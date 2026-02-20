@@ -1,0 +1,46 @@
+# Symlinked directories (never commit)
+/common/
+/secretsandconfig/
+/common
+/secretsandconfig
+
+# Node
+/node_modules/
+/node/node_modules/
+/scripts/node_modules/
+/electron/node_modules/
+package-lock.json
+
+# Python (legacy AppEngine removed; agentic/ scripts kept)
+*.py
+*.pyc
+*.pyo
+*.cfg
+__pycache__/
+/venv/
+agentic/.venv/
+/lib/
+
+# Agentic scripts (override *.py ignore)
+!agentic/*.py
+
+# Credentials live in secretsandconfig/ (already gitignored above)
+
+# Generated / build
+/node/live_variables.js
+/node/variables.js
+/stack/
+/electron/dist/
+/Resources/
+/include/
+/scripts/test.js
+scripts/cli/storage/
+
+# Keys / certs
+*.pem
+*.pub
+*.bak
+
+# System
+.DS_Store
+Thumbs.db

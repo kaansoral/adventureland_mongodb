@@ -1,0 +1,21 @@
+{
+	"name": "adventureland",
+	"description": "Adventure Land - MongoDB Backend",
+	"version": "0.0.1",
+	"private": true,
+	"license": "Apache-2.0",
+	"author": "KS",
+	"scripts": {
+		"start": "node main.js"
+	},
+	"dependencies": {
+		"argon2": "^0.44.0",
+		"cookie-parser": "^1.4.5",
+		"express": "^4.16.4",
+		"mongodb": "^6.16.0",
+		"nocache": "^3.0.1",
+		"node-fetch": "^2.6.1",
+		"nunjucks": "^3.2.2",
+		"stripe": "^14.0.0"
+	}
+}

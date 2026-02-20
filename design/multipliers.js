@@ -1,0 +1,9 @@
+var extra_shells=20;
+var multipliers={
+	"extra_shells":extra_shells,
+	"shells_to_gold":32000,
+	"buy_to_sell":0.6,
+	"secondhands_mult":2,
+	"secondhands_cash_mult":3,
+	"lostandfound_mult":4,
+};

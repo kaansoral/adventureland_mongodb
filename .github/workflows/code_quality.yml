@@ -1,0 +1,12 @@
+name: Code Quality
+on: [push, pull_request]
+
+jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install
+        working-directory: node
+      - run: npx prettier --check .
+        working-directory: node
