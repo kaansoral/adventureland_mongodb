@@ -866,15 +866,22 @@ async function add_event(element, type, tags, args) {
 
 // ==================== SERVER COMMUNICATION ====================
 
+function server_url(server, api_method) {
+	var protocol = options.base_url.startsWith("https") ? "https" : "http";
+	return protocol + "://" + server.address + server.path + "server_api/" + api_method;
+}
+
 async function server_eval(server, code, data) {
 	if (!data) data = {};
-	var ip = server.actual_ip;
-	if (Dev) ip = "0.0.0.0";
 	try {
-		var response = await fetch("http://" + ip + ":" + server.port, {
+		var response = await fetch(server_url(server, "eval"), {
 			method: "POST",
 			headers: { "Content-Type": "application/x-www-form-urlencoded" },
-			body: "aevent=eval&spass=" + keys.ACCESS_MASTER + "&code=" + encodeURIComponent(code) + "&data=" + encodeURIComponent(JSON.stringify(data)),
+			body: new URLSearchParams({
+				spass: keys.ACCESS_MASTER,
+				code: code,
+				data: JSON.stringify(data),
+			}).toString(),
 		});
 		return JSON.parse(await response.text());
 	} catch (e) {
@@ -918,22 +925,32 @@ async function update_characters(user, reason, name, shells) {
 			try {
 				var server = await get(character.server);
 				if (!server) continue;
-				var ip = server.actual_ip;
-				if (Dev) ip = "0.0.0.0";
 				if (!reason) {
-					await fetch("http://" + ip + ":" + server.port, {
+					await fetch(server_url(server, "cupdate"), {
 						method: "POST",
 						headers: { "Content-Type": "application/x-www-form-urlencoded" },
-						body: "aevent=cupdate&spass=" + keys.ACCESS_MASTER + "&cash=" + user.cash + "&id=" + character.info.name + "&ncash=" + (shells || 0),
+						body: new URLSearchParams({
+							spass: keys.ACCESS_MASTER,
+							cash: user.cash,
+							id: character.info.name,
+							ncash: shells || 0,
+						}).toString(),
 					});
 				} else if (reason === "friends" || reason === "not_friends") {
-					// Update character friends in DB
-					await db.collection("character").updateOne({ _id: character._id }, { $set: { friends: user.friends } });
+					await db.collection("character").updateOne(
+						{ _id: character._id },
+						{ $set: { friends: user.friends } },
+					);
 					var event_name = reason === "friends" ? "new_friend" : "lost_friend";
-					await fetch("http://" + ip + ":" + server.port, {
+					await fetch(server_url(server, event_name), {
 						method: "POST",
 						headers: { "Content-Type": "application/x-www-form-urlencoded" },
-						body: "aevent=" + event_name + "&spass=" + keys.ACCESS_MASTER + "&name=" + name + "&friends=" + JSON.stringify(user.friends) + "&id=" + character.info.name,
+						body: new URLSearchParams({
+							spass: keys.ACCESS_MASTER,
+							name: name,
+							friends: JSON.stringify(user.friends),
+							id: character.info.name,
+						}).toString(),
 					});
 				}
 			} catch (e) {

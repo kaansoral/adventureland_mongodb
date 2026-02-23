@@ -39,6 +39,7 @@ if (!server_def.secure) {
 	);
 	console.log("SSL Used: " + server_def.ssl_key);
 }
+app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
 	res.send("Hello World!");
 });
@@ -679,129 +680,77 @@ async function reload_server(to_broadcast, change) {
 	}
 }
 
-function decode_http_data(data) {
-	// #TODO: Find a better way to transfer data [28/09/17]
-	var result = decodeURIComponent(data)
-		.replace_all("u'", "'")
-		.replace_all("'", '"')
-		.replace_all("+", " ")
-		.replace_all("%2B", "+");
-	return result;
-}
+var server_api = express.Router();
+server_api.use((req, res, next) => {
+	if (req.body.spass !== keys.ACCESS_MASTER) return res.status(403).send("");
+	next();
+});
 
-function parse_http_json(data) {
-	var result = decode_http_data(data);
-	var json = {};
-	try {
-		json = JSON.parse(result);
-	} catch (e) {
-		console.log("\n" + data);
-		log_trace("parse_http_json", e);
+server_api.post("/shutdown", (req, res) => {
+	shutdown_routine();
+	res.send("ok");
+});
+
+server_api.post("/cupdate", (req, res) => {
+	var id = id_to_id[req.body.id];
+	if (players[id]) {
+		var player = players[id];
+		player.cash = req.body.cash;
+		if (req.body.ncash && req.body.ncash != "0") {
+			player.socket.emit("game_log", {
+				message: "Received " + req.body.ncash + " shells",
+				color: colors.cash,
+			});
+		}
+		resend(player, "reopen+nc");
 	}
-	return json;
-}
+	res.send("yes");
+});
 
-function http_handler(request, response) {
-	var body = [];
-	request
-		.on("error", function (err) {
-			server_log("http_err: " + err, 1);
-		})
-		.on("data", function (chunk) {
-			body.push(chunk);
-		})
-		.on("end", function () {
-			body = Buffer.concat(body).toString();
-			try {
-				// server_log("http_handle's end");
-				var url_parts = url.parse(request.url, true);
-				var args = url_parts.query;
-				var output = "";
-				//console.log(body);
-				(body || "").split("&").forEach(function (pv) {
-					var pvp = pv.split("=");
-					args[pvp[0]] = pvp[1];
-				});
-				if (args.checkin) {
-					// console.log(JSON.stringify(args));
-					// safe_search(request,"::1");
-					// console.log(JSON.stringify(request.headers));
-					console.log("start");
-					req = request;
-					console.log(req.connection ? req.connection.remoteAddress : null);
-					console.log(req.socket ? req.socket.remoteAddress : null);
-					console.log(req.connection && req.connection.socket ? req.connection.socket.remoteAddress : null);
-					console.log(req.info ? req.info.remoteAddress : null);
-					var ip = getClientIp(request);
-					var id = id_to_id[args.id];
-					// console.log(ip);
-					if (players[id] && players[id].ipass == args.ipass) {
-						players[id].last_ip = ip;
-						players[id].last_ipass = new Date();
-						// server_log("ipass for "+players[id].name);
-					}
-				}
-				if (args.spass != keys.ACCESS_MASTER) {
-					response.writeHead(200);
-					response.end(output);
-					return;
-				}
-				if (args.aevent == "shutdown") {
-					shutdown_routine();
-				}
-				if (args.aevent == "cupdate") {
-					var id = id_to_id[args.id];
-					server_log("cupdate for " + args.id + " socket.id: " + id);
-					if (players[id]) {
-						var player = players[id];
-						player.cash = args.cash;
-						if (args.ncash && args.ncash != "0") {
-							player.socket.emit("game_log", { message: "Received " + args.ncash + " shells", color: colors.cash });
-						}
-
-						resend(player, "reopen+nc");
-					}
-					output = "yes";
-				}
-				if (args.aevent == "new_friend") {
-					var id = id_to_id[args.id];
-					server_log("new_friend for " + args.id + " socket.id: " + id, 1);
-					if (players[id]) {
-						var player = players[id];
-						player.friends = parse_http_json(args.friends);
-						player.socket.emit("friend", { event: "new", name: args.name, friends: player.friends });
-						resend(player, "redata");
-					}
-					output = "yes";
-				}
-				if (args.aevent == "lost_friend") {
-					var id = id_to_id[args.id];
-					server_log("lost_friend for " + args.id + " socket.id: " + id, 1);
-					if (players[id]) {
-						var player = players[id];
-						player.friends = parse_http_json(args.friends);
-						player.socket.emit("friend", { event: "lost", friends: player.friends }); // ,name:args.name
-						resend(player, "redata");
-					}
-					output = "yes";
-				}
-				if (args.aevent == "eval") {
-					var data = parse_http_json(args.data);
-					try {
-						eval(decode_http_data(args.code));
-					} catch (e) {
-						console.log("\n" + args.code);
-						log_trace("chttp_eval", e);
-					}
-					output = JSON.stringify(output);
-				}
-				response.writeHead(200);
-				response.end(output);
-			} catch (e) {
-				log_trace("chttp_err", e);
-			}
+server_api.post("/new_friend", (req, res) => {
+	var id = id_to_id[req.body.id];
+	server_log("new_friend for " + req.body.id + " socket.id: " + id, 1);
+	if (players[id]) {
+		var player = players[id];
+		player.friends = JSON.parse(req.body.friends);
+		player.socket.emit("friend", {
+			event: "new",
+			name: req.body.name,
+			friends: player.friends,
 		});
-}
+		resend(player, "redata");
+	}
+	res.send("yes");
+});
+
+server_api.post("/lost_friend", (req, res) => {
+	var id = id_to_id[req.body.id];
+	server_log("lost_friend for " + req.body.id + " socket.id: " + id, 1);
+	if (players[id]) {
+		var player = players[id];
+		player.friends = JSON.parse(req.body.friends);
+		player.socket.emit("friend", {
+			event: "lost",
+			friends: player.friends,
+		});
+		resend(player, "redata");
+	}
+	res.send("yes");
+});
+
+server_api.post("/eval", (req, res) => {
+	var output = "";
+	var data = JSON.parse(req.body.data || "{}");
+	try {
+		eval(req.body.code);
+	} catch (e) {
+		console.log("\n" + req.body.code);
+		log_trace("chttp_eval", e);
+	}
+	res.send(JSON.stringify(output));
+});
+
+app.use(server_def.path + "server_api", server_api);
 
 function player_to_server(player, place) {
 	var char = {};
