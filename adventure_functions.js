@@ -868,12 +868,13 @@ async function add_event(element, type, tags, args) {
 
 function server_url(server, api_method) {
 	var protocol = options.base_url.startsWith("https") ? "https" : "http";
-	return protocol + "://" + server.address + server.path + "server_api/" + api_method;
+	return protocol + "://" + server.address + "/server_api/" + api_method;
 }
 
 async function server_eval(server, code, data) {
 	if (!data) data = {};
 	try {
+		console.log(server_url(server, "eval"));
 		var response = await fetch(server_url(server, "eval"), {
 			method: "POST",
 			headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -883,7 +884,9 @@ async function server_eval(server, code, data) {
 				data: JSON.stringify(data),
 			}).toString(),
 		});
-		return JSON.parse(await response.text());
+		var response = await response.text();
+		console.log(response);
+		return JSON.parse(response);
 	} catch (e) {
 		console.error("server_eval error", e);
 		return null;
@@ -902,7 +905,7 @@ async function server_eval_safe(server, code, data) {
 async function servers_eval(code, data) {
 	var servers = await get_servers();
 	for (var i = 0; i < servers.length; i++) {
-		await server_eval_safe(servers[i], code, data);
+		if (options.servers[servers[i].key]) await server_eval_safe(servers[i], code, data);
 	}
 }
 
@@ -937,10 +940,7 @@ async function update_characters(user, reason, name, shells) {
 						}).toString(),
 					});
 				} else if (reason === "friends" || reason === "not_friends") {
-					await db.collection("character").updateOne(
-						{ _id: character._id },
-						{ $set: { friends: user.friends } },
-					);
+					await db.collection("character").updateOne({ _id: character._id }, { $set: { friends: user.friends } });
 					var event_name = reason === "friends" ? "new_friend" : "lost_friend";
 					await fetch(server_url(server, event_name), {
 						method: "POST",
