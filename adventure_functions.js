@@ -868,13 +868,13 @@ async function add_event(element, type, tags, args) {
 
 function server_url(server, api_method) {
 	var protocol = options.base_url.startsWith("https") ? "https" : "http";
-	return protocol + "://" + server.address + server.api_path + api_method;
+	return protocol + "://" + server.address + options.servers[server.key].api_path + api_method;
 }
 
 async function server_eval(server, code, data) {
 	if (!data) data = {};
 	try {
-		console.log(server_url(server, "eval"));
+		//console.log(server_url(server, "eval"));
 		var response = await fetch(server_url(server, "eval"), {
 			method: "POST",
 			headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -885,7 +885,7 @@ async function server_eval(server, code, data) {
 			}).toString(),
 		});
 		var response = await response.text();
-		console.log(response);
+		//console.log(response);
 		return JSON.parse(response);
 	} catch (e) {
 		console.error("server_eval error", e);
