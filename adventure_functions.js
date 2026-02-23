@@ -868,7 +868,7 @@ async function add_event(element, type, tags, args) {
 
 function server_url(server, api_method) {
 	var protocol = options.base_url.startsWith("https") ? "https" : "http";
-	return protocol + "://" + server.address + "/server_api/" + api_method;
+	return protocol + "://" + server.address + server.api_path + "server_api/" + api_method;
 }
 
 async function server_eval(server, code, data) {
