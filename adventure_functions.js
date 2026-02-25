@@ -479,7 +479,7 @@ function servers_to_client(domain, servers_data) {
 			region: server.region,
 			players: gf(server, "players", 0),
 			key: get_id(server),
-			addr: server.addr,
+			address: server.address,
 			path: server.path,
 		});
 	}

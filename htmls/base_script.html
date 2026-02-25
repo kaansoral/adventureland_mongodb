@@ -2,7 +2,7 @@
 	var inside="{% if not user %}login{%else%}selection{%endif%}";
 	var user_id="{{user and user._id or ''}}",user_auth="{{user and user.info.auths[0] or ''}}";
 	var base_url="{{domain.base_url}}";
-	var server_addr="{{server and server.address or ''}}",server_path="{{server and server.path or ''}}";
+	var server_address="{{server and server.address or ''}}",server_path="{{server and server.path or ''}}";
 	var server_names={"US":"Americas","EU":"Europas","ASIA":"Eastlands"};
 	var sound_music='{%if domain.music_on %}1{%endif%}',sound_sfx='{% if domain.sfx_on %}1{%endif%}',xmas_tunes=false,music_level=0.3;
 	var perfect_pixels='{% if domain.perfect_pixels%}1{%endif%}';
@@ -93,7 +93,7 @@
 	{
 		if(url_address)
 		{
-			server_addr=url_address;
+			server_address=url_address;
 			server_path=url_path;
 			character_to_load=url_character;
 			setTimeout(function(){

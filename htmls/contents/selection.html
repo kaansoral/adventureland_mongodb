@@ -322,7 +322,7 @@
 	>
 		<div style="border-bottom: 2px dashed gray; color: #e7e7e7; display: inline-block; margin-bottom: 6px">Servers</div>
 		{% for server in servers %}
-		<div class="clickable enableclicks" onclick="server_addr='{{server.addr}}'; server_path='{{server.path}}'; init_socket();">
+		<div class="clickable enableclicks" onclick="server_address='{{server.address}}'; server_path='{{server.path}}'; init_socket();">
 			&gt; {{server.region=="EU" and "Europas" or server.region=="US" and "Americas" or "Eastlands"}} {% if server.gameplay!="hardcore" and server.gameplay!="dungeon" %}{{server.name}}{% endif %}{% if
 			server.gameplay=="hardcore" %} <span style="color: #dc3529">xHARDCORE</span>{% elif server.gameplay=="dungeon" %} <span style="color: #72396e">DUNGEON</span>{% endif%}{% if server.info.players
 			%} <span style="color: #85c76b">[{{server.info.players+domain.boost}}]</span>{% endif %}{% if user.admin%} <span style="color: gray">[{{server.info.observers}}]</span>{%endif%}{% if

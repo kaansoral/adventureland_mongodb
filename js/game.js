@@ -317,7 +317,7 @@ function observe_character(name) {
 					if (socket && observing && observing.name == ch.name) {
 						socket.emit("o:home");
 					} else {
-						server_addr = server.addr;
+						server_address = server.address;
 						server_port = server.port;
 						init_socket({ secret: ch.secret });
 						if (is_comm) hide_nav();
@@ -963,7 +963,7 @@ function on_load_progress(loader, resource) {
 }
 
 function loader_click() {
-	if (!server_addr)
+	if (!server_address)
 		show_modal(
 			"<div style='font-size: 48px'>No servers found, 3 possible scenarios: <br /><br />(1) The game is being updated <br />(2) All existing servers overloaded <br />(3) Someone found a bug that brought down all the servers<br /><br />Best to spend this time in our Discord to figure out what happened</div>",
 		);
@@ -1232,7 +1232,7 @@ function init_demo() {
 var first_welcome = false;
 function init_socket(args) {
 	if (!args) args = {};
-	if (!server_addr) {
+	if (!server_address) {
 		add_log("Welcome");
 		add_log("No live server found", "red");
 		add_log("Please check again in 2-3 minutes");
@@ -1246,14 +1246,14 @@ function init_socket(args) {
 	}
 	$(".disconnected").hide();
 	if (Local && (Cookies.get("windows") || Cookies.get("local_ip") || window.location.host == "advanture.land" || window.location.host == "x.qwazy.test"))
-		server_addr = "192.168.1.125"; // Cookies.set('windows','1',{expires:12*365});
+		server_address = "192.168.1.125"; // Cookies.set('windows','1',{expires:12*365});
 	else if (Local) {
-		if (window.location.origin == "http://127.0.0.1/") server_addr = "127.0.0.1";
-		// else server_addr = "0.0.0.0";
+		if (window.location.origin == "http://127.0.0.1/") server_address = "127.0.0.1";
+		// else server_address = "0.0.0.0";
 	}
 	var query = (args.secret && "desktop=" + ((!is_comm && 1) || "") + "&secret=" + args.secret) || undefined;
 	if (location.protocol == "https:")
-		window.socket = io(server_addr, {
+		window.socket = io(server_address, {
 			path: server_path,
 			secure: true,
 			transports: ["websocket"],
@@ -1261,7 +1261,7 @@ function init_socket(args) {
 			rejectUnauthorized: false,
 		});
 	else
-		window.socket = io(server_addr, {
+		window.socket = io(server_address, {
 			path: server_path,
 			secure: false,
 			transports: ["websocket"],
@@ -1498,7 +1498,7 @@ function init_socket(args) {
 		new_map_logic("start", { info: m_info });
 		new_game_logic();
 		// ipass=data.ipass;
-		// setInterval(function(){ if(game_loaded) $.getJSON(location.protocol+"//"+server_addr+":"+(parseInt(server_port)+40)+"/character?checkin=1&ipass="+ipass+"&id="+character.id+"&callback=?"); },30000); // + "?" = JSONP
+		// setInterval(function(){ if(game_loaded) $.getJSON(location.protocol+"//"+server_address+":"+(parseInt(server_port)+40)+"/character?checkin=1&ipass="+ipass+"&id="+character.id+"&callback=?"); },30000); // + "?" = JSONP
 
 		// api_call("load_gcode",{file:"/examples/hardcore.js",run:true});
 		try {

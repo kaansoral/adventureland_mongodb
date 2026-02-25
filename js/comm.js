@@ -71,7 +71,7 @@ function render_servers()
 	if(key==sl_cache) return;
 	sl_cache=key;
 	X.servers.forEach(function(server){
-		html+="<div class='gamebutton mb5 mr5' onclick='if(bc(this)) return; server_addr=\""+server.addr+"\"; server_port=\""+server.port+"\"; init_socket();'>";
+		html+="<div class='gamebutton mb5 mr5' onclick='if(bc(this)) return; server_address=\""+server.address+"\"; server_port=\""+server.port+"\"; init_socket();'>";
 			html+=server.region+" "+server.name+" <span style='color: #85C76B'>["+server.players+"]</span>";
 		html+="</div>";
 	});

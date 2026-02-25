@@ -101,7 +101,7 @@ models = {
 		realm: "main",
 		name: "I",
 		region: "EU",
-		addr: "de.adventure.land",
+		address: "de.adventure.land",
 		path: "/socket.io/",
 		version: "100",
 		last_update: new Date(),
