@@ -479,8 +479,8 @@ function servers_to_client(domain, servers_data) {
 			region: server.region,
 			players: gf(server, "players", 0),
 			key: get_id(server),
-			addr: domain.https ? server.ip : server.actual_ip,
-			port: server.port,
+			addr: server.addr,
+			path: server.path,
 		});
 	}
 	return servers;
@@ -1169,7 +1169,10 @@ async function enforce_limitations() {
 		}
 		delete server.players_list;
 	}
+	setTimeout(enforce_limitations, 6000 + Math.random() * 10000);
 }
+
+setTimeout(enforce_limitations, 6000);
 
 // ==================== SIMPLIFY ITEM ====================
 

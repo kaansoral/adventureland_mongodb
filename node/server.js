@@ -16,7 +16,6 @@ var server_key = process.argv[process.argv.length - 1];
 var server_def = options.servers[server_key];
 var region = server_def.region;
 var server_name = server_def.name;
-var port = server_def.local_port;
 var Dev = options.Dev;
 var Local = options.Local;
 var Prod = options.Prod;
@@ -24,21 +23,8 @@ var Staging = options.Staging;
 const express = require("express");
 var fs = require("fs");
 var app = express(),
-	server;
-app.set("trust proxy", true);
-if (!server_def.secure) {
 	server = require("http").createServer(app);
-	console.log("No SSL");
-} else {
-	server = require("https").createServer(
-		{
-			key: fs.readFileSync(server_def.ssl_key),
-			cert: fs.readFileSync(server_def.ssl_cert),
-		},
-		app,
-	);
-	console.log("SSL Used: " + server_def.ssl_key);
-}
+app.set("trust proxy", true);
 app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
 	res.send("Hello World!");
@@ -385,9 +371,6 @@ async function init_game() {
 				realm: "main",
 				name: server_name,
 				region: region,
-				actual_ip: "0.0.0.0",
-				ip: "0.0.0.0",
-				port: parseInt(port),
 				version: "" + Version,
 				last_update: new Date(),
 				info: { players: 0, observers: 0, total_players: 0, pvp: is_pvp || "", data: data },
@@ -397,6 +380,8 @@ async function init_game() {
 		Server.key = server_key;
 		Server.address = server_def.address;
 		Server.path = server_def.path;
+		Server.local_ip = server_def.local_ip;
+		Server.local_port = server_def.local_port;
 		Server.machine = server_def.machine;
 
 		server_id = region + server_name;
@@ -497,7 +482,7 @@ async function init_game() {
 			sprocess_game_data();
 		}
 		try {
-			server.listen(port);
+			server.listen(server_def.local_port, server_def.local_ip);
 			init_io();
 			// app2.listen(parseInt(port)+40);
 		} catch (e) {
