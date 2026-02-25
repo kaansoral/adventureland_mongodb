@@ -90,7 +90,25 @@ app.get("/", async (req, res, next) => {
 app.get("/comm", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
-	res.status(200).send(nunjucks.render("htmls/comm.html", { domain: domain, user: user }));
+	var servers = await get_servers();
+	var server = select_server(req, user, servers);
+	var total = 0, characters = [], data = null;
+	for (var i = 0; i < servers.length; i++) total += gf(servers[i], "players", 0);
+	if (user) {
+		characters = await get_characters(user);
+		domain.characters = characters_to_client(characters);
+		data = await get_user_data(user);
+	}
+	domain.servers = servers_to_client(domain, servers);
+	res.status(200).send(nunjucks.render("htmls/comm.html", {
+		domain: domain,
+		user: user,
+		user_data: data,
+		server: server,
+		servers: servers,
+		total: total,
+		characters: characters,
+	}));
 });
 
 // Character profile page
