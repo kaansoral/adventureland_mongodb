@@ -43,37 +43,9 @@ const path = require("node:path");
 var { Worker, SHARE_ENV } = require("worker_threads");
 var workers = [];
 var wlast = 0;
-// MongoDB connection (following qwazy pattern - direct MongoDB, no appengine_call layer)
+// MongoDB connection
 MongoClient = require("mongodb").MongoClient;
-if (keys.mongodb_tls) {
-	var mongodb_url =
-		"mongodb://" +
-		keys.mongodb_user +
-		":" +
-		keys.mongodb_password +
-		"@" +
-		keys.mongodb_ip +
-		":" +
-		keys.mongodb_port +
-		"/" +
-		keys.mongodb_name +
-		"?authSource=" +
-		(keys.mongodb_auth_source || keys.mongodb_name) +
-		"&tls=true";
-	client = new MongoClient(mongodb_url, { tlsCAFile: keys.mongodb_ca_file });
-} else {
-	client = new MongoClient(
-		"mongodb://" +
-			keys.mongodb_user +
-			":" +
-			keys.mongodb_password +
-			"@" +
-			keys.mongodb_ip +
-			":" +
-			keys.mongodb_port +
-			"/?directConnection=true",
-	);
-}
+client = new MongoClient(keys.mongodb_uri, { tlsCAFile: keys.mongodb_ca_file });
 client.connect();
 db = client.db(keys.mongodb_name);
 eval("" + fs.readFileSync(path.resolve(__dirname, "../common/mongodb_functions.js")));
@@ -4259,7 +4231,8 @@ function add_shells(player, amount, reason, announce, override) {
 			} else {
 				add_event(R.element, "ishells", ["cashflow"], {
 					info: {
-						message: player.name + " [" + get_id(user) + "] received " + -bill_amount + " shells from: " + reason + "_drop",
+						message:
+							player.name + " [" + get_id(user) + "] received " + -bill_amount + " shells from: " + reason + "_drop",
 						amount: -bill_amount,
 						reason: reason + "_drop",
 					},
@@ -5356,10 +5329,16 @@ function init_io() {
 					}
 					try {
 						var ud2 = await get_user_data(user2);
-						var unread = await db.collection("mail").find({ owner: get_id(user2), read: false }).limit(100).toArray();
+						var unread = await db
+							.collection("mail")
+							.find({ owner: get_id(user2), read: false })
+							.limit(100)
+							.toArray();
 						ud2.info.mail = unread.length;
 						await safe_save(ud2);
-					} catch (e) { console.error("send_mail ud error", e); }
+					} catch (e) {
+						console.error("send_mail ud error", e);
+					}
 					var player = players[socket.id];
 					if (player) socket.emit("game_response", { response: "mail_sent", to: data.to, cevent: "mail_sent" });
 				} catch (e) {
@@ -10569,7 +10548,12 @@ function init_io() {
 				if (entity.friends && !entity.private) {
 					notify_friends(entity, server_id).catch(console.error);
 				}
-				add_event(entity, "start", ["activity"], {info: {message: (entity.info.name || entity.name) + " [LV." + entity.level + "] logged in", server: server_id}});
+				add_event(entity, "start", ["activity"], {
+					info: {
+						message: (entity.info.name || entity.name) + " [LV." + entity.level + "] logged in",
+						server: server_id,
+					},
+				});
 				total_players++;
 			}
 		});
@@ -14222,10 +14206,16 @@ setInterval(function () {
 										});
 										try {
 											var ud2 = await get_user_data(user2);
-											var unread = await db.collection("mail").find({ owner: get_id(user2), read: false }).limit(100).toArray();
+											var unread = await db
+												.collection("mail")
+												.find({ owner: get_id(user2), read: false })
+												.limit(100)
+												.toArray();
 											ud2.info.mail = unread.length;
 											await safe_save(ud2);
-										} catch (e) { console.error("giveaway mail ud error", e); }
+										} catch (e) {
+											console.error("giveaway mail ud error", e);
+										}
 									} catch (e) {
 										console.log("#M unsent giveaway, lost item: " + mitem);
 										console.error(e);
@@ -14698,11 +14688,18 @@ function sync_loop() {
 		);
 		if (R.success) {
 			delete dc_players[player.real_id];
-			add_event({_id: player._id, info: {name: player.name}, level: player.level}, "stop", ["activity"], {info: {message: player.name + " [LV." + player.level + "] logged out", server: server_id}});
+			add_event({ _id: player._id, info: { name: player.name }, level: player.level }, "stop", ["activity"], {
+				info: { message: player.name + " [LV." + player.level + "] logged out", server: server_id },
+			});
 			try {
 				var user = await get(player.owner);
-				if (user) reward_referrer_logic(user).catch(function (e) { console.error("reward_referrer error", e); });
-			} catch (e) { console.error("reward_referrer get user error", e); }
+				if (user)
+					reward_referrer_logic(user).catch(function (e) {
+						console.error("reward_referrer error", e);
+					});
+			} catch (e) {
+				console.error("reward_referrer get user error", e);
+			}
 		} else {
 			server_log("#X SEVERE: stop_character failed for " + player.name, 1);
 		}

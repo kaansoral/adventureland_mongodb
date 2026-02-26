@@ -17,35 +17,7 @@ var server_auth = keys.SERVER_MASTER;
 
 // MongoDB connection
 MongoClient = require("mongodb").MongoClient;
-if (keys.mongodb_tls) {
-	var mongodb_url =
-		"mongodb://" +
-		keys.mongodb_user +
-		":" +
-		keys.mongodb_password +
-		"@" +
-		keys.mongodb_ip +
-		":" +
-		keys.mongodb_port +
-		"/" +
-		keys.mongodb_name +
-		"?authSource=" +
-		(keys.mongodb_auth_source || keys.mongodb_name) +
-		"&tls=true";
-	client = new MongoClient(mongodb_url, { tlsCAFile: keys.mongodb_ca_file });
-} else {
-	client = new MongoClient(
-		"mongodb://" +
-			keys.mongodb_user +
-			":" +
-			keys.mongodb_password +
-			"@" +
-			keys.mongodb_ip +
-			":" +
-			keys.mongodb_port +
-			"/?directConnection=true",
-	);
-}
+client = new MongoClient(keys.mongodb_uri, { tlsCAFile: keys.mongodb_ca_file });
 
 // Stub functions needed by models.js
 function post_get_init_user() {}

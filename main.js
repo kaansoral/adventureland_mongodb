@@ -6,10 +6,9 @@ var options = require("./secretsandconfig/options");
 eval("" + fs.readFileSync(path.resolve(__dirname, "common/init.js")));
 reinit_from_options();
 
-// Override MongoDB connection with TLS (common/init.js doesn't support TLS params)
-if (keys.mongodb_tls) {
-	var mongodb_url = "mongodb://" + keys.mongodb_user + ":" + keys.mongodb_password + "@" + keys.mongodb_ip + ":" + keys.mongodb_port + "/" + keys.mongodb_name + "?authSource=" + (keys.mongodb_auth_source || keys.mongodb_name) + "&tls=true";
-	client = new MongoClient(mongodb_url, { tlsCAFile: keys.mongodb_ca_file });
+// Override MongoDB connection from common/init.js with keys.mongodb_uri
+if (keys.mongodb_uri) {
+	client = new MongoClient(keys.mongodb_uri, { tlsCAFile: keys.mongodb_ca_file });
 	client.connect();
 	db = client.db(keys.mongodb_name);
 }
