@@ -200,7 +200,29 @@ async function send_email(domain, email, args) {
 	var html = args.html || "Default HTML";
 	var text = args.text || "An email from the game";
 	console.log("send_email " + email + " - " + title);
-	// TODO: Implement Amazon SES sending
+	try {
+		var { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
+		var client = new SESClient({
+			region: "us-east-1",
+			credentials: {
+				accessKeyId: keys.amazon_ses_user,
+				secretAccessKey: keys.amazon_ses_key,
+			},
+		});
+		await client.send(new SendEmailCommand({
+			Source: "hello@adventure.land",
+			Destination: { ToAddresses: [email] },
+			Message: {
+				Subject: { Data: title },
+				Body: {
+					Html: { Data: html },
+					Text: { Data: text },
+				},
+			},
+		}));
+	} catch (e) {
+		console.error("send_email error", e);
+	}
 }
 
 function send_verification_email(domain, user) {
