@@ -1,6 +1,4 @@
-var is_game = 1,
-	is_server = 0,
-	is_code = 0,
+var Place = "game",
 	is_pvp = 0,
 	is_demo = 0,
 	gameplay = "normal";

@@ -1,6 +1,4 @@
-var is_game = 0;
-var is_server = 1;
-var is_code = 0;
+var Place = "server";
 var options = require("../secretsandconfig/options");
 var Dev = options.Dev;
 var fs = require("fs");

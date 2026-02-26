@@ -599,10 +599,10 @@ function direction_logic(entity,target,mode)
 	if(entity!=target)
 	{
 		entity.a_angle=Math.atan2(get_y(target)-get_y(entity),get_x(target)-get_x(entity))*180/Math.PI;
-		// if(is_server && entity.moving) return; // maybe add the is_server [06/10/19]
+		// if(Place=="server" && entity.moving) return; // maybe add the is_server [06/10/19]
 		entity.angle=entity.a_angle;
 	}
-	if(is_game && !new_attacks && entity.moving) return;
+	if(Place=="game" && !new_attacks && entity.moving) return;
 	set_direction(entity,entity.moving&&"soft"||mode);
 }
 
@@ -664,8 +664,8 @@ function can_transport(entity)
 function can_walk(entity)
 {
 	if(entity.s && entity.s.dash) return false;
-	if(is_game && entity.me && transporting && ssince(transporting)<8 && !entity.c.town) return false;
-	if(is_code && entity.me && parent.transporting && ssince(parent.transporting)<8 && !entity.c.town) return false;
+	if(Place=="game" && entity.me && transporting && ssince(transporting)<8 && !entity.c.town) return false;
+	if(Place=="code" && entity.me && parent.transporting && ssince(parent.transporting)<8 && !entity.c.town) return false;
 	return !is_disabled(entity);
 }
 
@@ -1113,7 +1113,7 @@ function calculate_vxy(monster,speed_mult)
 	total=sqrt(total);
 	monster.vx=monster.speed*speed_mult*(monster.going_x-monster.from_x)/total;
 	monster.vy=monster.speed*speed_mult*(monster.going_y-monster.from_y)/total;
-	if(1 || is_game) monster.angle=Math.atan2(monster.going_y-monster.from_y,monster.going_x-monster.from_x)*180/Math.PI; // now the .angle is used on .resync [03/08/16]
+	if(1 || Place=="game") monster.angle=Math.atan2(monster.going_y-monster.from_y,monster.going_x-monster.from_x)*180/Math.PI; // now the .angle is used on .resync [03/08/16]
 	// -90 top | 0 right | 180/-180 left | 90 bottom
 	// if(monster==character) console.log(monster.angle);
 }
@@ -1122,7 +1122,7 @@ function recalculate_vxy(monster)
 {
 	if(monster.moving && monster.ref_speed!=monster.speed)
 	{
-		if(is_server) monster.move_num++;
+		if(Place=="server") monster.move_num++;
 		calculate_vxy(monster);
 	}
 }
@@ -1434,7 +1434,7 @@ function can_move(monster,based)
 	}
 	for(var i=bsearch_start(GEO.x_lines||[],minx);i<(GEO.x_lines||[]).length;i++)
 	{
-		if(is_server) perfc.roam_ops+=1;
+		if(Place=="server") perfc.roam_ops+=1;
 		var line=GEO.x_lines[i]; // c++;
 		if(line[0]==x1 && (line[1]<=y1 && line[2]>=y1 || line[0]==x0 && y0<=line[1] && y1>line[1])) // can't move directly onto lines - or move over lines, parallel to them
 		{
@@ -1451,7 +1451,7 @@ function can_move(monster,based)
 	}
 	for(var i=bsearch_start(GEO.y_lines||[],miny);i<(GEO.y_lines||[]).length;i++)
 	{
-		if(is_server) perfc.roam_ops+=1;
+		if(Place=="server") perfc.roam_ops+=1;
 		var line=GEO.y_lines[i]; // c++;
 		if(line[0]==y1 && (line[1]<=x1 && line[2]>=x1 || line[0]==y0 && x0<=line[1] && x1>line[1]))
 		{
@@ -1528,7 +1528,7 @@ function stop_logic(monster)
 		if(monster.s && monster.s.dash)
 		{
 			delete monster.s.dash;
-			if(is_server) resend(monster,"u+cid");
+			if(Place=="server") resend(monster,"u+cid");
 		}
 		if(monster.name_tag) stop_name_tag(monster);
 		if(monster.me)
@@ -1536,7 +1536,7 @@ function stop_logic(monster)
 			resolve_deferreds("move",{reason:"stopped"});
 			showhide_quirks_logic();
 		}
-		if(monster.is_monster && !monster.target && is_server && E.schedule.night && Math.random()<0.4)
+		if(monster.is_monster && !monster.target && Place=="server" && E.schedule.night && Math.random()<0.4)
 		{
 			monster.s.sleeping={"ms":3000+5000*Math.random()};
 			monster.u=true; monster.cid++;

@@ -1,6 +1,4 @@
-var is_game = 0;
-var is_server = 0;
-var is_code = 0;
+var Place = "bfs";
 var keys = require("../secretsandconfig/keys");
 var options = require("../secretsandconfig/options");
 var Dev = options.Dev;

@@ -1,4 +1,4 @@
-var is_server=0;
+var Place="cli";
 var character={
 	x:0, real_x:0,
 	y:0, real_y:0,
