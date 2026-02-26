@@ -10566,6 +10566,10 @@ function init_io() {
 				}
 				cdata.entities = send_all_xy(player, { raw: true });
 				socket.emit("start", cdata);
+				if (entity.friends && !entity.private) {
+					notify_friends(entity, server_id).catch(console.error);
+				}
+				add_event(entity, "start", ["activity"], {info: {message: (entity.info.name || entity.name) + " [LV." + entity.level + "] logged in", server: server_id}});
 				total_players++;
 			}
 		});
@@ -14635,11 +14639,13 @@ function sync_loop() {
 						if (player.user.unlocked) owner.info.unlocked = player.user.unlocked;
 						for (var p in player.user) if (p.startsWith("items")) owner.info[p] = player.user[p];
 					}
+					owner.to_backup = true;
 					await tx_save(owner);
 				}
 				entity.last_sync = entity.last_online = new Date();
 				var data = player_to_server(player, "sync");
 				sync_entity(entity, data);
+				entity.to_backup = true;
 				await tx_save(entity);
 			},
 			[player],
@@ -14672,12 +14678,14 @@ function sync_loop() {
 						for (var p in player.user) if (p.startsWith("items")) owner.info[p] = player.user[p];
 					}
 					owner.server = owner.mounted_to = "";
+					owner.to_backup = true;
 					await tx_save(owner);
 				}
 				var data = player_to_server(player);
 				sync_entity(entity, data);
 				entity.last_sync = entity.last_online = new Date();
 				entity.online = entity.server = "";
+				entity.to_backup = true;
 				await tx_save(entity);
 			},
 			[player],
@@ -14690,6 +14698,7 @@ function sync_loop() {
 		);
 		if (R.success) {
 			delete dc_players[player.real_id];
+			add_event({_id: player._id, info: {name: player.name}, level: player.level}, "stop", ["activity"], {info: {message: player.name + " [LV." + player.level + "] logged out", server: server_id}});
 		} else {
 			server_log("#X SEVERE: stop_character failed for " + player.name, 1);
 		}
