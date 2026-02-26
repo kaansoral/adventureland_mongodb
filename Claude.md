@@ -11,6 +11,7 @@ Rules:
 
 The original game is at ~/thegame - you can reference but never edit it.
 After task completion, if files are changed, commit your work to git
+- After changing code, run `npx prettier --check .` from the `node/` directory to verify formatting. If prettier reports issues on files you changed, run `npx prettier --write <file>` to fix them before committing.
 
 Data transfer / normalization notes: (note every gotcha and every little detail here, keep it updated Claude)
 
