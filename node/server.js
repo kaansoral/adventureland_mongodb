@@ -4248,14 +4248,23 @@ function add_shells(player, amount, reason, announce, override) {
 				{ user: user, amount: bill_amount },
 			);
 			if (R.failed) return;
-			add_event(R.element, "ishells", ["cashflow"], {
-				info: {
-					message:
-						player.name + " [" + get_id(user) + "] received " + -bill_amount + " shells from: " + reason + "_drop",
-					amount: -bill_amount,
-					reason: reason + "_drop",
-				},
-			});
+			if (bill_amount > 0) {
+				add_event(R.element, "bill", ["cashflow"], {
+					info: {
+						message: player.name + " [" + get_id(user) + "] spent " + bill_amount + " shells for: " + reason + "_drop",
+						amount: bill_amount,
+						reason: reason + "_drop",
+					},
+				});
+			} else {
+				add_event(R.element, "ishells", ["cashflow"], {
+					info: {
+						message: player.name + " [" + get_id(user) + "] received " + -bill_amount + " shells from: " + reason + "_drop",
+						amount: -bill_amount,
+						reason: reason + "_drop",
+					},
+				});
+			}
 			update_characters(R.element, null, null, 0).catch(console.error);
 			if (players[player.id]) {
 				player.cash = R.element.cash;
@@ -5345,6 +5354,12 @@ function init_io() {
 						} else if (item) console.log("#M unsent mail, lost item: " + item);
 						return;
 					}
+					try {
+						var ud2 = await get_user_data(user2);
+						var unread = await db.collection("mail").find({ owner: get_id(user2), read: false }).limit(100).toArray();
+						ud2.info.mail = unread.length;
+						await safe_save(ud2);
+					} catch (e) { console.error("send_mail ud error", e); }
 					var player = players[socket.id];
 					if (player) socket.emit("game_response", { response: "mail_sent", to: data.to, cevent: "mail_sent" });
 				} catch (e) {
@@ -10614,6 +10629,11 @@ function init_io() {
 							if (p) socket.emit("game_response", { response: "friend_failed", reason: "nouser" });
 							return;
 						}
+						if (user1.server || user2.server) {
+							var p = players[socket.id];
+							if (p) socket.emit("game_response", { response: "friend_failed", reason: "bank" });
+							return;
+						}
 						if (user1.friends.length >= 100 || user2.friends.length >= 100) {
 							var p = players[socket.id];
 							if (p) socket.emit("game_response", { response: "friend_failed", reason: "100limit" });
@@ -10664,6 +10684,11 @@ function init_io() {
 						if (!user1 || !user2) {
 							var p = players[socket.id];
 							if (p) socket.emit("game_response", { response: "unfriend_failed", reason: "nouser" });
+							return;
+						}
+						if (user1.server || user2.server) {
+							var p = players[socket.id];
+							if (p) socket.emit("game_response", { response: "unfriend_failed", reason: "bank" });
 							return;
 						}
 						var R = await tx(
@@ -14191,6 +14216,12 @@ setInterval(function () {
 											},
 											blobs: ["info"],
 										});
+										try {
+											var ud2 = await get_user_data(user2);
+											var unread = await db.collection("mail").find({ owner: get_id(user2), read: false }).limit(100).toArray();
+											ud2.info.mail = unread.length;
+											await safe_save(ud2);
+										} catch (e) { console.error("giveaway mail ud error", e); }
 									} catch (e) {
 										console.log("#M unsent giveaway, lost item: " + mitem);
 										console.error(e);
