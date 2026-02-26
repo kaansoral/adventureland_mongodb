@@ -14699,6 +14699,10 @@ function sync_loop() {
 		if (R.success) {
 			delete dc_players[player.real_id];
 			add_event({_id: player._id, info: {name: player.name}, level: player.level}, "stop", ["activity"], {info: {message: player.name + " [LV." + player.level + "] logged out", server: server_id}});
+			try {
+				var user = await get(player.owner);
+				if (user) reward_referrer_logic(user).catch(function (e) { console.error("reward_referrer error", e); });
+			} catch (e) { console.error("reward_referrer get user error", e); }
 		} else {
 			server_log("#X SEVERE: stop_character failed for " + player.name, 1);
 		}
