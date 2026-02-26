@@ -27,16 +27,23 @@ function set_pamount(amount)
 
 function update_shells_calc()
 {
-	var shells=pamount*80;
-	if(pamount>=500) shells=Math.floor(shells*1.24);
-	else if(pamount>=100) shells=Math.floor(shells*1.16);
-	else if(pamount>=25) shells=Math.floor(shells*1.08);
-	$("#shells-calc-base").html("You get: <span style='color: #F3C300'>"+shells.toLocaleString()+"</span> Shells");
+	if(pamount<25){ $("#shells-calc").hide(); return; }
+	var base=pamount*80;
+	var bonus_mult=0;
+	if(pamount>=500) bonus_mult=0.24;
+	else if(pamount>=100) bonus_mult=0.16;
+	else if(pamount>=25) bonus_mult=0.08;
+	var extra=Math.floor(base*bonus_mult);
+	var subtotal=base+extra;
+	var html=to_pretty_num(base)+" + "+to_pretty_num(extra)+" <span style='color: gray'>(extra)</span>";
 	if(extra_shells_pct)
 	{
-		var total=Math.floor((shells*(100+extra_shells_pct))/100.0);
-		$("#shells-calc-bonus").html("+ Event Bonus: <span style='color: #008E3A'>"+total.toLocaleString()+"</span> Shells");
+		var event_bonus=Math.floor((subtotal*extra_shells_pct)/100.0);
+		html+=" + "+to_pretty_num(event_bonus)+" <span style='color: #50B795'>(event bonus)</span>";
+		subtotal+=event_bonus;
 	}
+	html+=" = <span style='color: #F3C300'>"+to_pretty_num(subtotal)+"</span> Shells";
+	$("#shells-calc-line").html(html);
 	$("#shells-calc").show();
 }
 

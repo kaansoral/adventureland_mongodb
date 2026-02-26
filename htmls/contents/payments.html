@@ -48,10 +48,10 @@
 				Adventure Land uses <a href="https://stripe.com/about" target="_blank" style="color: #CFCFCF; text-decoration: none" onclick="stpr(event)">Stripe</a> to handle payments, the leader in payments processing. Your credit card information never touches Adventure Land's servers.
 				<div id="plog"></div>
 			</div>
-			<div class="pui mainpui" id="shells-calc" style="border: 4px solid gray; padding: 12px; background: black; font-size: 28px; text-align: left; margin-top: 5px; width: 404px; color: white; display: none">
-				<div id="shells-calc-base"></div>
-				{% if extra_shells %}<div id="shells-calc-bonus" style="color: #50B795"></div>{% endif %}
+			<div class="pui mainpui" id="shells-calc" style="border: 4px solid gray; padding: 12px; background: black; font-size: 24px; text-align: left; margin-top: 5px; width: 404px; color: white">
+				<span id="shells-calc-line"></span>
 			</div>
+			<script>update_shells_calc();</script>
 			{% if extra_shells %}
 				<div class="pui mainpui" style="border: 4px solid gray; padding: 12px; background: black; font-size: 36px; color: gray; text-align: left; margin-top: 5px; width: 404px; color: white">
 					<span style='color: #50B795'>Event Bonus:</span> <span style='color: #008E3A'>{{extra_shells}}%</span> Extra Shells with Every Purchase!
