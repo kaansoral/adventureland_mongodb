@@ -214,12 +214,16 @@ def ds_entity_to_mongo(entity, kind):
 
 def fix_info_ids(info):
     """Prefix numeric IDs inside info dict."""
-    # info.characters[].id → CH_ prefix
+    # info.characters[].id → CH_ prefix, info.characters[].server → SR_ prefix
     for ch in info.get("characters", []):
         if isinstance(ch, dict) and "id" in ch:
             cid = str(ch["id"])
             if cid and not cid.startswith("CH_"):
                 ch["id"] = "CH_" + cid
+        if isinstance(ch, dict) and "server" in ch:
+            srv = str(ch["server"])
+            if srv and not srv.startswith("SR_"):
+                ch["server"] = "SR_" + srv
 
     # info.code_list slot keys: large numbers → CH_ prefix
     code_list = info.get("code_list")

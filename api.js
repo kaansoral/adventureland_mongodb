@@ -773,7 +773,7 @@ async function start_character_api(args) {
 	var data = { done: 1, character: character_to_info(R.element, user, ip_info, guild), stats: stats };
 	if (code) { data.code = code.info.code; data.code_slot = code_slot; data.code_version = code_version; }
 	if (R.element.friends && !R.element.private) {
-		notify_friends(R.element, server_regions[server.region] + " " + server.name).catch(console.error);
+		notify_friends(R.element, get_id(server)).catch(console.error);
 	}
 	return data;
 }
@@ -1128,15 +1128,13 @@ async function not_friends_api(args) {
 
 async function pull_friends_api(args) {
 	var user = args.user;
-	var online_chars = [], server_name = {};
-	var servers = await get_servers();
-	for (var i = 0; i < servers.length; i++) server_name[get_id(servers[i])] = servers[i].region + " " + servers[i].name;
+	var online_chars = [];
 	var online = await db.collection("character").find({ friends: get_id(user), online: true }).toArray();
 	for (var i = 0; i < online.length; i++) {
 		var character = online[i];
 		if (character.private) continue;
 		var friend = { name: character.info.name || character.name, level: character.level, type: character.type, afk: gf(character, "afk", false), owner_name: gf(character, "owner_name"), owner: character.owner };
-		if (server_name[character.server]) { friend.server = server_name[character.server]; online_chars.push(friend); }
+		if (character.server) { friend.server = character.server; online_chars.push(friend); }
 	}
 	args.res.infs.push({ type: "friends", chars: online_chars });
 	return { success: true };
@@ -1145,15 +1143,13 @@ async function pull_friends_api(args) {
 async function pull_guild_api(args) {
 	var user = args.user;
 	if (!user.guild) return { success: true };
-	var online_chars = [], server_name = {};
-	var servers = await get_servers();
-	for (var i = 0; i < servers.length; i++) server_name[get_id(servers[i])] = servers[i].region + " " + servers[i].name;
+	var online_chars = [];
 	var online = await db.collection("character").find({ guild: user.guild, online: true }).toArray();
 	for (var i = 0; i < online.length; i++) {
 		var character = online[i];
 		if (character.private) continue;
 		var friend = { name: character.info.name || character.name, level: character.level, type: character.type, afk: gf(character, "afk", false), owner_name: gf(character, "owner_name"), owner: character.owner };
-		if (server_name[character.server]) { friend.server = server_name[character.server]; online_chars.push(friend); }
+		if (character.server) { friend.server = character.server; online_chars.push(friend); }
 	}
 	args.res.infs.push({ type: "guild", chars: online_chars });
 	return { success: true };
@@ -1161,9 +1157,7 @@ async function pull_guild_api(args) {
 
 async function pull_merchants_api(args) {
 	var user = args.user;
-	var online_chars = [], server_name = {};
-	var servers = await get_servers();
-	for (var i = 0; i < servers.length; i++) server_name[get_id(servers[i])] = servers[i].region + " " + servers[i].name;
+	var online_chars = [];
 	var online = await db.collection("character").find({ type: "merchant", online: true }).toArray();
 	for (var i = 0; i < online.length; i++) {
 		var character = online[i];
@@ -1178,7 +1172,7 @@ async function pull_merchants_api(args) {
 			if (character.info.slots && character.info.slots["trade" + s])
 				friend.slots["trade" + s] = simplify_item(character.info.slots["trade" + s]);
 		}
-		if (server_name[character.server]) { friend.server = server_name[character.server]; online_chars.push(friend); }
+		if (character.server) { online_chars.push(friend); }
 	}
 	args.res.infs.push({ type: "merchants", chars: online_chars });
 	return { success: true };

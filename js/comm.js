@@ -50,7 +50,7 @@ function render_characters()
 			html+="<div class='gamebutton mb5 mr5' onclick='if(bc(this)) return; observe_character(\""+char.name+"\");' style='text-align: left; width: 172px'>";
 				html+="<span style='float:left; margin-right: 5px; margin-top: -5px; margin-left: -4px; margin-bottom: -7px;'>"+sprite(char.skin,{cx:char.cx,rip:char.rip})+"</span>";
 				html+=char.name.length<=8&&char.name||char.name.substr(0,8)+"..";
-				html+=" <span style='color: #F3A05D'>["+char.server+"]</span>";
+				html+=" <span style='color: #F3A05D'>["+server_to_ui(char.server)+"]</span>";
 				html+="<br />";
 				html+="Lv."+char.level+" <span class='gray'>"+char.type.toTitleCase()+"</span>";
 			html+="</div>";

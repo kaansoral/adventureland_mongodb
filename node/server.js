@@ -384,7 +384,7 @@ async function init_game() {
 		Server.local_port = server_def.local_port;
 		Server.machine = server_def.machine;
 
-		server_id = region + server_name;
+		server_id = "SR_" + region + server_name;
 		server_auth = keys.SERVER_MASTER;
 		server_log("Server Live: " + server_name + " " + server_id, 1);
 		server_log("Node Version: " + process.version, 1);
@@ -4593,7 +4593,7 @@ function init_io() {
 								to: [data.name],
 								type: "private",
 								info: { message: message },
-								server: "SR_" + server_id,
+								server: server_id,
 								blobs: ["info"],
 							});
 							if (to_id !== player.owner)
@@ -4606,7 +4606,7 @@ function init_io() {
 									to: [data.name],
 									type: "private",
 									info: { message: message },
-									server: "SR_" + server_id,
+									server: server_id,
 									blobs: ["info"],
 								});
 						} catch (e) {
@@ -4631,7 +4631,7 @@ function init_io() {
 								to: [target.name],
 								type: "private",
 								info: { message: message },
-								server: "SR_" + server_id,
+								server: server_id,
 								blobs: ["info"],
 							});
 							if (target.owner !== player.owner)
@@ -4644,7 +4644,7 @@ function init_io() {
 									to: [target.name],
 									type: "private",
 									info: { message: message },
-									server: "SR_" + server_id,
+									server: server_id,
 									blobs: ["info"],
 								});
 						} catch (e) {
@@ -4677,7 +4677,7 @@ function init_io() {
 									to: names,
 									type: "ambient",
 									info: { message: message },
-									server: "SR_" + server_id,
+									server: server_id,
 									blobs: ["info"],
 								});
 							}
@@ -4694,12 +4694,12 @@ function init_io() {
 						await insert({
 							_id: "MS_" + random_string(29),
 							created: new Date(),
-							owner: "~SR_" + server_id,
+							owner: "~" + server_id,
 							author: player.owner,
 							fro: player.name,
 							type: "server",
 							info: { message: message },
-							server: "SR_" + server_id,
+							server: server_id,
 							blobs: ["info"],
 						});
 						await insert({
@@ -4710,7 +4710,7 @@ function init_io() {
 							fro: player.name,
 							type: "server",
 							info: { message: message },
-							server: "SR_" + server_id,
+							server: server_id,
 							blobs: ["info"],
 						});
 					} catch (e) {

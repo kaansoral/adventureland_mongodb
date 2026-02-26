@@ -1596,7 +1596,7 @@ function init_socket(args) {
 	socket.on("online", function (data) {
 		draw_trigger(function () {
 			no_chat_notification = true;
-			add_chat("", data.name + " is on " + data.server, "white", "online|" + data.name); //#80ECA7
+			add_chat("", data.name + " is on " + server_to_ui(data.server), "white", "online|" + data.name); //#80ECA7
 			no_chat_notification = false;
 		});
 	});

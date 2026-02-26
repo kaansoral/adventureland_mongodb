@@ -4917,7 +4917,7 @@ function load_friends(info)
 			info.chars.forEach(function(player){
 				var afk="AFK";
 				if(!player.afk) afk="<span style='color: #34bf15'>Active</span>";
-				html+="<tr><td>"+player.name+"</td><td>"+player.level+"</td><td>"+player.type.toUpperCase()+"</td><td>"+afk+"</td><td>"+player.server+"</td></tr>";
+				html+="<tr><td>"+player.name+"</td><td>"+player.level+"</td><td>"+player.type.toUpperCase()+"</td><td>"+afk+"</td><td>"+server_to_ui(player.server)+"</td></tr>";
 			});
 			html+="</table>";
 		}
@@ -5003,7 +5003,7 @@ function load_merchants(info)
 							html+=sprite(player.skin,{cx:player.cx,scale:2,height:64,width:42});
 							html+="<div>"+player.name+"</div>";
 							html+="<div>"+G.maps[player.map].name+": <span style='color: gray'>"+parseInt(player.x)+","+parseInt(player.y)+"</span></div>";
-							html+="<div style='color: #8AB272'>"+player.server+"</div>";
+							html+="<div style='color: #8AB272'>"+server_to_ui(player.server)+"</div>";
 						html+="</div>";
 					html+="</div>";
 				});
@@ -5138,7 +5138,7 @@ function load_chat(info,type)
 	html+="<div class='gamebutton gamebutton-small "+(type=="private"&&"gamebutton-active"||"")+"' style='color: #D0598B' onclick='pcs(); load_chat(null,\"private\")'>Private</div> ";
 	html+="<div class='gamebutton gamebutton-small "+(type=="all"&&"gamebutton-active"||"")+"' style='color: #717171' onclick='pcs(); load_chat(null)'>All Incoming</div> ";
 	X.servers.forEach(function(server){
-		html+="<div class='gamebutton gamebutton-small "+(type==(server.region+server.name)&&"gamebutton-active"||"")+"' style='color: #CFD5EB' onclick='pcs(); load_chat(null,\""+server.region+server.name+"\")'>"+server.region+" "+server.name+"</div> ";
+		html+="<div class='gamebutton gamebutton-small "+(type==server.key&&"gamebutton-active"||"")+"' style='color: #CFD5EB' onclick='pcs(); load_chat(null,\""+server.key+"\")'>"+server.region+" "+server.name+"</div> ";
 	});
 	// html+="<div class='gamebutton gamebutton-small' style='color: #88D69A' onclick='pcs(); show_alert(\"Soon\")'>Pull</div> ";
 	if(info)
@@ -5157,7 +5157,7 @@ function load_chat(info,type)
 					var color="gray";
 					if(message.type=="private") color="#CD7879",server=" <span style='color: #505259'>["+message.to[0]+"]</span>";
 					if(message.type=="party") color="#5B8DB0";
-					if(message.type=="ambient" || type=="global") server=" <span style='color: #505259'>["+message.server+"]</span>";
+					if(message.type=="ambient" || type=="global") server=" <span style='color: #505259'>["+server_to_ui(message.server)+"]</span>";
 					html+="<div title='"+message.date+"'>"+html_escape(message.fro)+":"+" <span style='color: "+color+"'>"+html_escape(message.message)+server+"</span></div>";
 				});
 			html+="</div>"

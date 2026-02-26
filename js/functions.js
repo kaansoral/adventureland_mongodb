@@ -4,6 +4,18 @@ var draw_timeouts=[],timers={},pingts={},pings=[],modal_count=0,last_ping=new Da
 var DTM=1; // draw_timeout multiplier - floating point - ideally ~1, but if a 60fps calibrated animation is executed on 30fps, around ~2 [04/03/19]
 var DMS=0; // ms after draw timeout trigger
 
+function server_to_ui(key) {
+	if (!key) return "";
+	if (X && X.servers) {
+		for (var i = 0; i < X.servers.length; i++) {
+			if (X.servers[i].key === key) return X.servers[i].region + " " + X.servers[i].name;
+		}
+	}
+	// Fallback: strip SR_ prefix
+	if (key.startsWith && key.startsWith("SR_")) return key.substring(3);
+	return key;
+}
+
 function is_hidden()
 {
 	return document.hidden;
