@@ -8,7 +8,7 @@ reinit_from_options();
 
 // Override MongoDB connection from common/init.js with keys.mongodb_uri
 if (keys.mongodb_uri) {
-	client = new MongoClient(keys.mongodb_uri, { tlsCAFile: keys.mongodb_ca_file });
+	client = new MongoClient(keys.mongodb_uri, keys.mongodb_config);
 	client.connect();
 	db = client.db(keys.mongodb_name);
 }

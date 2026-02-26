@@ -17,7 +17,7 @@ var server_auth = keys.SERVER_MASTER;
 
 // MongoDB connection
 MongoClient = require("mongodb").MongoClient;
-client = new MongoClient(keys.mongodb_uri, { tlsCAFile: keys.mongodb_ca_file });
+client = new MongoClient(keys.mongodb_uri, keys.mongodb_config);
 
 // Stub functions needed by models.js
 function post_get_init_user() {}

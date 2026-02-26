@@ -45,7 +45,7 @@ var workers = [];
 var wlast = 0;
 // MongoDB connection
 MongoClient = require("mongodb").MongoClient;
-client = new MongoClient(keys.mongodb_uri, { tlsCAFile: keys.mongodb_ca_file });
+client = new MongoClient(keys.mongodb_uri, keys.mongodb_config);
 client.connect();
 db = client.db(keys.mongodb_name);
 eval("" + fs.readFileSync(path.resolve(__dirname, "../common/mongodb_functions.js")));
