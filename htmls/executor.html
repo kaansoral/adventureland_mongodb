@@ -30,7 +30,7 @@
 	<body>
 		<div id="gg" style="text-align: center; color: #FD9610; height: 24px; line-height: 24px; padding-left: 4px; padding-right: 4px;">Initiating</div>
 		<script>
-			var active=false,catch_errors=true,Place="code";
+			var active=false,catch_errors=true,Place="code",Dev=parent.Dev,Staging=parent.Staging,Prod=parent.Prod,Local=parent.Local;
 			document.addEventListener("DOMContentLoaded",function(event){
 				active=true;
 				set_message("Executing ...","#FD9610");
