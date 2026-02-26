@@ -22,6 +22,8 @@ if (process.env.pm_id === "0" || !process.env.pm_id) {
 	);
 }
 
+setTimeout(enforce_limitations, 6000);
+
 // ==================== EMAIL SENDERS ====================
 
 async function send_announcement_email(user, purpose, title, text) {
@@ -86,11 +88,25 @@ async function check_servers() {
 	for (var i = 0; i < servers.length; i++) {
 		var server = post_get(servers[i]);
 		if (ssince(server.last_update) > 90) {
-			server.online = false;
-			server.info.players = 0;
-			await db.collection("server").updateOne({ _id: server._id }, { $set: { online: false, updated: new Date(), info: server.info } });
-			console.log("Server offline: " + server._id);
-			offlines.push(server._id);
+			var R = await tx(
+				async () => {
+					var entity = await tx_get(A.server);
+					if (!entity) return;
+					entity.online = false;
+					entity.info.players = 0;
+					entity.info.observers = 0;
+					entity.info.total_players = 0;
+					entity.info.merchants = 0;
+					await tx_save(entity);
+				},
+				{ server: server },
+			);
+			if (R.failed) {
+				console.error("check_servers tx failed", server._id, R.reason);
+			} else {
+				console.log("Server offline: " + server._id);
+				offlines.push(server._id);
+			}
 		}
 	}
 	if (offlines.length) {
