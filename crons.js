@@ -54,7 +54,7 @@ async function process_shard(kind, task, rand, args) {
 
 	var entities = await db.collection(kind).find(query).toArray();
 	for (var i = 0; i < entities.length; i++) {
-		var element = post_get(kind, entities[i]);
+		var element = post_get(entities[i]);
 		try {
 			await process_cron_entity(kind, task, element, args);
 		} catch (e) {
@@ -84,7 +84,7 @@ async function check_servers() {
 	var offlines = [];
 	var servers = await db.collection("server").find({ online: true }).toArray();
 	for (var i = 0; i < servers.length; i++) {
-		var server = post_get("server", servers[i]);
+		var server = post_get(servers[i]);
 		if (ssince(server.last_update) > 90) {
 			server.online = false;
 			server.info.players = 0;
@@ -118,7 +118,7 @@ async function unstuck_characters() {
 			})
 			.toArray();
 		for (var i = 0; i < stuck.length; i++) {
-			var character = post_get("character", stuck[i]);
+			var character = post_get(stuck[i]);
 			var m = msince(character.last_sync);
 			// await db.collection("character").updateOne({ _id: character._id }, { $set: { online: false, server: "", updated: new Date() } });
 			send_email(domain, "kaansoral@gmail.com", {
@@ -147,7 +147,7 @@ async function verify_steam_installs() {
 		.toArray();
 
 	for (var i = 0; i < characters.length; i++) {
-		var c = post_get("character", characters[i]);
+		var c = post_get(characters[i]);
 		if (owners.indexOf(c.owner) === -1) {
 			owners.push(c.owner);
 			try {
