@@ -1,3 +1,27 @@
+if (process.env.pm_id === "0" || !process.env.pm_id) {
+	setInterval(
+		async function () {
+			// hourly
+			await verify_steam_installs();
+		},
+		60 * 60 * 1000,
+	);
+	setInterval(
+		async function () {
+			// hourly
+			await unstuck_characters();
+		},
+		5 * 60 * 1000,
+	);
+	setInterval(
+		async function () {
+			// hourly
+			await check_servers();
+		},
+		1 * 60 * 1000,
+	);
+}
+
 // ==================== EMAIL SENDERS ====================
 
 async function send_announcement_email(user, purpose, title, text) {
@@ -42,55 +66,56 @@ async function process_shard(kind, task, rand, args) {
 async function process_cron_entity(kind, task, element, args) {
 	if (task === "backups") {
 		await backup_entity(element);
-		await db.collection(kind).updateOne(
-			{ _id: element._id },
-			{ $set: { to_backup: false, updated: new Date() } }
-		);
+		await db.collection(kind).updateOne({ _id: element._id }, { $set: { to_backup: false, updated: new Date() } });
 	}
 }
 
 // ==================== CHECK SERVERS ====================
 
 async function check_servers() {
+	var offlines = [];
 	var servers = await db.collection("server").find({ online: true }).toArray();
 	for (var i = 0; i < servers.length; i++) {
 		var server = init_entity("server", servers[i]);
 		if (ssince(server.last_update) > 90) {
 			server.online = false;
 			server.info.players = 0;
-			await db.collection("server").updateOne(
-				{ _id: server._id },
-				{ $set: { online: false, updated: new Date(), info: server.info } }
-			);
+			await db.collection("server").updateOne({ _id: server._id }, { $set: { online: false, updated: new Date(), info: server.info } });
 			console.log("Server offline: " + server._id);
+			offlines.push(server._id);
 		}
+	}
+	if (offlines.length) {
+		var domain = get_domain();
+		send_email(domain, "kaansoral@gmail.com", { html: offlines.join(", "), title: "OFFLINE SERVERS DETECTED" });
 	}
 }
 
 // ==================== UNSTUCK CHARACTERS ====================
 
 async function unstuck_characters() {
+	console.log("unstuck_characters()");
 	var servers = await get_servers();
 	var domain = get_domain();
 	for (var si = 0; si < servers.length; si++) {
 		var server = servers[si];
 		if (msince(server.created) <= 10) continue; // no widespread network issue
 		var cutoff = new Date(Date.now() - 30 * 60 * 1000); // 30 minutes ago
-		var stuck = await db.collection("character").find({
-			online: true,
-			server: server._id,
-			last_sync: { $lt: cutoff },
-		}).toArray();
+		var stuck = await db
+			.collection("character")
+			.find({
+				online: true,
+				server: server._id,
+				last_sync: { $lt: cutoff },
+			})
+			.toArray();
 		for (var i = 0; i < stuck.length; i++) {
 			var character = init_entity("character", stuck[i]);
 			var m = msince(character.last_sync);
-			await db.collection("character").updateOne(
-				{ _id: character._id },
-				{ $set: { online: false, server: "", updated: new Date() } }
-			);
+			// await db.collection("character").updateOne({ _id: character._id }, { $set: { online: false, server: "", updated: new Date() } });
 			send_email(domain, "kaansoral@gmail.com", {
 				html: "Stuck for " + m + " minutes",
-				title: "UNSTUCK " + character.name + " from " + server._id,
+				title: "MANUALLY UNSTUCK " + character.name + " from " + server._id,
 			});
 		}
 	}
@@ -103,10 +128,15 @@ async function verify_steam_installs() {
 	var owners = [];
 	var checks = {};
 	var cutoff = new Date(Date.now() - 4 * 3600 * 1000); // 4 hours ago
-	var characters = await db.collection("character").find({
-		platform: "steam",
-		last_online: { $gte: cutoff },
-	}).sort({ last_online: -1 }).limit(1000).toArray();
+	var characters = await db
+		.collection("character")
+		.find({
+			platform: "steam",
+			last_online: { $gte: cutoff },
+		})
+		.sort({ last_online: -1 })
+		.limit(1000)
+		.toArray();
 
 	for (var i = 0; i < characters.length; i++) {
 		var c = init_entity("character", characters[i]);
@@ -114,9 +144,7 @@ async function verify_steam_installs() {
 			owners.push(c.owner);
 			try {
 				var response = await fetch(
-					"https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v2/?key=" +
-					encodeURIComponent(keys.steam_publisher_web_apikey) +
-					"&appid=777150&steamid=" + encodeURIComponent(c.pid)
+					"https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v2/?key=" + encodeURIComponent(keys.steam_publisher_web_apikey) + "&appid=777150&steamid=" + encodeURIComponent(c.pid),
 				);
 				var text = await response.text();
 				if (text.indexOf('"ownsapp":true') !== -1) {
@@ -163,16 +191,6 @@ app.all("/cr/unstuck", async function (req, res, next) {
 		return res.send("no permission");
 	}
 	await unstuck_characters();
-	res.send("");
-});
-
-app.all("/cr/hourly", async function (req, res, next) {
-	var domain = get_domain(req);
-	var user = await get_user(req, domain);
-	if (!(user && user.admin) && req.query.keyword !== keys.SERVER_MASTER) {
-		return res.send("no permission");
-	}
-	await verify_steam_installs();
 	res.send("");
 });
 
