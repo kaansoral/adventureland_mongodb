@@ -5249,6 +5249,38 @@ function init_io() {
 					}
 					var user2 = await get(to_char.owner);
 					var user1 = player.owner ? await get(player.owner) : null;
+					if (!user2) {
+						var player = players[socket.id];
+						if (player)
+							socket.emit("game_response", {
+								response: "mail_failed",
+								to: data.to,
+								reason: "nouser",
+								cevent: "mail_failed",
+							});
+						if (player && item && player.esize) {
+							var r = JSON.parse(item);
+							add_item(player, r);
+							resend(player, "reopen");
+						} else if (item) console.log("#M unsent mail, lost item: " + item);
+						return;
+					}
+					if (!user1) {
+						var player = players[socket.id];
+						if (player)
+							socket.emit("game_response", {
+								response: "mail_failed",
+								to: data.to,
+								reason: "nouser",
+								cevent: "mail_failed",
+							});
+						if (player && item && player.esize) {
+							var r = JSON.parse(item);
+							add_item(player, r);
+							resend(player, "reopen");
+						} else if (item) console.log("#M unsent mail, lost item: " + item);
+						return;
+					}
 					var subject = ("" + (data.subject || "")).substring(0, 74);
 					var msg = ("" + (data.message || "")).substring(0, 1000);
 					var rid = randomStr(50);
