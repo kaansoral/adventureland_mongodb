@@ -5229,7 +5229,9 @@ function init_io() {
 			}
 			(async function () {
 				try {
-					var simplified_to = data.to.toLowerCase().replace(/\s+/g, "");
+					var player = players[socket.id];
+					if (!player) return;
+					var simplified_to = ("" + data.to).toLowerCase();
 					var to_char = await db.collection("character").findOne({ name: simplified_to });
 					if (!to_char) {
 						var player = players[socket.id];
