@@ -1,4 +1,3 @@
-var request = require("request");
 var crypto = require("crypto");
 var range_check = require("range_check");
 var protobuf = require("protobufjs");
@@ -856,16 +855,15 @@ function verify_mas_receipt(player, receipt) {
 		//player.mas_receipt=receipt;
 		var content = { "receipt-data": receipt, password: keys.apple_token };
 		var url = "https://buy.itunes.apple.com/verifyReceipt";
-		request(
-			{
-				url: url,
-				method: "POST",
-				json: content,
-			},
-			function (err, response, body) {
-				if (err) {
-					console.log("#M: mas error: " + player.name + " - " + err);
-				}
+		fetch(url, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(content),
+		})
+			.then(function (response) {
+				return response.json();
+			})
+			.then(function (body) {
 				if (body && body.status == 0 && body.receipt.download_id && body.receipt.original_purchase_date_ms) {
 					delete player.temp_auth;
 					player.auth_type = "mas";
@@ -878,28 +876,37 @@ function verify_mas_receipt(player, receipt) {
 					delete player.temp_auth;
 					console.log("#M: mas declined: " + player.name + " " + (body && body.status));
 				}
-			},
-		);
+			})
+			.catch(function (err) {
+				console.log("#M: mas error: " + player.name + " - " + err);
+			});
 	}
 }
 
 function verify_steam_ownership(player) {
 	var url = "https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v2/";
-	data = {
+	var data = {
 		key: keys.steam_publisher_web_apikey,
 		steamid: player.p.steam_id,
 		appid: "777150",
 	};
-	request.get({ url: url, qs: data }, function (err, response, body) {
-		console.log(body);
-	});
+	fetch(url + "?" + new URLSearchParams(data))
+		.then(function (response) {
+			return response.text();
+		})
+		.then(function (body) {
+			console.log(body);
+		})
+		.catch(function (err) {
+			console.log("verify_steam_ownership error", err);
+		});
 }
 
 function initiate_steam_microtxn(player) {
 	var url = "https://partner.steam-api.com/ISteamMicroTxn/InitTxn/v3/";
 	var orderid = parseInt(Math.random() * 1000000000 + 1);
 	console.log(orderid);
-	data = {
+	var data = {
 		key: keys.steam_publisher_web_apikey,
 		steamid: player.p.steam_id,
 		appid: "777150",
@@ -914,9 +921,20 @@ function initiate_steam_microtxn(player) {
 		"amount[0]": 999, // $9.99
 		"description[0]": "1000 Shells",
 	};
-	request.post({ url: url, form: data }, function (err, response, body) {
-		console.log(body);
-	});
+	fetch(url, {
+		method: "POST",
+		headers: { "Content-Type": "application/x-www-form-urlencoded" },
+		body: new URLSearchParams(data),
+	})
+		.then(function (response) {
+			return response.text();
+		})
+		.then(function (body) {
+			console.log(body);
+		})
+		.catch(function (err) {
+			console.log("initiate_steam_microtxn error", err);
+		});
 }
 
 function invincible_logic(player, place) {
@@ -3245,19 +3263,13 @@ function discord_call(message) {
 	if (message.search(" joined Adventure Land") != -1) {
 		url = "https://discordapp.com/api/channels/839163123499794481/messages";
 	}
-	request(
-		{
-			url: url,
-			headers: { Authorization: "Bot " + keys.discord_token },
-			method: "POST",
-			json: {
-				content: message,
-			},
-		},
-		function (err, response, body) {
-			//console.log(response);
-		},
-	);
+	fetch(url, {
+		method: "POST",
+		headers: { Authorization: "Bot " + keys.discord_token, "Content-Type": "application/json" },
+		body: JSON.stringify({ content: message }),
+	}).catch(function (err) {
+		console.log("discord_call error", err);
+	});
 }
 
 function server_log(message, important) {
