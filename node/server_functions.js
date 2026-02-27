@@ -1,5 +1,4 @@
 var crypto = require("crypto");
-var range_check = require("range_check");
 var protobuf = require("protobufjs");
 var ByteBuffer = require("bytebuffer"); // Steam decryption
 var false_socket = {

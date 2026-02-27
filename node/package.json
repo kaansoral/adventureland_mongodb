@@ -5,9 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js EU I 8120",
-    "lint": "eslint --ext .js .",
-    "lint:fix": "eslint --fix --ext .js ."
+    "start": "node server.js EU I 8120"
   },
   "author": "",
   "license": "AdventureLandOnlyUse",
@@ -15,17 +13,9 @@
     "@aws-sdk/client-ses": "^3.998.0",
     "bytebuffer": "^5.0.1",
     "protobufjs": "^6.9.0",
-    "range_check": "^1.4.0",
     "socket.io": "^4.0.0"
   },
   "devDependencies": {
-    "eslint": "^8.52.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.1",
     "prettier": "^3.0.3"
-  },
-  "eslintIgnore": [
-    "node_modules/*",
-    "data.js"
-  ]
+  }
 }
