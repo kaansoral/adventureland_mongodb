@@ -1229,7 +1229,39 @@ async function stripe_payment_api(args) {
 		add_event(R.element, "shells", ["cashflow"], { req: args.req, info: { message: "STRIPE! " + user.name + " received " + shells + " SHELLS!", usd: usd, token: token } });
 		args.res.infs.push({ type: "func", func: "stripe_result", args: ["success", R.element.cash] });
 		args.res.infs.push({ type: "success", message: "You received " + shells + " SHELLS!" });
-		update_characters(R.element).catch(console.error);
+		update_characters(R.element, null, null, shells).catch(console.error);
+
+		// Referrer bonus: 10% of shells to the referrer
+		try {
+			if (R.element.referrer && shells >= 20) {
+				var referrer = await get(R.element.referrer);
+				if (referrer) {
+					var referrer_shells = Math.round(shells * 0.1);
+					add_event(referrer, "referrer_cash", ["cashflow", "referrer"], {
+						info: {
+							message: "Referrer: " + referrer.name + " received " + referrer_shells + " shells from " + user.name + "[" + get_id(user) + "]",
+							source: get_id(user),
+						},
+					});
+					var R2 = await tx(
+						async () => {
+							var entity = await tx_get(A.referrer);
+							entity.info.rcash = gf(entity, "rcash", 0) + A.referrer_shells;
+							entity.info.referrer_events = gf(entity, "referrer_events", 0) + 1;
+							entity.cash += A.referrer_shells;
+							await tx_save(entity);
+						},
+						{ referrer: referrer, referrer_shells: referrer_shells },
+					);
+					if (!R2.failed) {
+						update_characters(referrer, null, null, referrer_shells).catch(console.error);
+					}
+				}
+			}
+		} catch (e) {
+			console.error("referrer bonus error", e);
+		}
+
 		return { success: true };
 	} catch (e) {
 		if (e.type === "StripeCardError") {
