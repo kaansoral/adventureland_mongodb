@@ -436,7 +436,7 @@ function rip(player) {
 	}
 }
 
-function notify_friends(data) {
+function notify_friends_emit(data) {
 	data.list.forEach(function (name) {
 		var player = players[name_to_id[name]];
 		if (!player) {
@@ -748,30 +748,6 @@ function normalise(data) {
 	}
 }
 
-var cloudflare_ips = [
-	// https://www.cloudflare.com/ips/
-	"103.21.244.0/22",
-	"103.22.200.0/22",
-	"103.31.4.0/22",
-	"104.16.0.0/12",
-	"108.162.192.0/18",
-	"131.0.72.0/22",
-	"141.101.64.0/18",
-	"162.158.0.0/15",
-	"172.64.0.0/13",
-	"173.245.48.0/20",
-	"188.114.96.0/20",
-	"190.93.240.0/20",
-	"197.234.240.0/22",
-	"198.41.128.0/17",
-	"2400:cb00::/32",
-	"2405:b500::/32",
-	"2606:4700::/32",
-	"2803:f800::/32",
-	"2c0f:f248::/32",
-	"2a06:98c0::/29",
-];
-
 function get_ip_raw(player) {
 	if (!player.socket) {
 		player = { socket: player };
@@ -784,14 +760,6 @@ function get_ip_raw(player) {
 		}
 		if (player.first_ip) {
 			return player.first_ip;
-		}
-		if (player.socket.request["headers"]["cf-connecting-ip"]) {
-			if (range_check.inRange(range_check.displayIP(player.socket.handshake.address), cloudflare_ips)) {
-				player.first_ip = player.socket.request["headers"]["cf-connecting-ip"];
-				return player.first_ip;
-			} else {
-				player.ipx = -1;
-			}
 		}
 	} catch (e) {}
 	try {

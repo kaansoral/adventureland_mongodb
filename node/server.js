@@ -318,13 +318,11 @@ if (server_name.startsWith("PVP") || server_name.startsWith("HARDCORE")) {
 	goldm *= 1.25;
 }
 
-// var secure_app=require('https').createServer(s_options,https_handler); #GTODO: Implement secure communications at one point
-
 async function init_game() {
 	try {
 		// Check if server already exists in MongoDB (following qwazy pattern)
 		Server = await get("SR_" + region + server_name);
-		if (Server && Server.online && msince(Server.last_update) < 12) {
+		if (Server && Server.online && msince(Server.updated) < 12) {
 			return [console.log("Server Exists: " + "SR_" + region + server_name), process.exit()];
 		}
 		var data = {};
@@ -525,7 +523,6 @@ async function init_game() {
 		init_server();
 		server.started = true;
 		server.live = true;
-		server.last_update = new Date();
 
 		// Save Server entity to MongoDB (following qwazy pattern)
 		Server.info.players = Object.keys(players).length;
@@ -534,9 +531,8 @@ async function init_game() {
 		Server.info.total_players = total_players;
 		Server.online = true;
 		Server.info.secret = random_string(32);
+		Server.updated = new Date();
 		await save(Server);
-
-		server.last_update = new Date();
 	} catch (e) {
 		log_trace("init", e);
 	}
@@ -10546,7 +10542,9 @@ function init_io() {
 				cdata.entities = send_all_xy(player, { raw: true });
 				socket.emit("start", cdata);
 				if (entity.friends && !entity.private) {
-					notify_friends(entity, server_id).catch(console.error);
+					setTimeout(function () {
+						notify_friends(entity, server_regions[region] + " " + server_name).catch(console.error);
+					}, 0);
 				}
 				add_event(entity, "start", ["activity"], {
 					info: {
@@ -14752,30 +14750,34 @@ async function server_loop() {
 		delete server.update_call;
 	}
 	if (server.update_call || server.stop_call) {
-	} else if (server.live && ssince(server.last_update) > 75) {
+	} else if (server.live && ssince(Server.updated) > 25) {
 		Server.info.players = Object.keys(players).length;
 		Server.info.observers = Object.keys(observers).length;
 		Server.info.merchants = total_merchants;
 		Server.info.total_players = total_players;
 		await safe_save(Server);
-
-		server.last_update = new Date();
 	} else if (server.started && !server.live && !server.stopped) {
 		Server.online = false;
-		await safe_save(Server);
+		await new Promise((r) => setTimeout(r, 200));
+		await retried_save(Server);
+		await new Promise((r) => setTimeout(r, 200));
 		server.stopped = true;
 	} else if (
 		server.stopped &&
 		((!Object.keys(dc_players).length && !Object.keys(players).length) || gameplay == "hardcore" || gameplay == "test")
 	) {
-		process.exit();
+		process.stdout.write("", () => {
+			// stdout flushed, now exit
+			process.exit(0);
+		});
 	} else if (server.stopped) {
 		sync_loop();
 	}
+	setTimeout(server_loop, 1000);
 }
 
 setInterval(sync_loop, 24000);
-setInterval(server_loop, 1000);
+setTimeout(server_loop, 1000);
 
 function shutdown() {
 	server_log("shutdown", 1);
@@ -14841,4 +14843,10 @@ process.on("SIGQUIT", exit_handler.bind(null, { exit: true }));
 process.on("SIGINT", exit_handler.bind(null, { exit: true }));
 process.on("SIGTERM", exit_handler.bind(null, { exit: true }));
 
-// process.on('uncaughtException', function(err) { console.log('Caught exception: ' + err); });
+process.on("uncaughtException", function (err) {
+	console.error("#EXC Caught exception:", err);
+});
+
+process.on("unhandledRejection", function (err) {
+	console.error("#EXC Unhandled rejection:", err);
+});

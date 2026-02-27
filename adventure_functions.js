@@ -1164,7 +1164,7 @@ async function notify_friends(character, server_name) {
 	for (var i = 0; i < servers.length; i++) {
 		var server = servers[i];
 		if (server_list[get_id(server)]) {
-			await server_eval_safe(server, "notify_friends(data)", { list: server_list[get_id(server)], name: character.info.name, server: server_name });
+			await server_eval_safe(server, "notify_friends_emit(data)", { list: server_list[get_id(server)], name: character.info.name, server: server_name });
 		}
 	}
 }
