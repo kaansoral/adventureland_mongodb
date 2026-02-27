@@ -120,13 +120,18 @@ function item_value(item) {
 
 function get_ip(req) {
 	var ip = req.ip || req.connection.remoteAddress || "0.0.0.0";
-	var cloudflare_ip = req.headers["cf-connecting-ip"];
-	if (cloudflare_ip) return cloudflare_ip;
 	return ip;
 }
 
 function get_country(req) {
-	return req.headers["cf-ipcountry"] || req.headers["x-appengine-country"] || "XX";
+	var header = req.headers["cf-ipcountry"] || req.headers["x-appengine-country"];
+	if (header) return header;
+	try {
+		var geoip = require("geoip-lite");
+		var geo = geoip.lookup(get_ip(req));
+		if (geo && geo.country) return geo.country;
+	} catch (e) {}
+	return "XX";
 }
 
 async function get_ip_info(ip_a) {
@@ -209,17 +214,19 @@ async function send_email(domain, email, args) {
 				secretAccessKey: keys.amazon_ses_key,
 			},
 		});
-		await client.send(new SendEmailCommand({
-			Source: "hello@adventure.land",
-			Destination: { ToAddresses: [email] },
-			Message: {
-				Subject: { Data: title },
-				Body: {
-					Html: { Data: html },
-					Text: { Data: text },
+		await client.send(
+			new SendEmailCommand({
+				Source: "hello@adventure.land",
+				Destination: { ToAddresses: [email] },
+				Message: {
+					Subject: { Data: title },
+					Body: {
+						Html: { Data: html },
+						Text: { Data: text },
+					},
 				},
-			},
-		}));
+			}),
+		);
 	} catch (e) {
 		console.error("send_email error", e);
 	}
@@ -322,6 +329,7 @@ secure_cookies = options.secure;
 SALES = 4 + 5 + 388 + 5101 + 125 / 20;
 extra_shells = 0;
 server_regions = { EU: "EU", US: "US", ASIA: "ASIA" };
+region_coords = { EU: [50, 8], US: [37, -100], ASIA: [1.3, 103.8] };
 allowed_name_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
 async function get_domain(req, user) {
@@ -361,10 +369,9 @@ async function get_domain(req, user) {
 		domain.https_mode = false;
 		domain.domain = req ? req.get("host").split(":")[0] : base_domain;
 	} else {
-		var protocol = "http";
-		if (req && req.headers["cf-visitor"] && req.headers["cf-visitor"].indexOf("https") !== -1) protocol = "https";
-		domain.base_url = protocol + "://" + base_domain;
-		domain.pref_url = domain.base_url;
+		var url = req ? req.protocol + "://" + req.get("host") : options.base_url;
+		domain.base_url = url;
+		domain.pref_url = url;
 		domain.stripe_pkey = keys.stripe_pkey;
 		domain.stripe_enabled = false;
 		domain.https_mode = HTTPS_MODE;
@@ -460,7 +467,7 @@ async function get_domain(req, user) {
 		if (req.cookies.no_weapons) domain.new_attacks = false;
 		if (req.cookies.manual_reload) domain.auto_reload = "off";
 		else domain.auto_reload = "auto";
-		if (req.protocol === "https" || (req.headers["cf-visitor"] && req.headers["cf-visitor"].indexOf("https") !== -1)) {
+		if (req.protocol === "https") {
 			domain.https = true;
 		}
 	}
@@ -488,7 +495,53 @@ async function get_servers(no_cache) {
 function select_server(req, user, servers) {
 	if (!servers || !servers.length) return null;
 	if (Dev) return servers[0];
-	// In production, would use geo-location matching
+	try {
+		var geoip = require("geoip-lite");
+		var ip = get_ip(req);
+		var geo = geoip.lookup(ip);
+		var latlon = (geo && geo.ll) || [0, 0];
+
+		var u_server = "";
+		if (user && gf(user, "characters", []).length) {
+			for (var i = 0; i < user.characters.length; i++) {
+				if (user.characters[i].home) {
+					u_server = user.characters[i].home;
+					break;
+				}
+			}
+		}
+
+		var min_dist = 99999999999,
+			the_server = null,
+			max_rank = -99999;
+		for (var i = 0; i < servers.length; i++) {
+			var server = servers[i];
+			var coords = region_coords[server.region] || [0, 0];
+			var dist = Math.pow(coords[0] - latlon[0], 2) + Math.pow(coords[1] - latlon[1], 2);
+			var rank = 100 + gf(server, "players", 0) / 10000.0;
+			if (gf(server, "players", 0) > 50) rank = 10 - gf(server, "players", 0) / 10000.0;
+			if (gf(server, "pvp")) {
+				rank = 1;
+				dist += 19999999999;
+			}
+			if (server.gameplay === "test") {
+				rank = -1000;
+				dist += 29999999999;
+			}
+			if (server.region + server.name === u_server) {
+				dist = -1;
+				rank = 99999999;
+			}
+			if (dist < min_dist || (dist === min_dist && rank > max_rank)) {
+				min_dist = dist;
+				the_server = server;
+				max_rank = rank;
+			}
+		}
+		if (the_server) return the_server;
+	} catch (e) {
+		console.error("select_server error", e);
+	}
 	return servers[0];
 }
 
@@ -863,17 +916,23 @@ async function reward_referrer_logic(user) {
 	if (gf(user, "reward")) return;
 
 	// Transaction: mark reward on user to prevent double reward
-	var R = await tx(async () => {
-		var entity = await tx_get(A.user);
-		if (gf(entity, "reward")) ex("already_rewarded");
-		entity.info.reward = true;
-		await tx_save(entity);
-	}, { user: user });
+	var R = await tx(
+		async () => {
+			var entity = await tx_get(A.user);
+			if (gf(entity, "reward")) ex("already_rewarded");
+			entity.info.reward = true;
+			await tx_save(entity);
+		},
+		{ user: user },
+	);
 	if (R.failed) return;
 
 	// Get referrer user
 	var referrer = await get(user.referrer);
-	if (!referrer) { console.error("reward_referrer: referrer not found: " + user.referrer); return; }
+	if (!referrer) {
+		console.error("reward_referrer: referrer not found: " + user.referrer);
+		return;
+	}
 
 	// Cheat prevention: check if this PID already triggered a reward
 	var rrewardmark = await get("IE_rrewardmark-" + user.pid);
@@ -889,15 +948,21 @@ async function reward_referrer_logic(user) {
 	});
 
 	// Transaction: add 200 shells to referrer, increment referral counters
-	var R2 = await tx(async () => {
-		var entity = await tx_get(A.referrer);
-		entity.info.referred = gf(entity, "referred", 0) + 1;
-		entity.info.referrer_events = gf(entity, "referrer_events", 0) + 1;
-		entity.info.rcash = gf(entity, "rcash", 0) + 200;
-		entity.cash += 200;
-		await tx_save(entity);
-	}, { referrer: referrer });
-	if (R2.failed) { console.error("reward_referrer: add_cash transaction failed"); return; }
+	var R2 = await tx(
+		async () => {
+			var entity = await tx_get(A.referrer);
+			entity.info.referred = gf(entity, "referred", 0) + 1;
+			entity.info.referrer_events = gf(entity, "referrer_events", 0) + 1;
+			entity.info.rcash = gf(entity, "rcash", 0) + 200;
+			entity.cash += 200;
+			await tx_save(entity);
+		},
+		{ referrer: referrer },
+	);
+	if (R2.failed) {
+		console.error("reward_referrer: add_cash transaction failed");
+		return;
+	}
 
 	// Create Friend Token mail for the referrer
 	var referred_name = user.name || gf(user, "email", "someone");
@@ -924,11 +989,19 @@ async function reward_referrer_logic(user) {
 		// Update referrer's unread mail count
 		try {
 			var ud = await get_user_data(referrer);
-			var unread = await db.collection("mail").find({ owner: get_id(referrer), read: false }).limit(100).toArray();
+			var unread = await db
+				.collection("mail")
+				.find({ owner: get_id(referrer), read: false })
+				.limit(100)
+				.toArray();
 			ud.info.mail = unread.length;
 			await safe_save(ud);
-		} catch (e) { console.error("reward_referrer mail ud error", e); }
-	} catch (e) { console.error("reward_referrer mail error", e); }
+		} catch (e) {
+			console.error("reward_referrer mail ud error", e);
+		}
+	} catch (e) {
+		console.error("reward_referrer mail error", e);
+	}
 
 	// Create rrewardmark to prevent re-reward for this PID
 	try {
@@ -938,7 +1011,9 @@ async function reward_referrer_logic(user) {
 			type: "infoelement",
 			info: {},
 		});
-	} catch (e) { console.error("reward_referrer rrewardmark error", e); }
+	} catch (e) {
+		console.error("reward_referrer rrewardmark error", e);
+	}
 
 	// Log "referrer_reward" event
 	add_event(referrer, "referrer_reward", ["cashflow", "referrer"], {
@@ -1287,8 +1362,6 @@ async function enforce_limitations() {
 	}
 	setTimeout(enforce_limitations, 6000 + Math.random() * 10000);
 }
-
-setTimeout(enforce_limitations, 6000);
 
 // ==================== SIMPLIFY ITEM ====================
 
