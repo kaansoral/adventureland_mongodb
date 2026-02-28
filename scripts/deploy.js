@@ -20,6 +20,8 @@ f.execs("rm -rf ~/deploy/" + folder + "/scripts");
 f.execs("rm -rf ~/deploy/" + folder + "/lib");
 f.execs("rm -rf ~/deploy/" + folder + "/python3");
 f.execs("rm -rf ~/deploy/" + folder + "/stack");
+f.execs("mkdir -p ~/deploy/" + folder + "/stack");
+f.execs("cp ~/adventureland/stack/update_notes.txt ~/deploy/" + folder + "/stack/update_notes.txt");
 f.execs("rm -rf ~/deploy/" + folder + "/electron");
 f.execs("find ~/deploy/" + folder + "/ -name '*.pxm' -delete");
 
