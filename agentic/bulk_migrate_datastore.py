@@ -71,7 +71,7 @@ KINDS = [
     ("Message",      "message",     "MS_"),  # largest (~6M) — last so you can switch before it finishes
 ]
 
-SKIP_PROPS = {"has_scatter", "__scatter__"}
+SKIP_PROPS = {"has_scatter", "__scatter__", "blobs"}
 USER_REF_FIELDS = {"owner", "referrer"}
 GUILD_REF_FIELDS = {"guild"}
 USER_LIST_FIELDS = {"friends"}
@@ -205,6 +205,8 @@ def fix_info_ids(info):
     if isinstance(code_list, dict):
         new_code_list = {}
         for slot, val in code_list.items():
+            if slot == "NaN":
+                continue
             new_slot = slot
             try:
                 if int(slot) > MAX_GENERIC_SLOT:
@@ -246,6 +248,14 @@ def convert_entity(entity, kind):
                 doc[key] = prefix_user_id(val) if val else None
             continue
 
+        # Message.owner with ~ prefix: server-owned messages
+        if kind == "Message" and key == "owner" and isinstance(val, str) and val.startswith("~"):
+            if val == "~global":
+                doc[key] = val
+            else:
+                doc[key] = "~SR_" + val[1:]  # ~EUI → ~SR_EUI
+            continue
+
         # Reference fields → US_ prefix (handles repeated/list values like Mail.owner)
         if key in USER_REF_FIELDS:
             if isinstance(val, list):
@@ -269,6 +279,14 @@ def convert_entity(entity, kind):
                 doc[key] = []
             continue
 
+        # Server field → SR_ prefix
+        if key == "server":
+            if val and isinstance(val, str) and val.strip():
+                doc[key] = prefix_id(val, "SR_")
+            else:
+                doc[key] = val
+            continue
+
         # Email (repeated in Datastore → string in MongoDB)
         if key == "email":
             if isinstance(val, list):
@@ -287,6 +305,14 @@ def convert_entity(entity, kind):
         doc["info"] = {}
     if isinstance(doc.get("info"), dict):
         fix_info_ids(doc["info"])
+        # Strip RDBMS blob marker artifact
+        if doc["info"].get("data") is True:
+            del doc["info"]["data"]
+
+    # Force offline state for migrated User/Character entities
+    if kind in ("User", "Character"):
+        doc["server"] = ""
+        doc["online"] = False
 
     return doc
 
