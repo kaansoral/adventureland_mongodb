@@ -4257,7 +4257,7 @@ function add_shells(player, amount, reason, announce, override) {
 function is_socket_allowed(socket) {
 	var loose = 0;
 	for (var id in sockets) {
-		if (!players[id] && get_ip(sockets[id]) == get_ip(socket)) {
+		if (!players[id] && get_ip_server(sockets[id]) == get_ip_server(socket)) {
 			loose++;
 		}
 	}
@@ -4269,7 +4269,7 @@ function is_socket_allowed(socket) {
 
 function disconnect_old_sockets(socket) {
 	for (var id in sockets) {
-		if (id != socket.id && !players[id] && get_ip(sockets[id]) == get_ip(socket)) {
+		if (id != socket.id && !players[id] && get_ip_server(sockets[id]) == get_ip_server(socket)) {
 			sockets[id].emit("disconnect_reason", "Too many loose connections from your network. Simply reload to play.");
 			if (sockets[id]) {
 				sockets[id].disconnect();
@@ -4905,7 +4905,7 @@ function init_io() {
 			} else if (action == "server_info") {
 				var info = [];
 				for (var id in players) {
-					info.push({ name: players[id].name, owner: players[id].owner, ip: get_ip(players[id]) });
+					info.push({ name: players[id].name, owner: players[id].owner, ip: get_ip_server(players[id]) });
 				}
 				//socket.emit("gm",{action:"server_info",info:info});
 			}
@@ -10254,6 +10254,8 @@ function init_io() {
 			}
 		});
 		socket.on("auth", async function (data) {
+			if (data.user) data.user = normalize_user_id(data.user);
+			if (data.character && !data.character.startsWith("CH_")) data.character = "CH_" + data.character;
 			if (gameplay == "test" && data.passphrase != "potato salad") {
 				return socket.emit("game_log", "Wrong passphrase!");
 			}
@@ -10319,7 +10321,7 @@ function init_io() {
 				}
 			}
 			var user_data = await get_user_data(owner);
-			var ip_a = get_ip(socket);
+			var ip_a = get_ip_server(socket);
 			try {
 				ip_a = ip_a.replace("::ffff:", "");
 			} catch (e) {}
@@ -13595,7 +13597,7 @@ function count_unique_users() {
 	unique_players = 0;
 	var marked = {};
 	for (var id in players) {
-		var ip = get_ip(players[id]);
+		var ip = get_ip_server(players[id]);
 		if (!marked[ip]) {
 			marked[ip] = 1;
 			unique_players++;
