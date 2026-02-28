@@ -13,9 +13,6 @@ if (keys.mongodb_uri) {
 	db = client.db(keys.mongodb_name);
 }
 
-// TTL index: auto-delete events after 75 days
-db.collection("event").createIndex({ created: 1 }, { expireAfterSeconds: 75 * 24 * 3600 });
-
 eval("" + fs.readFileSync(path.resolve(__dirname, "version.js")));
 if (Local) {
 	const filePath = path.join(__dirname, "version.js");
@@ -74,7 +71,11 @@ eval("" + fs.readFileSync(path.resolve(__dirname, "crons.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "common/admin.js")));
 
 // Stripe
-try { var stripe = require("stripe")(Dev ? keys.stripe_test_api_key : keys.stripe_api_key); } catch (e) { console.error("Stripe not loaded", e.message); }
+try {
+	var stripe = require("stripe")(Dev ? keys.stripe_test_api_key : keys.stripe_api_key);
+} catch (e) {
+	console.error("Stripe not loaded", e.message);
+}
 
 // ==================== ROUTES ====================
 
@@ -91,7 +92,9 @@ app.get("/comm", async (req, res, next) => {
 		domain = await get_domain(req, user);
 	var servers = await get_servers();
 	var server = select_server(req, user, servers);
-	var total = 0, characters = [], data = null;
+	var total = 0,
+		characters = [],
+		data = null;
 	for (var i = 0; i < servers.length; i++) total += gf(servers[i], "players", 0);
 	if (user) {
 		characters = await get_characters(user);
@@ -99,15 +102,17 @@ app.get("/comm", async (req, res, next) => {
 		data = await get_user_data(user);
 	}
 	domain.servers = servers_to_client(domain, servers);
-	res.status(200).send(nunjucks.render("htmls/comm.html", {
-		domain: domain,
-		user: user,
-		user_data: data,
-		server: server,
-		servers: servers,
-		total: total,
-		characters: characters,
-	}));
+	res.status(200).send(
+		nunjucks.render("htmls/comm.html", {
+			domain: domain,
+			user: user,
+			user_data: data,
+			server: server,
+			servers: servers,
+			total: total,
+			characters: characters,
+		}),
+	);
 });
 
 // Character profile page
@@ -115,8 +120,7 @@ app.get("/character/:name", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
 	var character = await get_character(req.params.name);
-	if (!character)
-		return res.status(200).send(nunjucks.render("htmls/simple_message.html", { domain: domain, message: "Not Found" }));
+	if (!character) return res.status(200).send(nunjucks.render("htmls/simple_message.html", { domain: domain, message: "Not Found" }));
 	if (!user) {
 		var ref = character.private ? req.params.name : character.owner;
 		set_cookie(res, "referrer", ref, domain.domain);
@@ -142,11 +146,9 @@ app.get("/player/:name", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
 	var character = await get_character(req.params.name);
-	if (!character)
-		return res.status(200).send(nunjucks.render("htmls/simple_message.html", { domain: domain, message: "Not Found" }));
+	if (!character) return res.status(200).send(nunjucks.render("htmls/simple_message.html", { domain: domain, message: "Not Found" }));
 	var player = await get(character.owner);
-	if (!player)
-		return res.status(200).send(nunjucks.render("htmls/simple_message.html", { domain: domain, message: "Not Found" }));
+	if (!player) return res.status(200).send(nunjucks.render("htmls/simple_message.html", { domain: domain, message: "Not Found" }));
 	if (!user) {
 		var ref = character.private ? req.params.name : get_id(player);
 		set_cookie(res, "referrer", ref, domain.domain);
@@ -161,7 +163,10 @@ app.get("/player/:name", async (req, res, next) => {
 		entities = [character];
 		domain.title = character.info.name || character.name;
 	} else {
-		entities = await db.collection("character").find({ owner: character.owner, private: { $ne: true } }).toArray();
+		entities = await db
+			.collection("character")
+			.find({ owner: character.owner, private: { $ne: true } })
+			.toArray();
 	}
 	if (!entities.length) {
 		entities = [character];
@@ -231,11 +236,14 @@ app.get("/ev/:uid/:v", async (req, res, next) => {
 	var message = "Email Verification Failed";
 	if (user && !gf(user, "verified")) {
 		if (gf(user, "everification") === req.params.v) {
-			var R = await tx(async () => {
-				R.element = await tx_get(A.user);
-				R.element.info.verified = true;
-				await tx_save(R.element);
-			}, { user: user });
+			var R = await tx(
+				async () => {
+					R.element = await tx_get(A.user);
+					R.element.info.verified = true;
+					await tx_save(R.element);
+				},
+				{ user: user },
+			);
 			if (!R.failed) message = "Your Email Is Now Verified";
 		}
 	} else if (user) {
@@ -266,7 +274,11 @@ app.all("/code.js", async (req, res, next) => {
 		for (var slot in code_list) {
 			if ("" + slot === "" + name || ("" + code_list[slot][0]).toLowerCase() === ("" + to_filename(name)).toLowerCase()) {
 				var code = await get("IE_USERCODE-" + get_id(user) + "-" + slot);
-				if (code) return res.status(200).set("Content-Type", "application/javascript").send("" + code.info.code);
+				if (code)
+					return res
+						.status(200)
+						.set("Content-Type", "application/javascript")
+						.send("" + code.info.code);
 			}
 		}
 	}
@@ -322,9 +334,12 @@ app.all("/data.js", async (req, res, next) => {
 		docs: docs,
 		drops: drops,
 	};
-	if (req.query.reload || (req.body && req.body.reload))
-		additional = "add_log('Game data reloaded','#32A3B0');\napply_backup()\n";
-	res.status(200).set("Content-Type", "application/javascript").set("Cache-Control", "public, max-age=2592000").send("var G=" + JSON.stringify(G) + ";\n" + additional);
+	if (req.query.reload || (req.body && req.body.reload)) additional = "add_log('Game data reloaded','#32A3B0');\napply_backup()\n";
+	res
+		.status(200)
+		.set("Content-Type", "application/javascript")
+		.set("Cache-Control", "public, max-age=2592000")
+		.send("var G=" + JSON.stringify(G) + ";\n" + additional);
 });
 
 // Shells / Payment page
@@ -388,35 +403,49 @@ app.get("/maps/:order?", async (req, res, next) => {
 	var maps_list = await db.collection("map").find(query).sort(sort).limit(5000).toArray();
 	for (var i = 0; i < maps_list.length; i++) {
 		var m = maps_list[i];
-		html += "<div style='margin-bottom: 2px'><a href='" + url + "/" + get_id(m).replace("MP_", "") + "' target='_blank' style='color: white; font-weight: bold; text-decoration:none'>" + get_id(m).replace("MP_", "") + "</a></div>";
+		html +=
+			"<div style='margin-bottom: 2px'><a href='" +
+			url +
+			"/" +
+			get_id(m).replace("MP_", "") +
+			"' target='_blank' style='color: white; font-weight: bold; text-decoration:none'>" +
+			get_id(m).replace("MP_", "") +
+			"</a></div>";
 	}
 	res.status(200).send(html);
 });
 
 // Static pages
 app.get("/privacy", async (req, res, next) => {
-	var user = await get_user(req), domain = await get_domain(req, user);
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
 	res.status(200).send(nunjucks.render("htmls/page.html", { domain: domain, user: user, content: "privacy" }));
 });
 app.get("/terms", async (req, res, next) => {
-	var user = await get_user(req), domain = await get_domain(req, user);
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
 	res.status(200).send(nunjucks.render("htmls/page.html", { domain: domain, user: user, content: "terms" }));
 });
 app.get("/contact", async (req, res, next) => {
-	var user = await get_user(req), domain = await get_domain(req, user);
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
 	res.status(200).send(nunjucks.render("htmls/page.html", { domain: domain, user: user, content: "contact" }));
 });
 app.get("/credits", async (req, res, next) => {
-	var user = await get_user(req), domain = await get_domain(req, user);
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
 	res.status(200).send(nunjucks.render("htmls/page.html", { domain: domain, user: user, content: "credits" }));
 });
 
 // Docs
 app.get("/docs/:path0?/:path1?/:path2?/:path3?", async (req, res, next) => {
-	var user = await get_user(req), domain = await get_domain(req, user);
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
 	domain.title = "Docs";
 	var p = [req.params.path0, req.params.path1, req.params.path2, req.params.path3];
-	for (var i = 0; i < p.length; i++) { if (p[i]) domain.title += " /" + p[i]; }
+	for (var i = 0; i < p.length; i++) {
+		if (p[i]) domain.title += " /" + p[i];
+	}
 	res.status(200).send(nunjucks.render("htmls/docs.html", { domain: domain, user: user, content: "docs", dpath: p, extras: true }));
 });
 
@@ -430,31 +459,38 @@ app.get("/executor", async (req, res, next) => {
 	res.status(200).send(nunjucks.render("htmls/executor.html", { domain: domain }));
 });
 app.get("/logs", async (req, res, next) => {
-	var user = await get_user(req), domain = await get_domain(req, user);
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
 	res.status(200).send(nunjucks.render("htmls/logs.html", { domain: domain, user: user }));
 });
 app.get("/linux", async (req, res, next) => {
-	var user = await get_user(req), domain = await get_domain(req, user);
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
 	res.status(200).send(nunjucks.render("htmls/linux.html", { domain: domain, user: user }));
 });
 app.get("/macos", async (req, res, next) => {
-	var user = await get_user(req), domain = await get_domain(req, user);
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
 	res.status(200).send(nunjucks.render("htmls/macos.html", { domain: domain, user: user }));
 });
 app.get("/allnotes", async (req, res, next) => {
-	var user = await get_user(req), domain = await get_domain(req, user);
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
 	res.status(200).send(nunjucks.render("htmls/allnotes.html", { domain: domain, user: user }));
 });
 app.get("/roadmap", async (req, res, next) => {
-	var user = await get_user(req), domain = await get_domain(req, user);
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
 	res.status(200).send(nunjucks.render("htmls/roadmap.html", { domain: domain, user: user }));
 });
 app.get("/drm-free", async (req, res, next) => {
-	var user = await get_user(req), domain = await get_domain(req, user);
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
 	res.status(200).send(nunjucks.render("htmls/drmfree.html", { domain: domain, user: user }));
 });
 app.get("/it-is-what-it-is", async (req, res, next) => {
-	var user = await get_user(req), domain = await get_domain(req, user);
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
 	res.status(200).send(nunjucks.render("htmls/disclaimers.html", { domain: domain, user: user }));
 });
 
@@ -488,7 +524,9 @@ app.all("/api", async (req, res, next) => {
 		req.params.method = method;
 		var args = req.body.arguments || req.query.arguments;
 		if (args && typeof args === "string") {
-			try { req.body = JSON.parse(args); } catch (e) {}
+			try {
+				req.body = JSON.parse(args);
+			} catch (e) {}
 		}
 		return handle_api_call(req, res, next);
 	}
@@ -503,8 +541,11 @@ app.listen(PORT, () => {
 });
 
 process.on("uncaughtException", function (err) {
-	console.error(err.stack);
-	console.error("Caught exception: " + err);
+	console.error("#EXC Caught exception:", err);
+});
+
+process.on("unhandledRejection", function (err) {
+	console.error("#EXC Unhandled rejection:", err);
 });
 
 module.exports = app;

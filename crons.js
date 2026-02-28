@@ -1,11 +1,12 @@
 if (process.env.pm_id === "0" || !process.env.pm_id) {
-	setInterval(
-		async function () {
-			// hourly
-			await verify_steam_installs();
-		},
-		60 * 60 * 1000,
-	);
+	if (Prod)
+		setInterval(
+			async function () {
+				// hourly
+				await verify_steam_installs();
+			},
+			60 * 60 * 1000,
+		);
 	setInterval(
 		async function () {
 			// hourly
@@ -87,7 +88,7 @@ async function check_servers() {
 	var servers = await db.collection("server").find({ online: true }).toArray();
 	for (var i = 0; i < servers.length; i++) {
 		var server = post_get(servers[i]);
-		if (ssince(server.last_update) > 90) {
+		if (ssince(server.updated) > 100) {
 			var R = await tx(
 				async () => {
 					var entity = await tx_get(A.server);
