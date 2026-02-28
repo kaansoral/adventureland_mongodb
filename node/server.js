@@ -13159,7 +13159,10 @@ function update_instance(instance) {
 			if (name == "upgrade") {
 				if (player.items[ref.num] && player.items[ref.num].name == "placeholder") {
 					var def = player.items[ref.num].p;
-					if (!def || !def.nums) continue;
+					if (!def || !def.nums) {
+						console.log("Missing p.nums on upgrade placeholder", player.name, player._id, "slot:" + ref.num);
+						continue;
+					}
 					var change = false;
 					if (value < ref.len * 0.8 && def.nums[0] === undefined) {
 						def.nums[0] = parseInt(player.p.u_roll * 10000) % 10;
@@ -13193,7 +13196,10 @@ function update_instance(instance) {
 			if (name == "compound") {
 				if (player.items[ref.num] && player.items[ref.num].name == "placeholder") {
 					var def = player.items[ref.num].p;
-					if (!def || !def.nums) continue;
+					if (!def || !def.nums) {
+						console.log("Missing p.nums on compound placeholder", player.name, player._id, "slot:" + ref.num);
+						continue;
+					}
 					var change = false;
 					if (value < 8000 && def.nums[0] === undefined) {
 						def.nums[0] = parseInt(player.p.c_roll * 10000) % 10;
