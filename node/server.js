@@ -14563,7 +14563,7 @@ function sync_loop() {
 				for (var p in owner.info) if (p.startsWith("items")) R.user[p] = owner.info[p];
 			},
 			[player],
-			(retries = 5),
+			6,
 		);
 		delete player.mounting;
 		delete player.mount_call;
@@ -14600,7 +14600,7 @@ function sync_loop() {
 				}
 			},
 			[player],
-			(retries = 40),
+			41,
 		);
 		delete player.unmount_call;
 		if (R.success) {
@@ -14647,7 +14647,7 @@ function sync_loop() {
 				await tx_save(entity);
 			},
 			[player],
-			(retries = 0),
+			1,
 		);
 		delete player.sync_call;
 		if (R.reason == "not_in_game") player.socket.disconnect();
@@ -14687,7 +14687,7 @@ function sync_loop() {
 				await tx_save(entity);
 			},
 			[player],
-			(retries = 40),
+			41,
 		);
 		delete player.stop_call;
 		server_log(
