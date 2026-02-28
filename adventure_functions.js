@@ -119,8 +119,9 @@ function item_value(item) {
 // ==================== IP UTILITIES ====================
 
 function get_ip(req) {
-	var ip = req.ip || req.connection.remoteAddress || "0.0.0.0";
-	return ip;
+	var forwarded = req.headers && req.headers["x-forwarded-for"];
+	var ip = (forwarded && forwarded.split(",")[0].trim()) || (req.connection && req.connection.remoteAddress) || req.ip || "0.0.0.0";
+	return ip.replace("::ffff:", "");
 }
 
 function get_country(req) {
@@ -1285,81 +1286,85 @@ function post_get_init_character(character) {
 async function enforce_limitations() {
 	// Port from Python - multi-accounting detection
 	// Runs from check_servers cron
-	var servers = await get_servers();
-	var players = [],
-		ips = {},
-		mips = {},
-		owners = {},
-		mowners = {},
-		ipx = {};
+	try {
+		var servers = await get_servers();
+		var players = [],
+			ips = {},
+			mips = {},
+			owners = {},
+			mowners = {},
+			ipx = {};
 
-	for (var si = 0; si < servers.length; si++) {
-		var server = servers[si];
-		if (server.gameplay !== "normal") continue;
-		try {
-			var splayers = await server_eval(
-				server,
-				"var list=[]; for(var id in players) { var player=players[id]; list.push({owner:player.owner,name:player.name,ip:get_ip(player),type:player.type,bot:player.bot||'',free:player.p.free||player.s.licenced||player.role=='gm',ipx:player.ipx||1,temp_auth:player.temp_auth||'',auth_id:player.auth_id||''}); }; output=list;",
-			);
-			if (!splayers) continue;
-			for (var i = 0; i < splayers.length; i++) {
-				splayers[i].pvp = gf(server, "pvp");
-				players.push(splayers[i]);
+		for (var si = 0; si < servers.length; si++) {
+			var server = servers[si];
+			if (server.gameplay !== "normal") continue;
+			try {
+				var splayers = await server_eval(
+					server,
+					"var list=[]; for(var id in players) { var player=players[id]; list.push({owner:player.owner,name:player.name,ip:get_ip_server(player),type:player.type,bot:player.bot||'',free:player.p.free||player.s.licenced||player.role=='gm',ipx:player.ipx||1,temp_auth:player.temp_auth||'',auth_id:player.auth_id||''}); }; output=list;",
+				);
+				if (!splayers) continue;
+				for (var i = 0; i < splayers.length; i++) {
+					splayers[i].pvp = gf(server, "pvp");
+					players.push(splayers[i]);
+				}
+				server.players_list = splayers;
+			} catch (e) {
+				console.error("enforce_limitations server error", e);
 			}
-			server.players_list = splayers;
-		} catch (e) {
-			console.error("enforce_limitations server error", e);
 		}
-	}
 
-	for (var i = 0; i < players.length; i++) {
-		var player = players[i];
-		if (player.free) continue;
-		if (player.auth_id) {
-			if (player.type !== "merchant") ips[player.ip] = (ips[player.ip] || 0) + 1;
-			else mips[player.ip] = (mips[player.ip] || 0) + 1;
-			player.ip = player.auth_id;
-			player.ipx = 1;
-		}
-		if (player.temp_auth) {
-			if (player.type !== "merchant") ips[player.ip] = (ips[player.ip] || 0) + 1;
-			else mips[player.ip] = (mips[player.ip] || 0) + 1;
-			player.ip = player.owner;
-			player.ipx = 1;
-		}
-		ipx[player.ip] = Math.max(ipx[player.ip] || 0, player.ipx);
-		if (player.type === "merchant") {
-			mowners[player.owner] = (mowners[player.owner] || 0) + 1;
-			mips[player.ip] = (mips[player.ip] || 0) + 1;
-		} else {
-			owners[player.owner] = (owners[player.owner] || 0) + 1;
-			ips[player.ip] = (ips[player.ip] || 0) + 1;
-		}
-	}
-
-	for (var si = 0; si < servers.length; si++) {
-		var server = servers[si];
-		if (server.gameplay !== "normal" || !server.players_list) continue;
-		var to_disconnect = [];
-		for (var i = 0; i < server.players_list.length; i++) {
-			var player = server.players_list[i];
+		for (var i = 0; i < players.length; i++) {
+			var player = players[i];
 			if (player.free) continue;
-			if (player.type === "merchant" && (mips[player.ip] > 1 || mowners[player.owner] > 1) && to_disconnect.indexOf(player.name) === -1) {
-				to_disconnect.push(player.name);
-				continue;
+			if (player.auth_id) {
+				if (player.type !== "merchant") ips[player.ip] = (ips[player.ip] || 0) + 1;
+				else mips[player.ip] = (mips[player.ip] || 0) + 1;
+				player.ip = player.auth_id;
+				player.ipx = 1;
 			}
-			if (player.type !== "merchant" && (ips[player.ip] > 3 * (ipx[player.ip] || 1) || owners[player.owner] > 3) && to_disconnect.indexOf(player.name) === -1) {
-				to_disconnect.push(player.name);
-				continue;
+			if (player.temp_auth) {
+				if (player.type !== "merchant") ips[player.ip] = (ips[player.ip] || 0) + 1;
+				else mips[player.ip] = (mips[player.ip] || 0) + 1;
+				player.ip = player.owner;
+				player.ipx = 1;
+			}
+			ipx[player.ip] = Math.max(ipx[player.ip] || 0, player.ipx);
+			if (player.type === "merchant") {
+				mowners[player.owner] = (mowners[player.owner] || 0) + 1;
+				mips[player.ip] = (mips[player.ip] || 0) + 1;
+			} else {
+				owners[player.owner] = (owners[player.owner] || 0) + 1;
+				ips[player.ip] = (ips[player.ip] || 0) + 1;
 			}
 		}
-		if (to_disconnect.length) {
-			await server_eval(
-				server,
-				JSON.stringify(to_disconnect) + ".forEach(function(name){ var player=get_player(name); if(!player) return; player.socket.emit('disconnect_reason','limits'); player.socket.disconnect(); });",
-			);
+
+		for (var si = 0; si < servers.length; si++) {
+			var server = servers[si];
+			if (server.gameplay !== "normal" || !server.players_list) continue;
+			var to_disconnect = [];
+			for (var i = 0; i < server.players_list.length; i++) {
+				var player = server.players_list[i];
+				if (player.free) continue;
+				if (player.type === "merchant" && (mips[player.ip] > 1 || mowners[player.owner] > 1) && to_disconnect.indexOf(player.name) === -1) {
+					to_disconnect.push(player.name);
+					continue;
+				}
+				if (player.type !== "merchant" && (ips[player.ip] > 3 * (ipx[player.ip] || 1) || owners[player.owner] > 3) && to_disconnect.indexOf(player.name) === -1) {
+					to_disconnect.push(player.name);
+					continue;
+				}
+			}
+			if (to_disconnect.length) {
+				await server_eval(
+					server,
+					JSON.stringify(to_disconnect) + ".forEach(function(name){ var player=get_player(name); if(!player) return; player.socket.emit('disconnect_reason','limits'); player.socket.disconnect(); });",
+				);
+			}
+			delete server.players_list;
 		}
-		delete server.players_list;
+	} catch (e) {
+		console.error("enforce_limitations()", e);
 	}
 	setTimeout(enforce_limitations, 6000 + Math.random() * 10000);
 }
