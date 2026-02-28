@@ -504,7 +504,7 @@ function select_server(req, user, servers) {
 
 		var u_server = "";
 		var chars = gf(user, "characters", []);
-		if (user && chars.length) {
+		if (user && chars && chars.length) {
 			for (var i = 0; i < chars.length; i++) {
 				if (chars[i].home) {
 					u_server = chars[i].home;
