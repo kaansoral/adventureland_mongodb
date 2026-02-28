@@ -502,10 +502,11 @@ function select_server(req, user, servers) {
 		var latlon = (geo && geo.ll) || [0, 0];
 
 		var u_server = "";
-		if (user && gf(user, "characters", []).length) {
-			for (var i = 0; i < user.characters.length; i++) {
-				if (user.characters[i].home) {
-					u_server = user.characters[i].home;
+		var chars = gf(user, "characters", []);
+		if (user && chars.length) {
+			for (var i = 0; i < chars.length; i++) {
+				if (chars[i].home) {
+					u_server = chars[i].home;
 					break;
 				}
 			}
