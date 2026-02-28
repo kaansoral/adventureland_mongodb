@@ -66,7 +66,17 @@ env.addFilter("is_user_newb", function (user) {
 
 env.addFilter("sales_percent", function (domain) {
 	if (!domain || !domain.sales) return "0.00";
-	return (domain.sales * 100 / 10000.0).toFixed(2);
+	return ((domain.sales * 100) / 10000.0).toFixed(2);
 });
 
 env.addFilter("to_pretty_num", to_pretty_num);
+
+env.addGlobal("tutorial_data", function (key) {
+	for (var i = 0; i < docs.tutorial.length; i++) {
+		if (docs.tutorial[i].key === key) return docs.tutorial[i];
+	}
+});
+
+env.addGlobal("task_name", function (key) {
+	return (docs.tasks && docs.tasks[key]) || key.charAt(0).toUpperCase() + key.slice(1);
+});
