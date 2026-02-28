@@ -405,7 +405,7 @@ function is_player_allowed(player) {
 		if (players[id].name == player.name && player != players[id]) {
 			return false;
 		} // "hardcore"
-		if (get_ip(players[id]) == get_ip(player)) {
+		if (get_ip_server(players[id]) == get_ip_server(player)) {
 			ips++;
 		}
 		if (player.auth_id && players[id].auth_id == player.auth_id) {
@@ -491,7 +491,7 @@ function is_same(player1, player2, party) {
 	if (player1.name == player2.name) {
 		return true;
 	}
-	if ((player1.owner && player1.owner == player2.owner) || (!Dev && get_ip(player1) == get_ip(player2))) {
+	if ((player1.owner && player1.owner == player2.owner) || (!Dev && get_ip_server(player1) == get_ip_server(player2))) {
 		return true;
 	}
 	if (party == 3 && !is_in_pvp(player1)) {
@@ -750,9 +750,12 @@ function normalise(data) {
 function get_ip_raw(player) {
 	if (!player.socket) {
 		player = { socket: player };
-	} // so get_ip(socket) works too [06/09/18]
+	} // so get_ip_server(socket) works too [06/09/18]
 	// return player.socket.handshake.address;
 	// BEWARE: player.socket.request.connection.remoteAddress
+	try {
+		return player.socket.request.headers["x-forwarded-for"].split(",")[0].trim();
+	} catch (e) {}
 	try {
 		if (player.last_ip) {
 			return player.last_ip;
@@ -769,7 +772,7 @@ function get_ip_raw(player) {
 	} catch (e) {}
 }
 
-function get_ip(player) {
+function get_ip_server(player) {
 	var ip = get_ip_raw(player) || "";
 	return ip.replace("::ffff:", "");
 }
@@ -790,8 +793,8 @@ function quick_hash(str) {
 function verify_steam_ticket(player, ticket) {
 	// Thanks: https://github.com/DoctorMcKay/node-steam-user
 	try {
-		var outer = EncryptedAppTicket.decode(new Buffer(ticket, "hex"));
-		var decrypted = symmetricDecrypt(outer.encryptedTicket, new Buffer(keys.steam_key, "hex"));
+		var outer = EncryptedAppTicket.decode(Buffer.from(ticket, "hex"));
+		var decrypted = symmetricDecrypt(outer.encryptedTicket, Buffer.from(keys.steam_key, "hex"));
 		let userData = decrypted.slice(0, outer.cbEncrypteduserdata);
 		let ownershipTicketLength = decrypted.readUInt32LE(outer.cbEncrypteduserdata);
 		let ownershipTicket = parseAppTicket(
