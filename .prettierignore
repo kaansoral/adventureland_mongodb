@@ -5,3 +5,4 @@ node/package-lock.json
 node/precompute.js
 package.json
 package-lock.json
+version.js

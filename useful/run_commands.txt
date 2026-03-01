@@ -5,8 +5,14 @@ node ~/adventureland/scripts/update_machines.js production;
 npm install's
 move DNS's
 
-pm2 start /root/adventureland/main.js --name adventureland --cwd /root/adventureland -i 4 --merge-logs
-pm2 start /root/adventureland/node/server.js --name al_eu1 --cwd /root/adventureland/node -- eu1
-pm2 start /root/adventureland/node/server.js --name al_eu2 --cwd /root/adventureland/node -- eu2
-pm2 start /root/adventureland/node/server.js --name al_eupvp --cwd /root/adventureland/node -- eupvp
-pm2 start /root/adventureland/node/server.js --name al_asia1 --cwd /root/adventureland/node -- asia1
+pm2 start /root/adventureland/main.js --name adventureland --cwd --kill_timeout 240000 /root/adventureland -i 4 --merge-logs
+pm2 start /root/adventureland/node/server.js --name al_eu1 --cwd --kill_timeout 240000 /root/adventureland/node -- eu1
+pm2 start /root/adventureland/node/server.js --name al_eu2 --cwd --kill_timeout 240000 /root/adventureland/node -- eu2
+pm2 start /root/adventureland/node/server.js --name al_eupvp --cwd --kill_timeout 240000 /root/adventureland/node -- eupvp
+pm2 start /root/adventureland/node/server.js --name al_asia1 --cwd --kill_timeout 240000 /root/adventureland/node -- asia1
+
+
+pm2 start /home/ubuntu/adventureland/node/server.js --name al_us1 --cwd --kill_timeout 240000 /home/ubuntu/adventureland/node -- us1
+pm2 start /home/ubuntu/adventureland/node/server.js --name al_us2 --cwd --kill_timeout 240000 /home/ubuntu/adventureland/node -- us2
+pm2 start /home/ubuntu/adventureland/node/server.js --name al_us3 --cwd --kill_timeout 240000 /home/ubuntu/adventureland/node -- us3
+pm2 start /home/ubuntu/adventureland/node/server.js --name al_uspvp --cwd --kill_timeout 240000 /home/ubuntu/adventureland/node -- uspvp

@@ -58,6 +58,7 @@ from pymongo import MongoClient, ReplaceOne
 DRY_RUN = os.environ.get("DRY_RUN", "1") == "1"
 BATCH_SIZE = int(os.environ.get("BATCH_SIZE", "500"))
 REPORT_EVERY = int(os.environ.get("REPORT_EVERY", "500"))
+ONLY_KIND = os.environ.get("ONLY_KIND", "")  # e.g. "Message" to run just one kind
 
 # ─── Kind → (collection, prefix) mapping ─────────────────────────────────────
 
@@ -329,6 +330,11 @@ def migrate_kind(ds, db, kind, collection, prefix, kind_index, total_kinds):
     print(f"  Querying Datastore for all {kind} entities...")
 
     query = ds.query(kind=kind)
+    # Optional: filter Message entities by type (e.g. MESSAGE_TYPE=private)
+    msg_type = os.environ.get("MESSAGE_TYPE", "")
+    if kind == "Message" and msg_type:
+        query.add_filter("type", "=", msg_type)
+        print(f"  Filter: type={msg_type}")
     count = 0
     errors = 0
     batch = []
@@ -404,7 +410,10 @@ def main():
     print(f"  Mode:         {'DRY RUN (no writes)' if DRY_RUN else '*** LIVE (writing to MongoDB!) ***'}")
     print(f"  Batch size:   {BATCH_SIZE}")
     print(f"  Report every: {REPORT_EVERY}")
-    print(f"  Kinds:        {', '.join(k for k, _, _ in KINDS)}")
+    run_kinds_preview = [(k, c, p) for k, c, p in KINDS if not ONLY_KIND or k == ONLY_KIND]
+    print(f"  Kinds:        {', '.join(k for k, _, _ in run_kinds_preview)}")
+    if os.environ.get("MESSAGE_TYPE"):
+        print(f"  Message filter: type={os.environ['MESSAGE_TYPE']}")
     print("=" * 60)
 
     if not DRY_RUN:
@@ -441,8 +450,13 @@ def main():
     t_total = time.time()
     totals = {}
 
-    for i, (kind, collection, prefix) in enumerate(KINDS, 1):
-        count, errors = migrate_kind(ds, db, kind, collection, prefix, i, len(KINDS))
+    run_kinds = [(k, c, p) for k, c, p in KINDS if not ONLY_KIND or k == ONLY_KIND]
+    if not run_kinds:
+        print(f"\n  [FATAL] ONLY_KIND={ONLY_KIND!r} not found in KINDS list")
+        sys.exit(1)
+
+    for i, (kind, collection, prefix) in enumerate(run_kinds, 1):
+        count, errors = migrate_kind(ds, db, kind, collection, prefix, i, len(run_kinds))
         totals[kind] = (count, errors)
 
     # Summary
@@ -453,7 +467,7 @@ def main():
     print(f"{'=' * 60}")
     grand_total = 0
     grand_errors = 0
-    for kind, collection, prefix in KINDS:
+    for kind, collection, prefix in run_kinds:
         count, errors = totals[kind]
         grand_total += count
         grand_errors += errors
