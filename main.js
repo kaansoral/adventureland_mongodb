@@ -232,7 +232,7 @@ app.get("/server/:region/:sname", async (req, res, next) => {
 // Email verification
 app.get("/ev/:uid/:v", async (req, res, next) => {
 	var domain = await get_domain(req);
-	var user = await get(req.params.uid);
+	var user = await get(normalize_user_id(req.params.uid));
 	var message = "Email Verification Failed";
 	if (user && !gf(user, "verified")) {
 		if (gf(user, "everification") === req.params.v) {
@@ -255,7 +255,7 @@ app.get("/ev/:uid/:v", async (req, res, next) => {
 // Password reset page
 app.get("/reset/:uid/:key", async (req, res, next) => {
 	var domain = await get_domain(req);
-	var user = await get(req.params.uid);
+	var user = await get(normalize_user_id(req.params.uid));
 	if (user && gf(user, "password_key", "123") === req.params.key) {
 		res.status(200).send(nunjucks.render("htmls/contents/password_reset.html", { domain: domain, user: user, id: req.params.uid, key: req.params.key }));
 	} else {
