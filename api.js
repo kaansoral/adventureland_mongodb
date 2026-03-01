@@ -1363,7 +1363,11 @@ async function load_article_api(args) {
 		try {
 			args.res.infs.push({ type: "article", html: shtml("docs/guide/" + name + ".html"), guide: args.guide, url: args.url, prev: found && prev, next: found && next });
 		} catch (e) {
-			args.res.infs.push({ type: "article", html: shtml("docs/articles/" + name + ".html"), url: args.url, prev: found && prev, next: found && next });
+			try {
+				args.res.infs.push({ type: "article", html: shtml("docs/articles/" + name + ".html"), url: args.url, prev: found && prev, next: found && next });
+			} catch (e2) {
+				args.res.infs.push({ type: "article", html: "Article not found: " + name, url: args.url });
+			}
 		}
 	} else if (args.func) {
 		args.res.infs.push({ type: "article", html: shtml("docs/functions/" + name + ".html"), func: name, url: args.url });
