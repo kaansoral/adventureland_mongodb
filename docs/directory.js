@@ -344,12 +344,12 @@ docs = {
 	],
 	images: {
 		bank: { url: "/images/static/bank_resized.png", width: 800, height: 433 },
-		character_button: { url: "http://lh3.googleusercontent.com/HZI8xM8UQ-VTTiz9I1WAC7wQy9cPHbeNQ11PuQK0kbydWEF7Rmc9NJYcsHYb82PXJiTDzAF1BAk9Fk28PT1iglsUOUlnGpbN", width: 382, height: 266 },
-		topleft_character: { url: "http://lh3.googleusercontent.com/oSB2aD44TMMup4cV_O-iXFj0iQ6zE70gPGSTLkYIrL1yWUkjog1GZLSTfmJ5WmwZyT3FkkoYNkWSqMOuqyIfsXT2R3MTYVJ_", width: 998, height: 602 },
-		topleft_monster: { url: "http://lh3.googleusercontent.com/g2wTE8fuzg7KzUmqzPAjsrP9fS7b4I7vLK_p1Nqa7_jgTAOUVfZNz05qafUoFaiQqno85dw2vTsQfpMIL5gsrGOcw9KeFSLvkQ", width: 486, height: 428 },
-		newyear_tree: { url: "http://lh3.googleusercontent.com/BbENUEvYLaLvbHPdk9uWDkMwhh59v4Sd_V_wex6whMDiLr9h2ZDCmDN-i5XxTehHbnaRQPrnd-msEgSsjaQrLWxCNQz6uvvA", width: 528, height: 516 },
-		cue: { url: "http://lh3.googleusercontent.com/h7ttABnKxQz0ca0p6jnq1DG5iNLw4Pac5Z1Bo800cRpxP2b9k-SQqY7yuYRVPLRIvCAvVBe3s2_EBUBR1TF3XptKR5jewcY8r9B1Xvr_dkKZ3ZE", width: 396, height: 396 },
-		upgrade: { url: "http://lh3.googleusercontent.com/qhSgjFF4Qp94CeS-Dc62PgZU9LANN68x6GCrBdPVvVrQYOlHSGEpNb8sP926OLbtKesfQA8Elc9Ycgm5l1SO-4yvV7dxpNMc7cvJCPKvTGdZCw", width: 426, height: 396 },
+		character_button: { url: "/images/static/character_button.png", width: 382, height: 266 },
+		topleft_character: { url: "/images/static/topleft_character.png", width: 998, height: 602 },
+		topleft_monster: { url: "/images/static/topleft_monster.png", width: 486, height: 428 },
+		newyear_tree: { url: "/images/static/newyear_tree.png", width: 528, height: 516 },
+		cue: { url: "/images/static/cue.png", width: 396, height: 396 },
+		upgrade: { url: "/images/static/upgrade.png", width: 426, height: 396 },
 	},
 };
 
