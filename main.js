@@ -505,7 +505,7 @@ app.get("/rearm", async (req, res, next) => {
 
 // Referrer redirect
 app.get("/r/:ref", async (req, res, next) => {
-	var referrer = await get(req.params.ref);
+	var referrer = await get(normalize_user_id(req.params.ref));
 	if (referrer) {
 		var domain = await get_domain(req);
 		set_cookie(res, "referrer", get_id(referrer), domain.domain);
