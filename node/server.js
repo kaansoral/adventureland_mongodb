@@ -2871,6 +2871,7 @@ function issue_player_award(attacker, target) {
 		// ,lost_shells=ceil(lost_shells/parties[attacker.party].length)
 		parties[attacker.party].forEach(function (a_name) {
 			var attacker = players[name_to_id[a_name]];
+			if (!attacker) return; // party member already disconnected
 			attacker.gold += gain_gold;
 			if (attacker.type != "merchant") {
 				attacker.xp += lost_xp;
@@ -14557,6 +14558,7 @@ function sync_loop() {
 			async () => {
 				var owner = await tx_get(A[0].owner);
 				var entity = await tx_get(A[0]);
+				if (!entity || entity.server != server_id) ex("character_gone"); // [03/03/26]
 				if (!owner || (owner.server && (owner.server != server_id || owner.mounted_to != get_id(A[0])))) {
 					R.in_bank = owner.mounted_to;
 					ex("already_in_bank");
@@ -14593,7 +14595,7 @@ function sync_loop() {
 		var R = await tx(
 			async () => {
 				var owner = await tx_get(A[0].owner);
-				var entity = await tx_get(A[0]);
+				// var entity = await tx_get(A[0]);
 				if (owner && owner.server == server_id && owner.mounted_to == get_id(A[0])) {
 					owner.server = owner.mounted_to = "";
 					if (A[0].user) {
