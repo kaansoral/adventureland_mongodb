@@ -11,10 +11,10 @@ const keys = require("../secretsandconfig/keys");
 const SIX_MONTHS_SECONDS = 6 * 30 * 24 * 60 * 60; // ~180 days
 
 async function main() {
-	const client = new MongoClient(keys.mongodb_connection_string);
+	const client = new MongoClient(keys.mongodb_uri, { ...keys.mongodb_config, serverSelectionTimeoutMS: 10000 });
 	try {
 		await client.connect();
-		const db = client.db(keys.mongodb_db_name);
+		const db = client.db(keys.mongodb_name);
 		const collection = db.collection("backup");
 
 		// Check existing indexes
