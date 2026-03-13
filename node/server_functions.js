@@ -792,26 +792,47 @@ function quick_hash(str) {
 
 function verify_steam_ticket(player, ticket) {
 	// Thanks: https://github.com/DoctorMcKay/node-steam-user
+	var outer = EncryptedAppTicket.decode(Buffer.from(ticket, "hex"));
+	var char_name = player.name || "unknown";
+
+	// Try current key first
 	try {
-		var outer = EncryptedAppTicket.decode(Buffer.from(ticket, "hex"));
 		var decrypted = symmetricDecrypt(outer.encryptedTicket, Buffer.from(keys.steam_key, "hex"));
-		let userData = decrypted.slice(0, outer.cbEncrypteduserdata);
-		let ownershipTicketLength = decrypted.readUInt32LE(outer.cbEncrypteduserdata);
-		let ownershipTicket = parseAppTicket(
-			decrypted.slice(outer.cbEncrypteduserdata, outer.cbEncrypteduserdata + ownershipTicketLength),
-		);
-		if (ownershipTicket) {
-			ownershipTicket.userData = userData.toString();
-		}
-		if (ownershipTicket.appID == 777150 && ownershipTicket.steamID) {
-			player.auth_type = "steam";
-			player.auth_id = ownershipTicket.steamID;
-			player.p.steam_id = ownershipTicket.steamID;
-			delete player.s.authfail;
-		}
-	} catch (e) {
-		console.log("#A verify_steam_ticket: " + e);
+		var result = _parse_steam_ticket(player, outer, decrypted);
+		if (result) console.log("#A new_steam_key_worked: " + char_name);
+		return;
+	} catch (e) {}
+
+	// Fallback to old key if set
+	if (keys.old_steam_key) {
+		try {
+			var decrypted = symmetricDecrypt(outer.encryptedTicket, Buffer.from(keys.old_steam_key, "hex"));
+			var result = _parse_steam_ticket(player, outer, decrypted);
+			if (result) console.log("#A old_steam_key_worked: " + char_name);
+			return;
+		} catch (e) {}
 	}
+
+	console.log("#A steam_key_didnt_work: " + char_name);
+}
+
+function _parse_steam_ticket(player, outer, decrypted) {
+	let userData = decrypted.slice(0, outer.cbEncrypteduserdata);
+	let ownershipTicketLength = decrypted.readUInt32LE(outer.cbEncrypteduserdata);
+	let ownershipTicket = parseAppTicket(
+		decrypted.slice(outer.cbEncrypteduserdata, outer.cbEncrypteduserdata + ownershipTicketLength),
+	);
+	if (ownershipTicket) {
+		ownershipTicket.userData = userData.toString();
+	}
+	if (ownershipTicket.appID == 777150 && ownershipTicket.steamID) {
+		player.auth_type = "steam";
+		player.auth_id = ownershipTicket.steamID;
+		player.p.steam_id = ownershipTicket.steamID;
+		delete player.s.authfail;
+		return true;
+	}
+	return false;
 }
 
 function verify_mas_receipt(player, receipt) {
