@@ -4672,12 +4672,10 @@ function set_direction() {} // compatibility
 function symmetricDecrypt(input, key, checkHmac) {
 	var aesIv = crypto.createDecipheriv("aes-256-ecb", key, "");
 	aesIv.setAutoPadding(false);
-	aesIv.end(input.slice(0, 16));
-	var iv = aesIv.read();
+	var iv = Buffer.concat([aesIv.update(input.slice(0, 16)), aesIv.final()]);
 
 	var aesData = crypto.createDecipheriv("aes-256-cbc", key, iv);
-	aesData.end(input.slice(16));
-	var plaintext = aesData.read();
+	var plaintext = Buffer.concat([aesData.update(input.slice(16)), aesData.final()]);
 
 	if (checkHmac) {
 		// The last 3 bytes of the IV are a random value, and the remainder are a partial HMAC
