@@ -1,0 +1,41 @@
+[package]
+name = "adventure-land"
+version = "1.3.1"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "adventure_land_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["devtools"] }
+tauri-plugin-store = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-single-instance = "2"
+
+# Steam integration (no .node recompile needed — links against libsteam_api statically)
+# IMPORTANT: Set STEAM_SDK_LOCATION=/path/to/steamworks_sdk before building.
+# Download SDK from https://partner.steamgames.com/downloads/steamworks_sdk.zip
+steamworks = "0.11"
+
+# Windows 7/8 detection (matches Electron's `parseFloat(os.release()) <= 6.3`)
+sys-info = "0.9"
+
+# File watcher for code sync (replaces chokidar / Node fs.watch)
+notify = "6"
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# PNG encoding for screenshots (via WebviewWindow::capture_image)
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+# Hex encoding for Steam ticket bytes
+hex = "0.4"

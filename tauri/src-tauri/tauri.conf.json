@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Adventure Land",
+  "version": "1.3.1",
+  "identifier": "land.adventure.rpg",
+  "build": {
+    "beforeBuildCommand": "",
+    "beforeDevCommand": "",
+    "frontendDist": "../resources"
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "dangerousRemoteUrls": [
+        "adventure.land",
+        "*.adventure.land",
+        "thegame.com",
+        "*.thegame.com"
+      ]
+    }
+  }
+}
