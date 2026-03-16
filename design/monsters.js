@@ -1140,10 +1140,10 @@ var monsters={
 		"slots":{"mainhand":{"name":"firestaff","level":12}},
 		"abilities":{"burn":{"unlimited":true,"attr0":100}},
 		"achievements":[
-			[1,"stat","fireresistance",1],
-			[10,"stat","fireresistance",1],
-			[100,"stat","fireresistance",1],
-			[1000,"stat","fireresistance",2],
+			[1,"stat","firesistance",1],
+			[10,"stat","firesistance",1],
+			[100,"stat","firesistance",1],
+			[1000,"stat","firesistance",2],
 		],
 	},
 	"ggreenpro":{
