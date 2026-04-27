@@ -12,7 +12,7 @@ for(var id in machines)
 	var single_command="sudo killall -s KILL node";
 	var single_command="ps aux | grep -i node | awk '{print $2}' | xargs  kill -9";
 	// var single_command="npm install socket.io@2.1.1";
-	var command="ssh -p "+(machine.ssh_port||22)+" -i "+machine.key+" "+machine.user+"@"+machine.ip+" \""+single_command+"\"";
+	var command="ssh -o IdentitiesOnly=yes -p "+(machine.ssh_port||22)+" -i "+machine.key+" "+machine.user+"@"+machine.ip+" \""+single_command+"\"";
 	console.log(command);
 	f.execso(command);
 }

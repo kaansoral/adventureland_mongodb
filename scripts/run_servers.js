@@ -5,7 +5,7 @@ require(process.env.HOME + "/thegame/scripts/data.js");
 servers.forEach(function (server) {
 	var machine = machines[server.machine];
 	var command =
-		"ssh -p " +
+		"ssh -o IdentitiesOnly=yes -p " +
 		(machine.ssh_port || 22) +
 		" -i " +
 		machine.key +

@@ -10,7 +10,7 @@ console.log("> " + the_command);
 
 for (var key in options.machines) {
 	var machine = options.machines[key];
-	var command = "ssh -p " + (machine.ssh_port || 22) + " -i " + machine.key + " " + machine.user + "@" + machine.ip + ' "' + the_command + '"';
+	var command = "ssh -o IdentitiesOnly=yes -p " + (machine.ssh_port || 22) + " -i " + machine.key + " " + machine.user + "@" + machine.ip + ' "' + the_command + '"';
 	console.log(command);
 	f.execso(command);
 }

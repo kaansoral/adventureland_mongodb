@@ -1,8 +1,5 @@
-Version = 2376;
+Version = 2416;
 
-update_notes = [
-	"Lunar New Year Event!",
-	"Last Update [1st of March]",
-	"Moved over to adventureland_mongodb!",
-	"Tripled fcape drop rate."
+update_notes=[
+	"Last Update [April 18th]",
 ];

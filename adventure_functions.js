@@ -719,29 +719,45 @@ function update_character(character, data, owner) {
 }
 
 function update_pids(character, data, owner) {
-	var fresh = false,
-		platform = "web",
-		pid = "";
-	var steam_id = data.p && data.p.steam_id;
-	var mas_auth_id = data.p && data.p.mas_auth_id;
-	if (data.p && data.p.platform === "steam" && steam_id) {
-		fresh = true;
-		platform = "steam";
-		pid = steam_id;
+	try {
+		var fresh = false,
+			platform = "web",
+			pid = "";
+		var steam_id = data.p && data.p.steam_id;
+		var mas_auth_id = data.p && data.p.mas_auth_id;
+		if (data.p && data.p.platform === "steam" && steam_id) {
+			fresh = true;
+			platform = "steam";
+			pid = steam_id;
+		}
+		if (data.p && data.p.platform === "mas" && mas_auth_id) {
+			fresh = true;
+			platform = "mas";
+			pid = mas_auth_id;
+		}
+		if (steam_id) {
+			character.platform = "steam";
+			character.pid = steam_id;
+		} else if (mas_auth_id) {
+			character.platform = "mas";
+			character.pid = mas_auth_id;
+		}
+		if (fresh && (owner.platform !== platform || owner.pid !== pid)) {
+			owner.platform = platform;
+			owner.pid = pid;
+		} else if (!fresh && steam_id && !owner.pid) {
+			owner.platform = "steam";
+			owner.pid = steam_id;
+		} else if (!fresh && mas_auth_id && !owner.pid) {
+			owner.platform = "mas";
+			owner.pid = mas_auth_id;
+		} else if (!fresh && (owner.platform !== character.platform || owner.pid !== character.pid)) {
+			character.platform = owner.platform;
+			character.pid = owner.pid;
+		}
+	} catch (e) {
+		console.error("#SEVERE update_pids: " + e);
 	}
-	if (data.p && data.p.platform === "mas" && mas_auth_id) {
-		fresh = true;
-		platform = "mas";
-		pid = mas_auth_id;
-	}
-	if (steam_id) {
-		character.platform = "steam";
-		character.pid = steam_id;
-	} else if (mas_auth_id) {
-		character.platform = "mas";
-		character.pid = mas_auth_id;
-	}
-	// Platform sync to owner handled within transactions where needed
 }
 
 function update_user_data(user, data) {

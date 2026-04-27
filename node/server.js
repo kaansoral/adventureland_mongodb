@@ -202,7 +202,7 @@ var mode = {
 var events = {
 	// SEASONS
 	holidayseason: false,
-	lunarnewyear: true,
+	lunarnewyear: false,
 	valentines: false,
 	pinkgoo: 0, // every N minutes - 60
 	snowman: 20 * 60, // 1200 normally - 60 - at sprocess_game_data
@@ -10388,7 +10388,8 @@ function init_io() {
 			player.verified = gf(owner, "verified", 0);
 
 			if (!instances[player.map] || !instances[player.map].allow || instances[player.map].mount) {
-				var place = G.maps[player.map].on_exit || G.maps[B.start_map].on_exit || ["main", 0];
+				var place = (G.maps[player.map] && G.maps[player.map].on_exit) ||
+					(G.maps[B.start_map] && G.maps[B.start_map].on_exit) || ["main", 0];
 				player.map = player.in = place[0];
 				player.x = G.maps[player.map].spawns[place[1]][0];
 				player.y = G.maps[player.map].spawns[place[1]][1];
@@ -14613,6 +14614,7 @@ function sync_loop() {
 			async () => {
 				var owner = await tx_get(A[0].owner);
 				var entity = await tx_get(A[0].real_id);
+				if (owner) update_pids(entity, A[0], owner);
 				if (owner && owner.server == server_id && owner.mounted_to == get_id(A[0])) {
 					owner.server = owner.mounted_to = "";
 					if (A[0].user) {
@@ -14674,6 +14676,7 @@ function sync_loop() {
 				if (player.user) owner = await tx_get(player.owner);
 				var entity = await tx_get(player);
 				if (!entity.server || entity.server != server_id) ex("not_in_game");
+				if (owner) update_pids(entity, player, owner);
 				if (owner && owner.server == server_id && owner.mounted_to == get_id(player)) {
 					if (player.user) {
 						owner.info.gold = player.user.gold;
@@ -14714,6 +14717,7 @@ function sync_loop() {
 				if (player.user) owner = await tx_get(player.owner);
 				var entity = await tx_get(player);
 				if (!entity.server || entity.server != server_id) ex("not_in_game");
+				if (owner) update_pids(entity, player, owner);
 				if (owner && owner.server == server_id && owner.mounted_to == get_id(player)) {
 					if (player.user) {
 						owner.info.gold = player.user.gold;

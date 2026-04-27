@@ -158,7 +158,7 @@ async function unstuck_characters() {
 	var domain = get_domain();
 	for (var si = 0; si < servers.length; si++) {
 		var server = servers[si];
-		if (msince(server.created) <= 10) continue; // no widespread network issue
+		if (msince(server.updated) > 10) continue; // no - widespread network issue
 		var cutoff = new Date(Date.now() - 30 * 60 * 1000); // 30 minutes ago
 		var stuck = await db
 			.collection("character")
@@ -171,7 +171,7 @@ async function unstuck_characters() {
 		for (var i = 0; i < stuck.length; i++) {
 			var character = post_get(stuck[i]);
 			var m = msince(character.last_sync);
-			// await db.collection("character").updateOne({ _id: character._id }, { $set: { online: false, server: "", updated: new Date() } });
+			await db.collection("character").updateOne({ _id: character._id }, { $set: { online: false, server: "", updated: new Date() } });
 			send_email(domain, "kaansoral@gmail.com", {
 				html: "Stuck for " + m + " minutes",
 				title: "MANUALLY UNSTUCK " + character.name + " from " + server._id,
