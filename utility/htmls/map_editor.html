@@ -1,19 +1,19 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 	<head>
-		<script src="/js/jquery/jquery-{{domain.jquery_version}}.min.js"{%if domain.electron%} onload="if(typeof require!=='undefined') window.$=window.jQuery=module.exports;"{%endif%}></script>
+		<script src="/js/jquery/jquery-{{domain.jquery_version}}.min.js" {%if domain.electron%} onload="if(typeof require!=='undefined') window.$=window.jQuery=module.exports;" {%endif%}></script>
 		<script src="/js/common_functions.js?v={{domain.v}}"></script>
 		<script src="/js/old_common_functions.js?v={{domain.v}}"></script>
 		<script src="/js/functions.js?v={{domain.v}}"></script>
 		<script src="/js/game.js?v={{domain.v}}"></script>
 		<script src="/js/keyboard.js?v={{domain.v}}"></script>
-		<link href="/css/index.css?v={{domain.v}}" rel="stylesheet" type="text/css"/>
-		<link href="/css/common.css?v={{domain.v}}" rel="stylesheet" type="text/css"/>
+		<link href="/css/index.css?v={{domain.v}}" rel="stylesheet" type="text/css" />
+		<link href="/css/common.css?v={{domain.v}}" rel="stylesheet" type="text/css" />
 		<script src="/data.js?v={{domain.v}}"></script>
 		<script src="/js/pixi/{{domain.pixi_version}}/pixi.min.js"></script>
 		<style>
-			html{
-				background:black;
+			html {
+				background: black;
 			}
 		</style>
 		<script>
@@ -47,7 +47,7 @@
 						loader.add(s_def.file);
 					}
 				}
-				{% for set,inf in tilesets.items() %}
+				{% for set, inf in tilesets %}
 					loader.add('{{inf.file}}');
 				{% endfor %}
 				loader.load(function (loader, resources) {
@@ -78,7 +78,7 @@
 					}
 
 					redraw_map();
-					
+
 					draw();
 				});
 				function draw() {
@@ -116,11 +116,11 @@
 	</head>
 	<body>
 		<style>
-			.gamebutton{
+			.gamebutton {
 				pointer-events: auto;
 			}
-			input{
-				font-family: 'Pixel';
+			input {
+				font-family: "Pixel";
 				text-align: center;
 				font-size: 24px;
 				line-height: 24px;
@@ -128,13 +128,19 @@
 				min-width: 27px;
 			}
 		</style>
-		<div id="entitymodal" style="display:none">
-			<div class="gamebutton gamebutton-large block mb5" onclick="startstop_group()">Dynamic Regular <span class='gray'>[No Animations]</span> <span class='ggreen'>[Multi Tiles]</span> <span class='gyellow'>{Roofs, Signs, Furniture}</span></div>
-			<div class="gamebutton gamebutton-large block mb5" onclick="startstop_animation()">Dynamic Animation <span class='ggreen'>[Blends with Characters]</span> <span class='gray'>[Single Tile]</span> <span class='gyellow'>{Smokes, Floating, Animating Objects}</span></div>
-			<div class="gamebutton gamebutton-large block mb5" onclick="startstop_animation('simple')">Simple Animation <span class='gray'>[Over Map] [Under Characters] [Single Tile]</span> <span class='gyellow'>{Waterfalls, Alien Flowers}</span></div>
-			<div class="gamebutton gamebutton-large block mb5" onclick="startstop_animation('night')">Add Night Animation <span class='gray'>[Blends with Characters]</span></div>
+		<div id="entitymodal" style="display: none">
+			<div class="gamebutton gamebutton-large block mb5" onclick="startstop_group()">
+				Dynamic Regular <span class="gray">[No Animations]</span> <span class="ggreen">[Multi Tiles]</span> <span class="gyellow">{Roofs, Signs, Furniture}</span>
+			</div>
+			<div class="gamebutton gamebutton-large block mb5" onclick="startstop_animation()">
+				Dynamic Animation <span class="ggreen">[Blends with Characters]</span> <span class="gray">[Single Tile]</span> <span class="gyellow">{Smokes, Floating, Animating Objects}</span>
+			</div>
+			<div class="gamebutton gamebutton-large block mb5" onclick="startstop_animation('simple')">
+				Simple Animation <span class="gray">[Over Map] [Under Characters] [Single Tile]</span> <span class="gyellow">{Waterfalls, Alien Flowers}</span>
+			</div>
+			<div class="gamebutton gamebutton-large block mb5" onclick="startstop_animation('night')">Add Night Animation <span class="gray">[Blends with Characters]</span></div>
 		</div>
-		<div id="zonemodal" style="display:none">
+		<div id="zonemodal" style="display: none">
 			<div class="gamebutton gamebutton-large block mb5" onclick="startstop_rectangle();">Rectangle [Spawn, Door, Area]</div>
 			<div class="gamebutton gamebutton-large block mb5" onclick="startstop_polygon();">Polygon [Special Spawn, Area]</div>
 			<div class="gamebutton gamebutton-large block mb5" onclick="startstop_point('spawn');">Spawn [Point with Distance Check]</div>
@@ -146,37 +152,54 @@
 			<div class="gamebutton clickable areabutton mbutton mt5" onclick="toggle_area_mode();">Area</div>
 			<div class="gamebutton clickable linebutton mbutton mt5" onclick="toggle_line_mode();">Line</div>
 			<div class="gamebutton clickable entitybutton mt5" onclick="startstop_entity();">Add Entity</div>
-			<div class="gamebutton clickable animinfo hidden mt5">FRAMES <input class="frames" type="text" value="7" style="width: 20px"/><div class='px4'></div> INTERVAL <input class="interval" type="text" value="40" style="width: 20px"/><div class='px4'></div> DELAY <input class='delay' type="text" value="0" style="width: 20px"/></div>
-			<div class="gamebutton clickable zoffset hidden mt5">Z.OFFSET <input class='zoffsetval' type="text" value="0" onchange="redraw_map()" style="width: 20px"/></div>
+			<div class="gamebutton clickable animinfo hidden mt5">
+				FRAMES <input class="frames" type="text" value="7" style="width: 20px" />
+				<div class="px4"></div>
+				INTERVAL <input class="interval" type="text" value="40" style="width: 20px" />
+				<div class="px4"></div>
+				DELAY <input class="delay" type="text" value="0" style="width: 20px" />
+			</div>
+			<div class="gamebutton clickable zoffset hidden mt5">Z.OFFSET <input class="zoffsetval" type="text" value="0" onchange="redraw_map()" style="width: 20px" /></div>
 			<div class="gamebutton clickable zonebutton mt5" onclick="startstop_zone();">Add Zone</div>
-			<div class="gamebutton clickable idbutton hidden mt5">ID <input type="text" class='idbuttonid' value="gg" style="width: 64px"/></div>
-			{#<div class="gamebutton clickable mt5">SCALE <input type="text" onchange="rescale_map(parseFloat($(this).val()))" value="2" style="width: 24px"/></div>#}
-			<div class="gamebutton largerfont mt5" onclick="map_zoom(-1)"><div class='px1'></div>-</div>
-			<div class="gamebutton largerfont mt5" onclick="map_zoom(1)"><div class='px1'></div>+</div>
-			<div class="gamebutton clickable mt5">STEP <input type="text" onchange="step_x=step_y=parseInt($(this).val())" value="8" style="width: 20px"/></div>
-			<div class="gamebutton clickable mt5">SIZE_X <input type="text" onchange="size_x=parseInt($(this).val()); redraw_map()" value="16" style="width: 20px"/></div>
-			<div class="gamebutton clickable mt5">SIZE_Y <input type="text" onchange="size_y=parseInt($(this).val()); redraw_map()" value="16" style="width: 20px"/></div>
+			<div class="gamebutton clickable idbutton hidden mt5">ID <input type="text" class="idbuttonid" value="gg" style="width: 64px" /></div>
+			{#
+			<div class="gamebutton clickable mt5">SCALE <input type="text" onchange="rescale_map(parseFloat($(this).val()))" value="2" style="width: 24px" /></div>
+			#}
+			<div class="gamebutton largerfont mt5" onclick="map_zoom(-1)">
+				<div class="px1"></div>
+				-
+			</div>
+			<div class="gamebutton largerfont mt5" onclick="map_zoom(1)">
+				<div class="px1"></div>
+				+
+			</div>
+			<div class="gamebutton clickable mt5">STEP <input type="text" onchange="step_x=step_y=parseInt($(this).val())" value="8" style="width: 20px" /></div>
+			<div class="gamebutton clickable mt5">SIZE_X <input type="text" onchange="size_x=parseInt($(this).val()); redraw_map()" value="16" style="width: 20px" /></div>
+			<div class="gamebutton clickable mt5">SIZE_Y <input type="text" onchange="size_y=parseInt($(this).val()); redraw_map()" value="16" style="width: 20px" /></div>
 			<div class="gamebutton clickable linesbutton mt5" onclick="toggle_lines();">Info: ON</div>
-			<div class="gamebutton clickable alertbutton mbutton largerfont mt5" onclick="toggle_alert_mode();"><div class='px2'></div>±</div>
+			<div class="gamebutton clickable alertbutton mbutton largerfont mt5" onclick="toggle_alert_mode();">
+				<div class="px2"></div>
+				±
+			</div>
 			<div class="gamebutton clickable mt5" onclick="show_json(map_data);">JSON</div>
 			{% if resort %}
-				<div class="gamebutton clickable mt5" onclick="show_upload_modal();">UPLOAD</div>
+			<div class="gamebutton clickable mt5" onclick="show_upload_modal();">UPLOAD</div>
 			{% endif %}
-			<div class="gamebutton clickable mt5" style="border-color: #E13758"onclick="show_modal($('#infomodal').html(),{wrap:false});">GUIDE</div>
-			<div class="gamebutton clickable xbutton hidden mt5" style='border-color: #4A95D4' onclick="tile_set=null; $(this).hide()"><div class='px2'></div>X</div>
+			<div class="gamebutton clickable mt5" style="border-color: #e13758" onclick="show_modal($('#infomodal').html(),{wrap:false});">GUIDE</div>
+			<div class="gamebutton clickable xbutton hidden mt5" style="border-color: #4a95d4" onclick="tile_set=null; $(this).hide()">
+				<div class="px2"></div>
+				X
+			</div>
 		</div>
 		<div id="topleftcorner">
-			{% for set,inf in tilesets.items()|sort %}
-				{% if set not in ["pack_1a","licht","stands"] %}
-					<div class="gamebutton clickable mb5" onclick="load_tileset('{{set}}','{{inf.file}}')">{{set}}</div>
-				{% endif %}
-			{% endfor %}
+			{% for set, inf in tilesets|dictsort %} {% if set not in ["pack_1a","licht","stands"] %}
+			<div class="gamebutton clickable mb5" onclick="load_tileset('{{set}}','{{inf.file}}')">{{set}}</div>
+			{% endif %} {% endfor %}
 		</div>
-		<div id="toprightcorner" style="background: black; border: 5px solid #32A3B0; z-index: 900" class="hidden">
-		</div>
+		<div id="toprightcorner" style="background: black; border: 5px solid #32a3b0; z-index: 900" class="hidden"></div>
 		<script>
-			$("input").each(function(){
-				$(this).attr("onkeyup",$(this).attr("onchange"));
+			$("input").each(function () {
+				$(this).attr("onkeyup", $(this).attr("onchange"));
 			});
 		</script>
 		{% include "utility/htmls/map_editor_info.html" %}

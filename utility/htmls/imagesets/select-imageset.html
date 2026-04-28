@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 	<head>
 		<script src="/js/jquery/jquery-{{domain.jquery_version}}.min.js"></script>
@@ -28,8 +28,8 @@
 	</head>
 	<body>
 		<ul>
-			{% for key,imageset in imagesets.items() %}
-			<li><a href="./selector/{{key}}">{{key}} {{imageset.file}}</a></li>
+			{% for key, imageset in imagesets %}
+			<li><a href="/communityselector/{{key}}">{{key}} {{imageset.file}}</a></li>
 			{% endfor %}
 		</ul>
 	</body>

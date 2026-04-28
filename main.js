@@ -417,6 +417,45 @@ app.get("/maps/:order?", async (req, res, next) => {
 	res.status(200).send(html);
 });
 
+// Community sprite-sheet selector (public — mirrors Flask /communityselector)
+// Renders only imagesets pre-defined in design/sprites.js — no filesystem access,
+// no user-controlled paths reach nunjucks or any IO.
+app.get("/communityselector", async (req, res, next) => {
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
+	res.status(200).send(nunjucks.render("utility/htmls/imagesets/select-imageset.html", { domain: domain, imagesets: imagesets }));
+});
+
+app.get("/communityselector/:name", async (req, res, next) => {
+	var name = req.params.name;
+	if (!name) return res.status(404).send("");
+	name = name.split("/")[0];
+	if (!Object.prototype.hasOwnProperty.call(imagesets, name)) return res.status(404).send("");
+	var imageset = imagesets[name];
+	var size = imageset.size,
+		width = imageset.columns * size,
+		height = imageset.rows * size,
+		xs = [],
+		ys = [];
+	for (var i = 0; i < imageset.columns; i++) xs.push(i);
+	for (var j = 0; j < imageset.rows; j++) ys.push(j);
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
+	res.status(200).send(
+		nunjucks.render("utility/htmls/imagesets/selector.html", {
+			domain: domain,
+			name: name,
+			file: imageset.file,
+			size: size,
+			width: width,
+			height: height,
+			xs: xs,
+			ys: ys,
+			scale: 3,
+		}),
+	);
+});
+
 // Static pages
 app.get("/privacy", async (req, res, next) => {
 	var user = await get_user(req),
