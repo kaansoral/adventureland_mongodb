@@ -25,7 +25,7 @@ import sys
 
 from pymongo import MongoClient
 
-RDBMS_PATH = "/Users/kaan/Desktop/PROJECTS/thegame/storage/db.rdbms"
+RDBMS_PATH = "/Users/kaan/PROJECTS/thegame/storage/db.rdbms"
 from mongo_config import MONGO_URI, MONGO_DB
 
 DRY_RUN = os.environ.get("DRY_RUN", "0") == "1"

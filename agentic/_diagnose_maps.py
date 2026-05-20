@@ -4,7 +4,7 @@ Diagnostic: Check what Map entity pickles contain in db.rdbms
 """
 import sqlite3, pickle, struct, io, datetime, sys, os, json
 
-RDBMS_PATH = "/Users/kaan/Desktop/PROJECTS/thegame/storage/db.rdbms"
+RDBMS_PATH = "/Users/kaan/PROJECTS/thegame/storage/db.rdbms"
 
 class GG:
     def __init__(self):
