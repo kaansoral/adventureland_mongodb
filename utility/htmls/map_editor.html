@@ -17,7 +17,7 @@
 			}
 		</style>
 		<script>
-			var map_data={{(map.info.data and map.info.data|to_json or '{tiles:[],placements:[]}')|safe}},tilesets={{tilesets|safe}};
+			var map_data={{(map.info.data and map.info.data|to_json or '{tiles:[],placements:[]}')|safe}},tilesets={{tilesets|to_json|safe}};
 			{% include "utility/htmls/map_editor.js" %}
 			$(function(){
 				width=$(window).width();
