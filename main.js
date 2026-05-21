@@ -394,6 +394,68 @@ app.post("/map/:name/:suffix?", async (req, res, next) => {
 	res.status(200).send("" + to_pretty_num(JSON.stringify(map.info.data).length));
 });
 
+// Community map viewer (public, read-only) — mirrors Flask /communitymaps/<name> GET.
+// No POST handler intentionally: writes are not exposed here.
+app.get("/communitymaps/:name", async (req, res, next) => {
+	var name = req.params.name;
+	if (!name) return res.status(404).send("no map");
+	name = name.split("/")[0];
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
+	var map = await get("MP_" + name);
+	res.status(200).send(
+		nunjucks.render("utility/htmls/map_editor.html", {
+			domain: domain,
+			name: "main",
+			map: map,
+			tilesets: tilesets,
+			community: 1,
+		}),
+	);
+});
+
+// Artist / admin map editor — mirrors Flask /editmap and /editmap/<name>.
+// Requires user with map_editor flag or admin.
+app.get("/editmap", async (req, res, next) => {
+	res.redirect("/editmap/main");
+});
+
+app.get("/editmap/:name", async (req, res, next) => {
+	var name = req.params.name;
+	if (!name) return res.status(404).send("no map");
+	name = name.split("/")[0];
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
+	if (!user || (!gf(user, "map_editor") && !is_admin(user))) return res.status(403).send("Not Permitted!");
+	var map = await get("MP_" + name);
+	res.status(200).send(
+		nunjucks.render("utility/htmls/map_editor.html", {
+			domain: domain,
+			name: name,
+			map: map,
+			tilesets: tilesets,
+			community: 1,
+		}),
+	);
+});
+
+app.post("/editmap/:name", async (req, res, next) => {
+	var data = req.body.data;
+	var name = req.params.name;
+	if (!name) return res.status(404).send("no map");
+	name = name.split("/")[0];
+	var user = await get_user(req);
+	if (!user || (!gf(user, "map_editor") && !is_admin(user))) return res.status(403).send("Not Permitted!");
+	var map = await get("MP_" + name);
+	if (!map) map = { _id: "MP_" + name, created: new Date(), info: {}, blobs: ["info"] };
+	if (typeof data === "string") data = JSON.parse(data);
+	map.info.data = data;
+	process_map(map);
+	map.updated = new Date();
+	await save(map);
+	res.status(200).send("" + to_pretty_num(JSON.stringify(map.info.data).length));
+});
+
 // Maps listing
 app.get("/maps/:order?", async (req, res, next) => {
 	var domain = await get_domain(req);
