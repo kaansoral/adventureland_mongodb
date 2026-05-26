@@ -453,6 +453,13 @@ app.post("/editmap/:name", async (req, res, next) => {
 	process_map(map);
 	map.updated = new Date();
 	await save(map);
+	// Mirror Flask copy_map(name, "test"): push saved data to MP_test for in-game testing.
+	// Intentionally bypasses copy_map_api's in-use guard — this is the artist test loop.
+	var test_map = await get("MP_test");
+	if (!test_map) test_map = { _id: "MP_test", name: "test", created: new Date(), info: {}, blobs: ["info"] };
+	test_map.info = JSON.parse(JSON.stringify(map.info));
+	test_map.updated = new Date();
+	await save(test_map);
 	res.status(200).send("" + to_pretty_num(JSON.stringify(map.info.data).length));
 });
 
