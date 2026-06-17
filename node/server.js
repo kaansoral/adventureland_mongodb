@@ -8347,9 +8347,6 @@ function init_io() {
 				}
 				var gold = bank_packs[data.pack][1];
 				var shells = bank_packs[data.pack][2];
-				if (!gold) {
-					return fail_response("gold_not_enough");
-				}
 				if (player.user[data.pack]) {
 					return fail_response("invalid");
 				}
