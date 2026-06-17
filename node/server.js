@@ -5451,6 +5451,51 @@ function init_io() {
 				if (player.mounting || player.unmounting) {
 					return fail_response("bank_opi");
 				}
+				// SECURITY GATE: a "ulocked" bank level (e.g. bank_u) can be entered from a
+				// non-bank map (level2 -> bank_u) where player.user isn't loaded yet, so the
+				// synchronous ulocked check above is skipped. Verify the unlock flag with a
+				// cheap projected read before committing to the mount. Read-only, no tx.
+				// player.unlock_checking is set SYNCHRONOUSLY so spammed transport calls are
+				// rejected here (bank_opi) instead of each launching a concurrent DB read.
+				if (the_door && the_door[7] == "ulocked") {
+					if (player.unlock_checking) {
+						return fail_response("bank_opi");
+					}
+					player.unlock_checking = true;
+					var the_to = data.to,
+						the_s = s;
+					(async function () {
+						try {
+							var proj = {};
+							proj["info.unlocked." + the_to] = 1;
+							var doc = await db
+								.collection(get_kind_from_id(player.owner))
+								.findOne({ _id: player.owner }, { projection: proj });
+							if (!(doc && doc.info && doc.info.unlocked && doc.info.unlocked[the_to])) {
+								return socket.emit("game_response", {
+									response: "transport_cant_locked",
+									failed: true,
+									place: "transport",
+								});
+							}
+							// Re-validate after the async gap, then mount as usual.
+							if (!players[socket.id] || player.user || player.mounting || player.unmounting) {
+								return;
+							}
+							add_call_cost(32, undefined, "bank");
+							player.mounting = new Date();
+							player.mount_to = the_to;
+							player.mount_s = the_s;
+							sync_loop();
+							socket.emit("game_response", { response: "data", success: false, in_progress: true, place: "transport" });
+						} catch (e) {
+							console.error("ulocked mount gate error", e);
+						} finally {
+							player.unlock_checking = false;
+						}
+					})();
+					return;
+				}
 				add_call_cost(32, undefined, "bank");
 				player.mounting = new Date();
 				player.mount_to = data.to;
