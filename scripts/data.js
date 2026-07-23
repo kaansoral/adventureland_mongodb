@@ -12,11 +12,12 @@ machines={
 		"user":"root",
 		"map":"euw1",
 	},
-	"usd1":{
-		"key":"~/thegame/design/docs/id_rsa.pem",
-		"ip":"158.69.23.127",
-		"user":"ubuntu",
-		"map":"usd1",
+	"usd2":{
+		"key":"~/server_admin/keys/ssh_usd2_adventureland_port_2201",
+		"ip":"54.39.16.171",
+		"user":"root",
+		"map":"usd2",
+		"ssh_port":2201,
 	},
 	// "eu1":{
 	// 	"key":"~/thegame/design/docs/id_rsa.pem",
@@ -104,24 +105,24 @@ servers=[
 		"region":"US",
 		"name":"I",
 		"port":2053,
-		"machine":"usd1",
+		"machine":"usd2",
 	},
 	{
 		"region":"US",
 		"name":"II",
 		"port":2083,
-		"machine":"usd1",
+		"machine":"usd2",
 	},
 	{
 		"region":"US",
 		"name":"III",
 		"port":2096,
-		"machine":"usd1",
+		"machine":"usd2",
 	},
 	{
 		"region":"US",
 		"name":"PVP",
 		"port":2087,
-		"machine":"usd1",
+		"machine":"usd2",
 	},
 ]

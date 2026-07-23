@@ -1,6 +1,6 @@
 var path = require("path"),
 	f = require(path.resolve(__dirname, "script_functions.js"));
-require(process.env.HOME + "/thegame/scripts/data.js");
+require(path.resolve(__dirname, "data.js"));
 
 servers.forEach(function (server) {
 	var machine = machines[server.machine];
