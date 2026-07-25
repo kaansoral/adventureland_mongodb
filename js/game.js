@@ -2038,7 +2038,17 @@ function init_socket(args) {
 				ui_log("Instance not found", "gray");
 				transporting = false;
 			} else if (response == "transport_cant_item") {
-				ui_log("Item not found", "gray");
+				var missing = data.items;
+				var parts = [];
+				if (missing) {
+					for (var iname in missing) {
+						if (!Object.prototype.hasOwnProperty.call(missing, iname)) continue;
+						var qty = missing[iname];
+						var label = (G.items[iname] && G.items[iname].name) || iname;
+						parts.push(qty + "× " + label);
+					}
+				}
+				ui_log(parts.length ? "Need " + parts.join(", ") : "Item not found", "gray");
 				transporting = false;
 			} else if (response == "transport_cant_dampened") {
 				ui_log("Can't transport inside a dampening field", "#A772D0");
