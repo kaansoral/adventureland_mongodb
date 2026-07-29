@@ -1015,6 +1015,48 @@ function show_upload_modal()
 	$('#toprightcorner').show();
 }
 
+function show_import_map() {
+	function onImportMapJsonChange(event) {
+		var reader = new FileReader();
+		reader.onload = onReaderLoad;
+		reader.readAsText(event.target.files[0]);
+	}
+
+	function onReaderLoad(event) {
+		$("#import_map_json").val(event.target.result);
+	}
+
+	function import_map() {
+		const text = $("#import_map_json").val();
+		const json = JSON.parse(text);
+		for (const key in json) {
+			const value = json[key];
+			map_data[key] = value;
+		}
+
+		$("#toprightcorner").hide();
+		$("#toprightcorner").html("");
+
+		redraw_map();
+	}
+
+	var html = "<div style='font-size: 32px;'>";
+	html +=
+		"<div style='margin-bottom: 20px'>The following will replace all data in your currently loaded map, press save to persist it</div>";
+	html += `
+	<input id="import_map_file" type="file" accept=".json" /><br/>
+	<textarea id="import_map_json" rows="10" style="min-height:600px; min-width:600px"></textarea>
+	<button id="import_map_button" style="margin-bottom:20px;">Import</button>
+	<br/>
+	<br/>
+	`;
+	html += "</div>";
+	$("#toprightcorner").html(html);
+	$("#toprightcorner").show();
+	$("#import_map_file").on("change", onImportMapJsonChange);
+	$("#import_map_button").on("click", import_map);
+}
+
 function rescale_map(nscale)
 {
 	var ox=(map.x-round(width/2))/scale,oy=(map.y-round(height/2))/scale;
@@ -1069,20 +1111,21 @@ function redraw_map()
 
 	to_delete=[]; deleted=false;
 
-	for(var i=0;i<map_data.placements.length;i++)
-	{
-		var tile=map_data.placements[i];
-		try{
-			if(!is_nun(tile[3])) place_area(tile[0],tile[1],tile[2],tile[3],tile[4],"yes");
-			else place_tile(tile[0],tile[1],tile[2],"yes");
-		}catch(e)
+	if (map_data.placements) {
+		for(var i=0;i<map_data.placements.length;i++)
 		{
-			console.log("Faulty tile detected + deleted"); deleted=true;
-			to_delete.push(i);
+			var tile=map_data.placements[i];
+			try{
+				if(!is_nun(tile[3])) place_area(tile[0],tile[1],tile[2],tile[3],tile[4],"yes");
+				else place_tile(tile[0],tile[1],tile[2],"yes");
+			}catch(e)
+			{
+				console.log("Faulty tile detected + deleted"); deleted=true;
+				to_delete.push(i);
+			}
 		}
+		delete_indices(map_data.placements,to_delete);
 	}
-	
-	delete_indices(map_data.placements,to_delete);
 	if(deleted) show_alert("Deleted some faulty tiles, this might have happened if you shrinked your own tileset, or if you increased your tile area after selecting a tile etc.");
 
 	to_delete=[]; deleted=false;

@@ -1653,3 +1653,41 @@ function process_map(map) {
 	data.max_x = max_x;
 	data.max_y = max_y;
 }
+
+/**
+ * Load map geometry from Mongo (MP_<key>), or import from design/maps/<key>.json
+ * when the document is missing (enables shipping new maps as JSON files).
+ * Works when eval'd from repo root (main.js) or node/ (server.js).
+ */
+async function load_map_geometry_or_import(key) {
+	var map = await get("MP_" + key);
+	if (map && map.info && map.info.data) {
+		return map.info.data;
+	}
+	var candidates = [path.resolve(__dirname, "design/maps", key + ".json"), path.resolve(__dirname, "../design/maps", key + ".json")];
+	var filename = null;
+	for (var i = 0; i < candidates.length; i++) {
+		if (fs.existsSync(candidates[i])) {
+			filename = candidates[i];
+			break;
+		}
+	}
+	if (!filename) {
+		return null;
+	}
+	console.warn("MP_" + key + " not found. Importing from " + filename);
+	var data = JSON.parse(fs.readFileSync(filename, "utf8"));
+	map = {
+		_id: "MP_" + key,
+		name: key,
+		created: new Date(),
+		updated: new Date(),
+		info: { data: data },
+		blobs: ["info"],
+	};
+	process_map(map);
+	map.updated = new Date();
+	await save(map);
+	return map.info.data;
+}
+

@@ -299,12 +299,12 @@ app.all("/data.js", async (req, res, next) => {
 		rpc = {};
 	for (var id in maps) {
 		if (maps[id].ignore) continue;
-		rpc[id] = get("MP_" + maps[id].key);
+		rpc[id] = load_map_geometry_or_import(maps[id].key);
 	}
 	for (var id in maps) {
 		if (maps[id].ignore) continue;
-		var map = await rpc[id];
-		if (map) geometry[id] = map.info.data;
+		var mapData = await rpc[id];
+		if (mapData) geometry[id] = mapData;
 	}
 	var G = {
 		version: Version,
