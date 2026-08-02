@@ -380,7 +380,7 @@ function disconnect() {
 		// add_log("Ps. This is the third version of our prototype limits enforcer. If it's unfair, please email hello@adventure.land","#CF888A");
 		add_log("Oops. You exceeded the limitations.", "#83BDCF");
 		// add_log("You can use one character on a normal server, one additional character on a PVP server and one merchant.","#CF888A");
-		add_log("You can have 3 characters and one merchant online at most.", "#CF888A");
+		add_log("You exceeded the configured character or merchant limit.", "#CF888A");
 	} else if (window.disconnect_reason) add_log("Disconnect Reason: " + window.disconnect_reason, "gray");
 	if (inside != "game") {
 		return;

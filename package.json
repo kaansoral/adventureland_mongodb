@@ -19,5 +19,9 @@
 		"nocache": "^3.0.1",
 		"nunjucks": "^3.2.2",
 		"stripe": "^14.0.0"
+	},
+	"allowScripts": {
+		"@mongodb-js/zstd@2.0.1": true,
+		"argon2@0.44.0": true
 	}
 }

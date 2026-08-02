@@ -25,7 +25,10 @@ import sys
 
 from pymongo import MongoClient
 
-RDBMS_PATH = "/Users/kaan/PROJECTS/thegame/storage/db.rdbms"
+DEFAULT_RDBMS_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "appserver", "storage", "db.rdbms")
+)
+RDBMS_PATH = os.environ.get("RDBMS_PATH", DEFAULT_RDBMS_PATH)
 from mongo_config import MONGO_URI, MONGO_DB
 
 DRY_RUN = os.environ.get("DRY_RUN", "0") == "1"
@@ -166,6 +169,10 @@ def main():
     if DRY_RUN:
         print("=== DRY RUN MODE ===\n")
 
+    if not os.path.isfile(RDBMS_PATH):
+        raise FileNotFoundError(
+            f"Datastore not found: {RDBMS_PATH}. Set RDBMS_PATH to the db.rdbms file to import."
+        )
     print(f"Opening {RDBMS_PATH}...")
     conn = sqlite3.connect(RDBMS_PATH)
     cursor = conn.cursor()

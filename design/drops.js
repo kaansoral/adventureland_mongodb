@@ -19,6 +19,7 @@ var drops = {
 	maps: {
 		global_static: [],
 		global: [
+			[1.0 / 10000, "shells", 1],
 			//[0.000015,"goldenegg"], //originally 0.000005
 			//[0.0000001,"5bucks"],
 			//[0.0002,"gift0"],

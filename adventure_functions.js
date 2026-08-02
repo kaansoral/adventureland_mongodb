@@ -1359,6 +1359,7 @@ async function enforce_limitations() {
 		for (var si = 0; si < servers.length; si++) {
 			var server = servers[si];
 			if (server.gameplay !== "normal" || !server.players_list) continue;
+			var character_limit = options.character_limit || 3;
 			var to_disconnect = [];
 			for (var i = 0; i < server.players_list.length; i++) {
 				var player = server.players_list[i];
@@ -1367,7 +1368,7 @@ async function enforce_limitations() {
 					to_disconnect.push(player.name);
 					continue;
 				}
-				if (player.type !== "merchant" && (ips[player.ip] > 3 * (ipx[player.ip] || 1) || owners[player.owner] > 3) && to_disconnect.indexOf(player.name) === -1) {
+				if (player.type !== "merchant" && (ips[player.ip] > character_limit * (ipx[player.ip] || 1) || owners[player.owner] > character_limit) && to_disconnect.indexOf(player.name) === -1) {
 					to_disconnect.push(player.name);
 					continue;
 				}

@@ -7,7 +7,10 @@ import sqlite3, pickle, struct, io, datetime, sys, os
 
 from pymongo import MongoClient, ReplaceOne
 
-RDBMS_PATH = "/Users/kaan/PROJECTS/thegame/storage/db.rdbms"
+DEFAULT_RDBMS_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "appserver", "storage", "db.rdbms")
+)
+RDBMS_PATH = os.environ.get("RDBMS_PATH", DEFAULT_RDBMS_PATH)
 from mongo_config import MONGO_URI, MONGO_DB
 
 # Kind → (prefix, collection_name)
@@ -201,13 +204,10 @@ def to_mongo_doc(kind, num_id, str_name, props):
         else:
             doc[key] = val
 
-    # Ensure 'info' is a dict with blobs marker
-    # For Map entities, info.data contains geometry — don't overwrite it!
-    if "info" in doc and isinstance(doc["info"], dict):
-        if kind != "Map":
-            doc["info"]["data"] = True
-            doc["blobs"] = ["info"]
-    elif "info" not in doc:
+    # Preserve the complete decoded info payload. In particular,
+    # Server.info.data contains persistent server state and Map.info.data
+    # contains geometry; neither is blob metadata.
+    if "info" not in doc:
         doc["info"] = {}
 
     # Ensure friends is a list (for User and Character)
@@ -223,6 +223,10 @@ def log(msg):
     print(msg, flush=True)
 
 def main():
+    if not os.path.isfile(RDBMS_PATH):
+        raise FileNotFoundError(
+            f"Datastore not found: {RDBMS_PATH}. Set RDBMS_PATH to the db.rdbms file to import."
+        )
     log(f"Opening {RDBMS_PATH}...")
     conn = sqlite3.connect(RDBMS_PATH)
     cursor = conn.cursor()

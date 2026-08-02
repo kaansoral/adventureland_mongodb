@@ -20,8 +20,8 @@ if (Local) {
 	const filePath = path.join(__dirname, "version.js");
 	let lines = fs.readFileSync(filePath, "utf-8").split("\n");
 	lines[0] = lines[0].replace(/Version\s*=\s*(\d+);/, (match, p1) => {
-		const newVersion = parseInt(p1, 10) + 1;
-		return `Version = ${newVersion};`;
+		Version = parseInt(p1, 10) + 1;
+		return `Version = ${Version};`;
 	});
 	fs.writeFileSync(filePath, lines.join("\n"), "utf-8");
 }

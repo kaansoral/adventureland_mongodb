@@ -528,7 +528,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":["Stranger","Where is mother","Cursed land","Stay clear","Go away","Back away","*stares blankly*","*stares coldly*","...",".....","........","Halt","Must protect","Never forget","Defend","Protect","For honor"],
 		"speed":28,
-		"attack":1800,
+		"attack":0,
 		"range":320,
 		"hp":120000,
 		"delay":12000,

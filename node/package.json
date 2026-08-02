@@ -17,5 +17,8 @@
   },
   "devDependencies": {
     "prettier": "^3.0.3"
+  },
+  "allowScripts": {
+    "protobufjs@6.11.6": true
   }
 }
