@@ -718,7 +718,7 @@ test("production loaders validate progression data before publishing it", () => 
 	);
 	const publicationContext = {
 		loadProgressionPublication,
-		progression_data: raw,
+		progression_data: rootBuilt,
 		Version: 1,
 	};
 	for (const name of [
@@ -767,19 +767,25 @@ test("production loaders validate progression data before publishing it", () => 
 		extractPublicationStatement(server, match.index),
 	);
 	assert.equal(serverPublicationStatements.length, 2);
-	const executePublication = (statement) => {
+	const executePublication = (statement, built) => {
+		publicationContext.progression_data = built;
 		vm.runInContext(`${statement}; globalThis.__publication = G;`, publicationContext);
 		return publicationContext.__publication;
 	};
-	const executeTwice = (statement) => {
-		const first = executePublication(statement);
-		const second = executePublication(statement);
+	const executeTwice = (statement, built) => {
+		const first = executePublication(statement, built);
+		const second = executePublication(statement, built);
 		assert.deepEqual(plain(second), plain(first));
 		return second;
 	};
-	const rootPublication = executeTwice(mainPublicationStatement);
-	const backendInitPublication = executeTwice(serverPublicationStatements[0]);
-	const backendReloadPublication = executeTwice(serverPublicationStatements[1]);
+	const rootPublication = executeTwice(mainPublicationStatement, rootBuilt);
+	const backendInitPublication = executeTwice(serverPublicationStatements[0], serverInitBuilt);
+	const backendReloadPublication = executeTwice(serverPublicationStatements[1], serverReloadBuilt);
+	for (const built of [rootBuilt, serverInitBuilt, serverReloadBuilt]) {
+		assert.equal(Object.isFrozen(built), true);
+		assert.equal(Object.isFrozen(built.items), true);
+		assert.equal(Object.isFrozen(built.skills), true);
+	}
 	const progressionProjection = (publication) =>
 		plain({
 			items: publication.items,
