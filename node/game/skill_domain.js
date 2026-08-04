@@ -544,7 +544,7 @@ function loadProgressionPublication(target, progressionData) {
 	const next =
 		progressionData && progressionData[VALIDATED_PUBLICATION] ? progressionData : buildProgressionData(progressionData);
 	return Object.assign(
-		{ ...target },
+		{ ...target, protocol: 3 },
 		{
 			items: next.items,
 			skills: next.skills,

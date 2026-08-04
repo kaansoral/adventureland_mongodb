@@ -400,8 +400,6 @@ async function init_game() {
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/multipliers.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/item_requirements.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/items.js")));
-		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/classes.js")));
-		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/levels.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/upgrades.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/drops.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/skills.js")));
@@ -461,9 +459,7 @@ async function init_game() {
 				cosmetics: cosmetics,
 				emotions: emotions,
 				projectiles: projectiles,
-				classes: classes,
 				dimensions: dimensions,
-				levels: levels,
 				positions: positions,
 				games: games,
 				events: events,
@@ -598,8 +594,6 @@ async function reload_server(to_broadcast, change) {
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/multipliers.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/item_requirements.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/items.js")));
-		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/classes.js")));
-		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/levels.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/upgrades.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/drops.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/skills.js")));
@@ -657,9 +651,7 @@ async function reload_server(to_broadcast, change) {
 				cosmetics: cosmetics,
 				emotions: emotions,
 				projectiles: projectiles,
-				classes: classes,
 				dimensions: dimensions,
-				levels: levels,
 				positions: positions,
 				games: games,
 				events: events,

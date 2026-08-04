@@ -52,8 +52,6 @@ eval("" + fs.readFileSync(path.resolve(__dirname, "design/npcs.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/multipliers.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/item_requirements.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/items.js")));
-eval("" + fs.readFileSync(path.resolve(__dirname, "design/classes.js")));
-eval("" + fs.readFileSync(path.resolve(__dirname, "design/levels.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/upgrades.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/drops.js"))); // needs items
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/skills.js")));
@@ -339,9 +337,7 @@ app.all("/data.js", async (req, res, next) => {
 			cosmetics: cosmetics,
 			emotions: emotions,
 			projectiles: projectiles,
-			classes: classes,
 			dimensions: dimensions,
-			levels: levels,
 			positions: positions,
 			games: games,
 			events: events,
