@@ -46,7 +46,6 @@ test(
 			await target.collection("map").insertMany(sourceMaps, { ordered: true });
 			for (const name of MUTABLE_COLLECTIONS) await target.collection(name).insertOne({ _id: `sentinel-${name}` });
 			await ensureWorldIndexes(target);
-			await target.createCollection("system.integration");
 
 			const leaseDir = path.join(runtime, "lease");
 			const guard = async () => ({ activePidFiles: [], openPorts: [], clear: true });
