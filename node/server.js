@@ -3963,7 +3963,7 @@ function init_io() {
 					socket.total_calls++;
 					add_call_cost(-1);
 					current_socket = socket;
-					call_modifier = { open_chest: 0.1, skill: 0.05, target: 0.5 }[method] || 1;
+					call_modifier = { open_chest: 0.1, ability: 0.05, target: 0.5 }[method] || 1;
 					if (players[socket.id]) {
 						name = players[socket.id].name;
 						// if(players[socket.id].type=="merchant") climit=round(climit/3);
@@ -10299,7 +10299,7 @@ function init_io() {
 				}
 				add_event(entity, "start", ["activity"], {
 					info: {
-						message: (entity.info.name || entity.name) + " [LV." + entity.level + "] logged in",
+						message: (entity.info.name || entity.name) + " [TL." + entity.total_level + "] logged in",
 						server: server_id,
 					},
 				});
@@ -11125,8 +11125,8 @@ function init_io() {
 						name: "Hidden",
 						map: mapn,
 						age: current.age,
-						level: current.level,
-						type: current.type,
+						total_level: current.total_level,
+						active_skill: current.active_skill || null,
 						afk: (current.afk && 1) || 0,
 						party: (current.party && "Hidden") || "",
 						kills: current.kills,
@@ -11136,8 +11136,8 @@ function init_io() {
 						name: current.name,
 						map: mapn,
 						age: current.age,
-						level: current.level,
-						type: current.type,
+						total_level: current.total_level,
+						active_skill: current.active_skill || null,
 						afk: (current.afk && 1) || 0,
 						party: current.party || "",
 					});

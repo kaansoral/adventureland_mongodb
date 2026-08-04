@@ -5261,7 +5261,7 @@ function load_nearby(fallback) {
 				"</td><td>" +
 				player.total_level +
 				"</td><td>" +
-				player.active_skill.toUpperCase() +
+				(player.active_skill || "unarmed").toUpperCase() +
 				"</td><td>" +
 				player.age +
 				"</td><td>" +

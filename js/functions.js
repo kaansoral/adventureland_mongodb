@@ -5492,7 +5492,7 @@ setInterval(function () {
 }, 2000);
 
 function update_servers_and_characters() {
-	var keys = { 1: null, 2: null, 3: null, merchant: null },
+	var keys = { 1: null, 2: null, 3: null, 4: null, 5: null },
 		order = 1,
 		c_count = 0;
 	X.characters.forEach(function (character) {
@@ -5501,10 +5501,9 @@ function update_servers_and_characters() {
 
 		if (!character.online) return;
 
-		if (character.type == "merchant") keys.merchant = character;
-		else if (order <= 3) (keys[order] = character), (order += 1);
+		if (order <= 5) (keys[order] = character), (order += 1);
 	});
-	[1, 2, 3, "merchant"].forEach(function (key) {
+	[1, 2, 3, 4, 5].forEach(function (key) {
 		if (!keys[key]) $(".characterr" + key).html("<span style='color: orange'>Offline</span>");
 		else $(".characterr" + key).html("<span style='color: green'>" + keys[key].name + "</span>"), (c_count += 1);
 	});

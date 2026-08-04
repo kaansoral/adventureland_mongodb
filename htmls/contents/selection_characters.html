@@ -12,7 +12,7 @@
 					{%endif%}
 				</span>
 				<br />
-				TL.{{characters[c].total_level}} <span class="gray" {%if characters[c].private%}style='text-decoration: underline #C7BAFF;'{%endif%}>{{characters[c].info.active_skill|title or 'Unarmed'}}</span>
+				TL.{{characters[c].total_level}} <span class="gray" {%if characters[c].private%}style='text-decoration: underline #C7BAFF;'{%endif%}>{% if characters[c].info.active_skill %}{{characters[c].info.active_skill|title}}{% else %}Unarmed{% endif %}</span>
 			</div>
 		{% else %}
 			<div class="gamebutton mb5" onclick="if(bc(this)) return; $('.nchb').click()" style='text-align: left; width: 160px'>
@@ -45,7 +45,7 @@
 			{% for c in characters %}
 				<div class="textbutton mt5" onclick="if(bc(this)) return; log_in('{{user._id}}','{{c._id}}','{{user.info.auths[0]}}')">
 					&gt; TL.{{c.total_level}}
-					<span class="gray">{{c.info.active_skill|title or 'Unarmed'}}</span>
+					<span class="gray">{% if c.info.active_skill %}{{c.info.active_skill|title}}{% else %}Unarmed{% endif %}</span>
 					{{c.info.name}}
 				</div>
 			{% endfor %}
