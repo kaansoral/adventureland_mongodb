@@ -783,17 +783,19 @@ function player_to_server(player, place) {
 function player_to_client(player, stranger) {
 	var data = {};
 	var skills = {};
-	var sourceSkills = (player.info && player.info.skills) || player.skills;
-	if (!sourceSkills) throw new Error("Protocol 3 character skill state is missing");
-	for (var i = 0; i < SKILL_IDS.length; i++) {
-		var skill = SKILL_IDS[i];
-		var progress = sourceSkills[skill];
-		if (!progress) throw new Error("Protocol 3 character skill state is incomplete: " + skill);
-		skills[skill] = {
-			level: progress.level,
-			xp: progress.xp,
-			max_xp: progress.level >= MAX_LEVEL ? null : (G.skill_xp && G.skill_xp[progress.level + 1]) || cumulativeXp(progress.level + 1),
-		};
+	if (!stranger) {
+		var sourceSkills = (player.info && player.info.skills) || player.skills;
+		if (!sourceSkills) throw new Error("Protocol 3 character skill state is missing");
+		for (var i = 0; i < SKILL_IDS.length; i++) {
+			var skill = SKILL_IDS[i];
+			var progress = sourceSkills[skill];
+			if (!progress) throw new Error("Protocol 3 character skill state is incomplete: " + skill);
+			skills[skill] = {
+				level: progress.level,
+				xp: progress.xp,
+				max_xp: progress.level >= MAX_LEVEL ? null : (G.skill_xp && G.skill_xp[progress.level + 1]) || cumulativeXp(progress.level + 1),
+			};
+		}
 	}
 	[
 		"hp",
