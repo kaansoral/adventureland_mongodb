@@ -13,6 +13,7 @@ const {
 	generateFixture,
 	loadBenchmarkData,
 	loadFixture,
+	loadTargetOracle,
 	runBenchmark,
 	stableJson,
 } = require("../tools/progression-benchmark");
@@ -68,6 +69,13 @@ test("strict target mode stays green when the reviewed routes meet the plan targ
 	assert.equal(report.strict_ok, true);
 	assert.equal(report.checks.target_alignment.pass, true);
 	assert.equal(report.checks.style_parity.pass, true);
+});
+
+test("strict targets come from the checked-in independent target oracle", () => {
+	const oracle = loadTargetOracle();
+	assert.deepEqual(oracle.targetHours, { starter: 2016, competent: 672, optimized: 336 });
+	assert.equal(oracle.durationTolerance, 0.1);
+	assert.equal(oracle.styleParityRatio, 1.15);
 });
 
 test("all JSON CLI output is deterministic", () => {

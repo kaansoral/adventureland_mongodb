@@ -44,6 +44,13 @@ test("stand accrual uses exact seventh-XP units across partitions and 2016 hours
 	]);
 });
 
+test("stand settlement caps one delayed settlement at one hour", () => {
+	const result = settleStand(createMerchantAccrual(), progression.STAND_HOUR_MS * 8, progression.STAND_HOUR_MS * 8);
+	assert.equal(result.credited_elapsed_ms, progression.STAND_HOUR_MS);
+	assert.equal(result.state.eligible_stand_ms, progression.STAND_HOUR_MS);
+	assert.equal(result.base_units, progression.BASE_UNITS_PER_HOUR);
+});
+
 test("Luck caps targets/hour, sales use positive-net source IDs, and Merchant gates are stable", () => {
 	let state = createMerchantAccrual();
 	const first = qualifyLuck(state, "target-1", 0);

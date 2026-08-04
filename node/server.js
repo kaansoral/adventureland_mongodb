@@ -18,7 +18,13 @@ var Local = options.Local;
 var Prod = options.Prod;
 var Staging = options.Staging;
 const express = require("express");
-const { buildProgressionData, loadProgressionPublication, SKILL_IDS, MAX_LEVEL, cumulativeXp } = require("./game/skill_domain");
+const {
+	buildProgressionData,
+	loadProgressionPublication,
+	SKILL_IDS,
+	MAX_LEVEL,
+	cumulativeXp,
+} = require("./game/skill_domain");
 const { progression } = require("../design/progression");
 const { createCharacterState, loadCharacterState } = require("./game/character_state");
 const { WEAPON_PROFILES, deriveActiveSkill, weaponProfile } = require("./game/active_skill");
@@ -808,7 +814,10 @@ function player_to_client(player, stranger) {
 			skills[skill] = {
 				level: progress.level,
 				xp: progress.xp,
-				max_xp: progress.level >= MAX_LEVEL ? null : (G.skill_xp && G.skill_xp[progress.level + 1]) || cumulativeXp(progress.level + 1),
+				max_xp:
+					progress.level >= MAX_LEVEL
+						? null
+						: (G.skill_xp && G.skill_xp[progress.level + 1]) || cumulativeXp(progress.level + 1),
 			};
 		}
 	}
@@ -2227,13 +2236,13 @@ function calculate_monster_score(player, monster, share) {
 	return score;
 }
 
-function award_monster_skill_share(player, monster, character_share, source_suffix) {
+function award_monster_skill_share(player, monster, character_share, source_suffix, source = "pve_damage") {
 	if (!player || !monster || !Number.isSafeInteger(Math.round(character_share)) || character_share <= 0) return [];
 	const encounterId = monster.encounter_id;
 	if (!encounterId) return [];
 	const split = progression_ledger.partition(Math.round(character_share), encounterId, player.id || player.name);
 	return awardPlayerSkillXpSplit(player, split, {
-		source: "pve_damage",
+		source,
 		sourceId: `${encounterId}:${player.id || player.name}:${source_suffix || "award"}`,
 	});
 }
@@ -2331,6 +2340,21 @@ function issue_monster_awards(monster) {
 			delete current.s.coop;
 			resend(current, "u+cid");
 		}
+	}
+	const totalProgressionWeight = progression_ledger.totalWeight(monster.encounter_id);
+	for (const characterId of progression_ledger.characterIds(monster.encounter_id)) {
+		const current = players[characterId] || players[name_to_id[characterId]];
+		if (!current || Object.prototype.hasOwnProperty.call(monster.points, current.name)) continue;
+		const weight = progression_ledger.weightForCharacter(monster.encounter_id, characterId);
+		if (!weight || !totalProgressionWeight) continue;
+		const source = progression_ledger.sourceForCharacter(monster.encounter_id, characterId);
+		award_monster_skill_share(
+			current,
+			monster,
+			round(monster.xp * (weight / totalProgressionWeight) * current.xpm * monster.mult),
+			`non_damage:${source}`,
+			source,
+		);
 	}
 	progression_ledger.close(monster.encounter_id);
 	B.drop_table_multiplier = 1;
@@ -7892,7 +7916,7 @@ function init_io() {
 				bnum = add_item(buyer, actual, { announce: false });
 			}
 
-			if (player.owner != buyer.owner) {
+			if (player.owner != buyer.owner && player.p && player.p.stand) {
 				const tradeSourceId = `${server_id}:trade:${randomStr(16)}`;
 				const saleDetails = {
 					merchantOwnerId: player.name,
@@ -7964,6 +7988,7 @@ function init_io() {
 			if (item.name == "placeholder") {
 				return fail_response("item_placeholder");
 			}
+			const isBuyback = item.src == "tb";
 			if (item.b || item.giveaway) {
 				return fail_response("sneaky");
 			}
@@ -8016,7 +8041,7 @@ function init_io() {
 					sourceId: tradeSourceId,
 					now: Date.now(),
 				};
-				if (item.src == "tb")
+				if (isBuyback)
 					recordMerchantSaleReversal(seller, {
 						merchantOwnerId: saleDetails.merchantOwnerId,
 						externalOwnerId: saleDetails.externalOwnerId,
@@ -8737,6 +8762,8 @@ function init_io() {
 				}
 			}
 
+			let chargedSlot = null;
+			let chargedAmount = 0;
 			if (gSkill.slot) {
 				let found = false;
 				let noCharge = false;
@@ -8756,9 +8783,9 @@ function init_io() {
 						noCharge = true;
 						continue;
 					}
-					// Charge is sufficient, use this item for the skill
-					slotItem.charges -= gItem.charge;
-					player.cslots[slotName] = cache_item(slotItem);
+					// Defer the charge mutation until every action precondition passes.
+					chargedSlot = slotName;
+					chargedAmount = gItem.charge;
 					noCharge = false;
 					break;
 				}
@@ -8804,18 +8831,17 @@ function init_io() {
 				return false;
 			};
 			if (target && isTargetTooFar(target)) {
-				return fail_response("too_far", data.name, { dist: dist, id: target.id });
+				return fail_response("too_far", data.name, { dist: distance(player, target), id: target.id });
 			}
 
-				const progressionSupportAction =
-					gSkill.contribution
-						? snapshot_progression_support(
-								player,
-								target,
-								gSkill,
-								target && target.is_player && ["entangle", "huntersmark"].includes(data.name) ? "pvp" : "combat",
-							)
-						: null;
+			const progressionSupportAction = gSkill.contribution
+				? snapshot_progression_support(
+						player,
+						target,
+						gSkill,
+						target && target.is_player && ["entangle", "huntersmark"].includes(data.name) ? "pvp" : "combat",
+					)
+				: null;
 			const recordProgressionSupport = (changed, encounterIds) =>
 				record_progression_support(progressionSupportAction, changed, encounterIds);
 
@@ -9677,6 +9703,14 @@ function init_io() {
 			}
 
 			if (cool) {
+				if (chargedSlot) {
+					const slotItem = player.slots[chargedSlot];
+					if (!slotItem || slotItem.charges < chargedAmount) {
+						return fail_response("skill_cant_charges", data.name);
+					}
+					slotItem.charges -= chargedAmount;
+					player.cslots[chargedSlot] = cache_item(slotItem);
+				}
 				consume_skill(player, data.name);
 			}
 			if (player.to_resend) {
@@ -9687,12 +9721,12 @@ function init_io() {
 					reject.response = "data";
 				}
 				socket.emit("game_response", reject);
-				} else if (resolve) {
-					socket.emit("game_response", resolve);
-				}
-				const outcome = reject ? "failed" : resolve && resolve.success === false ? "partial" : "success";
-				server_log("skill name=" + abilityName + " target=" + abilityTarget + " outcome=" + outcome);
-			});
+			} else if (resolve) {
+				socket.emit("game_response", resolve);
+			}
+			const outcome = reject ? "failed" : resolve && resolve.success === false ? "partial" : "success";
+			server_log("skill name=" + abilityName + " target=" + abilityTarget + " outcome=" + outcome);
+		});
 		socket.on("click", function (data) {
 			// You'll be missed 'click' method, the 'click' method was the first method on this server, it was used as an attack method up until [17/06/18] - at this date, there were 3 simple conditions left which checked for data.button=="right" - the game matured so that all interactions were handled client-side rather than processed server-side
 			socket.emit("game_log", "'click' method is deprecated.");
@@ -11366,6 +11400,7 @@ function init_io() {
 			} catch (e) {}
 			if (player) {
 				player.dc = true;
+				progression_ledger.removeCharacter(player.id || player.name);
 				try {
 					settlePlayerStand(player, Date.now(), { emit: false });
 					player.p.stand = false;
@@ -11737,6 +11772,7 @@ function remove_monster(target, args) {
 			points: (target.cooperative && target.points) || undefined,
 		});
 	}
+	progression_ledger.close(target.encounter_id);
 	delete instances[target.in].monsters[target.id];
 	if (!args.nospawn) {
 		target.map_def.live--;
@@ -12179,6 +12215,7 @@ function stop_pursuit(monster, args) {
 			return;
 		}
 		monster.target = null;
+		progression_ledger.disengage(monster.encounter_id, target && (target.id || target.name));
 		if (monster.master && target && !args.redirect) {
 			if (
 				instances[monster.in].monsters[monster.master] &&

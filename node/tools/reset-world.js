@@ -14,6 +14,7 @@ const {
 	mapSha256,
 	readCollectionNames,
 	readMapDocuments,
+	ensureWorldIndexes,
 	validateMapDocuments,
 	verifyWorldIndexes,
 	worldError,
@@ -437,6 +438,9 @@ async function runReset(options = {}) {
 		const expectedToken = confirmationToken(args.database, mapHash);
 		if (args.confirm !== expectedToken)
 			throw worldError("RESET_CONFIRM", "Confirmation token does not match the validated map hash");
+		// Repair/verify required indexes before opening the destructive transaction so a
+		// missing index cannot turn a committed data reset into a post-check failure.
+		await ensureWorldIndexes(db);
 		const backupDir = await ensureBackupDirectory(backupLocation);
 		const snapshot = await writeMapSnapshot(backupDir, liveDocuments);
 		await fs.writeFile(path.join(backupDir, "preflight.json"), `${JSON.stringify(preview, null, 2)}\n`, {
@@ -452,6 +456,7 @@ async function runReset(options = {}) {
 					await db.collection("map").deleteMany({}, { session });
 					if (seed.documents.length) await db.collection("map").insertMany(seed.documents, { session, ordered: true });
 				}
+				if (typeof options.transactionHook === "function") await options.transactionHook({ db, session, plan, deleted });
 			});
 		} finally {
 			await session.endSession();

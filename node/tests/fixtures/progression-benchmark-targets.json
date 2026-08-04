@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "target_hours": {
+    "starter": 2016,
+    "competent": 672,
+    "optimized": 336
+  },
+  "duration_tolerance": 0.1,
+  "style_parity_ratio": 1.15
+}

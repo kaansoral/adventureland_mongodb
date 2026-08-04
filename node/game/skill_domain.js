@@ -3,14 +3,15 @@
 const crypto = require("node:crypto");
 const { skills: DESIGN_SKILLS } = require("../../design/skills");
 const { character: CHARACTER_DEFINITION } = require("../../design/character");
+const { progression } = require("../../design/progression");
 
 const SKILL_IDS = Object.freeze(Object.keys(DESIGN_SKILLS));
 const SKILL_DEFINITIONS = DESIGN_SKILLS;
 const COMBAT_SKILL_IDS = Object.freeze(
 	SKILL_IDS.filter((id) => DESIGN_SKILLS[id] && DESIGN_SKILLS[id].kind === "combat"),
 );
-const MAX_LEVEL = 99;
-const MAX_XP = 900000000;
+const MAX_LEVEL = progression.MAX_LEVEL;
+const MAX_XP = progression.MAX_XP;
 const STARTER_WEAPONS = Object.freeze([...(CHARACTER_DEFINITION.starter?.weapons || [])]);
 const EXPECTED_BASELINE = Object.freeze({ ...(CHARACTER_DEFINITION.baseline || {}) });
 const EQUIPPABLE_TYPES = new Set([

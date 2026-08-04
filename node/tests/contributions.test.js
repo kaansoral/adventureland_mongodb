@@ -137,3 +137,25 @@ test("an action snapshot makes later healing eligible for its encounter", () => 
 	assert.deepEqual(ledger.engagedEncounterIds("priest"), ["goo"]);
 	assert.equal(ledger.weightsForCharacter("goo", "priest").priest, 25);
 });
+
+test("healing and support retain source attribution and lifecycle cleanup removes participants", () => {
+	const ledger = new ContributionLedger();
+	ledger.snapshotAction({ actionId: "heal", encounterIds: ["goo"], characterId: "priest", activeSkill: "priest" });
+	ledger.recordHealing({ actionId: "heal", characterId: "priest", amount: 10, currentHp: 0, maxHp: 100 });
+	ledger.snapshotAction({ actionId: "support", encounterIds: ["goo"], characterId: "paladin", activeSkill: "paladin" });
+	ledger.recordSupport({
+		actionId: "support",
+		characterId: "paladin",
+		activeSkill: "paladin",
+		changed: true,
+	});
+	assert.deepEqual(ledger.characterIds("goo").sort(), ["paladin", "priest"]);
+	assert.equal(ledger.sourceForCharacter("goo", "priest"), "pve_heal");
+	assert.equal(ledger.sourceForCharacter("goo", "paladin"), "pve_support");
+	assert.equal(ledger.totalWeight("goo"), 11);
+	ledger.removeCharacter("priest");
+	assert.deepEqual(ledger.characterIds("goo"), ["paladin"]);
+	ledger.removeCharacter("paladin");
+	assert.deepEqual(ledger.characterIds("goo"), []);
+	assert.deepEqual(ledger.engagedEncounterIds("paladin"), []);
+});

@@ -54,7 +54,7 @@ function validateSkillState(skills, options = {}) {
 			throw stateError(`skills.${id}.level`, "must be an integer from 1 through 99");
 		}
 		if (!Number.isSafeInteger(record.xp) || record.xp < 0 || record.xp > MAX_XP) {
-			throw stateError(`skills.${id}.xp`, "must be a safe integer from 0 through 900000000");
+			throw stateError(`skills.${id}.xp`, `must be a safe integer from 0 through ${MAX_XP}`);
 		}
 		const minimum = (xpTable && xpTable[record.level]) || cumulativeXp(record.level);
 		const next = nextThreshold(record.level, xpTable);

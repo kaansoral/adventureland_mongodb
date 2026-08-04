@@ -411,6 +411,9 @@ function is_player_allowed(player) {
 }
 
 function rip(player) {
+	if (player && player.is_player) {
+		progression_ledger.removeCharacter(player.id || player.name);
+	}
 	if (player && player.is_player && player.p && player.p.stand) {
 		try {
 			settlePlayerStand(player, Date.now(), { emit: false });

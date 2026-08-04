@@ -19,9 +19,35 @@ const { createMerchantAccrual, settleStand, qualifyLuck, recordSale } = require(
 
 const COMBAT_SKILLS = Object.freeze(COMBAT_SKILL_IDS.slice());
 const MERCHANT_PROFILES = Object.freeze(["starter", "competent", "optimized"]);
-const TARGET_HOURS = Object.freeze({ starter: 2016, competent: 672, optimized: 336 });
 const FIXTURE_PATH = path.resolve(__dirname, "../tests/fixtures/progression-benchmark-routes.json");
+const TARGET_ORACLE_PATH = path.resolve(__dirname, "../tests/fixtures/progression-benchmark-targets.json");
 const COMBAT_SOURCE = "pve_damage";
+
+function loadTargetOracle(filename = TARGET_ORACLE_PATH) {
+	const oracle = JSON.parse(fs.readFileSync(filename, "utf8"));
+	if (
+		!oracle ||
+		oracle.schema_version !== 1 ||
+		!oracle.target_hours ||
+		!Number.isFinite(oracle.duration_tolerance) ||
+		!Number.isFinite(oracle.style_parity_ratio)
+	) {
+		throw new Error("Benchmark target oracle is invalid");
+	}
+	for (const profile of MERCHANT_PROFILES) {
+		if (!Number.isSafeInteger(oracle.target_hours[profile]) || oracle.target_hours[profile] <= 0) {
+			throw new Error(`Benchmark target oracle is missing ${profile}`);
+		}
+	}
+	return Object.freeze({
+		targetHours: Object.freeze({ ...oracle.target_hours }),
+		durationTolerance: oracle.duration_tolerance,
+		styleParityRatio: oracle.style_parity_ratio,
+	});
+}
+
+const TARGET_ORACLE = loadTargetOracle();
+const TARGET_HOURS = TARGET_ORACLE.targetHours;
 
 function clone(value) {
 	return JSON.parse(JSON.stringify(value));
@@ -333,7 +359,7 @@ function evaluateCombatPlan(profile, skill, plan, data, baselineRate) {
 				`Benchmark plan ${profile}/${skill}/band-${bandIndex} starts at ${minimumLevel} before the skill reaches it`,
 			);
 		}
-		const targetXp = band.to_level >= 99 ? MAX_XP : cumulativeXp(Number(band.to_level || 99));
+		const targetXp = band.to_level >= progression.MAX_LEVEL ? MAX_XP : cumulativeXp(Number(band.to_level || progression.MAX_LEVEL));
 		const skillLevels = skillLevelsSnapshot(player);
 		const evaluatedCandidates = band.candidates.map((candidate) =>
 			simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, data }),
@@ -371,7 +397,7 @@ function evaluateCombatPlan(profile, skill, plan, data, baselineRate) {
 	}
 	const durationHours = Number((durationMs / progression.STAND_HOUR_MS).toFixed(6));
 	const targetHours = TARGET_HOURS[profile];
-	const ratePerHour = durationMs > 0 ? (player.t.skill_xp[skill] * 3600000) / durationMs : 0;
+	const ratePerHour = durationMs > 0 ? (player.t.skill_xp[skill] * progression.STAND_HOUR_MS) / durationMs : 0;
 	const rateX = baselineRate > 0 ? Number((ratePerHour / baselineRate).toFixed(6)) : 1;
 	return {
 		profile,
@@ -380,7 +406,7 @@ function evaluateCombatPlan(profile, skill, plan, data, baselineRate) {
 		duration_hours: durationHours,
 		target_hours: targetHours,
 		rate_x: profile === "starter" ? 1 : rateX,
-		within_target: Math.abs(durationHours - targetHours) / targetHours <= progression.BENCHMARK_TOLERANCE,
+		within_target: Math.abs(durationHours - targetHours) / targetHours <= TARGET_ORACLE.durationTolerance,
 		bands,
 		player_state: {
 			level: player.skills[skill].level,
@@ -508,7 +534,7 @@ function generateFixture(fixture, data = loadBenchmarkData()) {
 		max_xp: MAX_XP,
 		base_units_per_hour: progression.BASE_UNITS_PER_HOUR,
 		xp_units_per_xp: progression.XP_UNITS_PER_XP,
-		benchmark_tolerance: progression.BENCHMARK_TOLERANCE,
+		benchmark_tolerance: TARGET_ORACLE.durationTolerance,
 	};
 	const evaluatedStarter = {};
 	for (const skill of COMBAT_SKILLS) {
@@ -558,7 +584,7 @@ function runBenchmark({ fixturePath = FIXTURE_PATH, strictTargets = false } = {}
 	const merchantTargetAlignment = Object.values(merchant).every((result) => result.within_target);
 	const styleParity = Object.values(combat).every((profile) => {
 		const durations = Object.values(profile).map((result) => result.duration_hours);
-		return Math.max(...durations) / Math.min(...durations) <= 1.15;
+		return Math.max(...durations) / Math.min(...durations) <= TARGET_ORACLE.styleParityRatio;
 	});
 	const routeLegality = Object.values(combat).every((profile) =>
 		Object.values(profile).every((result) => result.bands.every((band) => Boolean(band.selected_candidate_id))),
@@ -587,6 +613,12 @@ function runBenchmark({ fixturePath = FIXTURE_PATH, strictTargets = false } = {}
 			target_alignment: { pass: targetAlignment, merchant_pass: merchantTargetAlignment },
 			style_parity: { pass: styleParity },
 		},
+		target_oracle: {
+			schema_version: 1,
+			target_hours: TARGET_HOURS,
+			duration_tolerance: TARGET_ORACLE.durationTolerance,
+			style_parity_ratio: TARGET_ORACLE.styleParityRatio,
+		},
 	};
 	if (strictTargets && !report.strict_ok) report.ok = false;
 	return report;
@@ -610,6 +642,7 @@ module.exports = {
 	generateFixture,
 	loadBenchmarkData,
 	loadFixture,
+	loadTargetOracle,
 	runBenchmark,
 	stableJson,
 };

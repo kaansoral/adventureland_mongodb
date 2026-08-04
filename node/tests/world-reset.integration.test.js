@@ -49,8 +49,9 @@ test(
 
 			const leaseDir = path.join(runtime, "lease");
 			const guard = async () => ({ activePidFiles: [], openPorts: [], clear: true });
-			const run = (argv) =>
+			const run = (argv, extra = {}) =>
 				require("../tools/reset-world").runReset({
+					...extra,
 					argv,
 					env: { ADVENTURELAND_RESET_MONGODB_URI: targetUri },
 					leaseDir,
@@ -62,6 +63,22 @@ test(
 			assert.equal(dry.mode, "dry-run");
 			assert.equal(dry.preview.preResetMapCount, 112);
 			assert.equal(dry.preview.targetMapHash, liveValidation.sha256);
+			await assert.rejects(
+				run(
+					[
+						"--database",
+						targetDatabase,
+						"--execute",
+						"--confirm",
+						dry.preview.confirmToken,
+						"--backup-dir",
+						path.join(runtime, "blocked-backup"),
+					],
+					{ writerGuard: async () => ({ activePidFiles: [{ name: "backend", pid: 1 }], openPorts: [], clear: false }) },
+				),
+				{ code: "RESET_WRITER_RUNNING" },
+			);
+			assert.equal(await target.collection("character").countDocuments(), 1);
 			const normalBackup = path.join(runtime, "normal-backup");
 			const executed = await run([
 				"--database",
@@ -90,6 +107,47 @@ test(
 			]);
 			assert.ok(Object.values(second.report.deleted).every((count) => count === 0));
 			assert.equal(second.report.mapHash, liveValidation.sha256);
+
+			await target.collection("character").dropIndexes();
+			await target.collection("character").insertOne({ _id: "sentinel-missing-index" });
+			const missingIndexDry = await run(["--database", targetDatabase]);
+			const missingIndexRun = await run([
+				"--database",
+				targetDatabase,
+				"--execute",
+				"--confirm",
+				missingIndexDry.preview.confirmToken,
+				"--backup-dir",
+				path.join(runtime, "missing-index-backup"),
+			]);
+			assert.ok(missingIndexRun.report.indexes.some((index) => index.collection === "character"));
+			assert.deepEqual(await verifyWorldIndexes(target), await ensureWorldIndexes(target));
+
+			await target.collection("character").insertOne({ _id: "sentinel-rollback" });
+			const rollbackDry = await run(["--database", targetDatabase]);
+			await assert.rejects(
+				run(
+					[
+						"--database",
+						targetDatabase,
+						"--execute",
+						"--confirm",
+						rollbackDry.preview.confirmToken,
+						"--backup-dir",
+						path.join(runtime, "rollback-backup"),
+					],
+					{
+						transactionHook: async () => {
+							const error = new Error("simulated reset transaction failure");
+							error.code = "RESET_TEST_FAILURE";
+							throw error;
+						},
+					},
+				),
+				{ code: "RESET_TEST_FAILURE" },
+			);
+			assert.equal(await target.collection("character").countDocuments({ _id: "sentinel-rollback" }), 1);
+			assert.equal(mapSha256(await readMapDocuments(target)), liveValidation.sha256);
 
 			const seed = await readSeed(path.resolve(__dirname, "../../seeds"), { maps: DESIGN_MAPS });
 			await target.collection("map").deleteOne({ _id: seed.documents[0]._id });

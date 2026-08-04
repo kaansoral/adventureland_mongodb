@@ -1,6 +1,7 @@
 "use strict";
 
 const { COMBAT_SKILL_IDS } = require("./skill_domain");
+const { progression } = require("../../design/progression");
 
 function contributionError(message, fields = {}) {
 	const error = new Error(message);
@@ -37,7 +38,7 @@ function splitShare(characterShare, weights) {
 }
 
 class ContributionLedger {
-	constructor({ now = () => Date.now(), closeAfterMs = 300000 } = {}) {
+	constructor({ now = () => Date.now(), closeAfterMs = progression.STAND_SETTLEMENT_MS } = {}) {
 		this.now = now;
 		this.closeAfterMs = closeAfterMs;
 		this.encounters = new Map();
@@ -51,6 +52,7 @@ class ContributionLedger {
 				encounterId,
 				metadata,
 				weights: new Map(),
+				sources: new Map(),
 				supportWeights: new Map(),
 				engaged: new Set(),
 				actions: new Set(),
@@ -103,7 +105,7 @@ class ContributionLedger {
 		return action;
 	}
 
-	_add(encounterId, characterId, skill, weight, actionId) {
+	_add(encounterId, characterId, skill, weight, actionId, source = "pve_damage") {
 		if (!weight || weight <= 0) return 0;
 		const encounter = this.openEncounter(encounterId);
 		const key = `${characterId}:${skill}`;
@@ -112,6 +114,9 @@ class ContributionLedger {
 		const characterWeights = encounter.weights.get(characterId) || new Map();
 		characterWeights.set(skill, (characterWeights.get(skill) || 0) + weight);
 		encounter.weights.set(characterId, characterWeights);
+		const sources = encounter.sources.get(`${characterId}:${skill}`) || new Set();
+		sources.add(source);
+		encounter.sources.set(`${characterId}:${skill}`, sources);
 		encounter.engaged.add(characterId);
 		encounter.lastActivity = this.now();
 		return weight;
@@ -136,6 +141,7 @@ class ContributionLedger {
 			action.activeSkill,
 			Math.max(0, Math.min(effective, hpBefore === null ? effective : hpBefore)),
 			actionId,
+			"pve_damage",
 		);
 	}
 
@@ -155,7 +161,10 @@ class ContributionLedger {
 		const ids = action.encounterIds.length ? action.encounterIds : encounterId ? [encounterId] : [];
 		if (!ids.length) return 0;
 		const perEncounter = effective / ids.length;
-		return ids.reduce((total, id) => total + this._add(id, characterId, action.activeSkill, perEncounter, actionId), 0);
+		return ids.reduce(
+			(total, id) => total + this._add(id, characterId, action.activeSkill, perEncounter, actionId, "pve_heal"),
+			0,
+		);
 	}
 
 	recordSupport({
@@ -164,8 +173,8 @@ class ContributionLedger {
 		activeSkill,
 		encounterIds = [],
 		changed = false,
-		weightPerUse = 1,
-		maxWeightPerTargetPerEncounter = 10,
+		weightPerUse = progression.SUPPORT_WEIGHT_PER_USE,
+		maxWeightPerTargetPerEncounter = progression.SUPPORT_MAX_WEIGHT_PER_TARGET_PER_ENCOUNTER,
 	}) {
 		if (!changed || !weightPerUse || weightPerUse <= 0) return 0;
 		const action = this._getAction(actionId, { actionId, characterId, activeSkill, encounterIds, kind: "combat" });
@@ -179,13 +188,71 @@ class ContributionLedger {
 			const current = encounter.supportWeights.get(key) || 0;
 			const accepted = Math.min(perEncounter, Math.max(0, maxWeightPerTargetPerEncounter - current));
 			if (!accepted || encounter.recordedActions.has(key + ":" + actionId)) continue;
-			const added = this._add(encounterId, characterId, action.activeSkill, accepted, actionId);
+			const added = this._add(encounterId, characterId, action.activeSkill, accepted, actionId, "pve_support");
 			if (added) {
 				encounter.supportWeights.set(key, current + added);
 				recorded += added;
 			}
 		}
 		return recorded;
+	}
+
+	characterIds(encounterId) {
+		const encounter = this.encounters.get(encounterId);
+		return encounter ? [...encounter.weights.keys()] : [];
+	}
+
+	weightForCharacter(encounterId, characterId) {
+		const encounter = this.encounters.get(encounterId);
+		const weights = encounter?.weights.get(characterId);
+		return weights ? [...weights.values()].reduce((sum, weight) => sum + weight, 0) : 0;
+	}
+
+	totalWeight(encounterId) {
+		const encounter = this.encounters.get(encounterId);
+		if (!encounter) return 0;
+		let total = 0;
+		for (const weights of encounter.weights.values()) {
+			for (const weight of weights.values()) total += weight;
+		}
+		return total;
+	}
+
+	sourceForCharacter(encounterId, characterId) {
+		const encounter = this.encounters.get(encounterId);
+		if (!encounter) return "pve_support";
+		const sources = new Set();
+		for (const [key, values] of encounter.sources) {
+			if (key.startsWith(`${characterId}:`)) for (const source of values) sources.add(source);
+		}
+		if (sources.has("pve_damage")) return "pve_damage";
+		if (sources.has("pve_heal")) return "pve_heal";
+		return "pve_support";
+	}
+
+	disengage(encounterId, characterId) {
+		const encounter = this.encounters.get(encounterId);
+		if (!encounter) return false;
+		encounter.engaged.delete(characterId);
+		return encounter.engaged.size > 0;
+	}
+
+	removeCharacter(characterId) {
+		for (const [encounterId, encounter] of this.encounters) {
+			encounter.engaged.delete(characterId);
+			encounter.weights.delete(characterId);
+			for (const key of encounter.sources.keys()) {
+				if (key.startsWith(`${characterId}:`)) encounter.sources.delete(key);
+			}
+			for (const key of encounter.supportWeights.keys()) {
+				if (key.startsWith(`${characterId}:`)) encounter.supportWeights.delete(key);
+			}
+			for (const actionId of encounter.actions) {
+				const action = this.actions.get(actionId);
+				if (action?.characterId === characterId) this.actions.delete(actionId);
+			}
+			if (!encounter.engaged.size && !encounter.weights.size) this.close(encounterId);
+		}
 	}
 
 	weightsForCharacter(encounterId, characterId) {
