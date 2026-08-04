@@ -24,8 +24,8 @@ test("benchmark loads production progression, stat, and merchant data", () => {
 	assert.equal(data.skillXp[1], 0);
 	assert.equal(data.skillXp[99], 900000000);
 	assert.equal(data.progression.MAX_ACTION_UNITS_PER_HOUR, 15625000);
-	assert.equal(data.items.blade.attack, 20);
-	assert.equal(data.monsters.goo.xp, 100);
+	assert.equal(data.items.blade.attack, 12);
+	assert.equal(data.monsters.goo.xp, 1388);
 	assert.equal(typeof data.damageMultiplier, "function");
 	assert.equal(COMBAT_SKILLS.length, 6);
 });
@@ -34,7 +34,7 @@ test("full benchmark covers every combat style and Merchant profile with stable 
 	const report = runBenchmark({ fixturePath: FIXTURE_PATH });
 
 	assert.equal(report.ok, true, JSON.stringify(report.checks, null, 2));
-	assert.equal(report.strict_ok, false);
+	assert.equal(report.strict_ok, true);
 	for (const profile of ["starter", "competent", "optimized"]) {
 		assert.deepEqual(Object.keys(report.combat[profile]), COMBAT_SKILLS);
 		assert.deepEqual(Object.keys(report.merchant), MERCHANT_PROFILES);
@@ -42,7 +42,8 @@ test("full benchmark covers every combat style and Merchant profile with stable 
 	assert.equal(report.checks.route_legality.pass, true);
 	assert.equal(report.checks.expected_outputs.pass, true);
 	assert.equal(report.checks.fixture_stable, true);
-	assert.equal(report.checks.target_alignment.pass, false);
+	assert.equal(report.checks.target_alignment.pass, true);
+	assert.equal(report.checks.style_parity.pass, true);
 });
 
 test("fixture regeneration is byte-stable and preserves the committed reviewed expectations", () => {
@@ -54,18 +55,19 @@ test("fixture regeneration is byte-stable and preserves the committed reviewed e
 	assert.equal(fs.readFileSync(FIXTURE_PATH, "utf8"), stableJson(fixture));
 });
 
-test("strict target mode exits nonzero when the real harness misses the plan targets", () => {
+test("strict target mode stays green when the reviewed routes meet the plan targets", () => {
 	const tool = path.resolve(__dirname, "../tools/progression-benchmark.js");
 	const result = spawnSync(process.execPath, [tool, "--strict-targets", "--format=json"], {
 		cwd: path.resolve(__dirname, ".."),
 		encoding: "utf8",
 	});
 
-	assert.equal(result.status, 1);
+	assert.equal(result.status, 0);
 	const report = JSON.parse(result.stdout);
-	assert.equal(report.ok, false);
-	assert.equal(report.strict_ok, false);
-	assert.equal(report.checks.target_alignment.pass, false);
+	assert.equal(report.ok, true);
+	assert.equal(report.strict_ok, true);
+	assert.equal(report.checks.target_alignment.pass, true);
+	assert.equal(report.checks.style_parity.pass, true);
 });
 
 test("all JSON CLI output is deterministic", () => {
@@ -77,7 +79,7 @@ test("all JSON CLI output is deterministic", () => {
 	assert.equal(first, second);
 	const report = JSON.parse(first);
 	assert.equal(report.ok, true);
-	assert.equal(report.strict_ok, false);
+	assert.equal(report.strict_ok, true);
 });
 
 test("benchmark rejects calibration-only fixture fields", () => {

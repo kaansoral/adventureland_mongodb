@@ -7454,11 +7454,11 @@ for(var name in items){
 
 // Starter fixtures are target totals. Keep the source catalog deterministic
 // even when the legacy weapon generator above changes its tier defaults.
-Object.assign(items.blade, { attack: 20, str: 20 });
-Object.assign(items.mace, { attack: 20, str: 14, int: 12 });
-Object.assign(items.staff, { attack: 20, int: 20 });
-Object.assign(items.wbook0, { attack: 12, int: 20 });
-Object.assign(items.bow, { attack: 20, dex: 20 });
-Object.assign(items.claw, { attack: 20, dex: 20 });
+Object.assign(items.blade, { attack: 12, str: 36 });
+Object.assign(items.mace, { attack: 12, str: 28, int: 30 });
+Object.assign(items.staff, { attack: 15, int: 40 });
+Object.assign(items.wbook0, { attack: 11, int: 34 });
+Object.assign(items.bow, { attack: 12, dex: 39 });
+Object.assign(items.claw, { attack: 11, dex: 30 });
 
 if(typeof module!=="undefined") module.exports={items:items,sets:sets};

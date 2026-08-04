@@ -1,6 +1,6 @@
 var monsters={
 	"goo":{
-		"name":"Goo","speed":6,"charge":12,"hp":100,"xp":100,"attack":5,"damage_type":"physical","respawn":1,"gold":20,"range":15,"frequency":0.4,"aggro":0,"aa":1,
+	"name":"Goo","speed":6,"charge":12,"hp":100,"xp":1388,"attack":5,"damage_type":"physical","respawn":1,"gold":20,"range":15,"frequency":0.4,"aggro":0,"aa":1,
 		//"immune":true,
 		//"respawn_as":"bee",
 		//"explosion":2000,
@@ -15,7 +15,7 @@ var monsters={
 		],
 	},
 	"bee":{
-		"name":"Bee","speed":12,"hp":300,"xp":400,"attack":16,"damage_type":"physical","respawn":2,"gold":40,"range":20,"frequency":0.5,"aggro":1,"aa":1,"rage":0.1,
+	"name":"Bee","speed":12,"hp":300,"xp":13672,"attack":16,"damage_type":"physical","respawn":2,"gold":40,"range":20,"frequency":0.5,"aggro":1,"aa":1,"rage":0.1,
 		"phresistance":60,
 		//"respawn_as":"goo",
 		"achievements":[
@@ -207,7 +207,7 @@ var monsters={
 		]
 	},
 	"hen":{
-		"name":"Chicken","speed":10,"hp":60,"xp":10,"attack":48,"damage_type":"physical","respawn":200,"gold":40,"range":20,"frequency":1.5,"aggro":1,"rage":0.2,"cute":true,
+		"name":"Chicken","speed":10,"hp":60,"xp":153455,"attack":48,"damage_type":"physical","respawn":200,"gold":40,"range":20,"frequency":1.5,"aggro":1,"rage":0.2,"cute":true,
 		"achievements":[
 			[1000,"stat","gold",2],
 		]

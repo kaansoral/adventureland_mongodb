@@ -147,7 +147,13 @@ function validateCandidateShape(candidate, context) {
 		throw new Error(`Benchmark candidate ${context}/${candidate.id} has invalid uptime`);
 }
 
-function validateItemRoute(skill, slots, minimumLevel, data, context) {
+function skillLevelsSnapshot(player) {
+	const levels = {};
+	for (const id of Object.keys(player.skills || {})) levels[id] = player.skills[id].level;
+	return levels;
+}
+
+function validateItemRoute(skill, slots, skillLevels, data, context) {
 	const instances = slotInstances(slots);
 	const mainResolution = resolveMainhand(instances, data.items);
 	if (!mainResolution || mainResolution.skill !== skill)
@@ -163,7 +169,7 @@ function validateItemRoute(skill, slots, minimumLevel, data, context) {
 		for (const requirement of requirements) {
 			if (!Number.isSafeInteger(requirement.level))
 				throw new Error(`Benchmark route ${context} has invalid requirement for ${itemId}`);
-			const actual = requirement.skill === skill ? minimumLevel : 0;
+			const actual = Number((skillLevels && skillLevels[requirement.skill]) || 0);
 			if (actual < requirement.level) {
 				throw new Error(
 					`Benchmark route ${context} is illegal: ${itemId} requires ${requirement.skill} ${requirement.level}`,
@@ -189,13 +195,16 @@ function validateMonsterRoute(monsterId, data, context) {
 	if (!monster) throw new Error(`Benchmark route ${context} references missing monster ${monsterId}`);
 	if (!Number.isFinite(monster.hp) || monster.hp <= 0 || !Number.isFinite(monster.xp) || monster.xp <= 0)
 		throw new Error(`Benchmark route ${context} references invalid monster ${monsterId}`);
+	if (monster.special || monster.operator || monster.rbuff) {
+		throw new Error(`Benchmark route ${context} uses excluded timed or special monster ${monsterId}`);
+	}
 	return monster;
 }
 
-function simulateSoloKill({ profile, skill, bandIndex, candidate, minimumLevel, data }) {
+function simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, data }) {
 	const context = `${profile}/${skill}/band-${bandIndex}/${candidate.id}`;
 	validateCandidateShape(candidate, context);
-	const mainResolution = validateItemRoute(skill, candidate.slots, minimumLevel, data, context);
+	const mainResolution = validateItemRoute(skill, candidate.slots, skillLevels, data, context);
 	const monster = validateMonsterRoute(candidate.monster, data, context);
 	const slots = slotInstances(candidate.slots);
 	const stats = calculateStats({
@@ -317,10 +326,17 @@ function evaluateCombatPlan(profile, skill, plan, data, baselineRate) {
 	for (const [bandIndex, band] of (plan.bands || []).entries()) {
 		if (!Array.isArray(band.candidates) || !band.candidates.length)
 			throw new Error(`Benchmark plan ${profile}/${skill}/band-${bandIndex} has no candidates`);
-		const minimumLevel = Number(band.from_level || player.skills[skill].level || 1);
+		const currentLevel = Number((player.skills[skill] && player.skills[skill].level) || 1);
+		const minimumLevel = Number(band.from_level || currentLevel || 1);
+		if (currentLevel < minimumLevel) {
+			throw new Error(
+				`Benchmark plan ${profile}/${skill}/band-${bandIndex} starts at ${minimumLevel} before the skill reaches it`,
+			);
+		}
 		const targetXp = band.to_level >= 99 ? MAX_XP : cumulativeXp(Number(band.to_level || 99));
+		const skillLevels = skillLevelsSnapshot(player);
 		const evaluatedCandidates = band.candidates.map((candidate) =>
-			simulateSoloKill({ profile, skill, bandIndex, candidate, minimumLevel, data }),
+			simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, data }),
 		);
 		const selected = chooseCandidate(plan.selection_mode, evaluatedCandidates, baselineRate || evaluatedCandidates[0].rate_per_hour);
 		const currentXp = player.skills[skill].xp;

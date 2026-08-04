@@ -16,12 +16,12 @@ function item(type, wtype, props = {}) {
 }
 
 const items = {
-	blade: item("weapon", "short_sword", { attack: 20, str: 20 }),
-	mace: item("weapon", "mace", { attack: 20, str: 14, int: 12 }),
-	staff: item("weapon", "staff", { attack: 20, int: 20 }),
-	wbook0: item("weapon", "book", { attack: 12, int: 20 }),
-	bow: item("weapon", "bow", { attack: 20, dex: 20 }),
-	claw: item("weapon", "fist", { attack: 20, dex: 20 }),
+	blade: item("weapon", "short_sword", { attack: 12, str: 36 }),
+	mace: item("weapon", "mace", { attack: 12, str: 28, int: 30 }),
+	staff: item("weapon", "staff", { attack: 15, int: 40 }),
+	wbook0: item("weapon", "book", { attack: 11, int: 34 }),
+	bow: item("weapon", "bow", { attack: 12, dex: 39 }),
+	claw: item("weapon", "fist", { attack: 11, dex: 30 }),
 	greatsword: item("weapon", "great_sword", { attack: 30 }),
 	shield: item("shield", null, { armor: 10 }),
 	rod: item("tool", "rod"),
@@ -326,12 +326,12 @@ test("style-bound effects are tagged and invalidated idempotently", () => {
 
 test("gear-only stats match the six starter golden inputs and ignore skill level", () => {
 	const expected = {
-		blade: ["warrior", 20, 520, 100, 0],
-		mace: ["paladin", 20, 394, 280, 0],
-		staff: ["mage", 20, 100, 400, 0],
-		wbook0: ["priest", 19, 100, 400, 19],
-		bow: ["ranger", 20, 100, 100, 0],
-		claw: ["rogue", 20, 100, 100, 0],
+		blade: ["warrior", 22, 856, 100, 0],
+		mace: ["paladin", 26, 688, 550, 0],
+		staff: ["mage", 30, 100, 700, 0],
+		wbook0: ["priest", 30, 100, 610, 30],
+		bow: ["ranger", 23, 100, 100, 0],
+		claw: ["rogue", 17, 100, 100, 0],
 	};
 	for (const [id, [skill, attack, hp, mp, heal]] of Object.entries(expected)) {
 		const result = calculateStats({ slots: { mainhand: { name: id } }, items });
@@ -368,6 +368,6 @@ test("gear-only stats match the six starter golden inputs and ignore skill level
 	assert.equal(noWeapon.range, 0);
 	assert.equal(noWeapon.damage_type, null);
 	const sick = calculateStats({ slots: { mainhand: { name: "blade" } }, items, deathSickness: true });
-	assert.equal(sick.attack, 16);
-	assert.equal(sick.max_hp, 416);
+	assert.equal(sick.attack, 17);
+	assert.equal(sick.max_hp, 685);
 });

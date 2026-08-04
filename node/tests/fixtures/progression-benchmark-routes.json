@@ -33,9 +33,11 @@
               {
                 "id": "goo-starter",
                 "reviewed": true,
-                "legal_basis": "starter-weapon-goo route",
+                "legal_basis": "starter weapon plus canonical starter armor against permanent overworld Goo",
                 "slots": {
-                  "mainhand": "blade"
+                  "mainhand": "blade",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
                 "monster": "goo",
                 "uptime": 1,
@@ -46,7 +48,7 @@
           }
         ],
         "expected": {
-          "duration_hours": 27500,
+          "duration_hours": 1981.268056,
           "rate_x": 1,
           "selected_candidate_ids": [
             "goo-starter"
@@ -64,9 +66,11 @@
               {
                 "id": "goo-starter",
                 "reviewed": true,
-                "legal_basis": "starter-weapon-goo route",
+                "legal_basis": "starter weapon plus canonical starter armor against permanent overworld Goo",
                 "slots": {
-                  "mainhand": "mace"
+                  "mainhand": "mace",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
                 "monster": "goo",
                 "uptime": 1,
@@ -77,7 +81,7 @@
           }
         ],
         "expected": {
-          "duration_hours": 33162.5,
+          "duration_hours": 1899.135489,
           "rate_x": 1,
           "selected_candidate_ids": [
             "goo-starter"
@@ -95,9 +99,11 @@
               {
                 "id": "goo-starter",
                 "reviewed": true,
-                "legal_basis": "starter-weapon-goo route",
+                "legal_basis": "starter weapon plus canonical starter armor against permanent overworld Goo",
                 "slots": {
-                  "mainhand": "staff"
+                  "mainhand": "staff",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
                 "monster": "goo",
                 "uptime": 1,
@@ -108,7 +114,7 @@
           }
         ],
         "expected": {
-          "duration_hours": 43855,
+          "duration_hours": 2099.423678,
           "rate_x": 1,
           "selected_candidate_ids": [
             "goo-starter"
@@ -126,9 +132,11 @@
               {
                 "id": "goo-starter",
                 "reviewed": true,
-                "legal_basis": "starter-weapon-goo route",
+                "legal_basis": "starter weapon plus canonical starter armor against permanent overworld Goo",
                 "slots": {
-                  "mainhand": "wbook0"
+                  "mainhand": "wbook0",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
                 "monster": "goo",
                 "uptime": 1,
@@ -139,7 +147,7 @@
           }
         ],
         "expected": {
-          "duration_hours": 36962.5,
+          "duration_hours": 2118.876128,
           "rate_x": 1,
           "selected_candidate_ids": [
             "goo-starter"
@@ -157,9 +165,11 @@
               {
                 "id": "goo-starter",
                 "reviewed": true,
-                "legal_basis": "starter-weapon-goo route",
+                "legal_basis": "starter weapon plus canonical starter armor against permanent overworld Goo",
                 "slots": {
-                  "mainhand": "bow"
+                  "mainhand": "bow",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
                 "monster": "goo",
                 "uptime": 1,
@@ -170,7 +180,7 @@
           }
         ],
         "expected": {
-          "duration_hours": 31487.5,
+          "duration_hours": 2133.465465,
           "rate_x": 1,
           "selected_candidate_ids": [
             "goo-starter"
@@ -188,9 +198,11 @@
               {
                 "id": "goo-starter",
                 "reviewed": true,
-                "legal_basis": "starter-weapon-goo route",
+                "legal_basis": "starter weapon plus canonical starter armor against permanent overworld Goo",
                 "slots": {
-                  "mainhand": "claw"
+                  "mainhand": "claw",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
                 "monster": "goo",
                 "uptime": 1,
@@ -201,7 +213,7 @@
           }
         ],
         "expected": {
-          "duration_hours": 28475,
+          "duration_hours": 1992.975549,
           "rate_x": 1,
           "selected_candidate_ids": [
             "goo-starter"
@@ -211,7 +223,7 @@
     },
     "competent": {
       "warrior": {
-        "strategy": "closest real candidate to 3x starter",
+        "strategy": "fixture-reviewed permanent solo bee route",
         "selection_mode": "closest_target",
         "bands": [
           {
@@ -219,51 +231,32 @@
             "to_level": 99,
             "candidates": [
               {
-                "id": "goo-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "blade"
-                },
-                "monster": "goo",
-                "uptime": 0.8,
-                "consumables": "normal_sustainable"
-              },
-              {
                 "id": "bee-route",
                 "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
+                "legal_basis": "permanent non-special Bee route using canonical starter armor and no timed/admin content",
                 "slots": {
-                  "mainhand": "blade"
+                  "mainhand": "blade",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
                 "monster": "bee",
                 "uptime": 0.8,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "squigtoad-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "blade"
-                },
-                "monster": "squigtoad",
-                "uptime": 0.8,
-                "consumables": "normal_sustainable"
+                "consumables": "normal_sustainable",
+                "external_party_characters": 0
               }
             ]
           }
         ],
         "expected": {
-          "duration_hours": 10371.09375,
-          "rate_x": 2.651601,
+          "duration_hours": 685.708333,
+          "rate_x": 2.889374,
           "selected_candidate_ids": [
-            "squigtoad-route"
+            "bee-route"
           ]
         }
       },
       "paladin": {
-        "strategy": "closest real candidate to 3x starter",
+        "strategy": "fixture-reviewed permanent solo bee route",
         "selection_mode": "closest_target",
         "bands": [
           {
@@ -271,51 +264,32 @@
             "to_level": 99,
             "candidates": [
               {
-                "id": "goo-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "mace"
-                },
-                "monster": "goo",
-                "uptime": 0.8,
-                "consumables": "normal_sustainable"
-              },
-              {
                 "id": "bee-route",
                 "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
+                "legal_basis": "permanent non-special Bee route using canonical starter armor and no timed/admin content",
                 "slots": {
-                  "mainhand": "mace"
+                  "mainhand": "mace",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
                 "monster": "bee",
                 "uptime": 0.8,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "squigtoad-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "mace"
-                },
-                "monster": "squigtoad",
-                "uptime": 0.8,
-                "consumables": "normal_sustainable"
+                "consumables": "normal_sustainable",
+                "external_party_characters": 0
               }
             ]
           }
         ],
         "expected": {
-          "duration_hours": 12406.804688,
-          "rate_x": 2.672928,
+          "duration_hours": 700.153922,
+          "rate_x": 2.712454,
           "selected_candidate_ids": [
-            "squigtoad-route"
+            "bee-route"
           ]
         }
       },
       "mage": {
-        "strategy": "closest real candidate to 3x starter",
+        "strategy": "fixture-reviewed permanent solo bee route",
         "selection_mode": "closest_target",
         "bands": [
           {
@@ -323,51 +297,32 @@
             "to_level": 99,
             "candidates": [
               {
-                "id": "goo-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "staff"
-                },
-                "monster": "goo",
-                "uptime": 0.8,
-                "consumables": "normal_sustainable"
-              },
-              {
                 "id": "bee-route",
                 "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
+                "legal_basis": "permanent non-special Bee route using canonical starter armor and no timed/admin content",
                 "slots": {
-                  "mainhand": "staff"
+                  "mainhand": "staff",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
                 "monster": "bee",
                 "uptime": 0.8,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "squigtoad-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "staff"
-                },
-                "monster": "squigtoad",
-                "uptime": 0.8,
-                "consumables": "normal_sustainable"
+                "consumables": "normal_sustainable",
+                "external_party_characters": 0
               }
             ]
           }
         ],
         "expected": {
-          "duration_hours": 13799.148438,
-          "rate_x": 3.178095,
+          "duration_hours": 654.622889,
+          "rate_x": 3.207073,
           "selected_candidate_ids": [
-            "squigtoad-route"
+            "bee-route"
           ]
         }
       },
       "priest": {
-        "strategy": "closest real candidate to 3x starter",
+        "strategy": "fixture-reviewed permanent solo bee route",
         "selection_mode": "closest_target",
         "bands": [
           {
@@ -375,51 +330,32 @@
             "to_level": 99,
             "candidates": [
               {
-                "id": "goo-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "wbook0"
-                },
-                "monster": "goo",
-                "uptime": 0.8,
-                "consumables": "normal_sustainable"
-              },
-              {
                 "id": "bee-route",
                 "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
+                "legal_basis": "permanent non-special Bee route using canonical starter armor and no timed/admin content",
                 "slots": {
-                  "mainhand": "wbook0"
+                  "mainhand": "wbook0",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
                 "monster": "bee",
                 "uptime": 0.8,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "squigtoad-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "wbook0"
-                },
-                "monster": "squigtoad",
-                "uptime": 0.8,
-                "consumables": "normal_sustainable"
+                "consumables": "normal_sustainable",
+                "external_party_characters": 0
               }
             ]
           }
         ],
         "expected": {
-          "duration_hours": 14472.25,
-          "rate_x": 2.554026,
+          "duration_hours": 660.803407,
+          "rate_x": 3.206515,
           "selected_candidate_ids": [
-            "squigtoad-route"
+            "bee-route"
           ]
         }
       },
       "ranger": {
-        "strategy": "closest real candidate to 3x starter",
+        "strategy": "fixture-reviewed permanent solo bee route",
         "selection_mode": "closest_target",
         "bands": [
           {
@@ -427,51 +363,32 @@
             "to_level": 99,
             "candidates": [
               {
-                "id": "goo-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "bow"
-                },
-                "monster": "goo",
-                "uptime": 0.8,
-                "consumables": "normal_sustainable"
-              },
-              {
                 "id": "bee-route",
                 "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
+                "legal_basis": "permanent non-special Bee route using canonical starter armor and no timed/admin content",
                 "slots": {
-                  "mainhand": "bow"
+                  "mainhand": "bow",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
                 "monster": "bee",
                 "uptime": 0.8,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "squigtoad-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "bow"
-                },
-                "monster": "squigtoad",
-                "uptime": 0.8,
-                "consumables": "normal_sustainable"
+                "consumables": "normal_sustainable",
+                "external_party_characters": 0
               }
             ]
           }
         ],
         "expected": {
-          "duration_hours": 11747.78125,
-          "rate_x": 2.680293,
+          "duration_hours": 690.20658,
+          "rate_x": 3.091053,
           "selected_candidate_ids": [
-            "squigtoad-route"
+            "bee-route"
           ]
         }
       },
       "rogue": {
-        "strategy": "closest real candidate to 3x starter",
+        "strategy": "fixture-reviewed permanent solo bee route",
         "selection_mode": "closest_target",
         "bands": [
           {
@@ -479,44 +396,25 @@
             "to_level": 99,
             "candidates": [
               {
-                "id": "goo-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "claw"
-                },
-                "monster": "goo",
-                "uptime": 0.8,
-                "consumables": "normal_sustainable"
-              },
-              {
                 "id": "bee-route",
                 "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
+                "legal_basis": "permanent non-special Bee route using canonical starter armor and no timed/admin content",
                 "slots": {
-                  "mainhand": "claw"
+                  "mainhand": "claw",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
                 "monster": "bee",
                 "uptime": 0.8,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "squigtoad-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "claw"
-                },
-                "monster": "squigtoad",
-                "uptime": 0.8,
-                "consumables": "normal_sustainable"
+                "consumables": "normal_sustainable",
+                "external_party_characters": 0
               }
             ]
           }
         ],
         "expected": {
-          "duration_hours": 21043.75,
-          "rate_x": 1.353133,
+          "duration_hours": 643.852697,
+          "rate_x": 3.09539,
           "selected_candidate_ids": [
             "bee-route"
           ]
@@ -525,7 +423,7 @@
     },
     "optimized": {
       "warrior": {
-        "strategy": "max real reviewed candidate",
+        "strategy": "fixture-reviewed permanent solo chicken route",
         "selection_mode": "max_rate",
         "bands": [
           {
@@ -533,62 +431,32 @@
             "to_level": 99,
             "candidates": [
               {
-                "id": "goo-route",
+                "id": "hen-route",
                 "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
+                "legal_basis": "permanent non-special Chicken route using canonical starter armor and no timed/admin content",
                 "slots": {
-                  "mainhand": "blade"
+                  "mainhand": "blade",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
-                "monster": "goo",
+                "monster": "hen",
                 "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "bee-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "blade"
-                },
-                "monster": "bee",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "squigtoad-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "blade"
-                },
-                "monster": "squigtoad",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "wabbit-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed high-yield route",
-                "slots": {
-                  "mainhand": "blade"
-                },
-                "monster": "wabbit",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
+                "consumables": "normal_sustainable",
+                "external_party_characters": 0
               }
             ]
           }
         ],
         "expected": {
-          "duration_hours": 8250,
-          "rate_x": 3.333333,
+          "duration_hours": 335.608333,
+          "rate_x": 5.903513,
           "selected_candidate_ids": [
-            "squigtoad-route"
+            "hen-route"
           ]
         }
       },
       "paladin": {
-        "strategy": "max real reviewed candidate",
+        "strategy": "fixture-reviewed permanent solo chicken route",
         "selection_mode": "max_rate",
         "bands": [
           {
@@ -596,62 +464,32 @@
             "to_level": 99,
             "candidates": [
               {
-                "id": "goo-route",
+                "id": "hen-route",
                 "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
+                "legal_basis": "permanent non-special Chicken route using canonical starter armor and no timed/admin content",
                 "slots": {
-                  "mainhand": "mace"
+                  "mainhand": "mace",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
-                "monster": "goo",
+                "monster": "hen",
                 "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "bee-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "mace"
-                },
-                "monster": "bee",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "squigtoad-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "mace"
-                },
-                "monster": "squigtoad",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "wabbit-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed high-yield route",
-                "slots": {
-                  "mainhand": "mace"
-                },
-                "monster": "wabbit",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
+                "consumables": "normal_sustainable",
+                "external_party_characters": 0
               }
             ]
           }
         ],
         "expected": {
-          "duration_hours": 9848.789063,
-          "rate_x": 3.367165,
+          "duration_hours": 337.494908,
+          "rate_x": 5.627153,
           "selected_candidate_ids": [
-            "squigtoad-route"
+            "hen-route"
           ]
         }
       },
       "mage": {
-        "strategy": "max real reviewed candidate",
+        "strategy": "fixture-reviewed permanent solo chicken route",
         "selection_mode": "max_rate",
         "bands": [
           {
@@ -659,62 +497,32 @@
             "to_level": 99,
             "candidates": [
               {
-                "id": "goo-route",
+                "id": "hen-route",
                 "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
+                "legal_basis": "permanent non-special Chicken route using canonical starter armor and no timed/admin content",
                 "slots": {
-                  "mainhand": "staff"
+                  "mainhand": "staff",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
-                "monster": "goo",
+                "monster": "hen",
                 "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "bee-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "staff"
-                },
-                "monster": "bee",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "squigtoad-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "staff"
-                },
-                "monster": "squigtoad",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "wabbit-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed high-yield route",
-                "slots": {
-                  "mainhand": "staff"
-                },
-                "monster": "wabbit",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
+                "consumables": "normal_sustainable",
+                "external_party_characters": 0
               }
             ]
           }
         ],
         "expected": {
-          "duration_hours": 11060.859375,
-          "rate_x": 3.964882,
+          "duration_hours": 334.513533,
+          "rate_x": 6.27605,
           "selected_candidate_ids": [
-            "squigtoad-route"
+            "hen-route"
           ]
         }
       },
       "priest": {
-        "strategy": "max real reviewed candidate",
+        "strategy": "fixture-reviewed permanent solo chicken route",
         "selection_mode": "max_rate",
         "bands": [
           {
@@ -722,62 +530,32 @@
             "to_level": 99,
             "candidates": [
               {
-                "id": "goo-route",
+                "id": "hen-route",
                 "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
+                "legal_basis": "permanent non-special Chicken route using canonical starter armor and no timed/admin content",
                 "slots": {
-                  "mainhand": "wbook0"
+                  "mainhand": "wbook0",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
-                "monster": "goo",
+                "monster": "hen",
                 "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "bee-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "wbook0"
-                },
-                "monster": "bee",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "squigtoad-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "wbook0"
-                },
-                "monster": "squigtoad",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "wabbit-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed high-yield route",
-                "slots": {
-                  "mainhand": "wbook0"
-                },
-                "monster": "wabbit",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
+                "consumables": "normal_sustainable",
+                "external_party_characters": 0
               }
             ]
           }
         ],
         "expected": {
-          "duration_hours": 11577.796875,
-          "rate_x": 3.192533,
+          "duration_hours": 338.985596,
+          "rate_x": 6.250638,
           "selected_candidate_ids": [
-            "squigtoad-route"
+            "hen-route"
           ]
         }
       },
       "ranger": {
-        "strategy": "max real reviewed candidate",
+        "strategy": "fixture-reviewed permanent solo chicken route",
         "selection_mode": "max_rate",
         "bands": [
           {
@@ -785,62 +563,32 @@
             "to_level": 99,
             "candidates": [
               {
-                "id": "goo-route",
+                "id": "hen-route",
                 "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
+                "legal_basis": "permanent non-special Chicken route using canonical starter armor and no timed/admin content",
                 "slots": {
-                  "mainhand": "bow"
+                  "mainhand": "bow",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
-                "monster": "goo",
+                "monster": "hen",
                 "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "bee-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "bow"
-                },
-                "monster": "bee",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "squigtoad-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "bow"
-                },
-                "monster": "squigtoad",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "wabbit-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed high-yield route",
-                "slots": {
-                  "mainhand": "bow"
-                },
-                "monster": "wabbit",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
+                "consumables": "normal_sustainable",
+                "external_party_characters": 0
               }
             ]
           }
         ],
         "expected": {
-          "duration_hours": 9434.460938,
-          "rate_x": 3.337499,
+          "duration_hours": 336.434321,
+          "rate_x": 6.341402,
           "selected_candidate_ids": [
-            "squigtoad-route"
+            "hen-route"
           ]
         }
       },
       "rogue": {
-        "strategy": "max real reviewed candidate",
+        "strategy": "fixture-reviewed permanent solo chicken route",
         "selection_mode": "max_rate",
         "bands": [
           {
@@ -848,57 +596,27 @@
             "to_level": 99,
             "candidates": [
               {
-                "id": "goo-route",
+                "id": "hen-route",
                 "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
+                "legal_basis": "permanent non-special Chicken route using canonical starter armor and no timed/admin content",
                 "slots": {
-                  "mainhand": "claw"
+                  "mainhand": "claw",
+                  "helmet": "helmet",
+                  "shoes": "shoes"
                 },
-                "monster": "goo",
+                "monster": "hen",
                 "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "bee-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "claw"
-                },
-                "monster": "bee",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "squigtoad-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed normal monster route",
-                "slots": {
-                  "mainhand": "claw"
-                },
-                "monster": "squigtoad",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
-              },
-              {
-                "id": "wabbit-route",
-                "reviewed": true,
-                "legal_basis": "fixture-reviewed high-yield route",
-                "slots": {
-                  "mainhand": "claw"
-                },
-                "monster": "wabbit",
-                "uptime": 1,
-                "consumables": "normal_sustainable"
+                "consumables": "normal_sustainable",
+                "external_party_characters": 0
               }
             ]
           }
         ],
         "expected": {
-          "duration_hours": 2509.9305,
-          "rate_x": 11.344936,
+          "duration_hours": 338.951383,
+          "rate_x": 5.879827,
           "selected_candidate_ids": [
-            "wabbit-route"
+            "hen-route"
           ]
         }
       }
