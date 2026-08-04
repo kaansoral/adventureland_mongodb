@@ -19,6 +19,7 @@ var Prod = options.Prod;
 var Staging = options.Staging;
 const express = require("express");
 const { buildProgressionData, loadProgressionPublication } = require("./game/skill_domain");
+const { progression } = require("../design/progression");
 const { createCharacterState } = require("./game/character_state");
 const { WEAPON_PROFILES, deriveActiveSkill, weaponProfile } = require("./game/active_skill");
 const { merchantTax, merchantSlots } = require("./game/merchant_progression");
@@ -30,6 +31,7 @@ const { ContributionLedger } = require("./game/contributions");
 const {
 	initializePlayerProgression,
 	awardPlayerSkillXp,
+	awardPlayerSkillXpSplit,
 	maxCombatLevel,
 	skillLevel,
 	markStandSession,
@@ -1223,7 +1225,7 @@ function calculate_gear_only_player_stats(player) {
 		activeSkill,
 		previousHp: player.hp === undefined ? null : player.hp,
 		previousMp: player.mp === undefined ? null : player.mp,
-		deathSickness: Number(player.death_sickness_until || 0) > Date.now(),
+		deathSickness: Number((player.info && player.info.death_sickness_until) || 0) > Date.now(),
 		getItemProperties: (instance) => calculate_item_properties(instance, { map: player.map }),
 	});
 	for (const [key, value] of Object.entries(calculated)) {
@@ -2142,17 +2144,10 @@ function award_monster_skill_share(player, monster, character_share, source_suff
 	const encounterId = monster.encounter_id;
 	if (!encounterId) return [];
 	const split = progression_ledger.partition(Math.round(character_share), encounterId, player.id || player.name);
-	const deltas = [];
-	for (const [skill, amount] of Object.entries(split)) {
-		if (!amount) continue;
-		deltas.push(
-			awardPlayerSkillXp(player, skill, amount, {
-				source: "pve_damage",
-				sourceId: `${encounterId}:${player.id || player.name}:${skill}:${source_suffix || "award"}`,
-			}),
-		);
-	}
-	return deltas;
+	return awardPlayerSkillXpSplit(player, split, {
+		source: "pve_damage",
+		sourceId: `${encounterId}:${player.id || player.name}:${source_suffix || "award"}`,
+	});
 }
 
 function snapshot_progression_support(player, target, ability, kind = "combat") {
@@ -2874,7 +2869,7 @@ function commence_attack(attacker, target, atype) {
 			characterId: attacker.id || attacker.name,
 			activeSkill: attacker.active_skill,
 			encounterIds: progressionEncounterIds,
-			kind: target.is_player && !info.positive ? "pvp" : "combat",
+			kind: target.is_player ? "pvp" : "combat",
 		};
 		progression_ledger.snapshotAction(info.progression_action);
 	}
@@ -3380,7 +3375,7 @@ function complete_attack(attacker, target, info) {
 					hpAfter: target.hp,
 				});
 			}
-			if (target.is_player && info.heal && net < 0) {
+			if (target.is_player && info.heal && net < 0 && info.progression_action.kind !== "pvp") {
 				progression_ledger.recordHealing({
 					encounterId: info.progression_action.encounterIds[0] || null,
 					actionId: info.progression_action.actionId,
@@ -3390,7 +3385,7 @@ function complete_attack(attacker, target, info) {
 					maxHp: target.max_hp,
 				});
 			}
-			if (target.is_monster && G.abilities[atype].contribution) {
+			if (target.is_monster && G.abilities[atype].contribution && info.progression_action.kind !== "pvp") {
 				progression_ledger.recordSupport({
 					actionId: info.progression_action.actionId,
 					characterId: info.progression_action.characterId,
@@ -13611,6 +13606,13 @@ function bless_loop() {
 }
 
 setInterval(bless_loop, 60 * 1000);
+setInterval(function () {
+	try {
+		progression_ledger.prune();
+	} catch (error) {
+		log_trace("#X progression ledger prune error", error);
+	}
+}, progression.STAND_SETTLEMENT_MS);
 
 function game_loop() {
 	// back in the day pretty much everything was in here [11/08/22]
@@ -14204,8 +14206,8 @@ function sync_entity(entity, data) {
 	entity.info.in = data.in;
 	entity.info.skills = data.skills;
 	entity.total_level = data.total_level;
-	entity.info.merchant_accrual = data.merchant_accrual;
-	entity.info.death_sickness_until = data.death_sickness_until || null;
+	entity.info.merchant_accrual = data.info && data.info.merchant_accrual;
+	entity.info.death_sickness_until = (data.info && data.info.death_sickness_until) || null;
 	entity.info.hp = data["hp"];
 	entity.info.mp = data["mp"];
 	entity.info.gold = data["gold"];

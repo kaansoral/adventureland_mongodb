@@ -68,6 +68,6 @@ test("runtime death sickness persists and clears by absolute timestamp", () => {
 	assert.equal(rehydratePlayerDeathSickness(character, 300999), 301000);
 	assert.deepEqual(character.s.death_sickness, { ms: 1 });
 	assert.equal(rehydratePlayerDeathSickness(character, 301000), null);
-	assert.equal(character.death_sickness_until, null);
+	assert.equal(character.info.death_sickness_until, null);
 	assert.equal(character.s.death_sickness, undefined);
 });

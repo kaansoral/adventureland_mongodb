@@ -411,6 +411,14 @@ function is_player_allowed(player) {
 }
 
 function rip(player) {
+	if (player && player.is_player && player.p && player.p.stand) {
+		try {
+			settlePlayerStand(player, Date.now(), { emit: false });
+			player.p.stand = false;
+		} catch (error) {
+			server_log("merchant death settlement failed: " + player.name + " " + (error.code || error.message), 1);
+		}
+	}
 	if (player && player.is_player && !player.is_npc) {
 		refreshDeathSickness(player);
 	}
@@ -526,8 +534,10 @@ function reset_player(player, soft) {
 		var fresh = createCharacterState();
 		player.skills = fresh.skills;
 		player.total_level = fresh.total_level;
-		player.merchant_accrual = undefined;
-		player.death_sickness_until = null;
+		if (player.info) {
+			player.info.merchant_accrual = undefined;
+			player.info.death_sickness_until = null;
+		}
 		player.s = {};
 		player.slots = {};
 		player.items = [{ name: "computer" }, { name: "tracker" }];
@@ -546,8 +556,8 @@ function save_player(player) {
 	P[player.real_id] = {
 		skills: player.skills,
 		total_level: player.total_level,
-		merchant_accrual: player.merchant_accrual,
-		death_sickness_until: player.death_sickness_until || null,
+		merchant_accrual: player.info && player.info.merchant_accrual,
+		death_sickness_until: (player.info && player.info.death_sickness_until) || null,
 		slots: player.slots,
 		items: player.items,
 		gold: player.gold,

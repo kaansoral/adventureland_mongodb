@@ -56,7 +56,7 @@ test("contributions snapshot style, count effective damage/heal, and conserve sp
 test("support divides one action across encounters and ignores PvP/redundant state", () => {
 	const ledger = new ContributionLedger();
 	ledger.snapshotAction({ actionId: "support", encounterIds: ["a", "b"], characterId: "char", activeSkill: "warrior" });
-	assert.deepEqual(ledger.engagedEncounterIds("char").sort(), ["a", "b"]);
+	assert.deepEqual(ledger.engagedEncounterIds("char"), []);
 	assert.equal(
 		ledger.recordSupport({
 			actionId: "support",
@@ -67,6 +67,7 @@ test("support divides one action across encounters and ignores PvP/redundant sta
 		}),
 		1,
 	);
+	assert.deepEqual(ledger.engagedEncounterIds("char").sort(), ["a", "b"]);
 	assert.equal(ledger.weightsForCharacter("a", "char").warrior, 0.5);
 	assert.equal(ledger.weightsForCharacter("b", "char").warrior, 0.5);
 	assert.equal(
@@ -92,7 +93,7 @@ test("support divides one action across encounters and ignores PvP/redundant sta
 test("an action snapshot makes later healing eligible for its encounter", () => {
 	const ledger = new ContributionLedger();
 	ledger.snapshotAction({ actionId: "heal-1", encounterIds: ["goo"], characterId: "priest", activeSkill: "priest" });
-	assert.deepEqual(ledger.engagedEncounterIds("priest"), ["goo"]);
+	assert.deepEqual(ledger.engagedEncounterIds("priest"), []);
 	assert.equal(
 		ledger.recordHealing({
 			actionId: "heal-1",
@@ -103,5 +104,6 @@ test("an action snapshot makes later healing eligible for its encounter", () => 
 		}),
 		25,
 	);
+	assert.deepEqual(ledger.engagedEncounterIds("priest"), ["goo"]);
 	assert.equal(ledger.weightsForCharacter("goo", "priest").priest, 25);
 });

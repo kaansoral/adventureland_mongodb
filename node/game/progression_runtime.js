@@ -1,6 +1,7 @@
 "use strict";
 
 const { SKILL_IDS, COMBAT_SKILL_IDS, cumulativeXp } = require("./skill_domain");
+const { progression } = require("../../design/progression");
 const { loadCharacterState, computeTotalLevel, validateSkillState } = require("./character_state");
 const { awardSkillXp } = require("./skill_progression");
 const {
@@ -16,18 +17,7 @@ const {
 } = require("./merchant_progression");
 const { applyDeathSickness, rehydrateDeathSickness, sicknessActive, sicknessDelta } = require("./death_sickness");
 
-const SOURCE_IDS = new Set([
-	"pve_damage",
-	"pve_heal",
-	"pve_support",
-	"merchant_stand",
-	"merchant_luck",
-	"merchant_sale",
-	"merchant_donation",
-	"merchant_dice",
-]);
-const MAX_PROCESSED_SOURCES = 1000;
-
+const SOURCE_IDS = new Set(progression.XP_SOURCES);
 function runtimeError(code, message, fields = {}) {
 	const error = new Error(message);
 	error.code = code;
@@ -37,24 +27,34 @@ function runtimeError(code, message, fields = {}) {
 
 function ensurePlayerContainers(player) {
 	if (!player || typeof player !== "object") throw runtimeError("invalid_character_skill_state", "Player is required");
+	if (!player.info || typeof player.info !== "object") player.info = {};
+	if (!player.info.skills && player.skills) player.info.skills = player.skills;
+	if (!player.skills && player.info.skills) player.skills = player.info.skills;
+	if (player.info.merchant_accrual === undefined && player.merchant_accrual !== undefined)
+		player.info.merchant_accrual = player.merchant_accrual;
+	if (player.info.death_sickness_until === undefined && player.death_sickness_until !== undefined)
+		player.info.death_sickness_until = player.death_sickness_until;
+	delete player.merchant_accrual;
+	delete player.death_sickness_until;
 	if (!player.p || typeof player.p !== "object") player.p = {};
 	if (!Array.isArray(player.p.skill_xp_sources)) player.p.skill_xp_sources = [];
 	if (!player.t || typeof player.t !== "object") player.t = {};
 	if (!player.t.skill_xp || typeof player.t.skill_xp !== "object") player.t.skill_xp = {};
 	for (const skill of SKILL_IDS) player.t.skill_xp[skill] = Number(player.t.skill_xp[skill]) || 0;
-	if (!player.merchant_accrual || typeof player.merchant_accrual !== "object")
-		player.merchant_accrual = createMerchantAccrual();
+	if (!player.info.merchant_accrual || typeof player.info.merchant_accrual !== "object")
+		player.info.merchant_accrual = createMerchantAccrual();
 	return player;
 }
 
 function initializePlayerProgression(player, now = Date.now()) {
 	ensurePlayerContainers(player);
-	const state = loadCharacterState({ info: { skills: player.skills }, total_level: player.total_level });
+	const state = loadCharacterState({ info: { skills: player.info.skills }, total_level: player.total_level });
 	player.skills = state.skills;
+	player.info.skills = player.skills;
 	player.total_level = state.total_level;
-	validateMerchantAccrual(player.merchant_accrual, now);
-	player.merchant_accrual = pruneMerchantAccrual(player.merchant_accrual, now);
-	rehydrateDeathSickness({ info: player }, now);
+	validateMerchantAccrual(player.info.merchant_accrual, now);
+	player.info.merchant_accrual = pruneMerchantAccrual(player.info.merchant_accrual, now);
+	rehydrateDeathSickness(player, now);
 	return player;
 }
 
@@ -92,16 +92,15 @@ function awardPlayerSkillXp(player, skillId, requestedXp, { source, sourceId, em
 		});
 	}
 	const known = new Set(player.p.skill_xp_sources);
-	const result = awardSkillXp(
-		{ skills: player.skills, total_level: player.total_level },
-		skillId,
-		requestedXp,
-		{ sourceId, seenSources: known },
-	);
+	const result = awardSkillXp({ skills: player.skills, total_level: player.total_level }, skillId, requestedXp, {
+		sourceId,
+		seenSources: known,
+	});
 	player.skills = result.state.skills;
+	player.info.skills = player.skills;
 	player.total_level = result.state.total_level;
 	if (sourceId && !player.p.skill_xp_sources.includes(sourceId)) {
-		player.p.skill_xp_sources = [...known].slice(-MAX_PROCESSED_SOURCES);
+		player.p.skill_xp_sources = [...known];
 	}
 	if (!result.delta.duplicate) player.t.skill_xp[skillId] += result.delta.accepted_xp;
 	player.t.total_skill_xp = SKILL_IDS.reduce((sum, skill) => sum + player.t.skill_xp[skill], 0);
@@ -109,8 +108,43 @@ function awardPlayerSkillXp(player, skillId, requestedXp, { source, sourceId, em
 	return result.delta;
 }
 
+function awardPlayerSkillXpSplit(player, split, { source, sourceId, emit = true } = {}) {
+	ensurePlayerContainers(player);
+	if (!sourceKind(source)) {
+		throw runtimeError("invalid_skill_delta", "Skill XP source is not allowlisted", {
+			path: "source",
+			reason: "unclassified_source",
+		});
+	}
+	const known = new Set(player.p.skill_xp_sources);
+	let working = { skills: JSON.parse(JSON.stringify(player.skills)), total_level: player.total_level };
+	const deltas = [];
+	for (const [skill, requestedXp] of Object.entries(split || {})) {
+		if (!requestedXp) continue;
+		const result = awardSkillXp(working, skill, requestedXp, {
+			sourceId: sourceId ? `${sourceId}:${skill}` : undefined,
+			seenSources: known,
+		});
+		working = result.state;
+		deltas.push(result.delta);
+	}
+	player.skills = working.skills;
+	player.info.skills = player.skills;
+	player.total_level = working.total_level;
+	if (sourceId) player.p.skill_xp_sources = [...known];
+	for (const delta of deltas) {
+		if (delta.duplicate) continue;
+		player.t.skill_xp[delta.skill] += delta.accepted_xp;
+		if (emit) emitSkillDelta(player, delta);
+	}
+	player.t.total_skill_xp = SKILL_IDS.reduce((sum, skill) => sum + player.t.skill_xp[skill], 0);
+	return deltas;
+}
+
 function maxCombatLevel(player) {
-	return Math.max(...COMBAT_SKILL_IDS.map((skill) => (player.skills && player.skills[skill] && player.skills[skill].level) || 1));
+	return Math.max(
+		...COMBAT_SKILL_IDS.map((skill) => (player.skills && player.skills[skill] && player.skills[skill].level) || 1),
+	);
 }
 
 function skillLevel(player, skillId) {
@@ -119,71 +153,89 @@ function skillLevel(player, skillId) {
 
 function markStandSession(player, now = Date.now()) {
 	ensurePlayerContainers(player);
-	player.merchant_accrual.stand_last_settled_at = now;
-	return player.merchant_accrual;
+	player.info.merchant_accrual.stand_last_settled_at = now;
+	return player.info.merchant_accrual;
 }
 
 function settlePlayerStand(player, now = Date.now(), { emit = true } = {}) {
 	ensurePlayerContainers(player);
-	const accrual = player.merchant_accrual;
+	const accrual = player.info.merchant_accrual;
 	if (!player.p || !player.p.stand || player.rip || !player.socket) {
-		accrual.stand_last_settled_at = now;
+		if (Number.isSafeInteger(accrual.stand_last_settled_at) && now > accrual.stand_last_settled_at)
+			accrual.stand_last_settled_at = now;
 		return { xp: 0, units: 0, state: accrual, skipped: true };
 	}
 	const previous = accrual.stand_last_settled_at;
-	accrual.stand_last_settled_at = now;
 	if (!Number.isSafeInteger(previous) || now <= previous) return { xp: 0, units: 0, state: accrual, skipped: true };
 	const settled = settleStand(accrual, now - previous, now);
-	player.merchant_accrual = settled.state;
 	if (settled.xp) {
-		const delta = awardPlayerSkillXp(player, "merchant", settled.xp, {
-			source: "merchant_stand",
-			sourceId: `stand:${player.id || player.name}:${previous}:${now}`,
-			emit,
-		});
-		return { ...settled, delta };
+		const before = {
+			skills: player.skills,
+			infoSkills: player.info.skills,
+			total_level: player.total_level,
+			t: player.t,
+			p: player.p,
+		};
+		try {
+			const delta = awardPlayerSkillXp(player, "merchant", settled.xp, {
+				source: "merchant_stand",
+				sourceId: `stand:${player.id || player.name}:${previous}:${now}`,
+				emit: false,
+			});
+			player.info.merchant_accrual = settled.state;
+			if (emit && !delta.duplicate) emitSkillDelta(player, delta);
+			return { ...settled, delta };
+		} catch (error) {
+			player.skills = before.skills;
+			player.info.skills = before.infoSkills;
+			player.total_level = before.total_level;
+			player.t = before.t;
+			player.p = before.p;
+			throw error;
+		}
 	}
+	player.info.merchant_accrual = settled.state;
 	return settled;
 }
 
 function recordMerchantLuck(player, targetId, now = Date.now()) {
 	ensurePlayerContainers(player);
-	const result = qualifyLuck(player.merchant_accrual, targetId, now);
-	player.merchant_accrual = result.state;
+	const result = qualifyLuck(player.info.merchant_accrual, targetId, now);
+	player.info.merchant_accrual = result.state;
 	return result;
 }
 
 function recordMerchantSale(player, details) {
 	ensurePlayerContainers(player);
-	const result = recordSale(player.merchant_accrual, details);
-	player.merchant_accrual = result.state;
+	const result = recordSale(player.info.merchant_accrual, details);
+	player.info.merchant_accrual = result.state;
 	return result;
 }
 
 function recordMerchantSaleReversal(player, details) {
 	ensurePlayerContainers(player);
-	const result = recordSaleReversal(player.merchant_accrual, details);
-	player.merchant_accrual = result.state;
+	const result = recordSaleReversal(player.info.merchant_accrual, details);
+	player.info.merchant_accrual = result.state;
 	return result;
 }
 
 function recordMerchantAction(player, details) {
 	ensurePlayerContainers(player);
-	const result = addCredit(player.merchant_accrual, details);
-	player.merchant_accrual = result.state;
+	const result = addCredit(player.info.merchant_accrual, details);
+	player.info.merchant_accrual = result.state;
 	return result;
 }
 
 function recordMerchantDonationOrDice(player, details) {
 	ensurePlayerContainers(player);
-	const result = recordDonationOrDice(player.merchant_accrual, details);
-	player.merchant_accrual = result.state;
+	const result = recordDonationOrDice(player.info.merchant_accrual, details);
+	player.info.merchant_accrual = result.state;
 	return result;
 }
 
 function refreshDeathSickness(player, now = Date.now()) {
 	ensurePlayerContainers(player);
-	const until = applyDeathSickness({ info: player }, now);
+	const until = applyDeathSickness(player, now);
 	if (!player.s || typeof player.s !== "object") player.s = {};
 	player.s.death_sickness = { ms: until - now };
 	return until;
@@ -191,7 +243,7 @@ function refreshDeathSickness(player, now = Date.now()) {
 
 function rehydratePlayerDeathSickness(player, now = Date.now()) {
 	ensurePlayerContainers(player);
-	const until = rehydrateDeathSickness({ info: player }, now);
+	const until = rehydrateDeathSickness(player, now);
 	if (!player.s || typeof player.s !== "object") player.s = {};
 	if (until === null) delete player.s.death_sickness;
 	else player.s.death_sickness = { ms: until - now };
@@ -202,6 +254,7 @@ module.exports = {
 	SOURCE_IDS,
 	initializePlayerProgression,
 	awardPlayerSkillXp,
+	awardPlayerSkillXpSplit,
 	maxCombatLevel,
 	skillLevel,
 	markStandSession,
@@ -213,8 +266,8 @@ module.exports = {
 	recordMerchantDonationOrDice,
 	refreshDeathSickness,
 	rehydratePlayerDeathSickness,
-	sicknessActive: (player, now) => sicknessActive({ info: player }, now),
-	sicknessDelta: (player, now) => sicknessDelta({ info: player }, now),
+	sicknessActive: (player, now) => sicknessActive(player, now),
+	sicknessDelta: (player, now) => sicknessDelta(player, now),
 	computeTotalLevel,
 	validateSkillState,
 	cumulativeXp,

@@ -51,8 +51,10 @@ class ContributionLedger {
 				encounterId,
 				metadata,
 				weights: new Map(),
+				supportWeights: new Map(),
 				engaged: new Set(),
 				actions: new Set(),
+				recordedActions: new Set(),
 				lastActivity: this.now(),
 			});
 		}
@@ -76,10 +78,19 @@ class ContributionLedger {
 	snapshotAction({ actionId, encounterIds = [], characterId, activeSkill, kind = "combat" }) {
 		if (!actionId || !characterId) throw contributionError("Action and character IDs are required");
 		if (kind === "pvp") return { actionId, characterId, activeSkill: null, encounterIds: [], ignored: true };
+		const existing = this.actions.get(actionId);
+		if (existing) {
+			const same =
+				existing.characterId === characterId &&
+				existing.activeSkill === activeSkill &&
+				existing.kind === kind &&
+				JSON.stringify(existing.encounterIds) === JSON.stringify(encounterIds);
+			if (!same) throw contributionError("Action ID cannot be reused with different progression data");
+			return existing;
+		}
 		const snapshot = { actionId, characterId, activeSkill, encounterIds: [...encounterIds], kind };
 		this.actions.set(actionId, snapshot);
 		for (const encounterId of encounterIds) {
-			this.engage(encounterId, characterId);
 			this.openEncounter(encounterId).actions.add(actionId);
 		}
 		return snapshot;
@@ -95,10 +106,12 @@ class ContributionLedger {
 	_add(encounterId, characterId, skill, weight, actionId) {
 		if (!weight || weight <= 0) return 0;
 		const encounter = this.openEncounter(encounterId);
-		if (actionId && encounter.actions.has(`${actionId}:${skill}:${characterId}`)) return 0;
-		if (actionId) encounter.actions.add(`${actionId}:${skill}:${characterId}`);
 		const key = `${characterId}:${skill}`;
-		encounter.weights.set(key, (encounter.weights.get(key) || 0) + weight);
+		if (actionId && encounter.recordedActions.has(key + ":" + actionId)) return 0;
+		if (actionId) encounter.recordedActions.add(key + ":" + actionId);
+		const characterWeights = encounter.weights.get(characterId) || new Map();
+		characterWeights.set(skill, (characterWeights.get(skill) || 0) + weight);
+		encounter.weights.set(characterId, characterWeights);
 		encounter.engaged.add(characterId);
 		encounter.lastActivity = this.now();
 		return weight;
@@ -161,10 +174,16 @@ class ContributionLedger {
 		const perEncounter = weightPerUse / Math.max(1, ids.length);
 		let recorded = 0;
 		for (const encounterId of ids) {
+			const encounter = this.openEncounter(encounterId);
 			const key = `${characterId}:${action.activeSkill}`;
-			const current = this.openEncounter(encounterId).weights.get(key) || 0;
+			const current = encounter.supportWeights.get(key) || 0;
 			const accepted = Math.min(perEncounter, Math.max(0, maxWeightPerTargetPerEncounter - current));
-			recorded += this._add(encounterId, characterId, action.activeSkill, accepted, actionId);
+			if (!accepted || encounter.recordedActions.has(key + ":" + actionId)) continue;
+			const added = this._add(encounterId, characterId, action.activeSkill, accepted, actionId);
+			if (added) {
+				encounter.supportWeights.set(key, current + added);
+				recorded += added;
+			}
 		}
 		return recorded;
 	}
@@ -173,10 +192,8 @@ class ContributionLedger {
 		const encounter = this.encounters.get(encounterId);
 		if (!encounter) return {};
 		const result = {};
-		for (const [key, weight] of encounter.weights) {
-			const [owner, skill] = key.split(":");
-			if (owner === characterId) result[skill] = (result[skill] || 0) + weight;
-		}
+		const skills = encounter.weights.get(characterId);
+		if (skills) for (const [skill, weight] of skills) result[skill] = weight;
 		return result;
 	}
 
@@ -188,10 +205,15 @@ class ContributionLedger {
 		const encounter = this.encounters.get(encounterId);
 		if (!encounter) return {};
 		const output = {};
-		for (const [key, weight] of encounter.weights) {
-			const [characterId, skill] = key.split(":");
-			if (!output[characterId]) output[characterId] = {};
-			output[characterId][skill] = weight;
+		for (const [characterId, skills] of encounter.weights) {
+			output[characterId] = {};
+			for (const [skill, weight] of skills) output[characterId][skill] = weight;
+		}
+		for (const actionId of encounter.actions) {
+			const action = this.actions.get(actionId);
+			if (!action) continue;
+			action.encounterIds = action.encounterIds.filter((id) => id !== encounterId && this.encounters.has(id));
+			if (!action.encounterIds.length) this.actions.delete(actionId);
 		}
 		this.encounters.delete(encounterId);
 		return output;
