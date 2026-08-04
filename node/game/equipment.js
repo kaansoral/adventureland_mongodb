@@ -18,17 +18,27 @@ function clone(value) {
 	return JSON.parse(JSON.stringify(value));
 }
 
-const ITEM_IDENTITY_IGNORED_FIELDS = new Set([
-	"grace",
-	"giveaway",
-	"gf",
-	"price",
-	"b",
-	"rid",
-	"list",
-	"o",
-	"oo",
-	"src",
+// This is the wire contract for the authoritative item instance, not the display/cache shape.
+const ITEM_IDENTITY_FIELDS = Object.freeze([
+	"name",
+	"level",
+	"q",
+	"stat_type",
+	"p",
+	"ps",
+	"m",
+	"v",
+	"l",
+	"ld",
+	"r",
+	"skin",
+	"charges",
+	"data",
+	"expires",
+	"gift",
+	"acl",
+	"acc",
+	"ach",
 ]);
 
 function canonicalize(value) {
@@ -44,8 +54,8 @@ function canonicalize(value) {
 function itemIdentity(item) {
 	if (!item || typeof item !== "object") return null;
 	const visible = {};
-	for (const [field, value] of Object.entries(item)) {
-		if (!ITEM_IDENTITY_IGNORED_FIELDS.has(field)) visible[field] = value;
+	for (const field of ITEM_IDENTITY_FIELDS) {
+		if (Object.prototype.hasOwnProperty.call(item, field)) visible[field] = item[field];
 	}
 	if (visible.level === undefined) visible.level = 0;
 	if (visible.q === undefined) visible.q = 1;
@@ -271,6 +281,7 @@ module.exports = {
 	OFFHAND_TYPES,
 	RING_SLOTS,
 	EARRING_SLOTS,
+	ITEM_IDENTITY_FIELDS,
 	itemIdentity,
 	sameItemIdentity,
 	validateRequirements,

@@ -158,6 +158,30 @@ test("equipment validates all requirements and atomically displaces incompatible
 	assert.throws(
 		() =>
 			planEquipmentTransaction({
+				player: { slots: {}, items: [{ name: "blade", charges: 2 }] },
+				item: { name: "blade", charges: 1 },
+				itemIndex: 0,
+				items,
+				itemRequirements: requirements,
+				skills: advanced,
+			}),
+		(error) => error.code === "inventory_item_changed",
+	);
+	assert.throws(
+		() =>
+			planEquipmentTransaction({
+				player: { slots: {}, items: [{ name: "blade", data: "appearance-a" }] },
+				item: { name: "blade", data: "appearance-b" },
+				itemIndex: 0,
+				items,
+				itemRequirements: requirements,
+				skills: advanced,
+			}),
+		(error) => error.code === "inventory_item_changed",
+	);
+	assert.throws(
+		() =>
+			planEquipmentTransaction({
 				player: { slots: {}, items: [{ name: "shield", q: 2 }] },
 				item: { name: "shield", q: 1 },
 				itemIndex: 0,
