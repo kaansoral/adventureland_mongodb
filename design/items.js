@@ -5256,7 +5256,7 @@ var premiums={
 		"skin":"xptome",
 		"reward":2,
 		"name":"Tome of Protection",
-		"explanation":"Significantly reduces experience loss on death. If the owner is defeated by another player, the victor receives a portion of the Tome's cost.",
+		"explanation":"Legacy item with no effect on skill progression or death sickness. It is not consumed.",
 		"s":true,
 		"g":3200000,
 	},

@@ -78,7 +78,10 @@ class ContributionLedger {
 		if (kind === "pvp") return { actionId, characterId, activeSkill: null, encounterIds: [], ignored: true };
 		const snapshot = { actionId, characterId, activeSkill, encounterIds: [...encounterIds], kind };
 		this.actions.set(actionId, snapshot);
-		for (const encounterId of encounterIds) this.openEncounter(encounterId).actions.add(actionId);
+		for (const encounterId of encounterIds) {
+			this.engage(encounterId, characterId);
+			this.openEncounter(encounterId).actions.add(actionId);
+		}
 		return snapshot;
 	}
 
@@ -139,10 +142,7 @@ class ContributionLedger {
 		const ids = action.encounterIds.length ? action.encounterIds : encounterId ? [encounterId] : [];
 		if (!ids.length) return 0;
 		const perEncounter = effective / ids.length;
-		return ids.reduce(
-			(total, id) => total + this._add(id, characterId, action.activeSkill, perEncounter, actionId),
-			0,
-		);
+		return ids.reduce((total, id) => total + this._add(id, characterId, action.activeSkill, perEncounter, actionId), 0);
 	}
 
 	recordSupport({

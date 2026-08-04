@@ -411,6 +411,9 @@ function is_player_allowed(player) {
 }
 
 function rip(player) {
+	if (player && player.is_player) {
+		refreshDeathSickness(player);
+	}
 	player.hp = 0;
 	player.rip = true;
 	player.rip_time = new Date();

@@ -11984,7 +11984,6 @@ function defeated_by_a_monster(attacker, player) {
 	const sickness = sicknessDelta(player);
 	player.socket.emit("game_response", {
 		response: "defeated_by_a_monster",
-		xp: 0,
 		monster: attacker.type,
 		death_sickness_until: sickness.death_sickness_until,
 	});
