@@ -1,5 +1,11 @@
 var crypto = require("crypto");
-var { loadCharacterState: loadProtocol3CharacterState } = require("./node/game/character_state");
+var loadProtocol3CharacterState;
+try {
+	loadProtocol3CharacterState = require("./node/game/character_state").loadCharacterState;
+} catch (error) {
+	if (error?.code !== "MODULE_NOT_FOUND" || !String(error.message).includes("./node/game/character_state")) throw error;
+	loadProtocol3CharacterState = require("./game/character_state").loadCharacterState;
+}
 
 // ==================== TIME UTILITIES ====================
 
