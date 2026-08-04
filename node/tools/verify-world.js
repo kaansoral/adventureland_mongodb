@@ -6,6 +6,7 @@ const vm = require("node:vm");
 const { MongoClient } = require("mongodb");
 const { maps: DESIGN_MAPS } = require("../../design/maps");
 const { buildProgressionData, loadProgressionPublication } = require("../game/skill_domain");
+const { assertProtocol3Publication } = require("../game/release_readiness");
 const { verifyWorldState } = require("../game/world_schema");
 const { readSeed } = require("./export-map-seed");
 
@@ -51,13 +52,15 @@ async function main(argv = process.argv.slice(2), env = process.env) {
 	const client = new MongoClient(uri, { serverSelectionTimeoutMS: 3_000 });
 	try {
 		await client.connect();
-		const world = await verifyWorldState(client.db(database), { maps: DESIGN_MAPS });
 		const seed = await readSeed(path.resolve(__dirname, "../../seeds"), { maps: DESIGN_MAPS });
+		const world = await verifyWorldState(client.db(database), {
+			maps: DESIGN_MAPS,
+			requiredMapHash: seed.manifest.sha256,
+		});
 		const raw = loadProgression();
 		const progression = buildProgressionData(raw);
 		const publication = loadProgressionPublication({}, progression);
-		if (publication.protocol !== 3 || publication.classes || publication.levels)
-			throw new Error("Protocol 3 publication failed verification");
+		assertProtocol3Publication(publication);
 		const report = {
 			protocol: publication.protocol,
 			mapCount: world.maps.mapCount,

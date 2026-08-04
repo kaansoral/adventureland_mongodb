@@ -7,6 +7,7 @@ const { EJSON } = BSON;
 
 const {
 	canonicalMapBytes,
+	designMapFingerprint,
 	mapSha256,
 	requiredMapIds,
 	readMapDocuments,
@@ -34,6 +35,7 @@ function buildSeed(documents, options = {}) {
 			documentCount: validated.documents.length,
 			ids: validated.documents.map((document) => document._id),
 			sha256: mapSha256(validated.documents),
+			sourceDesignMapHash: designMapFingerprint(options.maps),
 			sourceDesignMapVersion: options.designMapVersion ?? null,
 			liveDocumentCount: live.documents.length,
 			liveExtraCount: live.extras.length,
@@ -59,13 +61,24 @@ async function readSeed(seedDir, options = {}) {
 		.filter(Boolean)
 		.map((line) => EJSON.parse(line));
 	const validated = validateMapDocuments(documents, { maps: options.maps, exact: true });
+	if (!bytes.equals(canonicalMapBytes(validated.documents))) {
+		const error = new Error("Map seed bytes are not canonical Extended JSON");
+		error.code = "WORLD_SEED_CANONICAL";
+		throw error;
+	}
 	if (
 		manifest.schemaVersion !== 1 ||
 		manifest.documentCount !== validated.documents.length ||
-		manifest.sha256 !== validated.sha256
+		manifest.sha256 !== validated.sha256 ||
+		manifest.sourceDesignMapHash !== designMapFingerprint(options.maps)
 	) {
-		const error = new Error("Map seed manifest does not match canonical seed bytes");
+		const error = new Error("Map seed manifest does not match canonical seed bytes or design-map provenance");
 		error.code = "WORLD_SEED_MANIFEST";
+		throw error;
+	}
+	if (options.designMapVersion !== undefined && manifest.sourceDesignMapVersion !== options.designMapVersion) {
+		const error = new Error("Map seed manifest design-map version does not match the current source");
+		error.code = "WORLD_SEED_VERSION";
 		throw error;
 	}
 	if (JSON.stringify(manifest.ids) !== JSON.stringify(validated.documents.map((document) => document._id))) {

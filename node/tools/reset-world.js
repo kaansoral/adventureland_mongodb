@@ -3,7 +3,8 @@
 const fs = require("node:fs/promises");
 const net = require("node:net");
 const path = require("node:path");
-const { execFile } = require("node:child_process");
+const { constants: FS_CONSTANTS } = require("node:fs");
+const { randomUUID } = require("node:crypto");
 const { MongoClient } = require("mongodb");
 const { maps: DESIGN_MAPS } = require("../../design/maps");
 const {
@@ -24,14 +25,14 @@ const GAME_ROOT = path.resolve(__dirname, "../..");
 const DEFAULT_BACKUP_ROOT = path.join(ROOT_DIR, ".runtime", "reset-backups");
 const RESET_COMMAND_VERSION = "reset-world@protocol3";
 const RESET_WARNING = "Mutable documents are intentionally not backed up and are irrecoverable.";
+const DEFAULT_LEASE_DIR = path.join(ROOT_DIR, ".runtime", "reset-world.lock");
 
 function parseResetArgs(argv) {
-	const result = { execute: false, reseedMaps: false, json: false };
+	const result = { execute: false, reseedMaps: false };
 	for (let index = 0; index < argv.length; index += 1) {
 		const argument = argv[index];
 		if (argument === "--execute") result.execute = true;
 		else if (argument === "--reseed-maps") result.reseedMaps = true;
-		else if (argument === "--json") result.json = true;
 		else if (argument === "--database") result.database = argv[++index];
 		else if (argument === "--confirm") result.confirm = argv[++index];
 		else if (argument === "--backup-dir") result.backupDir = argv[++index];
@@ -117,13 +118,33 @@ function redactResetReport(input) {
 		database: input.database,
 		counts: input.counts || {},
 		deleted: input.deleted || {},
+		preResetMapHash: input.preResetMapHash,
+		preResetMapCount: input.preResetMapCount,
+		targetMapHash: input.targetMapHash || input.mapHash,
+		targetMapCount: input.targetMapCount || input.mapCount,
 		mapHash: input.mapHash,
 		mapCount: input.mapCount,
 		mapExtras: input.mapExtras || [],
 		guards: input.guards || {},
+		classification: input.classification,
+		plan: input.plan,
+		seed: input.seed,
+		topology: input.topology,
 		backupDir: input.backupDir,
+		backup: input.backup,
+		indexes: input.indexes,
 		reseedMaps: Boolean(input.reseedMaps),
 		warning: RESET_WARNING,
+		nextBoot: "scripts/service-server.sh",
+	};
+}
+
+function topologyReport(hello) {
+	return {
+		setName: hello.setName,
+		me: hello.me,
+		primary: hello.primary,
+		hosts: [...new Set([...(hello.hosts || []), ...(hello.passives || []), ...(hello.arbiters || [])])].sort(),
 	};
 }
 
@@ -168,19 +189,6 @@ async function checkWriterGuards(options = {}) {
 	return { activePidFiles, openPorts, clear: activePidFiles.length === 0 && openPorts.length === 0 };
 }
 
-function writerPortsFromEnv(value) {
-	if (value === "") return [];
-	if (typeof value !== "string") return [8090, 7192];
-	const ports = value
-		.split(",")
-		.filter(Boolean)
-		.map((port) => Number(port));
-	if (ports.some((port) => !Number.isInteger(port) || port < 1 || port > 65535)) {
-		throw worldError("RESET_PORTS", "Writer guard ports are invalid");
-	}
-	return ports;
-}
-
 async function countCollections(db, names) {
 	const counts = {};
 	for (const name of names) counts[name] = await db.collection(name).countDocuments();
@@ -194,8 +202,27 @@ async function writableReplicaSet(db) {
 	} catch (error) {
 		throw worldError("RESET_MONGO", "MongoDB hello failed", { cause: error });
 	}
-	if (!hello.isWritablePrimary || !hello.setName)
+	if (!hello.isWritablePrimary || hello.setName !== "adventureland-local")
 		throw worldError("RESET_REPLICA_SET", "Reset requires a writable MongoDB replica set");
+	const advertised = [
+		hello.me,
+		hello.primary,
+		...(hello.hosts || []),
+		...(hello.passives || []),
+		...(hello.arbiters || []),
+	]
+		.filter(Boolean)
+		.map((entry) => {
+			const value = String(entry).trim();
+			if (value.startsWith("[")) return value.slice(1, value.indexOf("]")).toLowerCase();
+			const separator = value.lastIndexOf(":");
+			return separator > -1 && /^\d+$/.test(value.slice(separator + 1))
+				? value.slice(0, separator).toLowerCase()
+				: value.toLowerCase();
+		});
+	if (advertised.some((host) => !["127.0.0.1", "localhost", "::1"].includes(host))) {
+		throw worldError("RESET_REMOTE_TOPOLOGY", "MongoDB replica-set members must resolve only to loopback hosts");
+	}
 	return hello;
 }
 
@@ -205,11 +232,16 @@ async function ensureBackupDirectory(directory) {
 	if (!resolved.startsWith(projectRoot)) {
 		throw worldError("RESET_BACKUP_PATH", "Backup directory must remain inside the project");
 	}
-	await fs.mkdir(directory, { recursive: true });
-	await fs.access(directory);
-	if ((await fs.readdir(directory)).length) {
-		throw worldError("RESET_BACKUP_NOT_EMPTY", "Backup directory must be empty before reset");
+	await fs.mkdir(path.dirname(resolved), { recursive: true });
+	try {
+		await fs.mkdir(resolved, { recursive: false, mode: 0o700 });
+	} catch (error) {
+		if (error.code !== "EEXIST") throw error;
+		if ((await fs.readdir(resolved)).length)
+			throw worldError("RESET_BACKUP_NOT_EMPTY", "Backup directory must be empty before reset");
 	}
+	await fs.access(resolved, FS_CONSTANTS.W_OK);
+	return resolved;
 }
 
 async function checkBackupLocation(directory) {
@@ -223,7 +255,7 @@ async function checkBackupLocation(directory) {
 		try {
 			const stats = await fs.stat(existing);
 			if (!stats.isDirectory()) throw worldError("RESET_BACKUP_PATH", "Backup path is not a directory");
-			await fs.access(existing, require("node:fs").constants.W_OK);
+			await fs.access(existing, FS_CONSTANTS.W_OK);
 			if (directory && existing === resolved && (await fs.readdir(existing)).length)
 				throw worldError("RESET_BACKUP_NOT_EMPTY", "Backup directory must be empty before reset");
 			return resolved;
@@ -233,6 +265,56 @@ async function checkBackupLocation(directory) {
 			if (parent === existing) throw worldError("RESET_BACKUP_PATH", "No writable project backup parent exists");
 			existing = parent;
 		}
+	}
+}
+
+async function acquireResetLease(directory = DEFAULT_LEASE_DIR) {
+	const resolved = path.resolve(directory);
+	await fs.mkdir(path.dirname(resolved), { recursive: true });
+	try {
+		await fs.mkdir(resolved, { recursive: false, mode: 0o700 });
+	} catch (error) {
+		if (error.code === "EEXIST") throw worldError("RESET_LEASE", "Another reset is already in progress");
+		throw error;
+	}
+	const ownerPath = path.join(resolved, "owner.json");
+	try {
+		await fs.writeFile(ownerPath, `${JSON.stringify({ pid: process.pid, startedAt: new Date().toISOString() })}\n`, {
+			mode: 0o600,
+			flag: "wx",
+		});
+	} catch (error) {
+		await fs.rmdir(resolved).catch(() => undefined);
+		throw error;
+	}
+	let released = false;
+	return async () => {
+		if (released) return;
+		released = true;
+		await fs.unlink(ownerPath).catch(() => undefined);
+		await fs.rmdir(resolved).catch(() => undefined);
+	};
+}
+
+async function writeMapSnapshot(backupDir, documents) {
+	const target = path.join(backupDir, "maps-live.ejson");
+	const temporary = `${target}.${randomUUID()}.tmp`;
+	const bytes = canonicalMapBytes(documents);
+	let handle;
+	try {
+		handle = await fs.open(temporary, "wx", 0o600);
+		await handle.writeFile(bytes);
+		await handle.sync();
+		await handle.close();
+		handle = undefined;
+		await fs.rename(temporary, target);
+		const readback = await fs.readFile(target);
+		if (!readback.equals(bytes)) throw worldError("RESET_BACKUP_VERIFY", "Map snapshot readback hash does not match");
+		return { path: target, bytes, sha256: mapSha256(documents), mapCount: documents.length };
+	} catch (error) {
+		if (handle) await handle.close().catch(() => undefined);
+		await fs.unlink(temporary).catch(() => undefined);
+		throw error;
 	}
 }
 
@@ -254,11 +336,18 @@ async function runReset(options = {}) {
 	}
 	const uri = env.ADVENTURELAND_RESET_MONGODB_URI;
 	validateResetUri(uri, args.database);
+	const releaseLease = await acquireResetLease(options.leaseDir || DEFAULT_LEASE_DIR);
+	const runId =
+		options.runId ||
+		`${new Date()
+			.toISOString()
+			.replace(/[-:.TZ]/g, "")
+			.slice(0, 14)}-${randomUUID()}`;
 	const client = new MongoClient(uri, { serverSelectionTimeoutMS: 3_000 });
 	try {
 		await client.connect();
 		const db = client.db(args.database);
-		await writableReplicaSet(db);
+		const topology = topologyReport(await writableReplicaSet(db));
 		const collectionNames = await readCollectionNames(db);
 		const classification = classifyCollections(collectionNames);
 		if (classification.unknown.length)
@@ -275,12 +364,14 @@ async function runReset(options = {}) {
 		}
 		const seed = await readSeed(path.join(GAME_ROOT, "seeds"), { maps: DESIGN_MAPS });
 		const seedValidation = validateMapDocuments(seed.documents, { maps: DESIGN_MAPS, exact: true });
-		const writer = await checkWriterGuards({
-			pidDir: env.ADVENTURELAND_RESET_PID_DIR || undefined,
-			ports: writerPortsFromEnv(env.ADVENTURELAND_RESET_WRITER_PORTS),
-		});
-		const backupLocation = await checkBackupLocation(args.backupDir);
+		if (!args.reseedMaps && mapValidation.requiredSha256 !== seedValidation.sha256) {
+			throw worldError("RESET_MAP_SEED_DRIFT", "Required live maps do not match the committed recovery seed");
+		}
+		const writer = await (options.writerGuard || checkWriterGuards)();
+		const requestedBackupDir = args.backupDir || path.join(DEFAULT_BACKUP_ROOT, runId);
+		const backupLocation = await checkBackupLocation(requestedBackupDir);
 		const mapHash = args.reseedMaps ? seedValidation.sha256 : mapValidation.sha256;
+		const preResetMapHash = mapSha256(liveDocuments);
 		const plan = buildResetPlan({
 			collectionNames,
 			counts,
@@ -288,6 +379,23 @@ async function runReset(options = {}) {
 			seedValidation,
 			reseedMaps: args.reseedMaps,
 		});
+		const classificationReport = {
+			mutable: classification.mutable,
+			system: classification.system,
+			unknown: classification.unknown,
+		};
+		const planReport = {
+			deleteCollections: plan.deletes,
+			preserveMaps: plan.preserveMaps,
+			reseedMaps: plan.reseedMaps,
+		};
+		const seedReport = {
+			schemaVersion: seed.manifest.schemaVersion,
+			documentCount: seed.manifest.documentCount,
+			sha256: seed.manifest.sha256,
+			sourceDesignMapHash: seed.manifest.sourceDesignMapHash,
+			sourceDesignMapVersion: seed.manifest.sourceDesignMapVersion,
+		};
 		const guards = {
 			loopback: true,
 			replicaSet: true,
@@ -295,21 +403,32 @@ async function runReset(options = {}) {
 			maps: Boolean(mapValidation) || args.reseedMaps,
 			writers: writer.clear,
 			backup: true,
+			lease: true,
+			writer,
 		};
 		const preview = redactResetReport({
 			timestamp: new Date().toISOString(),
 			mode: args.execute ? "execute" : "dry-run",
 			database: args.database,
 			counts,
+			preResetMapHash,
+			preResetMapCount: liveDocuments.length,
+			targetMapHash: mapHash,
+			targetMapCount: args.reseedMaps ? seedValidation.mapCount : mapValidation.mapCount,
 			mapHash,
 			mapCount: args.reseedMaps ? seedValidation.mapCount : mapValidation.mapCount,
 			mapExtras: args.reseedMaps ? [] : mapValidation.extras,
 			guards,
+			backupDir: backupLocation,
+			classification: classificationReport,
+			plan: planReport,
+			seed: seedReport,
+			topology,
 			reseedMaps: args.reseedMaps,
 		});
 		if (!args.execute) {
 			preview.confirmToken = confirmationToken(args.database, mapHash);
-			preview.nextCommand = `ADVENTURELAND_RESET_MONGODB_URI=\"$ADVENTURELAND_RESET_MONGODB_URI\" node node/tools/reset-world.js --database ${args.database} --execute --confirm ${preview.confirmToken}${args.reseedMaps ? " --reseed-maps" : ""}${args.backupDir ? ` --backup-dir ${JSON.stringify(backupLocation)}` : ""}`;
+			preview.nextCommand = `ADVENTURELAND_RESET_MONGODB_URI=\"$ADVENTURELAND_RESET_MONGODB_URI\" node node/tools/reset-world.js --database ${args.database} --execute --confirm ${preview.confirmToken}${args.reseedMaps ? " --reseed-maps" : ""} --backup-dir ${JSON.stringify(backupLocation)}`;
 			printReport(preview, stdout);
 			return { mode: "dry-run", plan, preview };
 		}
@@ -318,13 +437,8 @@ async function runReset(options = {}) {
 		const expectedToken = confirmationToken(args.database, mapHash);
 		if (args.confirm !== expectedToken)
 			throw worldError("RESET_CONFIRM", "Confirmation token does not match the validated map hash");
-		const runId = `${new Date()
-			.toISOString()
-			.replace(/[-:.TZ]/g, "")
-			.slice(0, 14)}-${mapHash.slice(0, 12)}`;
-		const backupDir = args.backupDir ? backupLocation : path.resolve(path.join(DEFAULT_BACKUP_ROOT, runId));
-		await ensureBackupDirectory(backupDir);
-		await fs.writeFile(path.join(backupDir, "maps-live.ejson"), canonicalMapBytes(liveDocuments), { mode: 0o600 });
+		const backupDir = await ensureBackupDirectory(backupLocation);
+		const snapshot = await writeMapSnapshot(backupDir, liveDocuments);
 		await fs.writeFile(path.join(backupDir, "preflight.json"), `${JSON.stringify(preview, null, 2)}\n`, {
 			mode: 0o600,
 		});
@@ -347,17 +461,38 @@ async function runReset(options = {}) {
 		if (afterValidation.sha256 !== mapHash)
 			throw worldError("RESET_POSTCHECK", "Map hash changed unexpectedly after reset");
 		const afterCounts = await countCollections(db, [...MUTABLE_COLLECTIONS, "map"]);
+		const residual = Object.fromEntries(
+			MUTABLE_COLLECTIONS.filter((name) => afterCounts[name] !== 0).map((name) => [name, afterCounts[name]]),
+		);
+		if (Object.keys(residual).length)
+			throw worldError("RESET_POSTCHECK", "Mutable documents remain after the committed reset", { residual });
+		const indexes = await verifyWorldIndexes(db);
 		const report = redactResetReport({
 			timestamp: new Date().toISOString(),
 			mode: "executed",
 			database: args.database,
 			counts: afterCounts,
 			deleted,
+			preResetMapHash,
+			preResetMapCount: liveDocuments.length,
+			targetMapHash: mapHash,
+			targetMapCount: afterValidation.mapCount,
 			mapHash: afterValidation.sha256,
 			mapCount: afterValidation.mapCount,
 			mapExtras: afterValidation.extras,
 			guards,
 			backupDir,
+			classification: classificationReport,
+			plan: planReport,
+			seed: seedReport,
+			topology,
+			backup: {
+				path: snapshot.path,
+				sha256: snapshot.sha256,
+				mapCount: snapshot.mapCount,
+				verified: true,
+			},
+			indexes,
 			reseedMaps: args.reseedMaps,
 		});
 		await fs.writeFile(path.join(backupDir, "report.json"), `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
@@ -365,6 +500,7 @@ async function runReset(options = {}) {
 		return { mode: "executed", plan, report, backupDir };
 	} finally {
 		await client.close();
+		await releaseLease();
 	}
 }
 
@@ -380,10 +516,11 @@ module.exports = {
 	checkWriterGuards,
 	confirmationToken,
 	ensureBackupDirectory,
+	acquireResetLease,
 	parseResetArgs,
 	portIsOpen,
 	redactResetReport,
 	runReset,
 	validateResetUri,
-	writerPortsFromEnv,
+	writeMapSnapshot,
 };

@@ -98,10 +98,19 @@ function mapSha256(documents) {
 	return crypto.createHash("sha256").update(canonicalMapBytes(documents)).digest("hex");
 }
 
+function designMapFingerprint(maps = DESIGN_MAPS) {
+	const definitions = Object.fromEntries(
+		Object.entries(maps || {})
+			.filter(([, entry]) => entry && !entry.ignore)
+			.map(([name, entry]) => [`MP_${entry.key || name}`, stableValue(entry)])
+			.sort(([left], [right]) => left.localeCompare(right)),
+	);
+	return crypto.createHash("sha256").update(JSON.stringify(definitions)).digest("hex");
+}
+
 function hasGeometry(document) {
 	const data = document && document.info && document.info.data;
-	if (typeof data === "string") return data.trim().length > 0;
-	return Boolean(data && typeof data === "object" && Object.keys(data).length > 0);
+	return Boolean(data && typeof data === "object" && !Array.isArray(data) && Object.keys(data).length > 0);
 }
 
 function validateMapDocuments(documents, options = {}) {
@@ -115,8 +124,11 @@ function validateMapDocuments(documents, options = {}) {
 		}
 		if (seen.has(document._id)) throw worldError("WORLD_MAP_DUPLICATE", `Map ${document._id} appears more than once`);
 		seen.add(document._id);
-		if (expected.has(document._id) && !hasGeometry(document)) {
-			throw worldError("WORLD_MAP_GEOMETRY", `Required map ${document._id} has no geometry`);
+		if (!hasGeometry(document)) {
+			throw worldError(
+				"WORLD_MAP_GEOMETRY",
+				`${expected.has(document._id) ? "Required" : "Preserved"} map ${document._id} has no geometry`,
+			);
 		}
 	}
 	const missing = expectedIds.filter((id) => !seen.has(id));
@@ -127,6 +139,7 @@ function validateMapDocuments(documents, options = {}) {
 	if (options.exact && extras.length)
 		throw worldError("WORLD_MAP_EXTRA", "Seed contains non-required map documents", { extras });
 	const sorted = sortedDocuments(documents);
+	const requiredDocuments = sorted.filter((document) => expected.has(document._id));
 	return {
 		documents: sorted,
 		mapCount: sorted.length,
@@ -134,6 +147,7 @@ function validateMapDocuments(documents, options = {}) {
 		requiredIds: expectedIds,
 		extras,
 		sha256: mapSha256(sorted),
+		requiredSha256: mapSha256(requiredDocuments),
 	};
 }
 
@@ -157,7 +171,7 @@ async function verifyWorldIndexes(db) {
 			missing.push(expected.name);
 	}
 	if (missing.length) throw worldError("WORLD_INDEX_MISSING", "Required world indexes are missing", { missing });
-	return true;
+	return WORLD_INDEXES.map((index) => ({ collection: index.collection, name: index.name, key: { ...index.key } }));
 }
 
 async function readCollectionNames(db) {
@@ -179,6 +193,8 @@ async function verifyWorldState(db, options = {}) {
 	const maps = validateMapDocuments(await readMapDocuments(db), { maps: options.maps || DESIGN_MAPS });
 	if (options.mapHash && maps.sha256 !== options.mapHash)
 		throw worldError("WORLD_MAP_HASH", "World map hash does not match the expected value");
+	if (options.requiredMapHash && maps.requiredSha256 !== options.requiredMapHash)
+		throw worldError("WORLD_MAP_SEED_DRIFT", "Required live maps do not match the committed recovery seed");
 	await verifyWorldIndexes(db);
 	return { collectionNames, classification, maps };
 }
@@ -190,6 +206,7 @@ module.exports = {
 	canonicalDocument,
 	canonicalMapBytes,
 	classifyCollections,
+	designMapFingerprint,
 	ensureWorldIndexes,
 	mapSha256,
 	requiredMapIds,

@@ -45,7 +45,12 @@ async function main() {
 			events: [],
 			emit(name, payload) {
 				this.events.push([name, payload]);
-				emitLog(lines, "server_event", { name, payload });
+				emitLog(lines, "server_event", {
+					name,
+					payload_type: payload === null ? "null" : Array.isArray(payload) ? "array" : typeof payload,
+					payload_keys:
+						payload && typeof payload === "object" && !Array.isArray(payload) ? Object.keys(payload).slice(0, 16) : [],
+				});
 			},
 		},
 	};

@@ -2,6 +2,8 @@ var fs = require("fs"),
 	path = require("path");
 var { buildProgressionData, loadProgressionPublication } = require("./node/game/skill_domain");
 var { ensureWorldIndexes, verifyWorldState } = require("./node/game/world_schema");
+var { assertProtocol3Publication } = require("./node/game/release_readiness");
+var { readSeed } = require("./node/tools/export-map-seed");
 var keys = require("./secretsandconfig/keys");
 var options = require("./secretsandconfig/options");
 
@@ -665,18 +667,22 @@ app.all("/api", async (req, res, next) => {
 const PORT = process.env.PORT || options.port;
 async function startBackend() {
 	await ensureWorldIndexes(db);
-	await verifyWorldState(db);
+	var seed = await readSeed(path.resolve(__dirname, "seeds"), { maps: maps });
+	await verifyWorldState(db, { requiredMapHash: seed.manifest.sha256 });
 	var publication = loadProgressionPublication({}, progression_data);
-	if (publication.protocol !== 3 || publication.classes || publication.levels) {
-		throw new Error("Protocol 3 progression publication failed startup validation");
-	}
+	assertProtocol3Publication(publication);
 	app.listen(PORT, () => {
 		console.log(`\x1b[32mAdventure Land\x1b[0m listening on port ${PORT}`);
 	});
 }
 
-startBackend().catch(function (error) {
+startBackend().catch(async function (error) {
 	console.error("World preflight failed:", error.code || error.message);
+	try {
+		if (client && typeof client.close === "function") await client.close();
+	} catch (closeError) {
+		console.error("World preflight cleanup failed:", closeError.message || closeError);
+	}
 	process.exitCode = 1;
 });
 
