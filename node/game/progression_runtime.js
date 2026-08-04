@@ -25,7 +25,47 @@ function runtimeError(code, message, fields = {}) {
 	return error;
 }
 
-function ensurePlayerContainers(player) {
+function normalizeSkillXpSource(entry, now) {
+	const sourceId = typeof entry === "string" ? entry : entry && entry.source_id;
+	if (typeof sourceId !== "string" || !sourceId) return null;
+	const expiresAt =
+		typeof entry === "object" && Number.isSafeInteger(entry.expires_at)
+			? entry.expires_at
+			: now + progression.SKILL_XP_SOURCE_RETENTION_MS;
+	if (expiresAt <= now) return null;
+	return { source_id: sourceId, expires_at: expiresAt };
+}
+
+function pruneSkillXpSources(player, now = Date.now()) {
+	const records = new Map();
+	for (const entry of Array.isArray(player.p?.skill_xp_sources) ? player.p.skill_xp_sources : []) {
+		const normalized = normalizeSkillXpSource(entry, now);
+		if (normalized) records.set(normalized.source_id, normalized);
+	}
+	player.p.skill_xp_sources = [...records.values()].slice(-progression.MAX_SKILL_XP_SOURCES);
+	return player.p.skill_xp_sources;
+}
+
+function commitSkillXpSources(player, known, now = Date.now()) {
+	const records = new Map(
+		pruneSkillXpSources(player, now).map((entry) => [entry.source_id, entry]),
+	);
+	for (const sourceId of known) {
+		if (!records.has(sourceId)) {
+			records.set(sourceId, {
+				source_id: sourceId,
+				expires_at: now + progression.SKILL_XP_SOURCE_RETENTION_MS,
+			});
+		}
+	}
+	player.p.skill_xp_sources = [...records.values()].slice(-progression.MAX_SKILL_XP_SOURCES);
+}
+
+function sourceIds(player) {
+	return new Set(player.p.skill_xp_sources.map((entry) => entry.source_id));
+}
+
+function ensurePlayerContainers(player, now = Date.now()) {
 	if (!player || typeof player !== "object") throw runtimeError("invalid_character_skill_state", "Player is required");
 	if (!player.info || typeof player.info !== "object") player.info = {};
 	if (!player.info.skills) throw runtimeError("invalid_character_skill_state", "Persisted info.skills is required");
@@ -39,6 +79,7 @@ function ensurePlayerContainers(player) {
 	delete player.death_sickness_until;
 	if (!player.p || typeof player.p !== "object") player.p = {};
 	if (!Array.isArray(player.p.skill_xp_sources)) player.p.skill_xp_sources = [];
+	pruneSkillXpSources(player, now);
 	if (!player.t || typeof player.t !== "object") player.t = {};
 	if (!player.t.skill_xp || typeof player.t.skill_xp !== "object") player.t.skill_xp = {};
 	for (const skill of SKILL_IDS) player.t.skill_xp[skill] = Number(player.t.skill_xp[skill]) || 0;
@@ -52,7 +93,7 @@ function ensurePlayerContainers(player) {
 }
 
 function initializePlayerProgression(player, now = Date.now()) {
-	ensurePlayerContainers(player);
+	ensurePlayerContainers(player, now);
 	const state = loadCharacterState({ info: { skills: player.info.skills }, total_level: player.total_level });
 	player.skills = state.skills;
 	player.info.skills = player.skills;
@@ -119,8 +160,8 @@ function flushPlayerProgressionEvents(player) {
 	return flushed;
 }
 
-function awardPlayerSkillXp(player, skillId, requestedXp, { source, sourceId, emit = true } = {}) {
-	ensurePlayerContainers(player);
+function awardPlayerSkillXp(player, skillId, requestedXp, { source, sourceId, emit = true, now = Date.now() } = {}) {
+	ensurePlayerContainers(player, now);
 	const kind = sourceKind(source);
 	if (!kind) {
 		throw runtimeError("invalid_skill_delta", "Skill XP source is not allowlisted", {
@@ -128,7 +169,7 @@ function awardPlayerSkillXp(player, skillId, requestedXp, { source, sourceId, em
 			reason: "unclassified_source",
 		});
 	}
-	const known = new Set(player.p.skill_xp_sources);
+	const known = sourceIds(player);
 	const result = awardSkillXp({ skills: player.skills, total_level: player.total_level }, skillId, requestedXp, {
 		sourceId,
 		seenSources: known,
@@ -136,24 +177,22 @@ function awardPlayerSkillXp(player, skillId, requestedXp, { source, sourceId, em
 	player.skills = result.state.skills;
 	player.info.skills = player.skills;
 	player.total_level = result.state.total_level;
-	if (sourceId && !player.p.skill_xp_sources.includes(sourceId)) {
-		player.p.skill_xp_sources = [...known];
-	}
+	if (sourceId) commitSkillXpSources(player, known, now);
 	if (!result.delta.duplicate) player.t.skill_xp[skillId] += result.delta.accepted_xp;
 	player.t.total_skill_xp = SKILL_IDS.reduce((sum, skill) => sum + player.t.skill_xp[skill], 0);
 	if (emit && !result.delta.duplicate) queueSkillDelta(player, result.delta);
 	return result.delta;
 }
 
-function awardPlayerSkillXpSplit(player, split, { source, sourceId, emit = true } = {}) {
-	ensurePlayerContainers(player);
+function awardPlayerSkillXpSplit(player, split, { source, sourceId, emit = true, now = Date.now() } = {}) {
+	ensurePlayerContainers(player, now);
 	if (!sourceKind(source)) {
 		throw runtimeError("invalid_skill_delta", "Skill XP source is not allowlisted", {
 			path: "source",
 			reason: "unclassified_source",
 		});
 	}
-	const known = new Set(player.p.skill_xp_sources);
+	const known = sourceIds(player);
 	let working = { skills: JSON.parse(JSON.stringify(player.skills)), total_level: player.total_level };
 	const deltas = [];
 	const eventSnapshots = [];
@@ -170,7 +209,7 @@ function awardPlayerSkillXpSplit(player, split, { source, sourceId, emit = true 
 	player.skills = working.skills;
 	player.info.skills = player.skills;
 	player.total_level = working.total_level;
-	if (sourceId) player.p.skill_xp_sources = [...known];
+	if (sourceId) commitSkillXpSources(player, known, now);
 	for (const event of eventSnapshots) {
 		const delta = event.delta;
 		if (delta.duplicate) continue;
@@ -219,6 +258,7 @@ function settlePlayerStand(player, now = Date.now(), { emit = true } = {}) {
 				source: "merchant_stand",
 				sourceId: `stand:${player.id || player.name}:${previous}:${now}`,
 				emit: false,
+				now,
 			});
 			player.info.merchant_accrual = settled.state;
 			player.p.stand_last_settled_at = now;

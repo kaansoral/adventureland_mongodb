@@ -13,6 +13,7 @@ const {
 	refreshDeathSickness,
 	rehydratePlayerDeathSickness,
 } = require("../game/progression_runtime");
+const { progression } = require("../../design/progression");
 
 function player() {
 	const state = createCharacterState();
@@ -154,6 +155,40 @@ test("runtime split awards commit all styles and reject backward stand time", ()
 	const backward = settlePlayerStand(character, 50);
 	assert.equal(backward.xp, 0);
 	assert.equal(character.p.stand_last_settled_at, 100);
+});
+
+test("skill XP replay records are bounded and expire without losing in-window deduplication", () => {
+	const character = player();
+	initializePlayerProgression(character, 0);
+	awardPlayerSkillXp(character, "warrior", 1, {
+		source: "pve_damage",
+		sourceId: "expiring-source",
+		now: 0,
+	});
+	assert.deepEqual(character.p.skill_xp_sources, [
+		{ source_id: "expiring-source", expires_at: progression.SKILL_XP_SOURCE_RETENTION_MS },
+	]);
+	const duplicate = awardPlayerSkillXp(character, "warrior", 1, {
+		source: "pve_damage",
+		sourceId: "expiring-source",
+		now: 0,
+	});
+	assert.equal(duplicate.duplicate, true);
+	const afterExpiry = awardPlayerSkillXp(character, "warrior", 1, {
+		source: "pve_damage",
+		sourceId: "expiring-source",
+		now: progression.SKILL_XP_SOURCE_RETENTION_MS + 1,
+	});
+	assert.notEqual(afterExpiry.duplicate, true);
+
+	for (let index = 0; index < progression.MAX_SKILL_XP_SOURCES + 25; index += 1) {
+		awardPlayerSkillXp(character, "warrior", 1, {
+			source: "pve_damage",
+			sourceId: `source-${index}`,
+			now: progression.SKILL_XP_SOURCE_RETENTION_MS + 1,
+		});
+	}
+	assert.equal(character.p.skill_xp_sources.length, progression.MAX_SKILL_XP_SOURCES);
 });
 
 test("runtime death sickness persists and clears by absolute timestamp", () => {
