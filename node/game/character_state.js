@@ -46,7 +46,8 @@ function validateSkillState(skills, options = {}) {
 	const xpTable = options.xpTable || null;
 	for (const id of ids) {
 		const record = skills[id];
-		if (!record || typeof record !== "object" || Array.isArray(record)) throw stateError(`skills.${id}`, "must be an object");
+		if (!record || typeof record !== "object" || Array.isArray(record))
+			throw stateError(`skills.${id}`, "must be an object");
 		const keys = Object.keys(record);
 		if (keys.some((key) => !["level", "xp"].includes(key))) throw stateError(`skills.${id}`, "contains unknown fields");
 		if (!Number.isInteger(record.level) || record.level < 1 || record.level > MAX_LEVEL) {

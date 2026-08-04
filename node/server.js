@@ -18,7 +18,12 @@ var Local = options.Local;
 var Prod = options.Prod;
 var Staging = options.Staging;
 const express = require("express");
-const { buildProgressionData, publishProgressionData } = require("./game/skill_domain");
+const { buildProgressionData, replaceProgressionData } = require("./game/skill_domain");
+const { loadCharacterState, createCharacterState } = require("./game/character_state");
+const { WEAPON_PROFILES, deriveActiveSkill, weaponProfile } = require("./game/active_skill");
+const { planEquipmentTransaction, isCompatibleOffhand } = require("./game/equipment");
+const { authorizeAbility } = require("./game/ability_access");
+const { calculateStats } = require("./game/stats");
 var fs = require("fs");
 var app = express(),
 	http_server = require("http").createServer(app);
@@ -412,7 +417,7 @@ async function init_game() {
 		}
 
 		// Build G (game data) from design globals (matches create_server_api output)
-		G = publishProgressionData(
+		G = replaceProgressionData(
 			{
 			version: Version,
 			achievements: achievements,
@@ -606,7 +611,7 @@ async function reload_server(to_broadcast, change) {
 			if (map) geometry[id] = map.info.data;
 		}
 
-		G = publishProgressionData(
+		G = replaceProgressionData(
 			{
 			version: Version,
 			achievements: achievements,
@@ -1191,9 +1196,57 @@ function apply_stats(player, prop, args) {
 	}
 }
 
+function calculate_gear_only_player_stats(player) {
+	const activeSkill = deriveActiveSkill(player.slots || {}, G.items, WEAPON_PROFILES);
+	const calculated = calculateStats({
+		slots: player.slots || {},
+		items: G.items,
+		sets: G.sets,
+		conditions: player.s || {},
+		conditionDefinitions: G.conditions,
+		profiles: WEAPON_PROFILES,
+		activeSkill,
+		previousHp: player.hp === undefined ? null : player.hp,
+		previousMp: player.mp === undefined ? null : player.mp,
+		deathSickness: Number(player.death_sickness_until || 0) > Date.now(),
+		getItemProperties: (instance) => calculate_item_properties(instance, { map: player.map }),
+	});
+	for (const [key, value] of Object.entries(calculated)) {
+		if (!["sets", "abilities", "auras", "damage_type", "projectile", "inventory_size", "hp", "mp"].includes(key)) player[key] = value;
+	}
+	player.active_skill = activeSkill;
+	player.damage_type = calculated.damage_type;
+	player.projectile = calculated.projectile;
+	player.range = calculated.range;
+	player.hp = calculated.hp;
+	player.mp = calculated.mp;
+	player.max_hp = calculated.max_hp;
+	player.max_mp = calculated.max_mp;
+	player.attack = calculated.attack;
+	player.heal = calculated.heal;
+	player.attack_ms = calculated.attack_ms;
+	player.mp_cost = calculated.mp_cost;
+	player.isize = calculated.inventory_size;
+	player.esize = calculated.inventory_size - (player.items || []).filter(Boolean).length;
+	player.a = calculated.abilities;
+	player.aura = calculated.auras;
+	player.monster_stats = {};
+	player.output = calculated.output;
+	player.tax = 0.05;
+	if (player.skills && player.skills.merchant) {
+		const merchantLevel = player.skills.merchant.level;
+		player.tax = merchantLevel > 80 ? 0.01 : merchantLevel > 70 ? 0.02 : merchantLevel > 60 ? 0.025 : merchantLevel > 50 ? 0.03 : merchantLevel > 20 ? 0.04 : 0.05;
+	}
+	calculate_common_stats(player);
+	return player;
+}
+
 function calculate_player_stats(player) {
 	if (player.is_npc) {
 		return;
+	}
+	if (player.skills && Object.keys(player.skills).length) {
+		return calculate_gear_only_player_stats(player);
 	}
 	player.max_xp = G.levels[player.level + ""];
 	var level_up = false;
@@ -1702,116 +1755,44 @@ function ccms(monster) {
 	}
 }
 
+function commit_equipment_transaction(player, itemIndex, requestedSlot) {
+	const item = player.items[itemIndex];
+	const transaction = planEquipmentTransaction({
+		player,
+		item,
+		itemIndex,
+		sourceIndex: itemIndex,
+		slot: requestedSlot,
+		items: G.items,
+		itemRequirements: G.items && Object.fromEntries(Object.entries(G.items).filter(([, definition]) => definition.requirements).map(([id, definition]) => [id, definition.requirements])),
+		profiles: WEAPON_PROFILES,
+		skills: player.skills,
+	});
+	player.slots = transaction.slots;
+	player.items = transaction.items;
+	player.active_skill = transaction.active_skill;
+	player.cslots = {};
+	for (const [slot, equipped] of Object.entries(player.slots)) player.cslots[slot] = cache_item(equipped);
+	player.citems = player.items.map((entry) => cache_item(entry));
+	calculate_player_stats(player);
+	return transaction;
+}
+
 function can_equip_item(player, item, slot) {
-	var class_def = G.classes[player.type];
-	if (!slot) {
-		slot = item.type;
-	}
-	if (slot == "offhand" && item.type != "weapon") {
-		slot = item.type;
-	} //Easiest solution to the slot:"offhand" challenge [15/11/16]
-	if (item.type == "tool") {
-		slot = "mainhand";
-	}
-	if (item.type == "test" && slot != "test") {
-		return slot;
-	}
-	if (
-		!in_arr(item.type, [
-			"helmet",
-			"pants",
-			"chest",
-			"weapon",
-			"amulet",
-			"earring",
-			"shoes",
-			"gloves",
-			"ring",
-			"shield",
-			"belt",
-			"source",
-			"orb",
-			"quiver",
-			"cape",
-			"misc_offhand",
-			"tool",
-		])
-	) {
+	try {
+		return planEquipmentTransaction({
+			player,
+			item: { name: item.iname || item.name },
+			sourceIndex: null,
+			slot,
+			items: G.items,
+			itemRequirements: Object.fromEntries(Object.entries(G.items).filter(([, definition]) => definition.requirements).map(([id, definition]) => [id, definition.requirements])),
+			profiles: WEAPON_PROFILES,
+			skills: player.skills,
+		}).slot;
+	} catch (error) {
 		return "no";
 	}
-	if (slot != item.type && in_arr(item.type, ["shield", "source", "quiver", "misc_offhand"]) && slot != "offhand") {
-		return "no";
-	}
-	if (in_arr(slot, ["weapon", "mainhand", "offhand", "tool"])) {
-		if (
-			slot == "weapon" &&
-			player.slots.mainhand &&
-			class_def.mainhand[G.items[player.slots.mainhand.name].wtype] &&
-			!player.slots.offhand &&
-			class_def.offhand[item.wtype]
-		) {
-			slot = "offhand";
-		} else if (
-			slot == "offhand" &&
-			(!player.slots.mainhand ||
-				(player.slots.mainhand && class_def.mainhand[G.items[player.slots.mainhand.name].wtype])) &&
-			class_def.offhand[item.wtype]
-		) {
-			slot = "offhand";
-		} else if (slot == "weapon" || slot == "mainhand") {
-			if (class_def.doublehand[item.wtype] && !player.slots.offhand) {
-			} else if (!class_def.mainhand[item.wtype]) {
-				return "no";
-			}
-			slot = "mainhand";
-		} else {
-			return "no";
-		}
-	} else if (item.type == "shield" || item.type == "misc_offhand") {
-		if (
-			class_def.offhand[item.type] &&
-			!(player.slots.mainhand && class_def.doublehand[G.items[player.slots.mainhand.name].wtype])
-		) {
-			slot = "offhand";
-		} else {
-			return "no";
-		}
-	} else if (item.type == "quiver") {
-		if (
-			class_def.offhand.quiver &&
-			!(player.slots.mainhand && class_def.doublehand[G.items[player.slots.mainhand.name].wtype])
-		) {
-			slot = "offhand";
-		} else {
-			return "no";
-		}
-	} else if (item.type == "source") {
-		if (
-			class_def.offhand.source &&
-			!(player.slots.mainhand && class_def.doublehand[G.items[player.slots.mainhand.name].wtype])
-		) {
-			slot = "offhand";
-		} else {
-			return "no";
-		}
-	} else if (item.type == "ring") {
-		if (slot == "ring1" || slot == "ring2") {
-		} else if (!player.slots["ring1"]) {
-			slot = "ring1";
-		} else {
-			slot = "ring2";
-		}
-	} else if (item.type == "earring") {
-		if (slot == "earring1" || slot == "earring2") {
-		} else if (!player.slots["earring1"]) {
-			slot = "earring1";
-		} else {
-			slot = "earring2";
-		}
-	} else if (slot != item.type) {
-		return "no";
-	}
-	return slot;
 }
 
 function consume(player, num, quantity) {
@@ -7050,20 +7031,14 @@ function init_io() {
 						break;
 					}
 					var slot = equip_def.slot || def.type;
-					var comp = can_equip_item(player, def, slot);
-					if (comp == "no") {
-						resolve.push("cant_equip");
+					var transaction;
+					try {
+						transaction = commit_equipment_transaction(player, equip_def.num, slot);
+					} catch (error) {
+						resolve.push(error.code || "cant_equip");
 						break;
 					}
-					slot = comp;
-					var existing = player.slots[slot];
-					player.slots[slot] = player.items[equip_def.num];
-					player.cslots[slot] = cache_item(player.slots[slot]);
-					if (existing && existing.b) {
-						existing = null;
-					}
-					player.items[equip_def.num] = existing;
-					player.citems[equip_def.num] = cache_item(existing);
+					slot = transaction.slot;
 					penalty += 120;
 					resolve.push({ num: equip_def.num, slot });
 				}
@@ -7280,21 +7255,13 @@ function init_io() {
 			} else if (!data.consume) {
 				// console.log(data);
 				var slot = data.slot || def.type;
-				var existing;
-				var comp = can_equip_item(player, def, slot);
-				if (comp == "no") {
-					resend(player, "u+cid+reopen"); // if you drop something on an invalid slot, it stays there for a bit otherwise [29/08/22]
-					return fail_response("cant_equip");
+				try {
+					var transaction = commit_equipment_transaction(player, data.num, slot);
+					slot = transaction.slot;
+				} catch (error) {
+					resend(player, "u+cid+reopen"); // Preserve the authoritative state on any rejected transaction.
+					return fail_response(error.code || "cant_equip", error);
 				}
-				slot = comp;
-				existing = player.slots[slot];
-				player.slots[slot] = player.items[data.num];
-				player.cslots[slot] = cache_item(player.slots[slot]);
-				if (existing && existing.b) {
-					existing = null;
-				}
-				player.items[data.num] = existing;
-				player.citems[data.num] = cache_item(existing);
 				player.s.penalty_cd = { ms: min(((player.s.penalty_cd && player.s.penalty_cd.ms) || 0) + 120, 120000) };
 				resolve.slot = slot;
 			} else {
@@ -10438,6 +10405,14 @@ function init_io() {
 			for (var prop in entity.info) {
 				player[prop] = entity.info[prop];
 			}
+			try {
+				var characterState = loadCharacterState({ info: { skills: player.skills }, total_level: player.total_level });
+				player.skills = characterState.skills;
+				player.total_level = characterState.total_level;
+			} catch (error) {
+				socket.emit("game_error", error.code || "invalid_character_skill_state");
+				return;
+			}
 			player.id = player.name;
 			player.pid = entity.pid || owner.pid;
 			player.drm = drm;
@@ -10494,7 +10469,10 @@ function init_io() {
 			player.total_ips = 1;
 			player.width = 26;
 			player.height = 36;
-			player.damage_type = G.classes[player.type].damage_type;
+			var activeWeapon = player.slots.mainhand && G.items[player.slots.mainhand.name];
+			var activeWeaponProfile = activeWeapon && weaponProfile(activeWeapon, WEAPON_PROFILES);
+			player.active_skill = deriveActiveSkill(player.slots, G.items, WEAPON_PROFILES);
+			player.damage_type = (activeWeapon && activeWeapon.damage_type) || (activeWeaponProfile && activeWeaponProfile.damage_type) || null;
 			player.xrange = 25;
 			player.red_zone = 0;
 			player.targets = player.targets_p = player.targets_m = player.targets_u = 0;

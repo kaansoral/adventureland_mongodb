@@ -3650,32 +3650,23 @@ function init_bank_exit(player) {
 }
 
 function init_player(player) {
-	var class_def = G.classes[player.type];
+	var state = loadCharacterState({ info: { skills: player.skills }, total_level: player.total_level });
+	player.skills = state.skills;
+	player.total_level = state.total_level;
 	player.citems = [];
-	if (
-		(player.slots.mainhand &&
-			player.slots.offhand &&
-			G.classes[player.type].doublehand[
-				G.items[player.slots.mainhand.name].wtype || G.items[player.slots.mainhand.name].type
-			]) ||
-		(player.slots.mainhand &&
-			!G.classes[player.type].mainhand[
-				G.items[player.slots.mainhand.name].wtype || G.items[player.slots.mainhand.name].type
-			] &&
-			!G.classes[player.type].doublehand[
-				G.items[player.slots.mainhand.name].wtype || G.items[player.slots.mainhand.name].type
-			])
-	) {
+	var main = player.slots.mainhand && G.items[player.slots.mainhand.name];
+	var offhand = player.slots.offhand && G.items[player.slots.offhand.name];
+	var mainProfile = main && weaponProfile(main, WEAPON_PROFILES);
+	if (main && main.type == "weapon" && !mainProfile) {
 		add_item(player, player.slots.mainhand, { announce: false });
 		player.slots.mainhand = null;
+		main = null;
 	}
-	if (
-		player.slots.offhand &&
-		!G.classes[player.type].offhand[G.items[player.slots.offhand.name].wtype || G.items[player.slots.offhand.name].type]
-	) {
+	if (player.slots.mainhand && player.slots.offhand && !isCompatibleOffhand(player.slots.mainhand, player.slots.offhand, G.items, WEAPON_PROFILES)) {
 		add_item(player, player.slots.offhand, { announce: false });
 		player.slots.offhand = null;
 	}
+	player.active_skill = deriveActiveSkill(player.slots, G.items, WEAPON_PROFILES);
 	for (var i = 0; i < player.items.length; i++) {
 		if (!player.items[i]) {
 			continue;
@@ -3711,14 +3702,18 @@ function init_player(player) {
 		player.p.dt[dt] = new Date(player.p.dt[dt]);
 	}
 	for (var id in G.abilities) {
-		if (G.abilities[id].applicability == "skill" && G.abilities[id].skill == player.type && G.abilities[id].persistent) {
+		if (
+			G.abilities[id].applicability == "skill" &&
+			G.abilities[id].persistent &&
+			(G.abilities[id].skill == "merchant" || G.abilities[id].skill == player.active_skill)
+		) {
 			player.last[id] = player.p.dt[id] || new Date();
 			if ((G.abilities[id].cooldown || G.abilities[id].reuse_cooldown) > mssince(player.last[id])) {
 				player.hitchhikers.push([
 					"eval",
 					{
 						code:
-							"skill_timeout('" +
+							"ability_timeout('" +
 							id +
 							"'," +
 							((G.abilities[id].cooldown || G.abilities[id].reuse_cooldown) - mssince(player.last[id])) +
@@ -3729,8 +3724,8 @@ function init_player(player) {
 		}
 	}
 	if (!player.skin || !T[player.skin]) {
-		player.skin = class_def.looks[0][0];
-		player.cx = clone(class_def.looks[0][1]);
+		player.skin = G.character.appearances[0][0];
+		player.cx = clone(G.character.appearances[0][1]);
 	}
 	prune_cx(player.cx || {});
 	if (!player.p.acx) {

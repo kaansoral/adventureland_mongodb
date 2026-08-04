@@ -541,6 +541,11 @@ function publishProgressionData(target, progressionData) {
 	return attachProgressionData(target, progressionData);
 }
 
+function replaceProgressionData(target, progressionData) {
+	const next = Object.isFrozen(progressionData && progressionData.skills) ? progressionData : buildProgressionData(progressionData);
+	return publishProgressionData({ ...target }, next);
+}
+
 module.exports = {
 	SKILL_IDS,
 	COMBAT_SKILL_IDS,
@@ -559,5 +564,6 @@ module.exports = {
 	buildProgressionData,
 	attachProgressionData,
 	publishProgressionData,
+	replaceProgressionData,
 	buildWeaponOwners,
 };

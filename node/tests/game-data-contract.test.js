@@ -11,7 +11,7 @@ const {
 	buildProgressionData,
 	buildWeaponOwners,
 	normalizeItems,
-	publishProgressionData,
+	replaceProgressionData,
 	validateCharacterDefinition,
 	validateItemRequirements,
 	validateProgressionData,
@@ -223,13 +223,24 @@ test("raw tier, owner, override, and hybrid sources independently produce final 
 		weaponowner: ["spear", 1.25, [{ skill: "warrior", level: 10 }]],
 		offhandowner: ["shield", 2, [{ skill: "paladin", level: 40 }]],
 		toolowner: ["rod", 1, [{ skill: "merchant", level: 16 }]],
-		hybrid: ["fury", 1.5, [
-			{ skill: "warrior", level: 20 },
-			{ skill: "paladin", level: 20 },
-			{ skill: "ranger", level: 20 },
-			{ skill: "rogue", level: 20 },
-		]],
-		curatedhybrid: ["starkillers", 3, [{ skill: "mage", level: 80 }, { skill: "priest", level: 80 }]],
+		hybrid: [
+			"fury",
+			1.5,
+			[
+				{ skill: "warrior", level: 20 },
+				{ skill: "paladin", level: 20 },
+				{ skill: "ranger", level: 20 },
+				{ skill: "rogue", level: 20 },
+			],
+		],
+		curatedhybrid: [
+			"starkillers",
+			3,
+			[
+				{ skill: "mage", level: 80 },
+				{ skill: "priest", level: 80 },
+			],
+		],
 	};
 	for (const [, [itemId, tier, expected]] of Object.entries(cases)) {
 		assert.equal(raw.items[itemId].tier, tier, itemId);
@@ -344,13 +355,17 @@ test("progression validators reject every special-contract regression with diagn
 	);
 	assert.throws(
 		() => validateRequirements("unknown_requirement", [{ skill: "missing", level: 1 }], data.skills),
-		(error) => error.code === "invalid_equipment_requirements" && error.item === "unknown_requirement" && error.skill === "missing",
+		(error) =>
+			error.code === "invalid_equipment_requirements" &&
+			error.item === "unknown_requirement" &&
+			error.skill === "missing",
 	);
 	const mismatchedRequirements = plain(data.items);
 	mismatchedRequirements.helmet.requirements[0].level = 2;
 	assert.throws(
 		() => validateItemRequirements(mismatchedRequirements, plain(data.item_requirements), data.skills, ownerMap),
-		(error) => error.code === "invalid_game_data" && error.item === "helmet" && /normalized snapshot/.test(error.message),
+		(error) =>
+			error.code === "invalid_game_data" && error.item === "helmet" && /normalized snapshot/.test(error.message),
 	);
 	const legacyClass = plain(data.items);
 	legacyClass.helmet.class = ["warrior"];
@@ -358,7 +373,13 @@ test("progression validators reject every special-contract regression with diagn
 		() => validateItemRequirements(legacyClass, plain(data.item_requirements), data.skills, ownerMap),
 		(error) => error.code === "invalid_game_data" && error.item === "helmet" && /Legacy class/.test(error.message),
 	);
-	for (const [field, value] of [["int", 15], ["dex", 16], ["compound", { int: 5 }], ["damage_type", "physical"], ["projectile", "magic"]]) {
+	for (const [field, value] of [
+		["int", 15],
+		["dex", 16],
+		["compound", { int: 5 }],
+		["damage_type", "physical"],
+		["projectile", "magic"],
+	]) {
 		const badBook = plain(data.items);
 		if (field === "compound") badBook.wbookhs.compound = value;
 		else badBook.wbookhs[field] = value;
@@ -462,7 +483,7 @@ test("every equippable item has the explicit all-of requirement snapshot", () =>
 	assert.ok(data.items.wbookhs.compound);
 	assert.deepEqual(plain(data.item_requirements.wbookhs), [{ skill: "priest", level: 40 }]);
 	const independentRequirementMatrix = {
-		"helmet": [{ skill: "warrior", level: 1 }],
+		helmet: [{ skill: "warrior", level: 1 }],
 		spear: [{ skill: "warrior", level: 10 }],
 		xmashat: [{ skill: "merchant", level: 20 }],
 		weaver: [{ skill: "ranger", level: 30 }],
@@ -624,7 +645,7 @@ test("production loaders validate progression data before publishing it", () => 
 	const server = fs.readFileSync(path.join(designRoot, "../node/server.js"), "utf8");
 	assert.match(main, /buildProgressionData\(\{/);
 	assert.equal((server.match(/const progression_data = buildProgressionData\(\{/g) || []).length, 2);
-	assert.ok(server.indexOf("buildProgressionData") < server.indexOf("G = publishProgressionData"));
+	assert.ok(server.indexOf("buildProgressionData") < server.indexOf("G = replaceProgressionData"));
 	const executeBuilderStatement = (statement, raw) => {
 		const context = {
 			buildProgressionData,
@@ -640,7 +661,10 @@ test("production loaders validate progression data before publishing it", () => 
 		return context.progression_data;
 	};
 	const raw = loadRaw();
-	const rootBuilt = executeBuilderStatement(extractBuilderStatement(main, "var progression_data = buildProgressionData({"), raw);
+	const rootBuilt = executeBuilderStatement(
+		extractBuilderStatement(main, "var progression_data = buildProgressionData({"),
+		raw,
+	);
 	const serverStatements = [...server.matchAll(/const progression_data = buildProgressionData\(\{/g)].map((match) =>
 		extractBuilderStatement(server, "const progression_data = buildProgressionData({", match.index),
 	);
@@ -691,9 +715,9 @@ test("production loaders validate progression data before publishing it", () => 
 			}),
 		(error) => error.code === "invalid_game_data" && error.item === "broken_weapon" && error.weapon_type === "unknown",
 	);
-	const rootLoader = (source) => publishProgressionData({ loader: "root" }, buildProgressionData(source));
-	const backendInitLoader = (source) => publishProgressionData({ loader: "backend-init" }, buildProgressionData(source));
-	const backendReloadLoader = (source) => publishProgressionData({ loader: "backend-reload" }, buildProgressionData(source));
+	const rootLoader = (source) => replaceProgressionData({ loader: "root" }, source);
+	const backendInitLoader = (source) => replaceProgressionData({ loader: "backend-init" }, source);
+	const backendReloadLoader = (source) => replaceProgressionData({ loader: "backend-reload" }, source);
 	const rootPublication = rootLoader(loadRaw());
 	const backendInitPublication = backendInitLoader(loadRaw());
 	const backendReloadPublication = backendReloadLoader(loadRaw());
@@ -713,8 +737,8 @@ test("production loaders validate progression data before publishing it", () => 
 		(error) => error.code === "invalid_game_data" && error.item === "missing",
 	);
 	assert.throws(
-		() => publishProgressionData(backendReloadPublication, invalidSource),
-		(error) => error.code === "invalid_game_data" && /validated progression/.test(error.message),
+		() => replaceProgressionData(backendReloadPublication, invalidSource),
+		(error) => error.code === "invalid_game_data",
 	);
 	assert.deepEqual(plain(backendReloadPublication), previousPublication);
 	assert.strictEqual(backendReloadPublication.skills, previousPublishedSkills);
@@ -748,21 +772,27 @@ test("the closed progression consumer inventory has no legacy skill lookups", ()
 		"docs/EXAMPLES.html",
 		"docs/directory.js",
 	];
-	const expectedProgressionRefs = { "htmls/index.html": 1, "htmls/contents/keymap_guide.html": 3, "docs/articles/7-using-skills.html": 3 };
+	const expectedProgressionRefs = { "htmls/index.html": 1 };
 	const expectedAbilityRefs = {
 		"node/server.js": 36,
-		"node/server_functions.js": 18,
+		"node/server_functions.js": 19,
 		"js/functions.js": 20,
 		"js/html.js": 29,
 		"js/runner_compat.js": 4,
 		"js/runner_functions.js": 14,
 		"utility/htmls/imagesets/selector.html": 2,
+		"htmls/contents/keymap_guide.html": 3,
+		"docs/articles/7-using-skills.html": 3,
 	};
 	const allowlistedLegacyReads = { "js/html.js": 10, "node/server.js": 2 };
 	let abilityReferences = 0;
 	for (const relativePath of inventory) {
 		const source = fs.readFileSync(path.join(designRoot, "..", relativePath), "utf8");
-		assert.equal((source.match(/\bG\.skills\b/g) || []).length, expectedProgressionRefs[relativePath] || 0, relativePath);
+		assert.equal(
+			(source.match(/\bG\.skills\b/g) || []).length,
+			expectedProgressionRefs[relativePath] || 0,
+			relativePath,
+		);
 		assert.doesNotMatch(source, /\bG\s*\[\s*["']skills["']\s*\]/, relativePath);
 		assert.doesNotMatch(source, /\bG\s*\[\s*["']abilities["']\s*\]/, relativePath);
 		assert.doesNotMatch(source, /\b(?:const|let|var)\s+\w+\s*=\s*G\s*\[\s*[^\]]+\s*\]/, relativePath);

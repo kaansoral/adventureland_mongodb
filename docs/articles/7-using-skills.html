@@ -1,5 +1,5 @@
-<p>In Code, skills are referenced by their keys from: <span class='jlabel' onclick="code_eval('show_json('+$(this).html()+')')">G.skills</span></p>
-<p>One example is <span class='dlabel'>"supershot"</span> you can check out: <span class='jlabel' onclick="code_eval('show_json('+$(this).html()+')')">G.skills.supershot</span></p>
+<p>In Code, abilities are referenced by their keys from: <span class='jlabel' onclick="code_eval('show_json('+$(this).html()+')')">G.abilities</span></p>
+<p>One example is <span class='dlabel'>"supershot"</span> you can check out: <span class='jlabel' onclick="code_eval('show_json('+$(this).html()+')')">G.abilities.supershot</span></p>
 
 <div class='code'>
 // Going Invis with a Rogue
@@ -11,7 +11,7 @@ use_skill("mluck",get_player("LuckyCharacter"));
 // Using Supershot with a Ranger
 var target=get_nearest_monster();
 if(is_in_range(target,"supershot") && !is_on_cooldown("supershot")
-	&& character.mp>=G.skills.supershot.mp)
+	&& character.mp>=G.abilities.supershot.mp)
 	use_skill("supershot",target);
 // Checks if a target is in "supershot" range, makes sure "supershot" isn't on cooldown and character has enough mana
 </div>

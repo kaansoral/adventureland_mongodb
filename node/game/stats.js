@@ -167,7 +167,7 @@ function calculateStats({
 	previousMp = null,
 	deathSickness = false,
 	worldEffects = null,
-	}) {
+}) {
 	const stats = baseStats();
 	stats._item_attack = 0;
 	stats.xluck = 0;
@@ -186,8 +186,12 @@ function calculateStats({
 		if (definition.ability) {
 			stats.abilities[definition.ability] = {
 				...(stats.abilities[definition.ability] || {}),
-				attr0: (stats.abilities[definition.ability] && stats.abilities[definition.ability].attr0 || 0) + (property.attr0 || 0),
-				attr1: (stats.abilities[definition.ability] && stats.abilities[definition.ability].attr1 || 0) + (property.attr1 || 0),
+				attr0:
+					((stats.abilities[definition.ability] && stats.abilities[definition.ability].attr0) || 0) +
+					(property.attr0 || 0),
+				attr1:
+					((stats.abilities[definition.ability] && stats.abilities[definition.ability].attr1) || 0) +
+					(property.attr1 || 0),
 			};
 		}
 		if (definition.aura) stats.auras[definition.aura] = { attr0: property.attr0 || 0, attr1: property.attr1 || 0 };
@@ -197,7 +201,13 @@ function calculateStats({
 	applyConditionProperties(stats, conditions, conditionDefinitions);
 
 	if (main && resolvedActiveSkill) {
-		if (slots.offhand && items[slots.offhand.name] && main.wtype === "stars" && items[slots.offhand.name].wtype !== "stars") stats._item_attack /= 3;
+		if (
+			slots.offhand &&
+			items[slots.offhand.name] &&
+			main.wtype === "stars" &&
+			items[slots.offhand.name].wtype !== "stars"
+		)
+			stats._item_attack /= 3;
 		const itemAttack = stats._item_attack;
 		if (resolvedActiveSkill === "warrior" || resolvedActiveSkill === "ranger" || resolvedActiveSkill === "rogue") {
 			const primary = resolvedActiveSkill === "warrior" ? stats.str : stats.dex;

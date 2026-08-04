@@ -31,12 +31,20 @@ function authorizeAbility({
 	const name = abilityId || (definition && definition.name) || "unknown";
 	if (!definition) throw accessError("unknown_ability", `Unknown ability ${name}`, { ability: name });
 	const currentSkill = activeSkill === undefined ? deriveActiveSkill(slots, items) : activeSkill;
-	if (standOpen && (definition.applicability === "active_combat" || (definition.applicability === "skill" && COMBAT_SKILL_IDS.includes(definition.skill)))) {
+	if (
+		standOpen &&
+		(definition.applicability === "active_combat" ||
+			(definition.applicability === "skill" && COMBAT_SKILL_IDS.includes(definition.skill)))
+	) {
 		throw accessError("stand_open", "Combat is unavailable while the trading stand is open", { action: name });
 	}
 	if (definition.applicability === "active_combat") {
 		if (!currentSkill) throw accessError("no_active_skill", "A combat weapon is required", { ability: name });
-	} else if (definition.applicability === "skill" && COMBAT_SKILL_IDS.includes(definition.skill) && currentSkill !== definition.skill) {
+	} else if (
+		definition.applicability === "skill" &&
+		COMBAT_SKILL_IDS.includes(definition.skill) &&
+		currentSkill !== definition.skill
+	) {
 		throw accessError("wrong_active_skill", "The equipped weapon does not own this ability", {
 			ability: name,
 			required: definition.skill,
@@ -58,7 +66,10 @@ function authorizeAbility({
 		throw accessError("ability_item_required", "The ability item gate failed", { ability: name });
 	}
 	if (cooldown && lastUse && now - lastUse < cooldown) {
-		throw accessError("ability_on_cooldown", "The ability is cooling down", { ability: name, ms: cooldown - (now - lastUse) });
+		throw accessError("ability_on_cooldown", "The ability is cooling down", {
+			ability: name,
+			ms: cooldown - (now - lastUse),
+		});
 	}
 	return { ability: name, active_skill: currentSkill, skill: definition.skill || currentSkill, authorized: true };
 }

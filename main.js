@@ -1,6 +1,6 @@
 var fs = require("fs"),
 	path = require("path");
-var { buildProgressionData, publishProgressionData } = require("./node/game/skill_domain");
+var { buildProgressionData, replaceProgressionData } = require("./node/game/skill_domain");
 var keys = require("./secretsandconfig/keys");
 var options = require("./secretsandconfig/options");
 
@@ -317,7 +317,7 @@ app.all("/data.js", async (req, res, next) => {
 		var map = await rpc[id];
 		if (map) geometry[id] = map.info.data;
 	}
-	var G = publishProgressionData(
+	var G = replaceProgressionData(
 		{
 			version: Version,
 			achievements: achievements,

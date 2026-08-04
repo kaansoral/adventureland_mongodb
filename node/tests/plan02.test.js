@@ -29,8 +29,16 @@ const items = {
 	helmet: item("helmet", null, { armor: 5 }),
 };
 
-const requirements = Object.fromEntries(Object.keys(items).map((id) => [id, [{ skill: id === "rod" || id === "pickaxe" ? "merchant" : "warrior", level: 1 }]]));
-requirements.mace = [{ skill: "paladin", level: 2 }, { skill: "warrior", level: 1 }];
+const requirements = Object.fromEntries(
+	Object.keys(items).map((id) => [
+		id,
+		[{ skill: id === "rod" || id === "pickaxe" ? "merchant" : "warrior", level: 1 }],
+	]),
+);
+requirements.mace = [
+	{ skill: "paladin", level: 2 },
+	{ skill: "warrior", level: 1 },
+];
 requirements.greatsword = [{ skill: "warrior", level: 1 }];
 requirements.shield = [{ skill: "paladin", level: 1 }];
 
@@ -39,9 +47,18 @@ test("character state is complete, ordered, derived, and rejects legacy shape", 
 	assert.deepEqual(Object.keys(fresh.skills), ["warrior", "paladin", "mage", "priest", "ranger", "rogue", "merchant"]);
 	assert.equal(fresh.total_level, 7);
 	assert.deepEqual(projectPersistenceState(fresh), { info: { skills: fresh.skills }, total_level: 7 });
-	assert.throws(() => validateSkillState({ warrior: { level: 1, xp: 0 } }), (error) => error.code === "invalid_character_skill_state");
-	assert.throws(() => validateSkillState({ ...fresh.skills, warrior: { level: 2, xp: 0 } }), (error) => error.code === "invalid_character_skill_state");
-	assert.throws(() => validateSkillState({ ...fresh.skills, rogue: { level: 1, xp: 0 }, old: { level: 1, xp: 0 } }), (error) => error.code === "invalid_character_skill_state");
+	assert.throws(
+		() => validateSkillState({ warrior: { level: 1, xp: 0 } }),
+		(error) => error.code === "invalid_character_skill_state",
+	);
+	assert.throws(
+		() => validateSkillState({ ...fresh.skills, warrior: { level: 2, xp: 0 } }),
+		(error) => error.code === "invalid_character_skill_state",
+	);
+	assert.throws(
+		() => validateSkillState({ ...fresh.skills, rogue: { level: 1, xp: 0 }, old: { level: 1, xp: 0 } }),
+		(error) => error.code === "invalid_character_skill_state",
+	);
 });
 
 test("active skill maps every combat profile and excludes tools and empty hands", () => {
@@ -57,7 +74,10 @@ test("equipment validates all requirements and atomically displaces incompatible
 	const advanced = structuredClone(skills);
 	advanced.paladin.level = 2;
 	const transaction = planEquipmentTransaction({
-		player: { slots: { mainhand: { name: "blade" }, offhand: { name: "shield" } }, items: [{ name: "greatsword" }, null] },
+		player: {
+			slots: { mainhand: { name: "blade" }, offhand: { name: "shield" } },
+			items: [{ name: "greatsword" }, null],
+		},
 		item: { name: "greatsword" },
 		itemIndex: 0,
 		slot: "mainhand",
@@ -67,14 +87,36 @@ test("equipment validates all requirements and atomically displaces incompatible
 	});
 	assert.equal(transaction.slots.mainhand.name, "greatsword");
 	assert.equal(transaction.slots.offhand, null);
-	assert.deepEqual(transaction.items.filter(Boolean).map((entry) => entry.name).sort(), ["blade", "shield"]);
+	assert.deepEqual(
+		transaction.items
+			.filter(Boolean)
+			.map((entry) => entry.name)
+			.sort(),
+		["blade", "shield"],
+	);
 	assert.equal(transaction.active_skill, "warrior");
 	assert.throws(
-		() => planEquipmentTransaction({ player: { slots: {}, items: [{ name: "mace" }] }, item: { name: "mace" }, itemIndex: 0, items, itemRequirements: requirements, skills }),
+		() =>
+			planEquipmentTransaction({
+				player: { slots: {}, items: [{ name: "mace" }] },
+				item: { name: "mace" },
+				itemIndex: 0,
+				items,
+				itemRequirements: requirements,
+				skills,
+			}),
 		(error) => error.code === "skill_level_required" && error.skill === "paladin",
 	);
 	assert.throws(
-		() => planEquipmentTransaction({ player: { slots: {}, items: [{ name: "blade" }] }, item: { name: "mace" }, itemIndex: 0, items, itemRequirements: requirements, skills: advanced }),
+		() =>
+			planEquipmentTransaction({
+				player: { slots: {}, items: [{ name: "blade" }] },
+				item: { name: "mace" },
+				itemIndex: 0,
+				items,
+				itemRequirements: requirements,
+				skills: advanced,
+			}),
 		(error) => error.code === "inventory_item_changed",
 	);
 });
@@ -82,30 +124,79 @@ test("equipment validates all requirements and atomically displaces incompatible
 test("ability access is active-style aware, preserves cooldown state, and permits Merchant utilities", () => {
 	const character = { skills };
 	assert.throws(
-		() => authorizeAbility({ abilityId: "attack", ability: { applicability: "active_combat" }, character, slots: {}, items }),
+		() =>
+			authorizeAbility({
+				abilityId: "attack",
+				ability: { applicability: "active_combat" },
+				character,
+				slots: {},
+				items,
+			}),
 		(error) => error.code === "no_active_skill",
 	);
 	assert.throws(
-		() => authorizeAbility({ abilityId: "smash", ability: { applicability: "skill", skill: "warrior", level: 1 }, character, activeSkill: "paladin" }),
+		() =>
+			authorizeAbility({
+				abilityId: "smash",
+				ability: { applicability: "skill", skill: "warrior", level: 1 },
+				character,
+				activeSkill: "paladin",
+			}),
 		(error) => error.code === "wrong_active_skill",
 	);
-	assert.equal(authorizeAbility({ abilityId: "fish", ability: { applicability: "skill", skill: "merchant", level: 1 }, character, activeSkill: "warrior" }).authorized, true);
+	assert.equal(
+		authorizeAbility({
+			abilityId: "fish",
+			ability: { applicability: "skill", skill: "merchant", level: 1 },
+			character,
+			activeSkill: "warrior",
+		}).authorized,
+		true,
+	);
 	assert.throws(
-		() => authorizeAbility({ abilityId: "attack", ability: { applicability: "active_combat" }, character, activeSkill: "warrior", standOpen: true }),
+		() =>
+			authorizeAbility({
+				abilityId: "attack",
+				ability: { applicability: "active_combat" },
+				character,
+				activeSkill: "warrior",
+				standOpen: true,
+			}),
 		(error) => error.code === "stand_open",
 	);
 	assert.throws(
-		() => authorizeAbility({ abilityId: "attack", ability: { applicability: "active_combat" }, character, activeSkill: "warrior", now: 100, lastUse: 90, cooldown: 20 }),
+		() =>
+			authorizeAbility({
+				abilityId: "attack",
+				ability: { applicability: "active_combat" },
+				character,
+				activeSkill: "warrior",
+				now: 100,
+				lastUse: 90,
+				cooldown: 20,
+			}),
 		(error) => error.code === "ability_on_cooldown",
 	);
 });
 
 test("style-bound effects are tagged and invalidated idempotently", () => {
 	const effect = tagStyleEffect({ name: "warcry" }, { sourceCharacterId: "CH1", sourceSkill: "warrior" });
-	const result = invalidateStyleEffects([effect, { name: "poison", style_bound: false, source_character_id: "CH1", source_skill: "warrior" }], { sourceCharacterId: "CH1", previousSkill: "warrior" });
-	assert.deepEqual(result.removed.map((entry) => entry.name), ["warcry"]);
-	assert.deepEqual(result.kept.map((entry) => entry.name), ["poison"]);
-	assert.equal(invalidateStyleEffects(result.kept, { sourceCharacterId: "CH1", previousSkill: "warrior" }).removed.length, 0);
+	const result = invalidateStyleEffects(
+		[effect, { name: "poison", style_bound: false, source_character_id: "CH1", source_skill: "warrior" }],
+		{ sourceCharacterId: "CH1", previousSkill: "warrior" },
+	);
+	assert.deepEqual(
+		result.removed.map((entry) => entry.name),
+		["warcry"],
+	);
+	assert.deepEqual(
+		result.kept.map((entry) => entry.name),
+		["poison"],
+	);
+	assert.equal(
+		invalidateStyleEffects(result.kept, { sourceCharacterId: "CH1", previousSkill: "warrior" }).removed.length,
+		0,
+	);
 });
 
 test("gear-only stats match the six starter golden inputs and ignore skill level", () => {
@@ -125,7 +216,13 @@ test("gear-only stats match the six starter golden inputs and ignore skill level
 		assert.equal(result.heal, heal, id);
 		assert.equal(result.damage_type, WEAPON_PROFILES[items[id].wtype].damage_type, id);
 		assert.equal(skill, WEAPON_PROFILES[items[id].wtype].skill);
-		const higher = calculateStats({ slots: { mainhand: { name: id } }, items, conditions: {}, previousHp: 1, previousMp: 1 });
+		const higher = calculateStats({
+			slots: { mainhand: { name: id } },
+			items,
+			conditions: {},
+			previousHp: 1,
+			previousMp: 1,
+		});
 		assert.equal(higher.attack, attack, `${id} skill-independent`);
 	}
 	const noWeapon = calculateStats({ slots: {}, items });
