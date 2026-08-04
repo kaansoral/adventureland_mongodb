@@ -18,7 +18,7 @@ var Local = options.Local;
 var Prod = options.Prod;
 var Staging = options.Staging;
 const express = require("express");
-const { buildProgressionData, loadProgressionPublication } = require("./game/skill_domain");
+const { buildProgressionData, loadProgressionPublication, SKILL_IDS, MAX_LEVEL, cumulativeXp } = require("./game/skill_domain");
 const { progression } = require("../design/progression");
 const { createCharacterState } = require("./game/character_state");
 const { WEAPON_PROFILES, deriveActiveSkill, weaponProfile } = require("./game/active_skill");
@@ -782,12 +782,21 @@ function player_to_server(player, place) {
 
 function player_to_client(player, stranger) {
 	var data = {};
+	var skills = {};
+	for (var i = 0; i < SKILL_IDS.length; i++) {
+		var skill = SKILL_IDS[i];
+		var progress = (player.skills && player.skills[skill]) || { level: 1, xp: 0 };
+		skills[skill] = {
+			level: progress.level,
+			xp: progress.xp,
+			max_xp: progress.level >= MAX_LEVEL ? null : (G.skill_xp && G.skill_xp[progress.level + 1]) || cumulativeXp(progress.level + 1),
+		};
+	}
 	[
 		"hp",
 		"max_hp",
 		"mp",
 		"max_mp",
-		"xp",
 		"attack",
 		"heal",
 		"frequency",
@@ -795,7 +804,6 @@ function player_to_client(player, stranger) {
 		"range",
 		"armor",
 		"resistance",
-		"level",
 		"party",
 		"rip",
 		"npc",
@@ -843,13 +851,14 @@ function player_to_client(player, stranger) {
 	data.skin = player.tskin || player.skin;
 	data.cx = player.tcx || player.cx;
 	data.slots = player.cslots;
-	data.skills = player.skills;
+	data.protocol = 3;
+	data.skills = skills;
 	data.active_skill = player.active_skill || null;
 	data.total_level = player.total_level;
+	data.death_sickness_until = (player.info && player.info.death_sickness_until) || null;
 	if (player.tp) {
 		data.tp = true;
 	}
-	data.ctype = player.type;
 	data.owner = (!player.private && player.owner) || "";
 
 	if (player.is_npc) {
@@ -870,7 +879,6 @@ function player_to_client(player, stranger) {
 			"for",
 			"mp_cost",
 			"mp_reduction",
-			"max_xp",
 			"goldm",
 			"xpm",
 			"luckm",
@@ -3794,12 +3802,12 @@ function transport_player_to(player, name, point, effect) {
 	if (0 && !effect && mssince(player.last.transport) > 6000) {
 		var ms = max(0, -mssince(player.last.attack)) + 3200;
 		var EV = "";
-		EV = "skill_timeout('attack'," + ms + "); ";
+		EV = "ability_timeout('attack'," + ms + "); ";
 		player.last.attack = future_ms(ms);
 		for (var i in player.last) {
 			if (G.abilities[i] && player.last[i] > future_ms(-3000)) {
 				player.last[i] = future_ms(3200);
-				EV += "skill_timeout('" + i + "'," + (3200 + (G.abilities[i].cooldown || 0)) + "); ";
+				EV += "ability_timeout('" + i + "'," + (3200 + (G.abilities[i].cooldown || 0)) + "); ";
 			}
 		}
 	}
@@ -8318,7 +8326,7 @@ function init_io() {
 					}
 					player.last_ethereal = new Date();
 					player.s.ethereal = { ms: 5000 };
-					socket.emit("eval", { code: "skill_timeout('ethereal',120)" });
+					socket.emit("eval", { code: "ability_timeout('ethereal',120)" });
 					return resend(player, "u+cid");
 				} else if (item.name == "angelwings") {
 					if (player.tskin == "snow_angel") {
@@ -8494,7 +8502,7 @@ function init_io() {
 			}
 			xy_emit(player, "emotion", { name: data.name, player: player.name });
 		});
-		socket.on("skill", function (data) {
+		socket.on("ability", function (data) {
 			const player = players[socket.id];
 			if (!player) {
 				return;
@@ -14221,8 +14229,9 @@ function sync_entity(entity, data) {
 	entity.info.in = data.in;
 	entity.info.skills = data.skills;
 	entity.total_level = data.total_level;
+	entity.info.active_skill = data.active_skill || null;
 	entity.info.merchant_accrual = data.info && data.info.merchant_accrual;
-	entity.info.death_sickness_until = (data.info && data.info.death_sickness_until) || null;
+	entity.info.death_sickness_until = data.death_sickness_until || (data.info && data.info.death_sickness_until) || null;
 	entity.info.hp = data["hp"];
 	entity.info.mp = data["mp"];
 	entity.info.gold = data["gold"];

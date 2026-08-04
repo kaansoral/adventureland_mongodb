@@ -2869,12 +2869,12 @@ function consume_skill(player, name, reuse) {
 		return;
 	}
 	player.last[name] = future_ms(min(penalty_cd, 10000) + cooldown * (multiplier - 1));
-	player.socket.emit("skill_timeout", {
+	player.socket.emit("ability_timeout", {
 		name: name,
 		ms: min(penalty_cd, 10000) + cooldown * multiplier,
 		penalty: min(penalty_cd, 10000),
 	});
-	// player.socket.emit("eval",{code:"skill_timeout('"+name+"',"+(min(penalty_cd,10000)+cooldown*multiplier)+")"});
+	// player.socket.emit("eval",{code:"ability_timeout('"+name+"',"+(min(penalty_cd,10000)+cooldown*multiplier)+")"});
 }
 
 function get_entity(name) {

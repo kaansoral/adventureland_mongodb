@@ -427,6 +427,8 @@ async function create_character_api(args) {
 				private: false,
 				info: {
 					skills: fresh.skills,
+					active_skill: null,
+					death_sickness_until: null,
 					characterth: A.characterth,
 					name: A.name,
 					gold: 0,
@@ -556,7 +558,7 @@ async function rename_character_api(args) {
 	else if (nname.length === 3) price = 24000;
 	else if (nname.length === 4) price = 2400;
 	else {
-		if (!gf(character, "last_rename", null) && (character.level < 60 || hsince(character.created) < 72)) price = 0;
+		if (!gf(character, "last_rename", null) && (character.total_level < 60 || hsince(character.created) < 72)) price = 0;
 		price = 640;
 	}
 	if (user.cash < price) return { failed: true, reason: "not_enough_shells" };
@@ -610,7 +612,7 @@ async function quote_name_api(args) {
 	else if (nname.length === 3) price = 24000;
 	else if (nname.length === 4) price = 2400;
 	else {
-		if (character && !gf(character, "last_rename", null) && (character.level < 60 || hsince(character.created) < 72)) price = 0;
+		if (character && !gf(character, "last_rename", null) && (character.total_level < 60 || hsince(character.created) < 72)) price = 0;
 		price = 640;
 	}
 	args.res.infs.push({ type: "eval", code: "show_alert('Costs " + to_pretty_num(price) + " shells')" });
@@ -810,8 +812,8 @@ async function pull_friends_api(args) {
 		if (character.private) continue;
 		var friend = {
 			name: character.info.name || character.name,
-			level: character.level,
-			type: character.type,
+			total_level: character.total_level,
+			active_skill: gf(character, "active_skill", character.info.active_skill || null),
 			afk: gf(character, "afk", false),
 			owner_name: gf(character, "owner_name"),
 			owner: character.owner,
@@ -835,8 +837,8 @@ async function pull_guild_api(args) {
 		if (character.private) continue;
 		var friend = {
 			name: character.info.name || character.name,
-			level: character.level,
-			type: character.type,
+			total_level: character.total_level,
+			active_skill: gf(character, "active_skill", character.info.active_skill || null),
 			afk: gf(character, "afk", false),
 			owner_name: gf(character, "owner_name"),
 			owner: character.owner,
@@ -853,13 +855,14 @@ async function pull_guild_api(args) {
 async function pull_merchants_api(args) {
 	var user = args.user;
 	var online_chars = [];
-	var online = await db.collection("character").find({ type: "merchant", online: true }).toArray();
+	var online = await db.collection("character").find({ online: true }).toArray();
 	for (var i = 0; i < online.length; i++) {
 		var character = online[i];
 		if (!gf(character, "p", 0) || !character.info.p.stand) continue;
 		var friend = {
 			name: character.info.name || character.name,
-			level: character.level,
+			total_level: character.total_level,
+			active_skill: gf(character, "active_skill", character.info.active_skill || "merchant"),
 			afk: gf(character, "afk", false),
 			skin: character.info.skin,
 			cx: gf(character, "cx", {}),
@@ -1466,8 +1469,7 @@ var REF = {
 		P: true,
 		U: true,
 		name: { type: "string" },
-		char: { type: "string" },
-		look: { type: "any", optional: true },
+		look: { type: "any" },
 	},
 	sort_characters: {
 		F: sort_characters_api,

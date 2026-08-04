@@ -402,8 +402,7 @@ async function get_domain(req, user) {
 	domain.pixi_filters_version = "2.6.0c0";
 	domain.interact_version = "1.2.6";
 	domain.gcs_bucket = "2dimages";
-	domain.gender_types = gender_types;
-	domain.character_types = character_types;
+	domain.character = character;
 	domain.screenshot = false;
 	domain.recording_mode = false;
 	domain.music_on = false;
@@ -615,6 +614,8 @@ function character_to_dict(character) {
 		name: character.info.name,
 		total_level: character.total_level,
 		skills: gf(character, "skills", character.info.skills || {}),
+		active_skill: gf(character, "active_skill", character.info.active_skill || null),
+		death_sickness_until: gf(character, "death_sickness_until", character.info.death_sickness_until || null),
 		online: 0,
 	};
 	if (character.online) {
@@ -655,6 +656,8 @@ function character_to_info(character, user, ip, guild) {
 		friends: character.friends,
 		total_level: character.total_level,
 		skills: gf(character, "skills", character.info.skills || {}),
+		active_skill: gf(character, "active_skill", character.info.active_skill || null),
+		death_sickness_until: gf(character, "death_sickness_until", character.info.death_sickness_until || null),
 		gold: character.info.gold,
 		items: character.info.items,
 		stats: character.info.stats,
@@ -706,6 +709,8 @@ function update_character(character, data, owner) {
 	character.info["in"] = data["in"];
 	if (data.skills) character.info.skills = data.skills;
 	if (data.total_level !== undefined) character.total_level = parseInt(data.total_level);
+	if (data.active_skill !== undefined) character.info.active_skill = data.active_skill;
+	if (data.death_sickness_until !== undefined) character.info.death_sickness_until = data.death_sickness_until;
 	character.info.hp = data.hp;
 	character.info.mp = data.mp;
 	character.info.gold = data.gold;

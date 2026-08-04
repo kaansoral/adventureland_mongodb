@@ -203,7 +203,9 @@ app.get("/merchants", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
 	domain.title = "All Online Merchants!";
-	var entities = await db.collection("character").find({ online: true, type: "merchant" }).toArray();
+	var entities = (await db.collection("character").find({ online: true }).toArray()).filter(
+		(entity) => entity.info && entity.info.p && entity.info.p.stand,
+	);
 	res.status(200).send(nunjucks.render("htmls/player.html", { domain: domain, characters: entities, merchants: true }));
 });
 
@@ -220,7 +222,7 @@ app.get("/character/:name/in/:region/:sname", async (req, res, next) => {
 		if (simplify_name(user_chars[i].name) === simplify_name(req.params.name)) {
 			domain.character_name = user_chars[i].name;
 			domain.url_character = user_chars[i].id;
-			level = user_chars[i].level;
+			level = user_chars[i].total_level;
 		}
 	}
 	for (var i = 0; i < servers.length; i++) {

@@ -39,18 +39,13 @@ env.addFilter("sshorten", function (name) {
 });
 
 env.addFilter("get_online_character", function (domain, key) {
-	var keys = { 1: null, 2: null, 3: null, 4: null, 5: null, merchant: null };
+	var keys = { 1: null, 2: null, 3: null, 4: null, 5: null };
 	var order = 1;
 	if (!domain || !domain.characters) return keys[key];
 	for (var i = 0; i < domain.characters.length; i++) {
 		var character = domain.characters[i];
 		if (!character.online) continue;
-		if (character.type == "merchant") {
-			keys["merchant"] = character;
-		} else {
-			keys[order] = character;
-			order++;
-		}
+		if (order <= 5) keys[order++] = character;
 	}
 	return keys[key];
 });
@@ -59,7 +54,7 @@ env.addFilter("is_user_newb", function (user) {
 	if (!user) return true;
 	var characters = gf(user, "characters", []);
 	for (var i = 0; i < characters.length; i++) {
-		if ((characters[i].level || 0) > 47) return false;
+		if ((characters[i].total_level || 0) > 47) return false;
 	}
 	return true;
 });
