@@ -1348,7 +1348,7 @@ var monsters={
 		"hide":true,
 		"immune":true,
 		"phresistance":35,
-		"name":"Mage","speed":24,"charge":84,"hp":5600000,"xp":1440000,"difficulty":0,"attack":2240,"damage_type":"magical","respawn":0,"gold":120000,"range":135,"frequency":1.46,"aggro":1.8,"rage":1.8,
+		"name":"Mage","speed":24,"charge":84,"hp":5600000,"xp":14400000,"difficulty":0,"attack":2240,"damage_type":"magical","respawn":0,"gold":120000,"range":135,"frequency":1.46,"aggro":1.8,"rage":1.8,
 		"armor":220,"resistance":360,
 		"slots":{"mainhand":{"name":"firestaff","level":13}},
 		"respawn_as":"xmagen",
