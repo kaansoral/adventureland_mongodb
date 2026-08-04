@@ -2,7 +2,7 @@
 
 const { worldError } = require("./world_schema");
 
-const SKILL_IDS = Object.freeze(["warrior", "paladin", "mage", "priest", "ranger", "rogue", "merchant"]);
+const { SKILL_IDS } = require("./skill_domain");
 
 function assertProtocol3Publication(publication) {
 	if (!publication || publication.protocol !== 3 || publication.classes || publication.levels) {

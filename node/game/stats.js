@@ -1,22 +1,11 @@
 "use strict";
 
 const { WEAPON_PROFILES, resolveMainhand } = require("./active_skill");
+const { EXPECTED_BASELINE } = require("./skill_domain");
 const { applySicknessMultiplier } = require("./death_sickness");
 
 const BASELINE = Object.freeze({
-	max_hp: 100,
-	max_mp: 100,
-	speed: 50,
-	frequency: 0.3,
-	inventory_size: 42,
-	attack: 0,
-	heal: 0,
-	armor: 0,
-	resistance: 0,
-	str: 0,
-	dex: 0,
-	int: 0,
-	vit: 0,
+	...EXPECTED_BASELINE,
 	piercing: 0,
 	crit: 0,
 	luck: 0,

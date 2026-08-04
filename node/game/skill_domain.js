@@ -1,66 +1,18 @@
 "use strict";
 
 const crypto = require("node:crypto");
+const { skills: DESIGN_SKILLS } = require("../../design/skills");
+const { character: CHARACTER_DEFINITION } = require("../../design/character");
 
-const SKILL_IDS = Object.freeze(["warrior", "paladin", "mage", "priest", "ranger", "rogue", "merchant"]);
-const SKILL_DEFINITIONS = Object.freeze({
-	warrior: Object.freeze({
-		name: "Warrior",
-		kind: "combat",
-		max_level: 99,
-		weapon_types: Object.freeze(["short_sword", "sword", "great_sword", "axe", "spear", "scythe"]),
-	}),
-	paladin: Object.freeze({
-		name: "Paladin",
-		kind: "combat",
-		max_level: 99,
-		weapon_types: Object.freeze(["hammer", "mace", "pmace", "basher"]),
-	}),
-	mage: Object.freeze({
-		name: "Mage",
-		kind: "combat",
-		max_level: 99,
-		weapon_types: Object.freeze(["staff", "great_staff", "wand", "wblade"]),
-	}),
-	priest: Object.freeze({
-		name: "Priest",
-		kind: "combat",
-		max_level: 99,
-		weapon_types: Object.freeze(["book"]),
-	}),
-	ranger: Object.freeze({
-		name: "Ranger",
-		kind: "combat",
-		max_level: 99,
-		weapon_types: Object.freeze(["bow", "crossbow", "dartgun"]),
-	}),
-	rogue: Object.freeze({
-		name: "Rogue",
-		kind: "combat",
-		max_level: 99,
-		weapon_types: Object.freeze(["fist", "dagger", "rapier", "stars"]),
-	}),
-	merchant: Object.freeze({ name: "Merchant", kind: "noncombat", max_level: 99 }),
-});
-const COMBAT_SKILL_IDS = Object.freeze(SKILL_IDS.slice(0, 6));
+const SKILL_IDS = Object.freeze(Object.keys(DESIGN_SKILLS));
+const SKILL_DEFINITIONS = DESIGN_SKILLS;
+const COMBAT_SKILL_IDS = Object.freeze(
+	SKILL_IDS.filter((id) => DESIGN_SKILLS[id] && DESIGN_SKILLS[id].kind === "combat"),
+);
 const MAX_LEVEL = 99;
 const MAX_XP = 900000000;
-const STARTER_WEAPONS = Object.freeze(["blade", "mace", "staff", "wbook0", "bow", "claw"]);
-const EXPECTED_BASELINE = Object.freeze({
-	max_hp: 100,
-	max_mp: 100,
-	speed: 50,
-	frequency: 0.3,
-	inventory_size: 42,
-	attack: 0,
-	heal: 0,
-	armor: 0,
-	resistance: 0,
-	str: 0,
-	dex: 0,
-	int: 0,
-	vit: 0,
-});
+const STARTER_WEAPONS = Object.freeze([...(CHARACTER_DEFINITION.starter?.weapons || [])]);
+const EXPECTED_BASELINE = Object.freeze({ ...(CHARACTER_DEFINITION.baseline || {}) });
 const EQUIPPABLE_TYPES = new Set([
 	"helmet",
 	"pants",
@@ -565,6 +517,8 @@ function loadProgressionPublication(target, progressionData) {
 module.exports = {
 	SKILL_IDS,
 	COMBAT_SKILL_IDS,
+	STARTER_WEAPONS,
+	EXPECTED_BASELINE,
 	MAX_LEVEL,
 	MAX_XP,
 	cumulativeXp,
