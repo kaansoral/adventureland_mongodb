@@ -442,7 +442,7 @@ async function create_character_api(args) {
 				a_rand: a_rand("character"),
 				realm: "main",
 				name: simplify_name(A.name),
-				total_level: fresh.total_level,
+				total_level: A.fresh.total_level,
 				worth: 0,
 				owner: get_id(A.user),
 				referrer: owner.referrer || "",
@@ -458,7 +458,7 @@ async function create_character_api(args) {
 				popularity: 0.0,
 				private: false,
 				info: {
-					skills: fresh.skills,
+					skills: A.fresh.skills,
 					death_sickness_until: null,
 					characterth: A.characterth,
 					name: A.name,
