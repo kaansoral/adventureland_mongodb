@@ -1,6 +1,6 @@
 var fs = require("fs"),
 	path = require("path");
-var { buildProgressionData, replaceProgressionData } = require("./node/game/skill_domain");
+var { buildProgressionData, loadProgressionPublication } = require("./node/game/skill_domain");
 var keys = require("./secretsandconfig/keys");
 var options = require("./secretsandconfig/options");
 
@@ -60,6 +60,7 @@ eval("" + fs.readFileSync(path.resolve(__dirname, "design/skills.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/skill_xp.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/abilities.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/character.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "design/progression.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/events.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/recipes.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/titles.js")));
@@ -317,7 +318,7 @@ app.all("/data.js", async (req, res, next) => {
 		var map = await rpc[id];
 		if (map) geometry[id] = map.info.data;
 	}
-	var G = replaceProgressionData(
+	var G = loadProgressionPublication(
 		{
 			version: Version,
 			achievements: achievements,
@@ -348,6 +349,7 @@ app.all("/data.js", async (req, res, next) => {
 			multipliers: multipliers,
 			docs: docs,
 			drops: drops,
+			progression: progression,
 		},
 		progression_data,
 	);

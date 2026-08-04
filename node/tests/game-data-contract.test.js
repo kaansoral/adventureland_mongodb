@@ -7,11 +7,10 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const {
-	attachProgressionData,
 	buildProgressionData,
 	buildWeaponOwners,
 	normalizeItems,
-	replaceProgressionData,
+	loadProgressionPublication,
 	validateCharacterDefinition,
 	validateItemRequirements,
 	validateProgressionData,
@@ -540,6 +539,8 @@ test("new ability catalog preserves every legacy definition and only changes own
 		delete newDefinition.skill;
 		delete oldDefinition.level;
 		delete newDefinition.level;
+		delete newDefinition.style_bound;
+		delete newDefinition.contribution;
 		assert.deepEqual(plain(newDefinition), plain(oldDefinition), id);
 	}
 	assert.equal(
@@ -645,7 +646,7 @@ test("production loaders validate progression data before publishing it", () => 
 	const server = fs.readFileSync(path.join(designRoot, "../node/server.js"), "utf8");
 	assert.match(main, /buildProgressionData\(\{/);
 	assert.equal((server.match(/const progression_data = buildProgressionData\(\{/g) || []).length, 2);
-	assert.ok(server.indexOf("buildProgressionData") < server.indexOf("G = replaceProgressionData"));
+	assert.ok(server.indexOf("buildProgressionData") < server.indexOf("G = loadProgressionPublication"));
 	const executeBuilderStatement = (statement, raw) => {
 		const context = {
 			buildProgressionData,
@@ -715,15 +716,82 @@ test("production loaders validate progression data before publishing it", () => 
 			}),
 		(error) => error.code === "invalid_game_data" && error.item === "broken_weapon" && error.weapon_type === "unknown",
 	);
-	const rootLoader = (source) => replaceProgressionData({ loader: "root" }, source);
-	const backendInitLoader = (source) => replaceProgressionData({ loader: "backend-init" }, source);
-	const backendReloadLoader = (source) => replaceProgressionData({ loader: "backend-reload" }, source);
-	const rootPublication = rootLoader(loadRaw());
-	const backendInitPublication = backendInitLoader(loadRaw());
-	const backendReloadPublication = backendReloadLoader(loadRaw());
-	assert.deepEqual(plain(backendInitPublication), { ...plain(rootPublication), loader: "backend-init" });
-	assert.deepEqual(plain(backendReloadPublication), { ...plain(rootPublication), loader: "backend-reload" });
+	const publicationContext = {
+		loadProgressionPublication,
+		progression_data: raw,
+		Version: 1,
+	};
+	for (const name of [
+		"achievements",
+		"animations",
+		"monsters",
+		"sprites",
+		"maps",
+		"geometry",
+		"npcs",
+		"tilesets",
+		"imagesets",
+		"sets",
+		"craft",
+		"titles",
+		"tokens",
+		"dismantle",
+		"conditions",
+		"cosmetics",
+		"emotions",
+		"projectiles",
+		"classes",
+		"dimensions",
+		"levels",
+		"positions",
+		"games",
+		"events",
+		"precomputed",
+		"multipliers",
+		"docs",
+		"drops",
+		"progression",
+	])
+		publicationContext[name] = {};
+	vm.createContext(publicationContext);
+	const extractPublicationStatement = (source, fromIndex = 0) => {
+		const start = source.indexOf("loadProgressionPublication(", fromIndex);
+		assert.notEqual(start, -1, "production publication call");
+		const end = source.indexOf(");", start) + 2;
+		assert.ok(end > start, "production publication statement");
+		const assignmentStart = source.lastIndexOf("G =", start);
+		return source.slice(assignmentStart === -1 ? start : assignmentStart, end);
+	};
+	const mainPublicationStatement = extractPublicationStatement(main);
+	const serverPublicationStatements = [...server.matchAll(/loadProgressionPublication\(/g)].map((match) =>
+		extractPublicationStatement(server, match.index),
+	);
+	assert.equal(serverPublicationStatements.length, 2);
+	const executePublication = (statement) => {
+		vm.runInContext(`${statement}; globalThis.__publication = G;`, publicationContext);
+		return publicationContext.__publication;
+	};
+	const executeTwice = (statement) => {
+		const first = executePublication(statement);
+		const second = executePublication(statement);
+		assert.deepEqual(plain(second), plain(first));
+		return second;
+	};
+	const rootPublication = executeTwice(mainPublicationStatement);
+	const backendInitPublication = executeTwice(serverPublicationStatements[0]);
+	const backendReloadPublication = executeTwice(serverPublicationStatements[1]);
+	const progressionProjection = (publication) =>
+		plain({
+			items: publication.items,
+			skills: publication.skills,
+			skill_xp: publication.skill_xp,
+			abilities: publication.abilities,
+			character: publication.character,
+		});
+	assert.deepEqual(progressionProjection(backendInitPublication), progressionProjection(rootPublication));
+	assert.deepEqual(progressionProjection(backendReloadPublication), progressionProjection(rootPublication));
 	assert.equal(Object.isFrozen(rootPublication.skills), true);
+	assert.equal(Object.isFrozen(rootPublication.items), true);
 	assert.equal(Object.isFrozen(rootPublication.abilities.attack), true);
 	assert.throws(() => {
 		rootPublication.abilities.attack.cooldown = 1;
@@ -737,7 +805,12 @@ test("production loaders validate progression data before publishing it", () => 
 		(error) => error.code === "invalid_game_data" && error.item === "missing",
 	);
 	assert.throws(
-		() => replaceProgressionData(backendReloadPublication, invalidSource),
+		() => loadProgressionPublication(backendReloadPublication, invalidSource),
+		(error) => error.code === "invalid_game_data",
+	);
+	const frozenMalformed = Object.freeze({ skills: Object.freeze({}) });
+	assert.throws(
+		() => loadProgressionPublication({}, frozenMalformed),
 		(error) => error.code === "invalid_game_data",
 	);
 	assert.deepEqual(plain(backendReloadPublication), previousPublication);
@@ -775,7 +848,7 @@ test("the closed progression consumer inventory has no legacy skill lookups", ()
 	const expectedProgressionRefs = { "htmls/index.html": 1 };
 	const expectedAbilityRefs = {
 		"node/server.js": 36,
-		"node/server_functions.js": 19,
+		"node/server_functions.js": 20,
 		"js/functions.js": 20,
 		"js/html.js": 29,
 		"js/runner_compat.js": 4,
@@ -784,7 +857,7 @@ test("the closed progression consumer inventory has no legacy skill lookups", ()
 		"htmls/contents/keymap_guide.html": 3,
 		"docs/articles/7-using-skills.html": 3,
 	};
-	const allowlistedLegacyReads = { "js/html.js": 10, "node/server.js": 2 };
+	const allowlistedLegacyReads = { "js/html.js": 10 };
 	let abilityReferences = 0;
 	for (const relativePath of inventory) {
 		const source = fs.readFileSync(path.join(designRoot, "..", relativePath), "utf8");

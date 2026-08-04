@@ -1,6 +1,7 @@
 "use strict";
 
 const { WEAPON_PROFILES, deriveActiveSkill, weaponProfile } = require("./active_skill");
+const { applySicknessMultiplier } = require("./death_sickness");
 
 const BASELINE = Object.freeze({
 	max_hp: 100,
@@ -231,9 +232,7 @@ function calculateStats({
 	stats.resistance += Math.min(stats.int, 180) + Math.max(stats.int - 180, 0) * 0.25;
 	stats.frequency += Math.min(stats.dex, 160) / 640 + Math.max(stats.dex - 160, 0) / 925 + stats.int / 1575;
 	if (worldEffects) mergeProperty(stats, worldEffects);
-	if (deathSickness) {
-		for (const key of ["attack", "heal", "max_hp", "max_mp", "armor", "resistance", "frequency"]) stats[key] *= 0.8;
-	}
+	Object.assign(stats, applySicknessMultiplier(stats, deathSickness));
 	stats.attack = Math.max(0, Math.round(stats.attack));
 	stats.heal = Math.max(0, Math.round(stats.heal));
 	stats.max_hp = Math.max(1, Math.round(stats.max_hp));

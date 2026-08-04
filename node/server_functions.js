@@ -3808,8 +3808,8 @@ function init_player_exit(player) {
 	for (var id in G.abilities) {
 		if (
 			G.abilities[id].applicability == "skill" &&
-			G.abilities[id].skill == player.type &&
 			G.abilities[id].persistent &&
+			(G.abilities[id].skill == "merchant" || G.abilities[id].skill == player.active_skill) &&
 			player.last[id]
 		) {
 			player.p.dt[id] = player.last[id];

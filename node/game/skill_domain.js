@@ -81,6 +81,7 @@ const EQUIPPABLE_TYPES = new Set([
 	"tool",
 ]);
 const NONCOMBAT_TOOL_TYPES = new Set(["rod", "pickaxe"]);
+const VALIDATED_PUBLICATION = Symbol("validated progression publication");
 const own = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 
 function fail(code, message, details) {
@@ -276,6 +277,21 @@ function validateAbilityCatalog(abilities, registry) {
 				definition.level > MAX_LEVEL
 			) {
 				throw fail("invalid_ability_catalog", `Invalid skill gate for ${id}`, { ability: id });
+			}
+		}
+		if (own(definition, "style_bound") && typeof definition.style_bound !== "boolean") {
+			throw fail("invalid_ability_catalog", `Invalid style-bound metadata for ${id}`, { ability: id });
+		}
+		if (own(definition, "contribution")) {
+			const contribution = definition.contribution;
+			if (
+				!contribution ||
+				!Number.isSafeInteger(contribution.weight_per_use) ||
+				contribution.weight_per_use <= 0 ||
+				!Number.isSafeInteger(contribution.max_weight_per_target_per_encounter) ||
+				contribution.max_weight_per_target_per_encounter < contribution.weight_per_use
+			) {
+				throw fail("invalid_ability_catalog", `Invalid contribution metadata for ${id}`, { ability: id });
 			}
 		}
 	}
@@ -519,31 +535,24 @@ function buildProgressionData(data) {
 		item_requirements: JSON.parse(JSON.stringify(data.item_requirements)),
 	};
 	validateProgressionData(normalized);
-	for (const field of ["skills", "skill_xp", "abilities", "character", "item_requirements"])
-		deepFreeze(normalized[field]);
+	Object.defineProperty(normalized, VALIDATED_PUBLICATION, { value: true });
+	deepFreeze(normalized);
 	return normalized;
 }
 
-function attachProgressionData(target, progressionData) {
-	return Object.assign(target, {
-		items: progressionData.items,
-		skills: progressionData.skills,
-		skill_xp: progressionData.skill_xp,
-		abilities: progressionData.abilities,
-		character: progressionData.character,
-	});
-}
-
-function publishProgressionData(target, progressionData) {
-	if (!progressionData || typeof progressionData !== "object" || !Object.isFrozen(progressionData.skills)) {
-		throw fail("invalid_game_data", "Only a validated progression publication may be attached");
-	}
-	return attachProgressionData(target, progressionData);
-}
-
-function replaceProgressionData(target, progressionData) {
-	const next = Object.isFrozen(progressionData && progressionData.skills) ? progressionData : buildProgressionData(progressionData);
-	return publishProgressionData({ ...target }, next);
+function loadProgressionPublication(target, progressionData) {
+	const next =
+		progressionData && progressionData[VALIDATED_PUBLICATION] ? progressionData : buildProgressionData(progressionData);
+	return Object.assign(
+		{ ...target },
+		{
+			items: next.items,
+			skills: next.skills,
+			skill_xp: next.skill_xp,
+			abilities: next.abilities,
+			character: next.character,
+		},
+	);
 }
 
 module.exports = {
@@ -562,8 +571,6 @@ module.exports = {
 	validateProgressionData,
 	normalizeItems,
 	buildProgressionData,
-	attachProgressionData,
-	publishProgressionData,
-	replaceProgressionData,
+	loadProgressionPublication,
 	buildWeaponOwners,
 };

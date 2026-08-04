@@ -18,12 +18,13 @@ var Local = options.Local;
 var Prod = options.Prod;
 var Staging = options.Staging;
 const express = require("express");
-const { buildProgressionData, replaceProgressionData } = require("./game/skill_domain");
+const { buildProgressionData, loadProgressionPublication } = require("./game/skill_domain");
 const { loadCharacterState, createCharacterState } = require("./game/character_state");
 const { WEAPON_PROFILES, deriveActiveSkill, weaponProfile } = require("./game/active_skill");
 const { planEquipmentTransaction, isCompatibleOffhand } = require("./game/equipment");
 const { authorizeAbility } = require("./game/ability_access");
 const { calculateStats } = require("./game/stats");
+const { invalidateConditions } = require("./game/style_effects");
 var fs = require("fs");
 var app = express(),
 	http_server = require("http").createServer(app);
@@ -386,6 +387,7 @@ async function init_game() {
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/skill_xp.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/abilities.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/character.js")));
+		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/progression.js")));
 		const progression_data = buildProgressionData({
 			items: items,
 			item_requirements: item_requirements,
@@ -417,7 +419,7 @@ async function init_game() {
 		}
 
 		// Build G (game data) from design globals (matches create_server_api output)
-		G = replaceProgressionData(
+		G = loadProgressionPublication(
 			{
 			version: Version,
 			achievements: achievements,
@@ -446,6 +448,7 @@ async function init_game() {
 			events: events,
 			images: precomputed.images,
 			multipliers: multipliers,
+			progression: progression,
 			},
 			progression_data,
 		);
@@ -582,6 +585,7 @@ async function reload_server(to_broadcast, change) {
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/skill_xp.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/abilities.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/character.js")));
+		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/progression.js")));
 		const progression_data = buildProgressionData({
 			items: items,
 			item_requirements: item_requirements,
@@ -611,7 +615,7 @@ async function reload_server(to_broadcast, change) {
 			if (map) geometry[id] = map.info.data;
 		}
 
-		G = replaceProgressionData(
+		G = loadProgressionPublication(
 			{
 			version: Version,
 			achievements: achievements,
@@ -640,6 +644,7 @@ async function reload_server(to_broadcast, change) {
 			events: events,
 			images: precomputed.images,
 			multipliers: multipliers,
+			progression: progression,
 			},
 			progression_data,
 		);
@@ -825,6 +830,9 @@ function player_to_client(player, stranger) {
 	data.skin = player.tskin || player.skin;
 	data.cx = player.tcx || player.cx;
 	data.slots = player.cslots;
+	data.skills = player.skills;
+	data.active_skill = player.active_skill || null;
+	data.total_level = player.total_level;
 	if (player.tp) {
 		data.tp = true;
 	}
@@ -973,8 +981,8 @@ function monster_to_client(monster, events) {
 function player_to_summary(player) {
 	var summary = {
 		skin: player.tskin || player.skin,
-		level: player.level,
-		type: player.type,
+		total_level: player.total_level,
+		active_skill: player.active_skill || null,
 		x: player.x,
 		y: player.y,
 		in: player.in,
@@ -1757,6 +1765,15 @@ function ccms(monster) {
 
 function commit_equipment_transaction(player, itemIndex, requestedSlot) {
 	const item = player.items[itemIndex];
+	const previousSkill = player.active_skill;
+	const itemDefinition = item && G.items[item.name];
+	const handChange = itemDefinition && (itemDefinition.type === "weapon" || itemDefinition.type === "tool" || requestedSlot === "mainhand" || requestedSlot === "offhand");
+	if (handChange && player.p && player.p.stand) {
+		const error = new Error("Combat equipment cannot change while the trading stand is open");
+		error.code = "stand_open";
+		error.action = "equip";
+		throw error;
+	}
 	const transaction = planEquipmentTransaction({
 		player,
 		item,
@@ -1771,6 +1788,9 @@ function commit_equipment_transaction(player, itemIndex, requestedSlot) {
 	player.slots = transaction.slots;
 	player.items = transaction.items;
 	player.active_skill = transaction.active_skill;
+	if (previousSkill !== player.active_skill) {
+		player.s = invalidateConditions(player.s || {}, { sourceCharacterId: player.id || player.name, previousSkill }).conditions;
+	}
 	player.cslots = {};
 	for (const [slot, equipped] of Object.entries(player.slots)) player.cslots[slot] = cache_item(equipped);
 	player.citems = player.items.map((entry) => cache_item(entry));
@@ -8870,6 +8890,19 @@ function init_io() {
 			if (!gSkill) {
 				return fail_response("no_skill", data.name);
 			}
+			try {
+				authorizeAbility({
+					abilityId: data.name,
+					ability: gSkill,
+					character: { skills: player.skills },
+					slots: player.slots,
+					items: G.items,
+					activeSkill: player.active_skill,
+					standOpen: Boolean(player.p && player.p.stand),
+				});
+			} catch (error) {
+				return fail_response(error.code || "skill_cant_use", data.name, error);
+			}
 
 			if (
 				gSkill.mp &&
@@ -8877,10 +8910,6 @@ function init_io() {
 				!(player.role == "gm" && data.name == "blink")
 			) {
 				return fail_response("no_mp", data.name);
-			}
-
-			if (gSkill.level && player.level < gSkill.level) {
-				return fail_response("no_level", data.name);
 			}
 
 			let cooldown;
@@ -8899,10 +8928,6 @@ function init_io() {
 					id: data.id,
 					ms: cooldown - mssince(lastUse),
 				});
-			}
-
-			if (gSkill.class && !in_arr(player.type, gSkill.class) && player.role != "gm") {
-				return fail_response("skill_cant_use", data.name);
 			}
 
 			if (gSkill.wtype && player.role != "gm") {

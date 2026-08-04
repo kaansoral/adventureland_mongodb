@@ -1366,4 +1366,44 @@ var abilities = {
 	},
 };
 
+var style_bound_abilities = [
+	"rspeed",
+	"reflection",
+	"energize",
+	"charge",
+	"hardshell",
+	"warcry",
+	"pcoat",
+	"invis",
+	"phaseout",
+	"darkblessing",
+	"absorb",
+	"mshield",
+];
+var support_weight_abilities = [
+	"rspeed",
+	"reflection",
+	"energize",
+	"taunt",
+	"agitate",
+	"stomp",
+	"warcry",
+	"huntersmark",
+	"entangle",
+	"curse",
+	"darkblessing",
+	"absorb",
+];
+style_bound_abilities.forEach(function (id) {
+	if (abilities[id]) abilities[id].style_bound = true;
+});
+support_weight_abilities.forEach(function (id) {
+	if (abilities[id]) {
+		abilities[id].contribution = {
+			weight_per_use: 1,
+			max_weight_per_target_per_encounter: 10,
+		};
+	}
+});
+
 if (typeof module !== "undefined") module.exports = { abilities: abilities };
