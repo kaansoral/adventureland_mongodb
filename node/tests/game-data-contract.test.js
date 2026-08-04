@@ -11,6 +11,7 @@ const {
 	buildProgressionData,
 	buildWeaponOwners,
 	normalizeItems,
+	publishProgressionData,
 	validateCharacterDefinition,
 	validateItemRequirements,
 	validateProgressionData,
@@ -204,6 +205,42 @@ test("item normalization is independent, non-mutating, and precedence-safe", () 
 	assert.deepEqual(plain(normalized.stealthcape.requirements), requirements.stealthcape);
 });
 
+test("raw tier, owner, override, and hybrid sources independently produce final requirements", () => {
+	const raw = loadRaw();
+	const data = loadAll();
+	const cases = {
+		helmetsource: ["helmet", 1, [{ skill: "warrior", level: 1 }]],
+		tierboundary10: ["spear", 1.25, [{ skill: "warrior", level: 10 }]],
+		tierboundary20: ["xmashat", 1.5, [{ skill: "merchant", level: 20 }]],
+		tierboundary30: ["weaver", 1.75, [{ skill: "ranger", level: 30 }]],
+		tierboundary40: ["mageshood", 2, [{ skill: "mage", level: 40 }]],
+		tierboundary50: ["mrnhat", 2.25, [{ skill: "ranger", level: 50 }]],
+		tierboundary60: ["sweaterhs", 2.5, [{ skill: "merchant", level: 60 }]],
+		tierboundary70: ["mcboots", 2.75, [{ skill: "merchant", level: 70 }]],
+		tierboundary80: ["hhelmet", 3, [{ skill: "warrior", level: 80 }]],
+		tierboundary90: ["handofmidas", 3.5, [{ skill: "merchant", level: 90 }]],
+		tierboundary95: ["xhelmet", 4, [{ skill: "warrior", level: 95 }]],
+		weaponowner: ["spear", 1.25, [{ skill: "warrior", level: 10 }]],
+		offhandowner: ["shield", 2, [{ skill: "paladin", level: 40 }]],
+		toolowner: ["rod", 1, [{ skill: "merchant", level: 16 }]],
+		hybrid: ["fury", 1.5, [
+			{ skill: "warrior", level: 20 },
+			{ skill: "paladin", level: 20 },
+			{ skill: "ranger", level: 20 },
+			{ skill: "rogue", level: 20 },
+		]],
+		curatedhybrid: ["starkillers", 3, [{ skill: "mage", level: 80 }, { skill: "priest", level: 80 }]],
+	};
+	for (const [, [itemId, tier, expected]] of Object.entries(cases)) {
+		assert.equal(raw.items[itemId].tier, tier, itemId);
+		assert.deepEqual(plain(data.item_requirements[itemId]), expected, itemId);
+		assert.deepEqual(plain(data.items[itemId].requirements), expected, itemId);
+	}
+	assert.equal(raw.items.mageshood.class[0], "mage");
+	assert.equal(raw.items.fury.class.length, 4);
+	assert.equal(raw.items.handofmidas.gold, 10);
+});
+
 test("progression validators reject every special-contract regression with diagnostics", () => {
 	const data = loadAll();
 	const ownerMap = buildWeaponOwners(data.skills);
@@ -246,6 +283,18 @@ test("progression validators reject every special-contract regression with diagn
 	assert.throws(
 		() => validateCharacterDefinition(badCharacter, data.items),
 		(error) => error.code === "invalid_game_data" && /baseline/.test(error.message),
+	);
+	const wrongBaseline = plain(data.character);
+	wrongBaseline.baseline.max_hp = 101;
+	assert.throws(
+		() => validateCharacterDefinition(wrongBaseline, data.items),
+		(error) => error.code === "invalid_game_data" && /baseline/.test(error.message),
+	);
+	const wrongAppearanceHash = plain(data.character);
+	wrongAppearanceHash.appearances[0][0] = "different_skin";
+	assert.throws(
+		() => validateCharacterDefinition(wrongAppearanceHash, data.items),
+		(error) => error.code === "invalid_game_data" && /appearances/.test(error.message),
 	);
 	const populatedSlots = plain(data.character);
 	populatedSlots.starter.slots = { mainhand: { name: "blade" } };
@@ -297,6 +346,27 @@ test("progression validators reject every special-contract regression with diagn
 		() => validateRequirements("unknown_requirement", [{ skill: "missing", level: 1 }], data.skills),
 		(error) => error.code === "invalid_equipment_requirements" && error.item === "unknown_requirement" && error.skill === "missing",
 	);
+	const mismatchedRequirements = plain(data.items);
+	mismatchedRequirements.helmet.requirements[0].level = 2;
+	assert.throws(
+		() => validateItemRequirements(mismatchedRequirements, plain(data.item_requirements), data.skills, ownerMap),
+		(error) => error.code === "invalid_game_data" && error.item === "helmet" && /normalized snapshot/.test(error.message),
+	);
+	const legacyClass = plain(data.items);
+	legacyClass.helmet.class = ["warrior"];
+	assert.throws(
+		() => validateItemRequirements(legacyClass, plain(data.item_requirements), data.skills, ownerMap),
+		(error) => error.code === "invalid_game_data" && error.item === "helmet" && /Legacy class/.test(error.message),
+	);
+	for (const [field, value] of [["int", 15], ["dex", 16], ["compound", { int: 5 }], ["damage_type", "physical"], ["projectile", "magic"]]) {
+		const badBook = plain(data.items);
+		if (field === "compound") badBook.wbookhs.compound = value;
+		else badBook.wbookhs[field] = value;
+		assert.throws(
+			() => validateItemRequirements(badBook, plain(data.item_requirements), data.skills, ownerMap),
+			(error) => error.code === "invalid_game_data" && error.item === "wbookhs",
+		);
+	}
 });
 
 test("every equippable item has the explicit all-of requirement snapshot", () => {
@@ -554,7 +624,7 @@ test("production loaders validate progression data before publishing it", () => 
 	const server = fs.readFileSync(path.join(designRoot, "../node/server.js"), "utf8");
 	assert.match(main, /buildProgressionData\(\{/);
 	assert.equal((server.match(/const progression_data = buildProgressionData\(\{/g) || []).length, 2);
-	assert.ok(server.indexOf("buildProgressionData") < server.indexOf("G = attachProgressionData"));
+	assert.ok(server.indexOf("buildProgressionData") < server.indexOf("G = publishProgressionData"));
 	const executeBuilderStatement = (statement, raw) => {
 		const context = {
 			buildProgressionData,
@@ -621,9 +691,9 @@ test("production loaders validate progression data before publishing it", () => 
 			}),
 		(error) => error.code === "invalid_game_data" && error.item === "broken_weapon" && error.weapon_type === "unknown",
 	);
-	const rootLoader = (source) => attachProgressionData({ loader: "root" }, buildProgressionData(source));
-	const backendInitLoader = (source) => attachProgressionData({ loader: "backend-init" }, buildProgressionData(source));
-	const backendReloadLoader = (source) => attachProgressionData({ loader: "backend-reload" }, buildProgressionData(source));
+	const rootLoader = (source) => publishProgressionData({ loader: "root" }, buildProgressionData(source));
+	const backendInitLoader = (source) => publishProgressionData({ loader: "backend-init" }, buildProgressionData(source));
+	const backendReloadLoader = (source) => publishProgressionData({ loader: "backend-reload" }, buildProgressionData(source));
 	const rootPublication = rootLoader(loadRaw());
 	const backendInitPublication = backendInitLoader(loadRaw());
 	const backendReloadPublication = backendReloadLoader(loadRaw());
@@ -635,13 +705,19 @@ test("production loaders validate progression data before publishing it", () => 
 		rootPublication.abilities.attack.cooldown = 1;
 	}, TypeError);
 	const previousPublication = plain(backendReloadPublication);
+	const previousPublishedSkills = backendReloadPublication.skills;
 	const invalidSource = loadRaw();
 	invalidSource.item_requirements.missing = [{ skill: "warrior", level: 1 }];
 	assert.throws(
 		() => buildProgressionData(invalidSource),
 		(error) => error.code === "invalid_game_data" && error.item === "missing",
 	);
+	assert.throws(
+		() => publishProgressionData(backendReloadPublication, invalidSource),
+		(error) => error.code === "invalid_game_data" && /validated progression/.test(error.message),
+	);
 	assert.deepEqual(plain(backendReloadPublication), previousPublication);
+	assert.strictEqual(backendReloadPublication.skills, previousPublishedSkills);
 });
 
 test("the closed progression consumer inventory has no legacy skill lookups", () => {
@@ -687,6 +763,9 @@ test("the closed progression consumer inventory has no legacy skill lookups", ()
 	for (const relativePath of inventory) {
 		const source = fs.readFileSync(path.join(designRoot, "..", relativePath), "utf8");
 		assert.equal((source.match(/\bG\.skills\b/g) || []).length, expectedProgressionRefs[relativePath] || 0, relativePath);
+		assert.doesNotMatch(source, /\bG\s*\[\s*["']skills["']\s*\]/, relativePath);
+		assert.doesNotMatch(source, /\bG\s*\[\s*["']abilities["']\s*\]/, relativePath);
+		assert.doesNotMatch(source, /\b(?:const|let|var)\s+\w+\s*=\s*G\s*\[\s*[^\]]+\s*\]/, relativePath);
 		assert.doesNotMatch(source, /G\.abilities\[[^\]]+\](?:\.class|\["class"\]|\['class'\])/, relativePath);
 		const legacyReads = source.match(/\b(?:skill|gSkill)\s*(?:\.\s*class|\[\s*["']class["']\s*\])/g) || [];
 		assert.equal(legacyReads.length, allowlistedLegacyReads[relativePath] || 0, relativePath);

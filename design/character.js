@@ -210,6 +210,16 @@ var character = {
 		int: 0,
 		vit: 0,
 	},
+	skills: {
+		warrior: { level: 1, xp: 0 },
+		paladin: { level: 1, xp: 0 },
+		mage: { level: 1, xp: 0 },
+		priest: { level: 1, xp: 0 },
+		ranger: { level: 1, xp: 0 },
+		rogue: { level: 1, xp: 0 },
+		merchant: { level: 1, xp: 0 },
+	},
+	total_level: 7,
 	starter: {
 		weapons: ["blade", "mace", "staff", "wbook0", "bow", "claw"],
 		consumables: [

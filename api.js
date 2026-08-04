@@ -1,6 +1,8 @@
 // api.js - Adventure Land API endpoints
 // Ported from Python api.py to Node.js/MongoDB REF pattern
 
+var { createCharacterState } = require("./node/game/character_state");
+
 // ==================== HELPER FUNCTIONS ====================
 
 function sint(x) {
@@ -44,7 +46,7 @@ function get_stats(characters) {
 	var stats = {};
 	for (var i = 0; i < characters.length; i++) {
 		var c = characters[i];
-		stats[get_id(c)] = { level: c.level, type: c.type, xp: c.xp };
+		stats[get_id(c)] = { total_level: c.total_level, skills: gf(c, "skills", gf(c, "info", {}).skills || {}) };
 	}
 	return stats;
 }
@@ -375,10 +377,9 @@ async function create_character_api(args) {
 	var domain = await get_domain(args.req),
 		user = args.user;
 	var name = args.name,
-		char_type = args.char,
 		look = sint(args.look);
-	if (!char_type || !character_types.includes(char_type)) return { failed: true, reason: "character_type_not_allowed" };
-	if (classes[char_type] && classes[char_type].looks && classes[char_type].looks.length <= look) return { failed: true, reason: "invalid_look" };
+	if (args.char !== undefined || args.type !== undefined) return { failed: true, reason: "character_type_not_allowed" };
+	if (!character || !Array.isArray(character.appearances) || !character.appearances[look]) return { failed: true, reason: "invalid_look" };
 	if (!name) return { failed: true, reason: "please_enter_a_name" };
 	name = name.replace(/ /g, "").replace(/\t/g, "");
 	if (!is_name_allowed(name)) return { failed: true, reason: "invalid_name" };
@@ -393,8 +394,8 @@ async function create_character_api(args) {
 		return { failed: true, reason: "reached_character_limit" };
 	}
 	var characterth = await get_characterth();
-	var base = classes[char_type];
 	var spawn = maps["main"].spawns[maps["main"].on_death ? maps["main"].on_death[1] : 0];
+	var fresh = createCharacterState();
 
 	var R = await tx(
 		async () => {
@@ -409,10 +410,8 @@ async function create_character_api(args) {
 				a_rand: a_rand("character"),
 				realm: "main",
 				name: simplify_name(A.name),
-				type: A.char_type,
-				level: 1,
+				total_level: fresh.total_level,
 				worth: 0,
-				xp: 0,
 				owner: get_id(A.user),
 				referrer: owner.referrer || "",
 				platform: "",
@@ -427,17 +426,24 @@ async function create_character_api(args) {
 				popularity: 0.0,
 				private: false,
 				info: {
+					skills: fresh.skills,
 					characterth: A.characterth,
 					name: A.name,
 					gold: 0,
 					items: [
+						{ name: "blade", level: 0, gift: 1 },
+						{ name: "mace", level: 0, gift: 1 },
+						{ name: "staff", level: 0, gift: 1 },
+						{ name: "wbook0", level: 0, gift: 1 },
+						{ name: "bow", level: 0, gift: 1 },
+						{ name: "claw", level: 0, gift: 1 },
 						{ name: "hpot0", q: 200, gift: 1 },
 						{ name: "mpot0", q: 200, gift: 1 },
 					],
-					slots: JSON.parse(JSON.stringify(A.base.base_slots || {})),
+					slots: {},
 					stats: {},
-					skin: A.base.looks[A.look][0],
-					cx: A.base.looks[A.look][1],
+					skin: A.character.appearances[A.look][0],
+					cx: A.character.appearances[A.look][1],
 					map: "main",
 					in: "main",
 					x: A.spawn[0],
@@ -462,7 +468,7 @@ async function create_character_api(args) {
 			await tx_save({ _id: "MK_character-" + simplify_name(A.name), type: "character", phrase: simplify_name(A.name), owner: get_id(R.character), created: new Date() });
 			R.owner = owner;
 		},
-		{ name: name, user: user, char_type: char_type, look: look, base: base, spawn: spawn, characterth: characterth },
+		{ name: name, user: user, look: look, character: character, spawn: spawn, characterth: characterth },
 	);
 
 	if (R.failed) return { failed: true, reason: R.reason || "creation_failed" };

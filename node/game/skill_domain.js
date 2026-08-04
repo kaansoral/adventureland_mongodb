@@ -447,6 +447,14 @@ function validateCharacterDefinition(character, items) {
 		throw fail("invalid_game_data", "Character baseline differs from the neutral progression contract");
 	}
 	if (
+		!character.skills ||
+		Object.keys(character.skills).join("\0") !== SKILL_IDS.join("\0") ||
+		Object.values(character.skills).some((skill) => !skill || skill.level !== 1 || skill.xp !== 0) ||
+		character.total_level !== SKILL_IDS.length
+	) {
+		throw fail("invalid_game_data", "Character skill starter state differs from the neutral progression contract");
+	}
+	if (
 		!character.starter ||
 		!Array.isArray(character.starter.weapons) ||
 		JSON.stringify(character.starter.weapons) !== JSON.stringify(STARTER_WEAPONS) ||
@@ -526,6 +534,13 @@ function attachProgressionData(target, progressionData) {
 	});
 }
 
+function publishProgressionData(target, progressionData) {
+	if (!progressionData || typeof progressionData !== "object" || !Object.isFrozen(progressionData.skills)) {
+		throw fail("invalid_game_data", "Only a validated progression publication may be attached");
+	}
+	return attachProgressionData(target, progressionData);
+}
+
 module.exports = {
 	SKILL_IDS,
 	COMBAT_SKILL_IDS,
@@ -543,5 +558,6 @@ module.exports = {
 	normalizeItems,
 	buildProgressionData,
 	attachProgressionData,
+	publishProgressionData,
 	buildWeaponOwners,
 };

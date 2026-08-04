@@ -18,7 +18,7 @@ var Local = options.Local;
 var Prod = options.Prod;
 var Staging = options.Staging;
 const express = require("express");
-const { attachProgressionData, buildProgressionData } = require("./game/skill_domain");
+const { buildProgressionData, publishProgressionData } = require("./game/skill_domain");
 var fs = require("fs");
 var app = express(),
 	http_server = require("http").createServer(app);
@@ -412,7 +412,7 @@ async function init_game() {
 		}
 
 		// Build G (game data) from design globals (matches create_server_api output)
-		G = attachProgressionData(
+		G = publishProgressionData(
 			{
 			version: Version,
 			achievements: achievements,
@@ -606,7 +606,7 @@ async function reload_server(to_broadcast, change) {
 			if (map) geometry[id] = map.info.data;
 		}
 
-		G = attachProgressionData(
+		G = publishProgressionData(
 			{
 			version: Version,
 			achievements: achievements,

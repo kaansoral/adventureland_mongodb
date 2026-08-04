@@ -613,8 +613,8 @@ function character_to_dict(character) {
 	var data = {
 		id: get_id(character),
 		name: character.info.name,
-		level: character.level,
-		type: character.type,
+		total_level: character.total_level,
+		skills: gf(character, "skills", character.info.skills || {}),
 		online: 0,
 	};
 	if (character.online) {
@@ -653,10 +653,9 @@ function character_to_info(character, user, ip, guild) {
 		id: get_id(character),
 		name: character.info.name,
 		friends: character.friends,
-		level: character.level,
+		total_level: character.total_level,
+		skills: gf(character, "skills", character.info.skills || {}),
 		gold: character.info.gold,
-		type: character.type,
-		xp: character.xp,
 		items: character.info.items,
 		stats: character.info.stats,
 		slots: gf(character, "slots", {}),
@@ -705,8 +704,8 @@ function update_character(character, data, owner) {
 	character.info.q = data.q || {};
 	character.info.map = data.map;
 	character.info["in"] = data["in"];
-	character.xp = parseInt(data.xp || 0);
-	character.level = parseInt(data.level);
+	if (data.skills) character.info.skills = data.skills;
+	if (data.total_level !== undefined) character.total_level = parseInt(data.total_level);
 	character.info.hp = data.hp;
 	character.info.mp = data.mp;
 	character.info.gold = data.gold;
