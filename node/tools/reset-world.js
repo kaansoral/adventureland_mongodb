@@ -22,6 +22,8 @@ const { readSeed } = require("./export-map-seed");
 const ROOT_DIR = path.resolve(__dirname, "../../..");
 const GAME_ROOT = path.resolve(__dirname, "../..");
 const DEFAULT_BACKUP_ROOT = path.join(ROOT_DIR, ".runtime", "reset-backups");
+const RESET_COMMAND_VERSION = "reset-world@protocol3";
+const RESET_WARNING = "Mutable documents are intentionally not backed up and are irrecoverable.";
 
 function parseResetArgs(argv) {
 	const result = { execute: false, reseedMaps: false, json: false };
@@ -109,6 +111,8 @@ function buildResetPlan(input) {
 
 function redactResetReport(input) {
 	return {
+		commandVersion: input.commandVersion || RESET_COMMAND_VERSION,
+		timestamp: input.timestamp,
 		mode: input.mode,
 		database: input.database,
 		counts: input.counts || {},
@@ -119,6 +123,7 @@ function redactResetReport(input) {
 		guards: input.guards || {},
 		backupDir: input.backupDir,
 		reseedMaps: Boolean(input.reseedMaps),
+		warning: RESET_WARNING,
 	};
 }
 
@@ -207,6 +212,30 @@ async function ensureBackupDirectory(directory) {
 	}
 }
 
+async function checkBackupLocation(directory) {
+	const projectRoot = path.resolve(ROOT_DIR) + path.sep;
+	const resolved = path.resolve(directory || DEFAULT_BACKUP_ROOT);
+	if (!resolved.startsWith(projectRoot)) {
+		throw worldError("RESET_BACKUP_PATH", "Backup directory must remain inside the project");
+	}
+	let existing = resolved;
+	while (true) {
+		try {
+			const stats = await fs.stat(existing);
+			if (!stats.isDirectory()) throw worldError("RESET_BACKUP_PATH", "Backup path is not a directory");
+			await fs.access(existing, require("node:fs").constants.W_OK);
+			if (directory && existing === resolved && (await fs.readdir(existing)).length)
+				throw worldError("RESET_BACKUP_NOT_EMPTY", "Backup directory must be empty before reset");
+			return resolved;
+		} catch (error) {
+			if (error.code !== "ENOENT") throw error;
+			const parent = path.dirname(existing);
+			if (parent === existing) throw worldError("RESET_BACKUP_PATH", "No writable project backup parent exists");
+			existing = parent;
+		}
+	}
+}
+
 function printReport(report, stdout) {
 	stdout(JSON.stringify(report));
 	stdout("\n");
@@ -236,10 +265,7 @@ async function runReset(options = {}) {
 			throw worldError("RESET_UNKNOWN_COLLECTION", "Unknown application collections block reset", {
 				unknown: classification.unknown,
 			});
-		const counts = await countCollections(
-			db,
-			collectionNames.filter((name) => !name.startsWith("system.")),
-		);
+		const counts = await countCollections(db, [...MUTABLE_COLLECTIONS, "map"]);
 		const liveDocuments = await readMapDocuments(db);
 		let mapValidation;
 		try {
@@ -253,6 +279,7 @@ async function runReset(options = {}) {
 			pidDir: env.ADVENTURELAND_RESET_PID_DIR || undefined,
 			ports: writerPortsFromEnv(env.ADVENTURELAND_RESET_WRITER_PORTS),
 		});
+		const backupLocation = await checkBackupLocation(args.backupDir);
 		const mapHash = args.reseedMaps ? seedValidation.sha256 : mapValidation.sha256;
 		const plan = buildResetPlan({
 			collectionNames,
@@ -270,6 +297,7 @@ async function runReset(options = {}) {
 			backup: true,
 		};
 		const preview = redactResetReport({
+			timestamp: new Date().toISOString(),
 			mode: args.execute ? "execute" : "dry-run",
 			database: args.database,
 			counts,
@@ -281,7 +309,7 @@ async function runReset(options = {}) {
 		});
 		if (!args.execute) {
 			preview.confirmToken = confirmationToken(args.database, mapHash);
-			preview.nextCommand = `ADVENTURELAND_RESET_MONGODB_URI=\"$ADVENTURELAND_RESET_MONGODB_URI\" node node/tools/reset-world.js --database ${args.database} --execute --confirm ${preview.confirmToken}${args.reseedMaps ? " --reseed-maps" : ""}`;
+			preview.nextCommand = `ADVENTURELAND_RESET_MONGODB_URI=\"$ADVENTURELAND_RESET_MONGODB_URI\" node node/tools/reset-world.js --database ${args.database} --execute --confirm ${preview.confirmToken}${args.reseedMaps ? " --reseed-maps" : ""}${args.backupDir ? ` --backup-dir ${JSON.stringify(backupLocation)}` : ""}`;
 			printReport(preview, stdout);
 			return { mode: "dry-run", plan, preview };
 		}
@@ -294,7 +322,7 @@ async function runReset(options = {}) {
 			.toISOString()
 			.replace(/[-:.TZ]/g, "")
 			.slice(0, 14)}-${mapHash.slice(0, 12)}`;
-		const backupDir = path.resolve(args.backupDir || path.join(DEFAULT_BACKUP_ROOT, runId));
+		const backupDir = args.backupDir ? backupLocation : path.resolve(path.join(DEFAULT_BACKUP_ROOT, runId));
 		await ensureBackupDirectory(backupDir);
 		await fs.writeFile(path.join(backupDir, "maps-live.ejson"), canonicalMapBytes(liveDocuments), { mode: 0o600 });
 		await fs.writeFile(path.join(backupDir, "preflight.json"), `${JSON.stringify(preview, null, 2)}\n`, {
@@ -318,11 +346,9 @@ async function runReset(options = {}) {
 		const afterValidation = validateMapDocuments(afterDocuments, { maps: DESIGN_MAPS, exact: args.reseedMaps });
 		if (afterValidation.sha256 !== mapHash)
 			throw worldError("RESET_POSTCHECK", "Map hash changed unexpectedly after reset");
-		const afterCounts = await countCollections(
-			db,
-			collectionNames.filter((name) => !name.startsWith("system.")),
-		);
+		const afterCounts = await countCollections(db, [...MUTABLE_COLLECTIONS, "map"]);
 		const report = redactResetReport({
+			timestamp: new Date().toISOString(),
 			mode: "executed",
 			database: args.database,
 			counts: afterCounts,
