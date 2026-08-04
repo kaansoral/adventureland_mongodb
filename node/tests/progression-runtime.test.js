@@ -64,7 +64,10 @@ test("runtime death sickness persists and clears by absolute timestamp", () => {
 	const character = player();
 	initializePlayerProgression(character, 0);
 	assert.equal(refreshDeathSickness(character, 1000), 301000);
+	assert.deepEqual(character.s.death_sickness, { ms: 300000 });
 	assert.equal(rehydratePlayerDeathSickness(character, 300999), 301000);
+	assert.deepEqual(character.s.death_sickness, { ms: 1 });
 	assert.equal(rehydratePlayerDeathSickness(character, 301000), null);
 	assert.equal(character.death_sickness_until, null);
+	assert.equal(character.s.death_sickness, undefined);
 });

@@ -183,12 +183,19 @@ function recordMerchantDonationOrDice(player, details) {
 
 function refreshDeathSickness(player, now = Date.now()) {
 	ensurePlayerContainers(player);
-	return applyDeathSickness({ info: player }, now);
+	const until = applyDeathSickness({ info: player }, now);
+	if (!player.s || typeof player.s !== "object") player.s = {};
+	player.s.death_sickness = { ms: until - now };
+	return until;
 }
 
 function rehydratePlayerDeathSickness(player, now = Date.now()) {
 	ensurePlayerContainers(player);
-	return rehydrateDeathSickness({ info: player }, now);
+	const until = rehydrateDeathSickness({ info: player }, now);
+	if (!player.s || typeof player.s !== "object") player.s = {};
+	if (until === null) delete player.s.death_sickness;
+	else player.s.death_sickness = { ms: until - now };
+	return until;
 }
 
 module.exports = {

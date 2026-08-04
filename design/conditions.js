@@ -639,6 +639,14 @@ var conditions = {
 		debuff: true,
 		persistent: true,
 	},
+	death_sickness: {
+		name: "Death Sickness",
+		skin: "condition_bad",
+		debuff: true,
+		ui: true,
+		duration: 5 * 60 * 1000,
+		explanation: "Reduces final combat and defensive stats by 20% for five minutes after death.",
+	},
 	town: {
 		name: "Town",
 		skin: "condition_positive",
