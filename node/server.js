@@ -6748,11 +6748,11 @@ function init_io() {
 						break;
 					}
 					var def = G.items[item.name];
-					def.iname = item.name; //just for orb name checks [08/10/16]
 					if (!def) {
 						resolve.push("no_item");
 						break;
 					}
+					def.iname = item.name; //just for orb name checks [08/10/16]
 					var slot = equip_def.slot || def.type;
 					var transaction;
 					try {
@@ -6804,10 +6804,10 @@ function init_io() {
 			var to_update = "reopen+u+cid";
 			var resolve = { num: data.num };
 			var resolve_type = "data";
-			def.iname = item.name; //just for orb name checks [08/10/16]
 			if (!def) {
 				return fail_response("no_item");
 			}
+			def.iname = item.name; //just for orb name checks [08/10/16]
 			// if(Dev) server_log("Trying to equip "+JSON.stringify(data));
 
 			if (data.slot && get_trade_slots(player).includes(data.slot) && !data.consume) {
