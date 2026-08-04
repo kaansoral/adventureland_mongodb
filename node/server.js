@@ -8807,15 +8807,15 @@ function init_io() {
 				return fail_response("too_far", data.name, { dist: dist, id: target.id });
 			}
 
-			const progressionSupportAction =
-				gSkill.contribution && !["taunt", "curse"].includes(data.name)
-					? snapshot_progression_support(
-							player,
-							target,
-							gSkill,
-							target && target.is_player && ["entangle", "huntersmark"].includes(data.name) ? "pvp" : "combat",
-						)
-					: null;
+				const progressionSupportAction =
+					gSkill.contribution
+						? snapshot_progression_support(
+								player,
+								target,
+								gSkill,
+								target && target.is_player && ["entangle", "huntersmark"].includes(data.name) ? "pvp" : "combat",
+							)
+						: null;
 			const recordProgressionSupport = (changed, encounterIds) =>
 				record_progression_support(progressionSupportAction, changed, encounterIds);
 
