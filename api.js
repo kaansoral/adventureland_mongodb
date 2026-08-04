@@ -501,7 +501,7 @@ async function create_character_api(args) {
 			await tx_save({ _id: "MK_character-" + simplify_name(A.name), type: "character", phrase: simplify_name(A.name), owner: get_id(R.character), created: new Date() });
 			R.owner = owner;
 		},
-		{ name: name, user: user, look: look, character: character, spawn: spawn, characterth: characterth },
+		{ name: name, user: user, look: look, character: character, spawn: spawn, characterth: characterth, fresh: fresh },
 	);
 
 	if (R.failed) return { failed: true, reason: R.reason || "creation_failed" };
