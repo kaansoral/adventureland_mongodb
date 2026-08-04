@@ -3,20 +3,20 @@
 
 <div class='code'>
 // Going Invis with a Rogue
-use_skill("invis");
+use_ability("invis");
 
 // Casting Merchant's Luck
-use_skill("mluck",get_player("LuckyCharacter"));
+use_ability("mluck",get_player("LuckyCharacter"));
 
 // Using Supershot with a Ranger
 var target=get_nearest_monster();
 if(is_in_range(target,"supershot") && !is_on_cooldown("supershot")
 	&& character.mp>=G.abilities.supershot.mp)
-	use_skill("supershot",target);
+	use_ability("supershot",target);
 // Checks if a target is in "supershot" range, makes sure "supershot" isn't on cooldown and character has enough mana
 </div>
 
-<p>Reference functions: <span class='rlabel' onclick="render_function_reference($(this).html())">use_skill</span> <span class='rlabel' onclick="render_function_reference($(this).html())">is_in_range</span> <span class='rlabel' onclick="render_function_reference($(this).html())">is_on_cooldown</span></p>
+<p>Reference functions: <span class='rlabel' onclick="render_function_reference($(this).html())">use_ability</span> <span class='rlabel' onclick="render_function_reference($(this).html())">is_in_range</span> <span class='rlabel' onclick="render_function_reference($(this).html())">is_on_cooldown</span></p>
 
 <p>Special Usage: 3-Shot</p>
 
@@ -27,7 +27,7 @@ for(id in parent.entities)
 		targets.push(parent.entities[id]);
 
 // Use 3-Shot with a Ranger on 3 targets
-use_skill("3shot",targets);
+use_ability("3shot",targets);
 </div>
 
 <p>Special Usage: Controlled Burst</p>
@@ -39,12 +39,12 @@ for(id in parent.entities)
 		targets.push([parent.entities[id],100]);
 
 // Attempt to use "Controlled Burst" for 100 mana on all monsters in range using a Mage
-use_skill("cburst",targets);
+use_ability("cburst",targets);
 </div>
 
 
 <p>Special Usage: Blink</p>
 
 <div class='code'>
-use_skill("blink",[character.x+10,character.y+10]);
+use_ability("blink",[character.x+10,character.y+10]);
 </div>

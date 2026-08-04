@@ -1,8 +1,6 @@
-var character_types=["warrior","paladin","mage","priest","rogue","ranger","merchant"]; //,"assassin","paladin","archer","priest"]
 //STR -> Warrior, Paladin - Paladin hits 50%/50% Physical/Magical - Hits magical on high ranges, can't wield heavy items
 //DEX -> Assasin, Archer
 //INT -> Mage, Priest - Priest can heal players aggressively + slows on damage
-var gender_types=["male","female"];
 var allowed_name_characters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 var item_grades={
 	"low":{"color":"grey"},

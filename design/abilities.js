@@ -459,7 +459,7 @@ var abilities = {
 		name: "Throw Stuff",
 		explanation: "Terrified? Just throw whatever you can find at your opponent!",
 		range: 200,
-		code: "range=character.level+200",
+		code: "range=character.total_level+200",
 		positive: ["essenceoflife"],
 		negative: ["essenceoffire"],
 		nprop: ["attack", "armor"],

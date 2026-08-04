@@ -18,7 +18,7 @@ function handle_death() {
 }
 
 function can_use(name) {
-	var active_skill = character.active_skill || character.ctype;
+	var active_skill = character.active_skill;
 	if (G.abilities[name] && G.abilities[name].applicability == "skill" && G.abilities[name].skill && G.abilities[name].skill != active_skill) return false; // checks the owning skill
 	return parent.can_use(name); // checks the cooldown
 }
@@ -28,7 +28,7 @@ function use(name, target) {
 	if (isNaN(name)) // if name is not an integer, use the skill
 	{
 		if (!target) target = get_target();
-		parent.use_skill(name, target);
+		parent.use_ability(name, target);
 	} else {
 		// for example, if there is a potion at the first inventory slot, use(0) would use it
 		equip(name);

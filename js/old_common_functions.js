@@ -168,18 +168,15 @@ function process_game_data()
 		else G.monsters[name].charge=round(G.monsters[name].speed*2);
 		G.monsters[name].max_hp=G.monsters[name].hp; // So default value adoption logic is easier [16/04/18]
 	}
-	for(var c in G.classes)
-	{
-		if(!G.classes[c].xcx) G.classes[c].xcx=[];
-		free_cx.forEach(function(cx){ if(!G.classes[c].xcx.includes(cx)) G.classes[c].xcx.push(cx); });
-		G.classes[c].looks.forEach(function(l){
-			if(!G.classes[c].xcx.includes(l[0])) G.classes[c].xcx.push(l[0]);
-			for(var slot in l[1])
-			{
-				if(!G.classes[c].xcx.includes(l[1][slot])) G.classes[c].xcx.push(l[1][slot]);
-			}
-		})
-	}
+	G.character.xcx = [];
+	free_cx.forEach(function(cx){ if(!G.character.xcx.includes(cx)) G.character.xcx.push(cx); });
+	(G.character.appearances || []).forEach(function(l){
+		if(!G.character.xcx.includes(l[0])) G.character.xcx.push(l[0]);
+		for(var slot in l[1])
+		{
+			if(!G.character.xcx.includes(l[1][slot])) G.character.xcx.push(l[1][slot]);
+		}
+	});
 	for(var s in G.sprites)
 	{
 		var current=G.sprites[s],matrix=current.matrix;
@@ -311,7 +308,7 @@ function all_cx(player,send)
 		else
 			cx[c]=(cx[c]||0)+0.01;
 	});
-	(G.classes[player.ctype||player.type].xcx||[]).forEach(function(c){
+	(G.character.xcx || []).forEach(function(c){
 		if(G.cosmetics.bundle[c])
 			G.cosmetics.bundle[c].forEach(function(cc){ cx[cc]=(cx[cc]||0)+0.01; })
 		else if(G.cosmetics.map[c])

@@ -1,8 +1,6 @@
 <div id="pagewrapper">
 	<script>
-		var chartype = "",
-			gendertype = "",
-			thelooks = 0;
+		var thelooks = 0;
 	</script>
 	<div id="pagewrapped" class="loginorselection hidewithmodals">
 		<div class="menu">{% include "htmls/contents/selection_characters.html"%}</div>
@@ -16,70 +14,19 @@
 			{#
 			<div class="whiteheader mt5" style="margin-left: -6px">&gt; Class</div>
 			#}
-			<div>
-				<div class="textbutton chartype" onclick="pcs(); $('.chartype').removeClass('selected'); $(this).addClass('selected'); chartype='warrior'; load_class_info()" style="color: #f07f2f">
-					Warrior
-				</div>
-				<div class="textbutton chartype" onclick="pcs(); $('.chartype').removeClass('selected'); $(this).addClass('selected'); chartype='paladin'; load_class_info()" style="color: #a3b4b9">
-					Paladin
-				</div>
-				<div class="textbutton chartype" onclick="pcs(); $('.chartype').removeClass('selected'); $(this).addClass('selected'); chartype='mage'; load_class_info()" style="color: #3e6eed">Mage</div>
-				<div class="textbutton chartype" onclick="pcs(); $('.chartype').removeClass('selected'); $(this).addClass('selected'); chartype='priest'; load_class_info()" style="color: #eb4d82">Priest</div>
-			</div>
-			<div>
-				<div class="textbutton chartype" onclick="pcs(); $('.chartype').removeClass('selected'); $(this).addClass('selected'); chartype='rogue'; load_class_info()" style="color: #44b75c">Rogue</div>
-				<div class="textbutton chartype" onclick="pcs(); $('.chartype').removeClass('selected'); $(this).addClass('selected'); chartype='ranger'; load_class_info()" style="color: #8a512b">Ranger</div>
-				<div class="textbutton chartype" onclick="pcs(); $('.chartype').removeClass('selected'); $(this).addClass('selected'); chartype='merchant'; load_class_info()" style="color: #7f7f7f">
-					Merchant
-				</div>
-			</div>
-			{#
-			<div class="whiteheader mt5" style="margin-left: -6px">&gt; Gender</div>
-			<div>
-				<div
-					class="textbutton gendertype inline-block"
-					onclick="pcs(); $('.gendertype').removeClass('selected'); $(this).addClass('selected'); gendertype='male'; load_class_info()"
-					style="color: #43a1c6"
-				>
-					Male
-				</div>
-				{% if "unknown" in domain.gender_types %}
-				<div class="textbutton gendertype inline-block" onclick="pcs(); $('.gendertype').removeClass('selected'); $(this).addClass('selected'); gendertype='unknown';">Unknown</div>
-				{% endif %}
-				<div
-					class="textbutton gendertype inline-block"
-					onclick="pcs(); $('.gendertype').removeClass('selected'); $(this).addClass('selected'); gendertype='female'; load_class_info()"
-					style="color: #c06c9b"
-				>
-					Female
-				</div>
-			</div>
-			#} {#
-			<div class="whiteheader mt5" style="margin-left: -6px">&gt; Looks</div>
-			#}
 			<div style="margin-top: 5px"></div>
 			<div>
-				<div class="textbutton lookstype inline-block" onclick="pcs(); $('.lookstype').removeClass('selected'); $(this).addClass('selected'); thelooks=0; load_class_info()" style="color: #df0024">
-					<span style="color: gray">Opt.</span> A
+				{% for appearance in domain.character.appearances %}
+				<div class="textbutton lookstype inline-block" onclick="pcs(); $('.lookstype').removeClass('selected'); $(this).addClass('selected'); thelooks={{loop.index0}}; load_appearance_info({{loop.index0}})">
+					<span style="color: gray">Look</span> {{loop.index}}
 				</div>
-				<div class="textbutton lookstype inline-block" onclick="pcs(); $('.lookstype').removeClass('selected'); $(this).addClass('selected'); thelooks=1; load_class_info()" style="color: #f3c300">
-					<span style="color: gray">Opt.</span> B
-				</div>
-				{#
-				<div style="margin-top: -5px"></div>
-				#}
-				<div class="textbutton lookstype inline-block" onclick="pcs(); $('.lookstype').removeClass('selected'); $(this).addClass('selected'); thelooks=2; load_class_info()" style="color: #00ac9f">
-					<span style="color: gray">Opt.</span> C
-				</div>
-				<div class="textbutton lookstype inline-block" onclick="pcs(); $('.lookstype').removeClass('selected'); $(this).addClass('selected'); thelooks=3; load_class_info()" style="color: #2e6db4">
-					<span style="color: gray">Opt.</span> D
-				</div>
+				{% endfor %}
 			</div>
 			<div style="margin-top: 10px"></div>
 			<div
 				class="gamebutton mt5"
 				style="width: 64px; padding: 5px 25px 5px 25px"
-				onclick="if(bc(this)) return; api_call('create_character',{name:$('.charactername').val(),char:chartype,look:thelooks},{disable:$(this)});"
+				onclick="if(bc(this)) return; api_call('create_character',{name:$('.charactername').val(),look:thelooks},{disable:$(this)});"
 			>
 				Create
 			</div>
@@ -291,10 +238,16 @@
 			>
 		</div>
 		<div class="enableclicks">
-			&gt; Merchant:
-			<span class="characterrmerchant"
-				>{% if domain|get_online_character("merchant") %}<span style="color: green">{{(domain|get_online_character("merchant")).name}}</span>{% else %}<span style="color: orange">Offline</span>{%
+			&gt; 4th Character:
+			<span class="characterr4"
+				>{% if domain|get_online_character(4) %}<span style="color: green">{{(domain|get_online_character(4)).name}}</span>{% else %}<span style="color: orange">Offline</span>{%
 				endif %}</span
+			>
+		</div>
+		<div class="enableclicks">
+			&gt; 5th Character:
+			<span class="characterr5"
+				>{% if domain|get_online_character(5) %}<span style="color: green">{{(domain|get_online_character(5)).name}}</span>{% else %}<span style="color: orange">Offline</span>{% endif %}</span
 			>
 		</div>
 	</div>

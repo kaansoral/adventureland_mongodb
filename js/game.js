@@ -453,7 +453,7 @@ function position_map() {
 }
 
 function ui_logic() {
-	if (character && character.ctype == "mage") {
+	if (character && character.active_skill == "mage") {
 		if (b_pressed && map.cursor != "crosshair") map.cursor = "crosshair";
 		else if (!b_pressed && map.cursor == "crosshair") map.cursor = "default";
 	}
@@ -872,7 +872,7 @@ function update_overlays() {
 	if (character) send_target_logic();
 	if (mode.dom_tests || no_html) return;
 	if (character) {
-		if (!cached("att", character.attack)) $(".attackui").html(((character.ctype == "priest" && "HEAL ") || "ATT ") + ((character.ctype == "priest" && character.heal) || character.attack));
+		if (!cached("att", character.attack)) $(".attackui").html(((character.active_skill == "priest" && "HEAL ") || "ATT ") + ((character.active_skill == "priest" && character.heal) || character.attack));
 		if (!cached("inv", character.esize + "|" + character.isize)) $(".invui").html("INV " + (character.isize - character.esize) + "/" + character.isize);
 		if (!cached("hptop", character.hp, character.max_hp)) {
 			//$(".hpui").html("HP: "+character.hp+"/"+character.max_hp);
@@ -884,10 +884,13 @@ function update_overlays() {
 			$("#mptext").html(character.mp + "/" + character.max_mp);
 			$("#mpslider").css("width", (character.mp * 100) / character.max_mp + "%");
 		}
-		var xp = floor((character.xp / character.max_xp) * 100);
-		if (!cached("xptop", character.level + "|" + xp)) {
-			$("#xpui").html("LV" + character.level + " " + xp + "%");
-			$("#xpslider").css("width", (character.xp * 100) / character.max_xp + "%");
+		var activeProgress = character.active_skill && character.skills && character.skills[character.active_skill];
+		var activeXp = (activeProgress && activeProgress.xp) || 0;
+		var activeMaxXp = activeProgress && activeProgress.max_xp;
+		var activePercent = activeMaxXp ? floor((activeXp * 100) / activeMaxXp) : activeProgress ? 100 : 0;
+		if (!cached("xptop", character.total_level + "|" + character.active_skill + "|" + activePercent)) {
+			$("#xpui").html("TL" + character.total_level + (character.active_skill ? " " + character.active_skill.toUpperCase() + " " + activePercent + "%" : ""));
+			$("#xpslider").css("width", activePercent + "%");
 		}
 		if (!cached("tutorialtop", X.tutorial.step + "|" + X.tutorial.task)) {
 			update_tutorial_ui();
@@ -1432,15 +1435,15 @@ function init_socket(args) {
 		character.home = data.home;
 		character.emx = data.emx;
 		character.acx = data.acx;
-		character.xcx = data.xcx;
-		G.classes[character.ctype].xcx.forEach(function (c) {
+		character.xcx = data.xcx || [];
+		(G.character.xcx || []).forEach(function (c) {
 			if (!character.xcx.includes(c)) character.xcx.push(c);
 		});
-		if (character.level == 1) {
+		if (character.total_level == 7) {
 			if (X && X.tutorial && !X.tutorial.finished && tutorial_ui) open_tutorial();
 			else show_game_guide();
 		}
-		if (character.ctype == "merchant" || recording_mode || 1) options.show_names = true;
+		if (character.active_skill == "merchant" || recording_mode || 1) options.show_names = true;
 		clear_game_logs();
 		add_log("Connected!");
 		if (S.holidayseason) add_holiday_log();
@@ -1603,7 +1606,7 @@ function init_socket(args) {
 			if (data.affected) {
 				// These were outside draw_trigger, but moved inside [03/07/18]
 				if (is_pvp) pvp_timeout(3600);
-				skill_timeout("invis");
+				ability_timeout("invis");
 			}
 			if (data.affected) start_animation(character, "light");
 			last_light = new Date();
@@ -1653,8 +1656,20 @@ function init_socket(args) {
 	socket.on("achievement_success", function (data) {
 		add_log("AP[" + data.name + "]: Complete!", "#58CF40");
 	});
-	socket.on("skill_timeout", function (data) {
-		skill_timeout(data.name, data.ms);
+	socket.on("ability_timeout", function (data) {
+		ability_timeout(data.name, data.ms);
+	});
+	socket.on("skill_xp", function (data) {
+		if (!character || !data.skills) return;
+		character.skills = data.skills;
+		character.total_level = data.total_level;
+	});
+	socket.on("skill_level_up", function (data) {
+		if (!character) return;
+		if (data.total_level !== undefined) character.total_level = data.total_level;
+		add_log((data.skill || "Skill").toTitleCase() + " reached level " + data.to_level + "!", "#724A8F");
+		call_code_function("trigger_character_event", "skill_level_up", data);
+		sfx("level_up");
 	});
 	socket.on("game_response", function (data) {
 		if (Dev) console.log(["game_response", data]);
@@ -2527,14 +2542,14 @@ function init_socket(args) {
 				}
 			} else if (data.type == "slots") {
 				if (map_machines.slots) map_machines.slots.spinning = future_s(3);
-			} else if (data.type == "level_up") {
+			} else if (data.type == "skill_level_up") {
 				var player = get_entity(data.name);
 				if (player) {
 					small_success(player);
 					d_text("LEVEL UP!", player, { size: "huge", color: "#724A8F" });
-					call_code_function("trigger_event", "level_up", { name: player.name, level: player.level });
+					call_code_function("trigger_event", "skill_level_up", { name: player.name, skill: data.skill, to_level: data.to_level, total_level: data.total_level });
 					if (player.me) {
-						call_code_function("trigger_character_event", "level_up", { level: player.level });
+						call_code_function("trigger_character_event", "skill_level_up", { skill: data.skill, to_level: data.to_level, total_level: data.total_level });
 						sfx("level_up");
 					}
 				}
@@ -3400,7 +3415,7 @@ function player_right_click(event) {
 	else if (character.slots.mainhand && character.slots.mainhand.name == "cupid") {
 		// just attack now
 		player_attack.call(this);
-	} else if (character.ctype == "priest") {
+	} else if (character.active_skill == "priest") {
 		if (!pvp || (character.party && this.party == character.party)) player_heal.call(this);
 		else if (pvp) player_attack.call(this);
 		else return;
@@ -3443,9 +3458,9 @@ function map_click(event) {
 		dy /= scale;
 		// if(log_flags.xy) console.log("dx,dy: "+round(dx)+","+round(dy));
 		if (call_code_function("on_map_click", character.real_x + dx, character.real_y + dy)) return;
-		if ((blink_pressed || mssince(last_blink_pressed) < 360) && character.ctype == "mage") {
+		if ((blink_pressed || mssince(last_blink_pressed) < 360) && character.active_skill == "mage") {
 			push_deferred("blink");
-			socket.emit("skill", { name: "blink", x: character.real_x + dx, y: character.real_y + dy, direction: character.moving && character.direction });
+			socket.emit("ability", { name: "blink", x: character.real_x + dx, y: character.real_y + dy, direction: character.moving && character.direction });
 			return;
 		}
 	} else if (event.x) {

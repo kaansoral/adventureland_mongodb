@@ -369,18 +369,18 @@ function render_server() {
 
 function render_character_sheet() {
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top; text-align: left' class='disableclicks'>";
-	html += "<div><span style='color:gray'>Class:</span> " + to_title(character.ctype) + "</div>";
-	html += "<div><span style='color:gray'>Level:</span> " + character.level + "</div>";
-	html += "<div><span style='color:gray'>XP:</span> " + to_pretty_num(character.xp) + " / " + to_pretty_num(character.max_xp) + "</div>";
-	var divider = 1,
-		disclaimer = "";
-	if (pvp && !(!is_pvp && G.maps[character.map].safe_pvp)) (divider = 10), (disclaimer = "<span style='color:#605B85'>(PVP)</span>");
-	var lost_xp = floor(min(max((character.max_xp * 0.01) / divider, (character.xp * 0.02) / divider), character.xp));
-	if (character.ctype != "merchant") html += "<div><span style='color:gray'>Max XP Loss:</span> " + to_pretty_num(lost_xp) + " " + disclaimer + "</div>";
+	html += "<div><span style='color:gray'>Total Level:</span> " + character.total_level + "</div>";
+	html += "<div><span style='color:gray'>Active Skill:</span> " + (character.active_skill ? to_title(character.active_skill) : "Unarmed") + "</div>";
+	Object.keys(character.skills || {}).forEach(function (skill) {
+		var progress = character.skills[skill];
+		html += "<div><span style='color:gray'>" + ((G.skills[skill] && G.skills[skill].name) || to_title(skill)) + ":</span> Lv." + progress.level + " " + to_pretty_num(progress.xp) + (progress.max_xp === null ? " / MAX" : " / " + to_pretty_num(progress.max_xp)) + " XP</div>";
+	});
+	if (character.death_sickness_until && new Date(character.death_sickness_until) > new Date())
+		html += "<div><span style='color:#D88989'>Death Sickness:</span> " + ((new Date(character.death_sickness_until) - new Date()) / 1000).toFixed(0) + "s</div>";
 	if (character.party && party && party[character.name])
 		html += "<div><span style='color:" + colors.party_xp + "'>Party:</span> " + round(party[character.name].share * 100) + "% <span style='color:gray'>(Your Share)</span></div>";
-	if (character.ctype == "merchant") html += "<div><span style='color:gray'>Tax:</span> " + character.tax * 100 + "%</div>";
-	if (character.ctype == "priest") {
+	if (character.tax !== undefined) html += "<div><span style='color:gray'>Tax:</span> " + character.tax * 100 + "%</div>";
+	if (character.active_skill == "priest") {
 		html += "<div><span style='color:gray'>Heal:</span> " + character.heal + "</div>";
 	}
 	html += "<div><span style='color:gray'>Attack:</span> " + character.attack + "</div>";
@@ -715,7 +715,7 @@ function render_character(player) {
 		onclick: "render_cosmetics(xtarget||ctarget,{toggle:true})",
 	});
 	html += "<div class='ihtml'>";
-	ihtml += info_line({ name: "LEVEL", color: "orange", value: player.level, afk: player.afk });
+	ihtml += info_line({ name: "LEVEL", color: "orange", value: player.total_level, afk: player.afk });
 	ihtml += info_line({ name: "HP", color: colors.hp, value: player.hp + "/" + player.max_hp });
 	ihtml += info_line({ name: "MP", color: "#365DC5", value: player.mp + "/" + player.max_mp });
 	if (player.heal) ihtml += info_line({ name: "HEAL", color: "#CB83AC", value: round(player.heal) });
@@ -1983,37 +1983,16 @@ function render_equip_info(name) {
 		html = "";
 	html += "<div style='background-color: black; border: 5px solid gray; font-size: 24px; display: inline-block; padding: 20px; line-height: 24px; max-width: 360px;' class='buyitem'>";
 	html += "<div style='padding: 4px; margin: 4px; text-align: center; color: #CDCAB7'>" + (weapon_types[def.wtype] || offhand_types[def.type] || def.wtype || def.type).toTitleCase() + "</div>";
-	["ranger", "rogue", "warrior", "mage", "priest", "paladin", "merchant"].forEach(function (ctype) {
-		var color = "#DDDDDD";
-		if (window.character && character.ctype == ctype) color = "#36813A";
-		else if (window.character) color = "#666870";
-		if (G.classes[ctype].mainhand[def.wtype || def.type]) {
-			html += "<div style='border: 2px dotted gray; padding: 14px; margin: 4px'>";
-			html += "<div style='color:" + color + "'>[" + ctype.toTitleCase() + "] Mainhand</div>";
-			var s = render_item("html", { item: {}, prop: G.classes[ctype].mainhand[def.wtype || def.type], pure: true });
-			if (!s) html += "<div style='color: #788783'>No Modifier</div>";
-			else html += s;
-			html += "</div>";
-		}
-		if (G.classes[ctype].doublehand[def.wtype || def.type]) {
-			html += "<div style='border: 2px dotted gray; padding: 14px; margin: 4px'>";
-			html += "<div style='color:" + color + "'>[" + ctype.toTitleCase() + "] Doublehand</div>";
-			var s = render_item("html", { item: {}, prop: G.classes[ctype].doublehand[def.wtype || def.type], pure: true });
-			if (!s) html += "<div style='color: #788783'>No Modifier</div>";
-			else html += s;
-			html += "<div style='margin-bottom: 5px'></div>";
-			html += "</div>";
-		}
-		if (G.classes[ctype].offhand[def.wtype || def.type]) {
-			html += "<div style='border: 2px dotted gray; padding: 14px; margin: 4px'>";
-			html += "<div style='color:" + color + "'>[" + ctype.toTitleCase() + "] Offhand</div>";
-			var s = render_item("html", { item: {}, prop: G.classes[ctype].offhand[def.wtype || def.type], pure: true });
-			if (!s) html += "<div style='color: #788783'>No Modifier</div>";
-			else html += s;
-			html += "<div style='margin-bottom: 5px'></div>";
-			html += "</div>";
-		}
-	});
+	if (def.requirements && def.requirements.length) {
+		html += "<div style='border: 2px dotted gray; padding: 14px; margin: 4px'><div style='color:#DDDDDD'>Skill requirements</div>";
+		def.requirements.forEach(function (requirement) {
+			var skill = G.skills[requirement.skill] || {};
+			var current = window.character && character.skills && character.skills[requirement.skill];
+			var color = current && current.level >= requirement.level ? "#36813A" : "#DDDDDD";
+			html += "<div style='color:" + color + "'>" + (skill.name || requirement.skill.toTitleCase()) + " Lv." + requirement.level + "</div>";
+		});
+		html += "</div>";
+	}
 	html += "</div>";
 	show_modal(html, { wrap: false, hideinbackground: true });
 }
@@ -3381,7 +3360,7 @@ function render_item(selector, args) {
 	var actual = args && args.actual;
 	if (selector && selector != "html") last_selector = selector;
 	else if (selector != "html") selector = last_selector;
-	var prop = args.prop || calculate_item_properties(actual || {}, { def: item, class: window.character && character.ctype, map: window.character && character.map }),
+	var prop = args.prop || calculate_item_properties(actual || {}, { def: item, class: window.character && character.active_skill, map: window.character && character.map }),
 		grade = calculate_item_grade(item, actual || {});
 	var html = "";
 	if (!args.pure)
@@ -3533,16 +3512,6 @@ function render_item(selector, args) {
 					" [Only]" +
 					"</span></div>";
 			}
-		for (var cname in G.classes)
-			if (item[cname]) {
-				html +=
-					"<div><span style='color: #7738E8;'>Bonus</span>: <span class='clickable' onclick='stpr(event); show_json(" +
-					JSON.stringify(item[cname]) +
-					")'>" +
-					cname.toTitleCase() +
-					" [Only]" +
-					"</span></div>";
-			}
 		if (args.count) html += bold_prop_line("Kills", to_pretty_num(args.count), "#7D0C15");
 		if (args.score) html += bold_prop_line("Score", to_pretty_num(args.score), "#C38737");
 		if (args.mcount) html += bold_prop_line("Max Score", to_pretty_num(args.mcount) + " <span class='gray'>[" + args.mowner + "]</span>", "#DCC343");
@@ -3552,19 +3521,10 @@ function render_item(selector, args) {
 				html += bold_prop_line("Base Gold", G.base_gold[args.monster][mname] + " <span class='gray'>(" + G.maps[mname].name + ")</span>", "gold");
 			}
 		}
-		if (prop["class"])
-			html += bold_prop_line(
-				"Class",
-				(function (a) {
-					var s = "";
-					a.forEach(function (x) {
-						if (s.length) s += ", ";
-						s += x.toTitleCase();
-					});
-					return s;
-				})(prop["class"]),
-				"gray",
-			);
+		if (prop.requirements)
+			prop.requirements.forEach(function (requirement) {
+				html += bold_prop_line("Skill", ((G.skills[requirement.skill] && G.skills[requirement.skill].name) || requirement.skill.toTitleCase()) + " Lv." + requirement.level, "gray");
+			});
 		if (actual && item.type == "elixir" && args.slot == "elixir") {
 			var remains = -msince(new Date(actual.expires)) / 60.0;
 			// html+="<div style='color: #C3C3C3'>"+remains+" hours</div>";
@@ -3681,12 +3641,10 @@ function render_item(selector, args) {
 				if (0 && parseInt(item.tier) < item.tier) t += "T" + parseInt(item.tier) + "+ " + (weapon_types[item.wtype] || offhand_types[item.wtype] || (item.wtype || item.type).toTitleCase());
 				else t += "T" + to_pretty_float(item.tier) + " " + (weapon_types[item.wtype] || offhand_types[item.wtype] || (item.wtype || item.type).toTitleCase());
 
-				if (
-					!window.character ||
-					G.classes[character.ctype].mainhand[item.wtype || item.type] ||
-					G.classes[character.ctype].doublehand[item.wtype || item.type] ||
-					G.classes[character.ctype].offhand[item.wtype || item.type]
-				)
+				if (!window.character || !item.requirements || item.requirements.every(function (requirement) {
+					var progress = character.skills && character.skills[requirement.skill];
+					return progress && progress.level >= requirement.level;
+				}))
 					color = "#56A244";
 
 				html +=
@@ -4673,7 +4631,7 @@ function render_skillbar(empty) {
 			if (current && current.skin) skin = current.skin;
 			else if (current.type == "item" && G.items[current.name]) skin = G.items[current.name].skin;
 			else if (G.abilities[current.name || current]) skin = G.abilities[current.name || current].skin;
-			html += item_container({ skid: id, skin: skin || "", draggable: false, droppable: true, onclick: "on_skill('" + id + "')" }, current);
+			html += item_container({ skid: id, skin: skin || "", draggable: false, droppable: true, onclick: "on_ability('" + id + "')" }, current);
 		} else html += item_container({ skid: id, draggable: false, droppable: true });
 		if (!(skillbar.length >= 8 && !(skillbar.length % 2) && !(i % 2))) html += "<div></div>";
 		i++;
@@ -4684,7 +4642,7 @@ function render_skillbar(empty) {
 	// $("#topmid").show().html(html);
 }
 
-function skill_click(slot) {
+function ability_click(slot) {
 	if (skillsui && keymap[slot]) render_skill("#skills-item", keymap[slot].name || keymap[slot], keymap[slot]);
 	if (G.abilities[slot]) render_skill("#skills-item", slot);
 }
@@ -4721,7 +4679,7 @@ function render_skills() {
 		if (current && current.skin) skin = current.skin;
 		else if (current && current.type == "item" && G.items[current.name]) skin = G.items[current.name].skin;
 		else if (current && G.abilities[current.name || current]) skin = G.abilities[current.name || current].skin;
-		html += item_container({ skid: N, skin: skin || "", onclick: "on_skill('" + N + "')" }, current);
+		html += item_container({ skid: N, skin: skin || "", onclick: "on_ability('" + N + "')" }, current);
 	});
 	html += "</div>";
 	html += "<div>";
@@ -4731,7 +4689,7 @@ function render_skills() {
 		if (current && current.skin) skin = current.skin;
 		else if (current && current.type == "item" && G.items[current.name]) skin = G.items[current.name].skin;
 		else if (current && G.abilities[current.name || current]) skin = G.abilities[current.name || current].skin;
-		html += item_container({ skid: N, skin: skin || "", onclick: "on_skill('" + N + "')" }, current);
+		html += item_container({ skid: N, skin: skin || "", onclick: "on_ability('" + N + "')" }, current);
 	});
 	html += "</div>";
 	html +=
@@ -4759,17 +4717,17 @@ function render_skills() {
 			});
 			if (!found) return;
 		}
-		if (skill.type == "skill" && (!skill["class"] || in_arr(character.ctype, skill["class"]) || character.role == "gm")) s.push({ name: name });
-		if (skill.type == "passive" && (!skill["class"] || in_arr(character.ctype, skill["class"]) || character.role == "gm")) s.push({ name: name });
-		if (skill.type == "ability" && (!skill["class"] || in_arr(character.ctype, skill["class"]) || character.role == "gm")) a.push({ name: name });
-		if (skill.type == "utility" && skill.ui !== false && (!skill["class"] || in_arr(character.ctype, skill["class"]))) a.push({ name: name });
+		if (skill.type == "skill" && (!skill.skill || skill.skill == character.active_skill || character.role == "gm")) s.push({ name: name });
+		if (skill.type == "passive" && (!skill.skill || skill.skill == character.active_skill || character.role == "gm")) s.push({ name: name });
+		if (skill.type == "ability" && (!skill.skill || skill.skill == character.active_skill || character.role == "gm")) a.push({ name: name });
+		if (skill.type == "utility" && skill.ui !== false && (!skill.skill || skill.skill == character.active_skill)) a.push({ name: name });
 	});
 	if (character.role == "gm") a.push({ name: "gm" });
 	// html+="<div style='border-bottom: 5px solid gray; margin-bottom: 2px; margin-left: -5px; margin-right: -5px'></div>";
 	for (var i = 0; i < 10; i++) {
 		html += "<div>";
 		for (var j = 0; j < 7; j++) {
-			if (slast < s.length) html += item_container({ skin: G.abilities[s[slast].name].skin, onclick: "skill_click('" + s[slast].name + "')", skname: s[slast].name }, s[slast]);
+			if (slast < s.length) html += item_container({ skin: G.abilities[s[slast].name].skin, onclick: "ability_click('" + s[slast].name + "')", skname: s[slast].name }, s[slast]);
 			else html += item_container({});
 			slast++;
 		}
@@ -4781,7 +4739,7 @@ function render_skills() {
 	for (var i = 0; i < 10; i++) {
 		html += "<div>";
 		for (var j = 0; j < 7; j++) {
-			if (alast < a.length) html += item_container({ skin: G.abilities[a[alast].name].skin, onclick: "skill_click('" + a[alast].name + "')", skname: a[alast].name }, a[alast]);
+			if (alast < a.length) html += item_container({ skin: G.abilities[a[alast].name].skin, onclick: "ability_click('" + a[alast].name + "')", skname: a[alast].name }, a[alast]);
 			else html += item_container({});
 			alast++;
 		}
@@ -5301,9 +5259,9 @@ function load_nearby(fallback) {
 				"\")'>" +
 				player.name +
 				"</td><td>" +
-				player.level +
+				player.total_level +
 				"</td><td>" +
-				player.ctype.toUpperCase() +
+				player.active_skill.toUpperCase() +
 				"</td><td>" +
 				player.age +
 				"</td><td>" +
@@ -5347,7 +5305,7 @@ function load_friends(info) {
 			info.chars.forEach(function (player) {
 				var afk = "AFK";
 				if (!player.afk) afk = "<span style='color: #34bf15'>Active</span>";
-				html += "<tr><td>" + player.name + "</td><td>" + player.level + "</td><td>" + player.type.toUpperCase() + "</td><td>" + afk + "</td><td>" + server_to_ui(player.server) + "</td></tr>";
+				html += "<tr><td>" + player.name + "</td><td>" + player.total_level + "</td><td>" + (player.active_skill || "unarmed").toUpperCase() + "</td><td>" + afk + "</td><td>" + server_to_ui(player.server) + "</td></tr>";
 			});
 			html += "</table>";
 		}
@@ -5403,7 +5361,7 @@ function load_server_list(info) {
 						"</span>";
 				if (player.name != character.name && player.name != "Hidden") party += " <span style='color: #A255BA' class='clickable' onclick='hide_modal(); cpm_window(\"" + player.name + "\");'>PM</span>";
 				if (name == "Hidden") name = "<span style='color:gray'>Hidden</span>";
-				html += "<tr><td>" + name + "</td><td>" + player.level + "</td><td>" + player.type.toUpperCase() + "</td><td>" + player.age + "</td><td>" + afk + "</td><td>" + party + "</td>";
+				html += "<tr><td>" + name + "</td><td>" + player.total_level + "</td><td>" + (player.active_skill || "unarmed").toUpperCase() + "</td><td>" + player.age + "</td><td>" + afk + "</td><td>" + party + "</td>";
 				if (is_pvp) html += "<td>" + to_pretty_num(player.kills) + "</td>";
 				html += "</tr>";
 			});
@@ -5501,7 +5459,7 @@ function load_character_list() {
 				(link = "<a href='/character/" + player.name + "/in/" + server_region + "/" + server_identifier + "/' target='_blank' class='cancela' style='color: #4C9BC8'>Deploy</span>");
 		if (player.name != character.name && player.name != "Hidden") party += " <span style='color: #A255BA' class='clickable' onclick='hide_modal(); cpm_window(\"" + player.name + "\");'>PM</span>";
 		if (name == "Hidden") name = "<span style='color:gray'>Hidden</span>";
-		html += "<tr><td>" + name + "</td><td>" + player.level + "</td><td>" + player.type.toUpperCase() + "</td><td>" + afk + "</td>";
+		html += "<tr><td>" + name + "</td><td>" + player.total_level + "</td><td>" + (player.active_skill || "unarmed").toUpperCase() + "</td><td>" + afk + "</td>";
 		html += "<td>" + link + "</td>";
 		html += "</tr>";
 	});
@@ -5942,9 +5900,9 @@ function cx_sprite(name, args) {
 					if (t[1] == "cxjar" && t[3] == name) mdrop = true;
 				});
 			}
-			for (var cname in G.classes) {
-				if ((G.classes[cname].xcx || []).includes(name)) ccx = true;
-			}
+			(G.character.appearances || []).forEach(function (appearance) {
+				if (appearance[0] == name || Object.values(appearance[1] || {}).includes(name)) ccx = true;
+			});
 			for (var iname in G.items) {
 				if ((G.items[iname].xcx || []).includes(name)) icx = true;
 			}
@@ -6261,26 +6219,19 @@ function render_cosmetics(player, args) {
 	$("#topleftcornerdialog").html(html);
 }
 
-function load_class_info(name, look) {
+function load_appearance_info(look) {
 	var html = "";
-	name = name || window.chartype || "warrior";
-	if (!G.classes[name]) return;
 	look = nunv(look, nunv(window.thelooks, 0));
-	if (!G.classes[name].looks[look]) look = 0;
+	var appearance = G.character.appearances[look] || G.character.appearances[0];
 
-	//html+="<div style='float: left; margin-right: 10px; margin-top: -10px; width: 52px; height: 72px; overflow: hidden'><img style='margin-top: -"+(72*4)+"px; margin-left: -"+(52*4)+"px; width: 624px; height: 576px;' src='/images/tiles/characters/chara7.png'/></div>";
 	html +=
 		"<div style='float: left; margin-right: 10px; margin-top: -10px; margin-bottom: -3px'>" +
-		sprite(G.classes[name].looks[look][0], { cx: G.classes[name].looks[look][1], scale: 2, height: 72, width: 52 }) +
+		sprite(appearance[0], { cx: appearance[1], scale: 2, height: 72, width: 52 }) +
 		"</div>";
-	html += "<div><span style='color: white'>Class:</span> <span style='color: " + colors.male + "'>" + name.toTitleCase() + "</span></div>";
-	html += "<div><span style='color: white'>Primary Attribute:</span> <span style='color: " + colors[G.classes[name].main_stat] + "'>" + G.classes[name].main_stat.toTitleCase() + "</span></div>";
-	if (G.classes[name].side_stat)
-		html += "<div><span style='color: white'>Secondary Attribute:</span> <span style='color: " + colors[G.classes[name].side_stat] + "'>" + G.classes[name].side_stat.toTitleCase() + "</span></div>";
-	html += "<div><span style='color: white'>Description:</span> <span style='color: gray'>" + G.classes[name].description + "</span></div>";
+	html += "<div><span style='color: white'>Appearance:</span> <span style='color: " + colors.male + "'>" + (look + 1) + " / " + G.character.appearances.length + "</span></div>";
+	html += "<div><span style='color: white'>Progression:</span> <span style='color: gray'>All seven skills begin at level 1.</span></div>";
 
-	$("#features").css("height", 208).html(html);
-	// $(".salesui").css("bottom",208+36);
+	$("#features").css("height", 100).html(html);
 }
 
 function to_pretty_fraction(num) {

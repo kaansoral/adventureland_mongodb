@@ -6,14 +6,22 @@
 {
 	"name": "CharacterName",
 	"type": "character",
-	"ctype": "warrior", // One of G.classes
 	"hp": 2000,
 	"max_hp": 2500,
 	"mp": 360,
 	"max_mp": 960,
-	"level": 72,
-	"xp": 978000, // Your current XP
-	"max_xp": 420000000, // max_xp is G.levels[character.level]
+	"skills": {
+		"warrior": {"level": 72, "xp": 978000, "max_xp": 1499375},
+		"paladin": {"level": 1, "xp": 0, "max_xp": 93711},
+		"mage": {"level": 1, "xp": 0, "max_xp": 93711},
+		"priest": {"level": 1, "xp": 0, "max_xp": 93711},
+		"ranger": {"level": 1, "xp": 0, "max_xp": 93711},
+		"rogue": {"level": 1, "xp": 0, "max_xp": 93711},
+		"merchant": {"level": 1, "xp": 0, "max_xp": 93711}
+	},
+	"active_skill": "warrior",
+	"total_level": 78,
+	"death_sickness_until": null,
 	"str": 206,
 	"int": 46,
 	"dex": 46,

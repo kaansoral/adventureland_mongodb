@@ -188,26 +188,26 @@ function throw_item(num, x, y) {
 	return parent.push_deferred("throw");
 }
 
-function use_skill(name, target, extra_arg) {
+function use_ability(name, target, extra_arg) {
 	// target: object or string (character name or monster ID)
-	// for "blink": use_skill("blink",[x,y])
+	// for "blink": use_ability("blink",[x,y])
 	// for "3shot", "5shot" target can be an array of objects or strings (name or ID)
-	// example: use_skill("3shot",[target1,target2,target3])
-	// extra_arg is currently for use_skill("throw",target,inventory_num) and use_skill("energize",target,optional_mp)
+	// example: use_ability("3shot",[target1,target2,target3])
+	// extra_arg is currently for use_ability("throw",target,inventory_num) and use_ability("energize",target,optional_mp)
 	if (!target) target = get_target();
-	return parent.use_skill(name, target, extra_arg);
+	return parent.use_ability(name, target, extra_arg);
 	// Returns a Promise
 	// For "3shot", "5shot", "cburst" returns an array of Promise's - one for each target
 }
 
 function reduce_cooldown(name, ms) {
-	// parent.next_skill contains Date objects of when the skills will be available next
-	// show_json(parent.next_skill) to get a better idea
+	// parent.next_ability contains Date objects of when the skills will be available next
+	// show_json(parent.next_ability) to get a better idea
 	// reduce_cooldown("attack",100) would cause the attack cooldown to reduce by 100 ms
 	// If your ping is 100+ms - this would ~correct/improve/adjust the cooldown
 	// attack(target).then(function(data){ reduce_cooldown("attack",character.ping*0.95); });
 	// Above call is likely the ideal usage
-	if (parent.next_skill[name]) parent.skill_timeout(name, -mssince(parent.next_skill[name]) - ms);
+	if (parent.next_ability[name]) parent.ability_timeout(name, -mssince(parent.next_ability[name]) - ms);
 }
 
 function bank_deposit(gold) {
@@ -459,7 +459,7 @@ function is_in_range(target, skill) {
 
 function is_on_cooldown(skill) {
 	if (G.abilities[skill] && G.abilities[skill].share) return is_on_cooldown(G.abilities[skill].share);
-	if (parent.next_skill[skill] && new Date() < parent.next_skill[skill]) return true;
+	if (parent.next_ability[skill] && new Date() < parent.next_ability[skill]) return true;
 	return false;
 }
 
@@ -468,7 +468,7 @@ function can_attack(target) {
 	// also works for "heal" as G.abilities.heal shares the "attack" cooldown
 	// is_disabled function checks .rip and .stunned
 	if (!target) return false;
-	if (!parent.is_disabled(character) && is_in_range(target) && new Date() >= parent.next_skill.attack) return true;
+	if (!parent.is_disabled(character) && is_in_range(target) && new Date() >= parent.next_ability.attack) return true;
 	return false;
 }
 
@@ -836,11 +836,11 @@ function use_hp_or_mp() {
 	if (safeties && mssince(last_potion) < min(200, character.ping * 3)) return resolving_promise({ reason: "safeties", success: false, used: false });
 	var used = true;
 	if (is_on_cooldown("use_hp")) return resolving_promise({ success: false, reason: "cooldown" });
-	if (character.mp / character.max_mp < 0.2) return use_skill("use_mp");
-	else if (character.hp / character.max_hp < 0.7) return use_skill("use_hp");
-	else if (character.mp / character.max_mp < 0.8) return use_skill("use_mp");
-	else if (character.hp < character.max_hp) return use_skill("use_hp");
-	else if (character.mp < character.max_mp) return use_skill("use_mp");
+	if (character.mp / character.max_mp < 0.2) return use_ability("use_mp");
+	else if (character.hp / character.max_hp < 0.7) return use_ability("use_hp");
+	else if (character.mp / character.max_mp < 0.8) return use_ability("use_mp");
+	else if (character.hp < character.max_hp) return use_ability("use_hp");
+	else if (character.mp < character.max_mp) return use_ability("use_mp");
 	else used = false;
 	if (used) last_potion = new Date();
 	else return resolving_promise({ reason: "full", success: false, used: false });

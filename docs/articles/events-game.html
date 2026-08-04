@@ -2,8 +2,8 @@
 
 <div class='code'>
 // Register to a single event:
-game.on("level_up",function(data){
-	game_log(data.name+" is now level "+data.level+"!");
+game.on("skill_level_up",function(data){
+	game_log(data.name+" reached "+data.skill+" level "+data.to_level+"!");
 });
 
 // Register to all events:
@@ -106,11 +106,13 @@ game.all(function(name,data){
 }
 </div>
 
-<span class='dlabel'>"level_up"</span>
+<span class='dlabel'>"skill_level_up"</span>
 <div class='code'>
 {
 	name: "CharacterName", // Character name
-	level: 72, // Characters' new level
+	skill: "warrior", // The skill that advanced
+	to_level: 72, // The skill's new level
+	total_level: 78,
 }
 </div>
 

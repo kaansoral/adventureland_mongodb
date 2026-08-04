@@ -143,7 +143,7 @@
 				// $("body").nodoubletapzoom();
 				window.onbeforeunload=function(e){
 					if(character && game_loaded) code_persistence_logic();
-					if(character && next_skill.use_town>new Date())
+					if(character && next_ability.use_town>new Date())
 					{
 						add_log("Since you engaged another player in the last 3.6 seconds, If you leave now, You will be automatically defeated.","#E58859")
 						var response="Are you sure?";

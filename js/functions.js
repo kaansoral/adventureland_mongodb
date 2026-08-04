@@ -230,7 +230,7 @@ function booster_modal_logic() {
 
 var snip_wl_code = 'map_key("Q","snippet","smart_move(\'winterland\')");\n//Press Q in the Game to test this, after you EXECUTE!';
 var snip_esc_code =
-	"map_key(\"ESC\",{name:\"eval\",code:\"use_skill('stop'); esc_pressed();\",skin:G.abilities.stop.skin});\n//Overrides ESC, adds stopping, overrides the 'eval' icon with the 'stop' icon";
+	"map_key(\"ESC\",{name:\"eval\",code:\"use_ability('stop'); esc_pressed();\",skin:G.abilities.stop.skin});\n//Overrides ESC, adds stopping, overrides the 'eval' icon with the 'stop' icon";
 function keymap_modal_logic() {
 	[
 		["1", "charge"],
@@ -750,7 +750,7 @@ function item_position(name) {
 }
 
 function can_use(name) {
-	if (!next_skill[name] || new Date() > next_skill[name]) return true;
+	if (!next_ability[name] || new Date() > next_ability[name]) return true;
 	return false;
 }
 
@@ -868,7 +868,7 @@ function show_confirm(text, ok, cancel, onclick) {
 	show_modal(html, { wrap: false });
 }
 
-function use_skill(name, target, arg) {
+function use_ability(name, target, arg) {
 	if (target && target.id) target = target.id;
 	if (target && is_array(target))
 		for (var i = 0; i < target.length; i++) {
@@ -900,7 +900,7 @@ function use_skill(name, target, arg) {
 		}
 	} else if (name == "cburst") {
 		if (is_array(target)) {
-			socket.emit("skill", { name: "cburst", targets: target });
+			socket.emit("ability", { name: "cburst", targets: target });
 		} else {
 			var hostiles = get_nearby_hostiles({ range: character.range - 2, limit: 12 }),
 				targets = [],
@@ -909,29 +909,29 @@ function use_skill(name, target, arg) {
 			hostiles.forEach(function (hostile) {
 				targets.push([hostile.id, hmp]);
 			});
-			socket.emit("skill", { name: "cburst", targets: targets });
+			socket.emit("ability", { name: "cburst", targets: targets });
 		}
 	} else if (name == "3shot") {
 		if (is_array(target)) {
-			socket.emit("skill", { name: "3shot", ids: target });
+			socket.emit("ability", { name: "3shot", ids: target });
 		} else {
 			var hostiles = get_nearby_hostiles({ range: character.range - 2, limit: 3 }),
 				ids = [];
 			hostiles.forEach(function (hostile) {
 				ids.push(hostile.id);
 			});
-			socket.emit("skill", { name: "3shot", ids: ids });
+			socket.emit("ability", { name: "3shot", ids: ids });
 		}
 	} else if (name == "5shot") {
 		if (is_array(target)) {
-			socket.emit("skill", { name: "5shot", ids: target });
+			socket.emit("ability", { name: "5shot", ids: target });
 		} else {
 			var hostiles = get_nearby_hostiles({ range: character.range - 2, limit: 5 }),
 				ids = [];
 			hostiles.forEach(function (hostile) {
 				ids.push(hostile.id);
 			});
-			socket.emit("skill", { name: "5shot", ids: ids });
+			socket.emit("ability", { name: "5shot", ids: ids });
 		}
 	} else if (name == "pcoat") {
 		var position = item_position("poison");
@@ -939,48 +939,48 @@ function use_skill(name, target, arg) {
 			add_log("You don't have a poison sack", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
-		socket.emit("skill", { name: "pcoat", num: position });
+		socket.emit("ability", { name: "pcoat", num: position });
 	} else if (name == "revive") {
 		var position = item_position("essenceoflife");
 		if (position === undefined) {
 			add_log("You don't have an essence", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
-		socket.emit("skill", { name: "revive", num: position, id: target });
+		socket.emit("ability", { name: "revive", num: position, id: target });
 	} else if (name == "entangle") {
 		var position = item_position("essenceofnature");
 		if (position === undefined) {
 			add_log("You don't have an essence", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
-		socket.emit("skill", { name: "entangle", num: position, id: target });
+		socket.emit("ability", { name: "entangle", num: position, id: target });
 	} else if (name == "poisonarrow") {
 		var position = item_position("poison");
 		if (position === undefined) {
 			add_log("You don't have a poison sack", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
-		socket.emit("skill", { name: "poisonarrow", num: position, id: target });
+		socket.emit("ability", { name: "poisonarrow", num: position, id: target });
 	} else if (name == "shadowstrike" || name == "phaseout") {
 		var position = item_position("shadowstone");
 		if (position === undefined) {
 			add_log("You don't have any shadow stones", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
-		socket.emit("skill", { name: name, num: position });
+		socket.emit("ability", { name: name, num: position });
 	} else if (name == "throw") {
 		if (!character.items[arg]) {
 			add_log("Inventory slot is empty", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
-		socket.emit("skill", { name: name, num: arg, id: target });
-	} else if (name == "blink") socket.emit("skill", { name: "blink", x: target[0], y: target[1] });
+		socket.emit("ability", { name: name, num: arg, id: target });
+	} else if (name == "blink") socket.emit("ability", { name: "blink", x: target[0], y: target[1] });
 	else if (name == "dash") {
 		var d = character.direction;
-		socket.emit("skill", { name: "dash", x: get_x(character) + [0, -40, 40, 0][d], y: get_y(character) + [40, 0, 0, -40][d] });
+		socket.emit("ability", { name: "dash", x: get_x(character) + [0, -40, 40, 0][d], y: get_y(character) + [40, 0, 0, -40][d] });
 	} else if (name == "energize") {
-		socket.emit("skill", { name: "energize", id: target, mp: arg });
-	} else if (name == "stack") on_skill("attack");
+		socket.emit("ability", { name: "energize", id: target, mp: arg });
+	} else if (name == "stack") on_ability("attack");
 	else if (name == "warp") {
 		if (target && is_string(target) && !target[2]) target[2] = character.map;
 		else if (!target || !target[2] || is_string(target)) {
@@ -995,9 +995,9 @@ function use_skill(name, target, arg) {
 			}
 			if (!trset) target = [Math.random() * 100, Math.random() * 100, "main"];
 		}
-		socket.emit("skill", { name: "warp", x: target[0], y: target[1], in: target[2] });
-	} else if (G.abilities[name] && G.abilities[name].target) socket.emit("skill", { name: name, id: target });
-	else if (G.abilities[name]) socket.emit("skill", { name: name });
+		socket.emit("ability", { name: "warp", x: target[0], y: target[1], in: target[2] });
+	} else if (G.abilities[name] && G.abilities[name].target) socket.emit("ability", { name: name, id: target });
+	else if (G.abilities[name]) socket.emit("ability", { name: name });
 	else {
 		add_log("Skill not found: " + name, "gray");
 		return rejecting_promise({ reason: "no_skill" });
@@ -1005,7 +1005,7 @@ function use_skill(name, target, arg) {
 	return push_deferred(name);
 }
 
-function on_skill(key, event) {
+function on_ability(key, event) {
 	var skill = keymap[key],
 		name = (skill && skill.name) || skill;
 	if (!skill) return;
@@ -1174,7 +1174,7 @@ function on_skill(key, event) {
 			small: true,
 			button: "Engage",
 			onclick: function () {
-				use_skill("magiport", $(".mglocx").val());
+				use_ability("magiport", $(".mglocx").val());
 				hide_modal(1);
 			},
 			input: "mglocx",
@@ -1182,11 +1182,11 @@ function on_skill(key, event) {
 			title: "Magiport",
 		});
 	} else if (name == "throw") {
-		use_skill(name, xtarget || ctarget, skill.num || 0);
-	} else use_skill(name, xtarget || ctarget);
+		use_ability(name, xtarget || ctarget, skill.num || 0);
+	} else use_ability(name, xtarget || ctarget);
 }
 
-function on_skill_up(key) {
+function on_ability_up(key) {
 	var skill = keymap[key],
 		name = (skill && skill.name) || skill;
 	if (!skill) return;
@@ -1206,18 +1206,18 @@ function on_skill_up(key) {
 
 function map_keys_and_skills() {
 	if (!skillbar.length) {
-		if (character.ctype == "warrior" || character.ctype == "rogue") skillbar = ["1", "2", "3", "Q", "R"];
-		else if (character.ctype == "merchant") skillbar = ["1", "2", "3", "4", "5"];
+		if (character.active_skill == "warrior" || character.active_skill == "rogue") skillbar = ["1", "2", "3", "Q", "R"];
+		else if (character.active_skill == "merchant") skillbar = ["1", "2", "3", "4", "5"];
 		else skillbar = ["1", "2", "3", "4", "R"]; // "X"
 	}
 	if (!Object.keys(keymap).length) {
-		if (character.ctype == "warrior") keymap = { 1: "use_hp", 2: "use_mp", 3: "cleave", 4: "stomp", 5: "agitate", Q: "taunt", R: "charge" };
-		else if (character.ctype == "mage") keymap = { 1: "use_hp", 2: "use_mp", Q: "light", R: "burst", 6: "cburst", B: "blink", 7: "magiport" };
-		else if (character.ctype == "priest") keymap = { 1: "use_hp", 2: "use_mp", R: "curse", 4: "partyheal", 8: "darkblessing", H: "heal" };
-		else if (character.ctype == "ranger") keymap = { 1: "use_hp", 2: "use_mp", 3: "3shot", 5: "5shot", 6: "4fingers", R: "supershot" };
-		else if (character.ctype == "rogue") keymap = { 1: "use_hp", 2: "use_mp", 3: "quickpunch", 5: "quickstab", R: "invis", Q: "pcoat" };
-		else if (character.ctype == "merchant") keymap = { 1: "use_hp", 2: "use_mp", 3: "mluck" };
-		else if (character.ctype == "paladin") keymap = { 1: "use_hp", 2: "use_mp", 3: "smash", 4: "selfheal", R: "purify", Q: "mshield" };
+		if (character.active_skill == "warrior") keymap = { 1: "use_hp", 2: "use_mp", 3: "cleave", 4: "stomp", 5: "agitate", Q: "taunt", R: "charge" };
+		else if (character.active_skill == "mage") keymap = { 1: "use_hp", 2: "use_mp", Q: "light", R: "burst", 6: "cburst", B: "blink", 7: "magiport" };
+		else if (character.active_skill == "priest") keymap = { 1: "use_hp", 2: "use_mp", R: "curse", 4: "partyheal", 8: "darkblessing", H: "heal" };
+		else if (character.active_skill == "ranger") keymap = { 1: "use_hp", 2: "use_mp", 3: "3shot", 5: "5shot", 6: "4fingers", R: "supershot" };
+		else if (character.active_skill == "rogue") keymap = { 1: "use_hp", 2: "use_mp", 3: "quickpunch", 5: "quickstab", R: "invis", Q: "pcoat" };
+		else if (character.active_skill == "merchant") keymap = { 1: "use_hp", 2: "use_mp", 3: "mluck" };
+		else if (character.active_skill == "paladin") keymap = { 1: "use_hp", 2: "use_mp", 3: "smash", 4: "selfheal", R: "purify", Q: "mshield" };
 		keymap["A"] = "attack";
 		keymap["I"] = "toggle_inventory";
 		keymap["C"] = "toggle_character";
@@ -1433,7 +1433,7 @@ function party_click(name) {
 		add_log(name + " isn't around. <span class='clickable' onclick='pcs(event); travel_p(\"" + name + "\")' style='color: #A78059'>Travel</span>", "gray");
 		return;
 	}
-	if (character.ctype == "priest") {
+	if (character.active_skill == "priest") {
 		player_heal.call(ptarget);
 	} else {
 		xtarget = ptarget;
@@ -1441,9 +1441,9 @@ function party_click(name) {
 }
 
 function attack_click() {
-	if (character.ctype == "priest" && ctarget && ctarget.type == "character") {
+	if (character.active_skill == "priest" && ctarget && ctarget.type == "character") {
 		player_heal.call(ctarget);
-	} else if (character.ctype == "priest") {
+	} else if (character.active_skill == "priest") {
 		player_heal.call(character);
 	} else if (ctarget && ctarget.type == "monster") {
 		monster_attack.call(ctarget);
@@ -2659,7 +2659,7 @@ function say(message, code) {
 			var args = rest.split(" "),
 				name = args.shift();
 			if (!name) {
-				use_skill("stop");
+				use_ability("stop");
 			} else if (name == "teleport" || name == "town") {
 				socket.emit("stop", { action: "town" });
 				push_deferred("stop");
@@ -4271,7 +4271,7 @@ function attack_timeout_animation(ms) {
 	draw_trigger(function () {
 		$(".atint").css("background", "none");
 		tint_c.a++;
-		add_tint(".atint", { ms: -mssince(next_skill.attack) - DMS, color: "#4C4C4C", reset_to: "#6A6A6A", type: "brute", key: "a", cur: tint_c.a }); //start_d:"left top",end_d:"left bottom",
+		add_tint(".atint", { ms: -mssince(next_ability.attack) - DMS, color: "#4C4C4C", reset_to: "#6A6A6A", type: "brute", key: "a", cur: tint_c.a }); //start_d:"left top",end_d:"left bottom",
 	});
 }
 
@@ -4279,8 +4279,8 @@ function pot_timeout(ms) {
 	// if(ms<=0) return; // [09/09/22] 0's are valid now, for corrections
 	if (ms === undefined) ms = 2000;
 	next_potion = future_ms(ms);
-	skill_timeout("use_hp", ms);
-	skill_timeout("use_mp", ms);
+	ability_timeout("use_hp", ms);
+	ability_timeout("use_mp", ms);
 	//add_tint(".hpui",{ms:ms,color:"#9A9A9A",reverse:1});
 	//add_tint(".mpui",{ms:ms,color:"#9A9A9A",reverse:1});
 	// add_tint(".ptint",{ms:ms,color:"#5F346E",reverse:1});
@@ -4288,13 +4288,13 @@ function pot_timeout(ms) {
 	draw_trigger(function () {
 		if (!get_tint(".ptint")) $(".ptint").css("background", "none");
 		tint_c.p++;
-		add_tint(".ptint", { ms: -mssince(next_skill.use_hp) - DMS, color: "#4C4C4C", reset_to: "#6A6A6A", type: "brute", key: "p", cur: tint_c.p });
+		add_tint(".ptint", { ms: -mssince(next_ability.use_hp) - DMS, color: "#4C4C4C", reset_to: "#6A6A6A", type: "brute", key: "p", cur: tint_c.p });
 	});
 }
 
 function pvp_timeout(ms, me) {
 	if (ms <= 0) return;
-	skill_timeout("use_town", ms);
+	ability_timeout("use_town", ms);
 	if (me) return;
 	draw_trigger(function () {
 		$(".pvptint").parent().css("background", "rgb(200,50,20)");
@@ -4318,7 +4318,7 @@ function pvp_timeout(ms, me) {
 				$(".pvptint").parent().css("background", "black");
 				$(".pvptint").css("background", "#907B81");
 				tint_c.t++;
-				add_tint(".pvptint", { ms: -mssince(next_skill.use_town) - DMS, color: "black", reset_to: "none", type: "brute", key: "t", cur: tint_c.t, pos: "top" });
+				add_tint(".pvptint", { ms: -mssince(next_ability.use_town) - DMS, color: "black", reset_to: "none", type: "brute", key: "t", cur: tint_c.t, pos: "top" });
 			}, 200);
 	});
 }
@@ -4329,36 +4329,36 @@ function pvp_timeout(ms, event) {
 		g = 50,
 		b = 20;
 	if (event == "sneak") (r = 45), (g = 111), (b = 45); // didn't work out well
-	skill_timeout("use_town", ms);
+	ability_timeout("use_town", ms);
 	if (event == 1) return; // 1=me
 	draw_trigger(function () {
 		$(".pvptint")
 			.parent()
 			.css("background", "rgb(" + r + "," + g + "," + b + ")");
 		tint_c.t++;
-		add_tint(".pvptint", { ms: -mssince(next_skill.use_town) - DMS, r: r, g: g, b: b, type: "dissipate", key: "t", cur: tint_c.t, i: 0 });
+		add_tint(".pvptint", { ms: -mssince(next_ability.use_town) - DMS, r: r, g: g, b: b, type: "dissipate", key: "t", cur: tint_c.t, i: 0 });
 	});
 }
 
-var next_skill = { attack: new Date(), use_hp: new Date(), use_mp: new Date(), use_town: new Date() };
-function skill_timeout_singular(name, ms) {
+var next_ability = { attack: new Date(), use_hp: new Date(), use_mp: new Date(), use_town: new Date() };
+function ability_timeout_singular(name, ms) {
 	// console.log([name,ms]);
 	if (ms <= 0) ms = 0;
 	var skids = [];
 	if (ms === undefined && (G.abilities[name].cooldown || G.abilities[name].reuse_cooldown) !== undefined) ms = G.abilities[name].cooldown || G.abilities[name].reuse_cooldown;
 	else if (ms === undefined && G.abilities[name].share) ms = G.abilities[G.abilities[name].share].cooldown * (G.abilities[name].cooldown_multiplier || 1);
 	else if (name == "attack" && ms === undefined) ms = 1000.0 / character.frequency;
-	next_skill[name] = future_ms(ms || 0);
-	if (name == "attack") next_attack = next_skill[name];
+	next_ability[name] = future_ms(ms || 0);
+	if (name == "attack") next_attack = next_ability[name];
 	//add_tint(".hpui",{ms:ms,color:"#9A9A9A",reverse:1});
 	//add_tint(".mpui",{ms:ms,color:"#9A9A9A",reverse:1});
 	// add_tint(".ptint",{ms:ms,color:"#5F346E",reverse:1});
 	//var original=$(".ptint").css("background");
 	for (var N in keymap) if (keymap[N] && (keymap[N] == name || keymap[N].name == name)) skids.push(N);
 	draw_trigger(function () {
-		if (name == "attack") attack_timeout_animation(-mssince(next_skill[name]) - DMS);
+		if (name == "attack") attack_timeout_animation(-mssince(next_ability[name]) - DMS);
 		skids.forEach(function (skid) {
-			add_tint(".skidloader" + skid, { ms: -mssince(next_skill[name]) - DMS, type: "skill", skid: skid });
+			add_tint(".skidloader" + skid, { ms: -mssince(next_ability[name]) - DMS, type: "skill", skid: skid });
 		});
 	});
 }
@@ -4367,11 +4367,11 @@ function restart_skill_tints() {
 	if (0) {
 		var skids = [];
 		for (var N in keymap) if (keymap[N] && (keymap[N] == name || keymap[N].name == name)) skids.push(N);
-		for (var name in next_skill) {
-			if (-mssince(next_skill[name]) > 0) {
+		for (var name in next_ability) {
+			if (-mssince(next_ability[name]) > 0) {
 				draw_trigger(function () {
 					skids.forEach(function (skid) {
-						add_tint(".skidloader" + skid, { ms: -mssince(next_skill[name]), type: "skill", skid: skid });
+						add_tint(".skidloader" + skid, { ms: -mssince(next_ability[name]), type: "skill", skid: skid });
 					});
 				});
 			}
@@ -4389,11 +4389,11 @@ function restart_skill_tints() {
 		});
 }
 
-function skill_timeout(name, ms) {
+function ability_timeout(name, ms) {
 	if (G.abilities[name].share) {
-		skill_timeout_singular(G.abilities[name].share, ms);
-		for (var s in G.abilities) if (G.abilities[s].share == G.abilities[name].share) skill_timeout_singular(s, ms);
-	} else if ((G.abilities[name].cooldown || G.abilities[name].reuse_cooldown) !== undefined || name == "attack") skill_timeout_singular(name, ms);
+		ability_timeout_singular(G.abilities[name].share, ms);
+		for (var s in G.abilities) if (G.abilities[s].share == G.abilities[name].share) ability_timeout_singular(s, ms);
+	} else if ((G.abilities[name].cooldown || G.abilities[name].reuse_cooldown) !== undefined || name == "attack") ability_timeout_singular(name, ms);
 }
 
 function disappearing_circle(x, y, size, args) {
@@ -4540,7 +4540,7 @@ function player_rclick_logic(element) {
 	if (!character || element.me) return;
 	var add = false;
 	if (element.npc) add = true;
-	else if (character.ctype == "priest" || (character.slots.mainhand && character.slots.mainhand.name == "cupid"))
+	else if (character.active_skill == "priest" || (character.slots.mainhand && character.slots.mainhand.name == "cupid"))
 		add = true; // maybe disable when the target is full hp
 	else {
 		if (!pvp);
@@ -4579,7 +4579,7 @@ function rip_logic() {
 		}
 		character.moving = false;
 		$("#ripbutton").show();
-		skill_timeout("use_town", 12000);
+		ability_timeout("use_town", 12000);
 		reopen();
 		$("#name").css("color", "#5E5D5D");
 	}
@@ -4741,7 +4741,7 @@ function add_name_tag(element) {
 		"|" +
 		(bar.mp && mp_width) +
 		"|" +
-		(bar.cl && element.ctype) +
+		(bar.cl && element.active_skill) +
 		"|" +
 		bar.focus +
 		"|" +
@@ -4774,10 +4774,10 @@ function add_name_tag(element) {
 		level.scale = new PIXI.Point(0.125, 0.125);
 		level.anchor.set(0.5, 0);
 	}
-	var fp2 = { fontFamily: SZ.font, fontSize: 64, fill: colors[element.ctype != "merchant" && G.classes[element.ctype] && G.classes[element.ctype].main_stat] || "#A29880", align: "center" },
+	var fp2 = { fontFamily: SZ.font, fontSize: 64, fill: colors[element.active_skill] || "#A29880", align: "center" },
 		cl;
 	if (bar.cl) {
-		cl = new PIXI.Text(element.ctype[0].toUpperCase(), fp2);
+		cl = new PIXI.Text((element.active_skill || "?")[0].toUpperCase(), fp2);
 		cl.scale = new PIXI.Point(0.125, 0.125);
 		cl.anchor.set(0.5, 0);
 	}
@@ -5602,7 +5602,7 @@ function handle_information(infs) {
 						break;
 					}
 
-				if (character.ctype != "merchant")
+				if (character.active_skill != "merchant")
 					for (var num in ui_list) {
 						if (parseInt(num) > 100 || ("" + num).startsWith("CH_")) delete ui_list[num];
 					}

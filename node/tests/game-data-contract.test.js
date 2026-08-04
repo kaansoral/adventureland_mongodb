@@ -520,6 +520,7 @@ test("new ability catalog preserves every legacy definition and only changes own
 	for (const id of Object.keys(legacy)) {
 		const oldDefinition = { ...legacy[id] };
 		const newDefinition = { ...data.abilities[id] };
+		if (id === "throw") oldDefinition.code = oldDefinition.code.replace("character.level", "character.total_level");
 		assert.equal(Object.prototype.hasOwnProperty.call(newDefinition, "class"), false, id);
 		const oldClass = oldDefinition.class;
 		if (Array.isArray(oldClass) && oldClass.length === 1) {
@@ -851,7 +852,7 @@ test("the closed progression consumer inventory has no legacy skill lookups", ()
 		"docs/EXAMPLES.html",
 		"docs/directory.js",
 	];
-	const expectedProgressionRefs = { "htmls/index.html": 1 };
+	const expectedProgressionRefs = { "htmls/index.html": 1, "js/html.js": 5 };
 	const expectedAbilityRefs = {
 		"node/server.js": 40,
 		"node/server_functions.js": 20,
@@ -863,7 +864,7 @@ test("the closed progression consumer inventory has no legacy skill lookups", ()
 		"htmls/contents/keymap_guide.html": 3,
 		"docs/articles/7-using-skills.html": 3,
 	};
-	const allowlistedLegacyReads = { "js/html.js": 10 };
+	const allowlistedLegacyReads = { "js/html.js": 2 };
 	let abilityReferences = 0;
 	for (const relativePath of inventory) {
 		const source = fs.readFileSync(path.join(designRoot, "..", relativePath), "utf8");

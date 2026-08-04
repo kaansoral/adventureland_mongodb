@@ -19,7 +19,7 @@ docs = {
 		"throw_item",
 		//"can_use",
 		//"use",
-		"use_skill",
+		"use_ability",
 		"reduce_cooldown",
 		"bank_deposit",
 		"bank_withdraw",
@@ -160,7 +160,7 @@ docs = {
 		"is_object",
 		"is_array",
 	],
-	documented: ["equip_batch", "attack", "heal", "buy", "upgrade", "compound", "use_skill"],
+	documented: ["equip_batch", "attack", "heal", "buy", "upgrade", "compound", "use_ability"],
 	javascript: [
 		["Javascript Intro", "js,learn,tutorial,number,integer,date,var,variable,let,const", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Introduction"],
 		["String", "string", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String"],
