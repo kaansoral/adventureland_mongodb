@@ -857,7 +857,10 @@ function player_to_client(player, stranger) {
 	data.cx = player.tcx || player.cx;
 	data.slots = player.cslots;
 	data.protocol = 3;
-	if (!stranger) data.skills = skills;
+	if (!stranger) {
+		data.skills = skills;
+		data.rip = player.rip ?? null;
+	}
 	data.active_skill = player.active_skill || null;
 	data.total_level = player.total_level;
 	data.death_sickness_until = (player.info && player.info.death_sickness_until) || null;
