@@ -64,7 +64,7 @@ Object.defineProperty(character, "y", {
 for (var p in parent.character) proxy(p); // Not all properties are sadly available right away, new properties are captured imperfectly
 // var character=parent.character; // Old [25/06/2018]
 
-var G = parent.G; // Game Data - Use show_json(Object.keys(G)); and inspect individual data with show_json(G.skills) and alike
+var G = parent.G; // Game Data - Use show_json(Object.keys(G)); and inspect individual data with show_json(G.abilities) and alike
 var safeties = true; // Prevents common delay based issues that cause many requests to be sent to the server in a burst that triggers the server to disconnect the character
 
 server = {
@@ -447,25 +447,25 @@ function is_in_range(target, skill) {
 	// When a target leaves your viewpoint, .visible becomes false and the object reference is never updated again
 	var range_multiplier = 1,
 		range_bonus = 0;
-	if (G.skills[skill] && G.skills[skill].range) {
-		if (distance(character, target) <= G.skills[skill].range) return true;
+	if (G.abilities[skill] && G.abilities[skill].range) {
+		if (distance(character, target) <= G.abilities[skill].range) return true;
 		return false;
 	}
-	if (G.skills[skill] && G.skills[skill].range_multiplier) range_multiplier = G.skills[skill].range_multiplier;
-	if (G.skills[skill] && G.skills[skill].range_bonus) range_bonus = G.skills[skill].range_bonus;
+	if (G.abilities[skill] && G.abilities[skill].range_multiplier) range_multiplier = G.abilities[skill].range_multiplier;
+	if (G.abilities[skill] && G.abilities[skill].range_bonus) range_bonus = G.abilities[skill].range_bonus;
 	if (distance(character, target) <= character.range * range_multiplier + range_bonus) return true;
 	return false;
 }
 
 function is_on_cooldown(skill) {
-	if (G.skills[skill] && G.skills[skill].share) return is_on_cooldown(G.skills[skill].share);
+	if (G.abilities[skill] && G.abilities[skill].share) return is_on_cooldown(G.abilities[skill].share);
 	if (parent.next_skill[skill] && new Date() < parent.next_skill[skill]) return true;
 	return false;
 }
 
 function can_attack(target) {
 	// better to use is_on_cooldown("attack") just for cooldown checks
-	// also works for "heal" as G.skills.heal shares the "attack" cooldown
+	// also works for "heal" as G.abilities.heal shares the "attack" cooldown
 	// is_disabled function checks .rip and .stunned
 	if (!target) return false;
 	if (!parent.is_disabled(character) && is_in_range(target) && new Date() >= parent.next_skill.attack) return true;

@@ -230,7 +230,7 @@ function booster_modal_logic() {
 
 var snip_wl_code = 'map_key("Q","snippet","smart_move(\'winterland\')");\n//Press Q in the Game to test this, after you EXECUTE!';
 var snip_esc_code =
-	"map_key(\"ESC\",{name:\"eval\",code:\"use_skill('stop'); esc_pressed();\",skin:G.skills.stop.skin});\n//Overrides ESC, adds stopping, overrides the 'eval' icon with the 'stop' icon";
+	"map_key(\"ESC\",{name:\"eval\",code:\"use_skill('stop'); esc_pressed();\",skin:G.abilities.stop.skin});\n//Overrides ESC, adds stopping, overrides the 'eval' icon with the 'stop' icon";
 function keymap_modal_logic() {
 	[
 		["1", "charge"],
@@ -243,7 +243,7 @@ function keymap_modal_logic() {
 	].forEach(function (ks) {
 		var k = ks[0],
 			s = ks[1];
-		$(".skb" + k).html(item_container({ skid: k, skin: G.skills[s].skin, draggable: false }, { name: s }));
+		$(".skb" + k).html(item_container({ skid: k, skin: G.abilities[s].skin, draggable: false }, { name: s }));
 	});
 	var html = "";
 	object_sort(K).forEach(function (k) {
@@ -996,8 +996,8 @@ function use_skill(name, target, arg) {
 			if (!trset) target = [Math.random() * 100, Math.random() * 100, "main"];
 		}
 		socket.emit("skill", { name: "warp", x: target[0], y: target[1], in: target[2] });
-	} else if (G.skills[name] && G.skills[name].target) socket.emit("skill", { name: name, id: target });
-	else if (G.skills[name]) socket.emit("skill", { name: name });
+	} else if (G.abilities[name] && G.abilities[name].target) socket.emit("skill", { name: name, id: target });
+	else if (G.abilities[name]) socket.emit("skill", { name: name });
 	else {
 		add_log("Skill not found: " + name, "gray");
 		return rejecting_promise({ reason: "no_skill" });
@@ -4345,8 +4345,8 @@ function skill_timeout_singular(name, ms) {
 	// console.log([name,ms]);
 	if (ms <= 0) ms = 0;
 	var skids = [];
-	if (ms === undefined && (G.skills[name].cooldown || G.skills[name].reuse_cooldown) !== undefined) ms = G.skills[name].cooldown || G.skills[name].reuse_cooldown;
-	else if (ms === undefined && G.skills[name].share) ms = G.skills[G.skills[name].share].cooldown * (G.skills[name].cooldown_multiplier || 1);
+	if (ms === undefined && (G.abilities[name].cooldown || G.abilities[name].reuse_cooldown) !== undefined) ms = G.abilities[name].cooldown || G.abilities[name].reuse_cooldown;
+	else if (ms === undefined && G.abilities[name].share) ms = G.abilities[G.abilities[name].share].cooldown * (G.abilities[name].cooldown_multiplier || 1);
 	else if (name == "attack" && ms === undefined) ms = 1000.0 / character.frequency;
 	next_skill[name] = future_ms(ms || 0);
 	if (name == "attack") next_attack = next_skill[name];
@@ -4390,10 +4390,10 @@ function restart_skill_tints() {
 }
 
 function skill_timeout(name, ms) {
-	if (G.skills[name].share) {
-		skill_timeout_singular(G.skills[name].share, ms);
-		for (var s in G.skills) if (G.skills[s].share == G.skills[name].share) skill_timeout_singular(s, ms);
-	} else if ((G.skills[name].cooldown || G.skills[name].reuse_cooldown) !== undefined || name == "attack") skill_timeout_singular(name, ms);
+	if (G.abilities[name].share) {
+		skill_timeout_singular(G.abilities[name].share, ms);
+		for (var s in G.abilities) if (G.abilities[s].share == G.abilities[name].share) skill_timeout_singular(s, ms);
+	} else if ((G.abilities[name].cooldown || G.abilities[name].reuse_cooldown) !== undefined || name == "attack") skill_timeout_singular(name, ms);
 }
 
 function disappearing_circle(x, y, size, args) {

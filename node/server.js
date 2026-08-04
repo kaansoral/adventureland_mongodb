@@ -18,6 +18,7 @@ var Local = options.Local;
 var Prod = options.Prod;
 var Staging = options.Staging;
 const express = require("express");
+const { attachProgressionData, buildProgressionData } = require("./game/skill_domain");
 var fs = require("fs");
 var app = express(),
 	http_server = require("http").createServer(app);
@@ -370,12 +371,24 @@ async function init_game() {
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/maps.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/npcs.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/multipliers.js")));
+		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/item_requirements.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/items.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/classes.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/levels.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/upgrades.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/drops.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/skills.js")));
+		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/skill_xp.js")));
+		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/abilities.js")));
+		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/character.js")));
+		const progression_data = buildProgressionData({
+			items: items,
+			item_requirements: item_requirements,
+			skills: skills,
+			skill_xp: skill_xp,
+			abilities: abilities,
+			character: character,
+		});
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/events.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/recipes.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/titles.js")));
@@ -399,7 +412,8 @@ async function init_game() {
 		}
 
 		// Build G (game data) from design globals (matches create_server_api output)
-		G = {
+		G = attachProgressionData(
+			{
 			version: Version,
 			achievements: achievements,
 			animations: animations,
@@ -410,7 +424,6 @@ async function init_game() {
 			npcs: npcs,
 			tilesets: tilesets,
 			imagesets: imagesets,
-			items: items,
 			sets: sets,
 			craft: craft,
 			titles: titles,
@@ -424,12 +437,13 @@ async function init_game() {
 			dimensions: dimensions,
 			levels: levels,
 			positions: positions,
-			skills: skills,
 			games: games,
 			events: events,
 			images: precomputed.images,
 			multipliers: multipliers,
-		};
+			},
+			progression_data,
+		);
 		server_log("Game Version: " + G.version, 1);
 
 		// Build D (dynamics data) from design globals
@@ -553,12 +567,24 @@ async function reload_server(to_broadcast, change) {
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/maps.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/npcs.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/multipliers.js")));
+		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/item_requirements.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/items.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/classes.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/levels.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/upgrades.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/drops.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/skills.js")));
+		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/skill_xp.js")));
+		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/abilities.js")));
+		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/character.js")));
+		const progression_data = buildProgressionData({
+			items: items,
+			item_requirements: item_requirements,
+			skills: skills,
+			skill_xp: skill_xp,
+			abilities: abilities,
+			character: character,
+		});
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/events.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/recipes.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/titles.js")));
@@ -580,7 +606,8 @@ async function reload_server(to_broadcast, change) {
 			if (map) geometry[id] = map.info.data;
 		}
 
-		G = {
+		G = attachProgressionData(
+			{
 			version: Version,
 			achievements: achievements,
 			animations: animations,
@@ -591,7 +618,6 @@ async function reload_server(to_broadcast, change) {
 			npcs: npcs,
 			tilesets: tilesets,
 			imagesets: imagesets,
-			items: items,
 			sets: sets,
 			craft: craft,
 			titles: titles,
@@ -605,12 +631,13 @@ async function reload_server(to_broadcast, change) {
 			dimensions: dimensions,
 			levels: levels,
 			positions: positions,
-			skills: skills,
 			games: games,
 			events: events,
 			images: precomputed.images,
 			multipliers: multipliers,
-		};
+			},
+			progression_data,
+		);
 		D = {
 			upgrades: upgrades,
 			drops: drops,
@@ -2911,7 +2938,7 @@ function commence_attack(attacker, target, atype) {
 		conditions: [],
 	}; // server projectile
 
-	if (!G.skills[atype].hostile) {
+	if (!G.abilities[atype].hostile) {
 		info.positive = true;
 	}
 
@@ -2923,7 +2950,7 @@ function commence_attack(attacker, target, atype) {
 	// FAILURE SCENARIOS
 	if (
 		attacker.type == "merchant" &&
-		!G.skills[atype].merchant_use &&
+		!G.abilities[atype].merchant_use &&
 		!(atype == "attack" && attacker.slots.mainhand && G.items[attacker.slots.mainhand.name].wtype == "dartgun")
 	) {
 		attacker.socket.emit("game_response", { response: "attack_failed", id: target.id });
@@ -2959,8 +2986,8 @@ function commence_attack(attacker, target, atype) {
 	if (attacker.tskin == "konami") {
 		def.projectile = "stone_k";
 	}
-	if ((atype != "attack" || !def.projectile || atype == "heal") && G.skills[atype].projectile) {
-		def.projectile = G.skills[atype].projectile;
+	if ((atype != "attack" || !def.projectile || atype == "heal") && G.abilities[atype].projectile) {
+		def.projectile = G.abilities[atype].projectile;
 	}
 
 	// DAMAGE TYPE LOGIC
@@ -2973,18 +3000,18 @@ function commence_attack(attacker, target, atype) {
 	if (attacker.is_player && attacker.slots.mainhand && G.items[attacker.slots.mainhand.name].damage_type) {
 		info.damage_type = G.items[attacker.slots.mainhand.name].damage_type;
 	}
-	if (atype != "attack" && G.skills[atype].damage_type) {
-		info.damage_type = G.skills[atype].damage_type;
+	if (atype != "attack" && G.abilities[atype].damage_type) {
+		info.damage_type = G.abilities[atype].damage_type;
 	}
 
 	// PROCS
-	if (!attacker.is_player || G.skills[atype].procs) {
+	if (!attacker.is_player || G.abilities[atype].procs) {
 		info.procs = true;
 	}
 
 	// HEAL / POSITIVE
 	if (
-		G.skills[atype].heal ||
+		G.abilities[atype].heal ||
 		(attacker.is_player && attacker.slots.mainhand && attacker.slots.mainhand.name == "cupid")
 	) {
 		info.heal = true;
@@ -2997,13 +3024,13 @@ function commence_attack(attacker, target, atype) {
 	}
 
 	// DAMAGE
-	if (G.skills[atype].damage) {
-		attack = G.skills[atype].damage;
+	if (G.abilities[atype].damage) {
+		attack = G.abilities[atype].damage;
 	}
 
 	// SKILL MP
-	if (G.skills[atype].mp) {
-		mp_cost = G.skills[atype].mp;
+	if (G.abilities[atype].mp) {
+		mp_cost = G.abilities[atype].mp;
 	}
 
 	if (info.procs && attacker.s.poisonous) {
@@ -3087,7 +3114,7 @@ function commence_attack(attacker, target, atype) {
 			attacker.socket.emit("game_response", { response: "no_mp" });
 			return { failed: true, reason: "no_mp", place: atype, id: target.id };
 		}
-		attack = attacker.mp * G.skills.burst.ratio;
+		attack = attacker.mp * G.abilities.burst.ratio;
 		mp_cost = attacker.mp;
 	} else if (atype == "cburst") {
 		var mp_cutoff = attacker.next_mp;
@@ -3096,7 +3123,7 @@ function commence_attack(attacker, target, atype) {
 			attacker.socket.emit("game_response", { response: "no_mp" });
 			return { failed: true, reason: "no_mp", place: atype, id: target.id };
 		}
-		attack = mp * G.skills.cburst.ratio;
+		attack = mp * G.abilities.cburst.ratio;
 		mp_cost = mp;
 		attacker.first = true;
 	} else if (atype == "purify") {
@@ -3116,9 +3143,9 @@ function commence_attack(attacker, target, atype) {
 			info.conditions.push("frozen");
 		}
 	} else if (atype == "quickpunch" || atype == "quickstab" || atype == "smash") {
-		attack = attacker.attack * G.skills[atype].damage_multiplier;
+		attack = attacker.attack * G.abilities[atype].damage_multiplier;
 	} else if (atype == "mentalburst") {
-		attack = attacker.attack * G.skills[atype].damage_multiplier;
+		attack = attacker.attack * G.abilities[atype].damage_multiplier;
 	} else if (atype == "poisonarrow") {
 		info.conditions.push("poisoned");
 	} else if (attacker.is_monster) {
@@ -3129,7 +3156,7 @@ function commence_attack(attacker, target, atype) {
 		attacker.last.attack = future_ms(rng);
 	}
 
-	if (atype != "attack" && target.immune && (!G.skills[atype] || !G.skills[atype].pierces_immunity)) {
+	if (atype != "attack" && target.immune && (!G.abilities[atype] || !G.abilities[atype].pierces_immunity)) {
 		disappearing_text(target.socket, target, "IMMUNE!", { xy: 1, color: "evade", nv: 1, from: attacker.id });
 		return { failed: true, reason: "skill_immune", place: atype, id: target.id };
 	}
@@ -3580,7 +3607,7 @@ function complete_attack(attacker, target, info) {
 					attack *= cmult;
 				}
 				if (attacker.type == "rogue") {
-					var maxd = G.skills.stack.max;
+					var maxd = G.abilities.stack.max;
 					// if(G.monsters[target.type] && G.monsters[target.type].stationary) maxd=9999999999;
 					target.s.stack = { ms: 10000, s: min(maxd, (target.s.stack && target.s.stack.s + 1) || 1) };
 					attack += target.s.stack.s;
@@ -3760,8 +3787,8 @@ function complete_attack(attacker, target, info) {
 		var net = original - max(0, target.hp);
 		if (target.hp <= 0) {
 			def.kill = true;
-			if (G.skills[atype].kill_buff) {
-				add_condition(attacker, G.skills[atype].kill_buff);
+			if (G.abilities[atype].kill_buff) {
+				add_condition(attacker, G.abilities[atype].kill_buff);
 			}
 		}
 
@@ -4163,9 +4190,9 @@ function transport_player_to(player, name, point, effect) {
 		EV = "skill_timeout('attack'," + ms + "); ";
 		player.last.attack = future_ms(ms);
 		for (var i in player.last) {
-			if (G.skills[i] && player.last[i] > future_ms(-3000)) {
+			if (G.abilities[i] && player.last[i] > future_ms(-3000)) {
 				player.last[i] = future_ms(3200);
-				EV += "skill_timeout('" + i + "'," + (3200 + (G.skills[i].cooldown || 0)) + "); ";
+				EV += "skill_timeout('" + i + "'," + (3200 + (G.abilities[i].cooldown || 0)) + "); ";
 			}
 		}
 	}
@@ -8863,7 +8890,6 @@ function init_io() {
 			var resolve = { response: "data", place: data.name, success: true };
 			var reject = null;
 			player.first = true;
-			G.skills.attack.cooldown = player.attack_ms;
 
 			if (is_disabled(player)) {
 				return fail_response("disabled", data.name);
@@ -8873,7 +8899,7 @@ function init_io() {
 				return fail_response("skill_cant_incapacitated", data.name);
 			}
 
-			const gSkill = G.skills[data.name];
+			const gSkill = G.abilities[data.name];
 			if (!gSkill) {
 				return fail_response("no_skill", data.name);
 			}
@@ -8894,10 +8920,10 @@ function init_io() {
 			let lastUse;
 			if (gSkill.share) {
 				// This skill shares a cooldown with another skill, use that skill's cooldown
-				cooldown = G.skills[gSkill.share].cooldown * (gSkill.cooldown_multiplier || 1);
+				cooldown = G.abilities[gSkill.share].cooldown * (gSkill.cooldown_multiplier || 1);
 				lastUse = player.last[gSkill.share];
 			} else {
-				cooldown = gSkill.cooldown || gSkill.reuse_cooldown;
+				cooldown = data.name == "attack" ? player.attack_ms : gSkill.cooldown || gSkill.reuse_cooldown;
 				lastUse = player.last[data.name];
 			}
 			if (cooldown && lastUse && mssince(lastUse) < cooldown) {
@@ -9229,8 +9255,8 @@ function init_io() {
 					return fail_response("item_blocked", data.name);
 				}
 				var prop = calculate_item_properties(item);
-				var negative = in_arr(item.name, G.skills.throw.negative);
-				for (const p of G.skills.throw.nprop) {
+				var negative = in_arr(item.name, G.abilities.throw.negative);
+				for (const p of G.abilities.throw.nprop) {
 					if (prop[p]) {
 						negative = true;
 						break;
@@ -9286,7 +9312,7 @@ function init_io() {
 				if (target.s.invincible) {
 					return fail_response("target_invincible", data.name);
 				}
-				add_condition(target, "tangled", { ms: G.skills.entangle.duration });
+				add_condition(target, "tangled", { ms: G.abilities.entangle.duration });
 				target.abs = true;
 				target.moving = false;
 				xy_emit(player, "ui", { type: "entangle", from: player.name, to: target.id });
@@ -9487,7 +9513,7 @@ function init_io() {
 						current.sound = "pm";
 					}
 					current.dist = distance(player, target);
-					if (current.dist < G.skills.track.range) {
+					if (current.dist < G.abilities.track.range) {
 						list.push(current);
 					}
 				}
@@ -9510,7 +9536,7 @@ function init_io() {
 						continue;
 					}
 					var dist = distance(player, target);
-					if (dist < G.skills.agitate.range) {
+					if (dist < G.abilities.agitate.range) {
 						if (target.target) {
 							stop_pursuit(target, { redirect: true, cause: "agitate redirect" });
 						}
@@ -9559,12 +9585,12 @@ function init_io() {
 				for (var id in instances[player.in].monsters) {
 					var target = instances[player.in].monsters[id];
 					var dist = distance(player, target);
-					if (dist < G.skills.stomp.range) {
+					if (dist < G.abilities.stomp.range) {
 						if (target.immune) {
 							player.hitchhikers.push(["game_response", { response: "skill_immune", skill: data.name }]);
 							player.to_resend = "nc";
 							disappearing_text(target.socket, target, "IMMUNE!", { xy: 1, color: "evade", nv: 1, from: player.id });
-						} else if (add_condition(target, "stunned", { duration: G.skills.stomp.duration })) {
+						} else if (add_condition(target, "stunned", { duration: G.abilities.stomp.duration })) {
 							ids.push(id);
 							add_pdps(player, target, 500);
 						}
@@ -9574,8 +9600,8 @@ function init_io() {
 					for (var id in instances[player.in].players) {
 						var target = instances[player.in].players[id];
 						var dist = distance(player, target);
-						if (dist < G.skills.stomp.range && !target.npc && !is_same(player, target, 1) && !target.s.invincible) {
-							if (add_condition(target, "stunned", { duration: G.skills.stomp.duration })) {
+						if (dist < G.abilities.stomp.range && !target.npc && !is_same(player, target, 1) && !target.s.invincible) {
+							if (add_condition(target, "stunned", { duration: G.abilities.stomp.duration })) {
 								reftarget = target;
 								resend(target, "u+cid");
 								ids.push(id);
@@ -12562,7 +12588,7 @@ function update_instance(instance) {
 				} else {
 					delete monster.s[name];
 				}
-				if (is_disabled(monster) && G.skills[name] && !G.skills[name].passive) {
+				if (is_disabled(monster) && G.abilities[name] && !G.abilities[name].passive) {
 					continue;
 				}
 				if (name != "young") {

@@ -2882,14 +2882,14 @@ function success_response(response, place, data) {
 function consume_skill(player, name, reuse) {
 	var penalty_cd = (player.s.penalty_cd && player.s.penalty_cd.ms) || 0;
 	var multiplier = 1;
-	//if(name=="attack" || G.skills[name].share=="attack")
-	if (G.skills[name].share) {
-		multiplier = G.skills[name].cooldown_multiplier || 1;
-		name = G.skills[name].share;
+	//if(name=="attack" || G.abilities[name].share=="attack")
+	if (G.abilities[name].share) {
+		multiplier = G.abilities[name].cooldown_multiplier || 1;
+		name = G.abilities[name].share;
 	}
-	var cooldown = G.skills[name].cooldown;
+	var cooldown = name == "attack" ? player.attack_ms : G.abilities[name].cooldown;
 	if (reuse) {
-		cooldown = G.skills[name].reuse_cooldown;
+		cooldown = G.abilities[name].reuse_cooldown;
 	}
 	if (!cooldown) {
 		return;
@@ -3710,10 +3710,10 @@ function init_player(player) {
 		}
 		player.p.dt[dt] = new Date(player.p.dt[dt]);
 	}
-	for (var id in G.skills) {
-		if (G.skills[id]["class"] && G.skills[id]["class"].includes(player.type) && G.skills[id].persistent) {
+	for (var id in G.abilities) {
+		if (G.abilities[id].applicability == "skill" && G.abilities[id].skill == player.type && G.abilities[id].persistent) {
 			player.last[id] = player.p.dt[id] || new Date();
-			if ((G.skills[id].cooldown || G.skills[id].reuse_cooldown) > mssince(player.last[id])) {
+			if ((G.abilities[id].cooldown || G.abilities[id].reuse_cooldown) > mssince(player.last[id])) {
 				player.hitchhikers.push([
 					"eval",
 					{
@@ -3721,7 +3721,7 @@ function init_player(player) {
 							"skill_timeout('" +
 							id +
 							"'," +
-							((G.skills[id].cooldown || G.skills[id].reuse_cooldown) - mssince(player.last[id])) +
+							((G.abilities[id].cooldown || G.abilities[id].reuse_cooldown) - mssince(player.last[id])) +
 							")",
 					},
 				]);
@@ -3810,11 +3810,11 @@ function init_player_exit(player) {
 	if (Object.keys(player.slots).length > 500) {
 		player.slots = {};
 	}
-	for (var id in G.skills) {
+	for (var id in G.abilities) {
 		if (
-			G.skills[id]["class"] &&
-			G.skills[id]["class"].includes(player.type) &&
-			G.skills[id].persistent &&
+			G.abilities[id].applicability == "skill" &&
+			G.abilities[id].skill == player.type &&
+			G.abilities[id].persistent &&
 			player.last[id]
 		) {
 			player.p.dt[id] = player.last[id];

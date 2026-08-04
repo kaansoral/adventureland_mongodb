@@ -56,7 +56,7 @@
 
 				const itemsBySkin = mapBySkin(G.items);
 				const conditionsBySkin = mapBySkin(G.conditions);
-				const skillsBySkin = mapBySkin(G.skills);
+				const skillsBySkin = mapBySkin(G.abilities);
 
 				// lookup table to look up skin name in G.positions by x,y coordinates
 				const skinByXY = {};
@@ -115,7 +115,7 @@
 
 						const skills = skillsBySkin[skin] ?? [];
 						for (const item of skills) {
-							title.push(`G.skills.${item.id} = ${item.name}`);
+							title.push(`G.abilities.${item.id} = ${item.name}`);
 							hasSkill = true;
 						}
 

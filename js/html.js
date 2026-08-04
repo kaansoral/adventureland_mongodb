@@ -468,9 +468,9 @@ function render_conditions(player) {
 		current = 0,
 		rids = [];
 	for (var condition in player.s) {
-		if (G.skills[condition] && G.skills[condition].ui) {
+		if (G.abilities[condition] && G.abilities[condition].ui) {
 			console.log("here");
-			var def = G.skills[condition],
+			var def = G.abilities[condition],
 				rid = randomStr(30);
 			html += item_container({ skin: def.skin, loader: "cplc" + rid });
 			rids.push([rid, 24000, player.s[condition].ms]);
@@ -592,11 +592,11 @@ function render_monster(monster) {
 	//if (def.spawns) html += info_line({ line: "SPAWNS", color: "#AEAEAE" });  this is  just adding an extra line to the mob UI
 	if (def.abilities) {
 		for (var id in def.abilities) {
-			if (!G.skills[id]) continue;
+			if (!G.abilities[id]) continue;
 			html += info_line({
 				name: (def.abilities[id].aura && "AURA") || "ABILITY",
 				color: "#FC5F39",
-				value: G.skills[id].name.toUpperCase(),
+				value: G.abilities[id].name.toUpperCase(),
 				onclick: "dialogs_target=xtarget||ctarget; render_skill('#topleftcornerdialog','" + id + "')",
 			});
 		}
@@ -2480,7 +2480,7 @@ function render_skill(selector, skill_name, args) {
 	if (!args) args = {};
 	var actual = args.actual || {},
 		html = "";
-	var skill = G.skills[skill_name];
+	var skill = G.abilities[skill_name];
 	html += "<div style='background-color: black; border: 5px solid gray; font-size: 24px; display: inline-block; padding: 20px; line-height: 24px; max-width: 240px; " + (args.styles || "") + "'>";
 	if (!skill) html += skill_name;
 	else {
@@ -2491,7 +2491,7 @@ function render_skill(selector, skill_name, args) {
 			if (skill.duration) html += bold_prop_line("Duration", skill.duration / 1000.0 + " seconds", "gray");
 			if (skill.cooldown && skill.cooldown / 1000.0) html += bold_prop_line("Cooldown", skill.cooldown / 1000.0 + " seconds", "gray");
 			if (skill.reuse_cooldown && skill.reuse_cooldown / 1000.0) html += bold_prop_line("R.Use Cooldown", skill.reuse_cooldown / 1000.0 + " seconds", "gray");
-			if (skill.share) html += bold_prop_line("Cooldown", to_pretty_float(skill.cooldown_multiplier || 1) + "X of " + G.skills[skill.share].name, "gray");
+			if (skill.share) html += bold_prop_line("Cooldown", to_pretty_float(skill.cooldown_multiplier || 1) + "X of " + G.abilities[skill.share].name, "gray");
 			if (skill.range) html += bold_prop_line("Range", skill.range, "gray");
 			if (skill.use_range) html += bold_prop_line("Range", "Character Range", "gray");
 			if (skill.range_multiplier && skill.range_bonus) html += bold_prop_line("Range", to_pretty_float(skill.range_multiplier || 1) + "X + " + skill.range_bonus, "gray");
@@ -2527,11 +2527,11 @@ function render_skill(selector, skill_name, args) {
 				+"</div>";
 			}
 			html +=
-				"<div class='clickable' onclick='show_json(G.skills." +
+				"<div class='clickable' onclick='show_json(G.abilities." +
 				skill_name +
-				',{prefix:"G.skills.",name:"' +
+				',{prefix:"G.abilities.",name:"' +
 				skill_name +
-				"\"})'><span style='color: #44A8D4;'>Show:</span> <span style='color:gray'>G.skills.</span>" +
+				"\"})'><span style='color: #44A8D4;'>Show:</span> <span style='color:gray'>G.abilities.</span>" +
 				skill_name +
 				"</div>";
 		}
@@ -3509,11 +3509,11 @@ function render_item(selector, args) {
 		if (prop.supporter) html += "<div style='color: #CA5931'>Supporter</div>";
 		if (prop.abilities) {
 			for (var id in prop.abilities) {
-				if (!G.skills[id]) continue;
+				if (!G.abilities[id]) continue;
 				html += info_line({
 					name: (prop.abilities[id].aura && "Aura") || "Ability",
 					color: "#FC5F39",
-					value: G.skills[id].name,
+					value: G.abilities[id].name,
 					onclick: "dialogs_target=xtarget||ctarget; render_skill('#topleftcornerdialog','" + id + "')",
 				});
 			}
@@ -3615,8 +3615,8 @@ function render_item(selector, args) {
 			} else if (item.ability == "restore_mp") {
 				html += bold_prop_line("Ability", "Restore MP", "#5D9ED9");
 				html += "<div style='color: #C3C3C3'>" + "Instead of using MP, skills restore 2X the amount with " + prop.attr0 + "% chance.</div>";
-			} else if (G.skills[item.ability]) {
-				html += bold_prop_line("Ability", G.skills[item.ability].name, "#E1924D");
+			} else if (G.abilities[item.ability]) {
+				html += bold_prop_line("Ability", G.abilities[item.ability].name, "#E1924D");
 				if (prop.attr0) html += bold_prop_line("Chance", "%" + prop.attr0);
 				html += "<div style='color: #C3C3C3'>" + "Activate the ability from the 'SKILLS' system.</div>";
 			}
@@ -4672,7 +4672,7 @@ function render_skillbar(empty) {
 		if (current) {
 			if (current && current.skin) skin = current.skin;
 			else if (current.type == "item" && G.items[current.name]) skin = G.items[current.name].skin;
-			else if (G.skills[current.name || current]) skin = G.skills[current.name || current].skin;
+			else if (G.abilities[current.name || current]) skin = G.abilities[current.name || current].skin;
 			html += item_container({ skid: id, skin: skin || "", draggable: false, droppable: true, onclick: "on_skill('" + id + "')" }, current);
 		} else html += item_container({ skid: id, draggable: false, droppable: true });
 		if (!(skillbar.length >= 8 && !(skillbar.length % 2) && !(i % 2))) html += "<div></div>";
@@ -4686,7 +4686,7 @@ function render_skillbar(empty) {
 
 function skill_click(slot) {
 	if (skillsui && keymap[slot]) render_skill("#skills-item", keymap[slot].name || keymap[slot], keymap[slot]);
-	if (G.skills[slot]) render_skill("#skills-item", slot);
+	if (G.abilities[slot]) render_skill("#skills-item", slot);
 }
 
 var skills_page = "I";
@@ -4720,7 +4720,7 @@ function render_skills() {
 			skin = current;
 		if (current && current.skin) skin = current.skin;
 		else if (current && current.type == "item" && G.items[current.name]) skin = G.items[current.name].skin;
-		else if (current && G.skills[current.name || current]) skin = G.skills[current.name || current].skin;
+		else if (current && G.abilities[current.name || current]) skin = G.abilities[current.name || current].skin;
 		html += item_container({ skid: N, skin: skin || "", onclick: "on_skill('" + N + "')" }, current);
 	});
 	html += "</div>";
@@ -4730,17 +4730,17 @@ function render_skills() {
 			skin = current;
 		if (current && current.skin) skin = current.skin;
 		else if (current && current.type == "item" && G.items[current.name]) skin = G.items[current.name].skin;
-		else if (current && G.skills[current.name || current]) skin = G.skills[current.name || current].skin;
+		else if (current && G.abilities[current.name || current]) skin = G.abilities[current.name || current].skin;
 		html += item_container({ skid: N, skin: skin || "", onclick: "on_skill('" + N + "')" }, current);
 	});
 	html += "</div>";
 	html +=
-		"<div class='textbutton' style='margin-left: 5px'><span class='clickable' onclick='btc(event); show_json(G.skills)'>SKILLS</span><!-- <span style='float:right; color: #7C7C7C; margin-right: 5px' class='clickable' onclick='btc(event); show_modal($(\"#keymapguide\").html())'><span style='color:#60B8C7'>&gt;</span> CONFIG <span style='color:#60B8C7'>&lt;</span></span>--></div>";
+		"<div class='textbutton' style='margin-left: 5px'><span class='clickable' onclick='btc(event); show_json(G.abilities)'>SKILLS</span><!-- <span style='float:right; color: #7C7C7C; margin-right: 5px' class='clickable' onclick='btc(event); show_modal($(\"#keymapguide\").html())'><span style='color:#60B8C7'>&gt;</span> CONFIG <span style='color:#60B8C7'>&lt;</span></span>--></div>";
 	var s = [],
 		slast = 0,
 		a = [],
 		alast = 0;
-	object_sort(G.skills).forEach(function (io) {
+	object_sort(G.abilities).forEach(function (io) {
 		var name = io[0],
 			skill = io[1];
 		if (skill.slot) {
@@ -4769,19 +4769,19 @@ function render_skills() {
 	for (var i = 0; i < 10; i++) {
 		html += "<div>";
 		for (var j = 0; j < 7; j++) {
-			if (slast < s.length) html += item_container({ skin: G.skills[s[slast].name].skin, onclick: "skill_click('" + s[slast].name + "')", skname: s[slast].name }, s[slast]);
+			if (slast < s.length) html += item_container({ skin: G.abilities[s[slast].name].skin, onclick: "skill_click('" + s[slast].name + "')", skname: s[slast].name }, s[slast]);
 			else html += item_container({});
 			slast++;
 		}
 		html += "</div>";
 		if (slast >= s.length) break; // i &&
 	}
-	html += "<div class='textbutton' style='margin-left: 5px' onclick='btc(event); show_json(G.skills)'>ABILITIES</div>";
+	html += "<div class='textbutton' style='margin-left: 5px' onclick='btc(event); show_json(G.abilities)'>ABILITIES</div>";
 	// html+="<div style='border-bottom: 5px solid gray; margin-bottom: 2px; margin-left: -5px; margin-right: -5px'></div>";
 	for (var i = 0; i < 10; i++) {
 		html += "<div>";
 		for (var j = 0; j < 7; j++) {
-			if (alast < a.length) html += item_container({ skin: G.skills[a[alast].name].skin, onclick: "skill_click('" + a[alast].name + "')", skname: a[alast].name }, a[alast]);
+			if (alast < a.length) html += item_container({ skin: G.abilities[a[alast].name].skin, onclick: "skill_click('" + a[alast].name + "')", skname: a[alast].name }, a[alast]);
 			else html += item_container({});
 			alast++;
 		}
@@ -4810,7 +4810,7 @@ function render_all_skills_and_conditions() {
 	// html+="<div style='padding: 10px; color: #CC863B; text-align: center'>Work in Progress</div>";
 	["ranger", "rogue", "warrior", "mage", "priest", "paladin", "merchant"].forEach(function (ctype) {
 		html += "<div>" + ctype.toTitleCase() + "</div>";
-		object_sort(G.skills).forEach(function (s) {
+		object_sort(G.abilities).forEach(function (s) {
 			var name = s[0],
 				skill = s[1];
 			if (skill["class"] && skill["class"].includes(ctype)) {
@@ -4819,7 +4819,7 @@ function render_all_skills_and_conditions() {
 		});
 	});
 	html += "<div>Item Skills</div>";
-	object_sort(G.skills).forEach(function (s) {
+	object_sort(G.abilities).forEach(function (s) {
 		var name = s[0],
 			skill = s[1];
 		if (skill.slot) {
@@ -4827,7 +4827,7 @@ function render_all_skills_and_conditions() {
 		}
 	});
 	html += "<div>Abilities and Utilities</div>";
-	object_sort(G.skills).forEach(function (s) {
+	object_sort(G.abilities).forEach(function (s) {
 		var name = s[0],
 			skill = s[1];
 		if (skill.type == "ability" || skill.type == "utility") {

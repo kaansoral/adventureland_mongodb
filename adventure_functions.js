@@ -102,14 +102,17 @@ function gf(element, name, def) {
 }
 
 function item_value(item) {
-	var gold = items[item.name].g;
+	var catalog = typeof progression_data !== "undefined" && progression_data.items;
+	if (!catalog && typeof G !== "undefined") catalog = G.items;
+	if (!catalog || !catalog[item.name]) throw new Error("Normalized item catalog is unavailable for " + item.name);
+	var gold = catalog[item.name].g;
 	if (item.q) gold *= item.q;
 	var level = item.level || 0;
-	if (items[item.name].upgrade) {
+	if (catalog[item.name].upgrade) {
 		if (Dev) level = Math.min(level, 12);
 		gold *= [1, 1, 1.1, 1.4, 1.6, 2, 4, 8, 16, 50, 500, 800, 1600, 20000][level] || 1;
 	}
-	if (items[item.name].compound) {
+	if (catalog[item.name].compound) {
 		if (Dev) level = Math.min(level, 5);
 		gold *= [1, 3, 9, 27, 81, 243, 800, 3600, 15000, 50000][level] || 1;
 	}

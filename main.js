@@ -1,5 +1,6 @@
 var fs = require("fs"),
 	path = require("path");
+var { buildProgressionData, attachProgressionData } = require("./node/game/skill_domain");
 var keys = require("./secretsandconfig/keys");
 var options = require("./secretsandconfig/options");
 
@@ -49,12 +50,16 @@ eval("" + fs.readFileSync(path.resolve(__dirname, "design/monsters.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/maps.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/npcs.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/multipliers.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "design/item_requirements.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/items.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/classes.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/levels.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/upgrades.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/drops.js"))); // needs items
-eval("" + fs.readFileSync(path.resolve(__dirname, "design/skills.js"))); // needs conditions
+eval("" + fs.readFileSync(path.resolve(__dirname, "design/skills.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "design/skill_xp.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "design/abilities.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "design/character.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/events.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/recipes.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/titles.js")));
@@ -62,6 +67,15 @@ eval("" + fs.readFileSync(path.resolve(__dirname, "design/tokens.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/cosmetics.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/emotions.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/precomputed_images.js")));
+
+var progression_data = buildProgressionData({
+	items: items,
+	item_requirements: item_requirements,
+	skills: skills,
+	skill_xp: skill_xp,
+	abilities: abilities,
+	character: character,
+});
 
 // docs
 eval("" + fs.readFileSync(path.resolve(__dirname, "docs/directory.js")));
@@ -303,39 +317,40 @@ app.all("/data.js", async (req, res, next) => {
 		var map = await rpc[id];
 		if (map) geometry[id] = map.info.data;
 	}
-	var G = {
-		version: Version,
-		achievements: achievements,
-		animations: animations,
-		monsters: monsters,
-		sprites: sprites,
-		maps: maps,
-		geometry: geometry,
-		npcs: npcs,
-		tilesets: tilesets,
-		imagesets: imagesets,
-		items: items,
-		sets: sets,
-		craft: craft,
-		titles: titles,
-		tokens: tokens,
-		dismantle: dismantle,
-		conditions: conditions,
-		cosmetics: cosmetics,
-		emotions: emotions,
-		projectiles: projectiles,
-		classes: classes,
-		dimensions: dimensions,
-		levels: levels,
-		positions: positions,
-		skills: skills,
-		games: games,
-		events: events,
-		images: precomputed.images,
-		multipliers: multipliers,
-		docs: docs,
-		drops: drops,
-	};
+	var G = attachProgressionData(
+		{
+			version: Version,
+			achievements: achievements,
+			animations: animations,
+			monsters: monsters,
+			sprites: sprites,
+			maps: maps,
+			geometry: geometry,
+			npcs: npcs,
+			tilesets: tilesets,
+			imagesets: imagesets,
+			sets: sets,
+			craft: craft,
+			titles: titles,
+			tokens: tokens,
+			dismantle: dismantle,
+			conditions: conditions,
+			cosmetics: cosmetics,
+			emotions: emotions,
+			projectiles: projectiles,
+			classes: classes,
+			dimensions: dimensions,
+			levels: levels,
+			positions: positions,
+			games: games,
+			events: events,
+			images: precomputed.images,
+			multipliers: multipliers,
+			docs: docs,
+			drops: drops,
+		},
+		progression_data,
+	);
 	if (req.query.reload || (req.body && req.body.reload)) additional = "add_log('Game data reloaded','#32A3B0');\napply_backup()\n";
 	res
 		.status(200)
