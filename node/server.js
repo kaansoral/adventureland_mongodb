@@ -2155,6 +2155,38 @@ function award_monster_skill_share(player, monster, character_share, source_suff
 	return deltas;
 }
 
+function snapshot_progression_support(player, target, ability, kind = "combat") {
+	if (!ability || !ability.contribution) return null;
+	const encounterIds =
+		target && target.is_monster && target.encounter_id
+			? [target.encounter_id]
+			: progression_ledger.engagedEncounterIds(player.id || player.name);
+	const action = {
+		actionId: server_id + ":support:" + randomStr(6),
+		characterId: player.id || player.name,
+		activeSkill: player.active_skill,
+		encounterIds,
+		kind,
+		weightPerUse: ability.contribution.weight_per_use,
+		maxWeightPerTargetPerEncounter: ability.contribution.max_weight_per_target_per_encounter,
+	};
+	progression_ledger.snapshotAction(action);
+	return action;
+}
+
+function record_progression_support(action, changed, encounterIds) {
+	if (!action || !changed) return 0;
+	return progression_ledger.recordSupport({
+		actionId: action.actionId,
+		characterId: action.characterId,
+		activeSkill: action.activeSkill,
+		encounterIds: encounterIds || action.encounterIds,
+		changed: true,
+		weightPerUse: action.weightPerUse,
+		maxWeightPerTargetPerEncounter: action.maxWeightPerTargetPerEncounter,
+	});
+}
+
 function issue_monster_awards(monster) {
 	var total = 0.1;
 	var total_characters = 0;
@@ -2641,6 +2673,7 @@ function commence_attack(attacker, target, atype) {
 		) {
 			stop_pursuit(target, { redirect: true, cause: "taunt redirect" });
 			target_player(target, attacker);
+			info.progression_support_changed = true;
 		}
 	} else if (atype == "curse") {
 		attack = 0;
@@ -3203,24 +3236,27 @@ function complete_attack(attacker, target, info) {
 				o_attack = attack = ceil(attack);
 
 				if (info.conditions.includes("frozen") && !target.immune && target.hp > attack) {
-					add_condition(target, "frozen");
+					if (add_condition(target, "frozen")) info.progression_support_changed = true;
 				}
 
 				if (info.conditions.includes("burned") && !target.immune && target.hp > attack) {
-					add_condition(target, "burned", {
-						divider: attacker.a && attacker.a.burn && attacker.a.burn.unlimited && 1.5,
-						fid: attacker.id,
-						f: attacker.name || G.monsters[attacker.type].name,
-						attack: attack,
-					});
+					if (
+						add_condition(target, "burned", {
+							divider: attacker.a && attacker.a.burn && attacker.a.burn.unlimited && 1.5,
+							fid: attacker.id,
+							f: attacker.name || G.monsters[attacker.type].name,
+							attack: attack,
+						})
+					)
+						info.progression_support_changed = true;
 				}
 
 				if (info.conditions.includes("woven") && !target.immune) {
-					add_condition(target, "woven");
+					if (add_condition(target, "woven")) info.progression_support_changed = true;
 				}
 
 				if (info.conditions.includes("stunned") && target.hp > attack) {
-					add_condition(target, "stunned", { duration: 2000 });
+					if (add_condition(target, "stunned", { duration: 2000 })) info.progression_support_changed = true;
 				}
 
 				if (info.procs && target.a.putrid) {
@@ -3233,7 +3269,7 @@ function complete_attack(attacker, target, info) {
 						return;
 					}
 					if (target.hp > attack && !target.immune) {
-						add_condition(target, c);
+						if (add_condition(target, c)) info.progression_support_changed = true;
 					}
 				});
 				if (info.procs && attacker.a.sugarrush && Math.random() < attacker.a.sugarrush.attr0 / 100) {
@@ -3360,7 +3396,7 @@ function complete_attack(attacker, target, info) {
 					characterId: info.progression_action.characterId,
 					activeSkill: info.progression_action.activeSkill,
 					encounterIds: info.progression_action.encounterIds,
-					changed: change || Boolean(def.kill) || info.conditions.length > 0,
+					changed: Boolean(info.progression_support_changed),
 					weightPerUse: G.abilities[atype].contribution.weight_per_use,
 					maxWeightPerTargetPerEncounter: G.abilities[atype].contribution.max_weight_per_target_per_encounter,
 				});
@@ -8636,6 +8672,18 @@ function init_io() {
 				return fail_response("too_far", data.name, { dist: dist, id: target.id });
 			}
 
+			const progressionSupportAction =
+				gSkill.contribution && !["taunt", "curse"].includes(data.name)
+					? snapshot_progression_support(
+							player,
+							target,
+							gSkill,
+							target && target.is_player && ["entangle", "huntersmark"].includes(data.name) ? "pvp" : "combat",
+						)
+					: null;
+			const recordProgressionSupport = (changed, encounterIds) =>
+				record_progression_support(progressionSupportAction, changed, encounterIds);
+
 			// Consume item check
 			if (gSkill.consume) {
 				let item;
@@ -8886,9 +8934,11 @@ function init_io() {
 				if (target.s.invincible) {
 					return fail_response("target_invincible", data.name);
 				}
-				add_condition(target, "tangled", { ms: G.abilities.entangle.duration });
+				const hadActiveTangle = target.s.tangled && target.s.tangled.ms > 0;
+				const tangled = add_condition(target, "tangled", { ms: G.abilities.entangle.duration });
 				target.abs = true;
 				target.moving = false;
+				recordProgressionSupport(tangled && !hadActiveTangle);
 				xy_emit(player, "ui", { type: "entangle", from: player.name, to: target.id });
 				consume_mp(player, gSkill.mp, target);
 				add_pdps(player, target, 4000);
@@ -9006,6 +9056,7 @@ function init_io() {
 				}
 			} else if (data.name == "darkblessing" || data.name == "warcry") {
 				consume_mp(player, gSkill.mp);
+				let changed = false;
 				for (var id in instances[player.in].players) {
 					var target = instances[player.in].players[id];
 					if (
@@ -9013,11 +9064,14 @@ function init_io() {
 						distance(player, target, true) < gSkill.range &&
 						(!(G.maps[player.map].pvp || is_pvp) || is_same(player, target, 1))
 					) {
+						const previous = target.s[gSkill.condition];
+						if (!previous || previous.ms <= 0 || previous.f != player.name) changed = true;
 						target.s[gSkill.condition] = { ms: gSkill.duration, f: player.name };
 						resend(target, "u+cid");
 						add_pdps(player, target, 500);
 					}
 				}
+				recordProgressionSupport(changed);
 				xy_emit(player, "ui", { type: data.name });
 			} else if (data.name == "3shot" || data.name == "5shot") {
 				player.halt = true;
@@ -9100,6 +9154,7 @@ function init_io() {
 				player.to_resend = "u+cid";
 			} else if (data.name == "agitate") {
 				var ids = [];
+				var supportEncounterIds = [];
 				for (var id in instances[player.in].monsters) {
 					var target = instances[player.in].monsters[id];
 					if (target.target == player.name) {
@@ -9118,15 +9173,18 @@ function init_io() {
 						target.u = true;
 						target.last.attacked = new Date();
 						target_player(target, player);
+						supportEncounterIds.push(target.encounter_id);
 						ids.push(id);
 					}
 				}
+				recordProgressionSupport(supportEncounterIds.length > 0, supportEncounterIds.filter(Boolean));
 				consume_mp(player, gSkill.mp, target);
 				xy_emit(player, "ui", { type: "agitate", name: player.name, ids: ids });
 				player.to_resend = "u+cid";
 				add_pdps(player, null, 1000);
 			} else if (data.name == "absorb") {
 				var ids = [];
+				var supportEncounterIds = [];
 				if (is_same(player, target, 1)) {
 					consume_mp(player, gSkill.mp, target);
 				} else {
@@ -9147,14 +9205,17 @@ function init_io() {
 						monster.cid += 1;
 						monster.u = true;
 						target_player(monster, player);
+						supportEncounterIds.push(monster.encounter_id);
 						ids.push(id);
 					}
 				}
+				recordProgressionSupport(supportEncounterIds.length > 0, supportEncounterIds.filter(Boolean));
 				xy_emit(player, "ui", { type: "absorb", name: player.name, from: data.id, ids: ids });
 				player.to_resend = "u+cid";
 				add_pdps(player, target, 1000);
 			} else if (data.name == "stomp") {
 				var ids = [];
+				var supportEncounterIds = [];
 				var reftarget = null;
 				for (var id in instances[player.in].monsters) {
 					var target = instances[player.in].monsters[id];
@@ -9166,10 +9227,12 @@ function init_io() {
 							disappearing_text(target.socket, target, "IMMUNE!", { xy: 1, color: "evade", nv: 1, from: player.id });
 						} else if (add_condition(target, "stunned", { duration: G.abilities.stomp.duration })) {
 							ids.push(id);
+							supportEncounterIds.push(target.encounter_id);
 							add_pdps(player, target, 500);
 						}
 					}
 				}
+				recordProgressionSupport(supportEncounterIds.length > 0, supportEncounterIds.filter(Boolean));
 				if (is_in_pvp(player, 1)) {
 					for (var id in instances[player.in].players) {
 						var target = instances[player.in].players[id];
@@ -9213,7 +9276,8 @@ function init_io() {
 					return fail_response("skill_cant_pve", data.name);
 				}
 				consume_mp(player, gSkill.mp, target);
-				add_condition(target, "marked");
+				const marked = add_condition(target, "marked");
+				recordProgressionSupport(marked && target.is_monster);
 				if (target.is_player) {
 					resend(target, "u+cid");
 				} else {
@@ -9375,20 +9439,26 @@ function init_io() {
 				resend(target, "u+cid");
 				resend(player, "u+cid");
 			} else if (data.name == "rspeed") {
+				const previous = target.s[gSkill.condition];
+				const changed = !previous || previous.ms <= 0 || previous.f != player.name;
 				consume_mp(player, gSkill.mp, target);
 				target.s[gSkill.condition] = { ms: G.conditions.rspeed.duration, f: player.name };
 				xy_emit(player, "ui", { type: "rspeed", from: player.name, to: target.name });
 				resend(target, "u+cid");
 				resend(player, "u+cid");
+				recordProgressionSupport(changed);
 				if (player.party == target.party && player != target) {
 					add_pdps(player, target, 2000);
 				}
 			} else if (data.name == "reflection") {
+				const previous = target.s[gSkill.condition];
+				const changed = !previous || previous.ms <= 0 || previous.f != player.name;
 				consume_mp(player, gSkill.mp, target);
 				target.s[gSkill.condition] = { ms: G.conditions.reflection.duration, f: player.name };
 				xy_emit(player, "ui", { type: "reflection", from: player.name, to: target.name });
 				resend(target, "u+cid");
 				resend(player, "u+cid");
+				recordProgressionSupport(changed);
 				if (player.party == target.party && player != target) {
 					add_pdps(player, target, 4000);
 				}
@@ -9403,6 +9473,7 @@ function init_io() {
 				}
 				target.mp += mp;
 				player.mp -= mp;
+				recordProgressionSupport(mp > 0);
 				if (player.party == target.party && player != target) {
 					add_pdps(player, target, mp * 2);
 				}
