@@ -34,6 +34,7 @@ const {
 	skillLevel,
 	markStandSession,
 	settlePlayerStand,
+	recordMerchantLuck,
 	refreshDeathSickness,
 	rehydratePlayerDeathSickness,
 	sicknessDelta,
@@ -6778,6 +6779,9 @@ function init_io() {
 				new_monster(player.in, { type: def.spawn, stype: "trap", x: player.x, y: player.y, owner: player.name });
 				consume_one(player, data.num);
 			} else if (def.gives) {
+				if ((def.gives || []).some((entry) => entry && entry[0] == "xp")) {
+					return fail_response("legacy_progression_item", data.name);
+				}
 				if (player.last.potion) {
 					const ms = -mssince(player.last.potion);
 					if (ms > 0) {
@@ -9356,16 +9360,17 @@ function init_io() {
 				// #TODO: Appear animation for non-self's [21/05/18]
 			} else if (data.name == "mluck") {
 				consume_mp(player, gSkill.mp, target);
-				if (
-					!target.s[gSkill.condition] ||
-					!target.s[gSkill.condition].strong ||
-					target.s[gSkill.condition].f == player.name
-				) {
+				const existingLuck = target.s[gSkill.condition];
+				const activeLuck = existingLuck && existingLuck.ms > 0;
+				const canApplyLuck = !activeLuck || !existingLuck.strong || existingLuck.f == player.name;
+				const newlyAppliedLuck = canApplyLuck && (!activeLuck || existingLuck.f != player.name);
+				if (canApplyLuck) {
 					target.s[gSkill.condition] = { ms: G.conditions.mluck.duration, f: player.name };
 				}
 				if (target.owner == player.owner) {
-					target.s[gSkill.condition].strong = true;
+					if (target.s[gSkill.condition]) target.s[gSkill.condition].strong = true;
 				}
+				if (newlyAppliedLuck) recordMerchantLuck(player, target.name, Date.now());
 				xy_emit(player, "ui", { type: "mluck", from: player.name, to: target.name });
 				resend(target, "u+cid");
 				resend(player, "u+cid");

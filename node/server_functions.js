@@ -411,7 +411,7 @@ function is_player_allowed(player) {
 }
 
 function rip(player) {
-	if (player && player.is_player) {
+	if (player && player.is_player && !player.is_npc) {
 		refreshDeathSickness(player);
 	}
 	player.hp = 0;
