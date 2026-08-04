@@ -29,9 +29,10 @@ const {
 	isCompatibleOffhand,
 	validateRequirements,
 } = require("./game/equipment");
+const { applyEquipmentTransaction } = require("./game/equipment_runtime");
 const { authorizeAbility } = require("./game/ability_access");
 const { calculateStats } = require("./game/stats");
-const { invalidateConditions, tagStyleEffect } = require("./game/style_effects");
+const { tagStyleEffect } = require("./game/style_effects");
 const { ContributionLedger } = require("./game/contributions");
 const {
 	initializePlayerProgression,
@@ -1381,83 +1382,24 @@ function ccms(monster) {
 	}
 }
 
-function cloneEquipmentState(value) {
-	return JSON.parse(JSON.stringify(value === undefined ? null : value));
-}
-
-function planSourceEffectInvalidation(player, previousSkill, nextSkill) {
-	if (previousSkill === nextSkill) return [];
-	const sourceCharacterId = player.id || player.name;
-	const candidates = [player];
-	const instance = player.in && instances[player.in];
-	if (instance && instance.players) candidates.push(...Object.values(instance.players));
-	if (instance && instance.monsters) candidates.push(...Object.values(instance.monsters));
-	const seen = new Set();
-	return candidates.reduce((changes, target) => {
-		if (!target || seen.has(target) || !target.s) return changes;
-		seen.add(target);
-		const result = invalidateConditions(target.s, { sourceCharacterId, previousSkill });
-		const progressionEffect = target.progression_style_effect;
-		const clearsProgressionEffect =
-			progressionEffect &&
-			progressionEffect.source_character_id === sourceCharacterId &&
-			progressionEffect.source_skill === previousSkill;
-		if (result.removed.length || clearsProgressionEffect)
-			changes.push({ target, conditions: result.conditions, clearsProgressionEffect: Boolean(clearsProgressionEffect) });
-		return changes;
-	}, []);
-}
-
 function apply_equipment_transaction(player, transaction, previousSkill) {
-	const invalidation = planSourceEffectInvalidation(player, previousSkill, transaction.active_skill);
-	const selfInvalidation = invalidation.find((entry) => entry.target === player);
-	const candidate = {
-		...player,
-		slots: transaction.slots,
-		items: transaction.items,
-		s: cloneEquipmentState(selfInvalidation ? selfInvalidation.conditions : player.s || {}),
-		cslots: {},
-		citems: [],
-	};
-	for (const [slot, equipped] of Object.entries(candidate.slots)) candidate.cslots[slot] = cache_item(equipped);
-	candidate.citems = candidate.items.map((entry) => cache_item(entry));
-	calculate_player_stats(candidate);
-	const projections = [{ target: player, candidate, self: true }];
-	for (const change of invalidation) {
-		if (change.target === player) continue;
-		const remoteCandidate = {
-			...change.target,
-			s: cloneEquipmentState(change.conditions),
-		};
-		if (change.clearsProgressionEffect) remoteCandidate.progression_style_effect = null;
-		if (change.target.is_monster) calculate_monster_stats(remoteCandidate);
-		else calculate_player_stats(remoteCandidate);
-		projections.push({ target: change.target, candidate: remoteCandidate, self: false });
-	}
-
-	// All candidate work, including every affected player's cache and stat generation, completes before authority changes.
-	for (const { target, candidate: projection } of projections) {
-		for (const [key, value] of Object.entries(projection)) {
-			if (
-				Object.prototype.hasOwnProperty.call(target, key) &&
-				!["socket", "character", "last", "t", "p"].includes(key) &&
-				!Object.is(value, target[key])
-			) {
-				target[key] = value;
-			}
-		}
-	}
-	for (const { target, self } of projections) {
-		if (self) continue;
-		if (target.is_monster && target.progression_style_effect === null) {
-			delete target.progression_style_effect;
-			target.u = true;
-			target.cid++;
-		}
-		if (target.socket && typeof target.socket.emit === "function") resend(target, "u+cid");
-		else target.to_resend = "u+cid";
-	}
-	return transaction;
+	const instance = player.in && instances[player.in];
+	const targets = [
+		...(instance && instance.players ? Object.values(instance.players) : []),
+		...(instance && instance.monsters ? Object.values(instance.monsters) : []),
+	];
+	return applyEquipmentTransaction({
+		player,
+		transaction,
+		previousSkill,
+		targets,
+		cacheItem: cache_item,
+		calculatePlayerStats: calculate_player_stats,
+		calculateMonsterStats: calculate_monster_stats,
+		getPlayerByName: (name) => players[name_to_id[name]],
+		reduceTargets: reduce_targets,
+		resend,
+	});
 }
 
 function commit_equipment_transaction(player, itemIndex, requestedSlot, requestedItem) {
