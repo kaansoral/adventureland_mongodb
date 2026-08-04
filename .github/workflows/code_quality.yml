@@ -10,3 +10,5 @@ jobs:
         working-directory: node
       - run: npx prettier --check .
         working-directory: node
+      - run: npm test
+        working-directory: node
