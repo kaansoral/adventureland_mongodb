@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const {
 	createMerchantAccrual,
+	addCredit,
 	settleStand,
 	qualifyLuck,
 	recordSale,
@@ -112,6 +113,7 @@ test("sale high-water survives reversal and same-owner transfers are ineligible"
 		now: 5,
 	});
 	assert.ok(newNet.credited >= 0);
+	assert.ok(newNet.credited > 0);
 	assert.equal(newNet.state.sales.buyer.credited_high_water_gold, 200000);
 });
 
@@ -121,8 +123,56 @@ test("Merchant action credits are bounded and validation rejects malformed persi
 	assert.equal(donation.credited, Math.floor(progression.BASE_UNITS_PER_HOUR / 4));
 	const dice = recordDonationOrDice(donation.state, { rawXp: 900000000, sourceId: "dice-1", kind: "dice", now: 1 });
 	assert.equal(dice.credited, Math.floor(progression.BASE_UNITS_PER_HOUR / 4));
+	const repeatedDonation = recordDonationOrDice(dice.state, {
+		rawXp: 900000000,
+		sourceId: "donation-2",
+		kind: "donation",
+		now: 2,
+	});
+	assert.equal(repeatedDonation.credited, 0);
+	assert.equal(repeatedDonation.capped, true);
+	const nextHourDonation = recordDonationOrDice(repeatedDonation.state, {
+		rawXp: 900000000,
+		sourceId: "donation-3",
+		kind: "donation",
+		now: progression.STAND_HOUR_MS + 3,
+	});
+	assert.ok(nextHourDonation.credited > 0);
+	const credit = addCredit(createMerchantAccrual(), {
+		units: progression.MAX_ACTION_UNITS_PER_HOUR,
+		sourceId: "expiring-credit",
+		now: 0,
+	});
+	assert.equal(
+		addCredit(credit.state, {
+			units: progression.MAX_ACTION_UNITS_PER_HOUR,
+			sourceId: "expiring-credit",
+			now: 1,
+		}).duplicate,
+		true,
+	);
+	assert.ok(
+		addCredit(credit.state, {
+			units: progression.MAX_ACTION_UNITS_PER_HOUR,
+			sourceId: "expiring-credit",
+			now: progression.STAND_HOUR_MS + 1,
+		}).credited > 0,
+	);
+	const standOnly = settleStand(createMerchantAccrual(), progression.STAND_HOUR_MS, progression.STAND_HOUR_MS);
+	assert.equal(
+		addCredit(standOnly.state, {
+			units: progression.MAX_ACTION_UNITS_PER_HOUR,
+			sourceId: "after-base",
+			now: progression.STAND_HOUR_MS + 1,
+		}).credited,
+		progression.MAX_ACTION_UNITS_PER_HOUR,
+	);
 	assert.throws(
 		() => validateMerchantAccrual({ ...createMerchantAccrual(), pending_credits: [{ units: 1, expires_at: 0 }] }, 0),
+		(error) => error.code === "invalid_merchant_state",
+	);
+	assert.throws(
+		() => validateMerchantAccrual({ ...createMerchantAccrual(), processed_sources: ["legacy-source"] }, 0),
 		(error) => error.code === "invalid_merchant_state",
 	);
 	assert.throws(

@@ -6,6 +6,7 @@ const { createCharacterState } = require("../game/character_state");
 const {
 	initializePlayerProgression,
 	awardPlayerSkillXp,
+	awardPlayerSkillXpSplit,
 	markStandSession,
 	settlePlayerStand,
 	refreshDeathSickness,
@@ -58,6 +59,34 @@ test("runtime stand settlement feeds Merchant through the common award path", ()
 	assert.equal(character.skills.merchant.xp, settled.xp);
 	assert.equal(character.skills.merchant.level, 3);
 	assert.equal(character.total_level, 9);
+});
+
+test("runtime split awards commit all styles and reject backward stand time", () => {
+	const character = player();
+	initializePlayerProgression(character, 0);
+	const deltas = awardPlayerSkillXpSplit(
+		character,
+		{ warrior: 100, rogue: 200 },
+		{ source: "pve_damage", sourceId: "encounter:split" },
+	);
+	assert.deepEqual(
+		deltas.map((delta) => delta.skill),
+		["warrior", "rogue"],
+	);
+	assert.equal(character.skills.warrior.xp, 100);
+	assert.equal(character.skills.rogue.xp, 200);
+	assert.equal(character.p.skill_xp_sources.length, 2);
+	const duplicate = awardPlayerSkillXpSplit(
+		character,
+		{ warrior: 100, rogue: 200 },
+		{ source: "pve_damage", sourceId: "encounter:split" },
+	);
+	assert.ok(duplicate.every((delta) => delta.duplicate));
+	character.p.stand = "stand0";
+	markStandSession(character, 100);
+	const backward = settlePlayerStand(character, 50);
+	assert.equal(backward.xp, 0);
+	assert.equal(character.info.merchant_accrual.stand_last_settled_at, 100);
 });
 
 test("runtime death sickness persists and clears by absolute timestamp", () => {

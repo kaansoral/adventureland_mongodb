@@ -90,6 +90,36 @@ test("support divides one action across encounters and ignores PvP/redundant sta
 	assert.equal(ledger.recordDamage({ encounterId: "pvp", actionId: "pvp", characterId: "char", amount: 100 }), 0);
 });
 
+test("action snapshots are immutable and support caps exclude damage weight", () => {
+	const ledger = new ContributionLedger();
+	ledger.snapshotAction({ actionId: "immutable", encounterIds: ["goo"], characterId: "char", activeSkill: "warrior" });
+	assert.throws(
+		() =>
+			ledger.snapshotAction({
+				actionId: "immutable",
+				encounterIds: ["goo"],
+				characterId: "char",
+				activeSkill: "rogue",
+			}),
+		(error) => error.code === "invalid_contribution",
+	);
+	ledger.snapshotAction({ actionId: "damage", encounterIds: ["goo"], characterId: "char", activeSkill: "warrior" });
+	assert.equal(ledger.recordDamage({ encounterId: "goo", actionId: "damage", characterId: "char", amount: 100 }), 100);
+	ledger.snapshotAction({ actionId: "support", encounterIds: ["goo"], characterId: "char", activeSkill: "warrior" });
+	assert.equal(
+		ledger.recordSupport({
+			actionId: "support",
+			characterId: "char",
+			activeSkill: "warrior",
+			encounterIds: ["goo"],
+			changed: true,
+			weightPerUse: 10,
+			maxWeightPerTargetPerEncounter: 10,
+		}),
+		10,
+	);
+});
+
 test("an action snapshot makes later healing eligible for its encounter", () => {
 	const ledger = new ContributionLedger();
 	ledger.snapshotAction({ actionId: "heal-1", encounterIds: ["goo"], characterId: "priest", activeSkill: "priest" });
