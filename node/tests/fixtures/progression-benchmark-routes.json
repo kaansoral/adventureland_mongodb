@@ -1,0 +1,717 @@
+{
+  "schema_version": 1,
+  "contract": {
+    "max_xp": 900000000,
+    "base_units_per_hour": 3125000,
+    "xp_units_per_xp": 7,
+    "benchmark_tolerance": 0.1
+  },
+  "targets": {
+    "starter": {
+      "duration_hours": 2016,
+      "weeks": 12
+    },
+    "competent": {
+      "duration_hours": 672,
+      "weeks": 4
+    },
+    "optimized": {
+      "duration_hours": 336,
+      "weeks": 2
+    }
+  },
+  "combat": {
+    "starter": {
+      "warrior": {
+        "strategy": "starter",
+        "legal": true,
+        "mainhand": "blade",
+        "monster": "goo",
+        "uptime": 1,
+        "external_party_characters": 0,
+        "consumables": "none",
+        "target_rate_x": 1,
+        "calibration": 0.0025,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          }
+        ]
+      },
+      "paladin": {
+        "strategy": "starter",
+        "legal": true,
+        "mainhand": "mace",
+        "monster": "goo",
+        "uptime": 1,
+        "external_party_characters": 0,
+        "consumables": "none",
+        "target_rate_x": 1,
+        "calibration": 0.003571428571,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 1,
+            "calibration": 0.003571428571
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 1,
+            "calibration": 0.003571428571
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 1,
+            "calibration": 0.003571428571
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 1,
+            "calibration": 0.003571428571
+          }
+        ]
+      },
+      "mage": {
+        "strategy": "starter",
+        "legal": true,
+        "mainhand": "staff",
+        "monster": "goo",
+        "uptime": 1,
+        "external_party_characters": 0,
+        "consumables": "none",
+        "target_rate_x": 1,
+        "calibration": 0.0025,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          }
+        ]
+      },
+      "priest": {
+        "strategy": "starter",
+        "legal": true,
+        "mainhand": "wbook0",
+        "monster": "goo",
+        "uptime": 1,
+        "external_party_characters": 0,
+        "consumables": "none",
+        "target_rate_x": 1,
+        "calibration": 0.004166666667,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 1,
+            "calibration": 0.004166666667
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 1,
+            "calibration": 0.004166666667
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 1,
+            "calibration": 0.004166666667
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 1,
+            "calibration": 0.004166666667
+          }
+        ]
+      },
+      "ranger": {
+        "strategy": "starter",
+        "legal": true,
+        "mainhand": "bow",
+        "monster": "goo",
+        "uptime": 1,
+        "external_party_characters": 0,
+        "consumables": "none",
+        "target_rate_x": 1,
+        "calibration": 0.0025,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          }
+        ]
+      },
+      "rogue": {
+        "strategy": "starter",
+        "legal": true,
+        "mainhand": "claw",
+        "monster": "goo",
+        "uptime": 1,
+        "external_party_characters": 0,
+        "consumables": "none",
+        "target_rate_x": 1,
+        "calibration": 0.0025,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 1,
+            "calibration": 0.0025
+          }
+        ]
+      }
+    },
+    "competent": {
+      "warrior": {
+        "strategy": "competent",
+        "legal": true,
+        "mainhand": "blade",
+        "monster": "bee",
+        "uptime": 0.8,
+        "external_party_characters": 0,
+        "consumables": "normal_sustainable",
+        "target_rate_x": 3,
+        "calibration": 0.00703125,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          }
+        ]
+      },
+      "paladin": {
+        "strategy": "competent",
+        "legal": true,
+        "mainhand": "mace",
+        "monster": "bee",
+        "uptime": 0.8,
+        "external_party_characters": 0,
+        "consumables": "normal_sustainable",
+        "target_rate_x": 3,
+        "calibration": 0.010044642857,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 3,
+            "calibration": 0.010044642857
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 3,
+            "calibration": 0.010044642857
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 3,
+            "calibration": 0.010044642857
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 3,
+            "calibration": 0.010044642857
+          }
+        ]
+      },
+      "mage": {
+        "strategy": "competent",
+        "legal": true,
+        "mainhand": "staff",
+        "monster": "bee",
+        "uptime": 0.8,
+        "external_party_characters": 0,
+        "consumables": "normal_sustainable",
+        "target_rate_x": 3,
+        "calibration": 0.00703125,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          }
+        ]
+      },
+      "priest": {
+        "strategy": "competent",
+        "legal": true,
+        "mainhand": "wbook0",
+        "monster": "bee",
+        "uptime": 0.8,
+        "external_party_characters": 0,
+        "consumables": "normal_sustainable",
+        "target_rate_x": 3,
+        "calibration": 0.01171875,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 3,
+            "calibration": 0.01171875
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 3,
+            "calibration": 0.01171875
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 3,
+            "calibration": 0.01171875
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 3,
+            "calibration": 0.01171875
+          }
+        ]
+      },
+      "ranger": {
+        "strategy": "competent",
+        "legal": true,
+        "mainhand": "bow",
+        "monster": "bee",
+        "uptime": 0.8,
+        "external_party_characters": 0,
+        "consumables": "normal_sustainable",
+        "target_rate_x": 3,
+        "calibration": 0.00703125,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          }
+        ]
+      },
+      "rogue": {
+        "strategy": "competent",
+        "legal": true,
+        "mainhand": "claw",
+        "monster": "bee",
+        "uptime": 0.8,
+        "external_party_characters": 0,
+        "consumables": "normal_sustainable",
+        "target_rate_x": 3,
+        "calibration": 0.00703125,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 3,
+            "calibration": 0.00703125
+          }
+        ]
+      }
+    },
+    "optimized": {
+      "warrior": {
+        "strategy": "optimized",
+        "legal": true,
+        "mainhand": "blade",
+        "monster": "croc",
+        "uptime": 1,
+        "external_party_characters": 0,
+        "consumables": "normal_sustainable",
+        "target_rate_x": 6,
+        "calibration": 0.013333333333,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          }
+        ]
+      },
+      "paladin": {
+        "strategy": "optimized",
+        "legal": true,
+        "mainhand": "mace",
+        "monster": "croc",
+        "uptime": 1,
+        "external_party_characters": 0,
+        "consumables": "normal_sustainable",
+        "target_rate_x": 6,
+        "calibration": 0.019047619048,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 6,
+            "calibration": 0.019047619048
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 6,
+            "calibration": 0.019047619048
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 6,
+            "calibration": 0.019047619048
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 6,
+            "calibration": 0.019047619048
+          }
+        ]
+      },
+      "mage": {
+        "strategy": "optimized",
+        "legal": true,
+        "mainhand": "staff",
+        "monster": "croc",
+        "uptime": 1,
+        "external_party_characters": 0,
+        "consumables": "normal_sustainable",
+        "target_rate_x": 6,
+        "calibration": 0.013333333333,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          }
+        ]
+      },
+      "priest": {
+        "strategy": "optimized",
+        "legal": true,
+        "mainhand": "wbook0",
+        "monster": "croc",
+        "uptime": 1,
+        "external_party_characters": 0,
+        "consumables": "normal_sustainable",
+        "target_rate_x": 6,
+        "calibration": 0.022222222222,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 6,
+            "calibration": 0.022222222222
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 6,
+            "calibration": 0.022222222222
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 6,
+            "calibration": 0.022222222222
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 6,
+            "calibration": 0.022222222222
+          }
+        ]
+      },
+      "ranger": {
+        "strategy": "optimized",
+        "legal": true,
+        "mainhand": "bow",
+        "monster": "croc",
+        "uptime": 1,
+        "external_party_characters": 0,
+        "consumables": "normal_sustainable",
+        "target_rate_x": 6,
+        "calibration": 0.013333333333,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          }
+        ]
+      },
+      "rogue": {
+        "strategy": "optimized",
+        "legal": true,
+        "mainhand": "claw",
+        "monster": "croc",
+        "uptime": 1,
+        "external_party_characters": 0,
+        "consumables": "normal_sustainable",
+        "target_rate_x": 6,
+        "calibration": 0.013333333333,
+        "bands": [
+          {
+            "from": 0,
+            "to": 0.25,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          },
+          {
+            "from": 0.25,
+            "to": 0.5,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          },
+          {
+            "from": 0.5,
+            "to": 0.75,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          },
+          {
+            "from": 0.75,
+            "to": 1,
+            "target_rate_x": 6,
+            "calibration": 0.013333333333
+          }
+        ]
+      }
+    }
+  },
+  "merchant": {
+    "starter": {
+      "strategy": "stand_only",
+      "legal": true,
+      "bonus_base_multiplier": 0,
+      "credit_kind": "stand_only"
+    },
+    "competent": {
+      "strategy": "stand_plus_bounded_economic_credits",
+      "legal": true,
+      "bonus_base_multiplier": 2,
+      "credit_kind": "positive_net_economic"
+    },
+    "optimized": {
+      "strategy": "stand_plus_full_legal_bonus_cap",
+      "legal": true,
+      "bonus_base_multiplier": 5,
+      "credit_kind": "luck_and_positive_net_economic"
+    }
+  }
+}
