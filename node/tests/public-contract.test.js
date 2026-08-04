@@ -54,13 +54,12 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.match(api, /look:\s*\{ type: "any" \}/);
 	assert.match(api, /args\.char !== undefined/);
 	assert.match(api, /total_level:\s*character\.total_level/);
-	assert.match(api, /function starter_loadout\(\)/);
-	assert.match(api, /starter\.weapons\[i\]/);
-	assert.match(api, /starter\.consumables\[j\]/);
-	assert.match(api, /starter\.equipment\[k\]/);
+	assert.match(api, /buildStarterLoadout\(character\)/);
+	assert.match(api, /node\/game\/starter_loadout/);
 	assert.match(api, /fresh: fresh, starter: starter/);
 	assert.match(api, /slots: A\.starter\.slots/);
 	assert.match(api, /items: A\.starter\.items/);
+	assert.doesNotMatch(api, /\{ name: "blade", level: 0, gift: 1 \}/);
 	assert.doesNotMatch(api, /\{ name: "helmet", level: 0, gift: 1 \}/);
 	assert.doesNotMatch(api, /\{ name: "shoes", level: 0, gift: 1 \}/);
 

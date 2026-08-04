@@ -5,6 +5,7 @@ var { createCharacterState } = require("./node/game/character_state");
 var { createMerchantAccrual } = require("./node/game/merchant_progression");
 var { SKILL_IDS } = require("./node/game/skill_domain");
 var { WEAPON_PROFILES, deriveActiveSkill } = require("./node/game/active_skill");
+var { buildStarterLoadout } = require("./node/game/starter_loadout");
 
 // ==================== HELPER FUNCTIONS ====================
 
@@ -54,21 +55,6 @@ function can_create_character_check(user, ip) {
 		return { can: false, reason: "limit" };
 	}
 	return { can: true };
-}
-
-function starter_loadout() {
-	var starter = character && character.starter ? character.starter : {},
-		items = [];
-	for (var i = 0; i < (starter.weapons || []).length; i++)
-		items.push({ name: starter.weapons[i], level: 0, gift: 1 });
-	for (var j = 0; j < (starter.consumables || []).length; j++) items.push({ ...starter.consumables[j] });
-	for (var k = 0; k < (starter.equipment || []).length; k++) items.push({ ...starter.equipment[k] });
-	var slots = {};
-	for (var slot in starter.slots || {}) {
-		var item = starter.slots[slot];
-		slots[slot] = item && typeof item === "object" ? { ...item } : { name: item };
-	}
-	return { items: items, slots: slots };
 }
 
 function is_name_allowed(name) {
@@ -444,7 +430,7 @@ async function create_character_api(args) {
 	var characterth = await get_characterth();
 	var spawn = maps["main"].spawns[maps["main"].on_death ? maps["main"].on_death[1] : 0];
 	var fresh = createCharacterState();
-	var starter = starter_loadout();
+	var starter = buildStarterLoadout(character);
 
 	var R = await tx(
 		async () => {

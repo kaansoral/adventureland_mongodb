@@ -6,10 +6,11 @@ const path = require("node:path");
 
 const { createCharacterState } = require("../game/character_state");
 const { deriveActiveSkill, WEAPON_PROFILES } = require("../game/active_skill");
+const { SKILL_IDS } = require("../game/skill_domain");
+const { buildStarterLoadout } = require("../game/starter_loadout");
 const { awardPlayerSkillXp, flushPlayerProgressionEvents, initializePlayerProgression } = require("../game/progression_runtime");
 const { loadBenchmarkData } = require("./progression-benchmark");
 
-const SKILL_IDS = ["warrior", "paladin", "mage", "priest", "ranger", "rogue", "merchant"];
 const GAME_ROOT = path.resolve(__dirname, "../..");
 const PROJECT_ROOT = path.resolve(GAME_ROOT, "..");
 
@@ -27,6 +28,7 @@ async function main() {
 	assert.ok(data.items.blade, "the canonical starter blade must be published");
 	assert.equal(data.items.blade.type, "weapon");
 	assert.ok(WEAPON_PROFILES[data.items.blade.wtype], "the starter blade must have a combat profile");
+	const starter = buildStarterLoadout(data.character);
 
 	const lines = [];
 	const player = {
@@ -36,8 +38,8 @@ async function main() {
 		info: {
 			name: "ReleaseSmoke",
 			skills: created.skills,
-			slots: { mainhand: { name: "blade" } },
-			items: [{ name: "blade" }],
+			slots: starter.slots,
+			items: starter.items,
 		},
 		p: {},
 		t: {},
@@ -56,8 +58,10 @@ async function main() {
 	};
 
 	initializePlayerProgression(player, 0);
+	assert.deepEqual(player.info.slots, {});
+	assert.deepEqual(player.info.items, starter.items);
 	const activeSkill = deriveActiveSkill(player.info.slots, data.items, WEAPON_PROFILES);
-	assert.equal(activeSkill, "warrior");
+	assert.equal(activeSkill, null);
 	assert.equal(Object.prototype.hasOwnProperty.call(player.info, "active_skill"), false);
 	emitLog(lines, "character_created", {
 		name: player.name,
@@ -66,6 +70,9 @@ async function main() {
 		active_skill: activeSkill,
 	});
 
+	player.info.slots.mainhand = { name: "blade" };
+	const combatSkill = deriveActiveSkill(player.info.slots, data.items, WEAPON_PROFILES);
+	assert.equal(combatSkill, "warrior");
 	const target = { id: "release-smoke-goo", hp: 105 };
 	for (let hit = 1; hit <= 3; hit += 1) {
 		const damage = 35;
@@ -101,6 +108,7 @@ async function main() {
 		ok: true,
 		character: player.name,
 		active_skill: activeSkill,
+		combat_skill: combatSkill,
 		target: target.id,
 		damage_events: 3,
 		warrior_xp: player.skills.warrior.xp,
