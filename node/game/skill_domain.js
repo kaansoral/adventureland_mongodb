@@ -550,6 +550,7 @@ function loadProgressionPublication(target, progressionData) {
 		{ ...publication, protocol: 3 },
 		{
 			items: next.items,
+			item_requirements: next.item_requirements,
 			skills: next.skills,
 			skill_xp: next.skill_xp,
 			abilities: next.abilities,

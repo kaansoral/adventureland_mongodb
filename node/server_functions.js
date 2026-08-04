@@ -532,7 +532,9 @@ function reset_player(player, soft) {
 	if (soft) {
 	} else {
 		var fresh = createCharacterState();
-		player.skills = fresh.skills;
+		if (!player.info || typeof player.info != "object") player.info = {};
+		player.info.skills = fresh.skills;
+		player.skills = player.info.skills;
 		player.total_level = fresh.total_level;
 		if (player.info) {
 			player.info.merchant_accrual = undefined;
@@ -3631,17 +3633,28 @@ function init_player(player) {
 	var offhand = player.slots.offhand && G.items[player.slots.offhand.name];
 	var mainProfile = main && weaponProfile(main, WEAPON_PROFILES);
 	if (main && main.type == "weapon" && !mainProfile) {
-		add_item(player, player.slots.mainhand, { announce: false });
-		player.slots.mainhand = null;
+		const previousSkill = deriveActiveSkill(player.slots, G.items, WEAPON_PROFILES);
+		const transaction = planUnequipTransaction({
+			player,
+			slot: "mainhand",
+			items: G.items,
+			profiles: WEAPON_PROFILES,
+		});
+		apply_equipment_transaction(player, transaction, previousSkill);
 		main = null;
 	}
 	if (
-		player.slots.mainhand &&
 		player.slots.offhand &&
 		!isCompatibleOffhand(player.slots.mainhand, player.slots.offhand, G.items, WEAPON_PROFILES)
 	) {
-		add_item(player, player.slots.offhand, { announce: false });
-		player.slots.offhand = null;
+		const previousSkill = deriveActiveSkill(player.slots, G.items, WEAPON_PROFILES);
+		const transaction = planUnequipTransaction({
+			player,
+			slot: "offhand",
+			items: G.items,
+			profiles: WEAPON_PROFILES,
+		});
+		apply_equipment_transaction(player, transaction, previousSkill);
 	}
 	player.active_skill = deriveActiveSkill(player.slots, G.items, WEAPON_PROFILES);
 	for (var i = 0; i < player.items.length; i++) {

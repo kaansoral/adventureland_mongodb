@@ -286,10 +286,18 @@ function activeSkillFromItem(item, weaponProfiles = WEAPON_PROFILES) {
 	return profile.skill;
 }
 
-function deriveActiveSkill(slots, items, weaponProfiles = WEAPON_PROFILES) {
+function resolveMainhand(slots, items, weaponProfiles = WEAPON_PROFILES) {
 	const mainhand = slots && slots.mainhand;
 	if (!mainhand || !items || !items[mainhand.name]) return null;
-	return activeSkillFromItem({ ...items[mainhand.name], ...mainhand }, weaponProfiles);
+	const item = items[mainhand.name];
+	const skill = activeSkillFromItem(item, weaponProfiles);
+	if (!skill) return null;
+	return { item, profile: weaponProfiles[item.wtype], skill };
+}
+
+function deriveActiveSkill(slots, items, weaponProfiles = WEAPON_PROFILES) {
+	const resolution = resolveMainhand(slots, items, weaponProfiles);
+	return resolution ? resolution.skill : null;
 }
 
 function weaponProfile(item, weaponProfiles = WEAPON_PROFILES) {
@@ -297,4 +305,11 @@ function weaponProfile(item, weaponProfiles = WEAPON_PROFILES) {
 	return weaponProfiles[item.wtype] || null;
 }
 
-module.exports = { WEAPON_PROFILES, NONCOMBAT_TOOLS, activeSkillFromItem, deriveActiveSkill, weaponProfile };
+module.exports = {
+	WEAPON_PROFILES,
+	NONCOMBAT_TOOLS,
+	activeSkillFromItem,
+	deriveActiveSkill,
+	resolveMainhand,
+	weaponProfile,
+};

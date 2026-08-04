@@ -28,7 +28,20 @@ test("stand accrual uses exact seventh-XP units across partitions and 2016 hours
 		xp += second.xp;
 	}
 	assert.equal(xp, 900000000);
-	assert.equal(state.base_ms_remainder, 0);
+	assert.equal(state.eligible_stand_ms, 2016 * 60 * 60 * 1000);
+	assert.equal(state.stand_rate_remainder, 0);
+	assert.equal(state.xp_unit_remainder, 0);
+	assert.deepEqual(Object.keys(state).sort(), [
+		"eligible_stand_ms",
+		"merchant_id",
+		"pending_credits",
+		"processed_sources",
+		"rolling_awards",
+		"rolling_hour_luck_uses",
+		"sales_by_owner",
+		"stand_rate_remainder",
+		"xp_unit_remainder",
+	]);
 });
 
 test("Luck caps targets/hour, sales use positive-net source IDs, and Merchant gates are stable", () => {
@@ -114,7 +127,7 @@ test("sale high-water survives reversal and same-owner transfers are ineligible"
 	});
 	assert.ok(newNet.credited >= 0);
 	assert.ok(newNet.credited > 0);
-	assert.equal(newNet.state.sales.buyer.credited_high_water_gold, 200000);
+	assert.equal(newNet.state.sales_by_owner.buyer.credited_high_water_gold, 200000);
 });
 
 test("Merchant action credits are bounded and validation rejects malformed persisted state", () => {
@@ -176,7 +189,11 @@ test("Merchant action credits are bounded and validation rejects malformed persi
 		(error) => error.code === "invalid_merchant_state",
 	);
 	assert.throws(
-		() => validateMerchantAccrual({ ...createMerchantAccrual(), sales: { buyer: { net_gold: -1 } } }, 0),
+		() => validateMerchantAccrual({ ...createMerchantAccrual(), sales_by_owner: { buyer: { net_gold: -1 } } }, 0),
+		(error) => error.code === "invalid_merchant_state",
+	);
+	assert.throws(
+		() => validateMerchantAccrual({ ...createMerchantAccrual(), stand_last_settled_at: 1 }, 0),
 		(error) => error.code === "invalid_merchant_state",
 	);
 });

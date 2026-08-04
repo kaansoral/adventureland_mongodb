@@ -1,10 +1,19 @@
 "use strict";
 
+const { abilities } = require("../../design/abilities");
+
+const STYLE_BOUND_ABILITY_IDS = new Set(
+	Object.entries(abilities)
+		.filter(([, definition]) => definition && definition.style_bound === true)
+		.map(([abilityId]) => abilityId),
+);
+
 function effectSource(effect) {
-	return effect && effect.source_character_id !== undefined ? effect.source_character_id : effect && effect.source;
+	return effect && effect.source_character_id;
 }
 
-function tagStyleEffect(effect, { sourceCharacterId, sourceSkill, styleBound = true } = {}) {
+function tagStyleEffect(effect, { sourceCharacterId, sourceSkill, styleBound } = {}) {
+	if (typeof styleBound !== "boolean") throw new TypeError("styleBound must be explicit");
 	return {
 		...effect,
 		source_character_id: sourceCharacterId === undefined ? effect && effect.source_character_id : sourceCharacterId,
@@ -37,4 +46,4 @@ function invalidateConditions(conditions, context) {
 	return { conditions: next, removed: result.removed };
 }
 
-module.exports = { tagStyleEffect, invalidateStyleEffects, invalidateConditions };
+module.exports = { STYLE_BOUND_ABILITY_IDS, tagStyleEffect, invalidateStyleEffects, invalidateConditions };

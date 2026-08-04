@@ -28,8 +28,9 @@ function runtimeError(code, message, fields = {}) {
 function ensurePlayerContainers(player) {
 	if (!player || typeof player !== "object") throw runtimeError("invalid_character_skill_state", "Player is required");
 	if (!player.info || typeof player.info !== "object") player.info = {};
-	if (!player.info.skills && player.skills) player.info.skills = player.skills;
-	if (!player.skills && player.info.skills) player.skills = player.info.skills;
+	if (!player.info.skills) throw runtimeError("invalid_character_skill_state", "Persisted info.skills is required");
+	// Runtime code may use the flattened alias, but the persisted document is authoritative.
+	player.skills = player.info.skills;
 	if (player.info.merchant_accrual === undefined && player.merchant_accrual !== undefined)
 		player.info.merchant_accrual = player.merchant_accrual;
 	if (player.info.death_sickness_until === undefined && player.death_sickness_until !== undefined)
@@ -41,8 +42,12 @@ function ensurePlayerContainers(player) {
 	if (!player.t || typeof player.t !== "object") player.t = {};
 	if (!player.t.skill_xp || typeof player.t.skill_xp !== "object") player.t.skill_xp = {};
 	for (const skill of SKILL_IDS) player.t.skill_xp[skill] = Number(player.t.skill_xp[skill]) || 0;
-	if (!player.info.merchant_accrual || typeof player.info.merchant_accrual !== "object")
-		player.info.merchant_accrual = createMerchantAccrual();
+	const merchantId = player.real_id || player.id || player.name || "unknown";
+	if (!player.info.merchant_accrual || typeof player.info.merchant_accrual !== "object") {
+		player.info.merchant_accrual = createMerchantAccrual(merchantId);
+	} else if (player.info.merchant_accrual.merchant_id !== merchantId) {
+		throw runtimeError("invalid_merchant_state", "Merchant accrual belongs to a different character");
+	}
 	return player;
 }
 
@@ -55,6 +60,8 @@ function initializePlayerProgression(player, now = Date.now()) {
 	validateMerchantAccrual(player.info.merchant_accrual, now);
 	player.info.merchant_accrual = pruneMerchantAccrual(player.info.merchant_accrual, now);
 	rehydrateDeathSickness(player, now);
+	// A persisted open stand is a reopened session; never carry a wall-clock gap across login.
+	if (player.p.stand) player.p.stand_last_settled_at = now;
 	return player;
 }
 
@@ -64,22 +71,35 @@ function sourceKind(source) {
 	return null;
 }
 
-function emitSkillDelta(player, delta) {
-	if (player.socket && typeof player.socket.emit === "function") {
-		player.socket.emit("skill_xp", {
-			...delta,
-			skills: JSON.parse(JSON.stringify(player.skills)),
-		});
-		if (delta.to_level > delta.from_level) {
+function queueSkillDelta(player, delta, skills = player.skills) {
+	if (!delta || delta.duplicate) return;
+	if (!Array.isArray(player.progression_events)) player.progression_events = [];
+	player.progression_events.push({
+		delta: { ...delta },
+		skills: JSON.parse(JSON.stringify(skills)),
+	});
+}
+
+function flushPlayerProgressionEvents(player) {
+	if (!Array.isArray(player.progression_events) || !player.progression_events.length) return 0;
+	if (!player.socket || typeof player.socket.emit !== "function") return 0;
+	let flushed = 0;
+	while (player.progression_events.length) {
+		const event = player.progression_events[0];
+		player.socket.emit("skill_xp", { ...event.delta, skills: event.skills });
+		if (event.delta.to_level > event.delta.from_level) {
 			player.socket.emit("skill_level_up", {
-				skill: delta.skill,
-				from_level: delta.from_level,
-				to_level: delta.to_level,
-				levels_gained: delta.levels_gained,
-				total_level: delta.total_level,
+				skill: event.delta.skill,
+				from_level: event.delta.from_level,
+				to_level: event.delta.to_level,
+				levels_gained: event.delta.levels_gained,
+				total_level: event.delta.total_level,
 			});
 		}
+		player.progression_events.shift();
+		flushed += 1;
 	}
+	return flushed;
 }
 
 function awardPlayerSkillXp(player, skillId, requestedXp, { source, sourceId, emit = true } = {}) {
@@ -104,7 +124,7 @@ function awardPlayerSkillXp(player, skillId, requestedXp, { source, sourceId, em
 	}
 	if (!result.delta.duplicate) player.t.skill_xp[skillId] += result.delta.accepted_xp;
 	player.t.total_skill_xp = SKILL_IDS.reduce((sum, skill) => sum + player.t.skill_xp[skill], 0);
-	if (emit && !result.delta.duplicate) emitSkillDelta(player, result.delta);
+	if (emit && !result.delta.duplicate) queueSkillDelta(player, result.delta);
 	return result.delta;
 }
 
@@ -119,6 +139,7 @@ function awardPlayerSkillXpSplit(player, split, { source, sourceId, emit = true 
 	const known = new Set(player.p.skill_xp_sources);
 	let working = { skills: JSON.parse(JSON.stringify(player.skills)), total_level: player.total_level };
 	const deltas = [];
+	const eventSnapshots = [];
 	for (const [skill, requestedXp] of Object.entries(split || {})) {
 		if (!requestedXp) continue;
 		const result = awardSkillXp(working, skill, requestedXp, {
@@ -127,15 +148,17 @@ function awardPlayerSkillXpSplit(player, split, { source, sourceId, emit = true 
 		});
 		working = result.state;
 		deltas.push(result.delta);
+		if (!result.delta.duplicate) eventSnapshots.push({ delta: result.delta, skills: working.skills });
 	}
 	player.skills = working.skills;
 	player.info.skills = player.skills;
 	player.total_level = working.total_level;
 	if (sourceId) player.p.skill_xp_sources = [...known];
-	for (const delta of deltas) {
+	for (const event of eventSnapshots) {
+		const delta = event.delta;
 		if (delta.duplicate) continue;
 		player.t.skill_xp[delta.skill] += delta.accepted_xp;
-		if (emit) emitSkillDelta(player, delta);
+		if (emit) queueSkillDelta(player, delta, event.skills);
 	}
 	player.t.total_skill_xp = SKILL_IDS.reduce((sum, skill) => sum + player.t.skill_xp[skill], 0);
 	return deltas;
@@ -153,7 +176,7 @@ function skillLevel(player, skillId) {
 
 function markStandSession(player, now = Date.now()) {
 	ensurePlayerContainers(player);
-	player.info.merchant_accrual.stand_last_settled_at = now;
+	player.p.stand_last_settled_at = now;
 	return player.info.merchant_accrual;
 }
 
@@ -161,11 +184,9 @@ function settlePlayerStand(player, now = Date.now(), { emit = true } = {}) {
 	ensurePlayerContainers(player);
 	const accrual = player.info.merchant_accrual;
 	if (!player.p || !player.p.stand || player.rip || !player.socket) {
-		if (Number.isSafeInteger(accrual.stand_last_settled_at) && now > accrual.stand_last_settled_at)
-			accrual.stand_last_settled_at = now;
 		return { xp: 0, units: 0, state: accrual, skipped: true };
 	}
-	const previous = accrual.stand_last_settled_at;
+	const previous = player.p.stand_last_settled_at;
 	if (!Number.isSafeInteger(previous) || now <= previous) return { xp: 0, units: 0, state: accrual, skipped: true };
 	const settled = settleStand(accrual, now - previous, now);
 	if (settled.xp) {
@@ -183,7 +204,8 @@ function settlePlayerStand(player, now = Date.now(), { emit = true } = {}) {
 				emit: false,
 			});
 			player.info.merchant_accrual = settled.state;
-			if (emit && !delta.duplicate) emitSkillDelta(player, delta);
+			player.p.stand_last_settled_at = now;
+			if (emit && !delta.duplicate) queueSkillDelta(player, delta);
 			return { ...settled, delta };
 		} catch (error) {
 			player.skills = before.skills;
@@ -195,6 +217,7 @@ function settlePlayerStand(player, now = Date.now(), { emit = true } = {}) {
 		}
 	}
 	player.info.merchant_accrual = settled.state;
+	player.p.stand_last_settled_at = now;
 	return settled;
 }
 
@@ -255,6 +278,7 @@ module.exports = {
 	initializePlayerProgression,
 	awardPlayerSkillXp,
 	awardPlayerSkillXpSplit,
+	flushPlayerProgressionEvents,
 	maxCombatLevel,
 	skillLevel,
 	markStandSession,

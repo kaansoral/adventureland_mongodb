@@ -1,6 +1,6 @@
 "use strict";
 
-const { SKILL_IDS } = require("./skill_domain");
+const { validateRequirements: validateRegistryRequirements } = require("./skill_domain");
 const { WEAPON_PROFILES, deriveActiveSkill, weaponProfile } = require("./active_skill");
 
 const OFFHAND_TYPES = new Set(["shield", "source", "quiver", "misc_offhand"]);
@@ -16,6 +16,44 @@ function equipmentError(code, message, fields = {}) {
 
 function clone(value) {
 	return JSON.parse(JSON.stringify(value));
+}
+
+const ITEM_IDENTITY_IGNORED_FIELDS = new Set([
+	"grace",
+	"giveaway",
+	"gf",
+	"price",
+	"b",
+	"rid",
+	"list",
+	"o",
+	"oo",
+	"src",
+]);
+
+function canonicalize(value) {
+	if (Array.isArray(value)) return value.map(canonicalize);
+	if (!value || typeof value !== "object") return value;
+	return Object.fromEntries(
+		Object.keys(value)
+			.sort()
+			.map((key) => [key, canonicalize(value[key])]),
+	);
+}
+
+function itemIdentity(item) {
+	if (!item || typeof item !== "object") return null;
+	const visible = {};
+	for (const [field, value] of Object.entries(item)) {
+		if (!ITEM_IDENTITY_IGNORED_FIELDS.has(field)) visible[field] = value;
+	}
+	if (visible.level === undefined) visible.level = 0;
+	if (visible.q === undefined) visible.q = 1;
+	return canonicalize(visible);
+}
+
+function sameItemIdentity(left, right) {
+	return JSON.stringify(itemIdentity(left)) === JSON.stringify(itemIdentity(right));
 }
 
 function itemDefinition(item, items) {
@@ -44,8 +82,13 @@ function requirementFailure(item, requirements, skills) {
 }
 
 function validateRequirements(item, requirements, skills) {
-	if (!Array.isArray(requirements) || !requirements.length) {
-		throw equipmentError("invalid_equipment_requirements", "The item has no authoritative requirements", { item });
+	try {
+		validateRegistryRequirements(item, requirements);
+	} catch (error) {
+		throw equipmentError(error.code || "invalid_equipment_requirements", error.message, {
+			item,
+			...error,
+		});
 	}
 	const failure = requirementFailure(item, requirements, skills);
 	if (failure) throw failure;
@@ -58,14 +101,13 @@ function findFreeInventory(inventory, reserved = new Set()) {
 	return -1;
 }
 
-function addToInventory(inventory, item, preferredIndex = -1) {
+function addToInventory(inventory, item, preferredIndex = -1, fullCode = "inventory_full_for_offhand") {
 	if (preferredIndex >= 0 && !inventory[preferredIndex]) {
 		inventory[preferredIndex] = item;
 		return preferredIndex;
 	}
 	const index = findFreeInventory(inventory);
-	if (index < 0)
-		throw equipmentError("inventory_full_for_offhand", "No inventory cell is available for the displaced item");
+	if (index < 0) throw equipmentError(fullCode, "No inventory cell is available for the displaced item");
 	inventory[index] = item;
 	return index;
 }
@@ -76,7 +118,9 @@ function isWeapon(item) {
 
 function isCompatibleOffhand(main, offhand, items, profiles = WEAPON_PROFILES) {
 	if (!offhand) return true;
-	if (!main) return true;
+	if (!main) {
+		return OFFHAND_TYPES.has(itemDefinition(offhand, items).type);
+	}
 	const mainDef = itemDefinition(main, items);
 	const offDef = itemDefinition(offhand, items);
 	const profile = weaponProfile(mainDef, profiles);
@@ -108,7 +152,17 @@ function chooseSlot(itemDef, requestedSlot, slots, profiles = WEAPON_PROFILES) {
 function validateLayout(slots, items, profiles = WEAPON_PROFILES) {
 	const main = slots.mainhand;
 	const offhand = slots.offhand;
-	if (!offhand || !main) return;
+	if (!offhand) return;
+	if (!main) {
+		const offhandDefinition = itemDefinition(offhand, items);
+		if (!OFFHAND_TYPES.has(offhandDefinition.type)) {
+			throw equipmentError("incompatible_offhand", "This offhand item requires a compatible mainhand", {
+				mainhand: null,
+				offhand: offhand.name,
+			});
+		}
+		return;
+	}
 	if (!isCompatibleOffhand(main, offhand, items, profiles)) {
 		throw equipmentError("incompatible_offhand", "The final hand layout is incompatible", {
 			mainhand: main.name,
@@ -134,14 +188,15 @@ function planEquipmentTransaction({
 	if (
 		sourceIndex !== undefined &&
 		sourceIndex !== null &&
-		(!source || !item || source.name !== item.name || (source.level || 0) !== (item.level || 0))
+		(!source || !sameItemIdentity(source, item))
 	) {
 		throw equipmentError("inventory_item_changed", "The inventory source no longer contains the requested item", {
 			index: sourceIndex,
 		});
 	}
-	const definition = itemDefinition(item || source, items);
-	validateRequirements(item.name, itemRequirements && itemRequirements[item.name], skills);
+	const equippedItem = source || item;
+	const definition = itemDefinition(equippedItem, items);
+	validateRequirements(equippedItem.name, itemRequirements && itemRequirements[equippedItem.name], skills);
 	const targetSlot = chooseSlot(definition, slot, currentSlots, profiles);
 	const nextSlots = clone(currentSlots);
 	const nextInventory = clone(currentInventory);
@@ -149,7 +204,7 @@ function planEquipmentTransaction({
 
 	const displaced = nextSlots[targetSlot];
 	if (displaced) addToInventory(nextInventory, displaced, sourceIndex);
-	nextSlots[targetSlot] = clone(item);
+	nextSlots[targetSlot] = clone(equippedItem);
 
 	if (
 		targetSlot === "mainhand" &&
@@ -157,9 +212,7 @@ function planEquipmentTransaction({
 		!isCompatibleOffhand(nextSlots.mainhand, nextSlots.offhand, items, profiles)
 	) {
 		const offhand = nextSlots.offhand;
-		const offhandDestination = addToInventory(nextInventory, offhand, sourceIndex);
-		if (offhandDestination < 0)
-			throw equipmentError("inventory_full_for_offhand", "No inventory cell is available for the displaced offhand");
+		addToInventory(nextInventory, offhand, sourceIndex, "inventory_full_for_offhand");
 		nextSlots.offhand = null;
 	}
 	if (
@@ -182,6 +235,30 @@ function planEquipmentTransaction({
 	};
 }
 
+function planUnequipTransaction({ player, slot, preferredIndex = -1, items, profiles = WEAPON_PROFILES }) {
+	const currentSlots = clone((player && player.slots) || {});
+	const currentInventory = clone((player && (player.items || player.inventory)) || []);
+	const item = currentSlots[slot];
+	if (!item) throw equipmentError("invalid_equipment", "The requested slot is empty", { slot });
+
+	const nextSlots = clone(currentSlots);
+	const nextInventory = clone(currentInventory);
+	nextSlots[slot] = null;
+	if (slot === "mainhand" && nextSlots.offhand && isWeapon(itemDefinition(nextSlots.offhand, items))) {
+		addToInventory(nextInventory, nextSlots.offhand, -1, "no_space");
+		nextSlots.offhand = null;
+	}
+	if (!item.b) addToInventory(nextInventory, item, Number.isInteger(preferredIndex) ? preferredIndex : -1, "no_space");
+	validateLayout(nextSlots, items, profiles);
+	return {
+		slots: nextSlots,
+		items: nextInventory,
+		inventory: nextInventory,
+		active_skill: deriveActiveSkill(nextSlots, items, profiles),
+		slot,
+	};
+}
+
 function canEquipItem(args) {
 	try {
 		return { ok: true, transaction: planEquipmentTransaction(args) };
@@ -190,23 +267,15 @@ function canEquipItem(args) {
 	}
 }
 
-function validateSkillOrder(requirements) {
-	let previous = -1;
-	for (const requirement of requirements || []) {
-		const index = SKILL_IDS.indexOf(requirement.skill);
-		if (index < previous)
-			throw equipmentError("invalid_equipment_requirements", "Requirements are not in registry order");
-		previous = index;
-	}
-}
-
 module.exports = {
 	OFFHAND_TYPES,
 	RING_SLOTS,
 	EARRING_SLOTS,
+	itemIdentity,
+	sameItemIdentity,
 	validateRequirements,
-	validateSkillOrder,
 	isCompatibleOffhand,
 	planEquipmentTransaction,
+	planUnequipTransaction,
 	canEquipItem,
 };

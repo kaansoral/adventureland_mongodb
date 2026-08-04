@@ -554,7 +554,13 @@ function equip_batch(data) {
 			return rejecting_promise({ reason: "invalid" });
 		}
 	}
-	parent.socket.emit("equip_batch", data);
+	parent.socket.emit(
+		"equip_batch",
+		data.map((entry) => ({
+			...entry,
+			item: entry.item || (parent.character && parent.character.items && parent.character.items[entry.num]),
+		})),
+	);
 	return parent.push_deferred("equip_batch");
 }
 
@@ -564,7 +570,11 @@ function equip(num, slot) {
 		game_log("Can't equip " + num);
 		return rejecting_promise({ reason: "invalid" });
 	} else {
-		parent.socket.emit("equip", { num: num, slot: slot });
+		parent.socket.emit("equip", {
+			num: num,
+			slot: slot,
+			item: parent.character && parent.character.items && parent.character.items[num],
+		});
 		return parent.push_deferred("equip");
 	}
 }

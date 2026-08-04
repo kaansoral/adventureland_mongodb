@@ -4252,7 +4252,7 @@ function on_rclick(current) {
 		} else {
 			inum = parseInt(inum, 10);
 			if (0 && character && character.items[inum] && G.items[character.items[inum].name].type == "elixir") return;
-			socket.emit("equip", { num: inum });
+			socket.emit("equip", { num: inum, item: character.items[inum] });
 			push_deferred("equip");
 		}
 	}
@@ -4351,7 +4351,7 @@ function on_drop(event) {
 				console.log("TRADE-ERROR: " + e);
 			}
 		} else {
-			socket.emit("equip", { num: inum, slot: slot }), (move = true), (cache_slots[slot] = -1);
+			socket.emit("equip", { num: inum, slot: slot, item: character.items[inum] }), (move = true), (cache_slots[slot] = -1);
 			push_deferred("equip");
 		}
 	}

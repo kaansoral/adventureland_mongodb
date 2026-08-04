@@ -1,6 +1,6 @@
 "use strict";
 
-const { WEAPON_PROFILES, deriveActiveSkill, weaponProfile } = require("./active_skill");
+const { WEAPON_PROFILES, resolveMainhand } = require("./active_skill");
 const { applySicknessMultiplier } = require("./death_sickness");
 
 const BASELINE = Object.freeze({
@@ -163,7 +163,6 @@ function calculateStats({
 	profiles = WEAPON_PROFILES,
 	getItemProperties = null,
 	getSetProperties = null,
-	activeSkill = undefined,
 	previousHp = null,
 	previousMp = null,
 	deathSickness = false,
@@ -174,9 +173,10 @@ function calculateStats({
 	stats.xluck = 0;
 	stats.xgold = 0;
 	stats.xxp = 0;
-	const resolvedActiveSkill = activeSkill === undefined ? deriveActiveSkill(slots, items, profiles) : activeSkill;
-	const main = slots.mainhand && items[slots.mainhand.name];
-	const profile = main && weaponProfile(main, profiles);
+	const mainResolution = resolveMainhand(slots, items, profiles);
+	const resolvedActiveSkill = mainResolution && mainResolution.skill;
+	const main = mainResolution && mainResolution.item;
+	const profile = mainResolution && mainResolution.profile;
 	if (main && resolvedActiveSkill) applyProfile(stats, profile, main);
 
 	for (const [slot, instance] of Object.entries(slots || {})) {

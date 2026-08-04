@@ -1024,7 +1024,7 @@ function on_ability(key, event) {
 				else socket.emit("merchant", { num: num });
 				push_deferred("merchant");
 			} else {
-				socket.emit("equip", { num: num });
+				socket.emit("equip", { num: num, item: character.items[num] });
 				push_deferred("equip");
 			}
 		} else add_log("Item not found", "gray");
@@ -4283,7 +4283,7 @@ function use(item) {
 		var def = G.items[current.name];
 		(def.gives || []).forEach(function (p) {
 			if (p[0] == item && p[1] > 0 && !done) {
-				socket.emit("equip", { num: i });
+				socket.emit("equip", { num: i, item: character.items[i] });
 				done = push_deferred("equip");
 			}
 		});

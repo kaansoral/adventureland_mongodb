@@ -6,7 +6,7 @@ const path = require("node:path");
 
 const { createCharacterState } = require("../game/character_state");
 const { deriveActiveSkill, WEAPON_PROFILES } = require("../game/active_skill");
-const { awardPlayerSkillXp, initializePlayerProgression } = require("../game/progression_runtime");
+const { awardPlayerSkillXp, flushPlayerProgressionEvents, initializePlayerProgression } = require("../game/progression_runtime");
 const { loadBenchmarkData } = require("./progression-benchmark");
 
 const SKILL_IDS = ["warrior", "paladin", "mage", "priest", "ranger", "rogue", "merchant"];
@@ -82,6 +82,7 @@ async function main() {
 			sourceId: `release-smoke:hit:${hit}`,
 		});
 	}
+	flushPlayerProgressionEvents(player);
 
 	assert.equal(target.hp, 0);
 	assert.equal(player.info.skills, player.skills);

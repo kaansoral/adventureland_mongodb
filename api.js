@@ -2,6 +2,7 @@
 // Ported from Python api.py to Node.js/MongoDB REF pattern
 
 var { createCharacterState } = require("./node/game/character_state");
+var { createMerchantAccrual } = require("./node/game/merchant_progression");
 var { SKILL_IDS } = require("./node/game/skill_domain");
 var { WEAPON_PROFILES, deriveActiveSkill } = require("./node/game/active_skill");
 
@@ -77,7 +78,7 @@ function get_stats(characters) {
 	var stats = {};
 	for (var i = 0; i < characters.length; i++) {
 		var c = characters[i];
-		stats[get_id(c)] = { total_level: c.total_level, skills: gf(c, "skills", gf(c, "info", {}).skills || {}) };
+		stats[get_id(c)] = { total_level: c.total_level, skills: gf(c, "info", {}).skills || {} };
 	}
 	return stats;
 }
@@ -459,6 +460,7 @@ async function create_character_api(args) {
 				private: false,
 				info: {
 					skills: A.fresh.skills,
+					merchant_accrual: null,
 					death_sickness_until: null,
 					characterth: A.characterth,
 					name: A.name,
@@ -485,6 +487,7 @@ async function create_character_api(args) {
 				blobs: ["info"],
 			};
 			// Add starter gear
+			R.character.info.merchant_accrual = createMerchantAccrual(R.character._id);
 			R.character.info.slots.helmet = { name: "helmet", level: 0, gift: 1 };
 			R.character.info.slots.shoes = { name: "shoes", level: 0, gift: 1 };
 

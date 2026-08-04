@@ -854,7 +854,7 @@ test("the closed progression consumer inventory has no legacy skill lookups", ()
 	];
 	const expectedProgressionRefs = { "htmls/index.html": 1, "js/html.js": 10, "js/game.js": 1 };
 	const expectedAbilityRefs = {
-		"node/server.js": 40,
+		"node/server.js": 42,
 		"node/server_functions.js": 20,
 		"js/functions.js": 20,
 		"js/html.js": 29,

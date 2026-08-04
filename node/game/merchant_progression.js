@@ -5,6 +5,19 @@ const { progression } = require("../../design/progression");
 const HOUR = progression.STAND_HOUR_MS;
 const BASE = progression.BASE_UNITS_PER_HOUR;
 const UNITS_PER_XP = progression.XP_UNITS_PER_XP;
+const CREDIT_KINDS = new Set(["mluck", "sale", "donation", "dice"]);
+const ACTION_KINDS = new Set(["donation", "dice"]);
+const REQUIRED_FIELDS = [
+	"merchant_id",
+	"eligible_stand_ms",
+	"stand_rate_remainder",
+	"xp_unit_remainder",
+	"rolling_hour_luck_uses",
+	"pending_credits",
+	"rolling_awards",
+	"sales_by_owner",
+	"processed_sources",
+];
 
 function merchantError(code, message, fields = {}) {
 	const error = new Error(message);
@@ -17,77 +30,80 @@ function clone(value) {
 	return JSON.parse(JSON.stringify(value));
 }
 
-function createMerchantAccrual() {
+function createMerchantAccrual(merchantId = "unknown") {
+	if (typeof merchantId !== "string" || !merchantId)
+		throw merchantError("invalid_merchant_state", "Merchant ID must be a non-empty string");
 	return {
-		base_ms_remainder: 0,
-		unit_xp_remainder: 0,
-		stand_last_settled_at: null,
+		merchant_id: merchantId,
+		eligible_stand_ms: 0,
+		stand_rate_remainder: 0,
+		xp_unit_remainder: 0,
+		rolling_hour_luck_uses: [],
 		pending_credits: [],
 		rolling_awards: [],
-		luck_targets: [],
-		action_events: [],
-		sales: {},
+		sales_by_owner: {},
 		processed_sources: [],
-		saturated_award_units: 0,
-		saturated_award_bonus_units: 0,
-		saturated_award_expires_at: null,
 	};
 }
 
 function prune(state, now) {
-	state.pending_credits = (state.pending_credits || []).filter((credit) => credit.expires_at > now);
-	state.rolling_awards = (state.rolling_awards || []).filter((award) => award.at > now - HOUR);
-	state.luck_targets = (state.luck_targets || []).filter((entry) => entry.at > now - HOUR);
-	state.action_events = (state.action_events || []).filter((entry) => entry.at > now - HOUR);
-	for (const [owner, ledger] of Object.entries(state.sales || {})) {
-		ledger.events = (ledger.events || []).filter((event) => event.at > now - HOUR);
-		if (!ledger.events.length && ledger.net_gold <= ledger.credited_high_water_gold) delete state.sales[owner];
+	const lowerBound = now - HOUR;
+	state.pending_credits = state.pending_credits.filter((credit) => credit.expires_at > now);
+	state.rolling_awards = state.rolling_awards.filter((award) => award.at > lowerBound);
+	state.rolling_hour_luck_uses = state.rolling_hour_luck_uses.filter((entry) => entry.at > lowerBound);
+	for (const [owner, ledger] of Object.entries(state.sales_by_owner)) {
+		ledger.events = ledger.events.filter((event) => event.at > lowerBound);
+		if (!ledger.events.length) delete state.sales_by_owner[owner];
 	}
-	state.processed_sources = (state.processed_sources || []).filter((entry) => entry.expires_at > now);
-	if (state.saturated_award_expires_at && state.saturated_award_expires_at <= now) {
-		state.saturated_award_units = 0;
-		state.saturated_award_bonus_units = 0;
-		state.saturated_award_expires_at = null;
-	}
+	state.processed_sources = state.processed_sources.filter((entry) => entry.expires_at > now);
+	if (state.saturated_award_units && state.saturated_award_units.expires_at <= now) delete state.saturated_award_units;
 	return state;
 }
 
+function prepare(previous, now) {
+	const state = clone(previous || createMerchantAccrual());
+	validateMerchantAccrual(state, now, { allowExpired: true });
+	return prune(state, now);
+}
+
 function unitsToXp(state, units) {
-	const total = state.unit_xp_remainder + units;
+	const total = state.xp_unit_remainder + units;
 	const xp = Math.floor(total / UNITS_PER_XP);
-	state.unit_xp_remainder = total % UNITS_PER_XP;
+	state.xp_unit_remainder = total % UNITS_PER_XP;
 	return xp;
 }
 
-function addRollingAward(state, base_units, bonus_units, now, kind) {
+function awardUnits(award) {
+	return award.base_units + award.bonus_units;
+}
+
+function addRollingAward(state, base_units, bonus_units, now) {
 	const units = base_units + bonus_units;
 	if (units <= 0) return;
 	if (state.rolling_awards.length >= progression.MAX_COLLECTION_SIZE) {
-		state.saturated_award_units += units;
-		state.saturated_award_bonus_units += bonus_units;
-		state.saturated_award_expires_at = Math.max(state.saturated_award_expires_at || 0, now + HOUR);
+		const previous = state.saturated_award_units;
+		state.saturated_award_units = {
+			units: (previous ? previous.units : 0) + units,
+			expires_at: Math.max(previous ? previous.expires_at : 0, now + HOUR),
+		};
 		return;
 	}
-	state.rolling_awards.push({ at: now, base_units, bonus_units, units, kind });
+	state.rolling_awards.push({ at: now, base_units, bonus_units });
 }
 
-function rollingUnits(state, now) {
+function rollingUnits(state) {
 	return (
-		state.rolling_awards.filter((award) => award.at > now - HOUR).reduce((sum, award) => sum + award.units, 0) +
-		(state.saturated_award_units || 0)
+		state.rolling_awards.reduce((sum, award) => sum + awardUnits(award), 0) +
+		(state.saturated_award_units ? state.saturated_award_units.units : 0)
 	);
 }
 
-function rollingBonusUnits(state, now) {
-	return (
-		state.rolling_awards
-			.filter((award) => award.at > now - HOUR)
-			.reduce((sum, award) => sum + (award.bonus_units || 0), 0) + (state.saturated_award_bonus_units || 0)
-	);
+function rollingBonusUnits(state) {
+	if (state.saturated_award_units) return progression.MAX_ACTION_UNITS_PER_HOUR;
+	return state.rolling_awards.reduce((sum, award) => sum + award.bonus_units, 0);
 }
 
 function reserveSource(state, sourceId, now) {
-	if (!sourceId) return { reserved: false };
 	const existing = state.processed_sources.find((entry) => entry.source_id === sourceId);
 	if (existing) return { duplicate: true, reserved: false };
 	if (state.processed_sources.length >= progression.MAX_COLLECTION_SIZE) return { saturated: true, reserved: false };
@@ -95,29 +111,26 @@ function reserveSource(state, sourceId, now) {
 	return { reserved: true };
 }
 
-function enqueueCredit(
-	state,
-	{ units, sourceId, kind = "action", targetId = null, now = Date.now(), expiresAt = now + HOUR },
-) {
+function enqueueCredit(state, { units, sourceId, kind, now, expiresAt = now + HOUR }) {
 	if (!Number.isSafeInteger(units) || units <= 0)
 		throw merchantError("invalid_merchant_credit", "Credit units must be a positive safe integer");
 	if (typeof sourceId !== "string" || !sourceId)
 		throw merchantError("invalid_merchant_credit", "Merchant credits require a source ID");
+	if (!CREDIT_KINDS.has(kind)) throw merchantError("invalid_merchant_credit", "Unknown Merchant credit kind");
 	if (!Number.isSafeInteger(expiresAt) || expiresAt <= now || expiresAt > now + HOUR)
 		throw merchantError("invalid_merchant_credit", "Merchant credit expiry must be within one hour");
 	const actionRoom = Math.max(
 		0,
 		progression.MAX_ACTION_UNITS_PER_HOUR -
 			state.pending_credits.reduce((sum, credit) => sum + credit.units, 0) -
-			rollingBonusUnits(state, now),
+			rollingBonusUnits(state),
 	);
 	const credited = Math.min(units, actionRoom);
 	if (credited)
 		state.pending_credits.push({
-			units: credited,
 			source_id: sourceId,
 			kind,
-			target_id: targetId,
+			units: credited,
 			expires_at: expiresAt,
 		});
 	return { state, credited, saturated: credited < units };
@@ -126,11 +139,14 @@ function enqueueCredit(
 function settleStand(previous, elapsedMs, now = Date.now()) {
 	if (!Number.isSafeInteger(elapsedMs) || elapsedMs < 0)
 		throw merchantError("invalid_merchant_clock", "Stand elapsed time must be a non-negative safe integer");
-	const state = prune(clone(previous || createMerchantAccrual()), now);
-	const numerator = elapsedMs * BASE + state.base_ms_remainder;
+	const state = prepare(previous, now);
+	if (!Number.isSafeInteger(state.eligible_stand_ms + elapsedMs))
+		throw merchantError("invalid_merchant_clock", "Eligible stand time exceeds safe integer range");
+	state.eligible_stand_ms += elapsedMs;
+	const numerator = elapsedMs * BASE + state.stand_rate_remainder;
 	const base_units = Math.floor(numerator / HOUR);
-	state.base_ms_remainder = numerator % HOUR;
-	const priorRolling = rollingUnits(state, now);
+	state.stand_rate_remainder = numerator % HOUR;
+	const priorRolling = rollingUnits(state);
 	const bonusCapacity = Math.max(0, progression.MAX_TOTAL_UNITS_PER_HOUR - priorRolling - base_units);
 	const requestedBonus = Math.min(
 		state.pending_credits.reduce((sum, credit) => sum + credit.units, 0),
@@ -146,21 +162,23 @@ function settleStand(previous, elapsedMs, now = Date.now()) {
 	}
 	state.pending_credits = state.pending_credits.filter((credit) => credit.units > 0);
 	const units = base_units + requestedBonus;
-	addRollingAward(state, base_units, requestedBonus, now, "stand");
+	addRollingAward(state, base_units, requestedBonus, now);
 	return { state, xp: unitsToXp(state, units), units, base_units, bonus_units: requestedBonus };
 }
 
 function addCredit(
 	previous,
-	{ units, sourceId, kind = "action", targetId = null, now = Date.now(), expiresAt = now + HOUR },
+	{ units, sourceId, kind = "mluck", now = Date.now(), expiresAt = now + HOUR },
 ) {
 	if (!Number.isSafeInteger(units) || units <= 0)
 		throw merchantError("invalid_merchant_credit", "Credit units must be a positive safe integer");
-	const state = prune(clone(previous || createMerchantAccrual()), now);
+	if (typeof sourceId !== "string" || !sourceId)
+		throw merchantError("invalid_merchant_credit", "Merchant credits require a source ID");
+	const state = prepare(previous, now);
 	const reservation = reserveSource(state, sourceId, now);
 	if (reservation.duplicate) return { state, credited: 0, duplicate: true };
 	if (reservation.saturated) return { state, credited: 0, saturated: true };
-	return enqueueCredit(state, { units, sourceId, kind, targetId, now, expiresAt });
+	return enqueueCredit(state, { units, sourceId, kind, now, expiresAt });
 }
 
 function recordSaleReversal(previous, { merchantOwnerId, externalOwnerId, goldReversed, sourceId, now = Date.now() }) {
@@ -168,30 +186,29 @@ function recordSaleReversal(previous, { merchantOwnerId, externalOwnerId, goldRe
 		return { state: clone(previous || createMerchantAccrual()), credited: 0, eligible: false };
 	if (typeof sourceId !== "string" || !sourceId)
 		throw merchantError("invalid_merchant_credit", "Merchant reversals require a source ID");
-	const state = prune(clone(previous || createMerchantAccrual()), now);
+	const state = prepare(previous, now);
 	const reservation = reserveSource(state, sourceId, now);
 	if (reservation.duplicate) return { state, credited: 0, duplicate: true };
 	if (reservation.saturated) return { state, credited: 0, saturated: true };
-	const ledger = state.sales[externalOwnerId];
+	const ledger = state.sales_by_owner[externalOwnerId];
 	if (!ledger) return { state, credited: 0, eligible: false };
 	ledger.net_gold = Math.max(0, ledger.net_gold - goldReversed);
 	if (ledger.events.length < progression.MAX_COLLECTION_SIZE)
-		ledger.events.push({ at: now, gold: -goldReversed, source_id: sourceId, kind: "reversal" });
+		ledger.events.push({ at: now, net_delta: -goldReversed, source_id: sourceId });
 	return { state, credited: 0, eligible: false };
 }
 
 function qualifyLuck(previous, targetId, now = Date.now()) {
-	const state = prune(clone(previous || createMerchantAccrual()), now);
-	if (state.luck_targets.some((entry) => entry.target_id === targetId))
+	const state = prepare(previous, now);
+	if (state.rolling_hour_luck_uses.some((entry) => entry.target_id === targetId))
 		return { state, qualifies: false, credited: 0, reason: "target_cap" };
-	if (state.luck_targets.length >= progression.LUCK_MAX_TARGETS_PER_HOUR)
+	if (state.rolling_hour_luck_uses.length >= progression.LUCK_MAX_TARGETS_PER_HOUR)
 		return { state, qualifies: false, credited: 0, reason: "hour_cap" };
-	state.luck_targets.push({ target_id: targetId, at: now });
+	state.rolling_hour_luck_uses.push({ target_id: targetId, at: now });
 	const result = addCredit(state, {
 		units: progression.LUCK_UNITS,
-		sourceId: `luck:${targetId}:${now}`,
-		kind: "luck",
-		targetId,
+		sourceId: `mluck:${targetId}:${now}`,
+		kind: "mluck",
 		now,
 	});
 	return { ...result, state: result.state, qualifies: true };
@@ -203,24 +220,24 @@ function recordSale(
 ) {
 	if (!merchantOwnerId || !externalOwnerId || merchantOwnerId === externalOwnerId || goldReceived <= 0)
 		return { state: clone(previous || createMerchantAccrual()), credited: 0, eligible: false };
-	const state = prune(clone(previous || createMerchantAccrual()), now);
+	const state = prepare(previous, now);
 	const effectiveSourceId = sourceId || `sale:${externalOwnerId}:${now}`;
 	const reservation = reserveSource(state, effectiveSourceId, now);
 	if (reservation.duplicate) return { state, credited: 0, duplicate: true };
 	if (reservation.saturated) return { state, credited: 0, saturated: true };
-	const ledger = state.sales[externalOwnerId] || { net_gold: 0, credited_high_water_gold: 0, events: [] };
-	const eligibleGold = Math.max(0, ledger.net_gold + goldReceived - ledger.credited_high_water_gold);
+	const ledger = state.sales_by_owner[externalOwnerId] || { net_gold: 0, credited_high_water_gold: 0, events: [] };
+	const eligibleGold = Math.min(goldReceived, Math.max(0, ledger.net_gold + goldReceived - ledger.credited_high_water_gold));
 	ledger.net_gold += goldReceived;
 	if (ledger.events.length >= progression.MAX_COLLECTION_SIZE) {
 		ledger.credited_high_water_gold = Math.max(ledger.credited_high_water_gold, ledger.net_gold);
-		state.sales[externalOwnerId] = ledger;
+		state.sales_by_owner[externalOwnerId] = ledger;
 		return { state, credited: 0, saturated: true };
 	}
-	ledger.events.push({ at: now, gold: goldReceived, source_id: effectiveSourceId, kind: "sale" });
+	ledger.events.push({ at: now, net_delta: goldReceived, source_id: effectiveSourceId });
 	const fraction = Math.min(1, eligibleGold / goldReceived);
 	const rawXp = Math.round(serverTax * 3.2 * fraction);
 	ledger.credited_high_water_gold = Math.max(ledger.credited_high_water_gold, ledger.net_gold);
-	state.sales[externalOwnerId] = ledger;
+	state.sales_by_owner[externalOwnerId] = ledger;
 	const units = Math.min(rawXp * UNITS_PER_XP, Math.floor(BASE / 10));
 	if (!units) return { state, credited: 0, eligible: eligibleGold > 0 };
 	return {
@@ -229,101 +246,95 @@ function recordSale(
 	};
 }
 
-function validateMerchantAccrual(state, now = Date.now()) {
+function validateMerchantAccrual(state, now = Date.now(), { allowExpired = false } = {}) {
 	if (!state || typeof state !== "object" || Array.isArray(state))
 		throw merchantError("invalid_merchant_state", "Merchant accrual must be an object");
-	for (const field of [
-		"base_ms_remainder",
-		"unit_xp_remainder",
-		"saturated_award_units",
-		"saturated_award_bonus_units",
-	]) {
-		if (!Number.isSafeInteger(state[field] || 0) || (state[field] || 0) < 0)
+	const allowedFields = new Set([...REQUIRED_FIELDS, "saturated_award_units"]);
+	if (Object.keys(state).some((field) => !allowedFields.has(field)))
+		throw merchantError("invalid_merchant_state", "Merchant accrual contains unknown fields");
+	for (const field of REQUIRED_FIELDS) {
+		if (!(field in state)) throw merchantError("invalid_merchant_state", `Missing ${field}`);
+	}
+	if (typeof state.merchant_id !== "string" || !state.merchant_id)
+		throw merchantError("invalid_merchant_state", "Invalid merchant_id");
+	for (const field of ["eligible_stand_ms", "stand_rate_remainder", "xp_unit_remainder"]) {
+		if (!Number.isSafeInteger(state[field]) || state[field] < 0)
 			throw merchantError("invalid_merchant_state", `Invalid ${field}`);
 	}
-	if (state.base_ms_remainder >= HOUR || state.unit_xp_remainder >= UNITS_PER_XP)
+	if (state.stand_rate_remainder >= HOUR || state.xp_unit_remainder >= UNITS_PER_XP)
 		throw merchantError("invalid_merchant_state", "Merchant remainders are out of range");
-	if (
-		state.stand_last_settled_at !== null &&
-		state.stand_last_settled_at !== undefined &&
-		(!Number.isSafeInteger(state.stand_last_settled_at) || state.stand_last_settled_at > now)
-	)
-		throw merchantError("invalid_merchant_state", "Invalid stand settlement timestamp");
-	if (
-		state.saturated_award_expires_at !== null &&
-		state.saturated_award_expires_at !== undefined &&
-		(!Number.isSafeInteger(state.saturated_award_expires_at) || state.saturated_award_expires_at < now)
-	)
-		throw merchantError("invalid_merchant_state", "Invalid saturated award expiry");
-	for (const collection of ["pending_credits", "rolling_awards", "luck_targets", "action_events", "processed_sources"])
-		if (!Array.isArray(state[collection]) || state[collection].length > progression.MAX_COLLECTION_SIZE)
-			throw merchantError("invalid_merchant_state", `${collection} exceeds its bound`);
-	if (state.luck_targets.length > progression.MAX_LUCK_COLLECTION_SIZE)
-		throw merchantError("invalid_merchant_state", "luck_targets exceeds its bound");
+	if (!Array.isArray(state.rolling_hour_luck_uses) || state.rolling_hour_luck_uses.length > progression.MAX_LUCK_COLLECTION_SIZE)
+		throw merchantError("invalid_merchant_state", "rolling_hour_luck_uses exceeds its bound");
+	if (!Array.isArray(state.pending_credits) || state.pending_credits.length > progression.MAX_COLLECTION_SIZE)
+		throw merchantError("invalid_merchant_state", "pending_credits exceeds its bound");
+	if (!Array.isArray(state.rolling_awards) || state.rolling_awards.length > progression.MAX_COLLECTION_SIZE)
+		throw merchantError("invalid_merchant_state", "rolling_awards exceeds its bound");
+	if (!Array.isArray(state.processed_sources) || state.processed_sources.length > progression.MAX_COLLECTION_SIZE)
+		throw merchantError("invalid_merchant_state", "processed_sources exceeds its bound");
+	if (!state.sales_by_owner || typeof state.sales_by_owner !== "object" || Array.isArray(state.sales_by_owner))
+		throw merchantError("invalid_merchant_state", "Invalid Merchant sales state");
+	if (Object.keys(state.sales_by_owner).length > progression.MAX_COLLECTION_SIZE)
+		throw merchantError("invalid_merchant_state", "sales_by_owner exceeds its bound");
+	if (state.saturated_award_units !== undefined) {
+		const marker = state.saturated_award_units;
+		if (
+			!marker ||
+			!Number.isSafeInteger(marker.units) ||
+			marker.units <= 0 ||
+			!Number.isSafeInteger(marker.expires_at) ||
+			(!allowExpired && (marker.expires_at <= now || marker.expires_at > now + HOUR))
+		)
+			throw merchantError("invalid_merchant_state", "Invalid saturated award marker");
+	}
+	for (const entry of state.rolling_hour_luck_uses) {
+		if (!entry || Object.keys(entry).some((key) => !["target_id", "at"].includes(key)))
+			throw merchantError("invalid_merchant_state", "Invalid Merchant Luck history");
+		if (typeof entry.target_id !== "string" || !entry.target_id || !Number.isSafeInteger(entry.at) || entry.at > now)
+			throw merchantError("invalid_merchant_state", "Invalid Merchant Luck history");
+	}
 	for (const credit of state.pending_credits) {
 		if (
 			!credit ||
-			!Number.isSafeInteger(credit.units) ||
-			credit.units <= 0 ||
-			credit.units > progression.MAX_ACTION_UNITS_PER_HOUR ||
+			Object.keys(credit).some((key) => !["source_id", "kind", "units", "expires_at"].includes(key)) ||
 			typeof credit.source_id !== "string" ||
 			!credit.source_id ||
-			typeof credit.kind !== "string" ||
+			!CREDIT_KINDS.has(credit.kind) ||
+			!Number.isSafeInteger(credit.units) ||
+			credit.units <= 0 ||
 			!Number.isSafeInteger(credit.expires_at) ||
-			credit.expires_at <= now
+			(!allowExpired && (credit.expires_at <= now || credit.expires_at > now + HOUR))
 		)
 			throw merchantError("invalid_merchant_state", "Invalid pending Merchant credit");
 	}
 	for (const award of state.rolling_awards) {
 		if (
 			!award ||
+			Object.keys(award).some((key) => !["base_units", "bonus_units", "at"].includes(key)) ||
 			!Number.isSafeInteger(award.at) ||
 			award.at > now ||
 			!Number.isSafeInteger(award.base_units) ||
 			award.base_units < 0 ||
 			!Number.isSafeInteger(award.bonus_units) ||
 			award.bonus_units < 0 ||
-			!Number.isSafeInteger(award.units) ||
-			award.units !== award.base_units + award.bonus_units ||
-			award.units > progression.MAX_TOTAL_UNITS_PER_HOUR ||
-			award.units <= 0
+			awardUnits(award) <= 0
 		)
 			throw merchantError("invalid_merchant_state", "Invalid rolling Merchant award");
 	}
-	for (const entry of state.luck_targets) {
-		if (!entry || !entry.target_id || !Number.isSafeInteger(entry.at) || entry.at > now)
-			throw merchantError("invalid_merchant_state", "Invalid Merchant Luck history");
-	}
-	if (
-		state.processed_sources.some(
-			(source) =>
-				!source ||
-				typeof source.source_id !== "string" ||
-				!source.source_id ||
-				!Number.isSafeInteger(source.expires_at) ||
-				source.expires_at <= 0,
-		)
-	)
-		throw merchantError("invalid_merchant_state", "Invalid processed Merchant source");
-	for (const entry of state.action_events) {
+	for (const source of state.processed_sources) {
 		if (
-			!entry ||
-			(entry.kind !== "donation" && entry.kind !== "dice") ||
-			!Number.isSafeInteger(entry.at) ||
-			entry.at > now ||
-			typeof entry.source_id !== "string" ||
-			!Number.isSafeInteger(entry.credited) ||
-			entry.credited < 0
+			!source ||
+			Object.keys(source).some((key) => !["source_id", "expires_at"].includes(key)) ||
+			typeof source.source_id !== "string" ||
+			!source.source_id ||
+			!Number.isSafeInteger(source.expires_at) ||
+			(!allowExpired && (source.expires_at <= now || source.expires_at > now + HOUR))
 		)
-			throw merchantError("invalid_merchant_state", "Invalid Merchant action history");
+			throw merchantError("invalid_merchant_state", "Invalid processed Merchant source");
 	}
-	if (!state.sales || typeof state.sales !== "object" || Array.isArray(state.sales))
-		throw merchantError("invalid_merchant_state", "Invalid Merchant sales state");
-	if (Object.keys(state.sales).length > progression.MAX_COLLECTION_SIZE)
-		throw merchantError("invalid_merchant_state", "sales exceeds its bound");
-	for (const ledger of Object.values(state.sales)) {
+	for (const ledger of Object.values(state.sales_by_owner)) {
 		if (
 			!ledger ||
+			Object.keys(ledger).some((key) => !["net_gold", "credited_high_water_gold", "events"].includes(key)) ||
 			!Number.isSafeInteger(ledger.net_gold) ||
 			ledger.net_gold < 0 ||
 			!Number.isSafeInteger(ledger.credited_high_water_gold) ||
@@ -335,12 +346,12 @@ function validateMerchantAccrual(state, now = Date.now()) {
 		for (const event of ledger.events) {
 			if (
 				!event ||
-				!Number.isSafeInteger(event.at) ||
-				event.at > now ||
-				!Number.isSafeInteger(event.gold) ||
+				Object.keys(event).some((key) => !["source_id", "net_delta", "at"].includes(key)) ||
 				typeof event.source_id !== "string" ||
 				!event.source_id ||
-				(event.kind !== "sale" && event.kind !== "reversal")
+				!Number.isSafeInteger(event.net_delta) ||
+				!Number.isSafeInteger(event.at) ||
+				event.at > now
 			)
 				throw merchantError("invalid_merchant_state", "Invalid Merchant sale event");
 		}
@@ -349,22 +360,21 @@ function validateMerchantAccrual(state, now = Date.now()) {
 }
 
 function recordDonationOrDice(previous, { rawXp, sourceId, kind, now = Date.now() }) {
-	const state = prune(clone(previous || createMerchantAccrual()), now);
-	if (kind !== "donation" && kind !== "dice")
+	if (!ACTION_KINDS.has(kind))
 		throw merchantError("invalid_merchant_credit", "Merchant action kind must be donation or dice");
-	const reservation = reserveSource(state, sourceId, now);
-	if (reservation.duplicate) return { state, credited: 0, duplicate: true };
-	if (reservation.saturated) return { state, credited: 0, saturated: true };
-	if (state.action_events.some((entry) => entry.kind === kind)) {
-		state.action_events.push({ kind, source_id: sourceId, at: now, credited: 0 });
+	if (typeof sourceId !== "string" || !sourceId)
+		throw merchantError("invalid_merchant_credit", "Merchant actions require a source ID");
+	const state = prepare(previous, now);
+	const actionKey = `action:${kind}:${sourceId}`;
+	if (state.processed_sources.some((entry) => entry.source_id === actionKey))
+		return { state, credited: 0, duplicate: true };
+	if (state.processed_sources.some((entry) => entry.source_id.startsWith(`action:${kind}:`)))
 		return { state, credited: 0, capped: true };
-	}
-	state.action_events.push({ kind, source_id: sourceId, at: now, credited: 0 });
+	const reservation = reserveSource(state, actionKey, now);
+	if (reservation.saturated) return { state, credited: 0, saturated: true };
 	const units = Math.min(Math.max(0, Math.round(rawXp)) * UNITS_PER_XP, Math.floor(BASE / 4));
 	if (!units) return { state, credited: 0 };
-	const result = enqueueCredit(state, { units, sourceId, kind, now });
-	state.action_events[state.action_events.length - 1].credited = result.credited;
-	return result;
+	return enqueueCredit(state, { units, sourceId, kind, now });
 }
 
 function merchantTax(level) {

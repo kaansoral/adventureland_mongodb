@@ -1,4 +1,5 @@
 var crypto = require("crypto");
+var { loadCharacterState: loadProtocol3CharacterState } = require("./node/game/character_state");
 
 // ==================== TIME UTILITIES ====================
 
@@ -707,8 +708,9 @@ function update_character(character, data, owner) {
 	character.info.q = data.q || {};
 	character.info.map = data.map;
 	character.info["in"] = data["in"];
-	if (data.skills) character.info.skills = data.skills;
-	if (data.total_level !== undefined) character.total_level = parseInt(data.total_level);
+	const loadedState = loadProtocol3CharacterState({ info: { skills: data.skills || character.info.skills } });
+	character.info.skills = loadedState.skills;
+	character.total_level = loadedState.total_level;
 	if (data.death_sickness_until !== undefined) character.info.death_sickness_until = data.death_sickness_until;
 	character.info.hp = data.hp;
 	character.info.mp = data.mp;

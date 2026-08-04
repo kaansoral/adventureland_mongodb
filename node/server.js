@@ -20,13 +20,18 @@ var Staging = options.Staging;
 const express = require("express");
 const { buildProgressionData, loadProgressionPublication, SKILL_IDS, MAX_LEVEL, cumulativeXp } = require("./game/skill_domain");
 const { progression } = require("../design/progression");
-const { createCharacterState } = require("./game/character_state");
+const { createCharacterState, loadCharacterState } = require("./game/character_state");
 const { WEAPON_PROFILES, deriveActiveSkill, weaponProfile } = require("./game/active_skill");
 const { merchantTax, merchantSlots } = require("./game/merchant_progression");
-const { planEquipmentTransaction, isCompatibleOffhand, validateRequirements } = require("./game/equipment");
+const {
+	planEquipmentTransaction,
+	planUnequipTransaction,
+	isCompatibleOffhand,
+	validateRequirements,
+} = require("./game/equipment");
 const { authorizeAbility } = require("./game/ability_access");
 const { calculateStats } = require("./game/stats");
-const { invalidateConditions } = require("./game/style_effects");
+const { invalidateConditions, tagStyleEffect } = require("./game/style_effects");
 const { ContributionLedger } = require("./game/contributions");
 const {
 	initializePlayerProgression,
@@ -36,6 +41,7 @@ const {
 	skillLevel,
 	markStandSession,
 	settlePlayerStand,
+	flushPlayerProgressionEvents,
 	recordMerchantLuck,
 	recordMerchantSale,
 	recordMerchantSaleReversal,
@@ -769,13 +775,21 @@ function player_to_server(player, place) {
 				"height",
 				"u",
 				"user",
+				"active_skill",
+				"progression_events",
 			])
 		) {
 			char[prop] = player[prop];
 		}
 	}
+	if (char.p && typeof char.p === "object") {
+		char.p = { ...char.p };
+		delete char.p.stand_last_settled_at;
+	}
+	if (char.info && char.info.skills) delete char.skills;
 	if (place == "sync" && !Object.keys(player.q).length && !player.p?.stand) {
-		delete char.p;
+		if (player.p?.skill_xp_sources?.length) char.p = { skill_xp_sources: player.p.skill_xp_sources };
+		else delete char.p;
 	} // ~20KB - too much [19/11/18]
 	return char;
 }
@@ -784,7 +798,7 @@ function player_to_client(player, stranger) {
 	var data = {};
 	var skills = {};
 	if (!stranger) {
-		var sourceSkills = (player.info && player.info.skills) || player.skills;
+		var sourceSkills = player.info && player.info.skills;
 		if (!sourceSkills) throw new Error("Protocol 3 character skill state is missing");
 		for (var i = 0; i < SKILL_IDS.length; i++) {
 			var skill = SKILL_IDS[i];
@@ -1233,7 +1247,6 @@ function calculate_gear_only_player_stats(player) {
 		conditions: player.s || {},
 		conditionDefinitions: G.conditions,
 		profiles: WEAPON_PROFILES,
-		activeSkill,
 		previousHp: player.hp === undefined ? null : player.hp,
 		previousMp: player.mp === undefined ? null : player.mp,
 		deathSickness: Number((player.info && player.info.death_sickness_until) || 0) > Date.now(),
@@ -1271,6 +1284,31 @@ function calculate_gear_only_player_stats(player) {
 function calculate_player_stats(player) {
 	if (player.is_npc) return;
 	return calculate_gear_only_player_stats(player);
+}
+
+function tag_style_condition(target, condition, source, abilityId) {
+	const ability = G.abilities[abilityId];
+	if (!target || !target.s || !target.s[condition] || !ability || ability.style_bound !== true) return;
+	target.s[condition] = tagStyleEffect(target.s[condition], {
+		sourceCharacterId: source && (source.id || source.name),
+		sourceSkill: deriveActiveSkill(source && source.slots, G.items, WEAPON_PROFILES),
+		styleBound: ability.style_bound,
+	});
+}
+
+function tag_style_progression_effect(target, source, abilityId) {
+	const ability = G.abilities[abilityId];
+	if (!target || !ability || ability.style_bound !== true) return;
+	Object.defineProperty(target, "progression_style_effect", {
+		configurable: true,
+		enumerable: false,
+		value: {
+			source_character_id: source && (source.id || source.name),
+			source_skill: deriveActiveSkill(source && source.slots, G.items, WEAPON_PROFILES),
+			ability_id: abilityId,
+		},
+		writable: true,
+	});
 }
 
 function calculate_common_stats(entity) {
@@ -1343,9 +1381,88 @@ function ccms(monster) {
 	}
 }
 
-function commit_equipment_transaction(player, itemIndex, requestedSlot) {
+function cloneEquipmentState(value) {
+	return JSON.parse(JSON.stringify(value === undefined ? null : value));
+}
+
+function planSourceEffectInvalidation(player, previousSkill, nextSkill) {
+	if (previousSkill === nextSkill) return [];
+	const sourceCharacterId = player.id || player.name;
+	const candidates = [player];
+	const instance = player.in && instances[player.in];
+	if (instance && instance.players) candidates.push(...Object.values(instance.players));
+	if (instance && instance.monsters) candidates.push(...Object.values(instance.monsters));
+	const seen = new Set();
+	return candidates.reduce((changes, target) => {
+		if (!target || seen.has(target) || !target.s) return changes;
+		seen.add(target);
+		const result = invalidateConditions(target.s, { sourceCharacterId, previousSkill });
+		const progressionEffect = target.progression_style_effect;
+		const clearsProgressionEffect =
+			progressionEffect &&
+			progressionEffect.source_character_id === sourceCharacterId &&
+			progressionEffect.source_skill === previousSkill;
+		if (result.removed.length || clearsProgressionEffect)
+			changes.push({ target, conditions: result.conditions, clearsProgressionEffect: Boolean(clearsProgressionEffect) });
+		return changes;
+	}, []);
+}
+
+function apply_equipment_transaction(player, transaction, previousSkill) {
+	const invalidation = planSourceEffectInvalidation(player, previousSkill, transaction.active_skill);
+	const selfInvalidation = invalidation.find((entry) => entry.target === player);
+	const candidate = {
+		...player,
+		slots: transaction.slots,
+		items: transaction.items,
+		s: cloneEquipmentState(selfInvalidation ? selfInvalidation.conditions : player.s || {}),
+		cslots: {},
+		citems: [],
+	};
+	for (const [slot, equipped] of Object.entries(candidate.slots)) candidate.cslots[slot] = cache_item(equipped);
+	candidate.citems = candidate.items.map((entry) => cache_item(entry));
+	calculate_player_stats(candidate);
+	const projections = [{ target: player, candidate, self: true }];
+	for (const change of invalidation) {
+		if (change.target === player) continue;
+		const remoteCandidate = {
+			...change.target,
+			s: cloneEquipmentState(change.conditions),
+		};
+		if (change.clearsProgressionEffect) remoteCandidate.progression_style_effect = null;
+		if (change.target.is_monster) calculate_monster_stats(remoteCandidate);
+		else calculate_player_stats(remoteCandidate);
+		projections.push({ target: change.target, candidate: remoteCandidate, self: false });
+	}
+
+	// All candidate work, including every affected player's cache and stat generation, completes before authority changes.
+	for (const { target, candidate: projection } of projections) {
+		for (const [key, value] of Object.entries(projection)) {
+			if (
+				Object.prototype.hasOwnProperty.call(target, key) &&
+				!["socket", "character", "last", "t", "p"].includes(key) &&
+				!Object.is(value, target[key])
+			) {
+				target[key] = value;
+			}
+		}
+	}
+	for (const { target, self } of projections) {
+		if (self) continue;
+		if (target.is_monster && target.progression_style_effect === null) {
+			delete target.progression_style_effect;
+			target.u = true;
+			target.cid++;
+		}
+		if (target.socket && typeof target.socket.emit === "function") resend(target, "u+cid");
+		else target.to_resend = "u+cid";
+	}
+	return transaction;
+}
+
+function commit_equipment_transaction(player, itemIndex, requestedSlot, requestedItem) {
 	const item = player.items[itemIndex];
-	const previousSkill = player.active_skill;
+	const previousSkill = deriveActiveSkill(player.slots || {}, G.items, WEAPON_PROFILES);
 	const itemDefinition = item && G.items[item.name];
 	const handChange =
 		itemDefinition &&
@@ -1361,35 +1478,59 @@ function commit_equipment_transaction(player, itemIndex, requestedSlot) {
 	}
 	const transaction = planEquipmentTransaction({
 		player,
-		item,
+		item: requestedItem === undefined ? item : requestedItem,
 		itemIndex,
 		sourceIndex: itemIndex,
 		slot: requestedSlot,
 		items: G.items,
-		itemRequirements:
-			G.items &&
-			Object.fromEntries(
-				Object.entries(G.items)
-					.filter(([, definition]) => definition.requirements)
-					.map(([id, definition]) => [id, definition.requirements]),
-			),
+		itemRequirements: G.item_requirements,
 		profiles: WEAPON_PROFILES,
 		skills: player.skills,
 	});
-	player.slots = transaction.slots;
-	player.items = transaction.items;
-	player.active_skill = transaction.active_skill;
-	if (previousSkill !== player.active_skill) {
-		player.s = invalidateConditions(player.s || {}, {
-			sourceCharacterId: player.id || player.name,
-			previousSkill,
-		}).conditions;
+	return apply_equipment_transaction(player, transaction, previousSkill);
+}
+
+function commit_unequip_transaction(player, requestedSlot, preferredIndex) {
+	const previousSkill = deriveActiveSkill(player.slots || {}, G.items, WEAPON_PROFILES);
+	if (player.p && player.p.stand && ["mainhand", "offhand"].includes(requestedSlot)) {
+		const error = new Error("Combat equipment cannot change while the trading stand is open");
+		error.code = "stand_open";
+		error.action = "unequip";
+		throw error;
 	}
-	player.cslots = {};
-	for (const [slot, equipped] of Object.entries(player.slots)) player.cslots[slot] = cache_item(equipped);
-	player.citems = player.items.map((entry) => cache_item(entry));
-	calculate_player_stats(player);
-	return transaction;
+	const transaction = planUnequipTransaction({
+		player,
+		slot: requestedSlot,
+		preferredIndex,
+		items: G.items,
+		profiles: WEAPON_PROFILES,
+	});
+	return apply_equipment_transaction(player, transaction, previousSkill);
+}
+
+function commit_equipment_loss(player, requestedSlot) {
+	const removed = [];
+	const nextSlots = cloneEquipmentState(player.slots || {});
+	if (!nextSlots[requestedSlot]) return removed;
+	removed.push(nextSlots[requestedSlot]);
+	nextSlots[requestedSlot] = null;
+	if (requestedSlot === "mainhand" && nextSlots.offhand && G.items[nextSlots.offhand.name]?.type === "weapon") {
+		removed.push(nextSlots.offhand);
+		nextSlots.offhand = null;
+	}
+	const previousSkill = deriveActiveSkill(player.slots || {}, G.items, WEAPON_PROFILES);
+	apply_equipment_transaction(
+		player,
+		{
+			slots: nextSlots,
+			items: cloneEquipmentState(player.items || []),
+			inventory: cloneEquipmentState(player.items || []),
+			active_skill: deriveActiveSkill(nextSlots, G.items, WEAPON_PROFILES),
+			slot: requestedSlot,
+		},
+		previousSkill,
+	);
+	return removed;
 }
 
 function can_equip_item(player, item, slot) {
@@ -1400,11 +1541,7 @@ function can_equip_item(player, item, slot) {
 			sourceIndex: null,
 			slot,
 			items: G.items,
-			itemRequirements: Object.fromEntries(
-				Object.entries(G.items)
-					.filter(([, definition]) => definition.requirements)
-					.map(([id, definition]) => [id, definition.requirements]),
-			),
+			itemRequirements: G.item_requirements,
 			profiles: WEAPON_PROFILES,
 			skills: player.skills,
 		}).slot;
@@ -1938,8 +2075,7 @@ function drop_something_hardcore(player, target) {
 				prob = 0.05;
 			}
 			if (Math.random() < prob) {
-				drop.pvp_items.push(target.slots[name]);
-				target.slots[name] = target.cslots[name] = null;
+				drop.pvp_items.push(...commit_equipment_loss(target, name));
 			}
 		}
 	}
@@ -2014,8 +2150,7 @@ function drop_something_pvp(player, target) {
 				prob = 0.3;
 			}
 			if (Math.random() < prob) {
-				drop.pvp_items.push(target.slots[name]);
-				target.slots[name] = target.cslots[name] = null;
+				drop.pvp_items.push(...commit_equipment_loss(target, name));
 			}
 		}
 	}
@@ -2178,6 +2313,18 @@ function snapshot_progression_support(player, target, ability, kind = "combat") 
 	};
 	progression_ledger.snapshotAction(action);
 	return action;
+}
+
+function engage_progression_targets(monster, player) {
+	if (!monster || !monster.encounter_id || !player) return;
+	const characterIds = new Set([player.id || player.name]);
+	if (player.party && parties[player.party]) {
+		for (const name of parties[player.party]) {
+			const member = players[name_to_id[name]];
+			if (member && member.in === monster.in) characterIds.add(member.id || member.name);
+		}
+	}
+	for (const characterId of characterIds) progression_ledger.engage(monster.encounter_id, characterId);
 }
 
 function record_progression_support(action, changed, encounterIds) {
@@ -2880,7 +3027,7 @@ function commence_attack(attacker, target, atype) {
 			characterId: attacker.id || attacker.name,
 			activeSkill: attacker.active_skill,
 			encounterIds: progressionEncounterIds,
-			kind: target.is_player ? "pvp" : "combat",
+			kind: target.is_player && !info.positive && !info.heal ? "pvp" : "combat",
 		};
 		progression_ledger.snapshotAction(info.progression_action);
 	}
@@ -3253,8 +3400,16 @@ function complete_attack(attacker, target, info) {
 							f: attacker.name || G.monsters[attacker.type].name,
 							attack: attack,
 						})
-					)
+					) {
+						if (info.progression_action && target.s.burned) {
+							Object.defineProperty(target.s.burned, "progression_action", {
+								value: { ...info.progression_action, encounterIds: [...info.progression_action.encounterIds] },
+								enumerable: false,
+								configurable: true,
+							});
+						}
 						info.progression_support_changed = true;
+					}
 				}
 
 				if (info.conditions.includes("woven") && !target.immune) {
@@ -3352,13 +3507,14 @@ function complete_attack(attacker, target, info) {
 			// console.log("HERE MPSHIELD!")
 			var max_mp = target.mp - 200;
 			var damage_per_mp = 1.5;
-			if (target.level > 99) {
+			const shieldLevel = target.is_player ? skillLevel(target, "paladin") : target.level;
+			if (shieldLevel > 99) {
 				damage_per_mp = 3;
-			} else if (target.level > 89) {
+			} else if (shieldLevel > 89) {
 				damage_per_mp = 2.4;
-			} else if (target.level > 79) {
+			} else if (shieldLevel > 79) {
 				damage_per_mp = 2;
-			} else if (target.level > 69) {
+			} else if (shieldLevel > 69) {
 				damage_per_mp = 1.75;
 			}
 			var max_hp = ceil(max_mp * damage_per_mp);
@@ -3583,6 +3739,7 @@ function complete_attack(attacker, target, info) {
 
 function target_player(monster, player, no_increase) {
 	// if(Dev) console.log("target_player: "+player.name+" "+(!no_increase));
+	delete monster.progression_style_effect;
 	if (!no_increase && (monster.s.charmed || monster.peaceful)) {
 		return;
 	}
@@ -3590,6 +3747,7 @@ function target_player(monster, player, no_increase) {
 		return;
 	}
 	monster.target = player.name;
+	engage_progression_targets(monster, player);
 	if (!no_increase) {
 		increase_targets(player, monster);
 	}
@@ -6656,7 +6814,11 @@ function init_io() {
 					var slot = equip_def.slot || def.type;
 					var transaction;
 					try {
-						transaction = commit_equipment_transaction(player, equip_def.num, slot);
+						if (!equip_def.item) {
+							resolve.push("inventory_item_changed");
+							break;
+						}
+						transaction = commit_equipment_transaction(player, equip_def.num, slot, equip_def.item);
 					} catch (error) {
 						resolve.push(error.code || "cant_equip");
 						break;
@@ -6882,7 +7044,10 @@ function init_io() {
 				// console.log(data);
 				var slot = data.slot || def.type;
 				try {
-					var transaction = commit_equipment_transaction(player, data.num, slot);
+					if (!data.item) {
+						return fail_response("inventory_item_changed", { index: data.num });
+					}
+					var transaction = commit_equipment_transaction(player, data.num, slot, data.item);
 					slot = transaction.slot;
 				} catch (error) {
 					resend(player, "u+cid+reopen"); // Preserve the authoritative state on any rejected transaction.
@@ -6932,11 +7097,12 @@ function init_io() {
 			if (player.esize <= 0 && !item.b) {
 				return fail_response("no_space");
 			}
-			player.slots[data.slot] = null;
-			player.cslots[data.slot] = null;
 			player.c = {};
-			if (!item.b) {
-				add_item(player, item, { announce: false });
+			try {
+				commit_unequip_transaction(player, data.slot, data.position);
+			} catch (error) {
+				resend(player, "reopen+u+cid");
+				return fail_response(error.code || "cant_unequip", error);
 			}
 			resend(player, "reopen+u+cid");
 			success_response("data");
@@ -8515,7 +8681,9 @@ function init_io() {
 			if (!player) {
 				return;
 			}
-			server_log("skill " + JSON.stringify(data));
+			const abilityName = typeof data?.name == "string" ? data.name.slice(0, 64) : "unknown";
+			const abilityTarget = data?.id === undefined || data?.id === null ? "none" : String(data.id).slice(0, 64);
+			server_log("skill name=" + abilityName + " target=" + abilityTarget + " outcome=received");
 
 			var cool = true;
 			var resolve = { response: "data", place: data.name, success: true };
@@ -8541,7 +8709,6 @@ function init_io() {
 					character: { skills: player.skills },
 					slots: player.slots,
 					items: G.items,
-					activeSkill: player.active_skill,
 					standOpen: Boolean(player.p && player.p.stand),
 				});
 			} catch (error) {
@@ -8779,6 +8946,7 @@ function init_io() {
 					return fail_response("skill_cant_use", data.name);
 				}
 				player.s.invis = { ms: 999999999999999 };
+				tag_style_condition(player, "invis", player, "invis");
 				xy_emit(player, "disappear", { id: player.id, invis: true, reason: "invis" });
 				player.to_resend = " ";
 			} else if (data.name == "pickpocket") {
@@ -8827,6 +8995,7 @@ function init_io() {
 				player.to_resend = "u+cid";
 			} else if (data.name == "charge") {
 				player.s.charging = { ms: gSkill.duration };
+				tag_style_condition(player, "charging", player, "charge");
 				player.to_resend = "u+cid";
 			} else if (data.name == "dash") {
 				consume_mp(player, gSkill.mp);
@@ -8867,6 +9036,7 @@ function init_io() {
 				player.s[gSkill.condition] = {
 					ms: gSkill.duration || G.conditions[gSkill.condition].duration,
 				};
+				tag_style_condition(player, gSkill.condition, player, data.name);
 				player.to_resend = "u+cid";
 			} else if (data.name == "mshield") {
 				// consume_mp(player, gSkill.mp);
@@ -8874,6 +9044,7 @@ function init_io() {
 					delete player.s[gSkill.condition];
 				} else {
 					player.s[gSkill.condition] = { ms: 999999999 };
+					tag_style_condition(player, gSkill.condition, player, "mshield");
 				}
 				player.to_resend = "u+cid";
 			} else if (
@@ -8943,9 +9114,11 @@ function init_io() {
 			} else if (data.name == "phaseout") {
 				consume_mp(player, gSkill.mp, mode.implicit_targets && player);
 				player.s.phasedout = { ms: G.conditions.phasedout.duration };
+				tag_style_condition(player, "phasedout", player, "phaseout");
 			} else if (data.name == "pcoat") {
 				consume_mp(player, gSkill.mp, mode.implicit_targets && player);
 				player.s.poisonous = { ms: G.conditions.poisonous.duration };
+				tag_style_condition(player, "poisonous", player, "pcoat");
 			} else if (data.name == "curse") {
 				//#TODO: last_curse variable + check for multiple curses
 				var attack = commence_attack(player, target, "curse");
@@ -9093,6 +9266,7 @@ function init_io() {
 						const previous = target.s[gSkill.condition];
 						if (!previous || previous.ms <= 0 || previous.f != player.name) changed = true;
 						target.s[gSkill.condition] = { ms: gSkill.duration, f: player.name };
+						tag_style_condition(target, gSkill.condition, player, data.name);
 						resend(target, "u+cid");
 						add_pdps(player, target, 500);
 					}
@@ -9161,9 +9335,9 @@ function init_io() {
 					if (is_invis(target)) {
 						current.invis = true;
 					}
-					if (target.type == "rogue" || target.type == "ranger") {
+					if (target.active_skill == "rogue" || target.active_skill == "ranger") {
 						current.sound = "rr";
-					} else if (target.type == "priest" || target.type == "mage") {
+					} else if (target.active_skill == "priest" || target.active_skill == "mage") {
 						current.sound = "pm";
 					}
 					current.dist = distance(player, target);
@@ -9231,6 +9405,7 @@ function init_io() {
 						monster.cid += 1;
 						monster.u = true;
 						target_player(monster, player);
+						tag_style_progression_effect(monster, player, "absorb");
 						supportEncounterIds.push(monster.encounter_id);
 						ids.push(id);
 					}
@@ -9469,6 +9644,7 @@ function init_io() {
 				const changed = !previous || previous.ms <= 0 || previous.f != player.name;
 				consume_mp(player, gSkill.mp, target);
 				target.s[gSkill.condition] = { ms: G.conditions.rspeed.duration, f: player.name };
+				tag_style_condition(target, gSkill.condition, player, "rspeed");
 				xy_emit(player, "ui", { type: "rspeed", from: player.name, to: target.name });
 				resend(target, "u+cid");
 				resend(player, "u+cid");
@@ -9481,6 +9657,7 @@ function init_io() {
 				const changed = !previous || previous.ms <= 0 || previous.f != player.name;
 				consume_mp(player, gSkill.mp, target);
 				target.s[gSkill.condition] = { ms: G.conditions.reflection.duration, f: player.name };
+				tag_style_condition(target, gSkill.condition, player, "reflection");
 				xy_emit(player, "ui", { type: "reflection", from: player.name, to: target.name });
 				resend(target, "u+cid");
 				resend(player, "u+cid");
@@ -9506,6 +9683,7 @@ function init_io() {
 				disappearing_text(player.socket, player, "-" + mp, { color: "mana", xy: 1 });
 				disappearing_text(target.socket, target, "+" + mp, { color: "mana", xy: 1 });
 				target.s[gSkill.condition] = { ms: G.conditions[gSkill.condition].duration };
+				tag_style_condition(target, gSkill.condition, player, "energize");
 				xy_emit(player, "ui", { type: "energize", from: player.name, to: target.name });
 				resend(target, "u+cid");
 				resend(player, "u+cid");
@@ -9567,10 +9745,12 @@ function init_io() {
 					reject.response = "data";
 				}
 				socket.emit("game_response", reject);
-			} else if (resolve) {
-				socket.emit("game_response", resolve);
-			}
-		});
+				} else if (resolve) {
+					socket.emit("game_response", resolve);
+				}
+				const outcome = reject ? "failed" : resolve && resolve.success === false ? "partial" : "success";
+				server_log("skill name=" + abilityName + " target=" + abilityTarget + " outcome=" + outcome);
+			});
 		socket.on("click", function (data) {
 			// You'll be missed 'click' method, the 'click' method was the first method on this server, it was used as an attack method up until [17/06/18] - at this date, there were 3 simple conditions left which checked for data.button=="right" - the game matured so that all interactions were handled client-side rather than processed server-side
 			socket.emit("game_log", "'click' method is deprecated.");
@@ -10116,6 +10296,7 @@ function init_io() {
 			if (!player.q) player.q = {};
 			if (!player.p) player.p = { dt: {} };
 			if (!player.p.dt) player.p.dt = {};
+			player.real_id = data.character;
 			try {
 				initializePlayerProgression(player);
 			} catch (error) {
@@ -12213,7 +12394,33 @@ function update_instance(instance) {
 					if (name == "burned") {
 						var damage = ceil(ref.intensity / 5);
 						//disappearing_text({},monster,"-"+damage,{color:"burn",xy:1});
+						const hpBefore = monster.hp;
 						monster.hp = max(0, monster.hp - damage);
+						const effectiveDamage = Math.max(0, hpBefore - monster.hp);
+						const progressionAction = ref.progression_action;
+						if (progressionAction && effectiveDamage > 0 && monster.encounter_id) {
+							const tick = (ref.progression_tick || 0) + 1;
+							Object.defineProperty(ref, "progression_tick", {
+								configurable: true,
+								enumerable: false,
+								value: tick,
+								writable: true,
+							});
+							const actionId = `${progressionAction.actionId}:burn:${tick}`;
+							progression_ledger.snapshotAction({
+								...progressionAction,
+								actionId,
+								encounterIds: [monster.encounter_id],
+							});
+							progression_ledger.recordDamage({
+								encounterId: monster.encounter_id,
+								actionId,
+								characterId: progressionAction.characterId,
+								amount: effectiveDamage,
+								hpBefore,
+								hpAfter: monster.hp,
+							});
+						}
 						xy_emit(monster, "hit", {
 							source: "burn",
 							hid: ref.f,
@@ -12845,6 +13052,8 @@ function update_instance(instance) {
 				delete player.s[name];
 				if (name == "death_sickness") {
 					player.info.death_sickness_until = null;
+					// Expiry changes the final-stat input; rebuild before the coherent client update.
+					calculate_player_stats(player);
 				}
 				if (name == "blink") {
 					if (player.s.dampened) {
@@ -13177,9 +13386,7 @@ function update_instance(instance) {
 						if (player.slots.mainhand) {
 							var prop = calculate_item_properties(player.slots.mainhand);
 							if (prop.breaks && Math.random() < max(0, prop.breaks / 100.0)) {
-								player.cid++;
-								player.u = true;
-								player.cslots.mainhand = player.slots.mainhand = null;
+								commit_equipment_loss(player, "mainhand");
 								player.socket.emit("game_log", "Your rod broke down ...");
 								player.socket.emit("game_response", { response: "data", cevent: "item_break", slot: "mainhand" });
 							}
@@ -13199,9 +13406,7 @@ function update_instance(instance) {
 						if (player.slots.mainhand) {
 							var prop = calculate_item_properties(player.slots.mainhand);
 							if (prop.breaks && Math.random() < max(0, prop.breaks / 100.0)) {
-								player.cid++;
-								player.u = true;
-								player.cslots.mainhand = player.slots.mainhand = null;
+								commit_equipment_loss(player, "mainhand");
 								player.socket.emit("game_log", "Your pickaxe broke down ...");
 							}
 						}
@@ -14238,8 +14443,9 @@ function sync_entity(entity, data) {
 	entity.info.q = data.q || {};
 	entity.info.map = data["map"];
 	entity.info.in = data.in;
-	entity.info.skills = data.skills;
-	entity.total_level = data.total_level;
+	const syncedSkillState = loadCharacterState({ info: { skills: data.info && data.info.skills } });
+	entity.info.skills = syncedSkillState.skills;
+	entity.total_level = syncedSkillState.total_level;
 	entity.info.merchant_accrual = data.info && data.info.merchant_accrual;
 	entity.info.death_sickness_until = data.death_sickness_until || (data.info && data.info.death_sickness_until) || null;
 	entity.info.hp = data["hp"];
@@ -14312,6 +14518,7 @@ function sync_loop() {
 		delete player.mounting;
 		delete player.mount_call;
 		if (R.success) {
+			flushPlayerProgressionEvents(player);
 			player.last_sync = new Date();
 			server_log("mount_user: " + player.name + " owner: " + player.owner, 1);
 			player.user = R.user;
@@ -14360,6 +14567,7 @@ function sync_loop() {
 		);
 		delete player.unmount_call;
 		if (R.success) {
+			flushPlayerProgressionEvents(player);
 			player.last_sync = new Date();
 			server_log("unmount_user: " + player.name + " owner: " + player.owner + " result: " + JSON.stringify(R), 1);
 			delete player.unmounting;
@@ -14425,8 +14633,9 @@ function sync_loop() {
 			server_log("#X SEVERE not_in_game disconnect at sync_call: ", player.id, 1);
 			player.socket.disconnect();
 		} else if (R.reason) player.last_sync = new Date(new Date().getTime() - 3 * 60 * 1000);
-		else if (R.success && Dev) {
-			server_log("sync_call: " + player.name + " owner: " + player.owner + " result: " + JSON.stringify(R), 1);
+		else if (R.success) {
+			flushPlayerProgressionEvents(player);
+			if (Dev) server_log("sync_call: " + player.name + " owner: " + player.owner + " result: " + JSON.stringify(R), 1);
 		}
 	}
 	// stop_call: Character logout using tx() (following qwazy pattern)
@@ -14475,6 +14684,7 @@ function sync_loop() {
 			1,
 		);
 		if (R.success || R.reason == "not_in_game") {
+			if (R.success) flushPlayerProgressionEvents(player);
 			if (R.reason == "not_in_game") server_log("#X SEVERE not_in_game stop_call ", player.real_id);
 			delete dc_players[player.real_id];
 			add_event(

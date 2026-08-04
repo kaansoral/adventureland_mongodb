@@ -20,7 +20,6 @@ function authorizeAbility({
 	character = {},
 	slots,
 	items,
-	activeSkill,
 	standOpen = false,
 	itemGate = null,
 	now = Date.now(),
@@ -30,7 +29,7 @@ function authorizeAbility({
 	const definition = typeof ability === "object" ? ability : null;
 	const name = abilityId || (definition && definition.name) || "unknown";
 	if (!definition) throw accessError("unknown_ability", `Unknown ability ${name}`, { ability: name });
-	const currentSkill = activeSkill === undefined ? deriveActiveSkill(slots, items) : activeSkill;
+	const currentSkill = deriveActiveSkill(slots, items);
 	if (
 		standOpen &&
 		(definition.applicability === "active_combat" ||
