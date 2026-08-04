@@ -48,8 +48,6 @@ async function run() {
 	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/npcs.js")));
 	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/multipliers.js")));
 	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/items.js")));
-	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/classes.js")));
-	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/levels.js")));
 	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/upgrades.js")));
 	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/drops.js")));
 	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/skills.js")));
@@ -98,9 +96,7 @@ async function run() {
 		cosmetics: cosmetics,
 		emotions: emotions,
 		projectiles: projectiles,
-		classes: classes,
 		dimensions: dimensions,
-		levels: levels,
 		positions: positions,
 		skills: skills,
 		games: games,
