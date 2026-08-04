@@ -1,22 +1,10 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "contract": {
     "max_xp": 900000000,
     "base_units_per_hour": 3125000,
     "xp_units_per_xp": 7,
     "benchmark_tolerance": 0.1
-  },
-  "expected": {
-    "combat_duration_hours": {
-      "starter": 2016,
-      "competent": 672,
-      "optimized": 336
-    },
-    "merchant_duration_hours": {
-      "starter": 2016,
-      "competent": 672,
-      "optimized": 336
-    }
   },
   "targets": {
     "starter": {
@@ -36,688 +24,910 @@
     "starter": {
       "warrior": {
         "strategy": "starter",
-        "legal": true,
-        "mainhand": "blade",
-        "monster": "goo",
-        "uptime": 1,
-        "external_party_characters": 0,
-        "consumables": "none",
-        "target_rate_x": 1,
-        "calibration": 0.0025,
+        "selection_mode": "fixed",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 1,
-            "calibration": 0.0025
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 1,
-            "calibration": 0.0025
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 1,
-            "calibration": 0.0025
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 1,
-            "calibration": 0.0025
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-starter",
+                "reviewed": true,
+                "legal_basis": "starter-weapon-goo route",
+                "slots": {
+                  "mainhand": "blade"
+                },
+                "monster": "goo",
+                "uptime": 1,
+                "consumables": "none",
+                "external_party_characters": 0
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 27500,
+          "rate_x": 1,
+          "selected_candidate_ids": [
+            "goo-starter"
+          ]
+        }
       },
       "paladin": {
         "strategy": "starter",
-        "legal": true,
-        "mainhand": "mace",
-        "monster": "goo",
-        "uptime": 1,
-        "external_party_characters": 0,
-        "consumables": "none",
-        "target_rate_x": 1,
-        "calibration": 0.003571428571,
+        "selection_mode": "fixed",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 1,
-            "calibration": 0.003571428571
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 1,
-            "calibration": 0.003571428571
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 1,
-            "calibration": 0.003571428571
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 1,
-            "calibration": 0.003571428571
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-starter",
+                "reviewed": true,
+                "legal_basis": "starter-weapon-goo route",
+                "slots": {
+                  "mainhand": "mace"
+                },
+                "monster": "goo",
+                "uptime": 1,
+                "consumables": "none",
+                "external_party_characters": 0
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 33162.5,
+          "rate_x": 1,
+          "selected_candidate_ids": [
+            "goo-starter"
+          ]
+        }
       },
       "mage": {
         "strategy": "starter",
-        "legal": true,
-        "mainhand": "staff",
-        "monster": "goo",
-        "uptime": 1,
-        "external_party_characters": 0,
-        "consumables": "none",
-        "target_rate_x": 1,
-        "calibration": 0.0025,
+        "selection_mode": "fixed",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 1,
-            "calibration": 0.0025
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 1,
-            "calibration": 0.0025
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 1,
-            "calibration": 0.0025
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 1,
-            "calibration": 0.0025
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-starter",
+                "reviewed": true,
+                "legal_basis": "starter-weapon-goo route",
+                "slots": {
+                  "mainhand": "staff"
+                },
+                "monster": "goo",
+                "uptime": 1,
+                "consumables": "none",
+                "external_party_characters": 0
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 43855,
+          "rate_x": 1,
+          "selected_candidate_ids": [
+            "goo-starter"
+          ]
+        }
       },
       "priest": {
         "strategy": "starter",
-        "legal": true,
-        "mainhand": "wbook0",
-        "monster": "goo",
-        "uptime": 1,
-        "external_party_characters": 0,
-        "consumables": "none",
-        "target_rate_x": 1,
-        "calibration": 0.004166666667,
+        "selection_mode": "fixed",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 1,
-            "calibration": 0.004166666667
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 1,
-            "calibration": 0.004166666667
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 1,
-            "calibration": 0.004166666667
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 1,
-            "calibration": 0.004166666667
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-starter",
+                "reviewed": true,
+                "legal_basis": "starter-weapon-goo route",
+                "slots": {
+                  "mainhand": "wbook0"
+                },
+                "monster": "goo",
+                "uptime": 1,
+                "consumables": "none",
+                "external_party_characters": 0
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 36962.5,
+          "rate_x": 1,
+          "selected_candidate_ids": [
+            "goo-starter"
+          ]
+        }
       },
       "ranger": {
         "strategy": "starter",
-        "legal": true,
-        "mainhand": "bow",
-        "monster": "goo",
-        "uptime": 1,
-        "external_party_characters": 0,
-        "consumables": "none",
-        "target_rate_x": 1,
-        "calibration": 0.0025,
+        "selection_mode": "fixed",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 1,
-            "calibration": 0.0025
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 1,
-            "calibration": 0.0025
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 1,
-            "calibration": 0.0025
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 1,
-            "calibration": 0.0025
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-starter",
+                "reviewed": true,
+                "legal_basis": "starter-weapon-goo route",
+                "slots": {
+                  "mainhand": "bow"
+                },
+                "monster": "goo",
+                "uptime": 1,
+                "consumables": "none",
+                "external_party_characters": 0
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 31487.5,
+          "rate_x": 1,
+          "selected_candidate_ids": [
+            "goo-starter"
+          ]
+        }
       },
       "rogue": {
         "strategy": "starter",
-        "legal": true,
-        "mainhand": "claw",
-        "monster": "goo",
-        "uptime": 1,
-        "external_party_characters": 0,
-        "consumables": "none",
-        "target_rate_x": 1,
-        "calibration": 0.0025,
+        "selection_mode": "fixed",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 1,
-            "calibration": 0.0025
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 1,
-            "calibration": 0.0025
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 1,
-            "calibration": 0.0025
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 1,
-            "calibration": 0.0025
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-starter",
+                "reviewed": true,
+                "legal_basis": "starter-weapon-goo route",
+                "slots": {
+                  "mainhand": "claw"
+                },
+                "monster": "goo",
+                "uptime": 1,
+                "consumables": "none",
+                "external_party_characters": 0
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 28475,
+          "rate_x": 1,
+          "selected_candidate_ids": [
+            "goo-starter"
+          ]
+        }
       }
     },
     "competent": {
       "warrior": {
-        "strategy": "competent",
-        "legal": true,
-        "mainhand": "blade",
-        "monster": "bee",
-        "uptime": 0.8,
-        "external_party_characters": 0,
-        "consumables": "normal_sustainable",
-        "target_rate_x": 3,
-        "calibration": 0.00703125,
+        "strategy": "closest real candidate to 3x starter",
+        "selection_mode": "closest_target",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "blade"
+                },
+                "monster": "goo",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "bee-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "blade"
+                },
+                "monster": "bee",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "squigtoad-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "blade"
+                },
+                "monster": "squigtoad",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 10371.09375,
+          "rate_x": 2.651601,
+          "selected_candidate_ids": [
+            "squigtoad-route"
+          ]
+        }
       },
       "paladin": {
-        "strategy": "competent",
-        "legal": true,
-        "mainhand": "mace",
-        "monster": "bee",
-        "uptime": 0.8,
-        "external_party_characters": 0,
-        "consumables": "normal_sustainable",
-        "target_rate_x": 3,
-        "calibration": 0.010044642857,
+        "strategy": "closest real candidate to 3x starter",
+        "selection_mode": "closest_target",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 3,
-            "calibration": 0.010044642857
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 3,
-            "calibration": 0.010044642857
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 3,
-            "calibration": 0.010044642857
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 3,
-            "calibration": 0.010044642857
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "mace"
+                },
+                "monster": "goo",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "bee-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "mace"
+                },
+                "monster": "bee",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "squigtoad-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "mace"
+                },
+                "monster": "squigtoad",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 12406.804688,
+          "rate_x": 2.672928,
+          "selected_candidate_ids": [
+            "squigtoad-route"
+          ]
+        }
       },
       "mage": {
-        "strategy": "competent",
-        "legal": true,
-        "mainhand": "staff",
-        "monster": "bee",
-        "uptime": 0.8,
-        "external_party_characters": 0,
-        "consumables": "normal_sustainable",
-        "target_rate_x": 3,
-        "calibration": 0.00703125,
+        "strategy": "closest real candidate to 3x starter",
+        "selection_mode": "closest_target",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "staff"
+                },
+                "monster": "goo",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "bee-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "staff"
+                },
+                "monster": "bee",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "squigtoad-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "staff"
+                },
+                "monster": "squigtoad",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 13799.148438,
+          "rate_x": 3.178095,
+          "selected_candidate_ids": [
+            "squigtoad-route"
+          ]
+        }
       },
       "priest": {
-        "strategy": "competent",
-        "legal": true,
-        "mainhand": "wbook0",
-        "monster": "bee",
-        "uptime": 0.8,
-        "external_party_characters": 0,
-        "consumables": "normal_sustainable",
-        "target_rate_x": 3,
-        "calibration": 0.01171875,
+        "strategy": "closest real candidate to 3x starter",
+        "selection_mode": "closest_target",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 3,
-            "calibration": 0.01171875
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 3,
-            "calibration": 0.01171875
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 3,
-            "calibration": 0.01171875
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 3,
-            "calibration": 0.01171875
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "wbook0"
+                },
+                "monster": "goo",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "bee-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "wbook0"
+                },
+                "monster": "bee",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "squigtoad-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "wbook0"
+                },
+                "monster": "squigtoad",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 14472.25,
+          "rate_x": 2.554026,
+          "selected_candidate_ids": [
+            "squigtoad-route"
+          ]
+        }
       },
       "ranger": {
-        "strategy": "competent",
-        "legal": true,
-        "mainhand": "bow",
-        "monster": "bee",
-        "uptime": 0.8,
-        "external_party_characters": 0,
-        "consumables": "normal_sustainable",
-        "target_rate_x": 3,
-        "calibration": 0.00703125,
+        "strategy": "closest real candidate to 3x starter",
+        "selection_mode": "closest_target",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "bow"
+                },
+                "monster": "goo",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "bee-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "bow"
+                },
+                "monster": "bee",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "squigtoad-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "bow"
+                },
+                "monster": "squigtoad",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 11747.78125,
+          "rate_x": 2.680293,
+          "selected_candidate_ids": [
+            "squigtoad-route"
+          ]
+        }
       },
       "rogue": {
-        "strategy": "competent",
-        "legal": true,
-        "mainhand": "claw",
-        "monster": "bee",
-        "uptime": 0.8,
-        "external_party_characters": 0,
-        "consumables": "normal_sustainable",
-        "target_rate_x": 3,
-        "calibration": 0.00703125,
+        "strategy": "closest real candidate to 3x starter",
+        "selection_mode": "closest_target",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 3,
-            "calibration": 0.00703125
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "claw"
+                },
+                "monster": "goo",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "bee-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "claw"
+                },
+                "monster": "bee",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "squigtoad-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "claw"
+                },
+                "monster": "squigtoad",
+                "uptime": 0.8,
+                "consumables": "normal_sustainable"
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 21043.75,
+          "rate_x": 1.353133,
+          "selected_candidate_ids": [
+            "bee-route"
+          ]
+        }
       }
     },
     "optimized": {
       "warrior": {
-        "strategy": "optimized",
-        "legal": true,
-        "mainhand": "blade",
-        "monster": "croc",
-        "uptime": 1,
-        "external_party_characters": 0,
-        "consumables": "normal_sustainable",
-        "target_rate_x": 6,
-        "calibration": 0.013333333333,
+        "strategy": "max real reviewed candidate",
+        "selection_mode": "max_rate",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "blade"
+                },
+                "monster": "goo",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "bee-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "blade"
+                },
+                "monster": "bee",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "squigtoad-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "blade"
+                },
+                "monster": "squigtoad",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "wabbit-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed high-yield route",
+                "slots": {
+                  "mainhand": "blade"
+                },
+                "monster": "wabbit",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 8250,
+          "rate_x": 3.333333,
+          "selected_candidate_ids": [
+            "squigtoad-route"
+          ]
+        }
       },
       "paladin": {
-        "strategy": "optimized",
-        "legal": true,
-        "mainhand": "mace",
-        "monster": "croc",
-        "uptime": 1,
-        "external_party_characters": 0,
-        "consumables": "normal_sustainable",
-        "target_rate_x": 6,
-        "calibration": 0.019047619048,
+        "strategy": "max real reviewed candidate",
+        "selection_mode": "max_rate",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 6,
-            "calibration": 0.019047619048
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 6,
-            "calibration": 0.019047619048
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 6,
-            "calibration": 0.019047619048
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 6,
-            "calibration": 0.019047619048
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "mace"
+                },
+                "monster": "goo",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "bee-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "mace"
+                },
+                "monster": "bee",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "squigtoad-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "mace"
+                },
+                "monster": "squigtoad",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "wabbit-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed high-yield route",
+                "slots": {
+                  "mainhand": "mace"
+                },
+                "monster": "wabbit",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 9848.789063,
+          "rate_x": 3.367165,
+          "selected_candidate_ids": [
+            "squigtoad-route"
+          ]
+        }
       },
       "mage": {
-        "strategy": "optimized",
-        "legal": true,
-        "mainhand": "staff",
-        "monster": "croc",
-        "uptime": 1,
-        "external_party_characters": 0,
-        "consumables": "normal_sustainable",
-        "target_rate_x": 6,
-        "calibration": 0.013333333333,
+        "strategy": "max real reviewed candidate",
+        "selection_mode": "max_rate",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "staff"
+                },
+                "monster": "goo",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "bee-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "staff"
+                },
+                "monster": "bee",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "squigtoad-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "staff"
+                },
+                "monster": "squigtoad",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "wabbit-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed high-yield route",
+                "slots": {
+                  "mainhand": "staff"
+                },
+                "monster": "wabbit",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 11060.859375,
+          "rate_x": 3.964882,
+          "selected_candidate_ids": [
+            "squigtoad-route"
+          ]
+        }
       },
       "priest": {
-        "strategy": "optimized",
-        "legal": true,
-        "mainhand": "wbook0",
-        "monster": "croc",
-        "uptime": 1,
-        "external_party_characters": 0,
-        "consumables": "normal_sustainable",
-        "target_rate_x": 6,
-        "calibration": 0.022222222222,
+        "strategy": "max real reviewed candidate",
+        "selection_mode": "max_rate",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 6,
-            "calibration": 0.022222222222
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 6,
-            "calibration": 0.022222222222
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 6,
-            "calibration": 0.022222222222
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 6,
-            "calibration": 0.022222222222
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "wbook0"
+                },
+                "monster": "goo",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "bee-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "wbook0"
+                },
+                "monster": "bee",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "squigtoad-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "wbook0"
+                },
+                "monster": "squigtoad",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "wabbit-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed high-yield route",
+                "slots": {
+                  "mainhand": "wbook0"
+                },
+                "monster": "wabbit",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 11577.796875,
+          "rate_x": 3.192533,
+          "selected_candidate_ids": [
+            "squigtoad-route"
+          ]
+        }
       },
       "ranger": {
-        "strategy": "optimized",
-        "legal": true,
-        "mainhand": "bow",
-        "monster": "croc",
-        "uptime": 1,
-        "external_party_characters": 0,
-        "consumables": "normal_sustainable",
-        "target_rate_x": 6,
-        "calibration": 0.013333333333,
+        "strategy": "max real reviewed candidate",
+        "selection_mode": "max_rate",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "bow"
+                },
+                "monster": "goo",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "bee-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "bow"
+                },
+                "monster": "bee",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "squigtoad-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "bow"
+                },
+                "monster": "squigtoad",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "wabbit-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed high-yield route",
+                "slots": {
+                  "mainhand": "bow"
+                },
+                "monster": "wabbit",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 9434.460938,
+          "rate_x": 3.337499,
+          "selected_candidate_ids": [
+            "squigtoad-route"
+          ]
+        }
       },
       "rogue": {
-        "strategy": "optimized",
-        "legal": true,
-        "mainhand": "claw",
-        "monster": "croc",
-        "uptime": 1,
-        "external_party_characters": 0,
-        "consumables": "normal_sustainable",
-        "target_rate_x": 6,
-        "calibration": 0.013333333333,
+        "strategy": "max real reviewed candidate",
+        "selection_mode": "max_rate",
         "bands": [
           {
-            "from": 0,
-            "to": 0.25,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
-          },
-          {
-            "from": 0.25,
-            "to": 0.5,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
-          },
-          {
-            "from": 0.5,
-            "to": 0.75,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
-          },
-          {
-            "from": 0.75,
-            "to": 1,
-            "target_rate_x": 6,
-            "calibration": 0.013333333333
+            "from_level": 1,
+            "to_level": 99,
+            "candidates": [
+              {
+                "id": "goo-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "claw"
+                },
+                "monster": "goo",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "bee-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "claw"
+                },
+                "monster": "bee",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "squigtoad-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed normal monster route",
+                "slots": {
+                  "mainhand": "claw"
+                },
+                "monster": "squigtoad",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              },
+              {
+                "id": "wabbit-route",
+                "reviewed": true,
+                "legal_basis": "fixture-reviewed high-yield route",
+                "slots": {
+                  "mainhand": "claw"
+                },
+                "monster": "wabbit",
+                "uptime": 1,
+                "consumables": "normal_sustainable"
+              }
+            ]
           }
-        ]
+        ],
+        "expected": {
+          "duration_hours": 2509.9305,
+          "rate_x": 11.344936,
+          "selected_candidate_ids": [
+            "wabbit-route"
+          ]
+        }
       }
     }
   },
   "merchant": {
     "starter": {
-      "strategy": "stand_only",
-      "legal": true
+      "strategy": "stand only",
+      "expected": {
+        "duration_hours": 2016,
+        "xp": 900000000,
+        "level_40_reached_at_hour": null
+      }
     },
     "competent": {
-      "strategy": "stand_plus_bounded_economic_credits",
-      "legal": true
+      "strategy": "stand plus bounded sales and five luck credits after 40",
+      "expected": {
+        "duration_hours": 672,
+        "xp": 900000036,
+        "level_40_reached_at_hour": 160
+      }
     },
     "optimized": {
-      "strategy": "stand_plus_full_legal_bonus_cap",
-      "legal": true
+      "strategy": "stand plus bounded sales and ten luck credits after 40",
+      "expected": {
+        "duration_hours": 336,
+        "xp": 900000000,
+        "level_40_reached_at_hour": 54
+      }
     }
   }
 }
