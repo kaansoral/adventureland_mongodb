@@ -178,8 +178,8 @@ async function readCollectionNames(db) {
 	return (await db.listCollections({}, { nameOnly: true }).toArray()).map((entry) => entry.name).sort();
 }
 
-async function readMapDocuments(db) {
-	return db.collection("map").find({}).sort({ _id: 1 }).toArray();
+async function readMapDocuments(db, options = {}) {
+	return db.collection("map").find({}, options).sort({ _id: 1 }).toArray();
 }
 
 async function verifyWorldState(db, options = {}) {

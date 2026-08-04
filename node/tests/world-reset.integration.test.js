@@ -149,6 +149,32 @@ test(
 			assert.equal(await target.collection("character").countDocuments({ _id: "sentinel-rollback" }), 1);
 			assert.equal(mapSha256(await readMapDocuments(target)), liveValidation.sha256);
 
+			await target.collection("character").insertOne({ _id: "sentinel-postcheck" });
+			const postcheckDry = await run(["--database", targetDatabase]);
+			await assert.rejects(
+				run(
+					[
+						"--database",
+						targetDatabase,
+						"--execute",
+						"--confirm",
+						postcheckDry.preview.confirmToken,
+						"--backup-dir",
+						path.join(runtime, "postcheck-backup"),
+					],
+					{
+						postcheckHook: async () => {
+							const error = new Error("simulated reset postcheck failure");
+							error.code = "RESET_TEST_POSTCHECK_FAILURE";
+							throw error;
+						},
+					},
+				),
+				{ code: "RESET_TEST_POSTCHECK_FAILURE" },
+			);
+			assert.equal(await target.collection("character").countDocuments({ _id: "sentinel-postcheck" }), 1);
+			assert.equal(await target.collection("character").countDocuments({ _id: "sentinel-rollback" }), 1);
+
 			const seed = await readSeed(path.resolve(__dirname, "../../seeds"), { maps: DESIGN_MAPS });
 			await target.collection("map").deleteOne({ _id: seed.documents[0]._id });
 			await target.collection("map").insertOne({ _id: "MP_integration_extra", info: { data: { extra: true } } });

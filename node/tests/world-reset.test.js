@@ -150,6 +150,28 @@ test("reset leases and map snapshots are exclusive and readback verified", async
 	}
 });
 
+test("reset writer guards cover MongoDB, configured writers, ports, and the shared lease", async () => {
+	const { mkdtemp, rm, writeFile, mkdir } = require("node:fs/promises");
+	const path = require("node:path");
+	const { checkWriterGuards } = require("../tools/reset-world");
+	const root = await mkdtemp(path.join(require("node:os").tmpdir(), "world-reset-writers-"));
+	const pidFile = path.join(root, "configured-writer.pid");
+	const lease = path.join(root, "writer-lease");
+	try {
+		await writeFile(pidFile, `${process.pid}\n`);
+		const guarded = await checkWriterGuards({ pidFiles: [pidFile], ports: [1], writerLeaseDir: lease });
+		assert.equal(guarded.clear, false);
+		assert.deepEqual(guarded.activePidFiles, [{ path: pidFile, pid: process.pid }]);
+		await mkdir(lease);
+		await writeFile(path.join(lease, "owner.json"), JSON.stringify({ pid: process.pid }));
+		const leased = await checkWriterGuards({ pidFiles: [path.join(root, "missing.pid")], ports: [1], writerLeaseDir: lease });
+		assert.equal(leased.clear, false);
+		assert.equal(leased.writerLease.active, true);
+	} finally {
+		await rm(root, { recursive: true, force: true });
+	}
+});
+
 test("reset backups stay project-local and cannot overwrite existing files", async () => {
 	const { mkdir, mkdtemp, rm, writeFile } = require("node:fs/promises");
 	const path = require("node:path");

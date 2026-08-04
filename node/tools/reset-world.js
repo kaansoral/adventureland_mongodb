@@ -159,6 +159,21 @@ function processIsRunning(pid) {
 	}
 }
 
+function configuredList(value) {
+	if (typeof value !== "string" || !value.trim()) return [];
+	return value.split(",").map((entry) => entry.trim()).filter(Boolean);
+}
+
+async function inspectWriterLease(directory) {
+	try {
+		const owner = JSON.parse(await fs.readFile(path.join(directory, "owner.json"), "utf8"));
+		return { path: directory, pid: Number(owner.pid), active: processIsRunning(owner.pid) };
+	} catch (error) {
+		if (error.code === "ENOENT") return null;
+		return { path: directory, active: true, unreadable: true };
+	}
+}
+
 async function portIsOpen(port, host = "127.0.0.1") {
 	return new Promise((resolve) => {
 		const socket = net.createConnection({ host, port });
@@ -174,25 +189,39 @@ async function portIsOpen(port, host = "127.0.0.1") {
 
 async function checkWriterGuards(options = {}) {
 	const pidDir = options.pidDir || path.join(ROOT_DIR, ".runtime", "pids");
-	const ports = options.ports || [8090, 7192];
+	const env = options.env || process.env;
+	const configuredPidFiles = options.pidFiles || configuredList(env.ADVENTURELAND_RESET_WRITER_PID_FILES);
+	const pidFiles = configuredPidFiles.length
+		? configuredPidFiles.map((file) => path.resolve(file))
+		: ["mongod", "backend", "game-server"].map((name) => path.join(pidDir, `${name}.pid`));
+	const configuredPorts = options.ports || configuredList(env.ADVENTURELAND_RESET_WRITER_PORTS).map(Number).filter(Number.isSafeInteger);
+	const ports = configuredPorts.length ? configuredPorts : [8090, 7192];
 	const activePidFiles = [];
-	for (const name of ["backend", "game-server"]) {
-		const file = path.join(pidDir, `${name}.pid`);
+	for (const file of pidFiles) {
 		try {
 			const pid = (await fs.readFile(file, "utf8")).trim();
-			if (processIsRunning(pid)) activePidFiles.push({ name, pid: Number(pid) });
+			if (processIsRunning(pid)) activePidFiles.push({ path: file, pid: Number(pid) });
 		} catch (error) {
 			if (error.code !== "ENOENT") throw error;
 		}
 	}
 	const openPorts = [];
 	for (const port of ports) if (await portIsOpen(port)) openPorts.push(port);
-	return { activePidFiles, openPorts, clear: activePidFiles.length === 0 && openPorts.length === 0 };
+	const leasePath = options.writerLeaseDir || env.ADVENTURELAND_RESET_WRITER_LEASE || path.join(ROOT_DIR, ".runtime", "reset-world-writer.lock");
+	const writerLease = await inspectWriterLease(leasePath);
+	return {
+		activePidFiles,
+		openPorts,
+		writerLease,
+		configuredPidFiles: pidFiles,
+		configuredPorts: ports,
+		clear: activePidFiles.length === 0 && openPorts.length === 0 && writerLease === null,
+	};
 }
 
-async function countCollections(db, names) {
+async function countCollections(db, names, options = {}) {
 	const counts = {};
-	for (const name of names) counts[name] = await db.collection(name).countDocuments();
+	for (const name of names) counts[name] = await db.collection(name).countDocuments({}, options);
 	return counts;
 }
 
@@ -368,7 +397,13 @@ async function runReset(options = {}) {
 		if (!args.reseedMaps && mapValidation.requiredSha256 !== seedValidation.sha256) {
 			throw worldError("RESET_MAP_SEED_DRIFT", "Required live maps do not match the committed recovery seed");
 		}
-		const writer = await (options.writerGuard || checkWriterGuards)();
+		const writer = await (options.writerGuard || checkWriterGuards)({
+			env,
+			pidDir: options.pidDir,
+			pidFiles: options.writerPidFiles,
+			ports: options.writerPorts,
+			writerLeaseDir: options.writerLeaseDir,
+		});
 		const requestedBackupDir = args.backupDir || path.join(DEFAULT_BACKUP_ROOT, runId);
 		const backupLocation = await checkBackupLocation(requestedBackupDir);
 		const mapHash = args.reseedMaps ? seedValidation.sha256 : mapValidation.sha256;
@@ -448,6 +483,7 @@ async function runReset(options = {}) {
 		});
 		const deleted = {};
 		const session = client.startSession();
+		let transactionValidation;
 		try {
 			await session.withTransaction(async () => {
 				for (const name of plan.deletes)
@@ -457,21 +493,33 @@ async function runReset(options = {}) {
 					if (seed.documents.length) await db.collection("map").insertMany(seed.documents, { session, ordered: true });
 				}
 				if (typeof options.transactionHook === "function") await options.transactionHook({ db, session, plan, deleted });
+				const transactionMaps = validateMapDocuments(await readMapDocuments(db, { session }), {
+					maps: DESIGN_MAPS,
+					exact: args.reseedMaps,
+				});
+				if (transactionMaps.sha256 !== mapHash)
+					throw worldError("RESET_POSTCHECK", "Map hash changed unexpectedly before reset commit");
+				const transactionCounts = await countCollections(db, [...MUTABLE_COLLECTIONS, "map"], { session });
+				const residual = Object.fromEntries(
+					MUTABLE_COLLECTIONS.filter((name) => transactionCounts[name] !== 0).map((name) => [name, transactionCounts[name]]),
+				);
+				if (Object.keys(residual).length)
+					throw worldError("RESET_POSTCHECK", "Mutable documents remain before reset commit", { residual });
+				transactionValidation = {
+					mapHash: transactionMaps.sha256,
+					mapCount: transactionMaps.mapCount,
+					counts: transactionCounts,
+					indexes: await verifyWorldIndexes(db),
+				};
+				if (typeof options.postcheckHook === "function")
+					await options.postcheckHook({ db, session, plan, deleted, validation: transactionValidation });
 			});
 		} finally {
 			await session.endSession();
 		}
-		const afterDocuments = await readMapDocuments(db);
-		const afterValidation = validateMapDocuments(afterDocuments, { maps: DESIGN_MAPS, exact: args.reseedMaps });
-		if (afterValidation.sha256 !== mapHash)
-			throw worldError("RESET_POSTCHECK", "Map hash changed unexpectedly after reset");
-		const afterCounts = await countCollections(db, [...MUTABLE_COLLECTIONS, "map"]);
-		const residual = Object.fromEntries(
-			MUTABLE_COLLECTIONS.filter((name) => afterCounts[name] !== 0).map((name) => [name, afterCounts[name]]),
-		);
-		if (Object.keys(residual).length)
-			throw worldError("RESET_POSTCHECK", "Mutable documents remain after the committed reset", { residual });
-		const indexes = await verifyWorldIndexes(db);
+		const afterCounts = transactionValidation.counts;
+		const afterValidation = transactionValidation;
+		const indexes = transactionValidation.indexes;
 		const report = redactResetReport({
 			timestamp: new Date().toISOString(),
 			mode: "executed",
@@ -498,6 +546,7 @@ async function runReset(options = {}) {
 				verified: true,
 			},
 			indexes,
+			transactionValidation,
 			reseedMaps: args.reseedMaps,
 		});
 		await fs.writeFile(path.join(backupDir, "report.json"), `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
