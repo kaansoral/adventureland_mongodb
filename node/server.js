@@ -37,6 +37,9 @@ const {
 	markStandSession,
 	settlePlayerStand,
 	recordMerchantLuck,
+	recordMerchantSale,
+	recordMerchantSaleReversal,
+	recordMerchantDonationOrDice,
 	refreshDeathSickness,
 	rehydratePlayerDeathSickness,
 	sicknessDelta,
@@ -7534,7 +7537,7 @@ function init_io() {
 			}
 			recordMerchantDonationOrDice(player, {
 				rawXp: gold * XPX,
-				sourceId: data.transaction_id || data.id || `donation:${player.name}:${Date.now()}:${gold}`,
+				sourceId: `${server_id}:donation:${player.name}:${Date.now()}:${randomStr(12)}`,
 				kind: "donation",
 				now: Date.now(),
 			});
@@ -7774,14 +7777,24 @@ function init_io() {
 			}
 
 			if (player.owner != buyer.owner) {
-				recordMerchantSale(player, {
+				const tradeSourceId = `${server_id}:trade:${randomStr(16)}`;
+				const saleDetails = {
 					merchantOwnerId: player.name,
 					externalOwnerId: buyer.owner || buyer.name,
 					goldReceived: round(price * (1 - player.tax)),
 					serverTax: price - round(price * (1 - player.tax)),
-					sourceId: `sale:${player.name}:${buyer.name}:${item.rid || data.slot}:${data.q}`,
+					sourceId: tradeSourceId,
 					now: Date.now(),
-				});
+				};
+				if (item.src == "tb")
+					recordMerchantSaleReversal(player, {
+						merchantOwnerId: saleDetails.merchantOwnerId,
+						externalOwnerId: saleDetails.externalOwnerId,
+						goldReversed: saleDetails.goldReceived,
+						sourceId: tradeSourceId,
+						now: saleDetails.now,
+					});
+				else recordMerchantSale(player, saleDetails);
 			}
 
 			socket.emit(
@@ -7878,14 +7891,24 @@ function init_io() {
 			}
 
 			if (seller.owner != player.owner) {
-				recordMerchantSale(seller, {
+				const tradeSourceId = `${server_id}:trade:${randomStr(16)}`;
+				const saleDetails = {
 					merchantOwnerId: seller.name,
 					externalOwnerId: player.owner || player.name,
 					goldReceived: round(price * (1 - seller.tax)),
 					serverTax: price - round(price * (1 - seller.tax)),
-					sourceId: `sale:${seller.name}:${player.name}:${item.rid || data.slot}:${data.q}`,
+					sourceId: tradeSourceId,
 					now: Date.now(),
-				});
+				};
+				if (item.src == "tb")
+					recordMerchantSaleReversal(seller, {
+						merchantOwnerId: saleDetails.merchantOwnerId,
+						externalOwnerId: saleDetails.externalOwnerId,
+						goldReversed: saleDetails.goldReceived,
+						sourceId: tradeSourceId,
+						now: saleDetails.now,
+					});
+				else recordMerchantSale(seller, saleDetails);
 			}
 
 			socket.emit("game_log", "Spent " + to_pretty_num(price) + " gold");

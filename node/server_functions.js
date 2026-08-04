@@ -1212,7 +1212,7 @@ function tavern_loop() {
 						) {
 							recordMerchantDonationOrDice(player, {
 								rawXp: bet.edge * 7.2,
-								sourceId: `dice:${bet.id}`,
+								sourceId: `${server_id}:dice:${bet.id}:${randomStr(12)}`,
 								kind: "dice",
 								now: Date.now(),
 							});
