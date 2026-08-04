@@ -1309,9 +1309,7 @@ async function enforce_limitations() {
 		var servers = await get_servers();
 		var players = [],
 			ips = {},
-			mips = {},
 			owners = {},
-			mowners = {},
 			ipx = {};
 
 		for (var si = 0; si < servers.length; si++) {
@@ -1320,7 +1318,7 @@ async function enforce_limitations() {
 			try {
 				var splayers = await server_eval(
 					server,
-					"var list=[]; for(var id in players) { var player=players[id]; list.push({owner:player.owner,name:player.name,ip:get_ip_server(player),type:player.type,bot:player.bot||'',free:player.p.free||player.s.licenced||player.role=='gm',ipx:player.ipx||1,temp_auth:player.temp_auth||'',auth_id:player.auth_id||''}); }; output=list;",
+					"var list=[]; for(var id in players) { var player=players[id]; list.push({owner:player.owner,name:player.name,ip:get_ip_server(player),total_level:player.total_level,stand:!!(player.p&&player.p.stand),bot:player.bot||'',free:player.p.free||player.s.licenced||player.role=='gm',ipx:player.ipx||1,temp_auth:player.temp_auth||'',auth_id:player.auth_id||''}); }; output=list;",
 				);
 				if (!splayers) continue;
 				for (var i = 0; i < splayers.length; i++) {
@@ -1337,25 +1335,18 @@ async function enforce_limitations() {
 			var player = players[i];
 			if (player.free) continue;
 			if (player.auth_id) {
-				if (player.type !== "merchant") ips[player.ip] = (ips[player.ip] || 0) + 1;
-				else mips[player.ip] = (mips[player.ip] || 0) + 1;
+				ips[player.ip] = (ips[player.ip] || 0) + 1;
 				player.ip = player.auth_id;
 				player.ipx = 1;
 			}
 			if (player.temp_auth) {
-				if (player.type !== "merchant") ips[player.ip] = (ips[player.ip] || 0) + 1;
-				else mips[player.ip] = (mips[player.ip] || 0) + 1;
+				ips[player.ip] = (ips[player.ip] || 0) + 1;
 				player.ip = player.owner;
 				player.ipx = 1;
 			}
 			ipx[player.ip] = Math.max(ipx[player.ip] || 0, player.ipx);
-			if (player.type === "merchant") {
-				mowners[player.owner] = (mowners[player.owner] || 0) + 1;
-				mips[player.ip] = (mips[player.ip] || 0) + 1;
-			} else {
-				owners[player.owner] = (owners[player.owner] || 0) + 1;
-				ips[player.ip] = (ips[player.ip] || 0) + 1;
-			}
+			owners[player.owner] = (owners[player.owner] || 0) + 1;
+			ips[player.ip] = (ips[player.ip] || 0) + 1;
 		}
 
 		for (var si = 0; si < servers.length; si++) {
@@ -1366,11 +1357,7 @@ async function enforce_limitations() {
 			for (var i = 0; i < server.players_list.length; i++) {
 				var player = server.players_list[i];
 				if (player.free) continue;
-				if (player.type === "merchant" && (mips[player.ip] > 1 || mowners[player.owner] > 1) && to_disconnect.indexOf(player.name) === -1) {
-					to_disconnect.push(player.name);
-					continue;
-				}
-				if (player.type !== "merchant" && (ips[player.ip] > character_limit * (ipx[player.ip] || 1) || owners[player.owner] > character_limit) && to_disconnect.indexOf(player.name) === -1) {
+				if (ips[player.ip] > character_limit * (ipx[player.ip] || 1) || owners[player.owner] > character_limit) {
 					to_disconnect.push(player.name);
 					continue;
 				}

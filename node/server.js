@@ -19,8 +19,10 @@ var Prod = options.Prod;
 var Staging = options.Staging;
 const express = require("express");
 const { buildProgressionData, loadProgressionPublication } = require("./game/skill_domain");
+const { createCharacterState } = require("./game/character_state");
 const { WEAPON_PROFILES, deriveActiveSkill, weaponProfile } = require("./game/active_skill");
-const { planEquipmentTransaction, isCompatibleOffhand } = require("./game/equipment");
+const { merchantTax, merchantSlots } = require("./game/merchant_progression");
+const { planEquipmentTransaction, isCompatibleOffhand, validateRequirements } = require("./game/equipment");
 const { authorizeAbility } = require("./game/ability_access");
 const { calculateStats } = require("./game/stats");
 const { invalidateConditions } = require("./game/style_effects");
@@ -1070,14 +1072,11 @@ function party_to_client(oname) {
 		if (!player) {
 			return;
 		}
-		if (player.type == "merchant") {
+		if (player.p && player.p.stand) {
 			return;
 		}
-		if (player.type == "priest") {
-			dps_multiplier = 1.36;
-		}
 		length += 1;
-		if (player.level < 60) {
+		if (maxCombatLevel(player) < 60) {
 			newbies += 1;
 		}
 		output += player.pdps * dps_multiplier + add;
@@ -1090,14 +1089,11 @@ function party_to_client(oname) {
 		if (!player) {
 			return;
 		}
-		if (player.type == "priest") {
-			dps_multiplier = 1.36;
-		}
 		player.share = 0;
 		if (!output) {
 			// to handle an all merchant party
 			player.share = 1.0 / (max(1, list.length) + EPS);
-		} else if (player.type != "merchant") {
+		} else if (!(player.p && player.p.stand)) {
 			player.share = odps[player.owner] / (c[player.owner] + EPS) / (output + EPS);
 			player.share = min(1, player.share);
 		}
@@ -1107,8 +1103,8 @@ function party_to_client(oname) {
 		player.party_xp = [0, 0, 10, 16, 20, 24, 25, 30, 36, 40, 40, 40, 40][length] || 0;
 		party[name] = {
 			skin: player.tskin || player.skin,
-			level: player.level,
-			type: player.type,
+			total_level: player.total_level,
+			active_skill: player.active_skill || null,
 			x: player.x,
 			y: player.y,
 			in: player.in,
@@ -1151,10 +1147,7 @@ function calculate_party(oname) {
 		if (!player) {
 			return;
 		}
-		if (player.type == "merchant") {
-			player.party_weight = 0;
-		}
-		player.party_weight = 20;
+		player.party_weight = player.p && player.p.stand ? 0 : 20;
 	});
 }
 
@@ -1252,470 +1245,18 @@ function calculate_gear_only_player_stats(player) {
 	player.esize = calculated.inventory_size - (player.items || []).filter(Boolean).length;
 	player.a = calculated.abilities;
 	player.aura = calculated.auras;
-	player.monster_stats = {};
 	player.output = calculated.output;
 	player.tax = 0.05;
 	if (player.skills && player.skills.merchant) {
-		const merchantLevel = player.skills.merchant.level;
-		player.tax =
-			merchantLevel > 80
-				? 0.01
-				: merchantLevel > 70
-					? 0.02
-					: merchantLevel > 60
-						? 0.025
-						: merchantLevel > 50
-							? 0.03
-							: merchantLevel > 20
-								? 0.04
-								: 0.05;
+		player.tax = merchantTax(player.skills.merchant.level);
 	}
 	calculate_common_stats(player);
 	return player;
 }
 
 function calculate_player_stats(player) {
-	if (player.is_npc) {
-		return;
-	}
-	if (player.skills && Object.keys(player.skills).length) {
-		return calculate_gear_only_player_stats(player);
-	}
-	player.max_xp = G.levels[player.level + ""];
-	var level_up = false;
-	while (player.xp >= player.max_xp) {
-		level_up = true;
-		player.xp -= player.max_xp;
-		player.level++;
-		player.max_xp = G.levels[player.level + ""];
-		player.hp = 0;
-		achievement_logic_level(player);
-	}
-	if (level_up) {
-		if (player.level >= 80) {
-			realm_broadcast("server_message", { message: player.name + " is now level " + player.level, color: "#968CFA" });
-		} else if (player.level >= 70) {
-			broadcast("server_message", { message: player.name + " is now level " + player.level + "!", color: "#968CFA" });
-		}
-		xy_emit(player, "ui", { type: "level_up", name: player.name });
-	}
-	//	disappearing_text(player.socket,player,"LEVEL UP!",{xy:1,size:"huge",color:"#724A8F"});
-	if (player.xp < 0) {
-		player.xp = 0;
-		player.warnings = (player.warnings || 0) + 1;
-		if (player.warnings == 2) {
-			console.log("'Your monster!' logged out ->");
-			player.socket.emit("ui_log", "You monster!");
-			player.socket.disconnect();
-			return;
-		}
-	}
-	var class_def = G.classes[player.type];
-	var item_attack = 0;
-	var the_date = new Date();
-	if (!class_def) {
-		class_def = G.classes.merchant;
-	} // when npc's get resend't
-	player.range = class_def.range;
-	player.max_hp = class_def.hp;
-	player.max_mp = class_def.mp;
-	["stealth"].forEach(function (prop) {
-		player[prop] = false;
-	});
-	[
-		"a_mp_cost",
-		"a_attack",
-		"stones",
-		"lifesteal",
-		"manasteal",
-		"incdmgamp",
-		"mp_reduction",
-		"stun",
-		"blast",
-		"explosion",
-		"cuteness",
-		"bling",
-	].forEach(function (prop) {
-		player[prop] = 0;
-	});
-	[
-		"speed",
-		"attack",
-		"frequency",
-		"mp_cost",
-		"armor",
-		"resistance",
-		"apiercing",
-		"rpiercing",
-		"a",
-		"aura",
-		"evasion",
-		"miss",
-		"reflection",
-		"crit",
-		"critdamage",
-		"dreturn",
-		"computer",
-		"xxp",
-		"xluck",
-		"xgold",
-		"output",
-		"courage",
-		"mcourage",
-		"pcourage",
-		"pnresistance",
-		"firesistance",
-		"fzresistance",
-		"phresistance",
-		"stresistance",
-	].forEach(function (prop) {
-		player[prop] = class_def[prop] || 0;
-	});
-	if (!player.a) {
-		player.a = {};
-	} //abilities
-	if (!player.aura) {
-		player.aura = {};
-	}
-	if (player.paura) {
-		for (var id in player.paura) {
-			player.aura[id] = player.paura[id];
-		}
-	}
-	for (stat in class_def.stats) {
-		player[stat] = class_def.stats[stat] + player.level * class_def.lstats[stat];
-		if (player.level > 40) {
-			player[stat] += (player.level - 40) * class_def.lstats[stat];
-		}
-		if (player.level > 55) {
-			player[stat] += (player.level - 55) * class_def.lstats[stat];
-		}
-		if (player.level > 65) {
-			player[stat] += (player.level - 65) * class_def.lstats[stat];
-		}
-		if (player.level > 80) {
-			player[stat] -= (player.level - 80) * class_def.lstats[stat];
-		}
-		player[stat] = floor(player[stat]);
-	}
-	if (!player.slots) {
-		player.slots = {};
-	}
-	// players.citems[27]=null; //- to reproduce the bug
-	while (player.items.length > 42 && !player.items[player.items.length - 1]) {
-		player.items.splice(player.items.length - 1);
-	}
-	while (player.citems.length > 42 && !player.citems[player.citems.length - 1]) {
-		player.citems.splice(player.citems.length - 1);
-	}
-	player.isize = 42;
-	player.sets = {};
-	player.esize = player.isize - player.items.length;
-	player.xpm = player.goldm = player.luckm = 1;
-	for (var i = 0; i < player.items.length; i++) {
-		var current = player.items[i];
-		if (!current) {
-			player.esize++;
-		} else if (current.name == "supercomputer") {
-			player.tracker = player.computer = player.supercomputer = true;
-		} else if (current.name == "computer") {
-			player.computer = true;
-		} else if (current.name == "tracker") {
-			player.tracker = true;
-		} else if (current.expires) {
-			// &&!current.ex = ex=elixier
-			if (the_date > current.expires) {
-				player.items[i] = null;
-				player.citems[i] = null;
-			} else if (G.items[current.name].gain) {
-				var prop = calculate_item_properties(current);
-				player.stones++;
-				player["x" + G.items[current.name].gain] = prop[G.items[current.name].gain];
-			}
-		}
-	}
-	player.monster_stats = {};
-	if (player.tracker) {
-		for (var name in G.monsters) {
-			var mx = max(
-				(player.p.stats.monsters[name] || 0) + (player.p.stats.monsters_diff[name] || 0),
-				(player.max_stats.monsters[name] || [0, 0])[0],
-			);
-			if (!mx || !G.monsters[name].achievements) {
-				continue;
-			}
-			G.monsters[name].achievements.forEach(function (def) {
-				if (mx < def[0]) {
-					return;
-				}
-				if (def[1] == "stat") {
-					player.monster_stats[def[2]] = (player.monster_stats[def[2]] || 0) + def[3];
-				}
-			});
-		}
-	}
-	character_slots.forEach(function (slot) {
-		var current = player.slots[slot];
-		if (!current) {
-			return;
-		}
-		var def = G.items[current.name];
-		if (!def) {
-			console.log("#X Undefined item: " + current.name + " (" + slot + ")");
-			return;
-		}
-		var prop = calculate_item_properties(current, { class: player.type, map: player.map });
-		if (prop.class && !prop.class.includes(player.type)) {
-			return;
-		}
-
-		apply_stats(player, prop, { no_range: slot == "offhand" && def.type == "weapon" });
-		if (prop.attack) {
-			if (slot == "offhand") {
-				item_attack += prop.attack * 0.7;
-			} else {
-				item_attack += prop.attack;
-			}
-		}
-		if (def.ability) {
-			player.a[def.ability] = {
-				attr0: ((player.a[def.ability] && player.a[def.ability].attr0) || 0) + prop.attr0,
-				attr1: ((player.a[def.ability] && player.a[def.ability].attr1) || 0) + prop.attr1,
-			};
-		}
-		if (def.aura) {
-			player.aura[def.aura] = { attr0: prop.attr0 || 0, attr1: prop.attr1 || 0 };
-		}
-		if (slot == "mainhand") {
-			apply_stats(player, class_def.doublehand[def.wtype] || class_def.mainhand[def.wtype] || {});
-		}
-		if (slot == "offhand") {
-			apply_stats(
-				player,
-				class_def.offhand[def.wtype] ||
-					class_def.offhand[def.type] || {
-						no_range: !player.slots.mainhand,
-					},
-			);
-		}
-		if (prop.set) {
-			player.sets[def.set] = (player.sets[def.set] || 0) + 1;
-		}
-	});
-	for (var set in player.sets) {
-		var prop = G.sets[set] && G.sets[set][player.sets[set]];
-		if (!prop) {
-			continue;
-		}
-		apply_stats(player, prop);
-	}
-	for (var condition in player.s) {
-		var prop = G.conditions[condition];
-		apply_stats(player, player.s[condition]);
-		if (!prop) {
-			continue;
-		}
-		apply_stats(player, prop);
-	}
-	apply_stats(player, player.monster_stats);
-	if (
-		player.slots.mainhand &&
-		player.slots.offhand &&
-		G.items[player.slots.mainhand.name].wtype == "stars" &&
-		G.items[player.slots.offhand.name].wtype != "stars"
-	) {
-		item_attack /= 3.0;
-	}
-	if (player.slots.cape && player.slots.cape.name == "stealthcape") {
-		player.stealth = true;
-	}
-	item_attack = max(item_attack, 5);
-	if (player.type == "paladin") {
-		player.attack += item_attack * (player.str / 20.0 + player.int / 40.0);
-	} else {
-		player.attack += item_attack * (player[class_def.main_stat] / 20.0);
-	}
-	player.attack += player.a_attack;
-	if (player.type == "priest") {
-		player.attack *= 1.6;
-	}
-	if (player.type == "warrior") {
-		player.courage += round(player.str / 30);
-	}
-	if (player.type == "priest") {
-		player.mcourage += round(player.int / 30);
-	}
-	if (player.type == "paladin") {
-		player.pcourage += round(player.str / 30 + player.int / 30);
-	}
-	//console.log(player.speed)
-	//player.speed+=player.dex/20.0+player.str/40.0+min(player.level,40)/4.0+max(0,min(player.level-40,20))/5.0+max(0,player.level-60)/7.0
-	player.speed +=
-		min(player.dex, 256) / 32.0 +
-		min(player.str, 256) / 64.0 +
-		min(player.level, 40) / 10.0 +
-		max(0, min(player.level - 40, 20)) / 15.0 +
-		max(0, min(86, player.level) - 60) / 16.0;
-
-	player.aggro_diff = player.bling / 100 - player.cuteness / 100;
-
-	//console.log(player.speed)
-	//player.max_hp+=player.str*5+player.vit*player.level/2; //player.str*10.0+player.level*10+player.vit*25
-	player.max_hp += player.str * 21 + player.vit * (48 + player.level / 3.0);
-	player.max_hp = max(1, player.max_hp);
-	player.max_mp = max(1, player.max_mp);
-	player.max_mp += player.int * 15.0 + player.level * 5;
-	//player.armor+=player.str/2.0;
-	player.armor += min(player.str, 160) + max(0, player.str - 160) * 0.25;
-	player.resistance += min(player.int, 180) + max(0, player.int - 180) * 0.25;
-	player.frequency +=
-		min(player.level, 80) / 164.0 +
-		min(160, player.dex) / 640.0 +
-		max(player.dex - 160, 0) / 925.0 +
-		player.int / 1575.0; // 120 635 1275 is the original mix
-	// player.frequency=9000;
-	player.attack_ms = round(1000.0 / player.frequency);
-	if (player.last_attack_ms && player.attack_ms != player.last_attack_ms) {
-		// server_log("skill_timeout_correction: "+player.last_attack_ms+" to "+player.attack_ms+" timeout: "+(player.attack_ms-mssince(player.last.attack)))
-		player.socket.emit("skill_timeout", {
-			name: "attack",
-			ms: player.attack_ms - mssince(player.last.attack),
-			reason: "attack_ms",
-		});
-	}
-	player.last_attack_ms = player.attack_ms;
-	player.mp_cost +=
-		min(player.level, 80) * (player.mp_cost / 10.0) +
-		player.a_mp_cost +
-		player.crit * 1.25 +
-		player.lifesteal * 1.5 +
-		player.manasteal / 5.0;
-	if (player.damage_type == "physical") {
-		player.mp_cost += player.apiercing / 15.0;
-	} else {
-		player.mp_cost += player.rpiercing / 15.0;
-	}
-	player.mp_cost = max(1, player.mp_cost);
-	if (!player.hp && !player.rip) {
-		player.hp = player.max_hp;
-		player.mp = player.max_mp;
-	} // used for level-ups
-	if ((player.gold || 0) <= 0) {
-		player.gold = 0;
-	}
-	player.heal = 0;
-	if (player.type == "priest") {
-		player.heal = player.attack;
-	}
-	player.output = max(5, player.output);
-	if (player.output) {
-		player.attack = (player.attack * player.output) / 100.0;
-	}
-	if (player.s.damage_received) {
-		player.attack += (player.s.damage_received.amount * 4) / 100;
-	}
-	["attack", "heal", "hp", "mp", "max_hp", "max_mp", "range", "mp_cost", "resistance", "armor"].forEach(
-		function (prop) {
-			player[prop] = round(player[prop]);
-		},
-	);
-	player.hp = max(0, min(player.hp, player.max_hp));
-	player.mp = max(0, min(player.mp, player.max_mp));
-
-	if (player.party && parties[player.party]) {
-		if (player.party_xp) {
-			player.xxp += player.party_xp;
-		}
-		if (player.party_luck) {
-			player.xluck += player.party_luck;
-		}
-		if (player.party_gold) {
-			player.xgold += player.party_gold;
-		}
-	}
-
-	if (goldm != 1) {
-		player.xgold += (goldm - 1) * 100.0;
-		player.xluck += (luckm - 1) * 100.0;
-		player.xxp += (xpm - 1) * 100.0;
-	}
-	player.luckm = 1 + player.xluck / 100.0;
-	player.xpm = 1 + player.xxp / 100.0;
-	player.goldm = 1 + player.xgold / 100.0;
-	["luckm", "xpm", "goldm"].forEach(function (p) {
-		player[p] = max(0.01, player[p]);
-	});
-
-	if (player.tskin == "konami") {
-		player.range = 120;
-		player.frequency += 0.25;
-		player.goldm *= 0.25;
-		player.luckm += 0.25;
-	}
-
-	if (player.s.invis) {
-		player.speed = max(player.speed * 0.6, player.speed - 25);
-		player.attack = round(player.attack * 1.25);
-	}
-	if (player.s.invincible) {
-		player.attack = round(player.attack * 0.45);
-	}
-	if (player.s.dash) {
-		player.speed = 500;
-	}
-	calculate_common_stats(player);
-
-	player.tax =
-		(player.level > 80 && 0.01) ||
-		(player.level > 80 && 0.012) ||
-		(player.level > 70 && 0.02) ||
-		(player.level > 60 && 0.025) ||
-		(player.level > 50 && 0.03) ||
-		(player.level > 20 && 0.04) ||
-		0.05;
-
-	player.fear = Math.max(
-		0,
-		player.targets_p - player.courage,
-		player.targets_m - player.mcourage,
-		player.targets_u - player.pcourage,
-	);
-	const sredux = [0, 20, 40, 70, 80, 90, 100];
-	player.speed -= sredux[Math.min(sredux.length - 1, player.fear)];
-	if (player.fear > 2) {
-		player.attack = Math.round(player.attack * 0.2);
-		if (mode.fear_affects_heal) {
-			player.heal = Math.round(player.heal * 0.2);
-		}
-	} else if (player.fear > 1) {
-		player.attack = Math.round(player.attack * 0.4);
-		if (mode.fear_affects_heal) {
-			player.heal = Math.round(player.heal * 0.4);
-		}
-	} else if (player.fear) {
-		player.attack = Math.round(player.attack * 0.6);
-		if (mode.fear_affects_heal) {
-			player.heal = Math.round(player.heal * 0.6);
-		}
-	}
-
-	if (player.map == "winterland") {
-		player.speed *= 0.95;
-	}
-
-	if (player.p.stand || player.s.hardshell) {
-		player.speed = 10;
-	}
-	player.evasion = min(50, player.evasion);
-	player.reflection = min((player.s.reflection && 50) || 30, player.reflection);
-	player.speed = min(player.speed, player.cruise || 200000);
-	player.speed = round(max(5, player.speed));
-	if (!player.gold && player.gold !== 0) {
-		player.gold = 0;
-		server_log("#X - GOLD BUG calculate", 1);
-	}
-	recalculate_vxy(player);
-	perfc.cps += 1;
+	if (player.is_npc) return;
+	return calculate_gear_only_player_stats(player);
 }
 
 function calculate_common_stats(entity) {
@@ -2219,7 +1760,6 @@ function drop_something(player, monster, share) {
 		drop.y = player.y;
 		drop.map = player.map;
 	}
-	// if(player.level<50 && mode.low49_20xglobal) global_mult=20; - Commented out after SpadarFaar discovered/used it [16/04/19]
 	// console.log(global_mult);
 	if (monster["1hp"]) {
 		global_mult *= 1000;
@@ -2268,7 +1808,6 @@ function drop_something(player, monster, share) {
 		return playerRoll < dropRate;
 	};
 
-	// if(player.level<50 && monster.type=="goo" && mode.low49_200xgoo) monster_mult=200;
 	if (D.drops.monsters[monster.type] && player.tskin != "konami") {
 		D.drops.monsters[monster.type].forEach(function (item) {
 			for (let d = 0; d < B.drop_table_multiplier; d++) {
@@ -2555,13 +2094,14 @@ function calculate_monster_score(player, monster, share) {
 		if (current.id == player.id) {
 			continue;
 		}
-		if (current.owner == player.owner && current.type == "merchant" && simple_distance(current, player) < 600) {
+		if (current.owner == player.owner && current.p && current.p.stand && simple_distance(current, player) < 600) {
 			score -= 0.2 / divider;
 		}
 		if (
 			current.party &&
 			current.party == player.party &&
-			current.type == "merchant" &&
+			current.p &&
+			current.p.stand &&
 			simple_distance(current, player) < 600
 		) {
 			score -= 0.1 / divider;
@@ -2569,14 +2109,14 @@ function calculate_monster_score(player, monster, share) {
 			current.owner == player.owner &&
 			current.party == player.party &&
 			simple_distance(current, player) < 600 &&
-			current.type != "merchant"
+			!(current.p && current.p.stand)
 		) {
 			score += 0.3 / divider;
 		} else if (
 			current.owner == player.owner &&
 			current.party &&
 			current.party == player.party &&
-			current.type != "merchant"
+			!(current.p && current.p.stand)
 		) {
 			score += 0.3 / divider;
 		} // originally 0.25
@@ -2584,7 +2124,7 @@ function calculate_monster_score(player, monster, share) {
 	if (simple_distance(player, monster) > 600 && share < 0.01) {
 		score -= 0.3 / divider;
 	}
-	if (player.type == "merchant" && player.party) {
+	if (player.p && player.p.stand && player.party) {
 		score /= 2;
 	}
 	if (score < 0) {
@@ -2676,7 +2216,6 @@ function issue_monster_award(monster) {
 	if (!player) {
 		return;
 	}
-	// if(gameplay=="test" && player.level<80) player.level+=1;
 	stats.kills[monster.type]++;
 	drop_something(player, monster);
 	if (!player.party) {
@@ -4848,23 +4387,6 @@ function init_io() {
 			exchange(player, G.docs.rewards[data.name], { name: "reward_" + data.name });
 			socket.emit("game_response", { response: "reward_received", rewards: player.user.rewards });
 		});
-		socket.on("creward", function (data) {
-			if (!player || !data.name || !G.classes[player.type].rewards[data.name]) {
-				return;
-			}
-			if (!player.verified || !player.auth_id) {
-				return socket.emit("game_response", "reward_notverified");
-			}
-			if (!player.p.rewards) {
-				player.p.rewards = [];
-			}
-			if (player.p.rewards.includes(data.name)) {
-				return socket.emit("game_response", "reward_already");
-			}
-			player.p.rewards.push(data.name);
-			exchange(player, G.classes[player.type].rewards[data.name].reward, { name: "reward_" + data.name });
-			socket.emit("game_response", { response: "reward_received", rewards: player.p.rewards });
-		});
 		socket.on("cx", function (data) {
 			var player = players[socket.id];
 			if (!player) {
@@ -5005,9 +4527,6 @@ function init_io() {
 				add_item(player, "monstertoken", { log: true, q: (gameplay == "hardcore" && 100) || 1 });
 				resend(player, "u+cid+reopen");
 				return success_response({ completed: true });
-			}
-			if (player.type == "merchant") {
-				return socket.emit("game_response", "monsterhunt_merchant");
 			}
 			var mmax = -1;
 			var name = "goo";
@@ -7978,9 +7497,12 @@ function init_io() {
 			if (gold >= 5000000) {
 				lstack(S.logs.donate, { name: player.name, gold: gold, xp: XPX });
 			}
-			if (player.type == "merchant") {
-				player.xp += parseInt(gold * XPX);
-			}
+			recordMerchantDonationOrDice(player, {
+				rawXp: gold * XPX,
+				sourceId: data.transaction_id || data.id || `donation:${player.name}:${Date.now()}:${gold}`,
+				kind: "donation",
+				now: Date.now(),
+			});
 			resend(player, "reopen");
 			socket.emit("game_response", { response: "donate_" + response, gold: gold, xprate: XPX });
 		});
@@ -8072,7 +7594,6 @@ function init_io() {
 				return fail_response("need_auth");
 			}
 			//if(item.list.includes(player.name)) return socket.emit("game_log","Already joined!");
-			//if(player.type!="merchant") return socket.emit("game_log","Only merchants can join giveaways!");
 
 			//item.list.push(player.name);
 
@@ -8217,11 +7738,15 @@ function init_io() {
 				bnum = add_item(buyer, actual, { announce: false });
 			}
 
-			if (player.type == "merchant") {
-				merchant_xp_logic(player, buyer, price, price - round(price * (1 - player.tax)));
-			}
-			if (buyer.type == "merchant") {
-				merchant_xp_logic(buyer, player, price, price - round(price * (1 - buyer.tax)));
+			if (player.owner != buyer.owner) {
+				recordMerchantSale(player, {
+					merchantOwnerId: player.name,
+					externalOwnerId: buyer.owner || buyer.name,
+					goldReceived: round(price * (1 - player.tax)),
+					serverTax: price - round(price * (1 - player.tax)),
+					sourceId: `sale:${player.name}:${buyer.name}:${item.rid || data.slot}:${data.q}`,
+					now: Date.now(),
+				});
 			}
 
 			socket.emit(
@@ -8317,11 +7842,15 @@ function init_io() {
 				item.src = "tb";
 			}
 
-			if (player.type == "merchant") {
-				merchant_xp_logic(player, seller, price, price - round(price * (1 - player.tax)));
-			}
-			if (seller.type == "merchant") {
-				merchant_xp_logic(seller, player, price, price - round(price * (1 - seller.tax)));
+			if (seller.owner != player.owner) {
+				recordMerchantSale(seller, {
+					merchantOwnerId: seller.name,
+					externalOwnerId: player.owner || player.name,
+					goldReceived: round(price * (1 - seller.tax)),
+					serverTax: price - round(price * (1 - seller.tax)),
+					sourceId: `sale:${seller.name}:${player.name}:${item.rid || data.slot}:${data.q}`,
+					now: Date.now(),
+				});
 			}
 
 			socket.emit("game_log", "Spent " + to_pretty_num(price) + " gold");
@@ -8358,7 +7887,9 @@ function init_io() {
 				return;
 			}
 			var initial = player.p.stand;
+			var now = Date.now();
 			server_log("merchant: " + player.name);
+			if (player.p.stand) settlePlayerStand(player, now);
 			if (data.close || player.p.stand) {
 				player.p.stand = false;
 				for (var i = 0; i < player.items.length; i++) {
@@ -8372,11 +7903,13 @@ function init_io() {
 				if (item && G.items[item.name].stand) {
 					player.p.stand = G.items[item.name].stand;
 					item.b = "stand";
+					markStandSession(player, now);
 				} else {
 					return fail_response("invalid");
 				}
 			}
 			if (initial != player.p.stand) {
+				calculate_player_stats(player);
 				// All unneccessary causes of resend's should be patched [03/08/18]
 				reslot_player(player);
 				resend(player, "u+cid");
@@ -8740,8 +8273,13 @@ function init_io() {
 				} else if (item.name == "angelwings") {
 					if (player.tskin == "snow_angel") {
 						player.tskin = "";
-					} else if (item.level >= 8 && (player.type == "mage" || player.type == "priest")) {
-						player.tskin = "snow_angel";
+					} else if (item.level >= 8) {
+						try {
+							validateRequirements(item.name, G.items[item.name].requirements, player.skills);
+							player.tskin = "snow_angel";
+						} catch (error) {
+							return socket.emit("game_response", "nothing");
+						}
 					} else {
 						return socket.emit("game_response", "nothing");
 					}
@@ -8858,7 +8396,6 @@ function init_io() {
 				if (!booster_items.includes(data.to)) {
 					return fail_response("invalid");
 				}
-				player.xpm = player.goldm = player.luckm = 1;
 				item.name = data.to;
 				player.s.penalty_cd = { ms: min(((player.s.penalty_cd && player.s.penalty_cd.ms) || 0) + 240, 120000) };
 			}
@@ -9078,7 +8615,7 @@ function init_io() {
 				}
 
 				if (data.name == "throw") {
-					range += player.level;
+					range += skillLevel(player, "merchant");
 				}
 
 				const dist = distance(player, target);
@@ -9589,7 +9126,7 @@ function init_io() {
 				if (is_same(player, target, 1)) {
 					consume_mp(player, gSkill.mp, target);
 				} else {
-					if (player.mp < gSkill.mp * 6 || player.level < 75) {
+					if (player.mp < gSkill.mp * 6 || skillLevel(player, "priest") < 75) {
 						return socket.emit("game_response", { response: "non_friendly_target", place: data.name, failed: true });
 					}
 					consume_mp(player, gSkill.mp * 6, target);
@@ -9872,18 +9409,12 @@ function init_io() {
 				resend(player, "u+cid");
 			} else if (data.name == "alchemy") {
 				var rate = 0.8;
-				if (player.level >= 100) {
-					rate = 1.12;
-				} else if (player.level >= 90) {
-					rate = 1.1;
-				} else if (player.level >= 80) {
-					rate = 1.06;
-				} else if (player.level >= 70) {
-					rate = 1;
-				} else if (player.level >= 60) {
-					rate = 0.92;
-				} else if (player.level >= 50) {
-					rate = 0.86;
+				var mageLevel = skillLevel(player, "mage");
+				for (var levelIndex = gSkill.levels.length - 1; levelIndex >= 0; levelIndex--) {
+					if (mageLevel >= gSkill.levels[levelIndex][0]) {
+						rate = gSkill.levels[levelIndex][1];
+						break;
+					}
 				}
 				consume_mp(player, gSkill.mp);
 				xy_emit(player, "ui", { type: "alchemy", name: player.name });
@@ -10556,7 +10087,14 @@ function init_io() {
 			if (!player.s) {
 				player.s = {};
 			}
-			player.t = { mdamage: 0, cgold: 0, dgold: 0, xp: 0, start: new Date() };
+			player.t = {
+				mdamage: 0,
+				cgold: 0,
+				dgold: 0,
+				skill_xp: Object.fromEntries(Object.keys(player.skills).map((skill) => [skill, 0])),
+				total_skill_xp: 0,
+				start: new Date(),
+			};
 			player.hitchhikers = []; // socket events to be registered after a resend
 			player.last = { attack: future_ms(-1200), attacked: really_old };
 			player.bets = {};
@@ -11193,9 +10731,6 @@ function init_io() {
 			if (!player) {
 				return;
 			}
-			if (player.type == "merchant") {
-				return fail_response("no_merchants");
-			}
 			if (player.s.hopsickness) {
 				return fail_response("cant_when_sick");
 			}
@@ -11606,6 +11141,12 @@ function init_io() {
 			} catch (e) {}
 			if (player) {
 				player.dc = true;
+				try {
+					settlePlayerStand(player, Date.now(), { emit: false });
+					player.p.stand = false;
+				} catch (error) {
+					server_log("merchant disconnect settlement failed: " + player.name + " " + (error.code || error.message));
+				}
 				try {
 					defeat_player(player);
 				} catch (e) {
@@ -13872,16 +13413,13 @@ function npc_loop() {
 						max_val = player.gold;
 						target = player;
 					}
-					if (player.type == "merchant") {
-						continue;
-					}
 					if (
 						def.seek == "dragondagger" &&
 						player.slots.mainhand &&
 						player.slots.mainhand.name == "dragondagger" &&
-						player.level < min_val
+						skillLevel(player, "rogue") < min_val
 					) {
-						min_val = player.level;
+						min_val = skillLevel(player, "rogue");
 						target = player;
 					}
 				}
@@ -14139,41 +13677,31 @@ setInterval(function () {
 	}
 }, 4000);
 
-setTimeout(
+setInterval(
 	function () {
-		setInterval(
-			function () {
-				for (var id in players) {
-					var player = players[id];
-					if (player.type == "merchant" && player.p.stand) {
-						var xp = 1000;
-						if (player.level <= 40) {
-							xp = G.levels[player.level] / 100;
-						} else if (player.level <= 60) {
-							xp = G.levels[player.level] / 200;
-						} else if (player.level <= 70) {
-							xp = G.levels[player.level] / 400;
-						} else {
-							xp = G.levels[70] / 400;
-						}
-						xp = parseInt(Math.round(xp));
-						player.xp += xp;
-						player.socket.emit("game_log", "Gained " + to_pretty_num(xp) + " marketing XP");
-						player.socket.emit("disappearing_text", {
-							message: "+" + xp,
-							x: player.x,
-							y: player.y - 32,
-							args: { color: "gray", size: "large" },
-						});
-						resend(player, "reopen+u+cid");
-					}
+		for (var id in players) {
+			var player = players[id];
+			if (!player.p || !player.p.stand || player.rip) continue;
+			try {
+				var settled = settlePlayerStand(player, Date.now());
+				if (settled.xp) {
+					calculate_player_stats(player);
+					player.socket.emit("game_log", "Gained " + to_pretty_num(settled.xp) + " stand XP");
+					player.socket.emit("disappearing_text", {
+						message: "+" + settled.xp,
+						x: player.x,
+						y: player.y - 32,
+						args: { color: "gray", size: "large" },
+					});
+					resend(player, "reopen+u+cid");
 				}
-			},
-			3 * 60 * 60 * 1000,
-		); //3
+			} catch (error) {
+				server_log("merchant settlement failed: " + player.name + " " + (error.code || error.message));
+			}
+		}
 	},
-	1 * 60 * 60 * 1000,
-); //1
+	5 * 60 * 1000,
+);
 
 setInterval(function () {
 	try {
@@ -14793,6 +14321,12 @@ function sync_loop() {
 	// stop_call: Character logout using tx() (following qwazy pattern)
 	async function stop_call(player) {
 		var bank = (player.user && true) || false;
+		try {
+			settlePlayerStand(player, Date.now(), { emit: false });
+			if (player.p) player.p.stand = false;
+		} catch (error) {
+			server_log("merchant logout settlement failed: " + player.name + " " + (error.code || error.message));
+		}
 		player.stopping = new Date();
 		init_player_exit(player);
 		player.stop_call = true;
@@ -14832,9 +14366,14 @@ function sync_loop() {
 		if (R.success || R.reason == "not_in_game") {
 			if (R.reason == "not_in_game") server_log("#X SEVERE not_in_game stop_call ", player.real_id);
 			delete dc_players[player.real_id];
-			add_event({ _id: player._id, info: { name: player.name }, level: player.level }, "stop", ["activity"], {
-				info: { message: player.name + " [LV." + player.level + "] logged out", server: server_id },
-			});
+			add_event(
+				{ _id: player._id, info: { name: player.name }, total_level: player.total_level },
+				"stop",
+				["activity"],
+				{
+					info: { message: player.name + " [TL." + player.total_level + "] logged out", server: server_id },
+				},
+			);
 			try {
 				var user = await get(player.owner);
 				if (user)

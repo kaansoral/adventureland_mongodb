@@ -369,8 +369,6 @@ function is_free(player) {
 
 function is_player_allowed(player) {
 	if (gameplay == "hardcore") {
-		//if(player.type=="mage" || player.type=="priest") return false;
-		//if(player.type=="rogue") return false;
 	}
 	var socket = player.socket;
 	var characters = 0;
@@ -383,19 +381,8 @@ function is_player_allowed(player) {
 	if (is_free(player) || (player.stones && 0)) {
 		return true;
 	}
-	if (player.type == "merchant") {
-		for (var id in players) {
-			if ((players[id].stones && 0) || id == player.socket.id || is_free(player)) {
-				continue;
-			}
-			if (players[id].owner == player.owner && players[id].type == "merchant") {
-				return false;
-			}
-		}
-		return true;
-	}
 	for (var id in players) {
-		if ((players[id].stones && 0) || is_free(players[id]) || players[id].type == "merchant") {
+		if ((players[id].stones && 0) || is_free(players[id])) {
 			continue;
 		} // was requested [28/10/16]
 		if (players[id].owner == player.owner) {
@@ -531,12 +518,13 @@ function reset_player(player, soft) {
 		player.p = { hardcore: true, dt: {} };
 		player.max_stats = { monsters: {} };
 	}
-	player.xp = 0;
 	if (soft) {
-		// player.level=max(1,player.level-20);
 	} else {
-		player.level = 1;
-		player.xp = 0;
+		var fresh = createCharacterState();
+		player.skills = fresh.skills;
+		player.total_level = fresh.total_level;
+		player.merchant_accrual = undefined;
+		player.death_sickness_until = null;
 		player.s = {};
 		player.slots = {};
 		player.items = [{ name: "computer" }, { name: "tracker" }];
@@ -548,12 +536,15 @@ function reset_player(player, soft) {
 			P[player.real_id] = null;
 		}
 	}
+	initializePlayerProgression(player);
 }
 
 function save_player(player) {
 	P[player.real_id] = {
-		level: player.level,
-		xp: player.xp,
+		skills: player.skills,
+		total_level: player.total_level,
+		merchant_accrual: player.merchant_accrual,
+		death_sickness_until: player.death_sickness_until || null,
 		slots: player.slots,
 		items: player.items,
 		gold: player.gold,
@@ -707,29 +698,6 @@ function server_tax(gold, preview) {
 		S.gold += tax;
 	}
 	return gold - tax;
-}
-
-function merchant_xp_logic(player, seller, price, tax) {
-	if (is_same(player, seller)) {
-		return;
-	}
-	if (!player.p.xpcache || Object.keys(player.p.xpcache).length > 120 || hsince(player.p.dt.last_xpcache) > 5 * 24) {
-		player.p.xpcache = {};
-		player.p.dt.last_xpcache = new Date();
-	}
-	if (!player.p.xpcache[seller.name]) {
-		player.p.xpcache[seller.name] = 0;
-	}
-	var initial = player.p.xpcache[seller.name];
-	player.p.xpcache[seller.name] = min(120000000, player.p.xpcache[seller.name] + round(price / 4));
-	player.xp += player.p.xpcache[seller.name] - initial;
-}
-
-function merchant_xp_logic(player, seller, price, tax) {
-	if (is_same(player, seller)) {
-		return;
-	}
-	player.xp += tax * 3.2;
 }
 
 function normalise(data) {
@@ -955,7 +923,7 @@ function serverhop_logic(player) {
 			hops++;
 		}
 	}
-	if (main && hops && main != region + server_name && player.level >= 60) {
+	if (main && hops && main != region + server_name && player.total_level >= 60) {
 		player.s.hopsickness = { ms: min(10000 * hops * hops, 3 * 60 * 60 * 1000) };
 		if (hops > 20) {
 			player.s.hopsickness.luck = -80;
@@ -996,7 +964,7 @@ function serverhop_logic(player) {
 		player.p.home = region + server_name;
 	}
 	player.p.entries = [[region + server_name, "" + new Date()]];
-	if (player.p.home != region + server_name && player.level >= 60 && server_name != "PVP") {
+	if (player.p.home != region + server_name && player.total_level >= 60 && server_name != "PVP") {
 		add_condition(player, "hopsickness");
 	}
 }
@@ -1229,9 +1197,12 @@ function tavern_loop() {
 							(bet.dir == "up" && parseFloat(tavern.dice.num) >= bet.num) ||
 							(bet.dir == "down" && parseFloat(tavern.dice.num) <= bet.num)
 						) {
-							if (player.type == "merchant") {
-								player.xp += parseInt(bet.edge * 7.2);
-							}
+							recordMerchantDonationOrDice(player, {
+								rawXp: bet.edge * 7.2,
+								sourceId: `dice:${bet.id}`,
+								kind: "dice",
+								now: Date.now(),
+							});
 							player.gold += bet.win - bet.edge;
 							S.gold -= bet.win - bet.edge - bet.gold;
 							if (bet.win - bet.edge - bet.gold >= 12000000) {
@@ -1294,11 +1265,7 @@ function tavern_loop() {
 							dir: bet.dir,
 						});
 					}
-					if (player.xp >= player.max_xp) {
-						resend(player, "reopen");
-					} else {
-						resend(player, "reopen+nc");
-					}
+					resend(player, "reopen+nc");
 				});
 				tavern.dice.next = future_s(2);
 				//server_log("Dice: Locked - Suspensing");
@@ -2255,7 +2222,7 @@ function event_loop() {
 						monster.last_attack = future_ms(1000);
 						var player = random_one(players);
 						if (
-							(player.level < 50 && Math.random() > 0.08) ||
+							(player.total_level < 50 && Math.random() > 0.08) ||
 							(G.maps[player.map] &&
 								(G.maps[player.map].safe || G.maps[player.map].instance || G.maps[player.map].irregular))
 						) {
@@ -2268,12 +2235,7 @@ function event_loop() {
 									break;
 								}
 								var ally = instances[player.in].players[pid];
-								if (
-									ally.name != player.name &&
-									!ally.npc &&
-									(ally.type != "merchant" || player.type == "merchant") &&
-									simple_distance(ally, player) < 500
-								) {
+								if (ally.name != player.name && !ally.npc && simple_distance(ally, player) < 500) {
 									player = null;
 									break;
 								}
@@ -3139,7 +3101,7 @@ function xy_emit(entity, event, data, must) {
 				y < player.y + player.vision[1]) ||
 			player.id == must
 		) {
-			if (event == "light" && (player.type == "rogue" || player.s.invis) && distance(player, entity) < 300) {
+			if (event == "light" && player.s.invis && distance(player, entity) < 300) {
 				player.last.invis = new Date();
 				delete player.s.invis;
 				player.socket.emit("light", { name: data.name, affected: 1 });
@@ -3572,9 +3534,10 @@ function get_trade_slots(player) {
 	if (player.p.stand) {
 		var num = 16;
 		var slots = [];
-		if (player.type == "merchant" && player.level >= 80) {
+		var merchantLevel = player.skills && player.skills.merchant ? player.skills.merchant.level : 1;
+		if (merchantSlots(merchantLevel, player.p.stand == "cstand") == 30) {
 			num = 30;
-		} else if (player.type == "merchant" && (player.level >= 70 || player.p.stand == "cstand")) {
+		} else if (merchantSlots(merchantLevel, player.p.stand == "cstand") == 24) {
 			num = 24;
 		}
 		for (var i = 1; i <= num; i++) {
@@ -5225,26 +5188,6 @@ function achievement_logic_monster_kill(player, monster) {
 			["ent", "stompy", "franky", "fvampire", "mvampire", "skeletor", "goo"].forEach(function (m) {
 				if (monster.type == m && !E.rewards["first_" + m] && E.minutes) {
 					E.rewards["first_" + m] = player.name;
-					announce = true;
-				}
-			});
-			if (announce) {
-				broadcast("hardcore_info", { E: E, achiever: player.name });
-			}
-		} else {
-		}
-	} catch (e) {
-		console.log("#A: " + e);
-	}
-}
-
-function achievement_logic_level(player) {
-	try {
-		if (gameplay == "hardcore") {
-			var announce = false;
-			["warrior", "paladin", "priest", "mage", "ranger", "rogue", "wabbit"].forEach(function (c) {
-				if (player.type == c && player.level >= 70 && !E.rewards["first_" + c + "_70"] && E.minutes) {
-					E.rewards["first_" + c + "_70"] = player.name;
 					announce = true;
 				}
 			});

@@ -20,7 +20,12 @@ function player() {
 		p: {},
 		t: {},
 		info: {},
-		socket: { events: [], emit(name, value) { this.events.push([name, value]); } },
+		socket: {
+			events: [],
+			emit(name, value) {
+				this.events.push([name, value]);
+			},
+		},
 	};
 }
 
@@ -51,7 +56,8 @@ test("runtime stand settlement feeds Merchant through the common award path", ()
 	const settled = settlePlayerStand(character, 3600000);
 	assert.equal(settled.xp, Math.floor(3125000 / 7));
 	assert.equal(character.skills.merchant.xp, settled.xp);
-	assert.equal(character.total_level, 7);
+	assert.equal(character.skills.merchant.level, 3);
+	assert.equal(character.total_level, 9);
 });
 
 test("runtime death sickness persists and clears by absolute timestamp", () => {
