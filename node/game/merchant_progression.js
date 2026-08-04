@@ -101,6 +101,10 @@ function enqueueCredit(
 ) {
 	if (!Number.isSafeInteger(units) || units <= 0)
 		throw merchantError("invalid_merchant_credit", "Credit units must be a positive safe integer");
+	if (typeof sourceId !== "string" || !sourceId)
+		throw merchantError("invalid_merchant_credit", "Merchant credits require a source ID");
+	if (!Number.isSafeInteger(expiresAt) || expiresAt <= now || expiresAt > now + HOUR)
+		throw merchantError("invalid_merchant_credit", "Merchant credit expiry must be within one hour");
 	const actionRoom = Math.max(
 		0,
 		progression.MAX_ACTION_UNITS_PER_HOUR -
@@ -162,6 +166,8 @@ function addCredit(
 function recordSaleReversal(previous, { merchantOwnerId, externalOwnerId, goldReversed, sourceId, now = Date.now() }) {
 	if (!merchantOwnerId || !externalOwnerId || merchantOwnerId === externalOwnerId || goldReversed <= 0)
 		return { state: clone(previous || createMerchantAccrual()), credited: 0, eligible: false };
+	if (typeof sourceId !== "string" || !sourceId)
+		throw merchantError("invalid_merchant_credit", "Merchant reversals require a source ID");
 	const state = prune(clone(previous || createMerchantAccrual()), now);
 	const reservation = reserveSource(state, sourceId, now);
 	if (reservation.duplicate) return { state, credited: 0, duplicate: true };
@@ -259,6 +265,10 @@ function validateMerchantAccrual(state, now = Date.now()) {
 			!credit ||
 			!Number.isSafeInteger(credit.units) ||
 			credit.units <= 0 ||
+			credit.units > progression.MAX_ACTION_UNITS_PER_HOUR ||
+			typeof credit.source_id !== "string" ||
+			!credit.source_id ||
+			typeof credit.kind !== "string" ||
 			!Number.isSafeInteger(credit.expires_at) ||
 			credit.expires_at <= now
 		)
@@ -275,6 +285,7 @@ function validateMerchantAccrual(state, now = Date.now()) {
 			award.bonus_units < 0 ||
 			!Number.isSafeInteger(award.units) ||
 			award.units !== award.base_units + award.bonus_units ||
+			award.units > progression.MAX_TOTAL_UNITS_PER_HOUR ||
 			award.units <= 0
 		)
 			throw merchantError("invalid_merchant_state", "Invalid rolling Merchant award");
@@ -300,7 +311,9 @@ function validateMerchantAccrual(state, now = Date.now()) {
 			(entry.kind !== "donation" && entry.kind !== "dice") ||
 			!Number.isSafeInteger(entry.at) ||
 			entry.at > now ||
-			(entry.source_id !== undefined && typeof entry.source_id !== "string")
+			typeof entry.source_id !== "string" ||
+			!Number.isSafeInteger(entry.credited) ||
+			entry.credited < 0
 		)
 			throw merchantError("invalid_merchant_state", "Invalid Merchant action history");
 	}
@@ -320,7 +333,15 @@ function validateMerchantAccrual(state, now = Date.now()) {
 		)
 			throw merchantError("invalid_merchant_state", "Invalid Merchant sale ledger");
 		for (const event of ledger.events) {
-			if (!event || !Number.isSafeInteger(event.at) || event.at > now || !Number.isSafeInteger(event.gold))
+			if (
+				!event ||
+				!Number.isSafeInteger(event.at) ||
+				event.at > now ||
+				!Number.isSafeInteger(event.gold) ||
+				typeof event.source_id !== "string" ||
+				!event.source_id ||
+				(event.kind !== "sale" && event.kind !== "reversal")
+			)
 				throw merchantError("invalid_merchant_state", "Invalid Merchant sale event");
 		}
 	}
