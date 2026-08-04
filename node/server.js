@@ -19,12 +19,23 @@ var Prod = options.Prod;
 var Staging = options.Staging;
 const express = require("express");
 const { buildProgressionData, loadProgressionPublication } = require("./game/skill_domain");
-const { loadCharacterState, createCharacterState } = require("./game/character_state");
 const { WEAPON_PROFILES, deriveActiveSkill, weaponProfile } = require("./game/active_skill");
 const { planEquipmentTransaction, isCompatibleOffhand } = require("./game/equipment");
 const { authorizeAbility } = require("./game/ability_access");
 const { calculateStats } = require("./game/stats");
 const { invalidateConditions } = require("./game/style_effects");
+const { ContributionLedger } = require("./game/contributions");
+const {
+	initializePlayerProgression,
+	awardPlayerSkillXp,
+	maxCombatLevel,
+	skillLevel,
+	markStandSession,
+	settlePlayerStand,
+	refreshDeathSickness,
+	rehydratePlayerDeathSickness,
+	sicknessDelta,
+} = require("./game/progression_runtime");
 var fs = require("fs");
 var app = express(),
 	http_server = require("http").createServer(app);
@@ -75,6 +86,7 @@ var dc_players = {};
 var sockets = {};
 var observers = {};
 var total_monsters = 0;
+var progression_ledger = new ContributionLedger();
 var max_players = 96;
 var chests = {};
 var projectiles = {};
@@ -107,6 +119,7 @@ var tavern = {};
 var dbase = { h: 8, v: 7, vn: 2 }; // default-base
 var G = {};
 var D = {};
+var item_runtime = {};
 var P = {}; // the game
 var S = {}; // server data
 var T = {}; // cosmetics
@@ -421,34 +434,34 @@ async function init_game() {
 		// Build G (game data) from design globals (matches create_server_api output)
 		G = loadProgressionPublication(
 			{
-			version: Version,
-			achievements: achievements,
-			animations: animations,
-			monsters: monsters,
-			sprites: sprites,
-			maps: maps,
-			geometry: geometry,
-			npcs: npcs,
-			tilesets: tilesets,
-			imagesets: imagesets,
-			sets: sets,
-			craft: craft,
-			titles: titles,
-			tokens: tokens,
-			dismantle: dismantle,
-			conditions: conditions,
-			cosmetics: cosmetics,
-			emotions: emotions,
-			projectiles: projectiles,
-			classes: classes,
-			dimensions: dimensions,
-			levels: levels,
-			positions: positions,
-			games: games,
-			events: events,
-			images: precomputed.images,
-			multipliers: multipliers,
-			progression: progression,
+				version: Version,
+				achievements: achievements,
+				animations: animations,
+				monsters: monsters,
+				sprites: sprites,
+				maps: maps,
+				geometry: geometry,
+				npcs: npcs,
+				tilesets: tilesets,
+				imagesets: imagesets,
+				sets: sets,
+				craft: craft,
+				titles: titles,
+				tokens: tokens,
+				dismantle: dismantle,
+				conditions: conditions,
+				cosmetics: cosmetics,
+				emotions: emotions,
+				projectiles: projectiles,
+				classes: classes,
+				dimensions: dimensions,
+				levels: levels,
+				positions: positions,
+				games: games,
+				events: events,
+				images: precomputed.images,
+				multipliers: multipliers,
+				progression: progression,
 			},
 			progression_data,
 		);
@@ -617,34 +630,34 @@ async function reload_server(to_broadcast, change) {
 
 		G = loadProgressionPublication(
 			{
-			version: Version,
-			achievements: achievements,
-			animations: animations,
-			monsters: monsters,
-			sprites: sprites,
-			maps: maps,
-			geometry: geometry,
-			npcs: npcs,
-			tilesets: tilesets,
-			imagesets: imagesets,
-			sets: sets,
-			craft: craft,
-			titles: titles,
-			tokens: tokens,
-			dismantle: dismantle,
-			conditions: conditions,
-			cosmetics: cosmetics,
-			emotions: emotions,
-			projectiles: projectiles,
-			classes: classes,
-			dimensions: dimensions,
-			levels: levels,
-			positions: positions,
-			games: games,
-			events: events,
-			images: precomputed.images,
-			multipliers: multipliers,
-			progression: progression,
+				version: Version,
+				achievements: achievements,
+				animations: animations,
+				monsters: monsters,
+				sprites: sprites,
+				maps: maps,
+				geometry: geometry,
+				npcs: npcs,
+				tilesets: tilesets,
+				imagesets: imagesets,
+				sets: sets,
+				craft: craft,
+				titles: titles,
+				tokens: tokens,
+				dismantle: dismantle,
+				conditions: conditions,
+				cosmetics: cosmetics,
+				emotions: emotions,
+				projectiles: projectiles,
+				classes: classes,
+				dimensions: dimensions,
+				levels: levels,
+				positions: positions,
+				games: games,
+				events: events,
+				images: precomputed.images,
+				multipliers: multipliers,
+				progression: progression,
 			},
 			progression_data,
 		);
@@ -761,7 +774,7 @@ function player_to_server(player, place) {
 			char[prop] = player[prop];
 		}
 	}
-	if (place == "sync" && !Object.keys(player.q).length && player.type != "merchant") {
+	if (place == "sync" && !Object.keys(player.q).length && !player.p?.stand) {
 		delete char.p;
 	} // ~20KB - too much [19/11/18]
 	return char;
@@ -1220,7 +1233,8 @@ function calculate_gear_only_player_stats(player) {
 		getItemProperties: (instance) => calculate_item_properties(instance, { map: player.map }),
 	});
 	for (const [key, value] of Object.entries(calculated)) {
-		if (!["sets", "abilities", "auras", "damage_type", "projectile", "inventory_size", "hp", "mp"].includes(key)) player[key] = value;
+		if (!["sets", "abilities", "auras", "damage_type", "projectile", "inventory_size", "hp", "mp"].includes(key))
+			player[key] = value;
 	}
 	player.active_skill = activeSkill;
 	player.damage_type = calculated.damage_type;
@@ -1243,7 +1257,18 @@ function calculate_gear_only_player_stats(player) {
 	player.tax = 0.05;
 	if (player.skills && player.skills.merchant) {
 		const merchantLevel = player.skills.merchant.level;
-		player.tax = merchantLevel > 80 ? 0.01 : merchantLevel > 70 ? 0.02 : merchantLevel > 60 ? 0.025 : merchantLevel > 50 ? 0.03 : merchantLevel > 20 ? 0.04 : 0.05;
+		player.tax =
+			merchantLevel > 80
+				? 0.01
+				: merchantLevel > 70
+					? 0.02
+					: merchantLevel > 60
+						? 0.025
+						: merchantLevel > 50
+							? 0.03
+							: merchantLevel > 20
+								? 0.04
+								: 0.05;
 	}
 	calculate_common_stats(player);
 	return player;
@@ -1767,7 +1792,12 @@ function commit_equipment_transaction(player, itemIndex, requestedSlot) {
 	const item = player.items[itemIndex];
 	const previousSkill = player.active_skill;
 	const itemDefinition = item && G.items[item.name];
-	const handChange = itemDefinition && (itemDefinition.type === "weapon" || itemDefinition.type === "tool" || requestedSlot === "mainhand" || requestedSlot === "offhand");
+	const handChange =
+		itemDefinition &&
+		(itemDefinition.type === "weapon" ||
+			itemDefinition.type === "tool" ||
+			requestedSlot === "mainhand" ||
+			requestedSlot === "offhand");
 	if (handChange && player.p && player.p.stand) {
 		const error = new Error("Combat equipment cannot change while the trading stand is open");
 		error.code = "stand_open";
@@ -1781,7 +1811,13 @@ function commit_equipment_transaction(player, itemIndex, requestedSlot) {
 		sourceIndex: itemIndex,
 		slot: requestedSlot,
 		items: G.items,
-		itemRequirements: G.items && Object.fromEntries(Object.entries(G.items).filter(([, definition]) => definition.requirements).map(([id, definition]) => [id, definition.requirements])),
+		itemRequirements:
+			G.items &&
+			Object.fromEntries(
+				Object.entries(G.items)
+					.filter(([, definition]) => definition.requirements)
+					.map(([id, definition]) => [id, definition.requirements]),
+			),
 		profiles: WEAPON_PROFILES,
 		skills: player.skills,
 	});
@@ -1789,7 +1825,10 @@ function commit_equipment_transaction(player, itemIndex, requestedSlot) {
 	player.items = transaction.items;
 	player.active_skill = transaction.active_skill;
 	if (previousSkill !== player.active_skill) {
-		player.s = invalidateConditions(player.s || {}, { sourceCharacterId: player.id || player.name, previousSkill }).conditions;
+		player.s = invalidateConditions(player.s || {}, {
+			sourceCharacterId: player.id || player.name,
+			previousSkill,
+		}).conditions;
 	}
 	player.cslots = {};
 	for (const [slot, equipped] of Object.entries(player.slots)) player.cslots[slot] = cache_item(equipped);
@@ -1806,7 +1845,11 @@ function can_equip_item(player, item, slot) {
 			sourceIndex: null,
 			slot,
 			items: G.items,
-			itemRequirements: Object.fromEntries(Object.entries(G.items).filter(([, definition]) => definition.requirements).map(([id, definition]) => [id, definition.requirements])),
+			itemRequirements: Object.fromEntries(
+				Object.entries(G.items)
+					.filter(([, definition]) => definition.requirements)
+					.map(([id, definition]) => [id, definition.requirements]),
+			),
 			profiles: WEAPON_PROFILES,
 			skills: player.skills,
 		}).slot;
@@ -1957,7 +2000,11 @@ function add_item(player, new_item, args) {
 		xy_emit(mr, "ui", { type: "+M", name: mr.name, item: cache_item(item), num: num, cevent: "mluck", event: "mluck" });
 		resend(mr, "reopen+nc+inv");
 	}
-	if (args.announce !== false && (a || (a_score[new_item.name] || 0) < G.items[new_item.name].a) && !player.stealth) {
+	if (
+		args.announce !== false &&
+		(a || (a_score[new_item.name] || 0) < ((item_runtime[new_item.name] && item_runtime[new_item.name].a) || 0)) &&
+		!player.stealth
+	) {
 		var event = G.items[new_item.name].event;
 		var e_type = "server_found";
 		var e_phrase = " found ";
@@ -2549,6 +2596,24 @@ function calculate_monster_score(player, monster, share) {
 	return score;
 }
 
+function award_monster_skill_share(player, monster, character_share, source_suffix) {
+	if (!player || !monster || !Number.isSafeInteger(Math.round(character_share)) || character_share <= 0) return [];
+	const encounterId = monster.encounter_id;
+	if (!encounterId) return [];
+	const split = progression_ledger.partition(Math.round(character_share), encounterId, player.id || player.name);
+	const deltas = [];
+	for (const [skill, amount] of Object.entries(split)) {
+		if (!amount) continue;
+		deltas.push(
+			awardPlayerSkillXp(player, skill, amount, {
+				source: "pve_damage",
+				sourceId: `${encounterId}:${player.id || player.name}:${skill}:${source_suffix || "award"}`,
+			}),
+		);
+	}
+	return deltas;
+}
+
 function issue_monster_awards(monster) {
 	var total = 0.1;
 	var total_characters = 0;
@@ -2579,7 +2644,7 @@ function issue_monster_awards(monster) {
 			}
 			if (monster.cbuff) {
 				for (var i = 0; i < monster.cbuff.length; i++) {
-					if (current.level <= monster.cbuff[i][0] && G.conditions[monster.cbuff[i][1]]) {
+					if (maxCombatLevel(current) <= monster.cbuff[i][0] && G.conditions[monster.cbuff[i][1]]) {
 						current.s[monster.cbuff[i][1]] = { ms: G.conditions[monster.cbuff[i][1]].duration };
 						break;
 					}
@@ -2594,17 +2659,12 @@ function issue_monster_awards(monster) {
 			current.p.stats.monsters[monster.type] = (current.p.stats.monsters[monster.type] || 0) + 1;
 			current.p.stats.monsters_diff[monster.type] = (current.p.stats.monsters_diff[monster.type] || 0) + (score - 1);
 			monster_hunt_logic(current, monster, share);
-			if (current.type == "merchant") {
-				continue;
-			}
-			current.xp += round(monster.xp * share * current.xpm);
-			if (current.t) {
-				current.t.xp += round(monster.xp * share * current.xpm);
-			}
+			award_monster_skill_share(current, monster, round(monster.xp * share * current.xpm), "cooperative");
 			delete current.s.coop;
 			resend(current, "u+cid");
 		}
 	}
+	progression_ledger.close(monster.encounter_id);
 	B.drop_table_multiplier = 1;
 }
 
@@ -2629,7 +2689,7 @@ function issue_monster_award(monster) {
 		}
 		if (monster.cbuff) {
 			for (var i = 0; i < monster.cbuff.length; i++) {
-				if (player.level <= monster.cbuff[i][0] && G.conditions[monster.cbuff[i][1]]) {
+				if (maxCombatLevel(player) <= monster.cbuff[i][0] && G.conditions[monster.cbuff[i][1]]) {
 					player.s[monster.cbuff[i][1]] = { ms: G.conditions[monster.cbuff[i][1]].duration };
 					break;
 				}
@@ -2639,13 +2699,7 @@ function issue_monster_award(monster) {
 		player.p.stats.monsters[monster.type] = (player.p.stats.monsters[monster.type] || 0) + 1;
 		player.p.stats.monsters_diff[monster.type] = (player.p.stats.monsters_diff[monster.type] || 0) + (score - 1);
 		monster_hunt_logic(player, monster);
-		if (player.type == "merchant") {
-			return;
-		}
-		player.xp += monster.xp * player.xpm * monster.mult;
-		if (player.t) {
-			player.t.xp += monster.xp * player.xpm * monster.mult;
-		}
+		award_monster_skill_share(player, monster, round(monster.xp * player.xpm * monster.mult), "solo");
 		player.cid++;
 		player.u = true;
 		calculate_player_stats(player);
@@ -2670,13 +2724,7 @@ function issue_monster_award(monster) {
 			current.p.stats.monsters[monster.type] = (current.p.stats.monsters[monster.type] || 0) + 1;
 			current.p.stats.monsters_diff[monster.type] = (current.p.stats.monsters_diff[monster.type] || 0) + (score - 1);
 			monster_hunt_logic(current, monster);
-			if (current.type == "merchant") {
-				return;
-			}
-			current.xp += cxp * monster.mult;
-			if (current.t) {
-				current.t.xp += cxp * monster.mult;
-			}
+			award_monster_skill_share(current, monster, round(cxp * monster.mult), "party");
 			current.cid++;
 			current.u = true;
 			calculate_player_stats(current);
@@ -2692,6 +2740,7 @@ function issue_monster_award(monster) {
 			}); //party:player.party, - better send it to individuals and multiply on client with a setting [19/08/16]
 		});
 	}
+	progression_ledger.close(monster.encounter_id);
 }
 
 function kill_monster(attacker, target) {
@@ -2753,69 +2802,55 @@ function issue_player_award(attacker, target) {
 		}
 		return;
 	}
-	var lost_xp = floor(min(max((target.max_xp * 0.01) / 10, (target.xp * 0.02) / 10), target.xp));
-
 	var lost_gold = 100;
 	var gain_gold = 100;
-	if (target.level >= 10) {
+	var target_level = maxCombatLevel(target);
+	if (target_level >= 10) {
 		lost_gold = 1000;
 	}
-	if (target.level >= 20) {
+	if (target_level >= 20) {
 		lost_gold = 5000;
 	}
-	if (target.level >= 30) {
+	if (target_level >= 30) {
 		lost_gold = 12500;
 	}
-	if (target.level >= 40) {
+	if (target_level >= 40) {
 		lost_gold = 25000;
 	}
-	if (target.level >= 50) {
+	if (target_level >= 50) {
 		lost_gold = 50000;
 	}
-	if (target.level >= 55) {
+	if (target_level >= 55) {
 		lost_gold = 75000;
 	}
-	if (target.level >= 60) {
+	if (target_level >= 60) {
 		lost_gold = 125000;
 	}
-	if (target.level >= 65) {
+	if (target_level >= 65) {
 		lost_gold = 250000;
 	}
-	if (target.level >= 70) {
+	if (target_level >= 70) {
 		lost_gold = 500000;
 	}
-	if (target.level >= 75) {
+	if (target_level >= 75) {
 		lost_gold = 1000000;
 	}
 
 	lost_gold = min(lost_gold, max(attacker.gold, 10000) * 4) || 0;
-	lost_xp = round(min(lost_xp, max(attacker.xp / 15.0, 50000))) || 0;
 
 	if (G.maps[attacker.map].safe_pvp && !is_pvp) {
 		lost_gold = 0;
-		lost_xp = 0;
 	}
 
 	if (gameplay == "hardcore") {
 		lost_gold = round(target.gold * 0.8);
-		lost_xp = target.xp;
-		for (var i = 1; i <= B.hlevel_loss; i++) {
-			if (target.level - i > 0) {
-				lost_xp += G.levels[target.level - i + ""];
-			}
-		}
-		target.level = max(1, target.level - B.hlevel_loss);
 	}
 
 	lost_gold = min(target.gold, lost_gold);
 	gain_gold = round(lost_gold * 0.9);
 
-	if (target.type == "merchant") {
-		lost_xp = 0;
-	}
 	if (gameplay != "hardcore" && gameplay != "test" && is_same(attacker, target, 1)) {
 		lost_gold = gain_gold = 0;
-		lost_xp = 0;
 	}
 
 	if (!is_same(attacker, target, 1)) {
@@ -2823,38 +2858,20 @@ function issue_player_award(attacker, target) {
 	}
 
 	if (mode.log_pvp) {
-		appengine_log("pvp", attacker.name + " pwned " + target.name + " For " + lost_gold + " Gold " + lost_xp + " XP");
+		appengine_log("pvp", attacker.name + " pwned " + target.name + " For " + lost_gold + " Gold");
 	}
 	pwns[pend++ % 200] = [attacker.name, target.name];
 
 	target.socket.emit("game_log", { message: "Slain by " + attacker.name, color: "#F12F02" });
-	var lost_shells = 0;
-	var psize = 1;
-	if (lost_xp) {
-		for (var i = 0; i < target.isize; i++) {
-			if (target.items[i] && target.items[i].name == "xptome") {
-				lost_shells = 2;
-				lost_xp = floor(lost_xp / 50);
-				consume_one(target, i);
-				target.to_reopen = true;
-				target.socket.emit("game_log", { message: "A tome fades away", color: "#B5C09C" });
-				break;
-			}
-		}
-	}
 
 	target.gold -= lost_gold;
-	target.xp -= lost_xp;
-	if (target.xp < 0) {
-		target.xp = 0;
-	}
+	refreshDeathSickness(target);
+	var sickness = sicknessDelta(target);
 	target.socket.emit("game_log", "Lost " + to_pretty_num(lost_gold) + " gold");
-	target.socket.emit("game_log", "Lost " + to_pretty_num(lost_xp) + " experience");
-	target.socket.emit("disappearing_text", {
-		message: "-" + lost_xp,
-		x: target.x,
-		y: target.y - 30,
-		args: { color: colors.party_xp },
+	target.socket.emit("game_log", "Death sickness applied for 5 minutes");
+	target.socket.emit("game_response", {
+		response: "defeated_by_player",
+		death_sickness_until: sickness.death_sickness_until,
 	});
 
 	if (gameplay == "hardcore") {
@@ -2865,11 +2882,7 @@ function issue_player_award(attacker, target) {
 	}
 
 	if (!attacker.party) {
-		if (attacker.type == "merchant") {
-			lost_xp = 0;
-		}
 		attacker.gold += gain_gold;
-		attacker.xp += round(lost_xp * 0.95);
 		attacker.socket.emit("game_log", { message: "Pwned " + target.name, color: "#67C051" });
 		attacker.socket.emit("game_log", "Looted " + to_pretty_num(gain_gold) + " gold");
 		attacker.socket.emit("disappearing_text", {
@@ -2878,31 +2891,13 @@ function issue_player_award(attacker, target) {
 			y: target.y - 40,
 			args: { color: "+gold", size: "large" },
 		});
-		attacker.socket.emit("game_log", "Gained " + to_pretty_num(round(lost_xp * 0.95)) + " experience");
-		attacker.socket.emit("disappearing_text", {
-			message: "+" + lost_xp,
-			x: target.x,
-			y: target.y - 30,
-			args: { color: colors.party_xp },
-		});
-		if (lost_shells) {
-			add_shells(attacker, lost_shells, "xptome");
-		}
 	} else {
 		var name = attacker.name;
-		lost_xp = floor((lost_xp * 0.92) / parties[attacker.party].length);
 		gain_gold = floor(gain_gold / parties[attacker.party].length);
-		if (lost_shells) {
-			add_shells(attacker, lost_shells, "xptome");
-		}
-		// ,lost_shells=ceil(lost_shells/parties[attacker.party].length)
 		parties[attacker.party].forEach(function (a_name) {
 			var attacker = players[name_to_id[a_name]];
 			if (!attacker) return; // party member already disconnected
 			attacker.gold += gain_gold;
-			if (attacker.type != "merchant") {
-				attacker.xp += lost_xp;
-			}
 			attacker.socket.emit("game_log", { message: name + " pwned " + target.name, color: "#67C051" });
 			attacker.socket.emit("game_log", "Looted " + to_pretty_num(gain_gold) + " gold");
 			attacker.socket.emit("disappearing_text", {
@@ -2911,15 +2906,6 @@ function issue_player_award(attacker, target) {
 				y: target.y - 40,
 				args: { color: "+gold", size: "large" },
 			});
-			if (attacker.type != "merchant") {
-				attacker.socket.emit("game_log", "Gained " + to_pretty_num(lost_xp) + " experience");
-				attacker.socket.emit("disappearing_text", {
-					message: "+" + lost_xp,
-					x: target.x,
-					y: target.y - 30,
-					args: { color: colors.party_xp },
-				});
-			}
 		});
 	}
 }
@@ -2950,19 +2936,20 @@ function commence_attack(attacker, target, atype) {
 
 	// FAILURE SCENARIOS
 	if (
-		attacker.type == "merchant" &&
-		!G.abilities[atype].merchant_use &&
-		!(atype == "attack" && attacker.slots.mainhand && G.items[attacker.slots.mainhand.name].wtype == "dartgun")
+		attacker.is_player &&
+		attacker.p &&
+		attacker.p.stand &&
+		(atype == "attack" || G.abilities[atype].applicability == "active_combat" || G.abilities[atype].hostile)
 	) {
-		attacker.socket.emit("game_response", { response: "attack_failed", id: target.id });
-		return { failed: true, reason: "merchant", place: atype, id: target.id };
+		attacker.socket.emit("game_response", { response: "stand_open", id: target.id });
+		return { failed: true, reason: "stand_open", place: atype, id: target.id };
 	}
 	if (
 		mode.pvp_level_gap &&
 		attacker.is_player &&
 		target.is_player &&
 		!info.positive &&
-		abs(attacker.level - target.level) > 10
+		abs(maxCombatLevel(attacker) - maxCombatLevel(target)) > 10
 	) {
 		attacker.socket.emit("game_response", { response: "attack_failed", id: target.id, reason: "level" });
 		return { failed: true, reason: "level_gap", place: atype, id: target.id };
@@ -2975,8 +2962,12 @@ function commence_attack(attacker, target, atype) {
 	if (attacker.is_monster) {
 		def.projectile = G.monsters[attacker.type].projectile || "stone";
 	}
-	if (attacker.is_player && G.classes[attacker.type].projectile) {
-		def.projectile = G.classes[attacker.type].projectile;
+	if (attacker.is_player) {
+		var attackerProfile =
+			attacker.slots &&
+			attacker.slots.mainhand &&
+			weaponProfile(G.items[attacker.slots.mainhand.name], WEAPON_PROFILES);
+		if (attackerProfile && attackerProfile.projectile) def.projectile = attackerProfile.projectile;
 	}
 	if (attacker.projectile) {
 		def.projectile = attacker.projectile;
@@ -2995,8 +2986,12 @@ function commence_attack(attacker, target, atype) {
 	if (attacker.is_monster && G.monsters[attacker.type].damage_type) {
 		info.damage_type = G.monsters[attacker.type].damage_type;
 	}
-	if (attacker.is_player && G.classes[attacker.type].damage_type) {
-		info.damage_type = G.classes[attacker.type].damage_type;
+	if (attacker.is_player) {
+		var playerProfile =
+			attacker.slots &&
+			attacker.slots.mainhand &&
+			weaponProfile(G.items[attacker.slots.mainhand.name], WEAPON_PROFILES);
+		if (playerProfile && playerProfile.damage_type) info.damage_type = playerProfile.damage_type;
 	}
 	if (attacker.is_player && attacker.slots.mainhand && G.items[attacker.slots.mainhand.name].damage_type) {
 		info.damage_type = G.items[attacker.slots.mainhand.name].damage_type;
@@ -3078,21 +3073,21 @@ function commence_attack(attacker, target, atype) {
 		info.apiercing = 500;
 		attack = attacker.attack * 0.75;
 	} else if (atype == "partyheal") {
-		if (attacker.level >= 80) {
+		if (skillLevel(attacker, "priest") >= 80) {
 			attack = 800;
-		} else if (attacker.level >= 72) {
+		} else if (skillLevel(attacker, "priest") >= 72) {
 			attack = 720;
-		} else if (attacker.level >= 60) {
+		} else if (skillLevel(attacker, "priest") >= 60) {
 			attack = 600;
 		} else {
 			attack = 400;
 		}
 	} else if (atype == "selfheal") {
-		if (attacker.level >= 80) {
+		if (skillLevel(attacker, "priest") >= 80) {
 			attack = 800;
-		} else if (attacker.level >= 72) {
+		} else if (skillLevel(attacker, "priest") >= 72) {
 			attack = 720;
-		} else if (attacker.level >= 60) {
+		} else if (skillLevel(attacker, "priest") >= 60) {
 			attack = 600;
 		} else {
 			attack = 400;
@@ -3185,11 +3180,8 @@ function commence_attack(attacker, target, atype) {
 	if (attacker.is_player) {
 		attacker.c = {};
 		attacker.to_resend = "u+cid";
-		if (attacker.p && attacker.p.stand) {
-			attacker.p.stand = false;
-		}
 		step_out_of_invis(attacker);
-		if (attacker.type == "merchant") {
+		if (attacker.active_skill == "merchant") {
 			var gold = parseInt(attack * 2);
 			attack = parseInt(min(attack, attacker.gold / 2));
 			attacker.gold = max(0, attacker.gold - gold);
@@ -3298,6 +3290,21 @@ function commence_attack(attacker, target, atype) {
 		action.conditions = info.conditions;
 	}
 	info.action = action;
+	if (attacker.is_player) {
+		var progressionEncounterIds = target.is_monster
+			? target.encounter_id
+				? [target.encounter_id]
+				: []
+			: progression_ledger.engagedEncounterIds(attacker.id || attacker.name);
+		info.progression_action = {
+			actionId: server_id + ":action:" + pid,
+			characterId: attacker.id || attacker.name,
+			activeSkill: attacker.active_skill,
+			encounterIds: progressionEncounterIds,
+			kind: target.is_player && !info.positive ? "pvp" : "combat",
+		};
+		progression_ledger.snapshotAction(info.progression_action);
+	}
 	xy_emit(attacker, "action", action, target.id);
 
 	if (!action.eta) {
@@ -3607,7 +3614,7 @@ function complete_attack(attacker, target, info) {
 					def.crit = cmult;
 					attack *= cmult;
 				}
-				if (attacker.type == "rogue") {
+				if (attacker.active_skill == "rogue") {
 					var maxd = G.abilities.stack.max;
 					// if(G.monsters[target.type] && G.monsters[target.type].stationary) maxd=9999999999;
 					target.s.stack = { ms: 10000, s: min(maxd, (target.s.stack && target.s.stack.s + 1) || 1) };
@@ -3786,6 +3793,39 @@ function complete_attack(attacker, target, info) {
 		}
 		target.hp = min(target.hp - attack, target.max_hp); // both for damage and heal
 		var net = original - max(0, target.hp);
+		if (attacker.is_player && info.progression_action) {
+			if (target.is_monster && net > 0) {
+				progression_ledger.recordDamage({
+					encounterId: target.encounter_id,
+					actionId: info.progression_action.actionId,
+					characterId: info.progression_action.characterId,
+					amount: net,
+					hpBefore: original,
+					hpAfter: target.hp,
+				});
+			}
+			if (target.is_player && info.heal && net < 0) {
+				progression_ledger.recordHealing({
+					encounterId: info.progression_action.encounterIds[0] || null,
+					actionId: info.progression_action.actionId,
+					characterId: info.progression_action.characterId,
+					amount: -net,
+					currentHp: original,
+					maxHp: target.max_hp,
+				});
+			}
+			if (target.is_monster && G.abilities[atype].contribution) {
+				progression_ledger.recordSupport({
+					actionId: info.progression_action.actionId,
+					characterId: info.progression_action.characterId,
+					activeSkill: info.progression_action.activeSkill,
+					encounterIds: info.progression_action.encounterIds,
+					changed: change || Boolean(def.kill) || info.conditions.length > 0,
+					weightPerUse: G.abilities[atype].contribution.weight_per_use,
+					maxWeightPerTargetPerEncounter: G.abilities[atype].contribution.max_weight_per_target_per_encounter,
+				});
+			}
+		}
 		if (target.hp <= 0) {
 			def.kill = true;
 			if (G.abilities[atype].kill_buff) {
@@ -6352,14 +6392,12 @@ function init_io() {
 						failed: true,
 					});
 				}
-				if (
-					!(
-						item0.name == item1.name &&
-						item1.name == item2.name &&
-						(item0.level || 0) == (item1.level || 0) &&
-						(item1.level || 0) == (item2.level || 0)
-					)
-				) {
+				if (!(
+					item0.name == item1.name &&
+					item1.name == item2.name &&
+					(item0.level || 0) == (item1.level || 0) &&
+					(item1.level || 0) == (item2.level || 0)
+				)) {
 					return socket.emit("game_response", "compound_mismatch");
 				}
 				if ((item0.level || 0) != data.clevel) {
@@ -6388,7 +6426,7 @@ function init_io() {
 				var result = 0;
 				var proc = 0;
 				var grace = 0;
-				var igrade = def.igrade;
+				var igrade = item_runtime[item0.name].igrade;
 				var high = false;
 				var grace_bonus = 0;
 				if ((item0.level || 0) >= 3) {
@@ -6768,11 +6806,14 @@ function init_io() {
 					if (!data.calculate) {
 						consume_one(player, data.scroll_num);
 					}
-					oprobability = probability = D.upgrades[item_def.igrade][new_level];
+					oprobability = probability = D.upgrades[item_runtime[item.name].igrade][new_level];
 					// grace=max(0,min(new_level+1, (item.grace||0) + min(3,player.p.ugrace[new_level]/3.0) +min(2,ugrace[new_level]/4.0) +item_def.igrace + player.p.ograce/2.0 )); - original [16/07/18]
 					grace = max(
 						0,
-						min(new_level + 1, (item.grace || 0) + min(3, player.p.ugrace[new_level] / 4.5) + item_def.igrace) +
+						min(
+							new_level + 1,
+							(item.grace || 0) + min(3, player.p.ugrace[new_level] / 4.5) + item_runtime[item.name].igrace,
+						) +
 							min(6, S.ugrace[new_level] / 3.0) +
 							player.p.ograce / 3.2,
 					);
@@ -6784,7 +6825,7 @@ function init_io() {
 							"\nPlayer: " +
 							min(3, player.p.ugrace[new_level] / 4.5) +
 							"\nDef: " +
-							item_def.igrace +
+							item_runtime[item.name].igrace +
 							"\nOgrace:" +
 							player.p.ograce / 3.2 +
 							"\nS.ugrace: " +
@@ -10430,14 +10471,6 @@ function init_io() {
 			for (var prop in entity.info) {
 				player[prop] = entity.info[prop];
 			}
-			try {
-				var characterState = loadCharacterState({ info: { skills: player.skills }, total_level: player.total_level });
-				player.skills = characterState.skills;
-				player.total_level = characterState.total_level;
-			} catch (error) {
-				socket.emit("game_error", error.code || "invalid_character_skill_state");
-				return;
-			}
 			player.id = player.name;
 			player.pid = entity.pid || owner.pid;
 			player.drm = drm;
@@ -10450,6 +10483,12 @@ function init_io() {
 			if (!player.q) player.q = {};
 			if (!player.p) player.p = { dt: {} };
 			if (!player.p.dt) player.p.dt = {};
+			try {
+				initializePlayerProgression(player);
+			} catch (error) {
+				socket.emit("game_error", error.code || "invalid_character_skill_state");
+				return;
+			}
 			if (guild) player.guild = guild_to_info(guild);
 			if (ip_info && ip_info.exception) player.ipx = ip_info.info.limit;
 			player.cash = owner.cash;
@@ -10497,7 +10536,8 @@ function init_io() {
 			var activeWeapon = player.slots.mainhand && G.items[player.slots.mainhand.name];
 			var activeWeaponProfile = activeWeapon && weaponProfile(activeWeapon, WEAPON_PROFILES);
 			player.active_skill = deriveActiveSkill(player.slots, G.items, WEAPON_PROFILES);
-			player.damage_type = (activeWeapon && activeWeapon.damage_type) || (activeWeaponProfile && activeWeaponProfile.damage_type) || null;
+			player.damage_type =
+				(activeWeapon && activeWeapon.damage_type) || (activeWeaponProfile && activeWeaponProfile.damage_type) || null;
 			player.xrange = 25;
 			player.red_zone = 0;
 			player.targets = player.targets_p = player.targets_m = player.targets_u = 0;
@@ -11947,8 +11987,10 @@ function new_monster(instance, map_def, args) {
 	}
 	var monster = {};
 	var id = ++total_monsters + "";
+	var encounter_id = server_id + ":" + instance + ":" + id;
 	var name = map_def.type;
 	monster.id = id;
+	monster.encounter_id = encounter_id;
 	monster.cid = 1;
 	monster.mult = 1; // gets reduced during a server restart
 	monster.m = 0;
@@ -12095,6 +12137,7 @@ function new_monster(instance, map_def, args) {
 		monster.rid = map_def.id;
 	}
 	monster.points = {};
+	progression_ledger.openEncounter(encounter_id, { instance: instance, monster: monster.type });
 	for (var a in monster.a) {
 		if (monster.a[a].cooldown) {
 			monster.s[a] = { ms: parseInt(monster.a[a].cooldown * Math.random()), ability: true };
@@ -12396,50 +12439,20 @@ function stop_pursuit(monster, args) {
 }
 
 function defeated_by_a_monster(attacker, player) {
-	var divider = 1;
-	if (is_in_pvp(player) && !(!is_pvp && G.maps[player.map].safe_pvp)) {
-		divider = 10;
-	}
-	var lost_xp = floor(min(max((player.max_xp * 0.01) / divider, (player.xp * 0.02) / divider), player.xp));
-	// Originally all of them are divided by player.xpm [05/06/19]
-	for (var i = 0; i < player.isize; i++) {
-		if (player.items[i] && player.items[i].name == "xptome") {
-			lost_xp = floor(lost_xp / 50);
-			consume_one(player, i);
-			player.socket.emit("game_log", { message: "A tome fades away", color: "#B5C09C" });
-			break;
-		}
-	}
-	player.xp -= lost_xp;
-	if (gameplay == "hardcore") {
-		player.socket.emit("game_log", "Lost 1 level");
-	}
-	player.socket.emit("game_response", { response: "defeated_by_a_monster", xp: lost_xp, monster: attacker.type });
+	refreshDeathSickness(player);
+	const sickness = sicknessDelta(player);
+	player.socket.emit("game_response", {
+		response: "defeated_by_a_monster",
+		xp: 0,
+		monster: attacker.type,
+		death_sickness_until: sickness.death_sickness_until,
+	});
+	player.socket.emit("game_log", "Death sickness applied for 5 minutes");
 	if (attacker.target) {
 		stop_pursuit(attacker, { force: true, cause: "defeat" });
 	}
 	rip(player);
-	if (gameplay == "hardcore") {
-		player.level = max(1, player.level - 1);
-		player.xp = 0;
-	}
-	lost_xp /= 12;
-	if (player.type == "merchant") {
-		lost_xp = 0;
-	}
-	var mult = 1;
-	if (attacker["1hp"]) {
-		mult = 500;
-	} else if (G.monsters[attacker.type] && G.monsters[attacker.type].special) {
-		mult = 20;
-	}
-	while (lost_xp > attacker.max_hp * 2.4 * mult) {
-		lost_xp -= attacker.max_hp * 2.4 * mult;
-		lost_xp *= 0.9;
-		if (!attacker.dead) {
-			level_monster(attacker);
-		}
-	}
+	resend(player, "u+cid");
 }
 
 function can_attack(monster, player) {
@@ -14586,8 +14599,10 @@ function sync_entity(entity, data) {
 	entity.info.q = data.q || {};
 	entity.info.map = data["map"];
 	entity.info.in = data.in;
-	entity.info.xp = parseInt(data["xp"] || 0);
-	entity.level = parseInt(data["level"]);
+	entity.info.skills = data.skills;
+	entity.total_level = data.total_level;
+	entity.info.merchant_accrual = data.merchant_accrual;
+	entity.info.death_sickness_until = data.death_sickness_until || null;
 	entity.info.hp = data["hp"];
 	entity.info.mp = data["mp"];
 	entity.info.gold = data["gold"];

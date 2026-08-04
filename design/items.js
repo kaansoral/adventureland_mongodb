@@ -7453,7 +7453,7 @@ for(var name in items){
 	}
 }
 
-// Plan-02 starter fixtures are target totals. Keep the source catalog deterministic
+// Starter fixtures are target totals. Keep the source catalog deterministic
 // even when the legacy weapon generator above changes its tier defaults.
 Object.assign(items.blade, { attack: 20, str: 20 });
 Object.assign(items.mace, { attack: 20, str: 14, int: 12 });

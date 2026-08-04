@@ -60,7 +60,17 @@ class ContributionLedger {
 	}
 
 	engage(encounterId, characterId) {
-		this.openEncounter(encounterId).engaged.add(characterId);
+		const encounter = this.openEncounter(encounterId);
+		encounter.engaged.add(characterId);
+		encounter.lastActivity = this.now();
+	}
+
+	engagedEncounterIds(characterId) {
+		const ids = [];
+		for (const [encounterId, encounter] of this.encounters) {
+			if (encounter.engaged.has(characterId)) ids.push(encounterId);
+		}
+		return ids;
 	}
 
 	snapshotAction({ actionId, encounterIds = [], characterId, activeSkill, kind = "combat" }) {
@@ -126,7 +136,13 @@ class ContributionLedger {
 			currentHp === null || maxHp === null
 				? Math.max(0, amount || 0)
 				: Math.max(0, Math.min(amount || 0, maxHp - currentHp));
-		return this._add(encounterId, characterId, action.activeSkill, effective, actionId);
+		const ids = action.encounterIds.length ? action.encounterIds : encounterId ? [encounterId] : [];
+		if (!ids.length) return 0;
+		const perEncounter = effective / ids.length;
+		return ids.reduce(
+			(total, id) => total + this._add(id, characterId, action.activeSkill, perEncounter, actionId),
+			0,
+		);
 	}
 
 	recordSupport({

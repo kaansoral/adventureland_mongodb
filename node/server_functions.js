@@ -37,37 +37,36 @@ var edges = {
 var NPC_prefix = "NPC0000000000000000NPC";
 
 function sprocess_game_data() {
+	item_runtime = {};
 	for (var name in G.items) {
 		var def = G.items[name];
-		def.igrade = calculate_item_grade(def);
-		if (!def.igrade) {
-			def.igrace = 1;
-		} else if (def.igrade == 1) {
-			def.igrace = -1;
-		} else if (def.igrade == 2) {
-			def.igrace = -2;
+		var runtime = (item_runtime[name] = { igrade: calculate_item_grade(def), igrace: 0, a: 0 });
+		if (!runtime.igrade) {
+			runtime.igrace = 1;
+		} else if (runtime.igrade == 1) {
+			runtime.igrace = -1;
+		} else if (runtime.igrade == 2) {
+			runtime.igrace = -2;
 		}
-
-		def.a = 0;
 
 		if (def.compound) {
 			var u_v = calculate_item_value({ name: name, level: 3 + (def.edge || 0) });
-			def.a = parseInt(round(u_v / 5000000));
+			runtime.a = parseInt(round(u_v / 5000000));
 		} else if (def.upgrade) {
 			var u_v = calculate_item_value({ name: name, level: 7 + (def.edge || 0) });
-			def.a = parseInt(round(u_v / 5000000));
+			runtime.a = parseInt(round(u_v / 5000000));
 		} else {
 			var u_v = calculate_item_value({ name: name });
-			def.a = parseInt(round(u_v / 5000000));
+			runtime.a = parseInt(round(u_v / 5000000));
 		}
 		if (def.event) {
-			def.a = 2;
+			runtime.a = 2;
 		}
 		if (def.rare) {
-			def.a = 12;
+			runtime.a = 12;
 		}
 	}
-	G.items.lostearring.igrade = 2;
+	item_runtime.lostearring.igrade = 2;
 	if (gameplay == "test") {
 		test_logic();
 	}
@@ -3650,9 +3649,7 @@ function init_bank_exit(player) {
 }
 
 function init_player(player) {
-	var state = loadCharacterState({ info: { skills: player.skills }, total_level: player.total_level });
-	player.skills = state.skills;
-	player.total_level = state.total_level;
+	initializePlayerProgression(player);
 	player.citems = [];
 	var main = player.slots.mainhand && G.items[player.slots.mainhand.name];
 	var offhand = player.slots.offhand && G.items[player.slots.offhand.name];
@@ -3662,7 +3659,11 @@ function init_player(player) {
 		player.slots.mainhand = null;
 		main = null;
 	}
-	if (player.slots.mainhand && player.slots.offhand && !isCompatibleOffhand(player.slots.mainhand, player.slots.offhand, G.items, WEAPON_PROFILES)) {
+	if (
+		player.slots.mainhand &&
+		player.slots.offhand &&
+		!isCompatibleOffhand(player.slots.mainhand, player.slots.offhand, G.items, WEAPON_PROFILES)
+	) {
 		add_item(player, player.slots.offhand, { announce: false });
 		player.slots.offhand = null;
 	}

@@ -16,6 +16,16 @@ var progression = {
 	SUPPORT_WEIGHT_PER_USE: 1,
 	SUPPORT_MAX_WEIGHT_PER_TARGET_PER_ENCOUNTER: 10,
 	BENCHMARK_TOLERANCE: 0.1,
+	XP_SOURCES: [
+		"pve_damage",
+		"pve_heal",
+		"pve_support",
+		"merchant_stand",
+		"merchant_luck",
+		"merchant_sale",
+		"merchant_donation",
+		"merchant_dice",
+	],
 };
 
 if (typeof module !== "undefined") module.exports = { progression: progression };

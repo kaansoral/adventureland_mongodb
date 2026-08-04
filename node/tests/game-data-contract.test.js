@@ -890,6 +890,19 @@ test("the closed progression consumer inventory has no legacy skill lookups", ()
 	assert.match(serverFunctions, /name == "attack" \? player\.attack_ms/);
 });
 
+test("frozen progression items keep derived runtime metadata out of the catalog", () => {
+	const serverFunctions = fs.readFileSync(path.join(designRoot, "..", "node/server_functions.js"), "utf8");
+	const server = fs.readFileSync(path.join(designRoot, "..", "node/server.js"), "utf8");
+	assert.match(serverFunctions, /item_runtime\s*=\s*\{\}/);
+	assert.match(serverFunctions, /item_runtime\[name\]/);
+	assert.doesNotMatch(serverFunctions, /def\.igrade\s*=/);
+	assert.doesNotMatch(serverFunctions, /def\.igrace\s*=/);
+	assert.doesNotMatch(serverFunctions, /def\.a\s*=/);
+	assert.doesNotMatch(serverFunctions, /G\.items\.lostearring\.igrade\s*=/);
+	assert.match(server, /item_runtime\[item\.name\]/);
+	assert.doesNotMatch(server, /G\.items\[[^\]]+\]\.(?:a|igrade|igrace)\s*=/);
+});
+
 test("Priest books and starter appearance data use the new ownership boundary", () => {
 	const data = loadAll();
 	for (const id of ["wbook0", "wbook1", "wbookhs"]) {
