@@ -54,6 +54,11 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.match(api, /look:\s*\{ type: "any" \}/);
 	assert.match(api, /args\.char !== undefined/);
 	assert.match(api, /total_level:\s*character\.total_level/);
+	assert.match(api, /\{ name: "helmet", level: 0, gift: 1 \}/);
+	assert.match(api, /\{ name: "shoes", level: 0, gift: 1 \}/);
+	assert.match(api, /slots: \{\}/);
+	assert.doesNotMatch(api, /slots\.helmet\s*=/);
+	assert.doesNotMatch(api, /slots\.shoes\s*=/);
 
 	assert.doesNotMatch(browser, /G\.classes|G\.levels|use_skill|next_skill|skill_timeout|\.ctype/);
 	assert.match(browser, /socket\.emit\("ability"/);

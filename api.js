@@ -474,6 +474,8 @@ async function create_character_api(args) {
 						{ name: "claw", level: 0, gift: 1 },
 						{ name: "hpot0", q: 200, gift: 1 },
 						{ name: "mpot0", q: 200, gift: 1 },
+						{ name: "helmet", level: 0, gift: 1 },
+						{ name: "shoes", level: 0, gift: 1 },
 					],
 					slots: {},
 					stats: {},
@@ -486,10 +488,7 @@ async function create_character_api(args) {
 				},
 				blobs: ["info"],
 			};
-			// Add starter gear
 			R.character.info.merchant_accrual = createMerchantAccrual(R.character._id);
-			R.character.info.slots.helmet = { name: "helmet", level: 0, gift: 1 };
-			R.character.info.slots.shoes = { name: "shoes", level: 0, gift: 1 };
 
 			if (!owner.info.characters) owner.info.characters = [];
 			if (!owner.info.characters.length) owner.name = A.name;
