@@ -268,6 +268,17 @@ class ContributionLedger {
 		return splitShare(characterShare, this.weightsForCharacter(encounterId, characterId));
 	}
 
+	partitionCharacterShares(encounterId, characterShares) {
+		const result = {};
+		for (const [characterId, characterShare] of Object.entries(characterShares || {})) {
+			if (!Number.isSafeInteger(characterShare) || characterShare < 0)
+				throw contributionError("Character share must be a non-negative safe integer");
+			const split = this.partition(characterShare, encounterId, characterId);
+			if (Object.keys(split).length) result[characterId] = split;
+		}
+		return result;
+	}
+
 	close(encounterId) {
 		const encounter = this.encounters.get(encounterId);
 		if (!encounter) return {};

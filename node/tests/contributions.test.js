@@ -159,3 +159,20 @@ test("healing and support retain source attribution and lifecycle cleanup remove
 	assert.deepEqual(ledger.characterIds("goo"), []);
 	assert.deepEqual(ledger.engagedEncounterIds("paladin"), []);
 });
+
+test("server award partitions only precomputed character shares and never funds support-only participants", () => {
+	const ledger = new ContributionLedger();
+	ledger.snapshotAction({ actionId: "damage", encounterIds: ["goo"], characterId: "warrior", activeSkill: "warrior" });
+	ledger.recordDamage({ encounterId: "goo", actionId: "damage", characterId: "warrior", amount: 70 });
+	ledger.snapshotAction({ actionId: "heal", encounterIds: ["goo"], characterId: "priest", activeSkill: "priest" });
+	ledger.recordHealing({ encounterId: "goo", actionId: "heal", characterId: "priest", amount: 30 });
+	ledger.snapshotAction({ actionId: "support", encounterIds: ["goo"], characterId: "paladin", activeSkill: "paladin" });
+	ledger.recordSupport({ actionId: "support", characterId: "paladin", activeSkill: "paladin", encounterIds: ["goo"], changed: true });
+
+	const partitions = ledger.partitionCharacterShares("goo", { warrior: 700, priest: 300 });
+	assert.deepEqual(Object.keys(partitions).sort(), ["priest", "warrior"]);
+	assert.equal(Object.values(partitions).flatMap(Object.values).reduce((sum, value) => sum + value, 0), 1000);
+	assert.equal(Object.values(partitions.warrior).reduce((sum, value) => sum + value, 0), 700);
+	assert.equal(Object.values(partitions.priest).reduce((sum, value) => sum + value, 0), 300);
+	assert.equal(partitions.paladin, undefined);
+});

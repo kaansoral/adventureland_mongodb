@@ -2236,11 +2236,11 @@ function calculate_monster_score(player, monster, share) {
 	return score;
 }
 
-function award_monster_skill_share(player, monster, character_share, source_suffix, source = "pve_damage") {
+function award_monster_skill_share(player, monster, character_share, source_suffix, source = "pve_damage", splitOverride) {
 	if (!player || !monster || !Number.isSafeInteger(Math.round(character_share)) || character_share <= 0) return [];
 	const encounterId = monster.encounter_id;
 	if (!encounterId) return [];
-	const split = progression_ledger.partition(Math.round(character_share), encounterId, player.id || player.name);
+	const split = splitOverride || progression_ledger.partition(Math.round(character_share), encounterId, player.id || player.name);
 	return awardPlayerSkillXpSplit(player, split, {
 		source,
 		sourceId: `${encounterId}:${player.id || player.name}:${source_suffix || "award"}`,
@@ -2308,6 +2308,7 @@ function issue_monster_awards(monster) {
 		}
 	}
 	B.drop_table_multiplier = parseInt(1 + Math.floor(total_characters / 10));
+	const awardCandidates = [];
 	for (var name in monster.points) {
 		var current = players[name_to_id[name]];
 		var share = Math.pow(max(0, monster.points[name]), 0.65) / total;
@@ -2336,25 +2337,29 @@ function issue_monster_awards(monster) {
 			current.p.stats.monsters[monster.type] = (current.p.stats.monsters[monster.type] || 0) + 1;
 			current.p.stats.monsters_diff[monster.type] = (current.p.stats.monsters_diff[monster.type] || 0) + (score - 1);
 			monster_hunt_logic(current, monster, share);
-			award_monster_skill_share(current, monster, round(monster.xp * share * current.xpm), "cooperative");
+			awardCandidates.push({
+				current,
+				characterShare: round(monster.xp * share * current.xpm),
+				characterId: current.id || current.name,
+			});
 			delete current.s.coop;
-			resend(current, "u+cid");
 		}
 	}
-	const totalProgressionWeight = progression_ledger.totalWeight(monster.encounter_id);
-	for (const characterId of progression_ledger.characterIds(monster.encounter_id)) {
-		const current = players[characterId] || players[name_to_id[characterId]];
-		if (!current || Object.prototype.hasOwnProperty.call(monster.points, current.name)) continue;
-		const weight = progression_ledger.weightForCharacter(monster.encounter_id, characterId);
-		if (!weight || !totalProgressionWeight) continue;
+	const characterShares = Object.fromEntries(
+		awardCandidates.map(({ characterId, characterShare }) => [characterId, characterShare]),
+	);
+	const partitions = progression_ledger.partitionCharacterShares(monster.encounter_id, characterShares);
+	for (const { current, characterShare, characterId } of awardCandidates) {
 		const source = progression_ledger.sourceForCharacter(monster.encounter_id, characterId);
 		award_monster_skill_share(
 			current,
 			monster,
-			round(monster.xp * (weight / totalProgressionWeight) * current.xpm * monster.mult),
-			`non_damage:${source}`,
+			characterShare,
+			"cooperative",
 			source,
+			partitions[characterId],
 		);
+		resend(current, "u+cid");
 	}
 	progression_ledger.close(monster.encounter_id);
 	B.drop_table_multiplier = 1;
