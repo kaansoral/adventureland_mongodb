@@ -553,7 +553,10 @@ function loadProgressionPublication(target, progressionData) {
 			skills: next.skills,
 			skill_xp: next.skill_xp,
 			abilities: next.abilities,
-			character: next.character,
+			// The legacy runtime derives a small cosmetic cache during server initialization.
+			// Keep that cache outside the frozen progression source while preserving the
+			// canonical character definition underneath it.
+			character: { ...next.character, xcx: [] },
 		},
 	);
 }
