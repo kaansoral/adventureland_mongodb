@@ -56,6 +56,21 @@ function can_create_character_check(user, ip) {
 	return { can: true };
 }
 
+function starter_loadout() {
+	var starter = character && character.starter ? character.starter : {},
+		items = [];
+	for (var i = 0; i < (starter.weapons || []).length; i++)
+		items.push({ name: starter.weapons[i], level: 0, gift: 1 });
+	for (var j = 0; j < (starter.consumables || []).length; j++) items.push({ ...starter.consumables[j] });
+	for (var k = 0; k < (starter.equipment || []).length; k++) items.push({ ...starter.equipment[k] });
+	var slots = {};
+	for (var slot in starter.slots || {}) {
+		var item = starter.slots[slot];
+		slots[slot] = item && typeof item === "object" ? { ...item } : { name: item };
+	}
+	return { items: items, slots: slots };
+}
+
 function is_name_allowed(name) {
 	if (name.length < 4) return false;
 	if (name.length > 12) return false;
@@ -429,6 +444,7 @@ async function create_character_api(args) {
 	var characterth = await get_characterth();
 	var spawn = maps["main"].spawns[maps["main"].on_death ? maps["main"].on_death[1] : 0];
 	var fresh = createCharacterState();
+	var starter = starter_loadout();
 
 	var R = await tx(
 		async () => {
@@ -465,19 +481,8 @@ async function create_character_api(args) {
 					characterth: A.characterth,
 					name: A.name,
 					gold: 0,
-					items: [
-						{ name: "blade", level: 0, gift: 1 },
-						{ name: "mace", level: 0, gift: 1 },
-						{ name: "staff", level: 0, gift: 1 },
-						{ name: "wbook0", level: 0, gift: 1 },
-						{ name: "bow", level: 0, gift: 1 },
-						{ name: "claw", level: 0, gift: 1 },
-						{ name: "hpot0", q: 200, gift: 1 },
-						{ name: "mpot0", q: 200, gift: 1 },
-						{ name: "helmet", level: 0, gift: 1 },
-						{ name: "shoes", level: 0, gift: 1 },
-					],
-					slots: {},
+					items: A.starter.items,
+					slots: A.starter.slots,
 					stats: {},
 					skin: A.character.appearances[A.look][0],
 					cx: A.character.appearances[A.look][1],
@@ -503,7 +508,7 @@ async function create_character_api(args) {
 			await tx_save({ _id: "MK_character-" + simplify_name(A.name), type: "character", phrase: simplify_name(A.name), owner: get_id(R.character), created: new Date() });
 			R.owner = owner;
 		},
-		{ name: name, user: user, look: look, character: character, spawn: spawn, characterth: characterth, fresh: fresh },
+		{ name: name, user: user, look: look, character: character, spawn: spawn, characterth: characterth, fresh: fresh, starter: starter },
 	);
 
 	if (R.failed) return { failed: true, reason: R.reason || "creation_failed" };
