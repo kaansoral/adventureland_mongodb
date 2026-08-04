@@ -9,6 +9,9 @@ const {
 	recordSale,
 	merchantTax,
 	merchantSlots,
+	validateMerchantAccrual,
+	recordSaleReversal,
+	recordDonationOrDice,
 } = require("../game/merchant_progression");
 const { progression } = require("../../design/progression");
 
@@ -60,4 +63,70 @@ test("Luck caps targets/hour, sales use positive-net source IDs, and Merchant ga
 	assert.equal(merchantSlots(70), 24);
 	assert.equal(merchantSlots(80), 30);
 	assert.equal(progression.XP_UNITS_PER_XP, 7);
+});
+
+test("sale high-water survives reversal and same-owner transfers are ineligible", () => {
+	let state = createMerchantAccrual();
+	const first = recordSale(state, {
+		merchantOwnerId: "merchant",
+		externalOwnerId: "buyer",
+		goldReceived: 100000,
+		serverTax: 5000,
+		sourceId: "sale-1",
+		now: 0,
+	});
+	state = first.state;
+	assert.ok(first.credited > 0);
+	const sameOwner = recordSale(state, {
+		merchantOwnerId: "merchant",
+		externalOwnerId: "merchant",
+		goldReceived: 100000,
+		serverTax: 5000,
+		sourceId: "same-owner",
+		now: 1,
+	});
+	assert.equal(sameOwner.eligible, false);
+	const reversed = recordSaleReversal(state, {
+		merchantOwnerId: "merchant",
+		externalOwnerId: "buyer",
+		goldReversed: 100000,
+		sourceId: "buyback-1",
+		now: 3,
+	});
+	state = reversed.state;
+	const replay = recordSale(state, {
+		merchantOwnerId: "merchant",
+		externalOwnerId: "buyer",
+		goldReceived: 100000,
+		serverTax: 5000,
+		sourceId: "sale-2",
+		now: 4,
+	});
+	assert.equal(replay.credited, 0);
+	const newNet = recordSale(replay.state, {
+		merchantOwnerId: "merchant",
+		externalOwnerId: "buyer",
+		goldReceived: 100000,
+		serverTax: 5000,
+		sourceId: "sale-3",
+		now: 5,
+	});
+	assert.ok(newNet.credited >= 0);
+	assert.equal(newNet.state.sales.buyer.credited_high_water_gold, 200000);
+});
+
+test("Merchant action credits are bounded and validation rejects malformed persisted state", () => {
+	let state = createMerchantAccrual();
+	const donation = recordDonationOrDice(state, { rawXp: 900000000, sourceId: "donation-1", kind: "donation", now: 0 });
+	assert.equal(donation.credited, Math.floor(progression.BASE_UNITS_PER_HOUR / 4));
+	const dice = recordDonationOrDice(donation.state, { rawXp: 900000000, sourceId: "dice-1", kind: "dice", now: 1 });
+	assert.equal(dice.credited, Math.floor(progression.BASE_UNITS_PER_HOUR / 4));
+	assert.throws(
+		() => validateMerchantAccrual({ ...createMerchantAccrual(), pending_credits: [{ units: 1, expires_at: 0 }] }, 0),
+		(error) => error.code === "invalid_merchant_state",
+	);
+	assert.throws(
+		() => validateMerchantAccrual({ ...createMerchantAccrual(), sales: { buyer: { net_gold: -1 } } }, 0),
+		(error) => error.code === "invalid_merchant_state",
+	);
 });

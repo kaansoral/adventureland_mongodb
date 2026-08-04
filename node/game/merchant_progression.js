@@ -28,6 +28,7 @@ function createMerchantAccrual() {
 		sales: {},
 		processed_sources: [],
 		saturated_award_units: 0,
+		saturated_award_expires_at: null,
 	};
 }
 
@@ -129,10 +130,15 @@ function addCredit(
 	return { state, credited, saturated: credited < units };
 }
 
-function recordSaleReversal(
-	previous,
-	{ merchantOwnerId, externalOwnerId, goldReversed, sourceId, now = Date.now() },
-) {
+function recordNoCredit(state, sourceId) {
+	if (!sourceId) return { state, credited: 0 };
+	if (state.processed_sources.includes(sourceId)) return { state, credited: 0, duplicate: true };
+	if (state.processed_sources.length >= progression.MAX_COLLECTION_SIZE) return { state, credited: 0, saturated: true };
+	state.processed_sources.push(sourceId);
+	return { state, credited: 0 };
+}
+
+function recordSaleReversal(previous, { merchantOwnerId, externalOwnerId, goldReversed, sourceId, now = Date.now() }) {
 	if (!merchantOwnerId || !externalOwnerId || merchantOwnerId === externalOwnerId || goldReversed <= 0)
 		return { state: clone(previous || createMerchantAccrual()), credited: 0, eligible: false };
 	const state = prune(clone(previous || createMerchantAccrual()), now);
@@ -191,9 +197,12 @@ function recordSale(
 	const rawXp = Math.round(serverTax * 3.2 * fraction);
 	ledger.credited_high_water_gold = Math.max(ledger.credited_high_water_gold, ledger.net_gold);
 	state.sales[externalOwnerId] = ledger;
+	const effectiveSourceId = sourceId || `sale:${externalOwnerId}:${now}`;
+	const units = Math.min(rawXp * UNITS_PER_XP, Math.floor(BASE / 10));
+	if (!units) return { ...recordNoCredit(state, effectiveSourceId), eligible: eligibleGold > 0 };
 	return addCredit(state, {
-		units: Math.min(rawXp * UNITS_PER_XP, Math.floor(BASE / 10)),
-		sourceId: sourceId || `sale:${externalOwnerId}:${now}`,
+		units,
+		sourceId: effectiveSourceId,
 		kind: "sale",
 		now,
 	});
@@ -208,20 +217,78 @@ function validateMerchantAccrual(state, now = Date.now()) {
 	}
 	if (state.base_ms_remainder >= HOUR || state.unit_xp_remainder >= UNITS_PER_XP)
 		throw merchantError("invalid_merchant_state", "Merchant remainders are out of range");
-	if (state.stand_last_settled_at !== null && state.stand_last_settled_at !== undefined &&
-		(!Number.isSafeInteger(state.stand_last_settled_at) || state.stand_last_settled_at > now))
+	if (
+		state.stand_last_settled_at !== null &&
+		state.stand_last_settled_at !== undefined &&
+		(!Number.isSafeInteger(state.stand_last_settled_at) || state.stand_last_settled_at > now)
+	)
 		throw merchantError("invalid_merchant_state", "Invalid stand settlement timestamp");
+	if (
+		state.saturated_award_expires_at !== null &&
+		state.saturated_award_expires_at !== undefined &&
+		(!Number.isSafeInteger(state.saturated_award_expires_at) || state.saturated_award_expires_at < now)
+	)
+		throw merchantError("invalid_merchant_state", "Invalid saturated award expiry");
 	for (const collection of ["pending_credits", "rolling_awards", "luck_targets", "processed_sources"])
 		if (!Array.isArray(state[collection]) || state[collection].length > progression.MAX_COLLECTION_SIZE)
 			throw merchantError("invalid_merchant_state", `${collection} exceeds its bound`);
 	if (state.luck_targets.length > progression.MAX_LUCK_COLLECTION_SIZE)
 		throw merchantError("invalid_merchant_state", "luck_targets exceeds its bound");
+	for (const credit of state.pending_credits) {
+		if (
+			!credit ||
+			!Number.isSafeInteger(credit.units) ||
+			credit.units <= 0 ||
+			!Number.isSafeInteger(credit.expires_at) ||
+			credit.expires_at <= now
+		)
+			throw merchantError("invalid_merchant_state", "Invalid pending Merchant credit");
+	}
+	for (const award of state.rolling_awards) {
+		if (
+			!award ||
+			!Number.isSafeInteger(award.at) ||
+			award.at > now ||
+			!Number.isSafeInteger(award.units) ||
+			award.units <= 0
+		)
+			throw merchantError("invalid_merchant_state", "Invalid rolling Merchant award");
+	}
+	for (const entry of state.luck_targets) {
+		if (!entry || !entry.target_id || !Number.isSafeInteger(entry.at) || entry.at > now)
+			throw merchantError("invalid_merchant_state", "Invalid Merchant Luck history");
+	}
+	if (state.processed_sources.some((source) => typeof source !== "string" || !source))
+		throw merchantError("invalid_merchant_state", "Invalid processed Merchant source");
+	if (!state.sales || typeof state.sales !== "object" || Array.isArray(state.sales))
+		throw merchantError("invalid_merchant_state", "Invalid Merchant sales state");
+	if (Object.keys(state.sales).length > progression.MAX_COLLECTION_SIZE)
+		throw merchantError("invalid_merchant_state", "sales exceeds its bound");
+	for (const ledger of Object.values(state.sales)) {
+		if (
+			!ledger ||
+			!Number.isSafeInteger(ledger.net_gold) ||
+			ledger.net_gold < 0 ||
+			!Number.isSafeInteger(ledger.credited_high_water_gold) ||
+			ledger.credited_high_water_gold < 0 ||
+			!Array.isArray(ledger.events) ||
+			ledger.events.length > progression.MAX_COLLECTION_SIZE
+		)
+			throw merchantError("invalid_merchant_state", "Invalid Merchant sale ledger");
+		for (const event of ledger.events) {
+			if (!event || !Number.isSafeInteger(event.at) || event.at > now || !Number.isSafeInteger(event.gold))
+				throw merchantError("invalid_merchant_state", "Invalid Merchant sale event");
+		}
+	}
 	return state;
 }
 
 function recordDonationOrDice(previous, { rawXp, sourceId, kind, now = Date.now() }) {
-	return addCredit(previous, {
-		units: Math.min(Math.max(0, Math.round(rawXp)) * UNITS_PER_XP, Math.floor(BASE / 4)),
+	const state = prune(clone(previous || createMerchantAccrual()), now);
+	const units = Math.min(Math.max(0, Math.round(rawXp)) * UNITS_PER_XP, Math.floor(BASE / 4));
+	if (!units) return recordNoCredit(state, sourceId);
+	return addCredit(state, {
+		units,
 		sourceId,
 		kind,
 		now,
