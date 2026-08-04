@@ -13,8 +13,15 @@ const {
 	validateMerchantAccrual,
 	recordSaleReversal,
 	recordDonationOrDice,
+	isOpenMerchantStand,
 } = require("../game/merchant_progression");
 const { progression } = require("../../design/progression");
+
+test("merchant sale eligibility requires a live open stand", () => {
+	assert.equal(isOpenMerchantStand({ p: { stand: true }, rip: false }), true);
+	assert.equal(isOpenMerchantStand({ p: { stand: false }, rip: false }), false);
+	assert.equal(isOpenMerchantStand({ p: { stand: true }, rip: true }), false);
+});
 
 test("stand accrual uses exact seventh-XP units across partitions and 2016 hours", () => {
 	let state = createMerchantAccrual();

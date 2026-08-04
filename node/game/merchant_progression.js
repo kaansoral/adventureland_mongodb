@@ -26,6 +26,10 @@ function merchantError(code, message, fields = {}) {
 	return error;
 }
 
+function isOpenMerchantStand(player) {
+	return Boolean(player && player.p && player.p.stand && !player.rip);
+}
+
 function clone(value) {
 	return JSON.parse(JSON.stringify(value));
 }
@@ -405,6 +409,7 @@ function merchantSlots(level, hasCstand = false) {
 
 module.exports = {
 	createMerchantAccrual,
+	isOpenMerchantStand,
 	settleStand,
 	addCredit,
 	qualifyLuck,

@@ -28,7 +28,7 @@ const {
 const { progression } = require("../design/progression");
 const { createCharacterState, loadCharacterState } = require("./game/character_state");
 const { WEAPON_PROFILES, deriveActiveSkill, weaponProfile } = require("./game/active_skill");
-const { merchantTax, merchantSlots } = require("./game/merchant_progression");
+const { merchantTax, merchantSlots, isOpenMerchantStand } = require("./game/merchant_progression");
 const {
 	planEquipmentTransaction,
 	planUnequipTransaction,
@@ -7921,7 +7921,7 @@ function init_io() {
 				bnum = add_item(buyer, actual, { announce: false });
 			}
 
-			if (player.owner != buyer.owner && player.p && player.p.stand) {
+			if (player.owner != buyer.owner && isOpenMerchantStand(player)) {
 				const tradeSourceId = `${server_id}:trade:${randomStr(16)}`;
 				const saleDetails = {
 					merchantOwnerId: player.name,
@@ -7979,6 +7979,9 @@ function init_io() {
 			}
 			if (seller.user) {
 				return fail_response("cant_in_bank");
+			}
+			if (!isOpenMerchantStand(seller)) {
+				return fail_response("seller_not_standing");
 			}
 			if (distance(seller, player, true) > B.dist || seller.map != player.map) {
 				return fail_response("distance");
