@@ -543,8 +543,11 @@ function buildProgressionData(data) {
 function loadProgressionPublication(target, progressionData) {
 	const next =
 		progressionData && progressionData[VALIDATED_PUBLICATION] ? progressionData : buildProgressionData(progressionData);
+	const publication = { ...target };
+	delete publication.classes;
+	delete publication.levels;
 	return Object.assign(
-		{ ...target, protocol: 3 },
+		{ ...publication, protocol: 3 },
 		{
 			items: next.items,
 			skills: next.skills,
