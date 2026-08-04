@@ -35,10 +35,18 @@ test("full benchmark covers every combat style and Merchant profile", () => {
 	assert.equal(report.ok, true, JSON.stringify(report.checks, null, 2));
 	for (const profile of ["starter", "competent", "optimized"]) {
 		assert.deepEqual(Object.keys(report.combat[profile]), COMBAT_SKILLS);
+		assert.equal(
+			report.combat[profile].warrior.duration_hours,
+			{ starter: 2016, competent: 672, optimized: 336 }[profile],
+		);
+		assert.equal(report.combat[profile].warrior.rate_x, { starter: 1, competent: 3, optimized: 6 }[profile]);
 		assert.equal(report.merchant[profile].within_target, true);
+		assert.equal(report.merchant[profile].duration_hours, { starter: 2016, competent: 672, optimized: 336 }[profile]);
 	}
 	assert.deepEqual(Object.keys(report.merchant), MERCHANT_PROFILES);
 	assert.equal(report.checks.style_parity.pass, true);
+	assert.equal(report.checks.expected_outputs.pass, true);
+	assert.equal(report.checks.fixture_stable, true);
 	assert.equal(report.checks.merchant_base_clock.xp, 900000000);
 });
 

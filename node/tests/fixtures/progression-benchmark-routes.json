@@ -6,6 +6,18 @@
     "xp_units_per_xp": 7,
     "benchmark_tolerance": 0.1
   },
+  "expected": {
+    "combat_duration_hours": {
+      "starter": 2016,
+      "competent": 672,
+      "optimized": 336
+    },
+    "merchant_duration_hours": {
+      "starter": 2016,
+      "competent": 672,
+      "optimized": 336
+    }
+  },
   "targets": {
     "starter": {
       "duration_hours": 2016,
@@ -697,21 +709,15 @@
   "merchant": {
     "starter": {
       "strategy": "stand_only",
-      "legal": true,
-      "bonus_base_multiplier": 0,
-      "credit_kind": "stand_only"
+      "legal": true
     },
     "competent": {
       "strategy": "stand_plus_bounded_economic_credits",
-      "legal": true,
-      "bonus_base_multiplier": 2,
-      "credit_kind": "positive_net_economic"
+      "legal": true
     },
     "optimized": {
       "strategy": "stand_plus_full_legal_bonus_cap",
-      "legal": true,
-      "bonus_base_multiplier": 5,
-      "credit_kind": "luck_and_positive_net_economic"
+      "legal": true
     }
   }
 }
