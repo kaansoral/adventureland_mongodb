@@ -36,6 +36,7 @@ test("public progression publication is protocol 3 and contains no class or leve
 
 test("server, API, and browser producers expose only the protocol-3 vocabulary", () => {
 	const server = read("node/server.js");
+	const serverFunctions = read("node/server_functions.js");
 	const api = read("api.js");
 	const browser = ["js/functions.js", "js/game.js", "js/html.js", "js/runner_functions.js", "js/runner_compat.js", "js/old_common_functions.js"]
 		.map(read)
@@ -49,6 +50,12 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.match(server, /data\.total_level/);
 	assert.match(server, /data\.death_sickness_until/);
 	assert.doesNotMatch(server, /data\.ctype\s*=/);
+	const timeoutStart = serverFunctions.indexOf('player.socket.emit("ability_timeout"');
+	assert.notEqual(timeoutStart, -1);
+	const timeoutBlock = serverFunctions.slice(timeoutStart, serverFunctions.indexOf("});", timeoutStart) + 3);
+	assert.match(timeoutBlock, /name:\s*name/);
+	assert.match(timeoutBlock, /ms:/);
+	assert.doesNotMatch(timeoutBlock, /penalty:/);
 
 	assert.doesNotMatch(api, /\n\s*char:\s*\{/);
 	assert.match(api, /look:\s*\{ type: "any" \}/);

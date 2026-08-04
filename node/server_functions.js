@@ -2874,7 +2874,6 @@ function consume_skill(player, name, reuse) {
 	player.socket.emit("ability_timeout", {
 		name: name,
 		ms: min(penalty_cd, 10000) + cooldown * multiplier,
-		penalty: min(penalty_cd, 10000),
 	});
 	// player.socket.emit("eval",{code:"ability_timeout('"+name+"',"+(min(penalty_cd,10000)+cooldown*multiplier)+")"});
 }

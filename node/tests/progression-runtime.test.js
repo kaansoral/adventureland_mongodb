@@ -67,6 +67,21 @@ test("runtime awards persist complete skill deltas and reject replay", () => {
 	]);
 	assert.equal(flushPlayerProgressionEvents(character), 1);
 	assert.equal(character.socket.events[0][0], "skill_xp");
+	const skillXp = character.socket.events[0][1];
+	assert.deepEqual(Object.keys(skillXp).sort(), [
+		"accepted_xp",
+		"discarded_xp",
+		"from_level",
+		"max_xp",
+		"skill",
+		"skills",
+		"to_level",
+		"total_level",
+		"xp",
+	].sort());
+	assert.equal(skillXp.levels_gained, undefined);
+	assert.deepEqual(skillXp.skills.warrior, { level: 1, xp: 100, max_xp: 93711 });
+	assert.deepEqual(skillXp.skills.merchant, { level: 1, xp: 0, max_xp: 93711 });
 	const duplicate = awardPlayerSkillXp(character, "warrior", 100, {
 		source: "pve_damage",
 		sourceId: "encounter:1:warrior",

@@ -80,13 +80,30 @@ function queueSkillDelta(player, delta, skills = player.skills) {
 	});
 }
 
+function publicSkillMap(skills) {
+	return Object.fromEntries(
+		SKILL_IDS.map((skill) => {
+			const progress = skills[skill];
+			return [
+				skill,
+				{
+					level: progress.level,
+					xp: progress.xp,
+					max_xp: progress.level >= 99 ? null : cumulativeXp(progress.level + 1),
+				},
+			];
+		}),
+	);
+}
+
 function flushPlayerProgressionEvents(player) {
 	if (!Array.isArray(player.progression_events) || !player.progression_events.length) return 0;
 	if (!player.socket || typeof player.socket.emit !== "function") return 0;
 	let flushed = 0;
 	while (player.progression_events.length) {
 		const event = player.progression_events[0];
-		player.socket.emit("skill_xp", { ...event.delta, skills: event.skills });
+		const { levels_gained: _levelsGained, ...skillXpDelta } = event.delta;
+		player.socket.emit("skill_xp", { ...skillXpDelta, skills: publicSkillMap(event.skills) });
 		if (event.delta.to_level > event.delta.from_level) {
 			player.socket.emit("skill_level_up", {
 				skill: event.delta.skill,
