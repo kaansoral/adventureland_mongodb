@@ -852,7 +852,7 @@ test("the closed progression consumer inventory has no legacy skill lookups", ()
 		"docs/EXAMPLES.html",
 		"docs/directory.js",
 	];
-	const expectedProgressionRefs = { "htmls/index.html": 1, "js/html.js": 5 };
+	const expectedProgressionRefs = { "htmls/index.html": 1, "js/html.js": 10, "js/game.js": 1 };
 	const expectedAbilityRefs = {
 		"node/server.js": 40,
 		"node/server_functions.js": 20,
@@ -863,8 +863,9 @@ test("the closed progression consumer inventory has no legacy skill lookups", ()
 		"utility/htmls/imagesets/selector.html": 2,
 		"htmls/contents/keymap_guide.html": 3,
 		"docs/articles/7-using-skills.html": 3,
+		"js/game.js": 2,
 	};
-	const allowlistedLegacyReads = { "js/html.js": 2 };
+	const allowlistedLegacyReads = {};
 	let abilityReferences = 0;
 	for (const relativePath of inventory) {
 		const source = fs.readFileSync(path.join(designRoot, "..", relativePath), "utf8");

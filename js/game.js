@@ -171,6 +171,65 @@ var events = {
 	abtesting: false,
 	duel: false,
 };
+var progression_protocol_diagnostics = {};
+var progression_pending_level_up = null;
+
+function report_progression_protocol_issue(code, message) {
+	if (progression_protocol_diagnostics[code]) return;
+	progression_protocol_diagnostics[code] = true;
+	if (typeof console != "undefined" && console.warn) console.warn("Protocol 3 progression rejected: " + message);
+}
+
+function valid_skill_xp_payload(data) {
+	var skill_ids = Object.keys(G.skills || {});
+	if (!data || !data.skills || !data.skill || skill_ids.indexOf(data.skill) == -1) {
+		report_progression_protocol_issue("unknown_skill", (data && data.skill) || "missing skill");
+		return false;
+	}
+	if (!Number.isSafeInteger(data.total_level) || !Number.isSafeInteger(data.from_level) || !Number.isSafeInteger(data.to_level) || !Number.isSafeInteger(data.accepted_xp) || !Number.isSafeInteger(data.discarded_xp) || !Number.isSafeInteger(data.xp) || data.total_level < 0 || data.from_level < 1 || data.to_level < 1 || data.accepted_xp < 0 || data.discarded_xp < 0 || data.xp < 0) {
+		report_progression_protocol_issue("invalid_skill_payload", "invalid skill XP arithmetic");
+		return false;
+	}
+	if (Object.keys(data.skills).length != skill_ids.length || skill_ids.some(function (id) { return !Object.prototype.hasOwnProperty.call(data.skills, id); })) {
+		report_progression_protocol_issue("invalid_skill_map", "skill map does not match the protocol registry");
+		return false;
+	}
+	var total = 0;
+	for (var i = 0; i < skill_ids.length; i++) {
+		var progress = data.skills[skill_ids[i]],
+			max = progress && progress.level >= 99 ? null : progress && G.skill_xp && G.skill_xp[progress.level + 1];
+		if (!progress || !Number.isSafeInteger(progress.level) || progress.level < 1 || progress.level > 99 || !Number.isSafeInteger(progress.xp) || progress.xp < 0 || (progress.max_xp !== null && progress.max_xp !== max) || (progress.max_xp === null && progress.level < 99) || (progress.level >= 99 && progress.xp !== 900000000) || progress.level != skill_level_for_xp(progress.xp)) {
+			report_progression_protocol_issue("invalid_skill_map", "skill threshold state is invalid");
+			return false;
+		}
+		total += progress.level;
+	}
+	var previous = character.skills && character.skills[data.skill];
+	var current = data.skills[data.skill];
+	if (!previous || data.from_level > data.to_level || data.from_level !== previous.level || data.xp !== previous.xp + data.accepted_xp || data.to_level !== current.level || data.total_level !== total || data.total_level !== character.total_level + (data.to_level - data.from_level) || (data.discarded_xp && data.xp !== 900000000) || skill_ids.some(function (id) {
+		var prior = character.skills[id], next = data.skills[id];
+		return !prior || (id != data.skill && (prior.level !== next.level || prior.xp !== next.xp || prior.max_xp !== next.max_xp));
+	})) {
+		report_progression_protocol_issue("invalid_skill_arithmetic", "skill XP delta does not continue the current state");
+		return false;
+	}
+	progression_pending_level_up = data.to_level > data.from_level ? {
+		skill: data.skill,
+		from_level: data.from_level,
+		to_level: data.to_level,
+		total_level: data.total_level,
+	} : null;
+	return true;
+}
+
+function skill_level_for_xp(xp) {
+	var level = 1;
+	for (var candidate = 2; candidate <= 99; candidate++) {
+		if (!G.skill_xp || xp < G.skill_xp[candidate]) break;
+		level = candidate;
+	}
+	return level;
+}
 /* */
 var code_run = false,
 	code_active = false,
@@ -1428,6 +1487,7 @@ function init_socket(args) {
 		G.base_gold = data.base_gold;
 		delete data.base_gold;
 		character = add_character(data, 1);
+		progression_pending_level_up = null;
 		character.ping = min(320, mssince(window.auth_sent));
 		pings = [character.ping];
 		if (!data.vision) character.vision = [700, 500];
@@ -1657,16 +1717,30 @@ function init_socket(args) {
 		add_log("AP[" + data.name + "]: Complete!", "#58CF40");
 	});
 	socket.on("ability_timeout", function (data) {
+		if (!data || !G.abilities || !G.abilities[data.name]) {
+			report_progression_protocol_issue("unknown_ability_timeout", (data && data.name) || "missing ability");
+			return;
+		}
 		ability_timeout(data.name, data.ms);
 	});
 	socket.on("skill_xp", function (data) {
-		if (!character || !data.skills) return;
+		if (!character) return;
+		if (!data || !data.skills) {
+			report_progression_protocol_issue("invalid_skill_payload", "missing skill XP map");
+			return;
+		}
+		if (!valid_skill_xp_payload(data)) return;
 		character.skills = data.skills;
 		character.total_level = data.total_level;
 	});
 	socket.on("skill_level_up", function (data) {
 		if (!character) return;
-		if (data.total_level !== undefined) character.total_level = data.total_level;
+		if (!data || !progression_pending_level_up || !Number.isSafeInteger(data.from_level) || !Number.isSafeInteger(data.to_level) || !Number.isSafeInteger(data.levels_gained) || !Number.isSafeInteger(data.total_level) || data.levels_gained !== data.to_level - data.from_level || data.skill !== progression_pending_level_up.skill || data.from_level !== progression_pending_level.from_level || data.to_level !== progression_pending_level.to_level || data.total_level !== progression_pending_level.total_level || !character.skills[data.skill] || character.skills[data.skill].level !== data.to_level || character.total_level !== data.total_level) {
+			report_progression_protocol_issue("invalid_skill_level_up", "skill level-up event does not continue the current state");
+			return;
+		}
+		progression_pending_level_up = null;
+		map_keys_and_skills();
 		add_log((data.skill || "Skill").toTitleCase() + " reached level " + data.to_level + "!", "#724A8F");
 		call_code_function("trigger_character_event", "skill_level_up", data);
 		sfx("level_up");
@@ -2139,7 +2213,7 @@ function init_socket(args) {
 				ui_log("Dismantled " + G.items[data.name].name, "#CF5C65");
 			} else if (response == "defeated_by_a_monster") {
 				ui_log("Defeated by " + G.monsters[data.monster].name, "#571F1B");
-				ui_log("Lost " + to_pretty_num(data.xp) + " experience", "gray");
+				ui_log("No skill experience was lost", "gray");
 			} else if (response == "dismantle_cant") ui_log("Can't dismantle", "gray");
 			else if (response == "inv_size") ui_log("Need more empty space", "gray");
 			else if (response == "craft_cant") ui_log("Can't craft", "gray");
@@ -2765,9 +2839,17 @@ function init_socket(args) {
 	});
 	socket.on("player", function (data) {
 		// more draw_trigger's might be needed in the future [24/09/18]
+		var previous_active_skill = character && character.active_skill;
 		var hitchhikers = data.hitchhikers;
 		delete data.hitchhikers;
 		if (character) adopt_soft_properties(character, data), rip_logic();
+		if (character && previous_active_skill !== character.active_skill) {
+			map_keys_and_skills();
+			render_skillbar();
+			if (skillsui) {
+				render_skills();
+			}
+		}
 		if (hitchhikers)
 			hitchhikers.forEach(function (tuple) {
 				original_onevent.apply(socket, [{ type: 2, nsp: "/", data: tuple }]);

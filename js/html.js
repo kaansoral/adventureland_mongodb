@@ -370,13 +370,18 @@ function render_server() {
 function render_character_sheet() {
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top; text-align: left' class='disableclicks'>";
 	html += "<div><span style='color:gray'>Total Level:</span> " + character.total_level + "</div>";
-	html += "<div><span style='color:gray'>Active Skill:</span> " + (character.active_skill ? to_title(character.active_skill) : "Unarmed") + "</div>";
-	Object.keys(character.skills || {}).forEach(function (skill) {
+	html += "<div><span style='color:gray'>Active Skill:</span> " + (character.active_skill ? to_title(character.active_skill) : "None — equip a combat weapon") + "</div>";
+	var skill_ids = Object.keys(G.skills || character.skills || {});
+	skill_ids.forEach(function (skill) {
 		var progress = character.skills[skill];
+		if (!progress) return;
 		html += "<div><span style='color:gray'>" + ((G.skills[skill] && G.skills[skill].name) || to_title(skill)) + ":</span> Lv." + progress.level + " " + to_pretty_num(progress.xp) + (progress.max_xp === null ? " / MAX" : " / " + to_pretty_num(progress.max_xp)) + " XP</div>";
 	});
-	if (character.death_sickness_until && new Date(character.death_sickness_until) > new Date())
+	if (character.death_sickness_until && new Date(character.death_sickness_until) > new Date()) {
 		html += "<div><span style='color:#D88989'>Death Sickness:</span> " + ((new Date(character.death_sickness_until) - new Date()) / 1000).toFixed(0) + "s</div>";
+		html += "<div><span style='color:#D88989'>Affected stats:</span> Attack, Heal, Max HP, Max MP, Armor, Resistance, Attack Speed</div>";
+		html += "<div><span style='color:#D88989'>Remedy:</span> Wait for the sickness timer to expire.</div>";
+	}
 	if (character.party && party && party[character.name])
 		html += "<div><span style='color:" + colors.party_xp + "'>Party:</span> " + round(party[character.name].share * 100) + "% <span style='color:gray'>(Your Share)</span></div>";
 	if (character.tax !== undefined) html += "<div><span style='color:gray'>Tax:</span> " + character.tax * 100 + "%</div>";
@@ -1985,11 +1990,13 @@ function render_equip_info(name) {
 	html += "<div style='padding: 4px; margin: 4px; text-align: center; color: #CDCAB7'>" + (weapon_types[def.wtype] || offhand_types[def.type] || def.wtype || def.type).toTitleCase() + "</div>";
 	if (def.requirements && def.requirements.length) {
 		html += "<div style='border: 2px dotted gray; padding: 14px; margin: 4px'><div style='color:#DDDDDD'>Skill requirements</div>";
+		html += "<div style='color:gray'>All requirements must pass</div>";
 		def.requirements.forEach(function (requirement) {
 			var skill = G.skills[requirement.skill] || {};
 			var current = window.character && character.skills && character.skills[requirement.skill];
-			var color = current && current.level >= requirement.level ? "#36813A" : "#DDDDDD";
-			html += "<div style='color:" + color + "'>" + (skill.name || requirement.skill.toTitleCase()) + " Lv." + requirement.level + "</div>";
+			var passed = Boolean(current && current.level >= requirement.level);
+			var color = passed ? "#36813A" : "#DD5C65";
+			html += "<div style='color:" + color + "'>" + (passed ? "PASS" : "FAIL") + " — " + (skill.name || requirement.skill.toTitleCase()) + " Lv." + requirement.level + "</div>";
 		});
 		html += "</div>";
 	}
@@ -3521,10 +3528,16 @@ function render_item(selector, args) {
 				html += bold_prop_line("Base Gold", G.base_gold[args.monster][mname] + " <span class='gray'>(" + G.maps[mname].name + ")</span>", "gold");
 			}
 		}
-		if (prop.requirements)
+		if (prop.requirements) {
+			html += "<div style='color:gray'>All requirements must pass</div>";
 			prop.requirements.forEach(function (requirement) {
-				html += bold_prop_line("Skill", ((G.skills[requirement.skill] && G.skills[requirement.skill].name) || requirement.skill.toTitleCase()) + " Lv." + requirement.level, "gray");
+				var current = window.character && character.skills && character.skills[requirement.skill];
+				var passed = current && current.level >= requirement.level;
+				var state = passed === undefined ? "CHECK" : passed ? "PASS" : "FAIL";
+				var color = state == "PASS" ? "#36813A" : state == "FAIL" ? "#DD5C65" : "gray";
+				html += bold_prop_line(state, ((G.skills[requirement.skill] && G.skills[requirement.skill].name) || requirement.skill.toTitleCase()) + " Lv." + requirement.level, color);
 			});
+		}
 		if (actual && item.type == "elixir" && args.slot == "elixir") {
 			var remains = -msince(new Date(actual.expires)) / 60.0;
 			// html+="<div style='color: #C3C3C3'>"+remains+" hours</div>";
@@ -4389,11 +4402,16 @@ function item_container(item, actual) {
 		item.trigrc = true;
 		container_prop += "ondrop='on_drop(event)' ondragover='allow_drop(event)'";
 	}
-	if (item.onclick) {
+	var disabled_reason = actual && actual.disabled_reason;
+	if (item.onclick && !disabled_reason) {
 		if (item.draggable) {
 			container_prop += ' onclick="' + item.onclick + '" class="clickable" ';
 			if (item.onmousedown) container_prop += ' onmousedown="' + item.onmousedown + '"'; // to handle middle clicks
 		} else container_prop += ' onmousedown="' + item.onclick + '" ontouchstart="' + item.onclick + '" class="clickable" ';
+	}
+	if (disabled_reason) {
+		container_prop += " title='Unavailable: " + disabled_reason + "' ";
+		xstyles += "opacity:0.62;";
 	}
 
 	// cls="rotate12";
@@ -4586,6 +4604,7 @@ function item_container(item, actual) {
 		}
 		html += "</div>";
 	}
+	if (disabled_reason) html += "<div style='position:absolute; left:0; right:0; bottom:-1px; color:#DD5C65; background:black; font-size:11px; text-align:center; line-height:12px; white-space:nowrap; overflow:hidden'>" + disabled_reason + "</div>";
 
 	if (!item.skin && item.loader) {
 		html += "<div class='loader" + item.loader + "' style='position: absolute; bottom: 0px; left: 0px; width: 52px; height: 0px; background-color: yellow;'></div>";
@@ -4698,29 +4717,45 @@ function render_skills() {
 		slast = 0,
 		a = [],
 		alast = 0;
+	function ability_gate_reason(skill) {
+		if (skill.applicability == "active_combat" && !character.active_skill) return "Equip combat weapon";
+		if (skill.applicability == "active_combat" && character.stand) return "Close trading stand";
+		if (skill.skill && G.skills[skill.skill]) {
+			var progress = character.skills && character.skills[skill.skill];
+			if (character.stand && G.skills[skill.skill].kind == "combat") return "Close trading stand";
+			if (skill.level && (!progress || progress.level < skill.level)) return "Requires " + skill.skill.toTitleCase() + " Lv." + skill.level;
+			if (G.skills[skill.skill].kind == "combat" && skill.skill != "merchant" && skill.skill != character.active_skill && skill.style_bound !== false) return "Requires " + skill.skill.toTitleCase() + " weapon";
+		}
+		if (skill.wtype) {
+			var mainhand = character.slots && character.slots.mainhand;
+			var item = mainhand && G.items[mainhand.name];
+			var accepted = is_array(skill.wtype) ? skill.wtype : [skill.wtype];
+			if (!item || accepted.indexOf(item.wtype) == -1) return "Requires " + accepted.join(" or ");
+		}
+		if (skill.slot) {
+			var slot_found = false;
+			skill.slot.forEach(function (p) {
+				if (character.slots && character.slots[p[0]] && character.slots[p[0]].name == p[1]) slot_found = true;
+			});
+			if (!slot_found) return "Requires equipped item";
+		}
+		if (skill.inventory) {
+			var inventory_found = false;
+			skill.inventory.forEach(function (name) {
+				for (var i = 0; i < 42; i++) if (character.items && character.items[i] && character.items[i].name == name) inventory_found = true;
+			});
+			if (!inventory_found) return "Requires inventory item";
+		}
+		return null;
+	}
 	object_sort(G.abilities).forEach(function (io) {
 		var name = io[0],
 			skill = io[1];
-		if (skill.slot) {
-			var found = false;
-			skill.slot.forEach(function (p) {
-				if (character.slots[p[0]] && character.slots[p[0]].name == p[1]) found = true;
-			});
-			if (!found) return;
-		}
-		if (skill.inventory) {
-			var found = false;
-			skill.inventory.forEach(function (p) {
-				for (var i = 0; i < 42; i++) {
-					if (character && character.items[i] && character.items[i].name == p) found = true;
-				}
-			});
-			if (!found) return;
-		}
-		if (skill.type == "skill" && (!skill.skill || skill.skill == character.active_skill || character.role == "gm")) s.push({ name: name });
-		if (skill.type == "passive" && (!skill.skill || skill.skill == character.active_skill || character.role == "gm")) s.push({ name: name });
-		if (skill.type == "ability" && (!skill.skill || skill.skill == character.active_skill || character.role == "gm")) a.push({ name: name });
-		if (skill.type == "utility" && skill.ui !== false && (!skill.skill || skill.skill == character.active_skill)) a.push({ name: name });
+		var disabled_reason = ability_gate_reason(skill);
+		var entry = { name: name };
+		if (disabled_reason) entry.disabled_reason = disabled_reason;
+		if (skill.type == "skill" || skill.type == "passive") s.push(entry);
+		if ((skill.type == "ability" || (skill.type == "utility" && skill.ui !== false)) && skill.applicability != "monster") a.push(entry);
 	});
 	if (character.role == "gm") a.push({ name: "gm" });
 	// html+="<div style='border-bottom: 5px solid gray; margin-bottom: 2px; margin-left: -5px; margin-right: -5px'></div>";
@@ -4766,12 +4801,12 @@ function render_all_skills_and_conditions() {
 	var html = "";
 	html += "<div style='background-color: black; border: 5px solid gray; padding: 14px; font-size: 24px; display: inline-block; max-width: 640px'>";
 	// html+="<div style='padding: 10px; color: #CC863B; text-align: center'>Work in Progress</div>";
-	["ranger", "rogue", "warrior", "mage", "priest", "paladin", "merchant"].forEach(function (ctype) {
+	Object.keys(G.skills || {}).forEach(function (ctype) {
 		html += "<div>" + ctype.toTitleCase() + "</div>";
 		object_sort(G.abilities).forEach(function (s) {
 			var name = s[0],
 				skill = s[1];
-			if (skill["class"] && skill["class"].includes(ctype)) {
+			if (skill.applicability == "skill" && skill.skill == ctype) {
 				html += item_container({ skin: skill.skin, onclick: "render_skill('','" + s[0] + "')" });
 			}
 		});

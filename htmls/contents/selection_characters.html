@@ -12,7 +12,8 @@
 					{%endif%}
 				</span>
 				<br />
-				TL.{{characters[c].total_level}} <span class="gray" {%if characters[c].private%}style='text-decoration: underline #C7BAFF;'{%endif%}>{% if characters[c].info.active_skill %}{{characters[c].info.active_skill|title}}{% else %}Unarmed{% endif %}</span>
+				TL.{{characters[c].total_level}} <span class="gray" {%if characters[c].private%}style='text-decoration: underline #C7BAFF;'{%endif%}>{% if characters[c].info.active_skill %}{{characters[c].info.active_skill|title}}{% else %}None — equip a combat weapon{% endif %}</span>
+				<br /><span class="gray">{{characters[c].info.skill_summary}}</span>
 			</div>
 		{% else %}
 			<div class="gamebutton mb5" onclick="if(bc(this)) return; $('.nchb').click()" style='text-align: left; width: 160px'>
@@ -38,17 +39,3 @@
 		/* overflow:true,scale:2 - otherwise female ranger's tattoo can't possible align with natural pixel offsetting [24/04/20] */
 	});
 </script>
-
-
-{#
-
-			{% for c in characters %}
-				<div class="textbutton mt5" onclick="if(bc(this)) return; log_in('{{user._id}}','{{c._id}}','{{user.info.auths[0]}}')">
-					&gt; TL.{{c.total_level}}
-					<span class="gray">{% if c.info.active_skill %}{{c.info.active_skill|title}}{% else %}Unarmed{% endif %}</span>
-					{{c.info.name}}
-				</div>
-			{% endfor %}
-			<div class="textbutton mt5 {%if not user.info.characters %}mb5{%endif%}" onclick="pcs(); $('.menu').hide(); $('.newcharacter').show(); load_appearance_info(0); resize();">&gt; New Character</div>
-
-#}

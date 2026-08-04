@@ -783,9 +783,12 @@ function player_to_server(player, place) {
 function player_to_client(player, stranger) {
 	var data = {};
 	var skills = {};
+	var sourceSkills = (player.info && player.info.skills) || player.skills;
+	if (!sourceSkills) throw new Error("Protocol 3 character skill state is missing");
 	for (var i = 0; i < SKILL_IDS.length; i++) {
 		var skill = SKILL_IDS[i];
-		var progress = (player.skills && player.skills[skill]) || { level: 1, xp: 0 };
+		var progress = sourceSkills[skill];
+		if (!progress) throw new Error("Protocol 3 character skill state is incomplete: " + skill);
 		skills[skill] = {
 			level: progress.level,
 			xp: progress.xp,
@@ -852,7 +855,7 @@ function player_to_client(player, stranger) {
 	data.cx = player.tcx || player.cx;
 	data.slots = player.cslots;
 	data.protocol = 3;
-	data.skills = skills;
+	if (!stranger) data.skills = skills;
 	data.active_skill = player.active_skill || null;
 	data.total_level = player.total_level;
 	data.death_sickness_until = (player.info && player.info.death_sickness_until) || null;
@@ -12835,6 +12838,9 @@ function update_instance(instance) {
 			}
 			if (player.s[name].ms <= 0) {
 				delete player.s[name];
+				if (name == "death_sickness") {
+					player.info.death_sickness_until = null;
+				}
 				if (name == "blink") {
 					if (player.s.dampened) {
 						xy_emit(player, "ui", { type: "dampened", name: player.name });
@@ -14229,7 +14235,6 @@ function sync_entity(entity, data) {
 	entity.info.in = data.in;
 	entity.info.skills = data.skills;
 	entity.total_level = data.total_level;
-	entity.info.active_skill = data.active_skill || null;
 	entity.info.merchant_accrual = data.info && data.info.merchant_accrual;
 	entity.info.death_sickness_until = data.death_sickness_until || (data.info && data.info.death_sickness_until) || null;
 	entity.info.hp = data["hp"];

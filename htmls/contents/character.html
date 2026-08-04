@@ -6,7 +6,7 @@
 	<div style='display: inline-block; padding: 10px; text-align: left'>
 		<div><span style='color:gray'>Name:</span> {{character.info.name}}</div>
 		<div><span style='color:gray'>Total Level:</span> {{character.total_level}}</div>
-		<div><span style='color:gray'>Active Skill:</span> {{character.info.active_skill|title or 'Unarmed'}}</div>
+		<div><span style='color:gray'>Active Skill:</span> {{character.info.active_skill|title or 'None — equip a combat weapon'}}</div>
 		{% if character.online %}
 			<div><span style='color:green'>Online</span></div>
 		{% endif %}

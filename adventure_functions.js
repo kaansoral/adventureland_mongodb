@@ -613,9 +613,9 @@ function character_to_dict(character) {
 		id: get_id(character),
 		name: character.info.name,
 		total_level: character.total_level,
-		skills: gf(character, "skills", character.info.skills || {}),
-		active_skill: gf(character, "active_skill", character.info.active_skill || null),
-		death_sickness_until: gf(character, "death_sickness_until", character.info.death_sickness_until || null),
+		skills: character.info.skills || {},
+		active_skill: character_active_skill(character),
+		death_sickness_until: character.info.death_sickness_until || null,
 		online: 0,
 	};
 	if (character.online) {
@@ -655,9 +655,9 @@ function character_to_info(character, user, ip, guild) {
 		name: character.info.name,
 		friends: character.friends,
 		total_level: character.total_level,
-		skills: gf(character, "skills", character.info.skills || {}),
-		active_skill: gf(character, "active_skill", character.info.active_skill || null),
-		death_sickness_until: gf(character, "death_sickness_until", character.info.death_sickness_until || null),
+		skills: character.info.skills || {},
+		active_skill: character_active_skill(character),
+		death_sickness_until: character.info.death_sickness_until || null,
 		gold: character.info.gold,
 		items: character.info.items,
 		stats: character.info.stats,
@@ -709,7 +709,6 @@ function update_character(character, data, owner) {
 	character.info["in"] = data["in"];
 	if (data.skills) character.info.skills = data.skills;
 	if (data.total_level !== undefined) character.total_level = parseInt(data.total_level);
-	if (data.active_skill !== undefined) character.info.active_skill = data.active_skill;
 	if (data.death_sickness_until !== undefined) character.info.death_sickness_until = data.death_sickness_until;
 	character.info.hp = data.hp;
 	character.info.mp = data.mp;
@@ -1239,6 +1238,7 @@ async function render_selection(req, res, user, domain, level, server) {
 	for (var i = 0; i < servers.length; i++) total += gf(servers[i], "players", 0);
 	if (user) {
 		characters = await get_characters(user);
+		characters = characters.map(character_view);
 		domain.characters = characters_to_client(characters);
 		data = await get_user_data(user);
 	}
@@ -1264,6 +1264,7 @@ async function selection_info(req, user, domain) {
 	var servers = await get_servers();
 	var server = select_server(req, user, servers);
 	var characters = await get_characters(user);
+	characters = characters.map(character_view);
 	return {
 		type: "content",
 		html: nunjucks.render("htmls/contents/selection.html", {

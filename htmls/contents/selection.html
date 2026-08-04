@@ -5,15 +5,10 @@
 	<div id="pagewrapped" class="loginorselection hidewithmodals">
 		<div class="menu">{% include "htmls/contents/selection_characters.html"%}</div>
 		<div class="newcharacter onback-hide hidden">
-			{#
-			<div class="whiteheader mb4 clickable" onclick="$('.charactername').focus()" style="margin-left: -6px">&gt; Name</div>
-			#}
+			<div style="color: gray; margin: 8px 0">Every new character starts with all seven skills at level 1. Your main-hand weapon selects the active combat style.</div>
 			<div style="margin-top: 10px"></div>
 			<input class="selectioninput charactername mb5 mt5" type="text" placeholder="Character Name" />
 			<div style="margin-top: 5px"></div>
-			{#
-			<div class="whiteheader mt5" style="margin-left: -6px">&gt; Class</div>
-			#}
 			<div style="margin-top: 5px"></div>
 			<div>
 				{% for appearance in domain.character.appearances %}

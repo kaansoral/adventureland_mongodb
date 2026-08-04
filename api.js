@@ -2,15 +2,46 @@
 // Ported from Python api.py to Node.js/MongoDB REF pattern
 
 var { createCharacterState } = require("./node/game/character_state");
+var { SKILL_IDS } = require("./node/game/skill_domain");
+var { WEAPON_PROFILES, deriveActiveSkill } = require("./node/game/active_skill");
 
 // ==================== HELPER FUNCTIONS ====================
 
-function sint(x) {
-	try {
-		return parseInt(x) || 0;
-	} catch (e) {
-		return 0;
-	}
+function parse_appearance_index(value) {
+	if (typeof value === "number") return Number.isSafeInteger(value) && value >= 0 ? value : null;
+	if (typeof value !== "string" || !/^(0|[1-9]\d*)$/.test(value)) return null;
+	var parsed = Number(value);
+	return Number.isSafeInteger(parsed) ? parsed : null;
+}
+
+function character_active_skill(character) {
+	if (!character || !character.info) return null;
+	return deriveActiveSkill(character.info.slots || {}, items, WEAPON_PROFILES);
+}
+
+function character_view(character) {
+	if (!character || !character.info) return character;
+	var skills = character.info.skills || {};
+	var summary = SKILL_IDS.map(function (skill) {
+		var progress = skills[skill] || { level: 0 };
+		return { skill: skill, level: progress.level || 0 };
+	})
+		.sort(function (a, b) {
+			return b.level - a.level || SKILL_IDS.indexOf(a.skill) - SKILL_IDS.indexOf(b.skill);
+		})
+		.slice(0, 2)
+		.map(function (entry) {
+			return entry.skill.toTitleCase() + " " + entry.level;
+		})
+		.join(" · ");
+	return {
+		...character,
+		info: {
+			...character.info,
+			active_skill: character_active_skill(character),
+			skill_summary: summary,
+		},
+	};
 }
 
 function can_create_character_check(user, ip) {
@@ -377,8 +408,9 @@ async function create_character_api(args) {
 	var domain = await get_domain(args.req),
 		user = args.user;
 	var name = args.name,
-		look = sint(args.look);
-	if (args.char !== undefined || args.type !== undefined) return { failed: true, reason: "character_type_not_allowed" };
+		look = parse_appearance_index(args.look);
+	if (args.char !== undefined || args.type !== undefined || args.class !== undefined) return { failed: true, reason: "character_type_not_allowed" };
+	if (look === null) return { failed: true, reason: "invalid_look" };
 	if (!character || !Array.isArray(character.appearances) || !character.appearances[look]) return { failed: true, reason: "invalid_look" };
 	if (!name) return { failed: true, reason: "please_enter_a_name" };
 	name = name.replace(/ /g, "").replace(/\t/g, "");
@@ -427,7 +459,6 @@ async function create_character_api(args) {
 				private: false,
 				info: {
 					skills: fresh.skills,
-					active_skill: null,
 					death_sickness_until: null,
 					characterth: A.characterth,
 					name: A.name,
@@ -813,7 +844,7 @@ async function pull_friends_api(args) {
 		var friend = {
 			name: character.info.name || character.name,
 			total_level: character.total_level,
-			active_skill: gf(character, "active_skill", character.info.active_skill || null),
+			active_skill: character_active_skill(character),
 			afk: gf(character, "afk", false),
 			owner_name: gf(character, "owner_name"),
 			owner: character.owner,
@@ -838,7 +869,7 @@ async function pull_guild_api(args) {
 		var friend = {
 			name: character.info.name || character.name,
 			total_level: character.total_level,
-			active_skill: gf(character, "active_skill", character.info.active_skill || null),
+			active_skill: character_active_skill(character),
 			afk: gf(character, "afk", false),
 			owner_name: gf(character, "owner_name"),
 			owner: character.owner,
@@ -862,7 +893,7 @@ async function pull_merchants_api(args) {
 		var friend = {
 			name: character.info.name || character.name,
 			total_level: character.total_level,
-			active_skill: gf(character, "active_skill", character.info.active_skill || "merchant"),
+			active_skill: character_active_skill(character),
 			afk: gf(character, "afk", false),
 			skin: character.info.skin,
 			cx: gf(character, "cx", {}),

@@ -1,6 +1,7 @@
 var fs = require("fs"),
 	path = require("path");
 var { buildProgressionData, loadProgressionPublication } = require("./node/game/skill_domain");
+var { ensureWorldIndexes, verifyWorldState } = require("./node/game/world_schema");
 var keys = require("./secretsandconfig/keys");
 var options = require("./secretsandconfig/options");
 
@@ -151,7 +152,8 @@ app.get("/character/:name", async (req, res, next) => {
 app.get("/characters", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
-	var characters = await db.collection("character").find({}).sort({ level: -1 }).limit(500).toArray();
+	var characters = await db.collection("character").find({}).sort({ total_level: -1, name: 1 }).limit(500).toArray();
+	characters = characters.map(character_view);
 	domain.title = "Characters";
 	res.status(200).send(nunjucks.render("htmls/player.html", { domain: domain, characters: characters }));
 });
@@ -661,8 +663,21 @@ app.all("/api", async (req, res, next) => {
 // ==================== START ====================
 
 const PORT = process.env.PORT || options.port;
-app.listen(PORT, () => {
-	console.log(`\x1b[32mAdventure Land\x1b[0m listening on port ${PORT}`);
+async function startBackend() {
+	await ensureWorldIndexes(db);
+	await verifyWorldState(db);
+	var publication = loadProgressionPublication({}, progression_data);
+	if (publication.protocol !== 3 || publication.classes || publication.levels) {
+		throw new Error("Protocol 3 progression publication failed startup validation");
+	}
+	app.listen(PORT, () => {
+		console.log(`\x1b[32mAdventure Land\x1b[0m listening on port ${PORT}`);
+	});
+}
+
+startBackend().catch(function (error) {
+	console.error("World preflight failed:", error.code || error.message);
+	process.exitCode = 1;
 });
 
 process.on("uncaughtException", function (err) {

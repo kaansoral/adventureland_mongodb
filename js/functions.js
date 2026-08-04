@@ -1204,45 +1204,80 @@ function on_ability_up(key) {
 	}
 }
 
+var generated_keymap_bindings = {};
+var generated_skillbar_bindings = [];
+var generated_skill_style = null;
+
 function map_keys_and_skills() {
+	var style = (character && character.active_skill) || null;
+	var style_changed = generated_skill_style !== style;
+	if (style_changed) {
+		for (var generated_key in generated_keymap_bindings) {
+			if (keymap[generated_key] === generated_keymap_bindings[generated_key]) delete keymap[generated_key];
+		}
+		generated_keymap_bindings = {};
+		if (generated_skillbar_bindings.length && generated_skillbar_bindings.every(function (key, index) { return skillbar[index] === key; })) skillbar = [];
+		generated_skillbar_bindings = [];
+		generated_skill_style = style;
+	}
 	if (!skillbar.length) {
-		if (character.active_skill == "warrior" || character.active_skill == "rogue") skillbar = ["1", "2", "3", "Q", "R"];
-		else if (character.active_skill == "merchant") skillbar = ["1", "2", "3", "4", "5"];
-		else skillbar = ["1", "2", "3", "4", "R"]; // "X"
+		var default_skillbar = style == "warrior" || style == "rogue" ? ["1", "2", "3", "Q", "R"] : style == "merchant" ? ["1", "2", "3", "4", "5"] : ["1", "2", "3", "4", "R"];
+		skillbar = default_skillbar.slice();
+		generated_skillbar_bindings = default_skillbar.slice();
 	}
-	if (!Object.keys(keymap).length) {
-		if (character.active_skill == "warrior") keymap = { 1: "use_hp", 2: "use_mp", 3: "cleave", 4: "stomp", 5: "agitate", Q: "taunt", R: "charge" };
-		else if (character.active_skill == "mage") keymap = { 1: "use_hp", 2: "use_mp", Q: "light", R: "burst", 6: "cburst", B: "blink", 7: "magiport" };
-		else if (character.active_skill == "priest") keymap = { 1: "use_hp", 2: "use_mp", R: "curse", 4: "partyheal", 8: "darkblessing", H: "heal" };
-		else if (character.active_skill == "ranger") keymap = { 1: "use_hp", 2: "use_mp", 3: "3shot", 5: "5shot", 6: "4fingers", R: "supershot" };
-		else if (character.active_skill == "rogue") keymap = { 1: "use_hp", 2: "use_mp", 3: "quickpunch", 5: "quickstab", R: "invis", Q: "pcoat" };
-		else if (character.active_skill == "merchant") keymap = { 1: "use_hp", 2: "use_mp", 3: "mluck" };
-		else if (character.active_skill == "paladin") keymap = { 1: "use_hp", 2: "use_mp", 3: "smash", 4: "selfheal", R: "purify", Q: "mshield" };
-		keymap["A"] = "attack";
-		keymap["I"] = "toggle_inventory";
-		keymap["C"] = "toggle_character";
-		keymap["U"] = "toggle_stats";
-		keymap["S"] = "stop";
-		keymap["\\"] = "toggle_run_code";
-		keymap["\\2"] = "toggle_run_code";
-		keymap["-"] = "toggle_code";
-		keymap[","] = "open_snippet";
-		keymap["F"] = "interact";
-		keymap["UP"] = "move_up";
-		keymap["DOWN"] = "move_down";
-		keymap["LEFT"] = "move_left";
-		keymap["RIGHT"] = "move_right";
-		keymap["X"] = "use_town";
+	var style_defaults = {
+		warrior: { 1: "use_hp", 2: "use_mp", 3: "cleave", 4: "stomp", 5: "agitate", Q: "taunt", R: "charge" },
+		mage: { 1: "use_hp", 2: "use_mp", Q: "light", R: "burst", 6: "cburst", B: "blink", 7: "magiport" },
+		priest: { 1: "use_hp", 2: "use_mp", R: "curse", 4: "partyheal", 8: "darkblessing", H: "heal" },
+		ranger: { 1: "use_hp", 2: "use_mp", 3: "3shot", 5: "5shot", 6: "4fingers", R: "supershot" },
+		rogue: { 1: "use_hp", 2: "use_mp", 3: "quickpunch", 5: "quickstab", R: "invis", Q: "pcoat" },
+		paladin: { 1: "use_hp", 2: "use_mp", 3: "smash", 4: "selfheal", R: "purify", Q: "mshield" },
+	};
+	var defaults = style_defaults[style] || { 1: "use_hp", 2: "use_mp" };
+	Object.keys(defaults).forEach(function (key) {
+		if (keymap[key] === undefined) {
+			keymap[key] = defaults[key];
+			generated_keymap_bindings[key] = defaults[key];
+		}
+	});
+	var universal = {
+		A: "attack", I: "toggle_inventory", C: "toggle_character", U: "toggle_stats", S: "stop", "\\": "toggle_run_code", "\\2": "toggle_run_code", "-": "toggle_code", ",": "open_snippet", F: "interact", UP: "move_up", DOWN: "move_down", LEFT: "move_left", RIGHT: "move_right", X: "use_town", ESC: "esc", T: "travel",
+	};
+	Object.keys(universal).forEach(function (key) {
+		if (keymap[key] === undefined) {
+			keymap[key] = universal[key];
+			generated_keymap_bindings[key] = universal[key];
+		}
+	});
+	if (character && character.skills && character.skills.merchant && character.skills.merchant.level >= 40 && keymap.M === undefined) {
+		keymap.M = "mluck";
+		generated_keymap_bindings.M = "mluck";
+	}
+	if (keymap["0"] === undefined) {
 		keymap["0"] = { name: "snippet", code: "say('Hola')" };
-		keymap["L"] = { name: "snippet", code: "loot()" };
-		keymap["ESC"] = "esc";
-		keymap["T"] = "travel";
-		keymap["TAB"] = { name: "pure_eval", code: "var list=get_nearby_hostiles(); if(list.length) ctarget=list[0];" };
-		keymap["N"] = { name: "pure_eval", code: "options.show_names=!options.show_names;" };
-		keymap["ENTER"] = { name: "pure_eval", code: "focus_chat()" };
-		keymap["SPACE"] = { name: "stand0", type: "item" };
+		generated_keymap_bindings["0"] = keymap["0"];
 	}
-	for (name in keymap) if (keymap[name].keycode) K[keymap[name].keycode] = name;
+	if (keymap.L === undefined) {
+		keymap.L = { name: "snippet", code: "loot()" };
+		generated_keymap_bindings.L = keymap.L;
+	}
+	if (keymap.TAB === undefined) {
+		keymap.TAB = { name: "pure_eval", code: "var list=get_nearby_hostiles(); if(list.length) ctarget=list[0];" };
+		generated_keymap_bindings.TAB = keymap.TAB;
+	}
+	if (keymap.N === undefined) {
+		keymap.N = { name: "pure_eval", code: "options.show_names=!options.show_names;" };
+		generated_keymap_bindings.N = keymap.N;
+	}
+	if (keymap.ENTER === undefined) {
+		keymap.ENTER = { name: "pure_eval", code: "focus_chat()" };
+		generated_keymap_bindings.ENTER = keymap.ENTER;
+	}
+	if (keymap.SPACE === undefined) {
+		keymap.SPACE = { name: "stand0", type: "item" };
+		generated_keymap_bindings.SPACE = keymap.SPACE;
+	}
+	for (var name in keymap) if (keymap[name] && keymap[name].keycode) K[keymap[name].keycode] = name;
 }
 
 var last_move = new Date();
