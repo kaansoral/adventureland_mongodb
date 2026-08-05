@@ -291,6 +291,97 @@ test("release gate staging promotes redacted producer artifacts and rewrites ret
 	}
 });
 
+test("rollback validator accepts complete evidence and rejects malformed recovery claims", () => {
+	const root = path.resolve(__dirname, "../../..");
+	const validatorPath = path.join(root, "scripts/validate-release-gate.mjs");
+	const priorRoot = execFileSync("git", ["rev-parse", "826f972"], { cwd: root, encoding: "utf8" }).trim();
+	const treeRef = (entry) =>
+		execFileSync("git", ["ls-tree", priorRoot, entry], { cwd: root, encoding: "utf8" }).trim().split(/\s+/)[2];
+	const priorManifest = {
+		schemaVersion: 1,
+		root: priorRoot,
+		game: treeRef("adventureland_mongodb"),
+		service: treeRef("cjs-al-service"),
+	};
+	const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "adventureland-rollback-validator-"));
+	const logPath = path.join(temporaryDirectory, "rollback.log");
+	const resultPath = path.join(temporaryDirectory, "rollback-result.json");
+	const manifestPath = path.join(temporaryDirectory, "prior-release.json");
+	const noMigrationPath = path.join(temporaryDirectory, "no-migration.json");
+	const database = "skill-rollback-validator";
+	const mutableCollections = [
+		"backup", "character", "event", "guild", "infoelement", "ip", "mail", "mark", "message", "pet", "server", "upload", "user",
+	];
+	const result = {
+		schemaVersion: 1,
+		gate: "rollback-drill",
+		ok: true,
+		target: { database, disposable: true },
+		evidence: logPath,
+		cleanup: {
+			verified: true,
+			databaseDropped: true,
+			mutableCounts: Object.fromEntries(mutableCollections.map((name) => [name, 0])),
+		},
+		processes: { stopped: true },
+		reset: { mapHash: "map-hash", finalMapHash: "map-hash", mapCount: 1, seedHash: "seed-hash" },
+		versionPreservation: { unchanged: true },
+		serviceCleanup: { verified: true, separateDatabase: false, sharedDatabase: database },
+		priorReleaseManifest: manifestPath,
+		recovery: {
+			verified: true,
+			noMigration: true,
+			noMigrationEvidence: noMigrationPath,
+			priorReleaseParent: priorRoot,
+		},
+		rollback: {
+			verified: true,
+			mapsPlayable: true,
+			failureObserved: true,
+			oldPairBoot: {
+				gameRef: priorManifest.game,
+				serviceRef: priorManifest.service,
+				gameServer: { worldVerified: true, portsClosed: true, stopped: true },
+				serviceBuild: { built: true },
+				serviceRuntime: {
+					started: true,
+					ready: true,
+					ownsPublicAction: true,
+					stopped: true,
+					action: { status: "succeeded" },
+				},
+			},
+			failureEvidence: { observed: true, kind: "post-reset-boot", portsClosed: true },
+			writerGuardEvidence: { observed: true, kind: "writer-guard" },
+		},
+	};
+	try {
+		fs.writeFileSync(manifestPath, `${JSON.stringify(priorManifest)}\n`);
+		fs.writeFileSync(noMigrationPath, JSON.stringify({ database, migrationCollections: [], migrationCommands: [] }));
+		const runValidator = (candidate, expectedExit) => {
+			fs.writeFileSync(resultPath, JSON.stringify(candidate));
+			fs.writeFileSync(logPath, `${JSON.stringify(candidate)}\n`);
+			const invoke = () =>
+				execFileSync(process.execPath, [validatorPath, logPath, "rollback-drill", database, resultPath], {
+					cwd: root,
+					stdio: "pipe",
+				});
+			if (expectedExit) assert.throws(invoke);
+			else assert.doesNotThrow(invoke);
+		};
+		runValidator(result, false);
+		const malformedFailure = structuredClone(result);
+		malformedFailure.rollback.failureEvidence.kind = "unexpected-source";
+		runValidator(malformedFailure, true);
+		const malformedNoMigration = structuredClone(result);
+		malformedNoMigration.recovery.noMigration = false;
+		fs.writeFileSync(noMigrationPath, JSON.stringify({ database, migrationCollections: ["character"], migrationCommands: ["copy"] }));
+		runValidator(malformedNoMigration, true);
+	} finally {
+		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+	}
+});
+
 test("browser death expression executes and validator rejects malformed evidence", async () => {
 	const root = path.resolve(__dirname, "../../..");
 	const browser = fs.readFileSync(path.join(root, "scripts/browser-smoke.mjs"), "utf8");
