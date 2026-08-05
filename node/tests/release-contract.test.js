@@ -897,6 +897,7 @@ test("browser death expression executes and validator rejects malformed evidence
 						xpAfter: 10,
 						xpObserved: true,
 						eventObserved: true,
+						eventSnapshot: skillXpEvent("rogue", 10),
 						eventCount: 1,
 					},
 				},
