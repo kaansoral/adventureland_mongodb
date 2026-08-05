@@ -72,13 +72,15 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.doesNotMatch(server, /socket\.fs\.skill/);
 	assert.doesNotMatch(server, /socket\.on\("(?:attack|heal)"/);
 	assert.doesNotMatch(server, /server_log\("skill name=/);
-	assert.match(server, /server_log\("ability actor_id=/);
+	assert.match(server, /server_log\("ability actor_id=[\s\S]*?outcome=received", 1\);/);
 	assert.doesNotMatch(server, /abilityTarget/);
 	assert.match(serverFunctions, /function progression_log_id\(player\)/);
 	assert.match(serverFunctions, /function progression_log_code\(error\)/);
 	assert.doesNotMatch(server + serverFunctions, /merchant (?:disconnect |logout )?settlement failed: \+ player\.name/);
 	assert.match(server, /merchant disconnect settlement failed: player_id=/);
 	assert.match(server, /merchant logout settlement failed: player_id=/);
+	assert.match(server, /merchant disconnect settlement failed: player_id=[\s\S]*?progression_log_code\(error\),\s*1,\s*\);/);
+	assert.match(server, /merchant logout settlement failed: player_id=[\s\S]*?progression_log_code\(error\),\s*1,\s*\);/);
 	assert.match(server, /socket\.on\("ability"/);
 	assert.match(server, /data\.protocol = 3/);
 	assert.match(server, /max_xp:/);
@@ -179,6 +181,7 @@ test("release-safe email and progression logs contain only bounded diagnostics",
 	const serverLogStart = serverFunctions.indexOf("function server_log(message, important)");
 	const serverLogEnd = serverFunctions.indexOf("\nfunction progression_log_id", serverLogStart);
 	const serverLogs = [];
+	const serverEvents = [];
 	const serverLog = vm.runInNewContext(`(${serverFunctions.slice(serverLogStart, serverLogEnd).trim()})`, {
 		process: { env: { ADVENTURELAND_RELEASE_SAFE_LOGS: "1" } },
 		console: {
@@ -186,33 +189,63 @@ test("release-safe email and progression logs contain only bounded diagnostics",
 			error: (message) => serverLogs.push(String(message)),
 		},
 		get: async () => ({ region: "synthetic", name: "server" }),
-		add_event: async () => undefined,
+		add_event: async (...args) => serverEvents.push(args),
 		server_id: "server-id",
 	});
-	serverLog("private important message", 1);
-	serverLog("Created an instance of secret-map", 1);
+	for (const message of [
+		"private important message",
+		"merchant settlement failed: player_id=stable error=failed",
+		"ability actor_id=stable ability=attack outcome=received",
+		"Created an instance of safe-map",
+		"Deleted an instance of safe-map",
+		"Server Live: safe 1",
+		"Game Version: safe",
+		"Node Version: v1",
+	])
+		serverLog(message, 1);
 	serverLog("SEVERE private player-name", 1);
 	serverLog("private nonimportant message");
+	await new Promise((resolve) => setImmediate(resolve));
 	assert.deepEqual(serverLogs, [
 		"release-safe important code=important",
+		"release-safe important code=merchant_settlement",
+		"release-safe important code=ability",
 		"release-safe important code=instance_created",
+		"release-safe important code=instance_deleted",
+		"release-safe important code=server_live",
+		"release-safe important code=game_version",
+		"release-safe important code=node_version",
 		"release-safe severe code=severe",
+	]);
+	assert.deepEqual(JSON.parse(JSON.stringify(serverEvents)), [
+		[
+			{ region: "synthetic", name: "server" },
+			"notice",
+			["noteworthy"],
+			{ info: { message: "synthetic server: release-safe severe code=severe", color: "red" } },
+		],
 	]);
 	assert.doesNotMatch(serverLogs.join("\n"), /secret-map|private player-name/);
 
+	const codeStart = serverFunctions.indexOf("function progression_log_code(error)");
+	const codeEnd = serverFunctions.indexOf("\nfunction appengine_log", codeStart);
+	const progressionLogCode = vm.runInNewContext(`(${serverFunctions.slice(codeStart, codeEnd).trim()})`);
 	const ripStart = serverFunctions.indexOf("function rip(player)");
 	const ripEnd = serverFunctions.indexOf("\nfunction notify_friends_emit", ripStart);
 	const ripLogs = [];
+	let settlementAttempt = 0;
 	const rip = vm.runInNewContext(`(${serverFunctions.slice(ripStart, ripEnd).trim()})`, {
 		progression_ledger: { removeCharacter: () => undefined },
 		settlePlayerStand: () => {
 			const error = new Error("private settlement detail");
-			error.code = "merchant_settlement_failed";
+			error.code = settlementAttempt++ === 2
+				? "bad code\nprivate settlement detail"
+				: "merchant_settlement_failed";
 			throw error;
 		},
 		server_log: (message, important) => ripLogs.push({ message, important }),
 		progression_log_id: progressionLogId,
-		progression_log_code: (error) => error.code,
+		progression_log_code: progressionLogCode,
 		refreshDeathSickness: () => undefined,
 		send_party_update: () => undefined,
 		Date,
@@ -232,7 +265,7 @@ test("release-safe email and progression logs contain only bounded diagnostics",
 	assert.deepEqual(ripLogs, [
 		{ message: "merchant death settlement failed actor_id=stable-id code=merchant_settlement_failed", important: 1 },
 		{ message: "merchant death settlement failed actor_id=unknown code=merchant_settlement_failed", important: 1 },
-		{ message: "merchant death settlement failed actor_id=unknown code=merchant_settlement_failed", important: 1 },
+		{ message: "merchant death settlement failed actor_id=unknown code=unknown", important: 1 },
 	]);
 	assert.doesNotMatch(JSON.stringify(ripLogs), /private-player-name|private settlement detail/);
 });

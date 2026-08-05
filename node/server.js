@@ -8673,7 +8673,7 @@ function init_io() {
 			}
 			const abilityName = typeof data?.name == "string" ? data.name.slice(0, 64) : "unknown";
 			const abilityLogName = G.abilities[abilityName] ? abilityName : "unknown";
-			server_log("ability actor_id=" + progression_log_id(player) + " ability=" + abilityLogName + " outcome=received");
+			server_log("ability actor_id=" + progression_log_id(player) + " ability=" + abilityLogName + " outcome=received", 1);
 
 			var cool = true;
 			var resolve = { response: "data", place: data.name, success: true };
@@ -11437,6 +11437,7 @@ function init_io() {
 							progression_log_id(player) +
 							" error=" +
 							progression_log_code(error),
+						1,
 					);
 				}
 				try {
@@ -14028,6 +14029,7 @@ setInterval(
 						progression_log_id(player) +
 						" error=" +
 						progression_log_code(error),
+					1,
 				);
 			}
 		}
@@ -14666,6 +14668,7 @@ function sync_loop() {
 					progression_log_id(player) +
 					" error=" +
 					progression_log_code(error),
+				1,
 			);
 		}
 		player.stopping = new Date();
