@@ -1639,13 +1639,8 @@ function add_item(player, new_item, args) {
 		num = player.items.length - 1;
 		player.esize--;
 	}
-	const merchantLuckSource =
-		args.m && player.s.mluck ? get_player_by_real_id(player.s.mluck.source_id) : null;
-	if (
-		merchantLuckSource &&
-		Math.random() <= 0.02 &&
-		can_add_item(merchantLuckSource, new_item.name)
-	) {
+	const merchantLuckSource = args.m && player.s.mluck ? get_player_by_real_id(player.s.mluck.source_id) : null;
+	if (merchantLuckSource && Math.random() <= 0.02 && can_add_item(merchantLuckSource, new_item.name)) {
 		var mr = merchantLuckSource;
 		var item = create_new_item(new_item.name);
 		item.m = player.name;
@@ -8673,7 +8668,10 @@ function init_io() {
 			}
 			const abilityName = typeof data?.name == "string" ? data.name.slice(0, 64) : "unknown";
 			const abilityLogName = G.abilities[abilityName] ? abilityName : "unknown";
-			server_log("ability actor_id=" + progression_log_id(player) + " ability=" + abilityLogName + " outcome=received", 1);
+			server_log(
+				"ability actor_id=" + progression_log_id(player) + " ability=" + abilityLogName + " outcome=received",
+				1,
+			);
 
 			var cool = true;
 			var resolve = { response: "data", place: data.name, success: true };

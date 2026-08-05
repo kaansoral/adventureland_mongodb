@@ -61,10 +61,7 @@ function combatHarness() {
 		return name;
 	};
 	vm.createContext(context);
-	context.use_ability = vm.runInContext(
-		`(${functionSource(code, "use_ability", "on_ability")})`,
-		context,
-	);
+	context.use_ability = vm.runInContext(`(${functionSource(code, "use_ability", "on_ability")})`, context);
 	return {
 		context,
 		onAbility: vm.runInContext(`(${functionSource(code, "on_ability", "on_ability_up")})`, context),
@@ -89,9 +86,19 @@ test("browser combat producers normalize targets through the ability wire", () =
 	for (const [producer, name, target, selected] of [
 		[() => onAbility("attack"), "attack", { id: "target-on-ability-attack" }, true],
 		[() => onAbility("heal"), "heal", { id: "target-on-ability-heal" }, true],
-		[() => playerAttack.call({ id: "target-player-attack" }, null, true), "attack", { id: "target-player-attack" }, false],
+		[
+			() => playerAttack.call({ id: "target-player-attack" }, null, true),
+			"attack",
+			{ id: "target-player-attack" },
+			false,
+		],
 		[() => playerHeal.call({ id: "target-player-heal" }, null, true), "heal", { id: "target-player-heal" }, false],
-		[() => monsterAttack.call({ id: "target-monster-attack" }, null, true), "attack", { id: "target-monster-attack" }, false],
+		[
+			() => monsterAttack.call({ id: "target-monster-attack" }, null, true),
+			"attack",
+			{ id: "target-monster-attack" },
+			false,
+		],
 	]) {
 		context.socket.events = [];
 		context.deferred.length = 0;
@@ -99,9 +106,7 @@ test("browser combat producers normalize targets through the ability wire", () =
 		context.ctarget = null;
 		if (selected) context.xtarget = target;
 		producer();
-		assert.deepEqual(JSON.parse(JSON.stringify(context.socket.events)), [
-			["ability", { name, id: target.id }],
-		]);
+		assert.deepEqual(JSON.parse(JSON.stringify(context.socket.events)), [["ability", { name, id: target.id }]]);
 		assert.deepEqual([...context.deferred], [name]);
 	}
 });

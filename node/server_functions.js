@@ -420,7 +420,10 @@ function rip(player) {
 			player.p.stand = false;
 		} catch (error) {
 			server_log(
-				"merchant death settlement failed actor_id=" + progression_log_id(player) + " code=" + progression_log_code(error),
+				"merchant death settlement failed actor_id=" +
+					progression_log_id(player) +
+					" code=" +
+					progression_log_code(error),
 				1,
 			);
 		}

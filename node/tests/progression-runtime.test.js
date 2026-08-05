@@ -147,10 +147,7 @@ test("runtime emits exact multi-level snapshots and suppresses replay events", (
 				},
 			},
 		],
-		[
-			"skill_level_up",
-			{ skill: "warrior", from_level: 1, to_level: 4, levels_gained: 3, total_level: 10 },
-		],
+		["skill_level_up", { skill: "warrior", from_level: 1, to_level: 4, levels_gained: 3, total_level: 10 }],
 	]);
 	const duplicate = awardPlayerSkillXp(character, "warrior", requestedXp, {
 		source: "pve_damage",
@@ -466,9 +463,7 @@ test("Merchant identity precedence rejects invalid expiry and preserves sale sta
 			candidate.s = structuredClone(character.s);
 			const authoritative = player();
 			authoritative.real_id = character.real_id;
-			authoritative.info.merchant_accrual = structuredClone(
-				accrual || createMerchantAccrual(character.real_id),
-			);
+			authoritative.info.merchant_accrual = structuredClone(accrual || createMerchantAccrual(character.real_id));
 			const authoritativeInfo = structuredClone(authoritative.info);
 			const authoritativeP = structuredClone(authoritative.p);
 			const authoritativeT = structuredClone(authoritative.t);
@@ -478,7 +473,9 @@ test("Merchant identity precedence rejects invalid expiry and preserves sale sta
 			assert.deepEqual(candidate.p, p);
 			assert.deepEqual(candidate.t, t);
 			assert.deepEqual(candidate.merchant_accrual, alias);
-			assert.throws(() => method(authoritative, { merchantOwnerId: "fallback-id" }), { code: "invalid_merchant_owner" });
+			assert.throws(() => method(authoritative, { merchantOwnerId: "fallback-id" }), {
+				code: "invalid_merchant_owner",
+			});
 			assert.deepEqual(authoritative.info, authoritativeInfo);
 			assert.deepEqual(authoritative.p, authoritativeP);
 			assert.deepEqual(authoritative.t, authoritativeT);
