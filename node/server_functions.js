@@ -3254,7 +3254,26 @@ function discord_call(message) {
 }
 
 function server_log(message, important) {
-	if (process.env.ADVENTURELAND_RELEASE_SAFE_LOGS === "1") return;
+	if (process.env.ADVENTURELAND_RELEASE_SAFE_LOGS === "1") {
+		if (!important) return;
+		var severe = message && (message + "").indexOf("SEVERE") != -1;
+		var safeMessage = severe ? "release-safe severe" : "release-safe important";
+		if (severe) console.error(safeMessage);
+		else console.log(safeMessage);
+		if (severe) {
+			(async function () {
+				try {
+					var srv = await get("SR_" + server_id);
+					if (!srv) return;
+					var se_message = srv.region + " " + srv.name + ": " + safeMessage;
+					await add_event(srv, "notice", ["noteworthy"], { info: { message: se_message, color: "red" } });
+				} catch (e) {
+					console.error("server_event SEVERE error");
+				}
+			})();
+		}
+		return;
+	}
 	if (Dev || important) {
 		if (message && (message + "").indexOf("SEVERE") != -1) console.error(message);
 		else console.log(message);
@@ -3274,7 +3293,7 @@ function server_log(message, important) {
 }
 
 function progression_log_id(player) {
-	var raw = player && (player.real_id || player.id);
+	var raw = player && player.real_id;
 	var value = raw === undefined || raw === null ? "" : String(raw);
 	return /^[A-Za-z0-9._:-]{1,128}$/.test(value) ? value : "unknown";
 }

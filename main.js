@@ -7,10 +7,22 @@ var { assertProtocol3Publication } = require("./node/game/release_readiness");
 var { readSeed } = require("./node/tools/export-map-seed");
 var keys = require("./secretsandconfig/keys");
 var options = require("./secretsandconfig/options");
+var releaseSafeLogs = process.env.ADVENTURELAND_RELEASE_SAFE_LOGS === "1";
+var configuredOptions = options;
+var configuredProject = process.env.GOOGLE_CLOUD_PROJECT;
+if (releaseSafeLogs && (!configuredProject || configuredProject.indexOf("-dev") !== -1)) process.env.GOOGLE_CLOUD_PROJECT = "adventureland-release";
+if (releaseSafeLogs) options = { ...options, Dev: false, Prod: true, Staging: false };
 
 eval("" + fs.readFileSync(path.resolve(__dirname, "common/init.js")));
 reinit_from_options();
-if (process.env.ADVENTURELAND_RELEASE_SAFE_LOGS === "1") Dev = false;
+if (releaseSafeLogs) {
+	options = configuredOptions;
+	Dev = false;
+	Prod = true;
+	Staging = false;
+	if (configuredProject === undefined) delete process.env.GOOGLE_CLOUD_PROJECT;
+	else process.env.GOOGLE_CLOUD_PROJECT = configuredProject;
+}
 
 app.use("/sounds", express.static("./sounds", { maxAge: "30d" }));
 

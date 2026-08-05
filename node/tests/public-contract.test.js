@@ -77,6 +77,8 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.match(serverFunctions, /function progression_log_id\(player\)/);
 	assert.match(serverFunctions, /function progression_log_code\(error\)/);
 	assert.doesNotMatch(server + serverFunctions, /merchant (?:disconnect |logout )?settlement failed: \+ player\.name/);
+	assert.match(server, /merchant disconnect settlement failed: player_id=/);
+	assert.match(server, /merchant logout settlement failed: player_id=/);
 	assert.match(server, /socket\.on\("ability"/);
 	assert.match(server, /data\.protocol = 3/);
 	assert.match(server, /max_xp:/);
@@ -110,4 +112,67 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.match(browser, /socket\.on\("ability_timeout"/);
 	assert.match(browser, /socket\.on\("skill_xp"/);
 	assert.match(browser, /socket\.on\("skill_level_up"/);
+});
+
+test("release-safe email and progression logs contain only bounded diagnostics", async () => {
+	const adventureFunctions = read("adventure_functions.js");
+	const emailStart = adventureFunctions.indexOf("async function send_email(");
+	const emailEnd = adventureFunctions.indexOf("\nfunction send_verification_email", emailStart);
+	assert.notEqual(emailStart, -1);
+	assert.notEqual(emailEnd, -1);
+	const logs = [];
+	let sendError = null;
+	class StubSesClient {
+		async send(command) {
+			this.command = command;
+			if (sendError) throw sendError;
+		}
+	}
+	class StubSendEmailCommand {
+		constructor(input) {
+			this.input = input;
+		}
+	}
+	const context = {
+		keys: { amazon_ses_user: "access", amazon_ses_key: "secret" },
+		console: {
+			log: (message) => logs.push(String(message)),
+			error: (message) => logs.push(String(message)),
+		},
+		require: (name) => {
+			assert.equal(name, "@aws-sdk/client-ses");
+			return { SESClient: StubSesClient, SendEmailCommand: StubSendEmailCommand };
+		},
+	};
+	const sendEmail = vm.runInNewContext(`(${adventureFunctions.slice(emailStart, emailEnd).trim()})`, context);
+	await sendEmail({}, "recipient@example.invalid", {
+		title: "private subject",
+		html: "private html",
+		text: "private text",
+	});
+	sendError = { name: "QuotaExceeded" };
+	await sendEmail({}, "recipient@example.invalid", { title: "private subject" });
+	sendError = { Code: "ProviderCode" };
+	await sendEmail({}, "recipient@example.invalid", { text: "secret body" });
+	sendError = { name: "bad code\nprivate error" };
+	await sendEmail({}, "recipient@example.invalid", { html: "secret html" });
+	assert.ok(
+		logs.every((message) =>
+			/^(send_email provider=ses status=attempt|send_email provider=ses status=failed code=[A-Za-z0-9_.:-]{1,64})$/.test(
+				message,
+			),
+		),
+	);
+	assert.doesNotMatch(
+		logs.join("\n"),
+		/recipient@example\.invalid|private subject|private html|private text|secret body|private error/,
+	);
+
+	const serverFunctions = read("node/server_functions.js");
+	const idStart = serverFunctions.indexOf("function progression_log_id(player)");
+	const idEnd = serverFunctions.indexOf("\nfunction progression_log_code", idStart);
+	const progressionLogId = vm.runInNewContext(`(${serverFunctions.slice(idStart, idEnd).trim()})`);
+	assert.equal(progressionLogId({ real_id: "stable-id" }), "stable-id");
+	assert.equal(progressionLogId({ id: "display-name" }), "unknown");
+	assert.equal(progressionLogId({ real_id: "display name" }), "unknown");
 });
