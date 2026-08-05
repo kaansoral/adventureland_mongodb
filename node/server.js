@@ -8658,8 +8658,8 @@ function init_io() {
 				return;
 			}
 			const abilityName = typeof data?.name == "string" ? data.name.slice(0, 64) : "unknown";
-			const abilityTarget = data?.id === undefined || data?.id === null ? "none" : String(data.id).slice(0, 64);
-			server_log("skill name=" + abilityName + " target=" + abilityTarget + " outcome=received");
+			const abilityLogName = G.abilities[abilityName] ? abilityName : "unknown";
+			server_log("ability actor_id=" + progression_log_id(player) + " ability=" + abilityLogName + " outcome=received");
 
 			var cool = true;
 			var resolve = { response: "data", place: data.name, success: true };
@@ -9734,7 +9734,7 @@ function init_io() {
 				socket.emit("game_response", resolve);
 			}
 			const outcome = reject ? "failed" : resolve && resolve.success === false ? "partial" : "success";
-			server_log("skill name=" + abilityName + " target=" + abilityTarget + " outcome=" + outcome);
+			server_log("ability actor_id=" + progression_log_id(player) + " ability=" + abilityLogName + " outcome=" + outcome);
 		});
 		socket.on("click", function (data) {
 			// You'll be missed 'click' method, the 'click' method was the first method on this server, it was used as an attack method up until [17/06/18] - at this date, there were 3 simple conditions left which checked for data.button=="right" - the game matured so that all interactions were handled client-side rather than processed server-side
@@ -11414,7 +11414,7 @@ function init_io() {
 					settlePlayerStand(player, Date.now(), { emit: false });
 					player.p.stand = false;
 				} catch (error) {
-					server_log("merchant disconnect settlement failed: " + player.name + " " + (error.code || error.message));
+					server_log("merchant disconnect settlement failed: player_id=" + progression_log_id(player) + " error=" + progression_log_code(error));
 				}
 				try {
 					defeat_player(player);
@@ -14000,7 +14000,7 @@ setInterval(
 					resend(player, "reopen+u+cid");
 				}
 			} catch (error) {
-				server_log("merchant settlement failed: " + player.name + " " + (error.code || error.message));
+				server_log("merchant settlement failed: player_id=" + progression_log_id(player) + " error=" + progression_log_code(error));
 			}
 		}
 	},
@@ -14633,7 +14633,7 @@ function sync_loop() {
 			settlePlayerStand(player, Date.now(), { emit: false });
 			if (player.p) player.p.stand = false;
 		} catch (error) {
-			server_log("merchant logout settlement failed: " + player.name + " " + (error.code || error.message));
+			server_log("merchant logout settlement failed: player_id=" + progression_log_id(player) + " error=" + progression_log_code(error));
 		}
 		player.stopping = new Date();
 		init_player_exit(player);

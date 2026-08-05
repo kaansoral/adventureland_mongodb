@@ -3261,6 +3261,17 @@ function server_log(message, important) {
 	}
 }
 
+function progression_log_id(player) {
+	var raw = player && (player.real_id || player.id);
+	var value = raw === undefined || raw === null ? "" : String(raw);
+	return /^[A-Za-z0-9._:-]{1,128}$/.test(value) ? value : "unknown";
+}
+
+function progression_log_code(error) {
+	var value = error && typeof error.code == "string" ? error.code : "unknown";
+	return /^[a-z0-9_]{1,64}$/.test(value) ? value : "unknown";
+}
+
 function appengine_log(event, message, color) {
 	if (!color) {
 		color = "gray";

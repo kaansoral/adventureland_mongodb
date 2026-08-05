@@ -72,6 +72,12 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.doesNotMatch(server, /socket\.fs\.skill/);
 	assert.match(server, /socket\.on\("attack"[\s\S]*?socket\.fs\.ability/);
 	assert.match(server, /socket\.on\("heal"[\s\S]*?socket\.fs\.ability/);
+	assert.doesNotMatch(server, /server_log\("skill name=/);
+	assert.match(server, /server_log\("ability actor_id=/);
+	assert.doesNotMatch(server, /abilityTarget/);
+	assert.match(serverFunctions, /function progression_log_id\(player\)/);
+	assert.match(serverFunctions, /function progression_log_code\(error\)/);
+	assert.doesNotMatch(server + serverFunctions, /merchant (?:disconnect |logout )?settlement failed: \+ player\.name/);
 	assert.match(server, /socket\.on\("ability"/);
 	assert.match(server, /data\.protocol = 3/);
 	assert.match(server, /max_xp:/);
