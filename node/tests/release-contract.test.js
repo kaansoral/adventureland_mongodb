@@ -67,6 +67,26 @@ test("release scripts are present and keep reset separate from service startup",
 	assert.match(rollback, /log,\n\s*root,\n\s*\{ redact: true \}/);
 	assert.match(verify, /GATE_STAGING_DIR=/);
 	assert.match(verify, /redact_release_logs/);
+	assert.ok(
+		verify.includes(
+			'run_typed_gate "live progression matrix" "live-progression-matrix" "$SMOKE_DATABASE" "$EVIDENCE_DIR/live-progression-matrix.log" "$EVIDENCE_DIR/live-progression-matrix.stdout.log" "$EVIDENCE_DIR/live-progression-matrix-result.json"',
+		),
+	);
+	assert.ok(
+		verify.includes(
+			'run_typed_gate "live game smoke" "live-game-smoke" "$SMOKE_DATABASE" "$EVIDENCE_DIR/live-game-smoke.log" "$EVIDENCE_DIR/live-service-smoke.stdout.log" "$EVIDENCE_DIR/live-service-smoke-result.json"',
+		),
+	);
+	assert.ok(
+		verify.includes(
+			'run_typed_gate "browser smoke" "browser-smoke" "$SMOKE_DATABASE" "" "$EVIDENCE_DIR/browser-smoke.log" "$EVIDENCE_DIR/browser-smoke-result.json"',
+		),
+	);
+	assert.ok(
+		verify.includes(
+			'run_typed_gate "rollback drill" "rollback-drill" "$ROLLBACK_DATABASE" "" "$EVIDENCE_DIR/rollback-drill.log" "$EVIDENCE_DIR/rollback-drill-result.json"',
+		),
+	);
 	assert.ok(fs.existsSync(matrixPath));
 	assert.match(fs.readFileSync(matrixPath, "utf8"), /gate: "live-progression-matrix"/);
 	assert.match(service, /data\.js/);
@@ -265,6 +285,7 @@ test("release gate staging promotes redacted producer artifacts and rewrites ret
 		evidence: path.join(stagingDirectory, "live-game-smoke.log"),
 		auxiliary: { log: path.join(stagingDirectory, "auxiliary.log") },
 		stdout_log: path.join(stagingDirectory, "live-service-smoke.stdout.log"),
+		password: "private-result-secret",
 	};
 	const command = [
 		"set -euo pipefail",
@@ -283,14 +304,14 @@ test("release gate staging promotes redacted producer artifacts and rewrites ret
 		'test -s "$EVIDENCE_DIR/auxiliary.log"',
 		'test -d "$GATE_STAGING_DIR"',
 	].join("\n");
-	const runFixture = (fixtureResult) =>
+	const runFixture = (fixtureResult, fixtureEvidence = evidenceDirectory) =>
 		execFileSync("bash", ["-e", "-u", "-o", "pipefail", "-c", command], {
 			cwd: root,
 			env: {
 				...process.env,
 				ROOT_DIR: fakeRoot,
-				EVIDENCE_DIR: evidenceDirectory,
-				GATE_STAGING_DIR: stagingDirectory,
+				EVIDENCE_DIR: fixtureEvidence,
+				GATE_STAGING_DIR: path.join(fixtureEvidence, ".staging"),
 				FAKE_RESULT: JSON.stringify(fixtureResult),
 			},
 			stdio: "pipe",
@@ -304,6 +325,10 @@ test("release gate staging promotes redacted producer artifacts and rewrites ret
 			/\.staging/,
 		);
 		assert.doesNotMatch(fs.readFileSync(path.join(evidenceDirectory, "auxiliary.log"), "utf8"), /private/);
+		assert.doesNotMatch(
+			fs.readFileSync(path.join(evidenceDirectory, "gate-result.json"), "utf8"),
+			/private-result-secret/,
+		);
 		assert.equal(fs.statSync(path.join(evidenceDirectory, "live-game-smoke.log")).mode & 0o777, 0o600);
 		assert.equal(fs.statSync(evidenceDirectory).mode & 0o777, 0o700);
 		assert.equal(fs.statSync(stagingDirectory).mode & 0o777, 0o700);
@@ -311,7 +336,10 @@ test("release gate staging promotes redacted producer artifacts and rewrites ret
 			...result,
 			auxiliary: { log: path.join(temporaryDirectory, "out-of-tree.log") },
 		};
-		assert.throws(() => runFixture(outOfTreeResult));
+		const failedEvidenceDirectory = path.join(temporaryDirectory, "failed-evidence");
+		assert.throws(() => runFixture(outOfTreeResult, failedEvidenceDirectory));
+		for (const file of ["live-game-smoke.log", "live-service-smoke.stdout.log", "gate-result.json", "auxiliary.log"])
+			assert.equal(fs.existsSync(path.join(failedEvidenceDirectory, file)), false);
 	} finally {
 		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 	}
@@ -418,6 +446,12 @@ test("rollback validator accepts complete evidence and rejects malformed recover
 			JSON.stringify({ database, migrationCollections: ["character"], migrationCommands: ["copy"] }),
 		);
 		runValidator(malformedNoMigration, true);
+		fs.rmSync(noMigrationPath);
+		runValidator(result, true);
+		fs.writeFileSync(noMigrationPath, JSON.stringify({ database, migrationCollections: [], migrationCommands: [] }));
+		const staleNoMigration = structuredClone(result);
+		staleNoMigration.recovery.noMigrationEvidence = path.join(temporaryDirectory, "missing-no-migration.json");
+		runValidator(staleNoMigration, true);
 	} finally {
 		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 	}
