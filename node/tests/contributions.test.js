@@ -136,6 +136,42 @@ test("action snapshots are immutable and support caps exclude damage weight", ()
 	);
 });
 
+test("deferred projectile and damage-over-time ticks retain the creation skill", () => {
+	const ledger = new ContributionLedger();
+	const encounterId = "burned-goo";
+	const created = {
+		actionId: "ranger-projectile",
+		characterId: "char",
+		activeSkill: "ranger",
+		encounterIds: [encounterId],
+		kind: "combat",
+	};
+	ledger.snapshotAction(created);
+
+	// The live server stores this immutable action on the condition before the
+	// player changes weapons. The burn tick receives the same source snapshot.
+	const burnTick = {
+		...created,
+		actionId: `${created.actionId}:burn:1`,
+		encounterIds: [encounterId],
+	};
+	ledger.snapshotAction(burnTick);
+	const currentSkillAfterSwitch = "rogue";
+	assert.equal(
+		ledger.recordDamage({
+			encounterId,
+			actionId: burnTick.actionId,
+			characterId: "char",
+			amount: 12,
+			hpBefore: 40,
+			hpAfter: 28,
+		}),
+		12,
+	);
+	assert.equal(currentSkillAfterSwitch, "rogue");
+	assert.deepEqual(ledger.weightsForCharacter(encounterId, "char"), { ranger: 12 });
+});
+
 test("an action snapshot makes later healing eligible for its encounter", () => {
 	const ledger = new ContributionLedger();
 	ledger.snapshotAction({ actionId: "heal-1", encounterIds: ["goo"], characterId: "priest", activeSkill: "priest" });
