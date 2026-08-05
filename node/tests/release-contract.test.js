@@ -275,6 +275,7 @@ test("browser death expression executes and validator rejects malformed evidence
 			target.target = character.name;
 			return { success: true, id: String(id), place: name };
 		},
+		TextEncoder,
 		setTimeout,
 		clearTimeout,
 	});
@@ -286,13 +287,22 @@ test("browser death expression executes and validator rejects malformed evidence
 		monster: target.mtype,
 		death_sickness_until: character.death_sickness_until,
 	});
-	socket.emit("game_log", { message: "Death sickness applied for 5 minutes" });
+	socket.emit("hit", { id: character.name, hid: "other-monster", damage: 8, kill: true, source: "attack" });
+	socket.emit("hit", { id: character.name, hid: target.id, damage: 10, kill: true, source: "attack" });
+	socket.emit("game_response", {
+		response: "defeated_by_a_monster",
+		monster: target.mtype,
+		death_sickness_until: character.death_sickness_until,
+	});
+	socket.emit("game_log", "Death sickness applied for 5 minutes");
 	character.rip = true;
 	socket.emit("player");
 	const liveDeath = await execution;
 	assert.equal(liveDeath.terminal_hit.victim_id, character.name);
 	assert.equal(liveDeath.terminal_hit.attacker_id, target.id);
 	assert.equal(liveDeath.terminal_hit.response.monster, target.mtype);
+	assert.equal(liveDeath.terminal_hit.event_index, 3);
+	assert.equal(liveDeath.terminal_hit.response_event_index, 4);
 	assert.equal(liveDeath.victim_id, character.name);
 
 	const validatorPath = path.join(root, "scripts/validate-release-gate.mjs");
@@ -308,6 +318,7 @@ test("browser death expression executes and validator rejects malformed evidence
 		ok: true,
 		target: { database: "skill-reset-test", disposable: true },
 		evidence: logPath,
+		character: "hero",
 		cleanup: { deferred: true, verified: false },
 		processes: { stopped: true },
 		account: { ownerId: "owner-1", sentinelId: "sentinel-1" },
@@ -331,6 +342,8 @@ test("browser death expression executes and validator rejects malformed evidence
 						victim_id: "hero",
 						kill: true,
 						damage: 10,
+						event_index: 3,
+						response_event_index: 4,
 						response: {
 							response: "defeated_by_a_monster",
 							monster: "goo",
@@ -389,6 +402,9 @@ test("browser death expression executes and validator rejects malformed evidence
 		const unknownResponseField = structuredClone(result);
 		unknownResponseField.browser.ui.liveDeath.responses[0].secret = "unexpected";
 		runValidator(unknownResponseField, true);
+		const unknownTerminalResponseField = structuredClone(result);
+		unknownTerminalResponseField.browser.ui.liveDeath.terminal_hit.response.secret = "unexpected";
+		runValidator(unknownTerminalResponseField, true);
 		const oversizedLog = structuredClone(result);
 		oversizedLog.browser.ui.liveDeath.serverLogs = [
 			"Death sickness applied for 5 minutes",
