@@ -77,7 +77,7 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.notEqual(abilityStart, -1);
 	assert.ok(abilityEnd > abilityStart);
 	const abilityBlock = server.slice(abilityStart, abilityEnd);
-	assert.match(abilityBlock, /outcome=received", 1\);/);
+	assert.match(abilityBlock, /outcome=received",\s*1,\s*\);/);
 	assert.match(abilityBlock, /outcome=" \+ outcome,\s*1,\s*\);/);
 	assert.doesNotMatch(server, /abilityTarget/);
 	assert.match(serverFunctions, /function progression_log_id\(player\)/);
