@@ -84,6 +84,36 @@ test("runtime awards persist complete skill deltas and reject replay", () => {
 	assert.equal(character.skills.warrior.xp, 100);
 });
 
+test("runtime rejects unclassified XP sources without mutating the character", () => {
+	const character = player();
+	initializePlayerProgression(character, 0);
+	const before = {
+		skills: structuredClone(character.skills),
+		total_level: character.total_level,
+		t: structuredClone(character.t),
+		p: structuredClone(character.p),
+		events: character.progression_events,
+	};
+	assert.throws(
+		() =>
+			awardPlayerSkillXp(character, "warrior", 1, {
+				source: "unclassified_source",
+				sourceId: "unclassified:1",
+			}),
+		(error) => error.code === "invalid_skill_delta" && error.path === "source" && error.reason === "unclassified_source",
+	);
+	assert.deepEqual(
+		{
+			skills: character.skills,
+			total_level: character.total_level,
+			t: character.t,
+			p: character.p,
+			events: character.progression_events,
+		},
+		before,
+	);
+});
+
 test("runtime stand settlement feeds Merchant through the common award path", () => {
 	const character = player();
 	character.p.stand = "stand0";
@@ -120,6 +150,51 @@ test("runtime reopens a persisted stand at the current server time", () => {
 	assert.equal(character.p.stand_last_settled_at, 5000000);
 	const settled = settlePlayerStand(character, 5000000 + 3600000);
 	assert.equal(settled.xp, Math.floor(3125000 / 7));
+});
+
+test("runtime stand settlement remains exact across close, logout, death, and restart lifecycles", () => {
+	const character = player();
+	character.p.stand = "stand0";
+	initializePlayerProgression(character, 0);
+	markStandSession(character, 0);
+	const partitions = [1, 999999, 1234567, 1365433];
+	let now = 0;
+	let xp = 0;
+	for (let hour = 0; hour < 2016; hour += 1) {
+		for (const elapsed of partitions) {
+			now += elapsed;
+			const settled = settlePlayerStand(character, now);
+			xp += settled.xp;
+		}
+		if (hour === 511 || hour === 1023 || hour === 1535) {
+			const persisted = structuredClone(character.info.merchant_accrual);
+			character.p.stand = null;
+			character.socket = null;
+			const closed = settlePlayerStand(character, now + progression.STAND_HOUR_MS);
+			assert.equal(closed.xp, 0);
+			assert.deepEqual(character.info.merchant_accrual, persisted);
+			character.socket = {
+				events: [],
+				emit(name, value) {
+					this.events.push([name, value]);
+				},
+			};
+			character.p.stand = "stand0";
+			initializePlayerProgression(character, now);
+			assert.deepEqual(character.info.merchant_accrual, persisted);
+		}
+		if (hour === 767) {
+			character.rip = true;
+			const dead = settlePlayerStand(character, now + progression.STAND_HOUR_MS);
+			assert.equal(dead.xp, 0);
+			character.rip = false;
+			initializePlayerProgression(character, now);
+		}
+	}
+	assert.equal(xp, 900000000);
+	assert.equal(character.skills.merchant.xp, 900000000);
+	assert.equal(character.total_level, 105);
+	assert.equal(character.info.merchant_accrual.eligible_stand_ms, 2016 * progression.STAND_HOUR_MS);
 });
 
 test("runtime split awards commit all styles and reject backward stand time", () => {
