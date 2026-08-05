@@ -2,6 +2,7 @@ var fs = require("fs"),
 	path = require("path");
 var { buildProgressionData, loadProgressionPublication } = require("./node/game/skill_domain");
 var { ensureWorldIndexes, verifyWorldState } = require("./node/game/world_schema");
+var { rankingSort } = require("./node/game/rankings");
 var { assertProtocol3Publication } = require("./node/game/release_readiness");
 var { readSeed } = require("./node/tools/export-map-seed");
 var keys = require("./secretsandconfig/keys");
@@ -154,9 +155,15 @@ app.get("/character/:name", async (req, res, next) => {
 app.get("/characters", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
-	var characters = await db.collection("character").find({}).sort({ total_level: -1, name: 1 }).limit(500).toArray();
+	var merchantRanking = req.query.ranking === "merchant";
+	var characters = await db
+		.collection("character")
+		.find({})
+		.sort(rankingSort(merchantRanking ? "merchant" : "total"))
+		.limit(500)
+		.toArray();
 	characters = characters.map(character_view);
-	domain.title = "Characters";
+	domain.title = merchantRanking ? "Merchant Rankings" : "Characters";
 	res.status(200).send(nunjucks.render("htmls/player.html", { domain: domain, characters: characters }));
 });
 
