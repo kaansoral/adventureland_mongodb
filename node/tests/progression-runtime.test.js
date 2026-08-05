@@ -1,7 +1,10 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const test = require("node:test");
+const vm = require("node:vm");
 const { createCharacterState } = require("../game/character_state");
 const {
 	initializePlayerProgression,
@@ -31,6 +34,14 @@ function player() {
 			},
 		},
 	};
+}
+
+function serverFunction(source, startMarker, endMarker, context) {
+	const start = source.indexOf(startMarker);
+	const end = source.indexOf(endMarker, start);
+	assert.notEqual(start, -1, `server source is missing ${startMarker}`);
+	assert.notEqual(end, -1, `server source is missing ${endMarker}`);
+	return vm.runInNewContext(`(${source.slice(start, end).trim()})`, context);
 }
 
 test("runtime requires persisted info.skills and repairs only the flattened alias", () => {
@@ -98,6 +109,75 @@ test("runtime keeps full player snapshots at the last emitted progression state"
 
 	flushPlayerProgressionEvents(character);
 	assert.equal(clientSkillState(character).warrior.xp, 100);
+});
+
+test("queued multi-style progression preserves protocol snapshots and excludes runtime state", () => {
+	const character = player();
+	initializePlayerProgression(character, 0);
+	character.active_skill = "warrior";
+	character.citems = [];
+	character.cslots = {};
+	character.q = {};
+	const serverSource = fs.readFileSync(path.join(__dirname, "../server.js"), "utf8");
+	const serializerContext = {
+		G: { skill_xp: {} },
+		MAX_LEVEL: 99,
+		SKILL_IDS: Object.keys(character.skills),
+		clientSkillState,
+		cumulativeXp: (level) => level * 100,
+		get_call_cost: () => 0,
+	};
+	const playerToClient = serverFunction(
+		serverSource,
+		"function player_to_client(player, stranger)",
+		"\nfunction monster_to_client",
+		serializerContext,
+	);
+	const playerToServer = serverFunction(
+		serverSource,
+		"function player_to_server(player, place)",
+		"\nfunction player_to_client",
+		{ in_arr: (value, values) => values.includes(value) },
+	);
+	const labels = ["start", "resend", "reconnect"];
+	const before = Object.fromEntries(labels.map((label) => [label, playerToClient(character)]));
+	assert.deepEqual(
+		labels.map((label) => [label, before[label].skills.warrior.xp, before[label].skills.rogue.xp]),
+		labels.map((label) => [label, 0, 0]),
+	);
+
+	awardPlayerSkillXpSplit(
+		character,
+		{ warrior: 100, rogue: 200 },
+		{ source: "pve_damage", sourceId: "queued:styles" },
+	);
+	assert.equal(character.progression_events.length, 2);
+	const pending = Object.fromEntries(labels.map((label) => [label, playerToClient(character)]));
+	for (const label of labels) {
+		assert.equal(pending[label].skills.warrior.xp, 0);
+		assert.equal(pending[label].skills.rogue.xp, 0);
+		assert.equal(pending[label].total_level, 7);
+	}
+	const serializedPlayer = playerToServer(character);
+	assert.equal(Object.hasOwn(serializedPlayer, "progression_events"), false);
+	assert.equal(Object.hasOwn(serializedPlayer, "progression_client_skills"), false);
+	assert.equal(JSON.stringify(character).includes("progression_client_skills"), false);
+
+	assert.equal(flushPlayerProgressionEvents(character), 2);
+	const skillEvents = character.socket.events.filter(([name]) => name === "skill_xp");
+	assert.equal(skillEvents.length, 2);
+	assert.equal(skillEvents[0][1].skill, "warrior");
+	assert.equal(skillEvents[0][1].skills.warrior.xp, 100);
+	assert.equal(skillEvents[0][1].skills.rogue.xp, 0);
+	assert.equal(skillEvents[1][1].skill, "rogue");
+	assert.equal(skillEvents[1][1].skills.warrior.xp, 100);
+	assert.equal(skillEvents[1][1].skills.rogue.xp, 200);
+	const after = Object.fromEntries(labels.map((label) => [label, playerToClient(character)]));
+	for (const label of labels) {
+		assert.equal(after[label].skills.warrior.xp, 100);
+		assert.equal(after[label].skills.rogue.xp, 200);
+		assert.equal(after[label].total_level, 7);
+	}
 });
 
 test("runtime rejects unclassified XP sources without mutating the character", () => {
