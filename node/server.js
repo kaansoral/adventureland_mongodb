@@ -3003,6 +3003,7 @@ function commence_attack(attacker, target, atype) {
 			: progression_ledger.engagedEncounterIds(attacker.id || attacker.name);
 		info.progression_action = {
 			actionId: server_id + ":action:" + pid,
+			sourcePid: pid,
 			characterId: attacker.id || attacker.name,
 			activeSkill: attacker.active_skill,
 			encounterIds: progressionEncounterIds,
@@ -12431,6 +12432,9 @@ function update_instance(instance) {
 						}
 						xy_emit(monster, "hit", {
 							source: "burn",
+							...(progressionAction && progressionAction.sourcePid
+								? { pid: progressionAction.sourcePid }
+								: {}),
 							hid: ref.f,
 							id: monster.id,
 							damage: damage,
