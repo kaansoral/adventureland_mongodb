@@ -672,7 +672,15 @@
           },
           "excluded": {
             "speed": 51,
-            "range": 10
+            "range": 10,
+            "xpMultiplier": 1,
+            "luckMultiplier": 1,
+            "goldMultiplier": 1,
+            "tax": 0
+          },
+          "current": {
+            "hp": 0,
+            "mp": 0
           }
         }
       },
@@ -697,7 +705,15 @@
             },
             "excluded": {
               "speed": 51,
-              "range": 10
+              "range": 10,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "xptome_before": {
@@ -724,7 +740,15 @@
           },
           "excluded": {
             "speed": 51,
-            "range": 10
+            "range": 10,
+            "xpMultiplier": 1,
+            "luckMultiplier": 1,
+            "goldMultiplier": 1,
+            "tax": 0
+          },
+          "current": {
+            "hp": 0,
+            "mp": 0
           }
         },
         "xptome_before": {
@@ -735,7 +759,30 @@
           "name": "xptome",
           "gift": 1
         },
-        "xptome_untouched": true
+        "xptome_untouched": true,
+        "baseline_stats": {
+          "affected": {
+            "attack": 18,
+            "heal": 0,
+            "maxHp": 100,
+            "maxMp": 100,
+            "armor": 10,
+            "resistance": 11,
+            "frequency": 0.5
+          },
+          "excluded": {
+            "speed": 51,
+            "range": 10,
+            "xpMultiplier": 1,
+            "luckMultiplier": 1,
+            "goldMultiplier": 1,
+            "tax": 0
+          },
+          "current": {
+            "hp": 0,
+            "mp": 0
+          }
+        }
       },
       "reconnect": {
         "rip": false,
@@ -762,7 +809,15 @@
           },
           "excluded": {
             "speed": 51,
-            "range": 10
+            "range": 10,
+            "xpMultiplier": 1,
+            "luckMultiplier": 1,
+            "goldMultiplier": 1,
+            "tax": 0
+          },
+          "current": {
+            "hp": 0,
+            "mp": 0
           }
         },
         "did_not_stack": true,
@@ -774,7 +829,30 @@
           "name": "xptome",
           "gift": 1
         },
-        "xptome_untouched": true
+        "xptome_untouched": true,
+        "baseline_stats": {
+          "affected": {
+            "attack": 18,
+            "heal": 0,
+            "maxHp": 100,
+            "maxMp": 100,
+            "armor": 10,
+            "resistance": 11,
+            "frequency": 0.5
+          },
+          "excluded": {
+            "speed": 51,
+            "range": 10,
+            "xpMultiplier": 1,
+            "luckMultiplier": 1,
+            "goldMultiplier": 1,
+            "tax": 0
+          },
+          "current": {
+            "hp": 0,
+            "mp": 0
+          }
+        }
       },
       "expiry": {
         "exact_timestamp_past": true,
@@ -803,7 +881,15 @@
             },
             "excluded": {
               "speed": 50.625,
-              "range": 10
+              "range": 10,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "paladin": {
@@ -818,7 +904,15 @@
             },
             "excluded": {
               "speed": 50.5,
-              "range": 10
+              "range": 10,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "mage": {
@@ -833,7 +927,15 @@
             },
             "excluded": {
               "speed": 46.0625,
-              "range": 100
+              "range": 100,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "priest": {
@@ -848,7 +950,15 @@
             },
             "excluded": {
               "speed": 50.0625,
-              "range": 120
+              "range": 120,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "ranger": {
@@ -863,7 +973,15 @@
             },
             "excluded": {
               "speed": 48.28125,
-              "range": 110
+              "range": 110,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "rogue": {
@@ -878,7 +996,15 @@
             },
             "excluded": {
               "speed": 51,
-              "range": 10
+              "range": 10,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           }
         },
@@ -895,7 +1021,15 @@
             },
             "excluded": {
               "speed": 50.625,
-              "range": 10
+              "range": 10,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "paladin": {
@@ -910,7 +1044,15 @@
             },
             "excluded": {
               "speed": 50.5,
-              "range": 10
+              "range": 10,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "mage": {
@@ -925,7 +1067,15 @@
             },
             "excluded": {
               "speed": 46.0625,
-              "range": 100
+              "range": 100,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "priest": {
@@ -940,7 +1090,15 @@
             },
             "excluded": {
               "speed": 50.0625,
-              "range": 120
+              "range": 120,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "ranger": {
@@ -955,7 +1113,15 @@
             },
             "excluded": {
               "speed": 48.28125,
-              "range": 110
+              "range": 110,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "rogue": {
@@ -970,7 +1136,15 @@
             },
             "excluded": {
               "speed": 51,
-              "range": 10
+              "range": 10,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           }
         },
@@ -1015,7 +1189,15 @@
             },
             "excluded": {
               "speed": 51,
-              "range": 10
+              "range": 10,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "sick": {
@@ -1030,7 +1212,15 @@
             },
             "excluded": {
               "speed": 51,
-              "range": 10
+              "range": 10,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "excluded_unchanged": true
@@ -1085,7 +1275,15 @@
             },
             "excluded": {
               "speed": 50,
-              "range": 0
+              "range": 0,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "sick": {
@@ -1100,7 +1298,15 @@
             },
             "excluded": {
               "speed": 50,
-              "range": 0
+              "range": 0,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "excluded_unchanged": true
@@ -1141,7 +1347,15 @@
             },
             "excluded": {
               "speed": 50,
-              "range": 0
+              "range": 0,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "sick": {
@@ -1156,7 +1370,15 @@
             },
             "excluded": {
               "speed": 50,
-              "range": 0
+              "range": 0,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "excluded_unchanged": true
@@ -1179,7 +1401,15 @@
             },
             "excluded": {
               "speed": 50,
-              "range": 0
+              "range": 0,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "sick": {
@@ -1194,7 +1424,15 @@
             },
             "excluded": {
               "speed": 50,
-              "range": 0
+              "range": 0,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 0,
+              "mp": 0
             }
           },
           "excluded_unchanged": true
@@ -1440,4 +1678,4 @@
     "paired_service_untouched": true
   },
   "evidence": "/home/cjstorrs/projects/adventureland/.runtime/release-verification/20260805T132519Z-328073/live-progression-matrix.log"
-}
+}\n
