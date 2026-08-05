@@ -175,4 +175,64 @@ test("release-safe email and progression logs contain only bounded diagnostics",
 	assert.equal(progressionLogId({ real_id: "stable-id" }), "stable-id");
 	assert.equal(progressionLogId({ id: "display-name" }), "unknown");
 	assert.equal(progressionLogId({ real_id: "display name" }), "unknown");
+
+	const serverLogStart = serverFunctions.indexOf("function server_log(message, important)");
+	const serverLogEnd = serverFunctions.indexOf("\nfunction progression_log_id", serverLogStart);
+	const serverLogs = [];
+	const serverLog = vm.runInNewContext(`(${serverFunctions.slice(serverLogStart, serverLogEnd).trim()})`, {
+		process: { env: { ADVENTURELAND_RELEASE_SAFE_LOGS: "1" } },
+		console: {
+			log: (message) => serverLogs.push(String(message)),
+			error: (message) => serverLogs.push(String(message)),
+		},
+		get: async () => ({ region: "synthetic", name: "server" }),
+		add_event: async () => undefined,
+		server_id: "server-id",
+	});
+	serverLog("private important message", 1);
+	serverLog("Created an instance of secret-map", 1);
+	serverLog("SEVERE private player-name", 1);
+	serverLog("private nonimportant message");
+	assert.deepEqual(serverLogs, [
+		"release-safe important code=important",
+		"release-safe important code=instance_created",
+		"release-safe severe code=severe",
+	]);
+	assert.doesNotMatch(serverLogs.join("\n"), /secret-map|private player-name/);
+
+	const ripStart = serverFunctions.indexOf("function rip(player)");
+	const ripEnd = serverFunctions.indexOf("\nfunction notify_friends_emit", ripStart);
+	const ripLogs = [];
+	const rip = vm.runInNewContext(`(${serverFunctions.slice(ripStart, ripEnd).trim()})`, {
+		progression_ledger: { removeCharacter: () => undefined },
+		settlePlayerStand: () => {
+			const error = new Error("private settlement detail");
+			error.code = "merchant_settlement_failed";
+			throw error;
+		},
+		server_log: (message, important) => ripLogs.push({ message, important }),
+		progression_log_id: progressionLogId,
+		progression_log_code: (error) => error.code,
+		refreshDeathSickness: () => undefined,
+		send_party_update: () => undefined,
+		Date,
+	});
+	for (const realId of ["stable-id", "display name", "x".repeat(129)]) {
+		const player = {
+			is_player: true,
+			is_npc: false,
+			real_id: realId,
+			id: "display-name",
+			name: "private-player-name",
+			p: { stand: true },
+			party: null,
+		};
+		rip(player);
+	}
+	assert.deepEqual(ripLogs, [
+		{ message: "merchant death settlement failed actor_id=stable-id code=merchant_settlement_failed", important: 1 },
+		{ message: "merchant death settlement failed actor_id=unknown code=merchant_settlement_failed", important: 1 },
+		{ message: "merchant death settlement failed actor_id=unknown code=merchant_settlement_failed", important: 1 },
+	]);
+	assert.doesNotMatch(JSON.stringify(ripLogs), /private-player-name|private settlement detail/);
 });

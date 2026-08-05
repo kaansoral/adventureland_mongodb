@@ -45,7 +45,7 @@ test("release scripts are present and keep reset separate from service startup",
 	assert.match(verify, /SMOKE_DATABASE=.*skill-reset-smoke/);
 	assert.match(verify, /ROLLBACK_DATABASE=.*skill-rollback/);
 	assert.match(verify, /assert_release_logs_redacted/);
-	assert.match(verify, /-e 'create_character'/);
+	assert.match(verify, /scripts\/release-log-policy\.mjs/);
 	assert.match(verify, /ADVENTURELAND_RELEASE_SAFE_LOGS=1/);
 	assert.doesNotMatch(verify, /ADVENTURELAND_BROWSER_SMOKE_COMMAND|ADVENTURELAND_ROLLBACK_DRILL_COMMAND/);
 	assert.doesNotMatch(verify, /bash -s/);
@@ -57,6 +57,7 @@ test("release scripts are present and keep reset separate from service startup",
 	assert.match(rollback, /noMigration/);
 	assert.match(rollback, /ADVENTURELAND_RELEASE_SAFE_LOGS: "1"/);
 	assert.match(rollback, /assertRedactedReleaseLog/);
+	assert.match(rollback, /redactReleaseLog/);
 	assert.ok(fs.existsSync(matrixPath));
 	assert.match(fs.readFileSync(matrixPath, "utf8"), /gate: "live-progression-matrix"/);
 	assert.match(service, /data\.js/);

@@ -3256,8 +3256,18 @@ function discord_call(message) {
 function server_log(message, important) {
 	if (process.env.ADVENTURELAND_RELEASE_SAFE_LOGS === "1") {
 		if (!important) return;
-		var severe = message && (message + "").indexOf("SEVERE") != -1;
-		var safeMessage = severe ? "release-safe severe" : "release-safe important";
+		var text = message == null ? "" : message + "";
+		var severe = text.indexOf("SEVERE") != -1;
+		var diagnosticCode = severe ? "severe" : "important";
+		if (!severe && text.indexOf("merchant ") != -1 && text.indexOf("settlement failed") != -1)
+			diagnosticCode = "merchant_settlement";
+		else if (!severe && text.indexOf("ability actor_id=") != -1) diagnosticCode = "ability";
+		else if (!severe && text.indexOf("Created an instance") != -1) diagnosticCode = "instance_created";
+		else if (!severe && text.indexOf("Deleted an instance") != -1) diagnosticCode = "instance_deleted";
+		else if (!severe && text.indexOf("Server Live:") != -1) diagnosticCode = "server_live";
+		else if (!severe && text.indexOf("Game Version:") != -1) diagnosticCode = "game_version";
+		else if (!severe && text.indexOf("Node Version:") != -1) diagnosticCode = "node_version";
+		var safeMessage = "release-safe " + (severe ? "severe" : "important") + " code=" + diagnosticCode;
 		if (severe) console.error(safeMessage);
 		else console.log(safeMessage);
 		if (severe) {
