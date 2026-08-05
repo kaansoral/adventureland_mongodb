@@ -19,6 +19,7 @@ var colors={
 	//"mp":"#365DC5",
 	"mp":"#3A62CE",
 	"stat_xp":"#4570B1",
+	"party_share":"#AD73E0",
 	"xp":"#CBFFFF",
 	"luck":"#2A9A3D",
 	"gold":"gold",

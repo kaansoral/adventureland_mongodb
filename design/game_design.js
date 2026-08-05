@@ -10,7 +10,6 @@ var item_grades={
 	"unique":{"color":"purple"},
 };
 
-var party_xp=[0,1,1.10,0.9,0.75,0.6,0.5,0.40,0.3];
 var server_regions={
 	"US":"Americas",
 	"EU":"Europas",

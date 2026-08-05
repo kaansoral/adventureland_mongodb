@@ -165,6 +165,61 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.match(browser, /socket\.on\("skill_level_up"/);
 });
 
+test("party share keeps its presentation color while XP remains private", () => {
+	const oldCommon = read("js/old_common_functions.js");
+	const gameDesign = read("design/game_design.js");
+	const htmlSource = read("js/html.js");
+	assert.match(oldCommon, /"party_share":"#AD73E0"/);
+	assert.doesNotMatch(oldCommon, /\bparty_xp\b/);
+	assert.doesNotMatch(gameDesign, /\bparty_xp\b/);
+	assert.match(htmlSource, /colors\.party_share/);
+	assert.doesNotMatch(htmlSource, /colors\.party_xp/);
+
+	const renderStart = htmlSource.indexOf("function render_character_sheet()");
+	const renderEnd = htmlSource.indexOf("\nfunction render_conditions", renderStart);
+	assert.ok(renderStart >= 0 && renderEnd > renderStart);
+	const rendered = { value: "" };
+	const context = {
+		character: {
+			name: "Hero",
+			total_level: 7,
+			active_skill: "warrior",
+			skills: { warrior: { level: 1, xp: 125, max_xp: 500 } },
+			party: true,
+			tax: undefined,
+			attack: 10,
+			frequency: 1,
+			str: 10,
+			int: 10,
+			dex: 10,
+			vit: 10,
+			for: 10,
+			armor: 10,
+			resistance: 10,
+			courage: 1,
+			mcourage: 1,
+			pcourage: 1,
+			speed: 10,
+			mp_cost: 1,
+			goldm: 1,
+			luckm: 1,
+			xpm: 1,
+		},
+		party: { Hero: { share: 0.25 } },
+		G: { skills: { warrior: { name: "Warrior" } } },
+		colors: { party_share: "#AD73E0", gold: "gold", luck: "green" },
+		round: Math.round,
+		to_title: (value) => value,
+		to_pretty_num: (value) => String(value),
+		to_pretty_float: (value) => String(value),
+		damage_multiplier: () => 0.5,
+		$: () => ({ html: (value) => { rendered.value = value; } }),
+	};
+	vm.runInNewContext(`${htmlSource.slice(renderStart, renderEnd)}\nrender_character_sheet();`, context);
+	assert.match(rendered.value, /color:#AD73E0/);
+	assert.match(rendered.value, /> 25% <span style='color:gray'>\(Your Share\)/);
+});
+
 test("release-safe email and progression logs contain only bounded diagnostics", async () => {
 	const adventureFunctions = read("adventure_functions.js");
 	const emailStart = adventureFunctions.indexOf("async function send_email(");

@@ -383,7 +383,7 @@ function render_character_sheet() {
 		html += "<div><span style='color:#D88989'>Remedy:</span> Wait for the sickness timer to expire.</div>";
 	}
 	if (character.party && party && party[character.name])
-		html += "<div><span style='color:" + colors.party_xp + "'>Party:</span> " + round(party[character.name].share * 100) + "% <span style='color:gray'>(Your Share)</span></div>";
+		html += "<div><span style='color:" + colors.party_share + "'>Party:</span> " + round(party[character.name].share * 100) + "% <span style='color:gray'>(Your Share)</span></div>";
 	if (character.tax !== undefined) html += "<div><span style='color:gray'>Tax:</span> " + character.tax * 100 + "%</div>";
 	if (character.active_skill == "priest") {
 		html += "<div><span style='color:gray'>Heal:</span> " + character.heal + "</div>";
