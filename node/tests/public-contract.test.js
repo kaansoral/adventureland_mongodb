@@ -129,6 +129,11 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.match(server, /data\.total_level/);
 	assert.match(server, /data\.death_sickness_until/);
 	assert.doesNotMatch(server, /data\.ctype\s*=/);
+	const partyStart = server.indexOf("function party_to_client(oname)");
+	const partyEnd = server.indexOf("\nfunction send_party_update", partyStart);
+	assert.notEqual(partyStart, -1);
+	assert.ok(partyEnd > partyStart);
+	assert.doesNotMatch(server.slice(partyStart, partyEnd), /party_xp|xp\s*:/);
 	const timeoutStart = serverFunctions.indexOf('player.socket.emit("ability_timeout"');
 	const timeoutEnd = serverFunctions.indexOf("});", timeoutStart);
 	assert.notEqual(timeoutStart, -1);
@@ -152,6 +157,7 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.doesNotMatch(api, /\{ name: "shoes", level: 0, gift: 1 \}/);
 
 	assert.doesNotMatch(browser, /G\.classes|G\.levels|use_skill|next_skill|skill_timeout|\.ctype/);
+	assert.doesNotMatch(browser, /party\[[^\]]+\]\.xp/);
 	assert.match(browser, /socket\.emit\("ability"/);
 	assert.doesNotMatch(browser, /socket\.emit\("(?:attack|heal)"/);
 	assert.match(browser, /socket\.on\("ability_timeout"/);

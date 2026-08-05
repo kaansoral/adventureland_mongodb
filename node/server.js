@@ -1152,7 +1152,6 @@ function party_to_client(oname) {
 		player.party_length = length;
 		player.party_gold = 5;
 		player.party_luck = newbies * 10;
-		player.party_xp = [0, 0, 10, 16, 20, 24, 25, 30, 36, 40, 40, 40, 40][length] || 0;
 		party[name] = {
 			skin: player.tskin || player.skin,
 			total_level: player.total_level,
@@ -1164,7 +1163,6 @@ function party_to_client(oname) {
 			share: player.share,
 			pdps: player.pdps,
 			l: length,
-			xp: player.party_xp,
 			luck: player.party_luck,
 			gold: player.party_gold,
 		};
@@ -10365,7 +10363,6 @@ function init_io() {
 			player.pdps = 0;
 			player.party_length = 1;
 			player.party_luck = 0;
-			player.party_xp = 0;
 			player.party_gold = 0;
 			player.share = 0.1;
 			player.cx = player.cx || {};

@@ -440,16 +440,7 @@ function render_character_sheet() {
 		else html += "<div><span style='color:gray'>Gold:</span> " + round(character.goldm * 100) + "%</div>";
 	}
 	if (character.xpm != 1) {
-		if (character.party && party && party[character.name] && party[character.name].xp)
-			html +=
-				"<div><span style='color:gray'>Experience:</span> " +
-				round(character.xpm * 100 - party[character.name].xp) +
-				"% <span style='color:" +
-				colors.stat_xp +
-				"'>+" +
-				party[character.name].xp +
-				"%</span></div>";
-		else html += "<div><span style='color:gray'>Experience:</span> " + round(character.xpm * 100) + "%</div>";
+		html += "<div><span style='color:gray'>Experience:</span> " + round(character.xpm * 100) + "%</div>";
 	}
 	if (character.luckm != 1) {
 		if (character.party && party && party[character.name] && party[character.name].luck)
