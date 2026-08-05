@@ -855,11 +855,42 @@ test("browser death expression executes and validator rejects malformed evidence
 		processes: { stopped: true },
 		account: { ownerId: "owner-1", sentinelId: "sentinel-1" },
 		browser: {
-			ui: {
-				domContract: true,
-				equipment: { fail: true, pass: true },
-				abilityGate: { passed: true },
-				liveDeath: {
+          ui: {
+            domContract: true,
+            equipment: { fail: true, pass: true },
+            abilityGate: { passed: true },
+            appearanceVariants: [1, 2, 3, 4].map((look) => ({
+              name: `hero-look-${look}`,
+              look,
+              success: true,
+            })),
+            combat: {
+              postSwitch: {
+                skill: "rogue",
+                attempts: 1,
+                xpObserved: true,
+              },
+            },
+            styleMatrix: {
+              transitions: [
+                ["blade", "warrior"],
+                ["mace", "paladin"],
+                ["staff", "mage"],
+                ["wbook0", "priest"],
+                ["bow", "ranger"],
+                ["claw", "rogue"],
+              ].map(([weapon, skill]) => ({
+                weapon,
+                skill,
+                activeSkill: skill,
+                mainhand: weapon,
+              })),
+              heal: { success: true },
+              support: { success: true, target: "monster-1" },
+            },
+            standLock: { stand: true, standOpenObserved: true },
+            expiryEvidence: { sicknessCleared: true, standClosed: true },
+            liveDeath: {
 					rip: true,
 					sickness: browserSicknessUntil,
 					target: {
