@@ -8,7 +8,11 @@ const { createCharacterState } = require("../game/character_state");
 const { deriveActiveSkill, WEAPON_PROFILES } = require("../game/active_skill");
 const { SKILL_IDS } = require("../game/skill_domain");
 const { buildStarterLoadout } = require("../game/starter_loadout");
-const { awardPlayerSkillXp, flushPlayerProgressionEvents, initializePlayerProgression } = require("../game/progression_runtime");
+const {
+	awardPlayerSkillXp,
+	flushPlayerProgressionEvents,
+	initializePlayerProgression,
+} = require("../game/progression_runtime");
 const { loadBenchmarkData } = require("./progression-benchmark");
 
 const GAME_ROOT = path.resolve(__dirname, "../..");

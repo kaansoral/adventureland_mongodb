@@ -60,7 +60,10 @@ test("character state is complete, ordered, derived, and rejects legacy shape", 
 		(error) => error.code === "invalid_character_skill_state",
 	);
 	const all99 = Object.fromEntries(Object.keys(fresh.skills).map((skill) => [skill, { level: 99, xp: 900000000 }]));
-	assert.equal(Object.values(all99).reduce((sum, progress) => sum + progress.level, 0), 693);
+	assert.equal(
+		Object.values(all99).reduce((sum, progress) => sum + progress.level, 0),
+		693,
+	);
 	assert.doesNotThrow(() => validateSkillState(all99));
 	const future = createCharacterState([...Object.keys(fresh.skills), "artisan"]);
 	future.skills.artisan = { level: 4, xp: 1000000 };
@@ -77,10 +80,7 @@ test("active skill maps every combat profile and excludes tools and empty hands"
 	assert.equal(deriveActiveSkill({ mainhand: { name: "rod" } }, items), null);
 	assert.equal(deriveActiveSkill({ mainhand: { name: "pickaxe" } }, items), null);
 	assert.equal(deriveActiveSkill({}, items), null);
-	assert.equal(
-		deriveActiveSkill({ mainhand: { name: "blade", wtype: "staff", type: "weapon" } }, items),
-		"warrior",
-	);
+	assert.equal(deriveActiveSkill({ mainhand: { name: "blade", wtype: "staff", type: "weapon" } }, items), "warrior");
 	assert.equal(deriveActiveSkill({ mainhand: { name: "blade", wtype: "unknown" } }, items), "warrior");
 	assert.equal(weaponProfile(items.blade).skill, "warrior");
 });
@@ -235,7 +235,10 @@ test("equipment validates all requirements and atomically displaces incompatible
 	});
 	assert.equal(unequipped.active_skill, null);
 	assert.equal(unequipped.slots.offhand.name, "shield");
-	assert.deepEqual(unequipped.items.filter(Boolean).map((entry) => entry.name), ["blade"]);
+	assert.deepEqual(
+		unequipped.items.filter(Boolean).map((entry) => entry.name),
+		["blade"],
+	);
 });
 
 test("ability access is active-style aware, preserves cooldown state, and permits Merchant utilities", () => {
@@ -312,7 +315,10 @@ test("ability access is active-style aware, preserves cooldown state, and permit
 });
 
 test("style-bound effects are tagged and invalidated idempotently", () => {
-	const effect = tagStyleEffect({ name: "warcry" }, { sourceCharacterId: "CH1", sourceSkill: "warrior", styleBound: true });
+	const effect = tagStyleEffect(
+		{ name: "warcry" },
+		{ sourceCharacterId: "CH1", sourceSkill: "warrior", styleBound: true },
+	);
 	const result = invalidateStyleEffects(
 		[effect, { name: "poison", style_bound: false, source_character_id: "CH1", source_skill: "warrior" }],
 		{ sourceCharacterId: "CH1", previousSkill: "warrior" },
@@ -365,7 +371,10 @@ test("gear-only stats match the six starter golden inputs and ignore skill level
 		assert.equal(result.heal, heal, id);
 		assert.equal(result.damage_type, WEAPON_PROFILES[items[id].wtype].damage_type, id);
 		assert.equal(skill, WEAPON_PROFILES[items[id].wtype].skill);
-		assert.equal(result.frequency, calculateStats({ slots: { mainhand: { name: id } }, items, conditions: {} }).frequency);
+		assert.equal(
+			result.frequency,
+			calculateStats({ slots: { mainhand: { name: id } }, items, conditions: {} }).frequency,
+		);
 		const higher = calculateStats({
 			slots: { mainhand: { name: id } },
 			items,

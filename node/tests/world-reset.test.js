@@ -164,7 +164,11 @@ test("reset writer guards cover MongoDB, configured writers, ports, and the shar
 		assert.deepEqual(guarded.activePidFiles, [{ path: pidFile, pid: process.pid }]);
 		await mkdir(lease);
 		await writeFile(path.join(lease, "owner.json"), JSON.stringify({ pid: process.pid }));
-		const leased = await checkWriterGuards({ pidFiles: [path.join(root, "missing.pid")], ports: [1], writerLeaseDir: lease });
+		const leased = await checkWriterGuards({
+			pidFiles: [path.join(root, "missing.pid")],
+			ports: [1],
+			writerLeaseDir: lease,
+		});
 		assert.equal(leased.clear, false);
 		assert.equal(leased.writerLease.active, true);
 		const owned = await checkWriterGuards({

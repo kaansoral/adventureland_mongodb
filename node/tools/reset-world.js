@@ -160,7 +160,10 @@ function processIsRunning(pid) {
 
 function configuredList(value) {
 	if (typeof value !== "string" || !value.trim()) return [];
-	return value.split(",").map((entry) => entry.trim()).filter(Boolean);
+	return value
+		.split(",")
+		.map((entry) => entry.trim())
+		.filter(Boolean);
 }
 
 async function inspectWriterLease(directory) {
@@ -193,7 +196,8 @@ async function checkWriterGuards(options = {}) {
 	const pidFiles = configuredPidFiles.length
 		? configuredPidFiles.map((file) => path.resolve(file))
 		: ["mongod", "backend", "game-server"].map((name) => path.join(pidDir, `${name}.pid`));
-	const configuredPorts = options.ports || configuredList(env.ADVENTURELAND_RESET_WRITER_PORTS).map(Number).filter(Number.isSafeInteger);
+	const configuredPorts =
+		options.ports || configuredList(env.ADVENTURELAND_RESET_WRITER_PORTS).map(Number).filter(Number.isSafeInteger);
 	const ports = configuredPorts.length ? configuredPorts : [8090, 7192];
 	const activePidFiles = [];
 	for (const file of pidFiles) {
@@ -206,9 +210,13 @@ async function checkWriterGuards(options = {}) {
 	}
 	const openPorts = [];
 	for (const port of ports) if (await portIsOpen(port)) openPorts.push(port);
-	const leasePath = options.writerLeaseDir || env.ADVENTURELAND_RESET_WRITER_LEASE || path.join(ROOT_DIR, ".runtime", "reset-world-writer.lock");
+	const leasePath =
+		options.writerLeaseDir ||
+		env.ADVENTURELAND_RESET_WRITER_LEASE ||
+		path.join(ROOT_DIR, ".runtime", "reset-world-writer.lock");
 	const writerLease = await inspectWriterLease(leasePath);
-	const ownedLeaseIsSafe = options.allowOwnedLease === true && writerLease?.active === true && writerLease.pid === process.pid;
+	const ownedLeaseIsSafe =
+		options.allowOwnedLease === true && writerLease?.active === true && writerLease.pid === process.pid;
 	return {
 		activePidFiles,
 		openPorts,
@@ -495,7 +503,8 @@ async function runReset(options = {}) {
 					await db.collection("map").deleteMany({}, { session });
 					if (seed.documents.length) await db.collection("map").insertMany(seed.documents, { session, ordered: true });
 				}
-				if (typeof options.transactionHook === "function") await options.transactionHook({ db, session, plan, deleted });
+				if (typeof options.transactionHook === "function")
+					await options.transactionHook({ db, session, plan, deleted });
 				const transactionMaps = validateMapDocuments(await readMapDocuments(db, { session }), {
 					maps: DESIGN_MAPS,
 					exact: args.reseedMaps,
@@ -504,7 +513,10 @@ async function runReset(options = {}) {
 					throw worldError("RESET_POSTCHECK", "Map hash changed unexpectedly before reset commit");
 				const transactionCounts = await countCollections(db, [...MUTABLE_COLLECTIONS, "map"], { session });
 				const residual = Object.fromEntries(
-					MUTABLE_COLLECTIONS.filter((name) => transactionCounts[name] !== 0).map((name) => [name, transactionCounts[name]]),
+					MUTABLE_COLLECTIONS.filter((name) => transactionCounts[name] !== 0).map((name) => [
+						name,
+						transactionCounts[name],
+					]),
 				);
 				if (Object.keys(residual).length)
 					throw worldError("RESET_POSTCHECK", "Mutable documents remain before reset commit", { residual });

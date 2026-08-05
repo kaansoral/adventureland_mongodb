@@ -95,7 +95,9 @@ test("production equipment projection atomically updates self and remote style e
 
 	assert.deepEqual(result.active_skill, "mage");
 	assert.deepEqual(player.slots, { mainhand: { name: "staff" } });
-	assert.deepEqual(player.s, { persistent: { style_bound: false, source_character_id: "source", source_skill: "warrior" } });
+	assert.deepEqual(player.s, {
+		persistent: { style_bound: false, source_character_id: "source", source_skill: "warrior" },
+	});
 	assert.equal(player.progression_style_effect, undefined);
 	assert.equal(player.cooldown, beforePlayerCooldown);
 	assert.equal(player.p, beforePlayerOpaque);

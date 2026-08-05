@@ -3,12 +3,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
-const {
-	COMBAT_SKILL_IDS,
-	MAX_XP,
-	buildProgressionData,
-	cumulativeXp,
-} = require("../game/skill_domain");
+const { COMBAT_SKILL_IDS, MAX_XP, buildProgressionData, cumulativeXp } = require("../game/skill_domain");
 const { createCharacterState } = require("../game/character_state");
 const { progression } = require("../../design/progression");
 const { calculateStats } = require("../game/stats");
@@ -205,11 +200,7 @@ function validateItemRoute(skill, slots, skillLevels, data, context) {
 		if (slot === "offhand" && item.type === "weapon" && !mainResolution.profile.offhand_weapon) {
 			throw new Error(`Benchmark route ${context} has incompatible weapon offhand ${itemId}`);
 		}
-		if (
-			slot === "offhand" &&
-			item.type !== "weapon" &&
-			!mainResolution.profile.allowed_offhands.includes(item.type)
-		) {
+		if (slot === "offhand" && item.type !== "weapon" && !mainResolution.profile.allowed_offhands.includes(item.type)) {
 			throw new Error(`Benchmark route ${context} has incompatible offhand ${itemId}`);
 		}
 	}
@@ -270,8 +261,12 @@ function simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, d
 		if (stats.crit > 0 && rng() * 100 < stats.crit) {
 			attack *= 2 + (stats.critdamage || 0) / 100;
 		}
-		let damage = Math.ceil(Math.ceil(attack * (0.9 + rng() * 0.2)) * data.damageMultiplier((monster[defenseKey] || 0) - (stats[pierceKey] || 0)));
-		if (mainResolution.profile.damage_type === "physical" && monster.evasion && rng() * 100 < monster.evasion) damage = 0;
+		let damage = Math.ceil(
+			Math.ceil(attack * (0.9 + rng() * 0.2)) *
+				data.damageMultiplier((monster[defenseKey] || 0) - (stats[pierceKey] || 0)),
+		);
+		if (mainResolution.profile.damage_type === "physical" && monster.evasion && rng() * 100 < monster.evasion)
+			damage = 0;
 		else if (monster.avoidance && rng() * 100 < monster.avoidance) damage = 0;
 		damage = Math.max(0, damage);
 		const hpBefore = hp;
@@ -332,9 +327,7 @@ function chooseCandidate(mode, candidates, baselineRate) {
 			)[0];
 	}
 	if (mode === "max_rate") {
-		return candidates
-			.slice()
-			.sort((a, b) => b.rate_per_hour - a.rate_per_hour || a.id.localeCompare(b.id))[0];
+		return candidates.slice().sort((a, b) => b.rate_per_hour - a.rate_per_hour || a.id.localeCompare(b.id))[0];
 	}
 	throw new Error(`Unknown benchmark selection mode ${mode}`);
 }
@@ -359,12 +352,17 @@ function evaluateCombatPlan(profile, skill, plan, data, baselineRate) {
 				`Benchmark plan ${profile}/${skill}/band-${bandIndex} starts at ${minimumLevel} before the skill reaches it`,
 			);
 		}
-		const targetXp = band.to_level >= progression.MAX_LEVEL ? MAX_XP : cumulativeXp(Number(band.to_level || progression.MAX_LEVEL));
+		const targetXp =
+			band.to_level >= progression.MAX_LEVEL ? MAX_XP : cumulativeXp(Number(band.to_level || progression.MAX_LEVEL));
 		const skillLevels = skillLevelsSnapshot(player);
 		const evaluatedCandidates = band.candidates.map((candidate) =>
 			simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, data }),
 		);
-		const selected = chooseCandidate(plan.selection_mode, evaluatedCandidates, baselineRate || evaluatedCandidates[0].rate_per_hour);
+		const selected = chooseCandidate(
+			plan.selection_mode,
+			evaluatedCandidates,
+			baselineRate || evaluatedCandidates[0].rate_per_hour,
+		);
 		const currentXp = player.skills[skill].xp;
 		const xpRemaining = Math.max(0, targetXp - currentXp);
 		const kills = xpRemaining === 0 ? 0 : Math.ceil(xpRemaining / selected.xp_per_kill);
@@ -570,14 +568,28 @@ function runBenchmark({ fixturePath = FIXTURE_PATH, strictTargets = false } = {}
 	const fixture = loadFixture(fixturePath);
 	const regenerated = generateFixture(fixture, data);
 	const combat = { starter: {}, competent: {}, optimized: {} };
-	for (const skill of COMBAT_SKILLS) combat.starter[skill] = evaluateCombatPlan("starter", skill, regenerated.combat.starter[skill], data, null);
+	for (const skill of COMBAT_SKILLS)
+		combat.starter[skill] = evaluateCombatPlan("starter", skill, regenerated.combat.starter[skill], data, null);
 	for (const skill of COMBAT_SKILLS) {
 		const baseline = combat.starter[skill].bands[0].rate_per_hour;
-		combat.competent[skill] = evaluateCombatPlan("competent", skill, regenerated.combat.competent[skill], data, baseline);
-		combat.optimized[skill] = evaluateCombatPlan("optimized", skill, regenerated.combat.optimized[skill], data, baseline);
+		combat.competent[skill] = evaluateCombatPlan(
+			"competent",
+			skill,
+			regenerated.combat.competent[skill],
+			data,
+			baseline,
+		);
+		combat.optimized[skill] = evaluateCombatPlan(
+			"optimized",
+			skill,
+			regenerated.combat.optimized[skill],
+			data,
+			baseline,
+		);
 	}
 	const merchant = {};
-	for (const profile of MERCHANT_PROFILES) merchant[profile] = runMerchantProfile(profile, regenerated.merchant[profile]);
+	for (const profile of MERCHANT_PROFILES)
+		merchant[profile] = runMerchantProfile(profile, regenerated.merchant[profile]);
 	const targetAlignment = Object.values(combat).every((profile) =>
 		Object.values(profile).every((result) => result.within_target),
 	);

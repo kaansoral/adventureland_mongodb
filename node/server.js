@@ -2236,11 +2236,19 @@ function calculate_monster_score(player, monster, share) {
 	return score;
 }
 
-function award_monster_skill_share(player, monster, character_share, source_suffix, source = "pve_damage", splitOverride) {
+function award_monster_skill_share(
+	player,
+	monster,
+	character_share,
+	source_suffix,
+	source = "pve_damage",
+	splitOverride,
+) {
 	if (!player || !monster || !Number.isSafeInteger(Math.round(character_share)) || character_share <= 0) return [];
 	const encounterId = monster.encounter_id;
 	if (!encounterId) return [];
-	const split = splitOverride || progression_ledger.partition(Math.round(character_share), encounterId, player.id || player.name);
+	const split =
+		splitOverride || progression_ledger.partition(Math.round(character_share), encounterId, player.id || player.name);
 	return awardPlayerSkillXpSplit(player, split, {
 		source,
 		sourceId: `${encounterId}:${player.id || player.name}:${source_suffix || "award"}`,
@@ -2351,14 +2359,7 @@ function issue_monster_awards(monster) {
 	const partitions = progression_ledger.partitionCharacterShares(monster.encounter_id, characterShares);
 	for (const { current, characterShare, characterId } of awardCandidates) {
 		const source = progression_ledger.sourceForCharacter(monster.encounter_id, characterId);
-		award_monster_skill_share(
-			current,
-			monster,
-			characterShare,
-			"cooperative",
-			source,
-			partitions[characterId],
-		);
+		award_monster_skill_share(current, monster, characterShare, "cooperative", source, partitions[characterId]);
 		resend(current, "u+cid");
 	}
 	progression_ledger.close(monster.encounter_id);

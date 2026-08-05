@@ -81,7 +81,8 @@ class ContributionLedger {
 		if (!actionId || !characterId) throw contributionError("Action and character IDs are required");
 		if (kind === "pvp") return { actionId, characterId, activeSkill: null, encounterIds: [], ignored: true };
 		const ids = [...new Set((Array.isArray(encounterIds) ? encounterIds : []).filter(Boolean))];
-		if (!ids.length) return { actionId, characterId, activeSkill, encounterIds: [], ignored: true, reason: "no_encounter" };
+		if (!ids.length)
+			return { actionId, characterId, activeSkill, encounterIds: [], ignored: true, reason: "no_encounter" };
 		const existing = this.actions.get(actionId);
 		if (existing) {
 			const same =

@@ -195,11 +195,7 @@ function planEquipmentTransaction({
 	const currentSlots = clone((player && player.slots) || {});
 	const currentInventory = clone((player && (player.items || player.inventory)) || []);
 	const source = sourceIndex === undefined || sourceIndex === null ? null : currentInventory[sourceIndex];
-	if (
-		sourceIndex !== undefined &&
-		sourceIndex !== null &&
-		(!source || !sameItemIdentity(source, item))
-	) {
+	if (sourceIndex !== undefined && sourceIndex !== null && (!source || !sameItemIdentity(source, item))) {
 		throw equipmentError("inventory_item_changed", "The inventory source no longer contains the requested item", {
 			index: sourceIndex,
 		});

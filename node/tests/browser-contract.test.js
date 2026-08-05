@@ -38,6 +38,9 @@ test("browser character and appearance surfaces use skill progression", () => {
 	assert.match(code, /character\.skills/);
 	assert.match(code, /character\.total_level/);
 	assert.match(code, /G\.character\.appearances/);
-	assert.match(fs.readFileSync(path.join(root, "htmls/contents/selection.html"), "utf8"), /domain\.character\.appearances/);
+	assert.match(
+		fs.readFileSync(path.join(root, "htmls/contents/selection.html"), "utf8"),
+		/domain\.character\.appearances/,
+	);
 	assert.doesNotMatch(fs.readFileSync(path.join(root, "htmls/contents/selection.html"), "utf8"), /char:/);
 });

@@ -4,3 +4,6 @@ package-lock.json
 .prettierrc
 precompute.js
 precomputed_map_data.js
+# Benchmark fixtures use the two-space stable serializer asserted by their byte-stability tests.
+tests/fixtures/progression-benchmark-routes.json
+tests/fixtures/progression-benchmark-targets.json

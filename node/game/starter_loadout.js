@@ -13,7 +13,12 @@ function cloneItem(item, label) {
 
 function buildStarterLoadout(characterDefinition) {
 	const starter = characterDefinition && characterDefinition.starter;
-	if (!starter || !Array.isArray(starter.weapons) || !Array.isArray(starter.consumables) || !Array.isArray(starter.equipment))
+	if (
+		!starter ||
+		!Array.isArray(starter.weapons) ||
+		!Array.isArray(starter.consumables) ||
+		!Array.isArray(starter.equipment)
+	)
 		throw starterError("Character starter definition is incomplete");
 	const items = starter.weapons.map((name) => {
 		if (typeof name !== "string" || !name) throw starterError("Starter weapon IDs must be non-empty strings");

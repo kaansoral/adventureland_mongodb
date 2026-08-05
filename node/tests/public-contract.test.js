@@ -16,7 +16,15 @@ function read(relativePath) {
 function loadRawProgression() {
 	const context = { console, multipliers: { shells_to_gold: 1 } };
 	vm.createContext(context);
-	for (const file of ["conditions.js", "item_requirements.js", "items.js", "skills.js", "skill_xp.js", "abilities.js", "character.js"])
+	for (const file of [
+		"conditions.js",
+		"item_requirements.js",
+		"items.js",
+		"skills.js",
+		"skill_xp.js",
+		"abilities.js",
+		"character.js",
+	])
 		vm.runInContext(read(`design/${file}`), context, { filename: file });
 	return context;
 }
@@ -29,16 +37,34 @@ test("public progression publication is protocol 3 and contains no class or leve
 	assert.equal(publication.protocol, 3);
 	assert.equal("classes" in publication, false);
 	assert.equal("levels" in publication, false);
-	assert.deepEqual(Object.keys(publication.skills), ["warrior", "paladin", "mage", "priest", "ranger", "rogue", "merchant"]);
+	assert.deepEqual(Object.keys(publication.skills), [
+		"warrior",
+		"paladin",
+		"mage",
+		"priest",
+		"ranger",
+		"rogue",
+		"merchant",
+	]);
 	assert.equal(publication.character.appearances.length, 28);
-	assert.deepEqual(Object.values(publication.character.skills).map(({ level, xp }) => [level, xp]), Array(7).fill([1, 0]));
+	assert.deepEqual(
+		Object.values(publication.character.skills).map(({ level, xp }) => [level, xp]),
+		Array(7).fill([1, 0]),
+	);
 });
 
 test("server, API, and browser producers expose only the protocol-3 vocabulary", () => {
 	const server = read("node/server.js");
 	const serverFunctions = read("node/server_functions.js");
 	const api = read("api.js");
-	const browser = ["js/functions.js", "js/game.js", "js/html.js", "js/runner_functions.js", "js/runner_compat.js", "js/old_common_functions.js"]
+	const browser = [
+		"js/functions.js",
+		"js/game.js",
+		"js/html.js",
+		"js/runner_functions.js",
+		"js/runner_compat.js",
+		"js/old_common_functions.js",
+	]
 		.map(read)
 		.join("\n");
 

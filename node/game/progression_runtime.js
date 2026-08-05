@@ -47,9 +47,7 @@ function pruneSkillXpSources(player, now = Date.now()) {
 }
 
 function commitSkillXpSources(player, known, now = Date.now()) {
-	const records = new Map(
-		pruneSkillXpSources(player, now).map((entry) => [entry.source_id, entry]),
-	);
+	const records = new Map(pruneSkillXpSources(player, now).map((entry) => [entry.source_id, entry]));
 	for (const sourceId of known) {
 		if (!records.has(sourceId)) {
 			records.set(sourceId, {
