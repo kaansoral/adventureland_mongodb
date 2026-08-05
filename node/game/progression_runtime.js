@@ -63,12 +63,28 @@ function sourceIds(player) {
 	return new Set(player.p.skill_xp_sources.map((entry) => entry.source_id));
 }
 
+function cloneSkillState(skills) {
+	return JSON.parse(JSON.stringify(skills));
+}
+
+function setClientSkillState(player, skills) {
+	Object.defineProperty(player, "progression_client_skills", {
+		configurable: true,
+		enumerable: false,
+		value: cloneSkillState(skills),
+		writable: true,
+	});
+}
+
 function ensurePlayerContainers(player, now = Date.now()) {
 	if (!player || typeof player !== "object") throw runtimeError("invalid_character_skill_state", "Player is required");
 	if (!player.info || typeof player.info !== "object") player.info = {};
 	if (!player.info.skills) throw runtimeError("invalid_character_skill_state", "Persisted info.skills is required");
 	// Runtime code may use the flattened alias, but the persisted document is authoritative.
 	player.skills = player.info.skills;
+	if (!Object.prototype.hasOwnProperty.call(player, "progression_client_skills")) {
+		setClientSkillState(player, player.info.skills);
+	}
 	if (player.info.merchant_accrual === undefined && player.merchant_accrual !== undefined)
 		player.info.merchant_accrual = player.merchant_accrual;
 	if (player.info.death_sickness_until === undefined && player.death_sickness_until !== undefined)
@@ -143,6 +159,7 @@ function flushPlayerProgressionEvents(player) {
 		const event = player.progression_events[0];
 		const { levels_gained: _levelsGained, ...skillXpDelta } = event.delta;
 		player.socket.emit("skill_xp", { ...skillXpDelta, skills: publicSkillMap(event.skills) });
+		setClientSkillState(player, event.skills);
 		if (event.delta.to_level > event.delta.from_level) {
 			player.socket.emit("skill_level_up", {
 				skill: event.delta.skill,
@@ -156,6 +173,12 @@ function flushPlayerProgressionEvents(player) {
 		flushed += 1;
 	}
 	return flushed;
+}
+
+function clientSkillState(player) {
+	ensurePlayerContainers(player);
+	const skills = player.progression_events?.length ? player.progression_client_skills : player.info.skills;
+	return cloneSkillState(skills);
 }
 
 function awardPlayerSkillXp(player, skillId, requestedXp, { source, sourceId, emit = true, now = Date.now() } = {}) {
@@ -334,6 +357,7 @@ module.exports = {
 	awardPlayerSkillXp,
 	awardPlayerSkillXpSplit,
 	flushPlayerProgressionEvents,
+	clientSkillState,
 	maxCombatLevel,
 	skillLevel,
 	markStandSession,

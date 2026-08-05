@@ -8,6 +8,7 @@ const {
 	awardPlayerSkillXp,
 	awardPlayerSkillXpSplit,
 	flushPlayerProgressionEvents,
+	clientSkillState,
 	markStandSession,
 	settlePlayerStand,
 	refreshDeathSickness,
@@ -82,6 +83,21 @@ test("runtime awards persist complete skill deltas and reject replay", () => {
 	});
 	assert.equal(duplicate.duplicate, true);
 	assert.equal(character.skills.warrior.xp, 100);
+});
+
+test("runtime keeps full player snapshots at the last emitted progression state", () => {
+	const character = player();
+	initializePlayerProgression(character, 0);
+	const before = clientSkillState(character);
+
+	awardPlayerSkillXp(character, "warrior", 100, { source: "pve_damage" });
+
+	assert.equal(character.skills.warrior.xp, 100);
+	assert.equal(clientSkillState(character).warrior.xp, before.warrior.xp);
+	assert.equal(character.progression_client_skills.warrior.xp, before.warrior.xp);
+
+	flushPlayerProgressionEvents(character);
+	assert.equal(clientSkillState(character).warrior.xp, 100);
 });
 
 test("runtime rejects unclassified XP sources without mutating the character", () => {

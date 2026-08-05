@@ -49,6 +49,7 @@ const {
 	markStandSession,
 	settlePlayerStand,
 	flushPlayerProgressionEvents,
+	clientSkillState,
 	recordMerchantLuck,
 	recordMerchantSale,
 	recordMerchantSaleReversal,
@@ -805,7 +806,7 @@ function player_to_client(player, stranger) {
 	var data = {};
 	var skills = {};
 	if (!stranger) {
-		var sourceSkills = player.info && player.info.skills;
+		var sourceSkills = clientSkillState(player);
 		if (!sourceSkills) throw new Error("Protocol 3 character skill state is missing");
 		for (var i = 0; i < SKILL_IDS.length; i++) {
 			var skill = SKILL_IDS[i];
@@ -886,7 +887,11 @@ function player_to_client(player, stranger) {
 		data.rip = player.rip ?? null;
 	}
 	data.active_skill = player.active_skill || null;
-	data.total_level = player.total_level;
+	data.total_level = !stranger
+		? Object.keys(skills).reduce(function (total, skill) {
+				return total + skills[skill].level;
+			}, 0)
+		: player.total_level;
 	data.death_sickness_until = (player.info && player.info.death_sickness_until) || null;
 	if (player.tp) {
 		data.tp = true;
