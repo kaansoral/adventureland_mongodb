@@ -336,6 +336,33 @@ test("runtime Merchant Luck requires stable IDs and deduplicates targets", () =>
 	assert.equal(character.info.merchant_accrual.rolling_hour_luck_uses[0].target_id, "target-real-id");
 });
 
+test("Merchant Luck rejects missing or malformed identity before mutating runtime state", () => {
+	const missingId = player();
+	missingId.mp = 100;
+	missingId.s = {};
+	const missingInfo = structuredClone(missingId.info);
+	const missingP = structuredClone(missingId.p);
+	const missingT = structuredClone(missingId.t);
+	assert.throws(() => validateMerchantLuck(missingId, "target-real-id"), { code: "invalid_merchant_identity" });
+	assert.deepEqual(missingId.info, missingInfo);
+	assert.deepEqual(missingId.p, missingP);
+	assert.deepEqual(missingId.t, missingT);
+	assert.equal(missingId.info.merchant_accrual, undefined);
+
+	const malformed = player();
+	malformed.real_id = "merchant-real-id";
+	malformed.mp = 100;
+	malformed.s = {};
+	malformed.info.merchant_accrual = { merchant_id: "merchant-real-id" };
+	const malformedInfo = structuredClone(malformed.info);
+	const malformedP = structuredClone(malformed.p);
+	const malformedT = structuredClone(malformed.t);
+	assert.throws(() => validateMerchantLuck(malformed, "target-real-id"), { code: "invalid_merchant_state" });
+	assert.deepEqual(malformed.info, malformedInfo);
+	assert.deepEqual(malformed.p, malformedP);
+	assert.deepEqual(malformed.t, malformedT);
+});
+
 test("client condition projections do not expose Merchant source IDs", () => {
 	const character = player();
 	initializePlayerProgression(character, 0);

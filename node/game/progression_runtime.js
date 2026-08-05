@@ -307,18 +307,17 @@ function recordMerchantLuck(player, targetId, now = Date.now()) {
 }
 
 function assertStableMerchantIdentity(player) {
-	const existingAccrual = player && player.info && player.info.merchant_accrual;
-	if (
-		existingAccrual &&
-		typeof player.real_id === "string" &&
-		player.real_id &&
-		existingAccrual.merchant_id !== player.real_id
-	) {
-		throw runtimeError("invalid_merchant_identity", "Merchant accrual belongs to a different character");
-	}
-	ensurePlayerContainers(player);
+	if (!player || typeof player !== "object" || !player.info || typeof player.info !== "object" || !player.info.skills)
+		throw runtimeError("invalid_character_skill_state", "Persisted info.skills is required");
+	const existingAccrual =
+		player.info.merchant_accrual !== undefined ? player.info.merchant_accrual : player.merchant_accrual;
+	if (existingAccrual !== undefined)
+		validateMerchantAccrual(existingAccrual, Date.now(), { allowExpired: true });
 	if (typeof player.real_id !== "string" || !player.real_id)
 		throw runtimeError("invalid_merchant_identity", "Merchant actions require a stable character ID");
+	if (existingAccrual && existingAccrual.merchant_id !== player.real_id)
+		throw runtimeError("invalid_merchant_identity", "Merchant accrual belongs to a different character");
+	ensurePlayerContainers(player);
 	if (player.info.merchant_accrual.merchant_id !== player.real_id)
 		throw runtimeError("invalid_merchant_identity", "Merchant accrual belongs to a different character");
 }
