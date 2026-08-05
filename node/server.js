@@ -9758,6 +9758,7 @@ function init_io() {
 			const outcome = reject ? "failed" : resolve && resolve.success === false ? "partial" : "success";
 			server_log(
 				"ability actor_id=" + progression_log_id(player) + " ability=" + abilityLogName + " outcome=" + outcome,
+				1,
 			);
 		});
 		socket.on("click", function (data) {

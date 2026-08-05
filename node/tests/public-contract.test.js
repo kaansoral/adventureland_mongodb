@@ -73,14 +73,25 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.doesNotMatch(server, /socket\.on\("(?:attack|heal)"/);
 	assert.doesNotMatch(server, /server_log\("skill name=/);
 	assert.match(server, /server_log\("ability actor_id=[\s\S]*?outcome=received", 1\);/);
+	const abilityStart = server.indexOf('socket.on("ability"');
+	const abilityEnd = server.indexOf('\n\t\tsocket.on("click"', abilityStart);
+	const abilityBlock = server.slice(abilityStart, abilityEnd);
+	assert.match(abilityBlock, /outcome=received", 1\);/);
+	assert.match(abilityBlock, /outcome=" \+ outcome,\s*1,\s*\);/);
 	assert.doesNotMatch(server, /abilityTarget/);
 	assert.match(serverFunctions, /function progression_log_id\(player\)/);
 	assert.match(serverFunctions, /function progression_log_code\(error\)/);
 	assert.doesNotMatch(server + serverFunctions, /merchant (?:disconnect |logout )?settlement failed: \+ player\.name/);
 	assert.match(server, /merchant disconnect settlement failed: player_id=/);
 	assert.match(server, /merchant logout settlement failed: player_id=/);
-	assert.match(server, /merchant disconnect settlement failed: player_id=[\s\S]*?progression_log_code\(error\),\s*1,\s*\);/);
-	assert.match(server, /merchant logout settlement failed: player_id=[\s\S]*?progression_log_code\(error\),\s*1,\s*\);/);
+	const disconnectStart = server.indexOf('"merchant disconnect settlement failed:');
+	const disconnectEnd = server.indexOf(");", disconnectStart);
+	const disconnectSettlement = server.slice(disconnectStart, disconnectEnd + 2);
+	const logoutStart = server.indexOf('"merchant logout settlement failed:');
+	const logoutEnd = server.indexOf(");", logoutStart);
+	const logoutSettlement = server.slice(logoutStart, logoutEnd + 2);
+	assert.match(disconnectSettlement, /progression_log_code\(error\),\s*1,/);
+	assert.match(logoutSettlement, /progression_log_code\(error\),\s*1,/);
 	assert.match(server, /socket\.on\("ability"/);
 	assert.match(server, /data\.protocol = 3/);
 	assert.match(server, /max_xp:/);
@@ -230,6 +241,15 @@ test("release-safe email and progression logs contain only bounded diagnostics",
 	const codeStart = serverFunctions.indexOf("function progression_log_code(error)");
 	const codeEnd = serverFunctions.indexOf("\nfunction appengine_log", codeStart);
 	const progressionLogCode = vm.runInNewContext(`(${serverFunctions.slice(codeStart, codeEnd).trim()})`);
+	for (const [error, expected] of [
+		[{ code: "merchant_settlement_failed" }, "merchant_settlement_failed"],
+		[{}, "unknown"],
+		[undefined, "unknown"],
+		[{ code: "bad code\nprivate" }, "unknown"],
+		[{ code: "x".repeat(65) }, "unknown"],
+	]) {
+		assert.equal(progressionLogCode(error), expected);
+	}
 	const ripStart = serverFunctions.indexOf("function rip(player)");
 	const ripEnd = serverFunctions.indexOf("\nfunction notify_friends_emit", ripStart);
 	const ripLogs = [];
@@ -238,9 +258,7 @@ test("release-safe email and progression logs contain only bounded diagnostics",
 		progression_ledger: { removeCharacter: () => undefined },
 		settlePlayerStand: () => {
 			const error = new Error("private settlement detail");
-			error.code = settlementAttempt++ === 2
-				? "bad code\nprivate settlement detail"
-				: "merchant_settlement_failed";
+			error.code = settlementAttempt++ === 2 ? "bad code\nprivate settlement detail" : "merchant_settlement_failed";
 			throw error;
 		},
 		server_log: (message, important) => ripLogs.push({ message, important }),
