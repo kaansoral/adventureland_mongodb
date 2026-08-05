@@ -9742,10 +9742,10 @@ function init_io() {
 			socket.emit("game_log", "'click' method is deprecated.");
 		});
 		socket.on("attack", function (data) {
-			return socket.fs.skill({ name: "attack", id: data.id });
+			return socket.fs.ability({ name: "attack", id: data.id });
 		});
 		socket.on("heal", function (data) {
-			return socket.fs.skill({ name: "heal", id: data.id });
+			return socket.fs.ability({ name: "heal", id: data.id });
 		});
 		socket.on("interaction", function (data) {
 			var player = players[socket.id];

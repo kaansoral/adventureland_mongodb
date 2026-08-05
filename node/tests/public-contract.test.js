@@ -69,6 +69,9 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 		.join("\n");
 
 	assert.doesNotMatch(server, /socket\.on\("skill"/);
+	assert.doesNotMatch(server, /socket\.fs\.skill/);
+	assert.match(server, /socket\.on\("attack"[\s\S]*?socket\.fs\.ability/);
+	assert.match(server, /socket\.on\("heal"[\s\S]*?socket\.fs\.ability/);
 	assert.match(server, /socket\.on\("ability"/);
 	assert.match(server, /data\.protocol = 3/);
 	assert.match(server, /max_xp:/);
