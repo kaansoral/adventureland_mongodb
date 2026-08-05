@@ -230,32 +230,46 @@ test("retained release-log scan visits browser and child log paths", () => {
 test("release gate staging promotes redacted producer artifacts and rewrites retained paths", () => {
 	const root = path.resolve(__dirname, "../../..");
 	const verify = fs.readFileSync(path.join(root, "scripts/verify-skill-refactor.sh"), "utf8");
-	const helperStart = verify.indexOf("redact_release_file() {");
-	const helperEnd = verify.indexOf("\ncleanup_release() {", helperStart);
-	const gateStart = verify.indexOf("run_typed_gate() {");
-	const gateEnd = verify.indexOf("\nassert_release_logs_redacted()", gateStart);
+	const helperStartMarker = "# release-gate-artifact-helpers: begin";
+	const helperEndMarker = "# release-gate-artifact-helpers: end";
+	const gateStartMarker = "# release-gate-runner: begin";
+	const gateEndMarker = "# release-gate-runner: end";
+	const helperStart = verify.indexOf(helperStartMarker);
+	const helperEnd = verify.indexOf(helperEndMarker, helperStart);
+	const gateStart = verify.indexOf(gateStartMarker);
+	const gateEnd = verify.indexOf(gateEndMarker, gateStart);
 	assert.ok(helperStart >= 0 && helperEnd > helperStart);
 	assert.ok(gateStart >= 0 && gateEnd > gateStart);
 	assert.match(verify, /umask 077/);
+	assert.match(verify, /redact_release_logs_in "\$GATE_STAGING_DIR"/);
 	const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "adventureland-gate-staging-"));
 	const fakeRoot = path.join(temporaryDirectory, "root");
 	const evidenceDirectory = path.join(temporaryDirectory, "evidence");
 	const stagingDirectory = path.join(evidenceDirectory, ".staging");
 	fs.mkdirSync(path.join(fakeRoot, "scripts"), { recursive: true, mode: 0o700 });
-	fs.mkdirSync(stagingDirectory, { recursive: true, mode: 0o700 });
 	fs.copyFileSync(
 		path.join(root, "scripts/release-log-policy.mjs"),
 		path.join(fakeRoot, "scripts/release-log-policy.mjs"),
 	);
-	fs.writeFileSync(path.join(fakeRoot, "scripts/validate-release-gate.mjs"), "process.exit(0);\n", { mode: 0o600 });
+	fs.writeFileSync(
+		path.join(fakeRoot, "scripts/validate-release-gate.mjs"),
+		[
+			"import { readFileSync } from 'node:fs';",
+			"const [log, gate, database, result] = process.argv.slice(2);",
+			"if (gate !== 'fake-gate' || database !== 'disposable' || !log.endsWith('live-service-smoke.stdout.log')) process.exit(1);",
+			"if (!JSON.parse(readFileSync(result, 'utf8')).evidence) process.exit(1);",
+		].join("\n") + "\n",
+		{ mode: 0o600 },
+	);
 	const result = {
 		evidence: path.join(stagingDirectory, "live-game-smoke.log"),
 		auxiliary: { log: path.join(stagingDirectory, "auxiliary.log") },
+		stdout_log: path.join(stagingDirectory, "live-service-smoke.stdout.log"),
 	};
 	const command = [
 		"set -euo pipefail",
-		verify.slice(helperStart, helperEnd),
-		verify.slice(gateStart, gateEnd),
+		verify.slice(helperStart, helperEnd + helperEndMarker.length),
+		verify.slice(gateStart, gateEnd + gateEndMarker.length),
 		"fake_gate() {",
 		"  printf 'password=private\\n' > \"$GATE_STAGING_DIR/live-game-smoke.log\"",
 		"  printf 'release-safe auxiliary\\n' > \"$GATE_STAGING_DIR/auxiliary.log\"",
@@ -267,10 +281,9 @@ test("release gate staging promotes redacted producer artifacts and rewrites ret
 		"test -s \"$EVIDENCE_DIR/live-service-smoke.stdout.log\"",
 		"test -s \"$EVIDENCE_DIR/gate-result.json\"",
 		"test -s \"$EVIDENCE_DIR/auxiliary.log\"",
-		"rm -rf -- \"$GATE_STAGING_DIR\"",
-		"test ! -e \"$GATE_STAGING_DIR/live-game-smoke.log\"",
+		"test -d \"$GATE_STAGING_DIR\"",
 	].join("\n");
-	try {
+	const runFixture = (fixtureResult) =>
 		execFileSync("bash", ["-e", "-u", "-o", "pipefail", "-c", command], {
 			cwd: root,
 			env: {
@@ -278,14 +291,24 @@ test("release gate staging promotes redacted producer artifacts and rewrites ret
 				ROOT_DIR: fakeRoot,
 				EVIDENCE_DIR: evidenceDirectory,
 				GATE_STAGING_DIR: stagingDirectory,
-				FAKE_RESULT: JSON.stringify(result),
+				FAKE_RESULT: JSON.stringify(fixtureResult),
 			},
 			stdio: "pipe",
 		});
+	try {
+		runFixture(result);
 		assert.doesNotMatch(fs.readFileSync(path.join(evidenceDirectory, "live-game-smoke.log"), "utf8"), /private/);
 		assert.doesNotMatch(fs.readFileSync(path.join(evidenceDirectory, "gate-result.json"), "utf8"), /\.staging/);
+		assert.doesNotMatch(fs.readFileSync(path.join(evidenceDirectory, "live-service-smoke.stdout.log"), "utf8"), /\.staging/);
+		assert.doesNotMatch(fs.readFileSync(path.join(evidenceDirectory, "auxiliary.log"), "utf8"), /private/);
 		assert.equal(fs.statSync(path.join(evidenceDirectory, "live-game-smoke.log")).mode & 0o777, 0o600);
 		assert.equal(fs.statSync(evidenceDirectory).mode & 0o777, 0o700);
+		assert.equal(fs.statSync(stagingDirectory).mode & 0o777, 0o700);
+		const outOfTreeResult = {
+			...result,
+			auxiliary: { log: path.join(temporaryDirectory, "out-of-tree.log") },
+		};
+		assert.throws(() => runFixture(outOfTreeResult));
 	} finally {
 		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 	}
