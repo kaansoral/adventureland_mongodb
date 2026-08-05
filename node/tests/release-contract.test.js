@@ -134,11 +134,13 @@ test("rollback process capture drains close and redacts before retention", async
 		child.stderr.emit("data", "token=private-token\n");
 		child.emit("exit", 0, null);
 		child.stdout.emit("data", "after-exit-output\n");
+		child.stderr.emit("data", "password=post-exit-stderr-secret\n");
 		child.emit("close", 0, null);
 		const result = await pending;
 		assert.match(result.output, /password.*\[redacted\]/);
 		assert.match(result.output, /after-exit-output/);
 		assert.doesNotMatch(result.output, /private-token/);
+		assert.doesNotMatch(result.output, /post-exit-stderr-secret/);
 		assert.equal(fs.readFileSync(logPath, "utf8"), result.output);
 		assert.deepEqual(phases, ["redact", "assert", "write"]);
 	} finally {
@@ -371,6 +373,21 @@ test("release gate staging promotes redacted producer artifacts and rewrites ret
 		assert.throws(() => runFixture(outOfTreeResult, failedEvidenceDirectory));
 		for (const file of ["live-game-smoke.log", "live-service-smoke.stdout.log", "gate-result.json", "auxiliary.log"])
 			assert.equal(fs.existsSync(path.join(failedEvidenceDirectory, file)), false);
+		assert.deepEqual(fs.readdirSync(path.join(failedEvidenceDirectory, ".staging")), []);
+		const collisionEvidenceDirectory = path.join(temporaryDirectory, "collision-evidence");
+		fs.mkdirSync(collisionEvidenceDirectory, { recursive: true });
+		const collisionLogPath = path.join(collisionEvidenceDirectory, "live-game-smoke.log");
+		fs.writeFileSync(collisionLogPath, "pre-existing evidence\n");
+		assert.throws(() => runFixture(result, collisionEvidenceDirectory));
+		assert.equal(fs.readFileSync(collisionLogPath, "utf8"), "pre-existing evidence\n");
+		assert.deepEqual(fs.readdirSync(path.join(collisionEvidenceDirectory, ".staging")), []);
+		const traversalEvidenceDirectory = path.join(temporaryDirectory, "traversal-evidence");
+		const traversalResult = {
+			...result,
+			auxiliary: { log: `${traversalEvidenceDirectory}/../outside.log` },
+		};
+		assert.throws(() => runFixture(traversalResult, traversalEvidenceDirectory));
+		assert.deepEqual(fs.readdirSync(path.join(traversalEvidenceDirectory, ".staging")), []);
 	} finally {
 		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 	}
