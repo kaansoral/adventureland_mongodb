@@ -99,7 +99,8 @@ test("rollback process capture drains close and redacts before retention", async
 	const root = path.resolve(__dirname, "../../..");
 	const rollback = fs.readFileSync(path.join(root, "scripts/rollback-drill.mjs"), "utf8");
 	const start = rollback.indexOf("function runProcess(");
-	const end = rollback.indexOf("\n\nasync function gitTreeRef", start);
+	const endMarker = "// release-process-capture: end";
+	const end = rollback.indexOf(endMarker, start);
 	assert.notEqual(start, -1);
 	assert.notEqual(end, -1);
 	const { redactReleaseLog, assertRedactedReleaseLog } = await import(
