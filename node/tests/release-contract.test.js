@@ -898,6 +898,14 @@ test("browser death expression executes and validator rejects malformed evidence
 	};
 	try {
 		runValidator(result);
+		const symlinkLogPath = path.join(temporaryDirectory, "browser-log-symlink.log");
+		fs.symlinkSync(logPath, symlinkLogPath);
+		assert.throws(() =>
+			execFileSync(process.execPath, [validatorPath, symlinkLogPath, "browser-smoke", "skill-reset-test", resultPath], {
+				cwd: root,
+				stdio: "pipe",
+			}),
+		);
 		const malformedHit = structuredClone(result);
 		malformedHit.browser.ui.liveDeath.terminal_hit.attacker_id = "other-monster";
 		runValidator(malformedHit, true);
