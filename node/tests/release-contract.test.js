@@ -535,6 +535,7 @@ test("browser death expression executes and validator rejects malformed evidence
 		};
 	};
 	const { listeners, socket } = createSocket();
+	const browserSicknessUntil = Date.now() + 4 * 60 * 1000;
 	const character = {
 		name: "hero",
 		rip: false,
@@ -546,7 +547,7 @@ test("browser death expression executes and validator rejects malformed evidence
 		max_hp: 100,
 		hp: 100,
 		max_mp: 100,
-		death_sickness_until: 123,
+		death_sickness_until: browserSicknessUntil,
 		skills: Object.fromEntries(
 			["warrior", "paladin", "mage", "priest", "ranger", "rogue", "merchant"].map((name) => [
 				name,
@@ -843,7 +844,7 @@ test("browser death expression executes and validator rejects malformed evidence
 				abilityGate: { passed: true },
 				liveDeath: {
 					rip: true,
-					sickness: 123,
+					sickness: browserSicknessUntil,
 					target: {
 						id: "monster-1",
 						type: "goo",
@@ -861,14 +862,14 @@ test("browser death expression executes and validator rejects malformed evidence
 						response: {
 							response: "defeated_by_a_monster",
 							monster: "goo",
-							death_sickness_until: 123,
+							death_sickness_until: browserSicknessUntil,
 						},
 					},
 					responses: [
 						{
 							response: "defeated_by_a_monster",
 							monster: "goo",
-							death_sickness_until: 123,
+							death_sickness_until: browserSicknessUntil,
 						},
 					],
 					serverLogs: ["Death sickness applied for 5 minutes"],
@@ -907,6 +908,12 @@ test("browser death expression executes and validator rejects malformed evidence
 		negativeIndexes.browser.ui.liveDeath.terminal_hit.event_index = -1;
 		negativeIndexes.browser.ui.liveDeath.terminal_hit.response_event_index = 0;
 		runValidator(negativeIndexes, true);
+		const staleSickness = structuredClone(result);
+		staleSickness.browser.ui.liveDeath.sickness = 123;
+		staleSickness.browser.ui.liveDeath.terminal_hit.response.death_sickness_until = 123;
+		staleSickness.browser.ui.liveDeath.terminal_hit.response_event_index = 4;
+		staleSickness.browser.ui.liveDeath.responses[0].death_sickness_until = 123;
+		runValidator(staleSickness, true);
 		const mismatchedOuterIdentity = structuredClone(result);
 		mismatchedOuterIdentity.character = "other-player";
 		runValidator(mismatchedOuterIdentity, true);
