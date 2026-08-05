@@ -9,6 +9,7 @@ const {
 	applySicknessMultiplier,
 	sicknessDelta,
 } = require("../game/death_sickness");
+const { calculateStats } = require("../game/stats");
 
 test("death sickness refreshes without stacking and rehydrates/clears by timestamp", () => {
 	const character = { info: {} };
@@ -39,4 +40,17 @@ test("sickness affects only the approved final stat set", () => {
 	for (const key of ["attack", "heal", "max_hp", "max_mp", "armor", "resistance", "frequency"])
 		assert.equal(sick[key], stats[key] * 0.8);
 	for (const key of ["speed", "range", "xpm", "luckm", "goldm"]) assert.equal(sick[key], stats[key]);
+});
+
+test("sickness clamps current HP/MP and expiry does not refill them", () => {
+	const sick = calculateStats({ previousHp: 1000, previousMp: 1000, deathSickness: true });
+	assert.equal(sick.max_hp, 80);
+	assert.equal(sick.max_mp, 80);
+	assert.equal(sick.hp, 80);
+	assert.equal(sick.mp, 80);
+	const recovered = calculateStats({ previousHp: sick.hp, previousMp: sick.mp, deathSickness: false });
+	assert.equal(recovered.max_hp, 100);
+	assert.equal(recovered.max_mp, 100);
+	assert.equal(recovered.hp, 80);
+	assert.equal(recovered.mp, 80);
 });
