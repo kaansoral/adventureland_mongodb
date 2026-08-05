@@ -3800,6 +3800,7 @@ function resend(player, events) {
 		add_call_cost(call_modifier);
 		calculate_player_stats(player);
 	}
+	flushPlayerProgressionEvents(player);
 	var data = player_to_client(player);
 	if (player.hitchhikers && player.hitchhikers.length) {
 		data.hitchhikers = player.hitchhikers;
