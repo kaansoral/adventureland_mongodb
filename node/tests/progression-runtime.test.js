@@ -464,11 +464,25 @@ test("Merchant identity precedence rejects invalid expiry and preserves sale sta
 			candidate.merchant_accrual = structuredClone(character.merchant_accrual);
 			candidate.mp = character.mp;
 			candidate.s = structuredClone(character.s);
+			const authoritative = player();
+			authoritative.real_id = character.real_id;
+			authoritative.info.merchant_accrual = structuredClone(
+				accrual || createMerchantAccrual(character.real_id),
+			);
+			const authoritativeInfo = structuredClone(authoritative.info);
+			const authoritativeP = structuredClone(authoritative.p);
+			const authoritativeT = structuredClone(authoritative.t);
+			const authoritativeAlias = structuredClone(authoritative.merchant_accrual);
 			assert.throws(() => method(candidate, { merchantOwnerId: "fallback-id" }), { code: "invalid_merchant_owner" });
 			assert.deepEqual(candidate.info, info);
 			assert.deepEqual(candidate.p, p);
 			assert.deepEqual(candidate.t, t);
 			assert.deepEqual(candidate.merchant_accrual, alias);
+			assert.throws(() => method(authoritative, { merchantOwnerId: "fallback-id" }), { code: "invalid_merchant_owner" });
+			assert.deepEqual(authoritative.info, authoritativeInfo);
+			assert.deepEqual(authoritative.p, authoritativeP);
+			assert.deepEqual(authoritative.t, authoritativeT);
+			assert.deepEqual(authoritative.merchant_accrual, authoritativeAlias);
 		}
 	}
 });

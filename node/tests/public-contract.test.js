@@ -102,6 +102,8 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.notEqual(standSettlementStart, -1);
 	assert.ok(standSettlementEnd > standSettlementStart);
 	const standSettlementCallbackStart = server.indexOf("function () {", standSettlementStart);
+	assert.ok(standSettlementCallbackStart > standSettlementStart);
+	assert.ok(standSettlementCallbackStart < standSettlementEnd);
 	const standLogs = [];
 	const standSettlementCallback = vm.runInNewContext(
 		`(${server.slice(standSettlementCallbackStart, standSettlementEnd + 3).trim()})`,
@@ -128,8 +130,10 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.match(server, /data\.death_sickness_until/);
 	assert.doesNotMatch(server, /data\.ctype\s*=/);
 	const timeoutStart = serverFunctions.indexOf('player.socket.emit("ability_timeout"');
+	const timeoutEnd = serverFunctions.indexOf("});", timeoutStart);
 	assert.notEqual(timeoutStart, -1);
-	const timeoutBlock = serverFunctions.slice(timeoutStart, serverFunctions.indexOf("});", timeoutStart) + 3);
+	assert.ok(timeoutEnd > timeoutStart);
+	const timeoutBlock = serverFunctions.slice(timeoutStart, timeoutEnd + 3);
 	assert.match(timeoutBlock, /name:\s*name/);
 	assert.match(timeoutBlock, /ms:/);
 	assert.doesNotMatch(timeoutBlock, /penalty:/);
@@ -197,6 +201,9 @@ test("release-safe email and progression logs contain only bounded diagnostics",
 	await sendEmail({}, "recipient@example.invalid", { text: "secret body" });
 	sendError = { name: "bad code\nprivate error" };
 	await sendEmail({}, "recipient@example.invalid", { html: "secret html" });
+	assert.equal(logs.length, 7);
+	assert.equal(logs.filter((message) => message.startsWith("send_email provider=ses status=attempt")).length, 4);
+	assert.equal(logs.filter((message) => message.startsWith("send_email provider=ses status=failed")).length, 3);
 	assert.ok(
 		logs.every((message) =>
 			/^(send_email provider=ses status=attempt|send_email provider=ses status=failed code=[A-Za-z0-9_.:-]{1,64})$/.test(
@@ -212,6 +219,8 @@ test("release-safe email and progression logs contain only bounded diagnostics",
 	const serverFunctions = read("node/server_functions.js");
 	const idStart = serverFunctions.indexOf("function progression_log_id(player)");
 	const idEnd = serverFunctions.indexOf("\nfunction progression_log_code", idStart);
+	assert.notEqual(idStart, -1);
+	assert.ok(idEnd > idStart);
 	const progressionLogId = vm.runInNewContext(`(${serverFunctions.slice(idStart, idEnd).trim()})`);
 	assert.equal(progressionLogId({ real_id: "stable-id" }), "stable-id");
 	assert.equal(progressionLogId({ id: "display-name" }), "unknown");
@@ -219,6 +228,8 @@ test("release-safe email and progression logs contain only bounded diagnostics",
 
 	const serverLogStart = serverFunctions.indexOf("function server_log(message, important)");
 	const serverLogEnd = serverFunctions.indexOf("\nfunction progression_log_id", serverLogStart);
+	assert.notEqual(serverLogStart, -1);
+	assert.ok(serverLogEnd > serverLogStart);
 	const serverLogs = [];
 	const serverEvents = [];
 	const serverLog = vm.runInNewContext(`(${serverFunctions.slice(serverLogStart, serverLogEnd).trim()})`, {

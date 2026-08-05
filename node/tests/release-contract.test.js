@@ -35,7 +35,6 @@ test("release scripts are present and keep reset separate from service startup",
 	const service = fs.readFileSync(path.join(root, "scripts/service-server.sh"), "utf8");
 	const browser = fs.readFileSync(path.join(root, "scripts/browser-smoke.mjs"), "utf8");
 	const rollback = fs.readFileSync(path.join(root, "scripts/rollback-drill.mjs"), "utf8");
-	const verifyScript = fs.readFileSync(path.join(root, "scripts/verify-skill-refactor.sh"), "utf8");
 	const matrixPath = path.join(root, "cjs-al-service", "tools/live-progression-matrix.mjs");
 	const smoke = fs.readFileSync(path.join(__dirname, "../tools/release-smoke.js"), "utf8");
 	assert.match(reset, /--execute/);
@@ -66,8 +65,8 @@ test("release scripts are present and keep reset separate from service startup",
 	assert.match(rollback, /await serviceClosed/);
 	assert.match(rollback, /path\.join\(tmpdir\(\), "adventureland-rollback-child-"\)/);
 	assert.match(rollback, /log,\n\s*root,\n\s*\{ redact: true \}/);
-	assert.match(verifyScript, /GATE_STAGING_DIR=/);
-	assert.match(verifyScript, /redact_release_logs/);
+	assert.match(verify, /GATE_STAGING_DIR=/);
+	assert.match(verify, /redact_release_logs/);
 	assert.ok(fs.existsSync(matrixPath));
 	assert.match(fs.readFileSync(matrixPath, "utf8"), /gate: "live-progression-matrix"/);
 	assert.match(service, /data\.js/);
@@ -90,24 +89,37 @@ test("rollback process capture drains close and redacts before retention", async
 	const child = new EventEmitter();
 	child.stdout = new EventEmitter();
 	child.stderr = new EventEmitter();
+	const phases = [];
 	const runProcess = vm.runInNewContext(`(${rollback.slice(start, end).trim()})`, {
 		spawn: () => child,
-		writeFile: fs.promises.writeFile,
-		redactReleaseLog,
-		assertRedactedReleaseLog,
+		writeFile: async (...args) => {
+			phases.push("write");
+			return fs.promises.writeFile(...args);
+		},
+		redactReleaseLog: (...args) => {
+			phases.push("redact");
+			return redactReleaseLog(...args);
+		},
+		assertRedactedReleaseLog: (...args) => {
+			phases.push("assert");
+			return assertRedactedReleaseLog(...args);
+		},
 	});
 	const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "adventureland-rollback-process-"));
 	const logPath = path.join(temporaryDirectory, "process.log");
 	try {
 		const pending = runProcess("synthetic", [], {}, logPath, root, { redact: true });
-		child.stdout.emit("data", '{"password":"private"}\\n');
+		child.stdout.emit("data", '{"password":"private"}\n');
+		child.stderr.emit("data", 'token=private-token\n');
 		child.emit("exit", 0, null);
-		child.stdout.emit("data", "after-exit-output\\n");
+		child.stdout.emit("data", "after-exit-output\n");
 		child.emit("close", 0, null);
 		const result = await pending;
 		assert.match(result.output, /password.*\[redacted\]/);
 		assert.match(result.output, /after-exit-output/);
+		assert.doesNotMatch(result.output, /private-token/);
 		assert.equal(fs.readFileSync(logPath, "utf8"), result.output);
+		assert.deepEqual(phases, ["redact", "assert", "write"]);
 	} finally {
 		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 	}
@@ -123,8 +135,14 @@ test("progression events stay queued until a successful persistence boundary", (
 	assert.doesNotMatch(server.slice(resendStart, resendEnd), /flushPlayerProgressionEvents/);
 	const syncStart = server.indexOf("async function sync_call(player)");
 	const syncEnd = server.indexOf("\n\t// stop_call:", syncStart);
+	assert.notEqual(syncStart, -1);
+	assert.ok(syncEnd > syncStart);
 	const syncBlock = server.slice(syncStart, syncEnd);
-	assert.ok(syncBlock.indexOf("await tx_save(entity)") < syncBlock.indexOf("flushPlayerProgressionEvents(player)"));
+	const saveIndex = syncBlock.indexOf("await tx_save(entity)");
+	const flushIndex = syncBlock.indexOf("flushPlayerProgressionEvents(player)");
+	assert.notEqual(saveIndex, -1);
+	assert.notEqual(flushIndex, -1);
+	assert.ok(saveIndex < flushIndex);
 });
 
 test("canonical release log policy round-trips structured secrets", async () => {
@@ -221,19 +239,25 @@ test("browser death expression executes and validator rejects malformed evidence
 	assert.doesNotThrow(() => new Function(expression));
 	assert.equal((expression.match(/let currentTarget\s*=/g) || []).length, 1);
 	assert.equal((expression.match(/const currentTarget\s*=/g) || []).length, 0);
-	const listeners = new Map();
-	const socket = {
-		on(event, handler) {
-			if (!listeners.has(event)) listeners.set(event, new Set());
-			listeners.get(event).add(handler);
-		},
-		off(event, handler) {
-			listeners.get(event)?.delete(handler);
-		},
-		emit(event, payload) {
-			for (const handler of [...(listeners.get(event) || [])]) handler(payload);
-		},
+	const createSocket = () => {
+		const listeners = new Map();
+		return {
+			listeners,
+			socket: {
+				on(event, handler) {
+					if (!listeners.has(event)) listeners.set(event, new Set());
+					listeners.get(event).add(handler);
+				},
+				off(event, handler) {
+					listeners.get(event)?.delete(handler);
+				},
+				emit(event, payload) {
+					for (const handler of [...(listeners.get(event) || [])]) handler(payload);
+				},
+			},
+		};
 	};
+	const { listeners, socket } = createSocket();
 	const character = {
 		name: "hero",
 		rip: false,
@@ -264,7 +288,8 @@ test("browser death expression executes and validator rejects malformed evidence
 		y: 0,
 		target: null,
 	};
-	const windowContext = { entities: { [target.id]: target }, ui_log: () => undefined };
+	const originalUiLog = () => undefined;
+	const windowContext = { entities: { [target.id]: target }, ui_log: originalUiLog };
 	const execution = vm.runInNewContext(`(${expression})`, {
 		character,
 		G: { abilities: { taunt: { mp: 1 } }, monsters: { goo: { passive: false } } },
@@ -304,6 +329,57 @@ test("browser death expression executes and validator rejects malformed evidence
 	assert.equal(liveDeath.terminal_hit.event_index, 3);
 	assert.equal(liveDeath.terminal_hit.response_event_index, 4);
 	assert.equal(liveDeath.victim_id, character.name);
+	assert.equal([...listeners.values()].some((handlers) => handlers.size > 0), false);
+	assert.equal(windowContext.ui_log, originalUiLog);
+
+	const ambiguous = createSocket();
+	const ambiguousCharacter = structuredClone(character);
+	const ambiguousTarget = structuredClone(target);
+	const ambiguousUiLog = () => undefined;
+	const ambiguousWindow = {
+		entities: { [ambiguousTarget.id]: ambiguousTarget },
+		ui_log: ambiguousUiLog,
+	};
+	const ambiguousExecution = vm.runInNewContext(`(${expression})`, {
+		character: ambiguousCharacter,
+		G: { abilities: { taunt: { mp: 1 } }, monsters: { goo: { passive: false } } },
+		window: ambiguousWindow,
+		socket: ambiguous.socket,
+		smart_move: async () => undefined,
+		use_ability: async (name, id) => {
+			ambiguousTarget.target = ambiguousCharacter.name;
+			return { success: true, id: String(id), place: name };
+		},
+		TextEncoder,
+		setTimeout,
+		clearTimeout,
+	});
+	await new Promise((resolve) => setImmediate(resolve));
+	ambiguous.socket.emit("hit", {
+		id: ambiguousCharacter.name,
+		hid: ambiguousTarget.id,
+		damage: 10,
+		kill: true,
+		source: "attack",
+	});
+	ambiguous.socket.emit("hit", {
+		id: ambiguousCharacter.name,
+		hid: "same-type-other-monster",
+		damage: 10,
+		kill: true,
+		source: "attack",
+	});
+	ambiguous.socket.emit("game_response", {
+		response: "defeated_by_a_monster",
+		monster: ambiguousTarget.mtype,
+		death_sickness_until: ambiguousCharacter.death_sickness_until,
+	});
+	ambiguousCharacter.rip = true;
+	ambiguous.socket.emit("player");
+	const ambiguousDeath = await ambiguousExecution;
+	assert.equal(ambiguousDeath.terminal_hit, null);
+	assert.equal([...ambiguous.listeners.values()].some((handlers) => handlers.size > 0), false);
+	assert.equal(ambiguousWindow.ui_log, ambiguousUiLog);
 
 	const validatorPath = path.join(root, "scripts/validate-release-gate.mjs");
 	const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "adventureland-browser-contract-"));
@@ -365,11 +441,16 @@ test("browser death expression executes and validator rejects malformed evidence
 			},
 		},
 	};
-	const runValidator = (candidate, expectedExit = false) => {
+	const runValidator = (
+		candidate,
+		expectedExit = false,
+		expectedGate = "browser-smoke",
+		expectedDatabase = "skill-reset-test",
+	) => {
 		fs.writeFileSync(resultPath, JSON.stringify(candidate));
 		fs.writeFileSync(logPath, `${JSON.stringify(candidate)}\n`);
 		const invoke = () =>
-			execFileSync(process.execPath, [validatorPath, logPath, "browser-smoke", "skill-reset-test", resultPath], {
+			execFileSync(process.execPath, [validatorPath, logPath, expectedGate, expectedDatabase, resultPath], {
 				cwd: root,
 				stdio: "pipe",
 			});
@@ -384,6 +465,12 @@ test("browser death expression executes and validator rejects malformed evidence
 		const malformedVictim = structuredClone(result);
 		malformedVictim.browser.ui.liveDeath.terminal_hit.victim_id = "other-player";
 		runValidator(malformedVictim, true);
+		const mismatchedOuterIdentity = structuredClone(result);
+		mismatchedOuterIdentity.character = "other-player";
+		runValidator(mismatchedOuterIdentity, true);
+		const emptyOuterIdentity = structuredClone(result);
+		emptyOuterIdentity.character = "";
+		runValidator(emptyOuterIdentity, true);
 		const malformedSkills = structuredClone(result);
 		delete malformedSkills.browser.ui.liveDeath.skills.merchant;
 		runValidator(malformedSkills, true);
@@ -411,6 +498,13 @@ test("browser death expression executes and validator rejects malformed evidence
 			"x".repeat(257),
 		];
 		runValidator(oversizedLog, true);
+		const multibyteOversizedLog = structuredClone(result);
+		multibyteOversizedLog.browser.ui.liveDeath.serverLogs = [
+			"Death sickness applied for 5 minutes",
+			"é".repeat(200),
+		];
+		runValidator(multibyteOversizedLog, true);
+		runValidator(result, true, "unsupported-gate");
 	} finally {
 		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 	}

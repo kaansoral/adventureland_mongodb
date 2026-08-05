@@ -320,10 +320,7 @@ function assertStableMerchantIdentity(player) {
 }
 
 function ensureStableMerchantIdentity(player) {
-	assertStableMerchantIdentity(player);
 	ensurePlayerContainers(player);
-	if (player.info.merchant_accrual.merchant_id !== player.real_id)
-		throw runtimeError("invalid_merchant_identity", "Merchant accrual belongs to a different character");
 }
 
 function validateMerchantLuck(player, targetId) {
