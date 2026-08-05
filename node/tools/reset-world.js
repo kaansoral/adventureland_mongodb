@@ -512,7 +512,7 @@ async function runReset(options = {}) {
 					mapHash: transactionMaps.sha256,
 					mapCount: transactionMaps.mapCount,
 					counts: transactionCounts,
-					indexes: await verifyWorldIndexes(db, { session }),
+					indexes: verifiedIndexes,
 				};
 				if (typeof options.postcheckHook === "function")
 					await options.postcheckHook({ db, session, plan, deleted, validation: transactionValidation });
@@ -522,7 +522,7 @@ async function runReset(options = {}) {
 		}
 		const afterCounts = transactionValidation.counts;
 		const afterValidation = transactionValidation;
-		const indexes = transactionValidation.indexes;
+		const indexes = await verifyWorldIndexes(db);
 		const report = redactResetReport({
 			timestamp: new Date().toISOString(),
 			mode: "executed",
