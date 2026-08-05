@@ -302,7 +302,8 @@ function validateMerchantAccrual(state, now = Date.now(), { allowExpired = false
 			!Number.isSafeInteger(marker.units) ||
 			marker.units <= 0 ||
 			!Number.isSafeInteger(marker.expires_at) ||
-			(!allowExpired && (marker.expires_at <= now || marker.expires_at > now + HOUR))
+			(!allowExpired && marker.expires_at <= now) ||
+			marker.expires_at > now + HOUR
 		)
 			throw merchantError("invalid_merchant_state", "Invalid saturated award marker");
 	}
@@ -322,7 +323,8 @@ function validateMerchantAccrual(state, now = Date.now(), { allowExpired = false
 			!Number.isSafeInteger(credit.units) ||
 			credit.units <= 0 ||
 			!Number.isSafeInteger(credit.expires_at) ||
-			(!allowExpired && (credit.expires_at <= now || credit.expires_at > now + HOUR))
+			(!allowExpired && credit.expires_at <= now) ||
+			credit.expires_at > now + HOUR
 		)
 			throw merchantError("invalid_merchant_state", "Invalid pending Merchant credit");
 	}
@@ -347,7 +349,8 @@ function validateMerchantAccrual(state, now = Date.now(), { allowExpired = false
 			typeof source.source_id !== "string" ||
 			!source.source_id ||
 			!Number.isSafeInteger(source.expires_at) ||
-			(!allowExpired && (source.expires_at <= now || source.expires_at > now + HOUR))
+			(!allowExpired && source.expires_at <= now) ||
+			source.expires_at > now + HOUR
 		)
 			throw merchantError("invalid_merchant_state", "Invalid processed Merchant source");
 	}

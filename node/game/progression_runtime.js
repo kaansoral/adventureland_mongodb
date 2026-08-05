@@ -306,28 +306,21 @@ function recordMerchantLuck(player, targetId, now = Date.now()) {
 	return result;
 }
 
-function validateMerchantAccrualForAction(state, now = Date.now()) {
-	validateMerchantAccrual(state, now, { allowExpired: true });
-	const futureLimit = now + progression.STAND_HOUR_MS;
-	const expiries = [
-		...state.pending_credits.map((credit) => credit.expires_at),
-		...state.processed_sources.map((source) => source.expires_at),
-		...(state.saturated_award_units ? [state.saturated_award_units.expires_at] : []),
-	];
-	if (expiries.some((expiresAt) => expiresAt > futureLimit))
-		throw runtimeError("invalid_merchant_state", "Merchant expiry exceeds the one-hour action window");
-}
-
 function assertStableMerchantIdentity(player) {
 	if (!player || typeof player !== "object" || !player.info || typeof player.info !== "object" || !player.info.skills)
 		throw runtimeError("invalid_character_skill_state", "Persisted info.skills is required");
 	const existingAccrual =
 		player.info.merchant_accrual !== undefined ? player.info.merchant_accrual : player.merchant_accrual;
-	if (existingAccrual !== undefined) validateMerchantAccrualForAction(existingAccrual);
+	if (existingAccrual !== undefined) validateMerchantAccrual(existingAccrual, Date.now(), { allowExpired: true });
 	if (typeof player.real_id !== "string" || !player.real_id)
 		throw runtimeError("invalid_merchant_identity", "Merchant actions require a stable character ID");
 	if (existingAccrual && existingAccrual.merchant_id !== player.real_id)
 		throw runtimeError("invalid_merchant_identity", "Merchant accrual belongs to a different character");
+	return existingAccrual;
+}
+
+function ensureStableMerchantIdentity(player) {
+	assertStableMerchantIdentity(player);
 	ensurePlayerContainers(player);
 	if (player.info.merchant_accrual.merchant_id !== player.real_id)
 		throw runtimeError("invalid_merchant_identity", "Merchant accrual belongs to a different character");
@@ -337,6 +330,7 @@ function validateMerchantLuck(player, targetId) {
 	assertStableMerchantIdentity(player);
 	if (typeof targetId !== "string" || !targetId)
 		throw runtimeError("invalid_merchant_target", "Merchant luck requires a stable target ID");
+	ensureStableMerchantIdentity(player);
 }
 
 function recordMerchantSale(player, details) {
@@ -357,6 +351,7 @@ function assertStableMerchantOwner(player, details) {
 	assertStableMerchantIdentity(player);
 	if (!details || details.merchantOwnerId !== player.real_id)
 		throw runtimeError("invalid_merchant_owner", "Merchant sale owner does not match the character ID");
+	ensureStableMerchantIdentity(player);
 }
 
 function recordMerchantAction(player, details) {

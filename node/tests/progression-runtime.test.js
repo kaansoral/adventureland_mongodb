@@ -386,6 +386,19 @@ test("Merchant identity precedence rejects invalid expiry and preserves sale sta
 	assert.doesNotThrow(() => validateMerchantLuck(authoritativeCharacter, "target-real-id"));
 	assert.equal(authoritativeCharacter.info.merchant_accrual.merchant_id, authoritativeCharacter.real_id);
 	assert.equal(authoritativeCharacter.merchant_accrual, undefined);
+	for (const merchantId of ["merchant-real-id", "other-real-id"]) {
+		const malformedAuthoritative = player();
+		malformedAuthoritative.real_id = "merchant-real-id";
+		malformedAuthoritative.info.merchant_accrual = { merchant_id: merchantId };
+		malformedAuthoritative.merchant_accrual = createMerchantAccrual(malformedAuthoritative.real_id);
+		const info = structuredClone(malformedAuthoritative.info);
+		const alias = structuredClone(malformedAuthoritative.merchant_accrual);
+		assert.throws(() => validateMerchantLuck(malformedAuthoritative, "target-real-id"), {
+			code: "invalid_merchant_state",
+		});
+		assert.deepEqual(malformedAuthoritative.info, info);
+		assert.deepEqual(malformedAuthoritative.merchant_accrual, alias);
+	}
 
 	for (const merchantId of [undefined, "", 42]) {
 		const malformed = player();
@@ -396,38 +409,67 @@ test("Merchant identity precedence rejects invalid expiry and preserves sale sta
 	}
 
 	const now = Date.now();
-	const future = player();
-	future.real_id = "merchant-real-id";
-	future.info.merchant_accrual = createMerchantAccrual(future.real_id);
-	future.info.merchant_accrual.pending_credits.push({
-		source_id: "future-credit",
-		kind: "mluck",
-		units: 1,
-		expires_at: now + progression.STAND_HOUR_MS + 1,
-	});
-	assert.throws(() => validateMerchantLuck(future, "target-real-id"), { code: "invalid_merchant_state" });
-	const expired = player();
-	expired.real_id = "merchant-real-id";
-	expired.info.merchant_accrual = createMerchantAccrual(expired.real_id);
-	expired.info.merchant_accrual.pending_credits.push({
-		source_id: "expired-credit",
-		kind: "mluck",
-		units: 1,
-		expires_at: now - 1,
-	});
-	assert.doesNotThrow(() => validateMerchantLuck(expired, "target-real-id"));
+	for (const [field, addExpiry] of [
+		[
+			"pending_credits",
+			(state, expiresAt) =>
+				state.pending_credits.push({ source_id: "expiry-credit", kind: "mluck", units: 1, expires_at: expiresAt }),
+		],
+		[
+			"processed_sources",
+			(state, expiresAt) => state.processed_sources.push({ source_id: "expiry-source", expires_at: expiresAt }),
+		],
+		[
+			"saturated_award_units",
+			(state, expiresAt) => {
+				state.saturated_award_units = { units: 1, expires_at: expiresAt };
+			},
+		],
+	]) {
+		for (const [label, expiresAt, shouldThrow] of [
+			["future", now + progression.STAND_HOUR_MS * 2, true],
+			["expired", now - 1, false],
+		]) {
+			const character = player();
+			character.real_id = "merchant-real-id";
+			character.info.merchant_accrual = createMerchantAccrual(character.real_id);
+			addExpiry(character.info.merchant_accrual, expiresAt);
+			const info = structuredClone(character.info);
+			const p = structuredClone(character.p);
+			const t = structuredClone(character.t);
+			if (shouldThrow)
+				assert.throws(() => validateMerchantLuck(character, "target-real-id"), { code: "invalid_merchant_state" });
+			else assert.doesNotThrow(() => validateMerchantLuck(character, "target-real-id"));
+			if (shouldThrow) {
+				assert.deepEqual(character.info, info, `${field} ${label} mutated info`);
+				assert.deepEqual(character.p, p, `${field} ${label} mutated p`);
+				assert.deepEqual(character.t, t, `${field} ${label} mutated t`);
+			}
+		}
+	}
 
-	for (const method of [recordMerchantSale, recordMerchantSaleReversal]) {
+	for (const accrual of [undefined, createMerchantAccrual("merchant-real-id")]) {
 		const character = player();
+		character.real_id = "merchant-real-id";
+		if (accrual) character.merchant_accrual = accrual;
 		character.mp = 100;
 		character.s = {};
 		const info = structuredClone(character.info);
 		const p = structuredClone(character.p);
 		const t = structuredClone(character.t);
-		assert.throws(() => method(character, { merchantOwnerId: "fallback-id" }), { code: "invalid_merchant_identity" });
-		assert.deepEqual(character.info, info);
-		assert.deepEqual(character.p, p);
-		assert.deepEqual(character.t, t);
+		const alias = structuredClone(character.merchant_accrual);
+		for (const method of [recordMerchantSale, recordMerchantSaleReversal]) {
+			const candidate = player();
+			candidate.real_id = character.real_id;
+			candidate.merchant_accrual = structuredClone(character.merchant_accrual);
+			candidate.mp = character.mp;
+			candidate.s = structuredClone(character.s);
+			assert.throws(() => method(candidate, { merchantOwnerId: "fallback-id" }), { code: "invalid_merchant_owner" });
+			assert.deepEqual(candidate.info, info);
+			assert.deepEqual(candidate.p, p);
+			assert.deepEqual(candidate.t, t);
+			assert.deepEqual(candidate.merchant_accrual, alias);
+		}
 	}
 });
 
@@ -442,27 +484,35 @@ test("server Merchant Luck handler rejects invalid identity before MP or conditi
 	const runHandler = (character) => {
 		const target = { real_id: "target-real-id", name: "target", owner: "other", s: {} };
 		const responses = [];
-		const handler = vm.runInNewContext(`(function(data) {${handlerBody}\n})`, {
-			player: character,
-			target,
-			gSkill: { condition: "mluck", mp: 10 },
-			G: { conditions: { mluck: { duration: 1000 } } },
-			validateMerchantLuck,
-			fail_response: (response, name) => {
-				responses.push({ response, name });
-				return { failed: true };
+		const uiEvents = [];
+		let recorded = 0;
+		const handler = vm.runInNewContext(
+			`(function(data) {${handlerBody}\nif (resolve) socket.emit("game_response", resolve);\n})`,
+			{
+				player: character,
+				target,
+				socket: { emit: (name, payload) => responses.push({ name, payload }) },
+				resolve: { response: "data", place: "mluck", success: true },
+				gSkill: { condition: "mluck", mp: 10 },
+				G: { conditions: { mluck: { duration: 1000 } } },
+				validateMerchantLuck,
+				fail_response: (response, name) => {
+					responses.push({ response, name });
+					return { failed: true };
+				},
+				consume_mp: (actor, cost) => {
+					actor.mp -= cost;
+				},
+				recordMerchantLuck: (actor, targetId, now) => {
+					recorded += 1;
+					return recordMerchantLuck(actor, targetId, now);
+				},
+				xy_emit: (...args) => uiEvents.push(args),
+				resend: () => undefined,
 			},
-			consume_mp: (actor, cost) => {
-				actor.mp -= cost;
-			},
-			recordMerchantLuck: () => {
-				throw new Error("invalid Merchant Luck should not record");
-			},
-			xy_emit: () => undefined,
-			resend: () => undefined,
-		});
+		);
 		handler({ name: "mluck" });
-		return { target, responses };
+		return { target, responses, uiEvents, recorded };
 	};
 	for (const character of [
 		Object.assign(player(), { mp: 100, s: {} }),
@@ -484,6 +534,25 @@ test("server Merchant Luck handler rejects invalid identity before MP or conditi
 		assert.deepEqual(character.t, t);
 		assert.deepEqual(targetState.target.s, {});
 	}
+	const valid = player();
+	valid.real_id = "merchant-real-id";
+	valid.info.merchant_accrual = createMerchantAccrual(valid.real_id);
+	valid.mp = 100;
+	valid.s = {};
+	const validState = runHandler(valid);
+	assert.equal(valid.mp, 90);
+	assert.equal(validState.recorded, 1);
+	assert.equal(validState.target.s.mluck.source_id, valid.real_id);
+	assert.equal(valid.info.merchant_accrual.rolling_hour_luck_uses.length, 1);
+	assert.deepEqual(validState.responses, [
+		{ name: "game_response", payload: { response: "data", place: "mluck", success: true } },
+	]);
+	assert.equal(validState.uiEvents.length, 1);
+	assert.equal(validState.uiEvents[0][0], valid);
+	assert.equal(validState.uiEvents[0][1], "ui");
+	assert.equal(validState.uiEvents[0][2].type, "mluck");
+	assert.equal(validState.uiEvents[0][2].from, undefined);
+	assert.equal(validState.uiEvents[0][2].to, "target");
 });
 
 test("client condition projections do not expose Merchant source IDs", () => {
