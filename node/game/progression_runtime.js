@@ -319,15 +319,11 @@ function assertStableMerchantIdentity(player) {
 	return existingAccrual;
 }
 
-function ensureStableMerchantIdentity(player) {
-	ensurePlayerContainers(player);
-}
-
 function validateMerchantLuck(player, targetId) {
 	assertStableMerchantIdentity(player);
 	if (typeof targetId !== "string" || !targetId)
 		throw runtimeError("invalid_merchant_target", "Merchant luck requires a stable target ID");
-	ensureStableMerchantIdentity(player);
+	ensurePlayerContainers(player);
 }
 
 function recordMerchantSale(player, details) {
@@ -348,7 +344,7 @@ function assertStableMerchantOwner(player, details) {
 	assertStableMerchantIdentity(player);
 	if (!details || details.merchantOwnerId !== player.real_id)
 		throw runtimeError("invalid_merchant_owner", "Merchant sale owner does not match the character ID");
-	ensureStableMerchantIdentity(player);
+	ensurePlayerContainers(player);
 }
 
 function recordMerchantAction(player, details) {

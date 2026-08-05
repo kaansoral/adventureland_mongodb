@@ -296,7 +296,23 @@ test("browser death expression executes and validator rejects malformed evidence
 	const browser = fs.readFileSync(path.join(root, "scripts/browser-smoke.mjs"), "utf8");
 	const expressionStartMarker = "const liveDeath = await cdp.evaluate(`";
 	const expressionStart = browser.indexOf(expressionStartMarker);
-	const expressionEnd = browser.indexOf("`);", expressionStart);
+	const findTemplateEnd = (source, start) => {
+		let escaped = false;
+		for (let index = start; index < source.length; index += 1) {
+			const character = source[index];
+			if (escaped) {
+				escaped = false;
+				continue;
+			}
+			if (character === "\\") {
+				escaped = true;
+				continue;
+			}
+			if (character === "`") return index;
+		}
+		return -1;
+	};
+	const expressionEnd = findTemplateEnd(browser, expressionStart + expressionStartMarker.length);
 	assert.notEqual(expressionStart, -1, "browser death expression was not found");
 	assert.notEqual(expressionEnd, -1, "browser death expression terminator was not found");
 	const expression = browser.slice(expressionStart + expressionStartMarker.length, expressionEnd);
@@ -569,6 +585,7 @@ test("browser death expression executes and validator rejects malformed evidence
 		];
 		runValidator(multibyteOversizedLog, true);
 		runValidator(result, true, "unsupported-gate");
+		runValidator(result, true, "browser-smoke", "other-database");
 	} finally {
 		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 	}
