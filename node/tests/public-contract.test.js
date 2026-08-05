@@ -70,8 +70,7 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 
 	assert.doesNotMatch(server, /socket\.on\("skill"/);
 	assert.doesNotMatch(server, /socket\.fs\.skill/);
-	assert.match(server, /socket\.on\("attack"[\s\S]*?socket\.fs\.ability/);
-	assert.match(server, /socket\.on\("heal"[\s\S]*?socket\.fs\.ability/);
+	assert.doesNotMatch(server, /socket\.on\("(?:attack|heal)"/);
 	assert.doesNotMatch(server, /server_log\("skill name=/);
 	assert.match(server, /server_log\("ability actor_id=/);
 	assert.doesNotMatch(server, /abilityTarget/);
@@ -107,6 +106,7 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 
 	assert.doesNotMatch(browser, /G\.classes|G\.levels|use_skill|next_skill|skill_timeout|\.ctype/);
 	assert.match(browser, /socket\.emit\("ability"/);
+	assert.doesNotMatch(browser, /socket\.emit\("(?:attack|heal)"/);
 	assert.match(browser, /socket\.on\("ability_timeout"/);
 	assert.match(browser, /socket\.on\("skill_xp"/);
 	assert.match(browser, /socket\.on\("skill_level_up"/);

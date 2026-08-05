@@ -1031,14 +1031,12 @@ function on_ability(key, event) {
 	} else if (name == "attack") {
 		var target = xtarget || ctarget;
 		if (target && target.id) {
-			socket.emit("attack", { id: target.id });
-			push_deferred("attack");
+			use_ability("attack", target);
 		} else add_log("No target", "gray");
 	} else if (name == "heal") {
 		var target = xtarget || ctarget;
 		if (target && target.id) {
-			socket.emit("heal", { id: target.id });
-			push_deferred("heal");
+			use_ability("heal", target);
 		} else add_log("No target", "gray");
 	} else if (name == "blink") {
 		if (event) blink_pressed = true;

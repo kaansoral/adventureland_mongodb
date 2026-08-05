@@ -2213,7 +2213,6 @@ function init_socket(args) {
 				ui_log("Dismantled " + G.items[data.name].name, "#CF5C65");
 			} else if (response == "defeated_by_a_monster") {
 				ui_log("Defeated by " + G.monsters[data.monster].name, "#571F1B");
-				ui_log("No skill experience was lost", "gray");
 			} else if (response == "dismantle_cant") ui_log("Can't dismantle", "gray");
 			else if (response == "inv_size") ui_log("Need more empty space", "gray");
 			else if (response == "craft_cant") ui_log("Can't craft", "gray");
@@ -3439,8 +3438,7 @@ function player_attack(event, code) {
 		d_text("FRIENDLY", character);
 		return rejecting_promise({ reason: "friendly" });
 	}
-	socket.emit("attack", { id: ctarget.id });
-	return push_deferred("attack");
+	return use_ability("attack", ctarget);
 }
 
 function player_heal(event, code) {
@@ -3461,8 +3459,7 @@ function player_heal(event, code) {
 			});
 		return rejecting_promise({ reason: "too_far", distance: distance(this, character) });
 	}
-	socket.emit("heal", { id: this.id });
-	return push_deferred("heal");
+	return use_ability("heal", this);
 }
 
 function monster_attack(event, code) {
@@ -3476,8 +3473,7 @@ function monster_attack(event, code) {
 		}); // Added +10 - otherwise seems unfair [17/06/18]
 		return rejecting_promise({ reason: "too_far", distance: distance(this, character) });
 	}
-	socket.emit("attack", { id: this.id });
-	return push_deferred("attack");
+	return use_ability("attack", this);
 }
 
 function player_right_click(event) {

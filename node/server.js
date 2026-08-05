@@ -9747,12 +9747,6 @@ function init_io() {
 			// You'll be missed 'click' method, the 'click' method was the first method on this server, it was used as an attack method up until [17/06/18] - at this date, there were 3 simple conditions left which checked for data.button=="right" - the game matured so that all interactions were handled client-side rather than processed server-side
 			socket.emit("game_log", "'click' method is deprecated.");
 		});
-		socket.on("attack", function (data) {
-			return socket.fs.ability({ name: "attack", id: data.id });
-		});
-		socket.on("heal", function (data) {
-			return socket.fs.ability({ name: "heal", id: data.id });
-		});
 		socket.on("interaction", function (data) {
 			var player = players[socket.id];
 			if (!player) {

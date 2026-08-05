@@ -29,6 +29,7 @@ test("browser code has a single ability action vocabulary", () => {
 	assert.match(code, /function use_ability\(/);
 	assert.match(code, /function ability_timeout\(/);
 	assert.match(code, /socket\.emit\("ability"/);
+	assert.doesNotMatch(code, /socket\.emit\("(?:attack|heal)"/);
 	assert.match(code, /socket\.on\("ability_timeout"/);
 });
 
