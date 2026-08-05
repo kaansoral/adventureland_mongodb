@@ -146,11 +146,7 @@ test("queued multi-style progression preserves protocol snapshots and excludes r
 		labels.map((label) => [label, 0, 0]),
 	);
 
-	awardPlayerSkillXpSplit(
-		character,
-		{ warrior: 100, rogue: 200 },
-		{ source: "pve_damage", sourceId: "queued:styles" },
-	);
+	awardPlayerSkillXpSplit(character, { warrior: 100, rogue: 200 }, { source: "pve_damage", sourceId: "queued:styles" });
 	assert.equal(character.progression_events.length, 2);
 	const pending = Object.fromEntries(labels.map((label) => [label, playerToClient(character)]));
 	for (const label of labels) {
