@@ -51,12 +51,12 @@ test(
 			const guard = async () => ({ activePidFiles: [], openPorts: [], clear: true });
 			const run = (argv, extra = {}) =>
 				require("../tools/reset-world").runReset({
-					...extra,
 					argv,
 					env: { ADVENTURELAND_RESET_MONGODB_URI: targetUri },
 					leaseDir,
 					writerGuard: guard,
 					stdout: () => {},
+					...extra,
 				});
 
 			const dry = await run(["--database", targetDatabase]);
