@@ -19,6 +19,7 @@ const {
 	refreshDeathSickness,
 	rehydratePlayerDeathSickness,
 } = require("../game/progression_runtime");
+const { cumulativeXp } = require("../game/skill_domain");
 const { progression } = require("../../design/progression");
 
 function player() {
@@ -96,6 +97,65 @@ test("runtime awards persist complete skill deltas and reject replay", () => {
 	});
 	assert.equal(duplicate.duplicate, true);
 	assert.equal(character.skills.warrior.xp, 100);
+});
+
+test("runtime emits exact multi-level snapshots and suppresses replay events", () => {
+	const character = player();
+	character.info.skills.warrior = { level: 1, xp: cumulativeXp(2) - 1 };
+	character.total_level = 7;
+	initializePlayerProgression(character, 0);
+	const requestedXp = cumulativeXp(4) - character.skills.warrior.xp + 1;
+	const delta = awardPlayerSkillXp(character, "warrior", requestedXp, {
+		source: "pve_damage",
+		sourceId: "encounter:multi-level",
+	});
+	assert.deepEqual(delta, {
+		skill: "warrior",
+		accepted_xp: requestedXp,
+		discarded_xp: 0,
+		from_level: 1,
+		to_level: 4,
+		levels_gained: 3,
+		xp: cumulativeXp(4) + 1,
+		max_xp: cumulativeXp(5),
+		total_level: 10,
+	});
+	assert.equal(flushPlayerProgressionEvents(character), 1);
+	assert.deepEqual(character.socket.events, [
+		[
+			"skill_xp",
+			{
+				accepted_xp: requestedXp,
+				discarded_xp: 0,
+				from_level: 1,
+				to_level: 4,
+				xp: cumulativeXp(4) + 1,
+				max_xp: cumulativeXp(5),
+				total_level: 10,
+				skill: "warrior",
+				skills: {
+					warrior: { level: 4, xp: cumulativeXp(4) + 1, max_xp: cumulativeXp(5) },
+					paladin: { level: 1, xp: 0, max_xp: cumulativeXp(2) },
+					mage: { level: 1, xp: 0, max_xp: cumulativeXp(2) },
+					priest: { level: 1, xp: 0, max_xp: cumulativeXp(2) },
+					ranger: { level: 1, xp: 0, max_xp: cumulativeXp(2) },
+					rogue: { level: 1, xp: 0, max_xp: cumulativeXp(2) },
+					merchant: { level: 1, xp: 0, max_xp: cumulativeXp(2) },
+				},
+			},
+		],
+		[
+			"skill_level_up",
+			{ skill: "warrior", from_level: 1, to_level: 4, levels_gained: 3, total_level: 10 },
+		],
+	]);
+	const duplicate = awardPlayerSkillXp(character, "warrior", requestedXp, {
+		source: "pve_damage",
+		sourceId: "encounter:multi-level",
+	});
+	assert.equal(duplicate.duplicate, true);
+	assert.equal(flushPlayerProgressionEvents(character), 0);
+	assert.equal(character.socket.events.length, 2);
 });
 
 test("runtime keeps full player snapshots at the last emitted progression state", () => {
