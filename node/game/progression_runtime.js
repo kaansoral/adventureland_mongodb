@@ -7,7 +7,6 @@ const { awardSkillXp } = require("./skill_progression");
 const {
 	createMerchantAccrual,
 	settleStand,
-	addCredit,
 	qualifyLuck,
 	recordSale,
 	recordSaleReversal,
@@ -347,13 +346,6 @@ function assertStableMerchantOwner(player, details) {
 	ensurePlayerContainers(player);
 }
 
-function recordMerchantAction(player, details) {
-	ensurePlayerContainers(player);
-	const result = addCredit(player.info.merchant_accrual, details);
-	player.info.merchant_accrual = result.state;
-	return result;
-}
-
 function recordMerchantDonationOrDice(player, details) {
 	ensurePlayerContainers(player);
 	const result = recordDonationOrDice(player.info.merchant_accrual, details);
@@ -393,7 +385,6 @@ module.exports = {
 	validateMerchantLuck,
 	recordMerchantSale,
 	recordMerchantSaleReversal,
-	recordMerchantAction,
 	recordMerchantDonationOrDice,
 	refreshDeathSickness,
 	rehydratePlayerDeathSickness,
