@@ -90,6 +90,9 @@ test(
 				normalBackup,
 			]);
 			assert.equal(executed.report.mapHash, liveValidation.sha256);
+			assert.equal(executed.report.transactionValidation.mapHash, liveValidation.sha256);
+			assert.deepEqual(executed.report.transactionValidation.extras, liveValidation.extras);
+			assert.deepEqual(executed.report.mapExtras, liveValidation.extras);
 			assert.equal(executed.report.preResetMapHash, liveValidation.sha256);
 			assert.equal(executed.report.backup.verified, true);
 			assert.deepEqual(await verifyWorldIndexes(target), await ensureWorldIndexes(target));
@@ -195,6 +198,8 @@ test(
 			]);
 			assert.equal(reseeded.report.mapCount, seed.manifest.documentCount);
 			assert.equal(reseeded.report.mapHash, seed.manifest.sha256);
+			assert.equal(reseeded.report.transactionValidation.mapHash, seed.manifest.sha256);
+			assert.deepEqual(reseeded.report.transactionValidation.extras, []);
 			assert.deepEqual(
 				validateMapDocuments(await readMapDocuments(target), { maps: DESIGN_MAPS, exact: true }).extras,
 				[],

@@ -133,6 +133,7 @@ function redactResetReport(input) {
 		backupDir: input.backupDir,
 		backup: input.backup,
 		indexes: input.indexes,
+		transactionValidation: input.transactionValidation,
 		reseedMaps: Boolean(input.reseedMaps),
 		warning: RESET_WARNING,
 		nextBoot: "scripts/service-server.sh",
@@ -523,6 +524,7 @@ async function runReset(options = {}) {
 				transactionValidation = {
 					mapHash: transactionMaps.sha256,
 					mapCount: transactionMaps.mapCount,
+					extras: transactionMaps.extras,
 					counts: transactionCounts,
 					indexes: verifiedIndexes,
 				};
@@ -545,7 +547,7 @@ async function runReset(options = {}) {
 			preResetMapCount: liveDocuments.length,
 			targetMapHash: mapHash,
 			targetMapCount: afterValidation.mapCount,
-			mapHash: afterValidation.sha256,
+			mapHash: afterValidation.mapHash,
 			mapCount: afterValidation.mapCount,
 			mapExtras: afterValidation.extras,
 			guards,
