@@ -10386,7 +10386,7 @@ function init_io() {
 			}
 
 			if (gameplay == "hardcore") {
-				reset_player(player);
+				reset_player(player, true);
 			} //  || gameplay=="test"
 
 			init_player(player);
