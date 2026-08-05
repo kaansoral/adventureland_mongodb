@@ -782,7 +782,8 @@
             "hp": 0,
             "mp": 0
           }
-        }
+        },
+        "skill_state_unchanged": true
       },
       "reconnect": {
         "rip": false,
@@ -852,7 +853,8 @@
             "hp": 0,
             "mp": 0
           }
-        }
+        },
+        "skill_state_unchanged": true
       },
       "expiry": {
         "exact_timestamp_past": true,
