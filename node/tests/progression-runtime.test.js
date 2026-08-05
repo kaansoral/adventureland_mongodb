@@ -327,7 +327,7 @@ test("runtime Merchant Luck requires stable IDs and deduplicates targets", () =>
 	initializePlayerProgression(character, 0);
 	assert.throws(() => validateMerchantLuck(character, ""), { code: "invalid_merchant_target" });
 	character.info.merchant_accrual.merchant_id = "other-real-id";
-	assert.throws(() => validateMerchantLuck(character, "target-real-id"), { code: "invalid_merchant_state" });
+	assert.throws(() => validateMerchantLuck(character, "target-real-id"), { code: "invalid_merchant_identity" });
 	character.info.merchant_accrual.merchant_id = character.real_id;
 	const first = recordMerchantLuck(character, "target-real-id", 0);
 	const repeated = recordMerchantLuck(character, "target-real-id", 1);
