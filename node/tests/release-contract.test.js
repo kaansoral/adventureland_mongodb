@@ -844,6 +844,22 @@ test("browser death expression executes and validator rejects malformed evidence
 	const skills = Object.fromEntries(
 		["warrior", "paladin", "mage", "priest", "ranger", "rogue", "merchant"].map((name) => [name, { level: 1, xp: 0 }]),
 	);
+	const skillXpEvent = (skill, xp) => ({
+		skill,
+		accepted_xp: xp,
+		discarded_xp: 0,
+		from_level: 1,
+		to_level: 1,
+		xp,
+		max_xp: 500,
+		total_level: 7,
+		skills: Object.fromEntries(
+			Object.keys(skills).map((name) => [
+				name,
+				{ level: 1, xp: name === skill ? xp : 0, max_xp: 500 },
+			]),
+		),
+	});
 	const result = {
 		schemaVersion: 1,
 		gate: "browser-smoke",
@@ -865,10 +881,22 @@ test("browser death expression executes and validator rejects malformed evidence
 					success: true,
 				})),
 				combat: {
+					xpBefore: 0,
+					xpAfter: 10,
+					skillXpObserved: true,
+					skillXpEventCount: 2,
+					warriorEventCount: 1,
+					rogueEventCount: 1,
+					warriorEventSnapshot: skillXpEvent("warrior", 10),
+					rogueEventSnapshot: skillXpEvent("rogue", 10),
 					postSwitch: {
 						skill: "rogue",
 						attempts: 1,
+						xpBefore: 0,
+						xpAfter: 10,
 						xpObserved: true,
+						eventObserved: true,
+						eventCount: 1,
 					},
 				},
 				styleMatrix: {
@@ -946,6 +974,21 @@ test("browser death expression executes and validator rejects malformed evidence
 	};
 	try {
 		runValidator(result);
+		const browserMutations = [
+			(candidate) => delete candidate.browser.ui.combat.warriorEventSnapshot.skills.merchant,
+			(candidate) => { candidate.browser.ui.combat.warriorEventSnapshot.skills.warrior.max_xp = -1; },
+			(candidate) => { candidate.browser.ui.combat.postSwitch.xpAfter = 0; },
+			(candidate) => { candidate.browser.ui.combat.skillXpEventCount = 0; },
+			(candidate) => { candidate.browser.ui.styleMatrix.transitions[0].mainhand = "mace"; },
+			(candidate) => { candidate.browser.ui.appearanceVariants[0].look = 4; },
+			(candidate) => { candidate.browser.ui.standLock.standOpenObserved = false; },
+			(candidate) => { candidate.browser.ui.expiryEvidence.standClosed = false; },
+		];
+		for (const mutate of browserMutations) {
+			const malformed = structuredClone(result);
+			mutate(malformed);
+			runValidator(malformed, true);
+		}
 		const symlinkLogPath = path.join(temporaryDirectory, "browser-log-symlink.log");
 		fs.symlinkSync(logPath, symlinkLogPath);
 		assert.throws(() =>
@@ -1005,6 +1048,48 @@ test("browser death expression executes and validator rejects malformed evidence
 		runValidator(multibyteOversizedLog, true);
 		runValidator(result, true, "unsupported-gate");
 		runValidator(result, true, "browser-smoke", "other-database");
+	} finally {
+		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+	}
+});
+
+test("live progression release validation covers contribution maps, curves, events, and Merchant edges", () => {
+	const root = path.resolve(__dirname, "../../..");
+	const validatorPath = path.join(root, "scripts/validate-release-gate.mjs");
+	const fixturePath = path.join(__dirname, "fixtures/live-progression-matrix-result.json");
+	const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "adventureland-live-contract-"));
+	const logPath = path.join(temporaryDirectory, "live.log");
+	const resultPath = path.join(temporaryDirectory, "live-result.json");
+	const result = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
+	result.target = { database: "skill-reset-test", disposable: true };
+	result.evidence = logPath;
+	const runValidator = (candidate, expectedExit = false) => {
+		fs.writeFileSync(resultPath, JSON.stringify(candidate));
+		fs.writeFileSync(logPath, `${JSON.stringify(candidate)}\n`);
+		const invoke = () =>
+			execFileSync(process.execPath, [validatorPath, logPath, "live-progression-matrix", "skill-reset-test", resultPath], {
+				cwd: root,
+				stdio: "pipe",
+			});
+		if (expectedExit) assert.throws(invoke);
+		else assert.doesNotThrow(invoke);
+	};
+	try {
+		runValidator(result);
+		const mutations = [
+			(candidate) => delete candidate.scenarios.contributions.persisted.skill_xp_delta.merchant,
+			(candidate) => delete candidate.scenarios.contributions.live_action.skill_xp_events[0].skills.merchant,
+			(candidate) => { candidate.scenarios.contributions.live_action.skill_xp_events[0].skills.warrior.maxXp += 1; },
+			(candidate) => candidate.scenarios.contributions.live_action.skill_xp_events.forEach((event) => { event.accepted_xp = 0; }),
+			(candidate) => { candidate.scenarios.merchant.live.open_status = "failed"; },
+			(candidate) => { candidate.scenarios.merchant.canonical.cap_fixture.pending_credit_expiry_pruned = false; },
+			(candidate) => { candidate.scenarios.merchant.persisted.luck_targets = []; },
+		];
+		for (const mutate of mutations) {
+			const malformed = structuredClone(result);
+			mutate(malformed);
+			runValidator(malformed, true);
+		}
 	} finally {
 		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 	}

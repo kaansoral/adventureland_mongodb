@@ -1,0 +1,1438 @@
+{
+  "schemaVersion": 1,
+  "gate": "live-progression-matrix",
+  "ok": true,
+  "target": {
+    "database": "skill-reset-smoke-20260805T132519Z_328073",
+    "disposable": true
+  },
+  "scenarios": {
+    "freshCharacter": {
+      "passed": true,
+      "fixture": {
+        "appearance_only": true,
+        "skill_ids": [
+          "warrior",
+          "paladin",
+          "mage",
+          "priest",
+          "ranger",
+          "rogue",
+          "merchant"
+        ],
+        "all_skills_level": 1,
+        "total_level": 7,
+        "starter_items": [
+          "blade",
+          "mace",
+          "staff",
+          "wbook0",
+          "bow",
+          "claw",
+          "hpot0",
+          "mpot0",
+          "helmet",
+          "shoes"
+        ],
+        "legacy_fields_absent": true
+      },
+      "live": {
+        "protocol": 3,
+        "active_skill": null,
+        "mainhand": null,
+        "all_slots_empty": true
+      },
+      "browser_server_counterpart": {
+        "script": "scripts/browser-smoke.mjs",
+        "browser_opened": false,
+        "server_side_protocol_state_verified": true
+      }
+    },
+    "gatedGear": {
+      "passed": true,
+      "item": "fury",
+      "requirements": [
+        {
+          "skill": "warrior",
+          "level": 20
+        },
+        {
+          "skill": "paladin",
+          "level": 20
+        },
+        {
+          "skill": "ranger",
+          "level": 20
+        },
+        {
+          "skill": "rogue",
+          "level": 20
+        }
+      ],
+      "below": {
+        "code": "ACTION_REJECTED",
+        "response": {
+          "response": "skill_level_required",
+          "place": "equip",
+          "success": false
+        },
+        "state_unchanged": true,
+        "below_requirements": true
+      },
+      "threshold_fixture": {
+        "skills": {
+          "warrior": 20,
+          "paladin": 20,
+          "ranger": 20,
+          "rogue": 20
+        },
+        "total_level": 83,
+        "xp_at_level_threshold": {
+          "warrior": 33829654,
+          "paladin": 33829654,
+          "ranger": 33829654,
+          "rogue": 33829654
+        }
+      },
+      "at_threshold": {
+        "status": "succeeded",
+        "equipped_slot": "helmet",
+        "item": "fury",
+        "all_requirements_satisfied": true,
+        "reconnect_total_level": 83
+      },
+      "canonical_all_of_assertion": true
+    },
+    "rankings": {
+      "passed": true,
+      "fixture": [
+        {
+          "name": "RankHighijbk",
+          "total_level": 90,
+          "merchant": 1,
+          "merchant_xp": 0,
+          "online": true,
+          "stand": false,
+          "owner": "ranking-owner-high-msg4eok1ijbk",
+          "ip": "198.18.0.11",
+          "server": "I",
+          "weapon": null
+        },
+        {
+          "name": "RankMultiijbk",
+          "total_level": 50,
+          "merchant": 20,
+          "merchant_xp": 33829654,
+          "online": true,
+          "stand": true,
+          "owner": "ranking-owner-multi-msg4eok1ijbk",
+          "ip": "198.18.0.12",
+          "server": "I",
+          "weapon": "blade"
+        },
+        {
+          "name": "RankMerchantijbk",
+          "total_level": 20,
+          "merchant": 30,
+          "merchant_xp": 78810912,
+          "online": true,
+          "stand": false,
+          "owner": "ranking-owner-merchant-msg4eok1ijbk",
+          "ip": "198.18.0.13",
+          "server": "I",
+          "weapon": "claw"
+        },
+        {
+          "name": "RankTieHighijbk",
+          "total_level": 26,
+          "merchant": 25,
+          "merchant_xp": 53977609,
+          "online": true,
+          "stand": true,
+          "owner": "ranking-owner-tie-high-msg4eok1ijbk",
+          "ip": "198.18.0.14",
+          "server": "I",
+          "weapon": "staff"
+        },
+        {
+          "name": "RankTieLowijbk",
+          "total_level": 26,
+          "merchant": 25,
+          "merchant_xp": 53977519,
+          "online": false,
+          "stand": true,
+          "owner": "ranking-owner-tie-low-msg4eok1ijbk",
+          "ip": "198.18.0.15",
+          "server": "",
+          "weapon": "bow"
+        }
+      ],
+      "general_order": [
+        "RankHighijbk",
+        "RankMultiijbk",
+        "RankTieHighijbk",
+        "RankTieLowijbk",
+        "RankMerchantijbk"
+      ],
+      "merchant_order": [
+        "RankMerchantijbk",
+        "RankTieHighijbk",
+        "RankTieLowijbk",
+        "RankMultiijbk",
+        "RankHighijbk"
+      ],
+      "merchants_open_stands": [
+        "RankMultiijbk",
+        "RankTieHighijbk"
+      ],
+      "pull_merchants_names": [
+        "RankMultiijbk",
+        "RankTieHighijbk"
+      ],
+      "closed_and_offline_excluded": true,
+      "pull_merchants_open_filter": true,
+      "numbered_character_slots": [
+        "1st",
+        "2nd",
+        "3rd",
+        "4th",
+        "5th"
+      ],
+      "normal_connection_limit_contract": {
+        "limit_source_checked": true,
+        "applies_by_ip_and_owner": true,
+        "merchant_exception": false
+      },
+      "merchant_reserved_slot": false
+    },
+    "contributions": {
+      "passed": true,
+      "live_action": {
+        "actions": [
+          {
+            "kind": "delayed_projectile",
+            "creation_skill": "ranger",
+            "creation_weapon": "firebow",
+            "switched_skill_before_resolution": "rogue",
+            "switched_weapon_before_resolution": "claw",
+            "projectile_action_id": "J7lXyu",
+            "projectile_target": "40",
+            "hit_damage": 6,
+            "snapshot_retained": true
+          },
+          {
+            "kind": "support",
+            "ability": "taunt",
+            "skill": "warrior",
+            "target": "42",
+            "status": "succeeded",
+            "action_id": "action-1-6"
+          },
+          {
+            "kind": "healing",
+            "ability": "selfheal",
+            "skill": "paladin",
+            "status": "succeeded",
+            "action_id": "action-1-8",
+            "hp_before": 50,
+            "hp_after": 411,
+            "effective_healing": 361,
+            "capped_at_missing_hp": true
+          },
+          {
+            "kind": "damage",
+            "skill": "warrior",
+            "weapon": "blade",
+            "target_found": true,
+            "target": "42",
+            "status": "succeeded",
+            "action_id": "action-1-10",
+            "target_hp_before": 98,
+            "damage": 24,
+            "effective_damage": 24,
+            "overkill": false,
+            "target_hp_after": 98
+          },
+          {
+            "kind": "damage",
+            "skill": "rogue",
+            "weapon": "claw",
+            "target_found": true,
+            "target": "42",
+            "status": "succeeded",
+            "action_id": "action-1-12",
+            "target_hp_before": 74,
+            "damage": 22,
+            "effective_damage": 22,
+            "overkill": false,
+            "target_hp_after": 74
+          },
+          {
+            "kind": "damage",
+            "skill": "rogue",
+            "weapon": "claw",
+            "target_found": true,
+            "target": "42",
+            "status": "succeeded",
+            "action_id": "action-1-13",
+            "target_hp_before": 52,
+            "damage": 21,
+            "effective_damage": 21,
+            "overkill": false,
+            "target_hp_after": 52
+          },
+          {
+            "kind": "damage",
+            "skill": "rogue",
+            "weapon": "claw",
+            "target_found": true,
+            "target": "42",
+            "status": "succeeded",
+            "action_id": "action-1-14",
+            "target_hp_before": 31,
+            "damage": 20,
+            "effective_damage": 20,
+            "overkill": false,
+            "target_hp_after": 31
+          },
+          {
+            "kind": "damage",
+            "skill": "rogue",
+            "weapon": "claw",
+            "target_found": true,
+            "target": "42",
+            "status": "succeeded",
+            "action_id": "action-1-15",
+            "target_hp_before": 11,
+            "damage": 26,
+            "effective_damage": 11,
+            "overkill": true,
+            "target_hp_after": 11
+          }
+        ],
+        "event_types": [
+          "action",
+          "hit",
+          "drop",
+          "death",
+          "skill-xp"
+        ],
+        "target": {
+          "id": "42",
+          "type": "goo"
+        },
+        "kill_observed": true,
+        "kill_event": {
+          "type": "death",
+          "id": "42",
+          "reason": null
+        },
+        "skill_xp_events": [
+          {
+            "skill": "warrior",
+            "accepted_xp": 102,
+            "from_level": 40,
+            "to_level": 40,
+            "skills": {
+              "warrior": {
+                "level": 40,
+                "xp": 142534463,
+                "maxXp": 149937526
+              },
+              "paladin": {
+                "level": 20,
+                "xp": 33829654,
+                "maxXp": 37484382
+              },
+              "mage": {
+                "level": 1,
+                "xp": 0,
+                "maxXp": 93711
+              },
+              "priest": {
+                "level": 1,
+                "xp": 0,
+                "maxXp": 93711
+              },
+              "ranger": {
+                "level": 40,
+                "xp": 142534361,
+                "maxXp": 149937526
+              },
+              "rogue": {
+                "level": 20,
+                "xp": 33829654,
+                "maxXp": 37484382
+              },
+              "merchant": {
+                "level": 1,
+                "xp": 0,
+                "maxXp": 93711
+              }
+            }
+          },
+          {
+            "skill": "paladin",
+            "accepted_xp": 718,
+            "from_level": 20,
+            "to_level": 20,
+            "skills": {
+              "warrior": {
+                "level": 40,
+                "xp": 142534463,
+                "maxXp": 149937526
+              },
+              "paladin": {
+                "level": 20,
+                "xp": 33830372,
+                "maxXp": 37484382
+              },
+              "mage": {
+                "level": 1,
+                "xp": 0,
+                "maxXp": 93711
+              },
+              "priest": {
+                "level": 1,
+                "xp": 0,
+                "maxXp": 93711
+              },
+              "ranger": {
+                "level": 40,
+                "xp": 142534361,
+                "maxXp": 149937526
+              },
+              "rogue": {
+                "level": 20,
+                "xp": 33829654,
+                "maxXp": 37484382
+              },
+              "merchant": {
+                "level": 1,
+                "xp": 0,
+                "maxXp": 93711
+              }
+            }
+          },
+          {
+            "skill": "rogue",
+            "accepted_xp": 290,
+            "from_level": 20,
+            "to_level": 20,
+            "skills": {
+              "warrior": {
+                "level": 40,
+                "xp": 142534463,
+                "maxXp": 149937526
+              },
+              "paladin": {
+                "level": 20,
+                "xp": 33830372,
+                "maxXp": 37484382
+              },
+              "mage": {
+                "level": 1,
+                "xp": 0,
+                "maxXp": 93711
+              },
+              "priest": {
+                "level": 1,
+                "xp": 0,
+                "maxXp": 93711
+              },
+              "ranger": {
+                "level": 40,
+                "xp": 142534361,
+                "maxXp": 149937526
+              },
+              "rogue": {
+                "level": 20,
+                "xp": 33829944,
+                "maxXp": 37484382
+              },
+              "merchant": {
+                "level": 1,
+                "xp": 0,
+                "maxXp": 93711
+              }
+            }
+          }
+        ],
+        "awarded_xp": 1110,
+        "overkill_observed": true,
+        "effective_damage_by_style": {
+          "warrior": 24,
+          "rogue": 74
+        }
+      },
+      "authoritative_ledger": {
+        "share": 101,
+        "split": {
+          "warrior": 30,
+          "rogue": 71
+        },
+        "conservation": true,
+        "passive_weight": 0,
+        "pvp_weight": 0,
+        "healing_weight": 40,
+        "effective_overheal_weight": 10,
+        "support_weight": 1,
+        "redundant_support_weight": 0,
+        "projectile_switch_skill": "ranger",
+        "multi_encounter_support_weight": 1,
+        "support_only_excluded": true,
+        "server_award_partitions": {
+          "matrix-player": {
+            "warrior": 150,
+            "rogue": 350,
+            "ranger": 500
+          },
+          "matrix-healer": {
+            "priest": 500
+          }
+        },
+        "passive_partition": {},
+        "pvp_partition": {}
+      },
+      "passive_and_pvp_zero": true,
+      "passive_observer": {
+        "character": "B4eox8ssive",
+        "action_count": 0,
+        "party_member": false,
+        "skill_xp_before": {
+          "warrior": 0,
+          "paladin": 0,
+          "mage": 0,
+          "priest": 0,
+          "ranger": 0,
+          "rogue": 0,
+          "merchant": 0
+        },
+        "skill_xp_after": {
+          "warrior": 0,
+          "paladin": 0,
+          "mage": 0,
+          "priest": 0,
+          "ranger": 0,
+          "rogue": 0,
+          "merchant": 0
+        },
+        "skill_xp_unchanged": true
+      },
+      "browser_server_counterpart": {
+        "browser_opened": false,
+        "server_side_use_ability_contract": true
+      },
+      "persisted": {
+        "skill_xp_before": {
+          "warrior": 142534361,
+          "paladin": 33829654,
+          "mage": 0,
+          "priest": 0,
+          "ranger": 142534361,
+          "rogue": 33829654,
+          "merchant": 0
+        },
+        "skill_xp_after": {
+          "warrior": 142534463,
+          "paladin": 33830372,
+          "mage": 0,
+          "priest": 0,
+          "ranger": 142534361,
+          "rogue": 33829944,
+          "merchant": 0
+        },
+        "skill_xp_delta": {
+          "warrior": 102,
+          "paladin": 718,
+          "mage": 0,
+          "priest": 0,
+          "ranger": 0,
+          "rogue": 290,
+          "merchant": 0
+        },
+        "emitted_xp_by_skill": {
+          "warrior": 102,
+          "paladin": 718,
+          "mage": 0,
+          "priest": 0,
+          "ranger": 0,
+          "rogue": 290,
+          "merchant": 0
+        },
+        "emitted_total_xp": 1110,
+        "emitted_equals_persisted": true
+      }
+    },
+    "merchant": {
+      "passed": true,
+      "fixture": {
+        "merchant_unlock_level": 40,
+        "merchant_unlock_is_test_fixture": true,
+        "accrual_seeded": false
+      },
+      "live": {
+        "open_status": "succeeded",
+        "trade_status": "succeeded",
+        "buy_status": "succeeded",
+        "transfer_status": "succeeded",
+        "mluck_status": "succeeded",
+        "repeated_mluck_status": "succeeded",
+        "close_status": "succeeded",
+        "merchant_xp_before": 142534361,
+        "merchant_xp_after": 142537096,
+        "merchant_xp_delta": 2735,
+        "merchant_xp_positive_seller_attribution": true,
+        "buyer_merchant_xp_before": 0,
+        "buyer_merchant_xp_after": 0,
+        "buyer_merchant_xp_delta": 0,
+        "transfer_merchant_xp_delta": 0,
+        "sale_item": "hpot0",
+        "repeated_target_rejected": true,
+        "live_luck_target_count": 10,
+        "live_luck_target_cap": 10,
+        "live_luck_cap_bounded": true,
+        "stand_closed": true,
+        "stand_only_no_wall_clock_award": true,
+        "buyer_observed_seller": true
+      },
+      "persisted": {
+        "eligible_stand_ms": 3677,
+        "sale_owner": "US_m4WaGW8tMPApnZ9eLw0wIfqvRb17R",
+        "sale_net_gold": 1,
+        "luck_targets": [
+          "B4lc3ypa9r5",
+          "B4lchtluck1",
+          "B4lcscluck2",
+          "B4ld2kluck3",
+          "B4ldcpluck4",
+          "B4ldmxluck5",
+          "B4ldx1luck6",
+          "B4le77luck7",
+          "B4lehuluck8",
+          "B4lescluck9"
+        ],
+        "luck_target_cap": 10,
+        "luck_target_cap_bounded": true,
+        "positive_sale_attribution": true,
+        "buyer_purchase_and_transfer_zero_xp": true,
+        "pending_credit_count": 10,
+        "transfer_send_xp": 0
+      },
+      "canonical": {
+        "luck_successes": 10,
+        "same_target": {
+          "qualifies": false,
+          "reason": "target_cap"
+        },
+        "hour_cap": {
+          "qualifies": false,
+          "reason": "hour_cap"
+        },
+        "rolling_window_reopens": true,
+        "transfer_exclusion": {
+          "source": "same-owner-send",
+          "credited": 0,
+          "eligible": false
+        },
+        "cap_fixture": {
+          "eligible_stand_ms": 3600000,
+          "pending_credit_expiry_pruned": true,
+          "settled_xp": 31,
+          "rolling_cap_units": 18750000
+        }
+      },
+      "mluck_mode": "authoritative_live_two_character_action"
+    },
+    "deathSickness": {
+      "passed": true,
+      "fixture": {
+        "live_monster_death": true,
+        "expiry_clock_fixture": true,
+        "sickness_duration_ms": 300000,
+        "multiplier": 0.8,
+        "safe_pvp": true,
+        "global_pvp": true,
+        "hardcore": true,
+        "environmental_harakiri": true,
+        "all_six_combat_styles": true
+      },
+      "initial": {
+        "rip": false,
+        "sickness_present": false,
+        "stats": {
+          "affected": {
+            "attack": 18,
+            "heal": 0,
+            "maxHp": 100,
+            "maxMp": 100,
+            "armor": 10,
+            "resistance": 11,
+            "frequency": 0.5
+          },
+          "excluded": {
+            "speed": 51,
+            "range": 10
+          }
+        }
+      },
+      "first_death": {
+        "response": {
+          "response": "defeated_by_a_monster",
+          "place": null,
+          "success": true,
+          "generation": 1,
+          "monster": "goo",
+          "target_id": "37",
+          "sickness_until": 1785936993507,
+          "stats": {
+            "affected": {
+              "attack": 14,
+              "heal": 0,
+              "maxHp": 80,
+              "maxMp": 80,
+              "armor": 8,
+              "resistance": 9,
+              "frequency": 0.4
+            },
+            "excluded": {
+              "speed": 51,
+              "range": 10
+            }
+          },
+          "xptome_before": {
+            "name": "xptome",
+            "gift": 1
+          },
+          "xptome_at_death": {
+            "name": "xptome",
+            "gift": 1
+          }
+        },
+        "sickness_applied": true,
+        "stats_reduced": true,
+        "respawn_sickness_persisted": true,
+        "stats": {
+          "affected": {
+            "attack": 14,
+            "heal": 0,
+            "maxHp": 80,
+            "maxMp": 80,
+            "armor": 8,
+            "resistance": 9,
+            "frequency": 0.4
+          },
+          "excluded": {
+            "speed": 51,
+            "range": 10
+          }
+        },
+        "xptome_before": {
+          "name": "xptome",
+          "gift": 1
+        },
+        "xptome_after": {
+          "name": "xptome",
+          "gift": 1
+        },
+        "xptome_untouched": true
+      },
+      "reconnect": {
+        "rip": false,
+        "sickness_persisted_across_logout": true,
+        "stats_remained_reduced": true
+      },
+      "second_death": {
+        "response": "defeated_by_a_monster",
+        "place": null,
+        "success": true,
+        "generation": 1,
+        "monster": "goo",
+        "target_id": "38",
+        "sickness_until": 1785937007841,
+        "stats": {
+          "affected": {
+            "attack": 14,
+            "heal": 0,
+            "maxHp": 80,
+            "maxMp": 80,
+            "armor": 8,
+            "resistance": 9,
+            "frequency": 0.4
+          },
+          "excluded": {
+            "speed": 51,
+            "range": 10
+          }
+        },
+        "did_not_stack": true,
+        "xptome_before": {
+          "name": "xptome",
+          "gift": 1
+        },
+        "xptome_at_death": {
+          "name": "xptome",
+          "gift": 1
+        },
+        "xptome_untouched": true
+      },
+      "expiry": {
+        "exact_timestamp_past": true,
+        "sickness_after_expiry": null,
+        "stats_restored": true
+      },
+      "style_matrix": {
+        "styles": [
+          "warrior",
+          "paladin",
+          "mage",
+          "priest",
+          "ranger",
+          "rogue"
+        ],
+        "baseline": {
+          "warrior": {
+            "affected": {
+              "attack": 22,
+              "heal": 0,
+              "maxHp": 856,
+              "maxMp": 100,
+              "armor": 46,
+              "resistance": 11,
+              "frequency": 0.503125
+            },
+            "excluded": {
+              "speed": 50.625,
+              "range": 10
+            }
+          },
+          "paladin": {
+            "affected": {
+              "attack": 26,
+              "heal": 0,
+              "maxHp": 688,
+              "maxMp": 550,
+              "armor": 38,
+              "resistance": 41,
+              "frequency": 0.42217261904761905
+            },
+            "excluded": {
+              "speed": 50.5,
+              "range": 10
+            }
+          },
+          "mage": {
+            "affected": {
+              "attack": 30,
+              "heal": 0,
+              "maxHp": 100,
+              "maxMp": 700,
+              "armor": 10,
+              "resistance": 51,
+              "frequency": 0.3785218253968254
+            },
+            "excluded": {
+              "speed": 46.0625,
+              "range": 100
+            }
+          },
+          "priest": {
+            "affected": {
+              "attack": 30,
+              "heal": 30,
+              "maxHp": 100,
+              "maxMp": 610,
+              "armor": 10,
+              "resistance": 45,
+              "frequency": 0.37471230158730157
+            },
+            "excluded": {
+              "speed": 50.0625,
+              "range": 120
+            }
+          },
+          "ranger": {
+            "affected": {
+              "attack": 25,
+              "heal": 0,
+              "maxHp": 100,
+              "maxMp": 100,
+              "armor": 10,
+              "resistance": 11,
+              "frequency": 0.46406250000000004
+            },
+            "excluded": {
+              "speed": 48.28125,
+              "range": 110
+            }
+          },
+          "rogue": {
+            "affected": {
+              "attack": 18,
+              "heal": 0,
+              "maxHp": 100,
+              "maxMp": 100,
+              "armor": 10,
+              "resistance": 11,
+              "frequency": 0.5
+            },
+            "excluded": {
+              "speed": 51,
+              "range": 10
+            }
+          }
+        },
+        "sick_after_respawn": {
+          "warrior": {
+            "affected": {
+              "attack": 17,
+              "heal": 0,
+              "maxHp": 685,
+              "maxMp": 80,
+              "armor": 37,
+              "resistance": 9,
+              "frequency": 0.4025000000000001
+            },
+            "excluded": {
+              "speed": 50.625,
+              "range": 10
+            }
+          },
+          "paladin": {
+            "affected": {
+              "attack": 21,
+              "heal": 0,
+              "maxHp": 550,
+              "maxMp": 440,
+              "armor": 30,
+              "resistance": 33,
+              "frequency": 0.3377380952380953
+            },
+            "excluded": {
+              "speed": 50.5,
+              "range": 10
+            }
+          },
+          "mage": {
+            "affected": {
+              "attack": 24,
+              "heal": 0,
+              "maxHp": 80,
+              "maxMp": 560,
+              "armor": 8,
+              "resistance": 41,
+              "frequency": 0.3028174603174603
+            },
+            "excluded": {
+              "speed": 46.0625,
+              "range": 100
+            }
+          },
+          "priest": {
+            "affected": {
+              "attack": 24,
+              "heal": 24,
+              "maxHp": 80,
+              "maxMp": 488,
+              "armor": 8,
+              "resistance": 36,
+              "frequency": 0.29976984126984124
+            },
+            "excluded": {
+              "speed": 50.0625,
+              "range": 120
+            }
+          },
+          "ranger": {
+            "affected": {
+              "attack": 20,
+              "heal": 0,
+              "maxHp": 80,
+              "maxMp": 80,
+              "armor": 8,
+              "resistance": 9,
+              "frequency": 0.3712500000000001
+            },
+            "excluded": {
+              "speed": 48.28125,
+              "range": 110
+            }
+          },
+          "rogue": {
+            "affected": {
+              "attack": 14,
+              "heal": 0,
+              "maxHp": 80,
+              "maxMp": 80,
+              "armor": 8,
+              "resistance": 9,
+              "frequency": 0.4
+            },
+            "excluded": {
+              "speed": 51,
+              "range": 10
+            }
+          }
+        },
+        "all_styles_verified": true
+      },
+      "skill_xp_byte_for_byte_unchanged": true,
+      "stat_contract": {
+        "included_fields": [
+          "attack",
+          "heal",
+          "maxHp",
+          "maxMp",
+          "armor",
+          "resistance",
+          "frequency"
+        ],
+        "excluded_fields": [
+          "speed",
+          "range"
+        ],
+        "every_source_asserted": true
+      },
+      "environmental": {
+        "source": "environmental-harakiri",
+        "response": "harakiri",
+        "sickness_applied": true,
+        "stats": {
+          "baseline": {
+            "affected": {
+              "attack": 18,
+              "heal": 0,
+              "maxHp": 100,
+              "maxMp": 100,
+              "armor": 10,
+              "resistance": 11,
+              "frequency": 0.5
+            },
+            "excluded": {
+              "speed": 51,
+              "range": 10
+            }
+          },
+          "sick": {
+            "affected": {
+              "attack": 14,
+              "heal": 0,
+              "maxHp": 80,
+              "maxMp": 80,
+              "armor": 8,
+              "resistance": 9,
+              "frequency": 0.4
+            },
+            "excluded": {
+              "speed": 51,
+              "range": 10
+            }
+          },
+          "excluded_unchanged": true
+        },
+        "skill_state_unchanged": true,
+        "skill_xp_assertion": "verified",
+        "xptome_before": {
+          "name": "xptome",
+          "gift": 1
+        },
+        "xptome_after": {
+          "name": "xptome",
+          "gift": 1
+        },
+        "xptome_untouched": true,
+        "xptome_assertion": "verified",
+        "xptome_runtime_present": true,
+        "persisted_rip": true
+      },
+      "safe_pvp": {
+        "map": "arena",
+        "safe_pvp": true,
+        "server_url": "http://127.0.0.1:7192",
+        "response": {
+          "response": "defeated_by_player",
+          "place": null,
+          "success": true,
+          "generation": 1
+        },
+        "sickness_applied": true,
+        "attacker_skill_unchanged": true,
+        "victim_skill_unchanged": true,
+        "xptome_before": {
+          "name": "xptome",
+          "gift": 1
+        },
+        "xptome_after": {
+          "name": "xptome",
+          "gift": 1
+        },
+        "xptome_untouched": true,
+        "stats": {
+          "baseline": {
+            "affected": {
+              "attack": 0,
+              "heal": 0,
+              "maxHp": 100,
+              "maxMp": 100,
+              "armor": 0,
+              "resistance": 0,
+              "frequency": 0.3
+            },
+            "excluded": {
+              "speed": 50,
+              "range": 0
+            }
+          },
+          "sick": {
+            "affected": {
+              "attack": 0,
+              "heal": 0,
+              "maxHp": 80,
+              "maxMp": 80,
+              "armor": 0,
+              "resistance": 0,
+              "frequency": 0.24
+            },
+            "excluded": {
+              "speed": 50,
+              "range": 0
+            }
+          },
+          "excluded_unchanged": true
+        }
+      },
+      "global_pvp": {
+        "map": "main",
+        "safe_pvp": false,
+        "server_url": "http://127.0.0.1:7194",
+        "response": {
+          "response": "defeated_by_player",
+          "place": null,
+          "success": true,
+          "generation": 1
+        },
+        "sickness_applied": true,
+        "attacker_skill_unchanged": true,
+        "victim_skill_unchanged": true,
+        "xptome_before": {
+          "name": "xptome",
+          "gift": 1
+        },
+        "xptome_after": {
+          "name": "xptome",
+          "gift": 1
+        },
+        "xptome_untouched": true,
+        "stats": {
+          "baseline": {
+            "affected": {
+              "attack": 0,
+              "heal": 0,
+              "maxHp": 100,
+              "maxMp": 100,
+              "armor": 0,
+              "resistance": 0,
+              "frequency": 0.3
+            },
+            "excluded": {
+              "speed": 50,
+              "range": 0
+            }
+          },
+          "sick": {
+            "affected": {
+              "attack": 0,
+              "heal": 0,
+              "maxHp": 80,
+              "maxMp": 80,
+              "armor": 0,
+              "resistance": 0,
+              "frequency": 0.24
+            },
+            "excluded": {
+              "speed": 50,
+              "range": 0
+            }
+          },
+          "excluded_unchanged": true
+        }
+      },
+      "hardcore": {
+        "source": "hardcore-harakiri",
+        "response": "harakiri",
+        "sickness_applied": true,
+        "stats": {
+          "baseline": {
+            "affected": {
+              "attack": 0,
+              "heal": 0,
+              "maxHp": 100,
+              "maxMp": 100,
+              "armor": 0,
+              "resistance": 0,
+              "frequency": 0.3
+            },
+            "excluded": {
+              "speed": 50,
+              "range": 0
+            }
+          },
+          "sick": {
+            "affected": {
+              "attack": 0,
+              "heal": 0,
+              "maxHp": 80,
+              "maxMp": 80,
+              "armor": 0,
+              "resistance": 0,
+              "frequency": 0.24
+            },
+            "excluded": {
+              "speed": 50,
+              "range": 0
+            }
+          },
+          "excluded_unchanged": true
+        },
+        "skill_state_unchanged": true,
+        "skill_xp_assertion": "not_applicable_after_hardcore_reset",
+        "xptome_assertion": "not_applicable_after_hardcore_reset",
+        "xptome_before": null,
+        "xptome_after": null,
+        "xptome_untouched": null,
+        "xptome_runtime_present": false,
+        "hardcore_reset_baseline": {
+          "xptome_present": false,
+          "skill_xp_nonzero": false
+        },
+        "live_rip": true
+      }
+    }
+  },
+  "cleanup": {
+    "verified": true,
+    "user_deleted": true,
+    "character_deleted": true,
+    "owned_documents_deleted": 3,
+    "remaining_owned_documents": 0,
+    "exact_collections": [
+      "backup",
+      "character",
+      "mark"
+    ],
+    "accounts": [
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      },
+      {
+        "verified": true,
+        "user_deleted": true,
+        "character_deleted": true,
+        "owned_documents_deleted": 3,
+        "remaining_owned_documents": 0,
+        "exact_collections": [
+          "backup",
+          "character",
+          "mark"
+        ]
+      }
+    ],
+    "sentinel_preserved": true,
+    "sentinel_deleted": true
+  },
+  "processes": {
+    "stopped": true,
+    "runtime_connections": 0,
+    "paired_service_untouched": true
+  },
+  "evidence": "/home/cjstorrs/projects/adventureland/.runtime/release-verification/20260805T132519Z-328073/live-progression-matrix.log"
+}
