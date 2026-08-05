@@ -51,6 +51,7 @@ const {
 	flushPlayerProgressionEvents,
 	clientSkillState,
 	recordMerchantLuck,
+	validateMerchantLuck,
 	recordMerchantSale,
 	recordMerchantSaleReversal,
 	recordMerchantDonationOrDice,
@@ -864,7 +865,15 @@ function player_to_client(player, stranger) {
 	].forEach(function (p) {
 		// removed "vx","vy"
 		if (player[p] !== undefined) {
-			data[p] = player[p];
+			if (p !== "s") data[p] = player[p];
+			else {
+				data.s = { ...player.s };
+				for (const [condition, value] of Object.entries(data.s)) {
+					if (!value || typeof value !== "object" || Array.isArray(value)) continue;
+					data.s[condition] = { ...value };
+					delete data.s[condition].source_id;
+				}
+			}
 		}
 	});
 	["stand"].forEach(function (p) {
@@ -1630,14 +1639,14 @@ function add_item(player, new_item, args) {
 		num = player.items.length - 1;
 		player.esize--;
 	}
+	const merchantLuckSource =
+		args.m && player.s.mluck ? get_player_by_real_id(player.s.mluck.source_id) : null;
 	if (
-		args.m &&
-		player.s.mluck &&
-		get_player_by_real_id(player.s.mluck.source_id) &&
+		merchantLuckSource &&
 		Math.random() <= 0.02 &&
-		can_add_item(get_player_by_real_id(player.s.mluck.source_id), new_item.name)
+		can_add_item(merchantLuckSource, new_item.name)
 	) {
-		var mr = get_player_by_real_id(player.s.mluck.source_id);
+		var mr = merchantLuckSource;
 		var item = create_new_item(new_item.name);
 		item.m = player.name;
 		if (new_item.data) {
@@ -9606,10 +9615,15 @@ function init_io() {
 				player.to_resend = "u+cid";
 				// #TODO: Appear animation for non-self's [21/05/18]
 			} else if (data.name == "mluck") {
-				consume_mp(player, gSkill.mp, target);
 				const sourceId = player.real_id;
 				const targetId = target.real_id;
 				if (!sourceId || !targetId) return fail_response("skill_cant", data.name);
+				try {
+					validateMerchantLuck(player, targetId);
+				} catch (error) {
+					return fail_response("skill_cant", data.name);
+				}
+				consume_mp(player, gSkill.mp, target);
 				const existingLuck = target.s[gSkill.condition];
 				const activeLuck = existingLuck && existingLuck.ms > 0;
 				const canApplyLuck = !activeLuck || !existingLuck.strong || existingLuck.source_id == sourceId;

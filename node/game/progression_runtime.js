@@ -300,16 +300,24 @@ function settlePlayerStand(player, now = Date.now(), { emit = true } = {}) {
 }
 
 function recordMerchantLuck(player, targetId, now = Date.now()) {
+	validateMerchantLuck(player, targetId);
+	const result = qualifyLuck(player.info.merchant_accrual, targetId, now);
+	player.info.merchant_accrual = result.state;
+	return result;
+}
+
+function assertStableMerchantIdentity(player) {
 	ensurePlayerContainers(player);
 	if (typeof player.real_id !== "string" || !player.real_id)
 		throw runtimeError("invalid_merchant_identity", "Merchant actions require a stable character ID");
 	if (player.info.merchant_accrual.merchant_id !== player.real_id)
 		throw runtimeError("invalid_merchant_identity", "Merchant accrual belongs to a different character");
+}
+
+function validateMerchantLuck(player, targetId) {
+	assertStableMerchantIdentity(player);
 	if (typeof targetId !== "string" || !targetId)
 		throw runtimeError("invalid_merchant_target", "Merchant luck requires a stable target ID");
-	const result = qualifyLuck(player.info.merchant_accrual, targetId, now);
-	player.info.merchant_accrual = result.state;
-	return result;
 }
 
 function recordMerchantSale(player, details) {
@@ -329,10 +337,7 @@ function recordMerchantSaleReversal(player, details) {
 }
 
 function assertStableMerchantOwner(player, details) {
-	if (typeof player.real_id !== "string" || !player.real_id)
-		throw runtimeError("invalid_merchant_identity", "Merchant actions require a stable character ID");
-	if (player.info.merchant_accrual.merchant_id !== player.real_id)
-		throw runtimeError("invalid_merchant_identity", "Merchant accrual belongs to a different character");
+	assertStableMerchantIdentity(player);
 	if (!details || details.merchantOwnerId !== player.real_id)
 		throw runtimeError("invalid_merchant_owner", "Merchant sale owner does not match the character ID");
 }
@@ -380,6 +385,7 @@ module.exports = {
 	markStandSession,
 	settlePlayerStand,
 	recordMerchantLuck,
+	validateMerchantLuck,
 	recordMerchantSale,
 	recordMerchantSaleReversal,
 	recordMerchantAction,

@@ -12,8 +12,10 @@ const {
 	awardPlayerSkillXpSplit,
 	flushPlayerProgressionEvents,
 	clientSkillState,
+	validateMerchantLuck,
 	markStandSession,
 	settlePlayerStand,
+	recordMerchantLuck,
 	recordMerchantSale,
 	recordMerchantSaleReversal,
 	refreshDeathSickness,
@@ -315,6 +317,47 @@ test("runtime merchant sale bridges require a stable character owner", () => {
 		now: 1,
 	});
 	assert.equal(reversal.eligible, false);
+	assert.equal(character.info.merchant_accrual.sales_by_owner["buyer-owner"].net_gold, 0);
+	assert.equal(character.info.merchant_accrual.sales_by_owner["buyer-owner"].credited_high_water_gold, 1000);
+});
+
+test("runtime Merchant Luck requires stable IDs and deduplicates targets", () => {
+	const character = player();
+	character.real_id = "merchant-real-id";
+	initializePlayerProgression(character, 0);
+	assert.throws(() => validateMerchantLuck(character, ""), { code: "invalid_merchant_target" });
+	character.info.merchant_accrual.merchant_id = "other-real-id";
+	assert.throws(() => validateMerchantLuck(character, "target-real-id"), { code: "invalid_merchant_state" });
+	character.info.merchant_accrual.merchant_id = character.real_id;
+	const first = recordMerchantLuck(character, "target-real-id", 0);
+	const repeated = recordMerchantLuck(character, "target-real-id", 1);
+	assert.equal(first.qualifies, true);
+	assert.equal(repeated.qualifies, false);
+	assert.equal(character.info.merchant_accrual.rolling_hour_luck_uses[0].target_id, "target-real-id");
+});
+
+test("client condition projections do not expose Merchant source IDs", () => {
+	const character = player();
+	initializePlayerProgression(character, 0);
+	character.s = { mluck: { ms: 1000, f: "Merchant", source_id: "private-real-id" } };
+	character.cslots = {};
+	const serverSource = fs.readFileSync(path.join(__dirname, "../server.js"), "utf8");
+	const playerToClient = serverFunction(
+		serverSource,
+		"function player_to_client(player, stranger)",
+		"\nfunction monster_to_client",
+		{
+			G: { skill_xp: {} },
+			MAX_LEVEL: 99,
+			SKILL_IDS: Object.keys(character.skills),
+			clientSkillState,
+			cumulativeXp: (level) => level * 100,
+			get_call_cost: () => 0,
+		},
+	);
+	const projected = playerToClient(character);
+	assert.equal(projected.s.mluck.source_id, undefined);
+	assert.equal(character.s.mluck.source_id, "private-real-id");
 });
 
 test("runtime stand settlement advances the persisted clock between ticks", () => {
