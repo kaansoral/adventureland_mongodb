@@ -2553,6 +2553,7 @@ function new_worker(num) {
 function init_server() {
 	if (gameplay == "hardcore") {
 		E = {
+			schedule: E.schedule,
 			rewards: {
 				item8: null,
 				item9: null,
