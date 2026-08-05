@@ -442,6 +442,7 @@ test("browser death expression executes and validator rejects malformed evidence
 		kill: true,
 		source: "attack",
 	});
+	ambiguous.socket.emit("hit", { id: ambiguousCharacter.name, kill: true });
 	ambiguous.socket.emit("hit", {
 		id: ambiguousCharacter.name,
 		hid: "same-type-other-monster",
@@ -460,6 +461,84 @@ test("browser death expression executes and validator rejects malformed evidence
 	assert.equal(ambiguousDeath.terminal_hit, null);
 	assert.equal([...ambiguous.listeners.values()].some((handlers) => handlers.size > 0), false);
 	assert.equal(ambiguousWindow.ui_log, ambiguousUiLog);
+
+	const executeExpression = ({
+		failureCharacter,
+		failureWindow,
+		failureSocket,
+		useAbility,
+		scheduler = setTimeout,
+		clearScheduler = clearTimeout,
+	}) =>
+		vm.runInNewContext(`(${expression})`, {
+			character: failureCharacter,
+			G: { abilities: { taunt: { mp: 1 } }, monsters: { goo: { passive: false } } },
+			window: failureWindow,
+			socket: failureSocket,
+			smart_move: async () => undefined,
+			use_ability: useAbility,
+			TextEncoder,
+			setTimeout: scheduler,
+			clearTimeout: clearScheduler,
+		});
+	const noTargetSocket = createSocket();
+	const noTargetUiLog = () => undefined;
+	const noTargetWindow = { entities: {}, ui_log: noTargetUiLog };
+	const noTargetExecution = executeExpression({
+		failureCharacter: structuredClone(character),
+		failureWindow: noTargetWindow,
+		failureSocket: noTargetSocket.socket,
+		useAbility: async () => ({ success: true }),
+	});
+	await assert.rejects(noTargetExecution, /no live monster/);
+	assert.equal([...noTargetSocket.listeners.values()].some((handlers) => handlers.size > 0), false);
+	assert.equal(noTargetWindow.ui_log, noTargetUiLog);
+
+	const actionErrorSocket = createSocket();
+	const actionErrorCharacter = structuredClone(character);
+	const actionErrorTarget = structuredClone(target);
+	const actionErrorUiLog = () => undefined;
+	const actionErrorWindow = { entities: { [actionErrorTarget.id]: actionErrorTarget }, ui_log: actionErrorUiLog };
+	const actionErrorExecution = executeExpression({
+		failureCharacter: actionErrorCharacter,
+		failureWindow: actionErrorWindow,
+		failureSocket: actionErrorSocket.socket,
+		useAbility: async () => ({ success: false }),
+	});
+	await assert.rejects(actionErrorExecution, /taunt was rejected/);
+	assert.equal([...actionErrorSocket.listeners.values()].some((handlers) => handlers.size > 0), false);
+	assert.equal(actionErrorWindow.ui_log, actionErrorUiLog);
+
+	const timeoutSocket = createSocket();
+	const timeoutCharacter = structuredClone(character);
+	const timeoutTarget = structuredClone(target);
+	const timeoutUiLog = () => undefined;
+	const timeoutWindow = { entities: { [timeoutTarget.id]: timeoutTarget }, ui_log: timeoutUiLog };
+	let timeoutCallback;
+	const timeoutExecution = executeExpression({
+		failureCharacter: timeoutCharacter,
+		failureWindow: timeoutWindow,
+		failureSocket: timeoutSocket.socket,
+		useAbility: async (name, id) => {
+			timeoutTarget.target = timeoutCharacter.name;
+			return { success: true, id: String(id), place: name };
+		},
+		scheduler: (callback, delayMs) => {
+			if (delayMs === 10_000) {
+				timeoutCallback = callback;
+				return "synthetic-timeout";
+			}
+			return setTimeout(callback, delayMs);
+		},
+		clearScheduler: (timer) => {
+			if (timer !== "synthetic-timeout") clearTimeout(timer);
+		},
+	});
+	assert.equal(typeof timeoutCallback, "function");
+	timeoutCallback();
+	await assert.rejects(timeoutExecution, /did not publish death sickness/);
+	assert.equal([...timeoutSocket.listeners.values()].some((handlers) => handlers.size > 0), false);
+	assert.equal(timeoutWindow.ui_log, timeoutUiLog);
 
 	const validatorPath = path.join(root, "scripts/validate-release-gate.mjs");
 	const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "adventureland-browser-contract-"));
@@ -545,6 +624,9 @@ test("browser death expression executes and validator rejects malformed evidence
 		const malformedVictim = structuredClone(result);
 		malformedVictim.browser.ui.liveDeath.terminal_hit.victim_id = "other-player";
 		runValidator(malformedVictim, true);
+		const negativeIndexes = structuredClone(result);
+		negativeIndexes.browser.ui.liveDeath.terminal_hit.event_index = -1;
+		runValidator(negativeIndexes, true);
 		const mismatchedOuterIdentity = structuredClone(result);
 		mismatchedOuterIdentity.character = "other-player";
 		runValidator(mismatchedOuterIdentity, true);
