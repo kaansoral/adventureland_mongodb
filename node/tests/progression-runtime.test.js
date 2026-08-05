@@ -100,7 +100,8 @@ test("runtime rejects unclassified XP sources without mutating the character", (
 				source: "unclassified_source",
 				sourceId: "unclassified:1",
 			}),
-		(error) => error.code === "invalid_skill_delta" && error.path === "source" && error.reason === "unclassified_source",
+		(error) =>
+			error.code === "invalid_skill_delta" && error.path === "source" && error.reason === "unclassified_source",
 	);
 	assert.deepEqual(
 		{

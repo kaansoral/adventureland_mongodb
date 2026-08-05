@@ -235,7 +235,10 @@ function recordSale(
 	if (reservation.duplicate) return { state, credited: 0, duplicate: true };
 	if (reservation.saturated) return { state, credited: 0, saturated: true };
 	const ledger = state.sales_by_owner[externalOwnerId] || { net_gold: 0, credited_high_water_gold: 0, events: [] };
-	if (!state.sales_by_owner[externalOwnerId] && Object.keys(state.sales_by_owner).length >= progression.MAX_COLLECTION_SIZE)
+	if (
+		!state.sales_by_owner[externalOwnerId] &&
+		Object.keys(state.sales_by_owner).length >= progression.MAX_COLLECTION_SIZE
+	)
 		return { state, credited: 0, saturated: true };
 	const eligibleGold = Math.min(
 		goldReceived,
