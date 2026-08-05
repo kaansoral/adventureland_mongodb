@@ -880,8 +880,9 @@ test("browser death expression executes and validator rejects malformed evidence
 					look,
 					success: true,
 				})),
-				combat: {
-					xpBefore: 0,
+					combat: {
+						attempts: 1,
+						xpBefore: 0,
 					xpAfter: 10,
 					skillXpObserved: true,
 					skillXpEventCount: 2,

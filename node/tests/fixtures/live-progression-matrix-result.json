@@ -989,9 +989,14 @@
         ],
         "excluded_fields": [
           "speed",
-          "range"
+          "range",
+          "xpMultiplier",
+          "luckMultiplier",
+          "goldMultiplier",
+          "tax"
         ],
-        "every_source_asserted": true
+        "every_source_asserted": true,
+        "multiplier": 0.8
       },
       "environmental": {
         "source": "environmental-harakiri",
