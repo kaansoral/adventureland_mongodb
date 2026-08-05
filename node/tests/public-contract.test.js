@@ -72,9 +72,10 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.doesNotMatch(server, /socket\.fs\.skill/);
 	assert.doesNotMatch(server, /socket\.on\("(?:attack|heal)"/);
 	assert.doesNotMatch(server, /server_log\("skill name=/);
-	assert.match(server, /server_log\("ability actor_id=[\s\S]*?outcome=received", 1\);/);
 	const abilityStart = server.indexOf('socket.on("ability"');
 	const abilityEnd = server.indexOf('\n\t\tsocket.on("click"', abilityStart);
+	assert.notEqual(abilityStart, -1);
+	assert.ok(abilityEnd > abilityStart);
 	const abilityBlock = server.slice(abilityStart, abilityEnd);
 	assert.match(abilityBlock, /outcome=received", 1\);/);
 	assert.match(abilityBlock, /outcome=" \+ outcome,\s*1,\s*\);/);
@@ -86,13 +87,40 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.match(server, /merchant logout settlement failed: player_id=/);
 	const disconnectStart = server.indexOf('"merchant disconnect settlement failed:');
 	const disconnectEnd = server.indexOf(");", disconnectStart);
+	assert.notEqual(disconnectStart, -1);
+	assert.ok(disconnectEnd > disconnectStart);
 	const disconnectSettlement = server.slice(disconnectStart, disconnectEnd + 2);
 	const logoutStart = server.indexOf('"merchant logout settlement failed:');
 	const logoutEnd = server.indexOf(");", logoutStart);
+	assert.notEqual(logoutStart, -1);
+	assert.ok(logoutEnd > logoutStart);
 	const logoutSettlement = server.slice(logoutStart, logoutEnd + 2);
 	assert.match(disconnectSettlement, /progression_log_code\(error\),\s*1,/);
 	assert.match(logoutSettlement, /progression_log_code\(error\),\s*1,/);
-	assert.match(server, /socket\.on\("ability"/);
+	const standSettlementStart = server.indexOf("setInterval(\n\tfunction () {\n\t\tfor (var id in players)");
+	const standSettlementEnd = server.indexOf("\n\t},\n\t5 * 60 * 1000,\n);", standSettlementStart);
+	assert.notEqual(standSettlementStart, -1);
+	assert.ok(standSettlementEnd > standSettlementStart);
+	const standSettlementCallbackStart = server.indexOf("function () {", standSettlementStart);
+	const standLogs = [];
+	const standSettlementCallback = vm.runInNewContext(
+		`(${server.slice(standSettlementCallbackStart, standSettlementEnd + 3).trim()})`,
+		{
+			players: { stander: { p: { stand: true }, rip: false } },
+			settlePlayerStand: () => {
+				const error = new Error("private stand detail");
+				error.code = "merchant_settlement_failed";
+				throw error;
+			},
+			progression_log_id: () => "stable-id",
+			progression_log_code: (error) => error.code,
+			server_log: (message, important) => standLogs.push({ message, important }),
+		},
+	);
+	standSettlementCallback();
+	assert.deepEqual(standLogs, [
+		{ message: "merchant settlement failed: player_id=stable-id error=merchant_settlement_failed", important: 1 },
+	]);
 	assert.match(server, /data\.protocol = 3/);
 	assert.match(server, /max_xp:/);
 	assert.match(server, /data\.active_skill/);
@@ -240,9 +268,14 @@ test("release-safe email and progression logs contain only bounded diagnostics",
 
 	const codeStart = serverFunctions.indexOf("function progression_log_code(error)");
 	const codeEnd = serverFunctions.indexOf("\nfunction appengine_log", codeStart);
+	assert.notEqual(codeStart, -1);
+	assert.ok(codeEnd > codeStart);
 	const progressionLogCode = vm.runInNewContext(`(${serverFunctions.slice(codeStart, codeEnd).trim()})`);
 	for (const [error, expected] of [
 		[{ code: "merchant_settlement_failed" }, "merchant_settlement_failed"],
+		[{ code: "x" }, "x"],
+		[{ code: "x".repeat(64) }, "x".repeat(64)],
+		[{ code: "" }, "unknown"],
 		[{}, "unknown"],
 		[undefined, "unknown"],
 		[{ code: "bad code\nprivate" }, "unknown"],
@@ -252,6 +285,8 @@ test("release-safe email and progression logs contain only bounded diagnostics",
 	}
 	const ripStart = serverFunctions.indexOf("function rip(player)");
 	const ripEnd = serverFunctions.indexOf("\nfunction notify_friends_emit", ripStart);
+	assert.notEqual(ripStart, -1);
+	assert.ok(ripEnd > ripStart);
 	const ripLogs = [];
 	let settlementAttempt = 0;
 	const rip = vm.runInNewContext(`(${serverFunctions.slice(ripStart, ripEnd).trim()})`, {

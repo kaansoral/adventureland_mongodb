@@ -187,7 +187,7 @@ test("retained release-log scan visits browser and child log paths", () => {
 	const childDirectory = path.join(temporaryDirectory, "child");
 	fs.mkdirSync(childDirectory);
 	const invoke = () =>
-		execFileSync("bash", ["-c", `${scanner}\nassert_release_logs_redacted`], {
+		execFileSync("bash", ["-e", "-u", "-o", "pipefail", "-c", `${scanner}\nassert_release_logs_redacted`], {
 			cwd: root,
 			env: { ...process.env, ROOT_DIR: root, EVIDENCE_DIR: temporaryDirectory },
 			stdio: "pipe",
@@ -199,6 +199,9 @@ test("retained release-log scan visits browser and child log paths", () => {
 			"release-safe important code=merchant_settlement\n",
 		);
 		assert.doesNotThrow(invoke);
+		fs.writeFileSync(path.join(temporaryDirectory, "browser.log"), "password=private-browser-value\n");
+		assert.throws(invoke);
+		fs.writeFileSync(path.join(temporaryDirectory, "browser.log"), "release-safe important code=ability\n");
 		fs.writeFileSync(path.join(childDirectory, "unsafe.log"), "password=private-value\n");
 		assert.throws(invoke);
 	} finally {
@@ -378,13 +381,19 @@ test("browser death expression executes and validator rejects malformed evidence
 		changedSnapshot.browser.ui.liveDeath.skillsBefore.warrior.xp = 1;
 		runValidator(changedSnapshot, true);
 		const oversizedResponses = structuredClone(result);
-		oversizedResponses.browser.ui.liveDeath.responses = Array.from({ length: 17 }, () => ({ response: "noise" }));
+		oversizedResponses.browser.ui.liveDeath.responses = [
+			...result.browser.ui.liveDeath.responses,
+			...Array.from({ length: 16 }, () => ({ response: "noise" })),
+		];
 		runValidator(oversizedResponses, true);
 		const unknownResponseField = structuredClone(result);
 		unknownResponseField.browser.ui.liveDeath.responses[0].secret = "unexpected";
 		runValidator(unknownResponseField, true);
 		const oversizedLog = structuredClone(result);
-		oversizedLog.browser.ui.liveDeath.serverLogs = ["x".repeat(257)];
+		oversizedLog.browser.ui.liveDeath.serverLogs = [
+			"Death sickness applied for 5 minutes",
+			"x".repeat(257),
+		];
 		runValidator(oversizedLog, true);
 	} finally {
 		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
