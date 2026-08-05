@@ -40,7 +40,7 @@ function combatHarness() {
 		character: { range: 100, team: null },
 		ctarget: null,
 		xtarget: null,
-		keymap: { attack: "attack" },
+		keymap: { attack: "attack", heal: "heal" },
 		deferred: [],
 		distance: () => 0,
 		direction_logic: () => {},
@@ -86,16 +86,18 @@ test("browser code has a single ability action vocabulary", () => {
 
 test("browser combat producers normalize targets through the ability wire", () => {
 	const { context, onAbility, playerAttack, playerHeal, monsterAttack } = combatHarness();
-	const target = { id: "target-1" };
-	context.xtarget = target;
-	for (const [producer, name] of [
-		[() => onAbility("attack"), "attack"],
-		[() => playerAttack.call(target, null, true), "attack"],
-		[() => playerHeal.call(target, null, true), "heal"],
-		[() => monsterAttack.call(target, null, true), "attack"],
+	for (const [producer, name, target, selected] of [
+		[() => onAbility("attack"), "attack", { id: "target-on-ability-attack" }, true],
+		[() => onAbility("heal"), "heal", { id: "target-on-ability-heal" }, true],
+		[() => playerAttack.call({ id: "target-player-attack" }, null, true), "attack", { id: "target-player-attack" }, false],
+		[() => playerHeal.call({ id: "target-player-heal" }, null, true), "heal", { id: "target-player-heal" }, false],
+		[() => monsterAttack.call({ id: "target-monster-attack" }, null, true), "attack", { id: "target-monster-attack" }, false],
 	]) {
 		context.socket.events = [];
 		context.deferred.length = 0;
+		context.xtarget = null;
+		context.ctarget = null;
+		if (selected) context.xtarget = target;
 		producer();
 		assert.deepEqual(JSON.parse(JSON.stringify(context.socket.events)), [
 			["ability", { name, id: target.id }],
