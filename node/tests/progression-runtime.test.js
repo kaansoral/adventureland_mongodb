@@ -616,7 +616,7 @@ test("runtime reopens a persisted stand at the current server time", () => {
 });
 
 test("runtime stand settlement remains exact across close, logout, death, and restart lifecycles", () => {
-	const character = player();
+	let character = player();
 	character.p.stand = "stand0";
 	initializePlayerProgression(character, 0);
 	markStandSession(character, 0);
@@ -653,6 +653,25 @@ test("runtime stand settlement remains exact across close, logout, death, and re
 			character.rip = false;
 			initializePlayerProgression(character, now);
 		}
+		const persisted = {
+			info: structuredClone(character.info),
+			total_level: character.total_level,
+			p: structuredClone(character.p),
+		};
+		persisted.p.stand = null;
+		const rehydrated = player();
+		rehydrated.info = persisted.info;
+		rehydrated.total_level = persisted.total_level;
+		rehydrated.p = persisted.p;
+		rehydrated.socket = {
+			events: [],
+			emit(name, value) {
+				this.events.push([name, value]);
+			},
+		};
+		initializePlayerProgression(rehydrated, now);
+		rehydrated.p.stand = "stand0";
+		character = rehydrated;
 	}
 	assert.equal(xp, 900000000);
 	assert.equal(character.skills.merchant.xp, 900000000);
