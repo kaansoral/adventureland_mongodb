@@ -110,7 +110,7 @@ test("rollback process capture drains close and redacts before retention", async
 	try {
 		const pending = runProcess("synthetic", [], {}, logPath, root, { redact: true });
 		child.stdout.emit("data", '{"password":"private"}\n');
-		child.stderr.emit("data", 'token=private-token\n');
+		child.stderr.emit("data", "token=private-token\n");
 		child.emit("exit", 0, null);
 		child.stdout.emit("data", "after-exit-output\n");
 		child.emit("close", 0, null);
@@ -273,15 +273,15 @@ test("release gate staging promotes redacted producer artifacts and rewrites ret
 		"fake_gate() {",
 		"  printf 'password=private\\n' > \"$GATE_STAGING_DIR/live-game-smoke.log\"",
 		"  printf 'release-safe auxiliary\\n' > \"$GATE_STAGING_DIR/auxiliary.log\"",
-		"  printf '%s\\n' \"$FAKE_RESULT\" > \"$GATE_STAGING_DIR/gate-result.json\"",
+		'  printf \'%s\\n\' "$FAKE_RESULT" > "$GATE_STAGING_DIR/gate-result.json"',
 		"  printf '%s\\n' \"$FAKE_RESULT\"",
 		"}",
-		"run_typed_gate fake fake-gate disposable \"$EVIDENCE_DIR/live-game-smoke.log\" \"$EVIDENCE_DIR/live-service-smoke.stdout.log\" \"$EVIDENCE_DIR/gate-result.json\" fake_gate",
-		"test -s \"$EVIDENCE_DIR/live-game-smoke.log\"",
-		"test -s \"$EVIDENCE_DIR/live-service-smoke.stdout.log\"",
-		"test -s \"$EVIDENCE_DIR/gate-result.json\"",
-		"test -s \"$EVIDENCE_DIR/auxiliary.log\"",
-		"test -d \"$GATE_STAGING_DIR\"",
+		'run_typed_gate fake fake-gate disposable "$EVIDENCE_DIR/live-game-smoke.log" "$EVIDENCE_DIR/live-service-smoke.stdout.log" "$EVIDENCE_DIR/gate-result.json" fake_gate',
+		'test -s "$EVIDENCE_DIR/live-game-smoke.log"',
+		'test -s "$EVIDENCE_DIR/live-service-smoke.stdout.log"',
+		'test -s "$EVIDENCE_DIR/gate-result.json"',
+		'test -s "$EVIDENCE_DIR/auxiliary.log"',
+		'test -d "$GATE_STAGING_DIR"',
 	].join("\n");
 	const runFixture = (fixtureResult) =>
 		execFileSync("bash", ["-e", "-u", "-o", "pipefail", "-c", command], {
@@ -299,7 +299,10 @@ test("release gate staging promotes redacted producer artifacts and rewrites ret
 		runFixture(result);
 		assert.doesNotMatch(fs.readFileSync(path.join(evidenceDirectory, "live-game-smoke.log"), "utf8"), /private/);
 		assert.doesNotMatch(fs.readFileSync(path.join(evidenceDirectory, "gate-result.json"), "utf8"), /\.staging/);
-		assert.doesNotMatch(fs.readFileSync(path.join(evidenceDirectory, "live-service-smoke.stdout.log"), "utf8"), /\.staging/);
+		assert.doesNotMatch(
+			fs.readFileSync(path.join(evidenceDirectory, "live-service-smoke.stdout.log"), "utf8"),
+			/\.staging/,
+		);
 		assert.doesNotMatch(fs.readFileSync(path.join(evidenceDirectory, "auxiliary.log"), "utf8"), /private/);
 		assert.equal(fs.statSync(path.join(evidenceDirectory, "live-game-smoke.log")).mode & 0o777, 0o600);
 		assert.equal(fs.statSync(evidenceDirectory).mode & 0o777, 0o700);
@@ -333,7 +336,19 @@ test("rollback validator accepts complete evidence and rejects malformed recover
 	const noMigrationPath = path.join(temporaryDirectory, "no-migration.json");
 	const database = "skill-rollback-validator";
 	const mutableCollections = [
-		"backup", "character", "event", "guild", "infoelement", "ip", "mail", "mark", "message", "pet", "server", "upload", "user",
+		"backup",
+		"character",
+		"event",
+		"guild",
+		"infoelement",
+		"ip",
+		"mail",
+		"mark",
+		"message",
+		"pet",
+		"server",
+		"upload",
+		"user",
 	];
 	const result = {
 		schemaVersion: 1,
@@ -398,7 +413,10 @@ test("rollback validator accepts complete evidence and rejects malformed recover
 		runValidator(malformedFailure, true);
 		const malformedNoMigration = structuredClone(result);
 		malformedNoMigration.recovery.noMigration = false;
-		fs.writeFileSync(noMigrationPath, JSON.stringify({ database, migrationCollections: ["character"], migrationCommands: ["copy"] }));
+		fs.writeFileSync(
+			noMigrationPath,
+			JSON.stringify({ database, migrationCollections: ["character"], migrationCommands: ["copy"] }),
+		);
 		runValidator(malformedNoMigration, true);
 	} finally {
 		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
@@ -523,7 +541,10 @@ test("browser death expression executes and validator rejects malformed evidence
 	assert.equal(liveDeath.terminal_hit.event_index, 3);
 	assert.equal(liveDeath.terminal_hit.response_event_index, 4);
 	assert.equal(liveDeath.victim_id, character.name);
-	assert.equal([...listeners.values()].some((handlers) => handlers.size > 0), false);
+	assert.equal(
+		[...listeners.values()].some((handlers) => handlers.size > 0),
+		false,
+	);
 	assert.equal(windowContext.ui_log, originalUiLog);
 
 	const ambiguous = createSocket();
@@ -557,13 +578,6 @@ test("browser death expression executes and validator rejects malformed evidence
 		source: "attack",
 	});
 	ambiguous.socket.emit("hit", { id: ambiguousCharacter.name, kill: true });
-	ambiguous.socket.emit("hit", {
-		id: ambiguousCharacter.name,
-		hid: "same-type-other-monster",
-		damage: 10,
-		kill: true,
-		source: "attack",
-	});
 	ambiguous.socket.emit("game_response", {
 		response: "defeated_by_a_monster",
 		monster: ambiguousTarget.mtype,
@@ -573,8 +587,57 @@ test("browser death expression executes and validator rejects malformed evidence
 	ambiguous.socket.emit("player");
 	const ambiguousDeath = await ambiguousExecution;
 	assert.equal(ambiguousDeath.terminal_hit, null);
-	assert.equal([...ambiguous.listeners.values()].some((handlers) => handlers.size > 0), false);
+	assert.equal(
+		[...ambiguous.listeners.values()].some((handlers) => handlers.size > 0),
+		false,
+	);
 	assert.equal(ambiguousWindow.ui_log, ambiguousUiLog);
+
+	const sameTypeOther = createSocket();
+	const sameTypeOtherCharacter = structuredClone(character);
+	sameTypeOtherCharacter.rip = false;
+	const sameTypeOtherTarget = structuredClone(target);
+	const sameTypeOtherUiLog = () => undefined;
+	const sameTypeOtherWindow = {
+		entities: { [sameTypeOtherTarget.id]: sameTypeOtherTarget },
+		ui_log: sameTypeOtherUiLog,
+	};
+	const sameTypeOtherExecution = vm.runInNewContext(`(${expression})`, {
+		character: sameTypeOtherCharacter,
+		G: { abilities: { taunt: { mp: 1 } }, monsters: { goo: { passive: false } } },
+		window: sameTypeOtherWindow,
+		socket: sameTypeOther.socket,
+		smart_move: async () => undefined,
+		use_ability: async (name, id) => {
+			sameTypeOtherTarget.target = sameTypeOtherCharacter.name;
+			return { success: true, id: String(id), place: name };
+		},
+		TextEncoder,
+		setTimeout,
+		clearTimeout,
+	});
+	await new Promise((resolve) => setImmediate(resolve));
+	sameTypeOther.socket.emit("hit", {
+		id: sameTypeOtherCharacter.name,
+		hid: "same-type-other-monster",
+		damage: 10,
+		kill: true,
+		source: "attack",
+	});
+	sameTypeOther.socket.emit("game_response", {
+		response: "defeated_by_a_monster",
+		monster: sameTypeOtherTarget.mtype,
+		death_sickness_until: sameTypeOtherCharacter.death_sickness_until,
+	});
+	sameTypeOtherCharacter.rip = true;
+	sameTypeOther.socket.emit("player");
+	const sameTypeOtherDeath = await sameTypeOtherExecution;
+	assert.equal(sameTypeOtherDeath.terminal_hit, null);
+	assert.equal(
+		[...sameTypeOther.listeners.values()].some((handlers) => handlers.size > 0),
+		false,
+	);
+	assert.equal(sameTypeOtherWindow.ui_log, sameTypeOtherUiLog);
 
 	const executeExpression = ({
 		failureCharacter,
@@ -595,17 +658,41 @@ test("browser death expression executes and validator rejects malformed evidence
 			setTimeout: scheduler,
 			clearTimeout: clearScheduler,
 		});
+	const createTrackedScheduler = () => {
+		const scheduled = new Set();
+		const cleared = new Set();
+		return {
+			scheduled,
+			cleared,
+			schedule(callback, delayMs) {
+				const timer = setTimeout(callback, delayMs);
+				scheduled.add(timer);
+				return timer;
+			},
+			clear(timer) {
+				cleared.add(timer);
+				clearTimeout(timer);
+			},
+		};
+	};
 	const noTargetSocket = createSocket();
 	const noTargetUiLog = () => undefined;
 	const noTargetWindow = { entities: {}, ui_log: noTargetUiLog };
+	const noTargetTimers = createTrackedScheduler();
 	const noTargetExecution = executeExpression({
 		failureCharacter: structuredClone(character),
 		failureWindow: noTargetWindow,
 		failureSocket: noTargetSocket.socket,
 		useAbility: async () => ({ success: true }),
+		scheduler: noTargetTimers.schedule,
+		clearScheduler: noTargetTimers.clear,
 	});
 	await assert.rejects(noTargetExecution, /no live monster/);
-	assert.equal([...noTargetSocket.listeners.values()].some((handlers) => handlers.size > 0), false);
+	assert.equal(noTargetTimers.cleared.size, noTargetTimers.scheduled.size);
+	assert.equal(
+		[...noTargetSocket.listeners.values()].some((handlers) => handlers.size > 0),
+		false,
+	);
 	assert.equal(noTargetWindow.ui_log, noTargetUiLog);
 
 	const actionErrorSocket = createSocket();
@@ -613,14 +700,21 @@ test("browser death expression executes and validator rejects malformed evidence
 	const actionErrorTarget = structuredClone(target);
 	const actionErrorUiLog = () => undefined;
 	const actionErrorWindow = { entities: { [actionErrorTarget.id]: actionErrorTarget }, ui_log: actionErrorUiLog };
+	const actionErrorTimers = createTrackedScheduler();
 	const actionErrorExecution = executeExpression({
 		failureCharacter: actionErrorCharacter,
 		failureWindow: actionErrorWindow,
 		failureSocket: actionErrorSocket.socket,
 		useAbility: async () => ({ success: false }),
+		scheduler: actionErrorTimers.schedule,
+		clearScheduler: actionErrorTimers.clear,
 	});
 	await assert.rejects(actionErrorExecution, /taunt was rejected/);
-	assert.equal([...actionErrorSocket.listeners.values()].some((handlers) => handlers.size > 0), false);
+	assert.equal(actionErrorTimers.cleared.size, actionErrorTimers.scheduled.size);
+	assert.equal(
+		[...actionErrorSocket.listeners.values()].some((handlers) => handlers.size > 0),
+		false,
+	);
 	assert.equal(actionErrorWindow.ui_log, actionErrorUiLog);
 
 	const timeoutSocket = createSocket();
@@ -629,6 +723,7 @@ test("browser death expression executes and validator rejects malformed evidence
 	const timeoutUiLog = () => undefined;
 	const timeoutWindow = { entities: { [timeoutTarget.id]: timeoutTarget }, ui_log: timeoutUiLog };
 	let timeoutCallback;
+	let timeoutCleared = false;
 	const timeoutExecution = executeExpression({
 		failureCharacter: timeoutCharacter,
 		failureWindow: timeoutWindow,
@@ -645,13 +740,18 @@ test("browser death expression executes and validator rejects malformed evidence
 			return setTimeout(callback, delayMs);
 		},
 		clearScheduler: (timer) => {
-			if (timer !== "synthetic-timeout") clearTimeout(timer);
+			if (timer === "synthetic-timeout") timeoutCleared = true;
+			else clearTimeout(timer);
 		},
 	});
 	assert.equal(typeof timeoutCallback, "function");
 	timeoutCallback();
 	await assert.rejects(timeoutExecution, /did not publish death sickness/);
-	assert.equal([...timeoutSocket.listeners.values()].some((handlers) => handlers.size > 0), false);
+	assert.equal(timeoutCleared, true);
+	assert.equal(
+		[...timeoutSocket.listeners.values()].some((handlers) => handlers.size > 0),
+		false,
+	);
 	assert.equal(timeoutWindow.ui_log, timeoutUiLog);
 
 	const validatorPath = path.join(root, "scripts/validate-release-gate.mjs");
@@ -740,6 +840,7 @@ test("browser death expression executes and validator rejects malformed evidence
 		runValidator(malformedVictim, true);
 		const negativeIndexes = structuredClone(result);
 		negativeIndexes.browser.ui.liveDeath.terminal_hit.event_index = -1;
+		negativeIndexes.browser.ui.liveDeath.terminal_hit.response_event_index = 0;
 		runValidator(negativeIndexes, true);
 		const mismatchedOuterIdentity = structuredClone(result);
 		mismatchedOuterIdentity.character = "other-player";
@@ -769,16 +870,10 @@ test("browser death expression executes and validator rejects malformed evidence
 		unknownTerminalResponseField.browser.ui.liveDeath.terminal_hit.response.secret = "unexpected";
 		runValidator(unknownTerminalResponseField, true);
 		const oversizedLog = structuredClone(result);
-		oversizedLog.browser.ui.liveDeath.serverLogs = [
-			"Death sickness applied for 5 minutes",
-			"x".repeat(257),
-		];
+		oversizedLog.browser.ui.liveDeath.serverLogs = ["Death sickness applied for 5 minutes", "x".repeat(257)];
 		runValidator(oversizedLog, true);
 		const multibyteOversizedLog = structuredClone(result);
-		multibyteOversizedLog.browser.ui.liveDeath.serverLogs = [
-			"Death sickness applied for 5 minutes",
-			"é".repeat(200),
-		];
+		multibyteOversizedLog.browser.ui.liveDeath.serverLogs = ["Death sickness applied for 5 minutes", "é".repeat(200)];
 		runValidator(multibyteOversizedLog, true);
 		runValidator(result, true, "unsupported-gate");
 		runValidator(result, true, "browser-smoke", "other-database");
