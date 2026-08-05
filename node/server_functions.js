@@ -2899,6 +2899,14 @@ function get_player(name) {
 	return players[name_to_id[name]];
 }
 
+function get_player_by_real_id(realId) {
+	if (!realId) return null;
+	for (var socketId in players) {
+		if (players[socketId] && players[socketId].real_id == realId) return players[socketId];
+	}
+	return null;
+}
+
 function realm_broadcast(event, data) {
 	data.sname = region + " " + server_name;
 	servers_eval("broadcast(data.event,JSON.parse(data.data))", { event: event, data: JSON.stringify(data) });

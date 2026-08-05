@@ -14,6 +14,8 @@ const {
 	clientSkillState,
 	markStandSession,
 	settlePlayerStand,
+	recordMerchantSale,
+	recordMerchantSaleReversal,
 	refreshDeathSickness,
 	rehydratePlayerDeathSickness,
 } = require("../game/progression_runtime");
@@ -218,6 +220,41 @@ test("runtime stand settlement feeds Merchant through the common award path", ()
 	assert.equal(character.skills.merchant.level, 3);
 	assert.equal(character.total_level, 9);
 	assert.equal(flushPlayerProgressionEvents(character), 1);
+});
+
+test("runtime merchant sale bridges require a stable character owner", () => {
+	const character = player();
+	character.real_id = "character-real-id";
+	initializePlayerProgression(character, 0);
+	assert.throws(
+		() =>
+			recordMerchantSale(character, {
+				merchantOwnerId: character.name || "character",
+				externalOwnerId: "buyer-owner",
+				goldReceived: 1000,
+				serverTax: 50,
+				sourceId: "sale:wrong-owner",
+				now: 0,
+			}),
+		{ code: "invalid_merchant_owner" },
+	);
+	const sale = recordMerchantSale(character, {
+		merchantOwnerId: character.real_id,
+		externalOwnerId: "buyer-owner",
+		goldReceived: 1000,
+		serverTax: 50,
+		sourceId: "sale:stable-owner",
+		now: 0,
+	});
+	assert.equal(sale.eligible, true);
+	const reversal = recordMerchantSaleReversal(character, {
+		merchantOwnerId: character.real_id,
+		externalOwnerId: "buyer-owner",
+		goldReversed: 1000,
+		sourceId: "buyback:stable-owner",
+		now: 1,
+	});
+	assert.equal(reversal.eligible, false);
 });
 
 test("runtime stand settlement advances the persisted clock between ticks", () => {

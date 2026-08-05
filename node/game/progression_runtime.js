@@ -301,6 +301,12 @@ function settlePlayerStand(player, now = Date.now(), { emit = true } = {}) {
 
 function recordMerchantLuck(player, targetId, now = Date.now()) {
 	ensurePlayerContainers(player);
+	if (typeof player.real_id !== "string" || !player.real_id)
+		throw runtimeError("invalid_merchant_identity", "Merchant actions require a stable character ID");
+	if (player.info.merchant_accrual.merchant_id !== player.real_id)
+		throw runtimeError("invalid_merchant_identity", "Merchant accrual belongs to a different character");
+	if (typeof targetId !== "string" || !targetId)
+		throw runtimeError("invalid_merchant_target", "Merchant luck requires a stable target ID");
 	const result = qualifyLuck(player.info.merchant_accrual, targetId, now);
 	player.info.merchant_accrual = result.state;
 	return result;
@@ -308,6 +314,7 @@ function recordMerchantLuck(player, targetId, now = Date.now()) {
 
 function recordMerchantSale(player, details) {
 	ensurePlayerContainers(player);
+	assertStableMerchantOwner(player, details);
 	const result = recordSale(player.info.merchant_accrual, details);
 	player.info.merchant_accrual = result.state;
 	return result;
@@ -315,9 +322,19 @@ function recordMerchantSale(player, details) {
 
 function recordMerchantSaleReversal(player, details) {
 	ensurePlayerContainers(player);
+	assertStableMerchantOwner(player, details);
 	const result = recordSaleReversal(player.info.merchant_accrual, details);
 	player.info.merchant_accrual = result.state;
 	return result;
+}
+
+function assertStableMerchantOwner(player, details) {
+	if (typeof player.real_id !== "string" || !player.real_id)
+		throw runtimeError("invalid_merchant_identity", "Merchant actions require a stable character ID");
+	if (player.info.merchant_accrual.merchant_id !== player.real_id)
+		throw runtimeError("invalid_merchant_identity", "Merchant accrual belongs to a different character");
+	if (!details || details.merchantOwnerId !== player.real_id)
+		throw runtimeError("invalid_merchant_owner", "Merchant sale owner does not match the character ID");
 }
 
 function recordMerchantAction(player, details) {

@@ -1633,11 +1633,11 @@ function add_item(player, new_item, args) {
 	if (
 		args.m &&
 		player.s.mluck &&
-		get_player(player.s.mluck.f) &&
+		get_player_by_real_id(player.s.mluck.source_id) &&
 		Math.random() <= 0.02 &&
-		can_add_item(get_player(player.s.mluck.f), new_item.name)
+		can_add_item(get_player_by_real_id(player.s.mluck.source_id), new_item.name)
 	) {
-		var mr = get_player(player.s.mluck.f);
+		var mr = get_player_by_real_id(player.s.mluck.source_id);
 		var item = create_new_item(new_item.name);
 		item.m = player.name;
 		if (new_item.data) {
@@ -7930,8 +7930,8 @@ function init_io() {
 			if (player.owner != buyer.owner && isOpenMerchantStand(player)) {
 				const tradeSourceId = `${server_id}:trade:${randomStr(16)}`;
 				const saleDetails = {
-					merchantOwnerId: player.name,
-					externalOwnerId: buyer.owner || buyer.name,
+					merchantOwnerId: player.real_id,
+					externalOwnerId: buyer.owner,
 					goldReceived: round(price * (1 - player.tax)),
 					serverTax: price - round(price * (1 - player.tax)),
 					sourceId: tradeSourceId,
@@ -8048,8 +8048,8 @@ function init_io() {
 			if (seller.owner != player.owner) {
 				const tradeSourceId = `${server_id}:trade:${randomStr(16)}`;
 				const saleDetails = {
-					merchantOwnerId: seller.name,
-					externalOwnerId: player.owner || player.name,
+					merchantOwnerId: seller.real_id,
+					externalOwnerId: player.owner,
 					goldReceived: round(price * (1 - seller.tax)),
 					serverTax: price - round(price * (1 - seller.tax)),
 					sourceId: tradeSourceId,
@@ -9607,17 +9607,20 @@ function init_io() {
 				// #TODO: Appear animation for non-self's [21/05/18]
 			} else if (data.name == "mluck") {
 				consume_mp(player, gSkill.mp, target);
+				const sourceId = player.real_id;
+				const targetId = target.real_id;
+				if (!sourceId || !targetId) return fail_response("skill_cant", data.name);
 				const existingLuck = target.s[gSkill.condition];
 				const activeLuck = existingLuck && existingLuck.ms > 0;
-				const canApplyLuck = !activeLuck || !existingLuck.strong || existingLuck.f == player.name;
-				const newlyAppliedLuck = canApplyLuck && (!activeLuck || existingLuck.f != player.name);
+				const canApplyLuck = !activeLuck || !existingLuck.strong || existingLuck.source_id == sourceId;
+				const newlyAppliedLuck = canApplyLuck && (!activeLuck || existingLuck.source_id != sourceId);
 				if (canApplyLuck) {
-					target.s[gSkill.condition] = { ms: G.conditions.mluck.duration, f: player.name };
+					target.s[gSkill.condition] = { ms: G.conditions.mluck.duration, f: player.name, source_id: sourceId };
 				}
 				if (target.owner == player.owner) {
 					if (target.s[gSkill.condition]) target.s[gSkill.condition].strong = true;
 				}
-				if (newlyAppliedLuck) recordMerchantLuck(player, target.name, Date.now());
+				if (newlyAppliedLuck) recordMerchantLuck(player, targetId, Date.now());
 				xy_emit(player, "ui", { type: "mluck", from: player.name, to: target.name });
 				resend(target, "u+cid");
 				resend(player, "u+cid");
