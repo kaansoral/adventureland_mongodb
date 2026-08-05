@@ -1,7 +1,7 @@
 "use strict";
 
 const assert = require("node:assert/strict");
-const { execFileSync } = require("node:child_process");
+const { execFileSync, spawn } = require("node:child_process");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -141,6 +141,36 @@ test("rollback process capture drains close and redacts before retention", async
 		assert.equal(fs.readFileSync(logPath, "utf8"), result.output);
 		assert.deepEqual(phases, ["redact", "assert", "write"]);
 	} finally {
+		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+	}
+});
+
+test("rollback interruption stops the child before removing transient paths", async () => {
+	const root = path.resolve(__dirname, "../../..");
+	const rollbackModule = await import(
+		`${require("node:url").pathToFileURL(path.join(root, "scripts/rollback-drill.mjs")).href}?signal=${Date.now()}`
+	);
+	const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "adventureland-rollback-signal-"));
+	const childEvidenceDirectory = path.join(temporaryDirectory, "child-evidence");
+	const temporaryPath = path.join(temporaryDirectory, "rollback-live-game-smoke.mjs");
+	fs.mkdirSync(childEvidenceDirectory);
+	fs.writeFileSync(path.join(childEvidenceDirectory, "child.log"), "release-safe child\n");
+	fs.writeFileSync(temporaryPath, "temporary rollback source\n");
+	const child = spawn(process.execPath, ["-e", "process.on('SIGTERM', () => {}); setInterval(() => {}, 1000);"], {
+		stdio: "ignore",
+	});
+	try {
+		await new Promise((resolve) => setTimeout(resolve, 50));
+		await rollbackModule.cleanupRollbackChild({
+			child,
+			childEvidenceDirectory,
+			temporaryPath,
+		});
+		assert.equal(child.exitCode === null && child.signalCode === null, false);
+		assert.equal(fs.existsSync(childEvidenceDirectory), false);
+		assert.equal(fs.existsSync(temporaryPath), false);
+	} finally {
+		if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
 		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 	}
 });
