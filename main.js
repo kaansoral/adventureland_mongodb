@@ -10,6 +10,7 @@ var options = require("./secretsandconfig/options");
 
 eval("" + fs.readFileSync(path.resolve(__dirname, "common/init.js")));
 reinit_from_options();
+if (process.env.ADVENTURELAND_RELEASE_SAFE_LOGS === "1") Dev = false;
 
 app.use("/sounds", express.static("./sounds", { maxAge: "30d" }));
 

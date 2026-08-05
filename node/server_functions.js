@@ -419,7 +419,10 @@ function rip(player) {
 			settlePlayerStand(player, Date.now(), { emit: false });
 			player.p.stand = false;
 		} catch (error) {
-			server_log("merchant death settlement failed: " + player.name + " " + (error.code || error.message), 1);
+			server_log(
+				"merchant death settlement failed actor_id=" + progression_log_id(player) + " code=" + progression_log_code(error),
+				1,
+			);
 		}
 	}
 	if (player && player.is_player && !player.is_npc) {
@@ -3251,6 +3254,7 @@ function discord_call(message) {
 }
 
 function server_log(message, important) {
+	if (process.env.ADVENTURELAND_RELEASE_SAFE_LOGS === "1") return;
 	if (Dev || important) {
 		if (message && (message + "").indexOf("SEVERE") != -1) console.error(message);
 		else console.log(message);

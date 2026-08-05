@@ -13,7 +13,7 @@ var server_key = process.argv[process.argv.length - 1];
 var server_def = options.servers[server_key];
 var region = server_def.region;
 var server_name = server_def.name;
-var Dev = options.Dev;
+var Dev = options.Dev && process.env.ADVENTURELAND_RELEASE_SAFE_LOGS !== "1";
 var Local = options.Local;
 var Prod = options.Prod;
 var Staging = options.Staging;

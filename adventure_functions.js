@@ -215,7 +215,7 @@ async function send_email(domain, email, args) {
 	var title = args.title || "Default Title";
 	var html = args.html || "Default HTML";
 	var text = args.text || "An email from the game";
-	console.log("send_email " + email + " - " + title);
+	console.log("send_email provider=ses status=attempt");
 	try {
 		var { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
 		var client = new SESClient({
@@ -239,7 +239,9 @@ async function send_email(domain, email, args) {
 			}),
 		);
 	} catch (e) {
-		console.error("send_email error", e);
+		var code = e && (e.name || e.code || e.Code);
+		if (typeof code != "string" || !/^[A-Za-z0-9_.:-]{1,64}$/.test(code)) code = "unknown";
+		console.error("send_email provider=ses status=failed code=" + code);
 	}
 }
 
