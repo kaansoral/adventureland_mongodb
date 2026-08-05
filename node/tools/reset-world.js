@@ -14,7 +14,6 @@ const {
 	mapSha256,
 	readCollectionNames,
 	readMapDocuments,
-	ensureWorldIndexes,
 	validateMapDocuments,
 	verifyWorldIndexes,
 	worldError,
@@ -209,13 +208,15 @@ async function checkWriterGuards(options = {}) {
 	for (const port of ports) if (await portIsOpen(port)) openPorts.push(port);
 	const leasePath = options.writerLeaseDir || env.ADVENTURELAND_RESET_WRITER_LEASE || path.join(ROOT_DIR, ".runtime", "reset-world-writer.lock");
 	const writerLease = await inspectWriterLease(leasePath);
+	const ownedLeaseIsSafe = options.allowOwnedLease === true && writerLease?.active === true && writerLease.pid === process.pid;
 	return {
 		activePidFiles,
 		openPorts,
 		writerLease,
 		configuredPidFiles: pidFiles,
 		configuredPorts: ports,
-		clear: activePidFiles.length === 0 && openPorts.length === 0 && writerLease === null,
+		clear: activePidFiles.length === 0 && openPorts.length === 0 && (writerLease === null || ownedLeaseIsSafe),
+		ownedLeaseIsSafe,
 	};
 }
 
@@ -366,7 +367,8 @@ async function runReset(options = {}) {
 	}
 	const uri = env.ADVENTURELAND_RESET_MONGODB_URI;
 	validateResetUri(uri, args.database);
-	const releaseLease = await acquireResetLease(options.leaseDir || DEFAULT_LEASE_DIR);
+	const leaseDirectory = options.leaseDir || env.ADVENTURELAND_RESET_WRITER_LEASE || DEFAULT_LEASE_DIR;
+	const releaseLease = await acquireResetLease(leaseDirectory);
 	const runId =
 		options.runId ||
 		`${new Date()
@@ -397,12 +399,14 @@ async function runReset(options = {}) {
 		if (!args.reseedMaps && mapValidation.requiredSha256 !== seedValidation.sha256) {
 			throw worldError("RESET_MAP_SEED_DRIFT", "Required live maps do not match the committed recovery seed");
 		}
+		const verifiedIndexes = await verifyWorldIndexes(db);
 		const writer = await (options.writerGuard || checkWriterGuards)({
 			env,
 			pidDir: options.pidDir,
 			pidFiles: options.writerPidFiles,
 			ports: options.writerPorts,
-			writerLeaseDir: options.writerLeaseDir,
+			writerLeaseDir: options.writerLeaseDir || leaseDirectory,
+			allowOwnedLease: true,
 		});
 		const requestedBackupDir = args.backupDir || path.join(DEFAULT_BACKUP_ROOT, runId);
 		const backupLocation = await checkBackupLocation(requestedBackupDir);
@@ -438,6 +442,7 @@ async function runReset(options = {}) {
 			collections: classification.unknown.length === 0,
 			maps: Boolean(mapValidation) || args.reseedMaps,
 			writers: writer.clear,
+			indexes: true,
 			backup: true,
 			lease: true,
 			writer,
@@ -461,6 +466,7 @@ async function runReset(options = {}) {
 			seed: seedReport,
 			topology,
 			reseedMaps: args.reseedMaps,
+			indexes: verifiedIndexes,
 		});
 		if (!args.execute) {
 			preview.confirmToken = confirmationToken(args.database, mapHash);
@@ -473,9 +479,6 @@ async function runReset(options = {}) {
 		const expectedToken = confirmationToken(args.database, mapHash);
 		if (args.confirm !== expectedToken)
 			throw worldError("RESET_CONFIRM", "Confirmation token does not match the validated map hash");
-		// Repair/verify required indexes before opening the destructive transaction so a
-		// missing index cannot turn a committed data reset into a post-check failure.
-		await ensureWorldIndexes(db);
 		const backupDir = await ensureBackupDirectory(backupLocation);
 		const snapshot = await writeMapSnapshot(backupDir, liveDocuments);
 		await fs.writeFile(path.join(backupDir, "preflight.json"), `${JSON.stringify(preview, null, 2)}\n`, {
@@ -509,7 +512,7 @@ async function runReset(options = {}) {
 					mapHash: transactionMaps.sha256,
 					mapCount: transactionMaps.mapCount,
 					counts: transactionCounts,
-					indexes: await verifyWorldIndexes(db),
+					indexes: await verifyWorldIndexes(db, { session }),
 				};
 				if (typeof options.postcheckHook === "function")
 					await options.postcheckHook({ db, session, plan, deleted, validation: transactionValidation });

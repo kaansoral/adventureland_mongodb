@@ -80,6 +80,8 @@ class ContributionLedger {
 	snapshotAction({ actionId, encounterIds = [], characterId, activeSkill, kind = "combat" }) {
 		if (!actionId || !characterId) throw contributionError("Action and character IDs are required");
 		if (kind === "pvp") return { actionId, characterId, activeSkill: null, encounterIds: [], ignored: true };
+		const ids = [...new Set((Array.isArray(encounterIds) ? encounterIds : []).filter(Boolean))];
+		if (!ids.length) return { actionId, characterId, activeSkill, encounterIds: [], ignored: true, reason: "no_encounter" };
 		const existing = this.actions.get(actionId);
 		if (existing) {
 			const same =
@@ -90,7 +92,7 @@ class ContributionLedger {
 			if (!same) throw contributionError("Action ID cannot be reused with different progression data");
 			return existing;
 		}
-		const snapshot = { actionId, characterId, activeSkill, encounterIds: [...encounterIds], kind };
+		const snapshot = { actionId, characterId, activeSkill, encounterIds: ids, kind };
 		this.actions.set(actionId, snapshot);
 		for (const encounterId of encounterIds) {
 			this.openEncounter(encounterId).actions.add(actionId);

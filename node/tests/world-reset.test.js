@@ -167,6 +167,14 @@ test("reset writer guards cover MongoDB, configured writers, ports, and the shar
 		const leased = await checkWriterGuards({ pidFiles: [path.join(root, "missing.pid")], ports: [1], writerLeaseDir: lease });
 		assert.equal(leased.clear, false);
 		assert.equal(leased.writerLease.active, true);
+		const owned = await checkWriterGuards({
+			pidFiles: [path.join(root, "missing.pid")],
+			ports: [1],
+			writerLeaseDir: lease,
+			allowOwnedLease: true,
+		});
+		assert.equal(owned.clear, true);
+		assert.equal(owned.ownedLeaseIsSafe, true);
 	} finally {
 		await rm(root, { recursive: true, force: true });
 	}

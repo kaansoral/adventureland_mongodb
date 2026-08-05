@@ -163,10 +163,10 @@ async function ensureWorldIndexes(db) {
 	return WORLD_INDEXES;
 }
 
-async function verifyWorldIndexes(db) {
+async function verifyWorldIndexes(db, options = {}) {
 	const missing = [];
 	for (const expected of WORLD_INDEXES) {
-		const indexes = await db.collection(expected.collection).listIndexes().toArray();
+		const indexes = await db.collection(expected.collection).listIndexes(options).toArray();
 		if (!indexes.some((actual) => actual.name === expected.name && indexMatches(actual.key, expected.key)))
 			missing.push(expected.name);
 	}

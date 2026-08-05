@@ -90,6 +90,22 @@ test("support divides one action across encounters and ignores PvP/redundant sta
 	assert.equal(ledger.recordDamage({ encounterId: "pvp", actionId: "pvp", characterId: "char", amount: 100 }), 0);
 });
 
+test("empty encounter snapshots are discarded and cannot grow replay state", () => {
+	const ledger = new ContributionLedger();
+	for (let index = 0; index < 100; index += 1) {
+		const snapshot = ledger.snapshotAction({
+			actionId: `untargeted-${index}`,
+			encounterIds: [],
+			characterId: "char",
+			activeSkill: "warrior",
+		});
+		assert.equal(snapshot.ignored, true);
+		assert.equal(snapshot.reason, "no_encounter");
+	}
+	assert.equal(ledger.actions.size, 0);
+	assert.equal(ledger.encounters.size, 0);
+});
+
 test("action snapshots are immutable and support caps exclude damage weight", () => {
 	const ledger = new ContributionLedger();
 	ledger.snapshotAction({ actionId: "immutable", encounterIds: ["goo"], characterId: "char", activeSkill: "warrior" });

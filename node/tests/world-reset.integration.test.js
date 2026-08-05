@@ -110,17 +110,20 @@ test(
 
 			await target.collection("character").dropIndexes();
 			await target.collection("character").insertOne({ _id: "sentinel-missing-index" });
-			const missingIndexDry = await run(["--database", targetDatabase]);
-			const missingIndexRun = await run([
+			await assert.rejects(run(["--database", targetDatabase]), { code: "WORLD_INDEX_MISSING" });
+			assert.equal(await target.collection("character").countDocuments({ _id: "sentinel-missing-index" }), 1);
+			await ensureWorldIndexes(target);
+			const restoredIndexDry = await run(["--database", targetDatabase]);
+			const restoredIndexRun = await run([
 				"--database",
 				targetDatabase,
 				"--execute",
 				"--confirm",
-				missingIndexDry.preview.confirmToken,
+				restoredIndexDry.preview.confirmToken,
 				"--backup-dir",
-				path.join(runtime, "missing-index-backup"),
+				path.join(runtime, "missing-index-repaired-backup"),
 			]);
-			assert.ok(missingIndexRun.report.indexes.some((index) => index.collection === "character"));
+			assert.ok(restoredIndexRun.report.indexes.some((index) => index.collection === "character"));
 			assert.deepEqual(await verifyWorldIndexes(target), await ensureWorldIndexes(target));
 
 			await target.collection("character").insertOne({ _id: "sentinel-rollback" });
