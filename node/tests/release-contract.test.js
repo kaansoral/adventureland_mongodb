@@ -35,6 +35,7 @@ test("release scripts are present and keep reset separate from service startup",
 	const service = fs.readFileSync(path.join(root, "scripts/service-server.sh"), "utf8");
 	const browser = fs.readFileSync(path.join(root, "scripts/browser-smoke.mjs"), "utf8");
 	const rollback = fs.readFileSync(path.join(root, "scripts/rollback-drill.mjs"), "utf8");
+	const verifyScript = fs.readFileSync(path.join(root, "scripts/verify-skill-refactor.sh"), "utf8");
 	const matrixPath = path.join(root, "cjs-al-service", "tools/live-progression-matrix.mjs");
 	const smoke = fs.readFileSync(path.join(__dirname, "../tools/release-smoke.js"), "utf8");
 	assert.match(reset, /--execute/);
@@ -61,12 +62,55 @@ test("release scripts are present and keep reset separate from service startup",
 	assert.match(rollback, /ADVENTURELAND_RELEASE_SAFE_LOGS: "1"/);
 	assert.match(rollback, /assertRedactedReleaseLog/);
 	assert.match(rollback, /redactReleaseLog/);
+	assert.match(rollback, /const serviceClosed = new Promise/);
+	assert.match(rollback, /await serviceClosed/);
+	assert.match(rollback, /path\.join\(tmpdir\(\), "adventureland-rollback-child-"\)/);
+	assert.match(rollback, /log,\n\s*root,\n\s*\{ redact: true \}/);
+	assert.match(verifyScript, /GATE_STAGING_DIR=/);
+	assert.match(verifyScript, /redact_release_logs/);
 	assert.ok(fs.existsSync(matrixPath));
 	assert.match(fs.readFileSync(matrixPath, "utf8"), /gate: "live-progression-matrix"/);
 	assert.match(service, /data\.js/);
 	assert.match(service, /verify-publication\.js/);
 	assert.match(smoke, /combat_action/);
 	assert.match(smoke, /skill_level_up/);
+});
+
+test("rollback process capture drains close and redacts before retention", async () => {
+	const root = path.resolve(__dirname, "../../..");
+	const rollback = fs.readFileSync(path.join(root, "scripts/rollback-drill.mjs"), "utf8");
+	const start = rollback.indexOf("function runProcess(");
+	const end = rollback.indexOf("\n\nasync function gitTreeRef", start);
+	assert.notEqual(start, -1);
+	assert.notEqual(end, -1);
+	const { redactReleaseLog, assertRedactedReleaseLog } = await import(
+		`${require("node:url").pathToFileURL(path.join(root, "scripts/release-log-policy.mjs")).href}?process=${Date.now()}`
+	);
+	const EventEmitter = require("node:events");
+	const child = new EventEmitter();
+	child.stdout = new EventEmitter();
+	child.stderr = new EventEmitter();
+	const runProcess = vm.runInNewContext(`(${rollback.slice(start, end).trim()})`, {
+		spawn: () => child,
+		writeFile: fs.promises.writeFile,
+		redactReleaseLog,
+		assertRedactedReleaseLog,
+	});
+	const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "adventureland-rollback-process-"));
+	const logPath = path.join(temporaryDirectory, "process.log");
+	try {
+		const pending = runProcess("synthetic", [], {}, logPath, root, { redact: true });
+		child.stdout.emit("data", '{"password":"private"}\\n');
+		child.emit("exit", 0, null);
+		child.stdout.emit("data", "after-exit-output\\n");
+		child.emit("close", 0, null);
+		const result = await pending;
+		assert.match(result.output, /password.*\[redacted\]/);
+		assert.match(result.output, /after-exit-output/);
+		assert.equal(fs.readFileSync(logPath, "utf8"), result.output);
+	} finally {
+		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+	}
 });
 
 test("progression events stay queued until a successful persistence boundary", () => {
