@@ -844,22 +844,31 @@ test("browser death expression executes and validator rejects malformed evidence
 	const skills = Object.fromEntries(
 		["warrior", "paladin", "mage", "priest", "ranger", "rogue", "merchant"].map((name) => [name, { level: 1, xp: 0 }]),
 	);
-	const skillXpEvent = (skill, xp) => ({
-		skill,
-		accepted_xp: xp,
-		discarded_xp: 0,
-		from_level: 1,
-		to_level: 1,
-		xp,
-		max_xp: 500,
-		total_level: 7,
-		skills: Object.fromEntries(
-			Object.keys(skills).map((name) => [
-				name,
-				{ level: 1, xp: name === skill ? xp : 0, max_xp: 500 },
-			]),
-		),
-	});
+	const browserMaxXp = Math.round(900_000_000 * ((1 / (99 - 1)) ** 2));
+	const skillXpEvent = (skill, xp, priorXp = {}) => {
+		const xpBySkill = Object.fromEntries(
+			Object.keys(skills).map((name) => [name, priorXp[name] || 0]),
+		);
+		xpBySkill[skill] = xp;
+		return {
+			skill,
+			accepted_xp: xp - (priorXp[skill] || 0),
+			discarded_xp: 0,
+			from_level: 1,
+			to_level: 1,
+			xp,
+			max_xp: browserMaxXp,
+			total_level: 7,
+			skills: Object.fromEntries(
+				Object.keys(skills).map((name) => [
+					name,
+					{ level: 1, xp: xpBySkill[name], max_xp: browserMaxXp },
+				]),
+			),
+		};
+	};
+	const warriorEvent = skillXpEvent("warrior", 10);
+	const rogueEvent = skillXpEvent("rogue", 10, { warrior: 10 });
 	const result = {
 		schemaVersion: 1,
 		gate: "browser-smoke",
@@ -880,16 +889,18 @@ test("browser death expression executes and validator rejects malformed evidence
 					look,
 					success: true,
 				})),
-					combat: {
-						attempts: 1,
-						xpBefore: 0,
+				combat: {
+					attempts: 1,
+					xpBefore: 0,
 					xpAfter: 10,
+					skillXpBaseline: structuredClone(skills),
 					skillXpObserved: true,
 					skillXpEventCount: 2,
+					skillXpEvents: [warriorEvent, rogueEvent],
 					warriorEventCount: 1,
 					rogueEventCount: 1,
-					warriorEventSnapshot: skillXpEvent("warrior", 10),
-					rogueEventSnapshot: skillXpEvent("rogue", 10),
+					warriorEventSnapshot: warriorEvent,
+					rogueEventSnapshot: rogueEvent,
 					postSwitch: {
 						skill: "rogue",
 						attempts: 1,
@@ -897,7 +908,7 @@ test("browser death expression executes and validator rejects malformed evidence
 						xpAfter: 10,
 						xpObserved: true,
 						eventObserved: true,
-						eventSnapshot: skillXpEvent("rogue", 10),
+						eventSnapshot: rogueEvent,
 						eventCount: 1,
 					},
 				},
@@ -977,6 +988,10 @@ test("browser death expression executes and validator rejects malformed evidence
 	try {
 		runValidator(result);
 		const browserMutations = [
+			(candidate) => delete candidate.browser.ui.combat.skillXpEvents[0].skills.merchant,
+			(candidate) => { candidate.browser.ui.combat.skillXpEvents[1].skills.warrior.xp = 0; },
+			(candidate) => { candidate.browser.ui.combat.skillXpEvents[0].accepted_xp = 0; },
+			(candidate) => { candidate.browser.ui.combat.skillXpEvents[0].unexpected = true; },
 			(candidate) => delete candidate.browser.ui.combat.warriorEventSnapshot.skills.merchant,
 			(candidate) => { candidate.browser.ui.combat.warriorEventSnapshot.skills.warrior.max_xp = -1; },
 			(candidate) => { candidate.browser.ui.combat.postSwitch.xpAfter = 0; },
