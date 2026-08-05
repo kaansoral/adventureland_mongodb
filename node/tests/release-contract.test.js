@@ -59,3 +59,17 @@ test("release scripts are present and keep reset separate from service startup",
 	assert.match(smoke, /combat_action/);
 	assert.match(smoke, /skill_level_up/);
 });
+
+test("progression events stay queued until a successful persistence boundary", () => {
+	const root = path.resolve(__dirname, "../..");
+	const server = fs.readFileSync(path.join(root, "node/server.js"), "utf8");
+	const resendStart = server.indexOf("function resend(player, events)");
+	const resendEnd = server.indexOf("\nfunction transport_monster_to", resendStart);
+	assert.notEqual(resendStart, -1);
+	assert.notEqual(resendEnd, -1);
+	assert.doesNotMatch(server.slice(resendStart, resendEnd), /flushPlayerProgressionEvents/);
+	const syncStart = server.indexOf("async function sync_call(player)");
+	const syncEnd = server.indexOf("\n\t// stop_call:", syncStart);
+	const syncBlock = server.slice(syncStart, syncEnd);
+	assert.ok(syncBlock.indexOf("await tx_save(entity)") < syncBlock.indexOf("flushPlayerProgressionEvents(player)"));
+});
