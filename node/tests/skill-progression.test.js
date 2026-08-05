@@ -19,14 +19,20 @@ test("skill XP awards cross multiple thresholds once and recompute total level",
 test("skill XP validates requests, deduplicates sources, and discards at level 99", () => {
 	const seen = new Set();
 	const state = createCharacterState();
-	assert.throws(
-		() => awardSkillXp(state, "warrior", -1),
-		(error) => error.code === "invalid_skill_delta",
-	);
+	for (const requestedXp of [-1, 0.5, Number.NaN, Number.POSITIVE_INFINITY, Number.MAX_SAFE_INTEGER + 1]) {
+		assert.throws(
+			() => awardSkillXp(state, "warrior", requestedXp),
+			(error) =>
+				error.code === "invalid_skill_delta" &&
+				error.path === "requested_xp" &&
+				error.reason === "non_negative_safe_integer_required",
+		);
+	}
 	assert.throws(
 		() => awardSkillXp(state, "missing", 1),
-		(error) => error.code === "invalid_skill_delta",
+		(error) => error.code === "invalid_skill_delta" && error.path === "skill" && error.reason === "unknown_skill",
 	);
+	assert.deepEqual(state, createCharacterState());
 	const first = awardSkillXp(state, "warrior", 100, { sourceId: "same", seenSources: seen });
 	const duplicate = awardSkillXp(first.state, "warrior", 100, { sourceId: "same", seenSources: seen });
 	assert.equal(duplicate.delta.duplicate, true);
