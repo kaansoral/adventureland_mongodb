@@ -106,6 +106,15 @@ function ensurePlayerContainers(player, now = Date.now()) {
 }
 
 function initializePlayerProgression(player, now = Date.now()) {
+	for (const field of ["type", "level", "xp", "max_xp"]) {
+		if (Object.prototype.hasOwnProperty.call(player || {}, field)) {
+			throw runtimeError(
+				"invalid_character_skill_state",
+				`Persisted character contains unsupported root progression field ${field}`,
+				{ path: field, reason: "legacy_root_progression" },
+			);
+		}
+	}
 	ensurePlayerContainers(player, now);
 	const state = loadCharacterState({ info: { skills: player.info.skills }, total_level: player.total_level });
 	player.skills = state.skills;

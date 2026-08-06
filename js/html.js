@@ -3358,7 +3358,7 @@ function render_item(selector, args) {
 	var actual = args && args.actual;
 	if (selector && selector != "html") last_selector = selector;
 	else if (selector != "html") selector = last_selector;
-	var prop = args.prop || calculate_item_properties(actual || {}, { def: item, class: window.character && character.active_skill, map: window.character && character.map }),
+	var prop = args.prop || calculate_item_properties(actual || {}, { def: item, map: window.character && character.map }),
 		grade = calculate_item_grade(item, actual || {});
 	var html = "";
 	if (!args.pure)

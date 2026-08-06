@@ -161,7 +161,7 @@ app.get("/character/:name", async (req, res, next) => {
 		await put_ip_info(ip);
 	}
 	domain.title = character.info.name || character.name;
-	res.status(200).send(nunjucks.render("htmls/character.html", { domain: domain, character: character }));
+	res.status(200).send(nunjucks.render("htmls/character.html", { domain: domain, character: character_view(character) }));
 });
 
 // All characters listing

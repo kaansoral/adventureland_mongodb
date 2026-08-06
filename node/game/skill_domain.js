@@ -279,6 +279,7 @@ function normalizeItems(items, itemRequirements) {
 			throw fail("invalid_game_data", `Requirements reference missing item ${itemId}`, { item: itemId });
 		normalized[itemId].requirements = JSON.parse(JSON.stringify(requirements));
 		delete normalized[itemId].class;
+		for (const skillId of SKILL_IDS) delete normalized[itemId][skillId];
 	}
 	return normalized;
 }

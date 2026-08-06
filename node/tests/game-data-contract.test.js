@@ -90,6 +90,8 @@ test("real design catalogs load with the canonical registry and curve", () => {
 	assert.equal(Object.keys(data.abilities).length, 105);
 	assert.equal(Object.keys(data.items).length, 529);
 	assert.equal(Object.keys(data.item_requirements).length, 287);
+	for (const skill of ["warrior", "paladin", "mage", "priest", "ranger", "rogue", "merchant"])
+		assert.equal(data.items.tigerhelmet[skill], undefined, `normalized item retained ${skill} modifier`);
 	assert.equal(data.character.appearances.length, 28);
 	assert.deepEqual(plain(data.character.starter.weapons), ["blade", "mace", "staff", "wbook0", "bow", "claw"]);
 	for (let level = 1; level <= 99; level += 1) {
@@ -520,7 +522,7 @@ test("new ability catalog preserves every legacy definition and only changes own
 	for (const id of Object.keys(legacy)) {
 		const oldDefinition = { ...legacy[id] };
 		const newDefinition = { ...data.abilities[id] };
-		if (id === "throw") oldDefinition.code = oldDefinition.code.replace("character.level", "character.total_level");
+		if (id === "throw") oldDefinition.code = newDefinition.code;
 		assert.equal(Object.prototype.hasOwnProperty.call(newDefinition, "class"), false, id);
 		const oldClass = oldDefinition.class;
 		if (Array.isArray(oldClass) && oldClass.length === 1) {
@@ -544,6 +546,7 @@ test("new ability catalog preserves every legacy definition and only changes own
 		delete newDefinition.contribution;
 		assert.deepEqual(plain(newDefinition), plain(oldDefinition), id);
 	}
+	assert.equal(data.abilities.throw.code, "range=character.skills.merchant.level+200");
 	assert.equal(
 		Object.values(legacy).filter((definition) => definition.class && definition.class.length === 1).length,
 		55,
@@ -646,6 +649,8 @@ test("production loaders validate progression data before publishing it", () => 
 	const main = fs.readFileSync(path.join(designRoot, "../main.js"), "utf8");
 	const server = fs.readFileSync(path.join(designRoot, "../node/server.js"), "utf8");
 	assert.match(main, /buildProgressionData\(\{/);
+	assert.match(main, /character_view\(character\)/);
+	assert.doesNotMatch(fs.readFileSync(path.join(designRoot, "../js/html.js"), "utf8"), /calculate_item_properties\([^\n]+class:/);
 	assert.equal((server.match(/const progression_data = buildProgressionData\(\{/g) || []).length, 2);
 	assert.ok(server.indexOf("buildProgressionData") < server.indexOf("G = loadProgressionPublication"));
 	const executeBuilderStatement = (statement, raw) => {
