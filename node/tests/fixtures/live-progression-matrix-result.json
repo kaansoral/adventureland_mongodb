@@ -792,13 +792,15 @@
         "stats_remained_reduced": true
       },
       "second_death": {
-        "response": "defeated_by_a_monster",
-        "place": null,
-        "success": true,
-        "generation": 1,
-        "monster": "goo",
-        "target_id": "38",
-        "death_sickness_until": 1785937007841,
+        "response": {
+          "response": "defeated_by_a_monster",
+          "place": null,
+          "success": true,
+          "generation": 1,
+          "monster": "goo",
+          "target_id": "38",
+          "death_sickness_until": 1785937007841
+        },
         "sickness_until": 1785937007841,
         "stats": {
           "affected": {
