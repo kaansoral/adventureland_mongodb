@@ -1142,6 +1142,9 @@ test("live progression release validation covers contribution maps, curves, even
 	try {
 		runValidator(result);
 		const mutations = [
+			(candidate) => { candidate.scenarios.freshCharacter.fixture.total_level = 6; },
+			(candidate) => { candidate.scenarios.gatedGear.below.state_unchanged = false; },
+			(candidate) => { candidate.scenarios.rankings.merchant_order.pop(); },
 			(candidate) => delete candidate.scenarios.contributions.persisted.skill_xp_delta.merchant,
 			(candidate) => delete candidate.scenarios.contributions.live_action.skill_xp_events[0].skills.merchant,
 			(candidate) => { candidate.scenarios.contributions.live_action.skill_xp_events[0].skills.warrior.maxXp += 1; },

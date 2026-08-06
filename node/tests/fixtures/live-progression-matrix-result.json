@@ -478,35 +478,6 @@
           "rogue": 74
         }
       },
-      "authoritative_ledger": {
-        "share": 101,
-        "split": {
-          "warrior": 30,
-          "rogue": 71
-        },
-        "conservation": true,
-        "passive_weight": 0,
-        "pvp_weight": 0,
-        "healing_weight": 40,
-        "effective_overheal_weight": 10,
-        "support_weight": 1,
-        "redundant_support_weight": 0,
-        "projectile_switch_skill": "ranger",
-        "multi_encounter_support_weight": 1,
-        "support_only_excluded": true,
-        "server_award_partitions": {
-          "matrix-player": {
-            "warrior": 150,
-            "rogue": 350,
-            "ranger": 500
-          },
-          "matrix-healer": {
-            "priest": 500
-          }
-        },
-        "passive_partition": {},
-        "pvp_partition": {}
-      },
       "passive_and_party_zero": true,
       "passive_and_pvp_zero": true,
       "party_member_zero": {
