@@ -9,8 +9,8 @@ const { progression } = require("../../design/progression");
 const { calculateStats } = require("../game/stats");
 const { resolveMainhand } = require("../game/active_skill");
 const { ContributionLedger } = require("../game/contributions");
-const { awardPlayerSkillXpSplit, initializePlayerProgression } = require("../game/progression_runtime");
-const { createMerchantAccrual, settleStand, qualifyLuck, recordSale } = require("../game/merchant_progression");
+const { awardPlayerSkillXp, awardPlayerSkillXpSplit, initializePlayerProgression } = require("../game/progression_runtime");
+const { settleStand, qualifyLuck, recordSale } = require("../game/merchant_progression");
 
 const COMBAT_SKILLS = Object.freeze(COMBAT_SKILL_IDS.slice());
 const MERCHANT_PROFILES = Object.freeze(["starter", "competent", "optimized"]);
@@ -43,7 +43,6 @@ function loadTargetOracle(filename = TARGET_ORACLE_PATH) {
 
 const TARGET_ORACLE = loadTargetOracle();
 const TARGET_HOURS = TARGET_ORACLE.targetHours;
-const BENCHMARK_LOADOUT_SLOTS = Object.freeze(["mainhand", "helmet", "shoes"]);
 const BENCHMARK_ITEM_TYPES = Object.freeze({
 	mainhand: "weapon",
 	helmets: "helmet",
@@ -279,8 +278,7 @@ function canonicalCombatBands(skill, plan, data) {
 			target_level: nextLevel,
 			template,
 			monster_source: "all_normal",
-			loadout_slots: plan.loadout_slots || BENCHMARK_LOADOUT_SLOTS,
-			include_party_variants: false,
+			loadout_slots: plan.loadout_slots,
 		});
 	}
 	return bands;
@@ -293,7 +291,7 @@ function enumerateCanonicalCandidates({ profile, skill, plan, band, skillLevels,
 		(band.candidates && band.candidates[0]) ||
 		(plan.bands && plan.bands[0] && plan.bands[0].candidates && plan.bands[0].candidates[0]);
 	if (!template) throw new Error(`Benchmark plan ${profile}/${skill} is missing a canonical candidate template`);
-	const loadoutSlots = band.loadout_slots || plan.loadout_slots || BENCHMARK_LOADOUT_SLOTS;
+	const loadoutSlots = band.loadout_slots || plan.loadout_slots;
 	if (!Array.isArray(loadoutSlots) || !loadoutSlots.length)
 		throw new Error(`Benchmark plan ${profile}/${skill} has no canonical loadout slots`);
 	const pools = loadoutSlots.map((slot) => {
@@ -308,10 +306,12 @@ function enumerateCanonicalCandidates({ profile, skill, plan, band, skillLevels,
 			? normalBenchmarkMonsters(data)
 			: [template.monster];
 	if (!monsters.length) throw new Error(`Benchmark plan ${profile}/${skill} has no canonical monsters`);
-	const partyCounts =
-		profile === "optimized" && (band.include_party_variants === true || plan.include_party_variants === true || profile === "optimized")
-			? [0, 1]
-			: [Number(template.external_party_characters || 0)];
+	const partyCounts = band.party_counts || plan.party_counts;
+	if (!Array.isArray(partyCounts) || !partyCounts.length)
+		throw new Error(`Benchmark plan ${profile}/${skill} has no explicit party/support variants`);
+	const normalizedPartyCounts = [...new Set(partyCounts.map(Number))].sort((left, right) => left - right);
+	if (normalizedPartyCounts.some((count) => !Number.isSafeInteger(count) || count < 0 || count > 9))
+		throw new Error(`Benchmark plan ${profile}/${skill} has an invalid party/support cardinality`);
 	const routes = [];
 	const slots = {};
 	const visit = (index) => {
@@ -327,7 +327,7 @@ function enumerateCanonicalCandidates({ profile, skill, plan, band, skillLevels,
 		const mainResolution = resolveMainhand(slotInstances(slots), data.items);
 		if (!mainResolution || mainResolution.skill !== skill) return;
 		for (const monster of monsters) {
-			for (const externalPartyCharacters of partyCounts) {
+			for (const externalPartyCharacters of normalizedPartyCounts) {
 				const routeSlots = clone(slots);
 				const route = {
 					id: `canonical-${candidateIdentityKey({ slots: routeSlots, monster, external_party_characters: externalPartyCharacters })}`,
@@ -485,16 +485,28 @@ function abilityCycleMs(ability, stats, mpPerSecond) {
 	return Math.max(cooldown, resourceWait);
 }
 
+function damageProfile(damageType, mainResolution) {
+	const resolvedType = damageType || mainResolution.profile.damage_type;
+	if (resolvedType === "pure") return { damageType: "pure", defenseKey: null, pierceKey: null, missKey: null };
+	if (resolvedType === "magical") return { damageType: "magical", defenseKey: "resistance", pierceKey: "rpiercing", missKey: "avoidance" };
+	return { damageType: "physical", defenseKey: "armor", pierceKey: "apiercing", missKey: "evasion" };
+}
+
+function hitChance(monster, damageType) {
+	if (damageType === "pure") return 1;
+	const missKey = damageType === "magical" ? "avoidance" : "evasion";
+	return Math.max(0, 1 - Number(monster[missKey] || 0) / 100);
+}
+
 function abilityDamageAgainst(ability, stats, monster, mainResolution, data) {
 	const rawDamage = abilityDamage(ability, stats, stats.max_mp);
 	if (rawDamage <= 0) return 0;
-	if (ability.definition.damage_type === "pure") return Math.ceil(rawDamage);
-	const defenseKey = mainResolution.profile.damage_type === "magical" ? "resistance" : "armor";
-	const pierceKey = mainResolution.profile.damage_type === "magical" ? "rpiercing" : "apiercing";
-	const abilityPiercing = ability.name === "piercingshot" ? 500 : Number(stats[pierceKey] || 0);
+	const profile = damageProfile(ability.definition.damage_type, mainResolution);
+	if (profile.damageType === "pure") return Math.ceil(rawDamage);
+	const abilityPiercing = ability.name === "piercingshot" ? 500 : Number(stats[profile.pierceKey] || 0);
 	return Math.max(
 		0,
-		Math.ceil(Math.ceil(rawDamage) * data.damageMultiplier((monster[defenseKey] || 0) - abilityPiercing)),
+		Math.ceil(Math.ceil(rawDamage) * data.damageMultiplier((monster[profile.defenseKey] || 0) - abilityPiercing)),
 	);
 }
 
@@ -559,20 +571,15 @@ function simulateProjectedKill({ profile, skill, bandIndex, candidate, skillLeve
 			simulation_mode: "projected",
 		};
 	}
-	const defenseKey = mainResolution.profile.damage_type === "magical" ? "resistance" : "armor";
-	const pierceKey = mainResolution.profile.damage_type === "magical" ? "rpiercing" : "apiercing";
+	const basicProfile = damageProfile(mainResolution.profile.damage_type, mainResolution);
 	const basicDamage = Math.max(
 		1,
 		Math.ceil(
-			Math.ceil(stats.attack) * data.damageMultiplier((monster[defenseKey] || 0) - (stats[pierceKey] || 0)),
+			Math.ceil(stats.attack) * data.damageMultiplier((monster[basicProfile.defenseKey] || 0) - (stats[basicProfile.pierceKey] || 0)),
 		),
 	);
-	const hitChance = Math.max(
-		0,
-		1 -
-			(mainResolution.profile.damage_type === "physical" ? Number(monster.evasion || 0) : Number(monster.avoidance || 0)) / 100,
-	);
-	const basicDps = (basicDamage * hitChance * 1000) / stats.attack_ms;
+	const basicHitChance = hitChance(monster, basicProfile.damageType);
+	const basicDps = (basicDamage * basicHitChance * 1000) / stats.attack_ms;
 	const abilities =
 		(candidate.ability_policy || "basic_only") === "use_unlocked"
 			? unlockedDamageAbilities(skill, Number(skillLevels[skill] || 1), mainResolution.item, data.abilities)
@@ -588,13 +595,14 @@ function simulateProjectedKill({ profile, skill, bandIndex, candidate, skillLeve
 	const directOptions = abilities
 		.map((ability) => {
 			const damage = abilityDamageAgainst(ability, stats, monster, mainResolution, data);
+			const abilityHitChance = hitChance(monster, damageProfile(ability.definition.damage_type, mainResolution).damageType);
 			const cycleMs = abilityCycleMs(ability, stats, mpPerSecond);
 			return {
 				ability,
 				damage,
 				cycleMs,
 				incrementalDps: Number.isFinite(cycleMs)
-					? Math.max(0, damage - basicDamage) * hitChance * 1000 / cycleMs
+					? Math.max(0, damage * abilityHitChance - basicDamage * basicHitChance) * 1000 / cycleMs
 					: 0,
 			};
 		})
@@ -765,8 +773,7 @@ function simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, d
 		encounterIds: [encounterId],
 		kind: "combat",
 	});
-	const defenseKey = mainResolution.profile.damage_type === "magical" ? "resistance" : "armor";
-	const pierceKey = mainResolution.profile.damage_type === "magical" ? "rpiercing" : "apiercing";
+	const basicProfile = damageProfile(mainResolution.profile.damage_type, mainResolution);
 	let hp = monster.hp;
 	let elapsedMs = 0;
 	let hits = 0;
@@ -814,16 +821,18 @@ function simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, d
 		if (stats.crit > 0 && rng() * 100 < stats.crit) {
 			attack *= 2 + (stats.critdamage || 0) / 100;
 		}
+		const attackProfile = damageProfile(
+			selectedAbility ? selectedAbility.definition.damage_type : basicProfile.damageType,
+			mainResolution,
+		);
 		let damage =
-			selectedAbility && selectedAbility.definition.damage_type === "pure"
+			attackProfile.damageType === "pure"
 				? Math.ceil(attack)
 				: Math.ceil(
 						Math.ceil(attack * (0.9 + rng() * 0.2)) *
-							data.damageMultiplier((monster[defenseKey] || 0) - (stats[pierceKey] || 0)),
+							data.damageMultiplier((monster[attackProfile.defenseKey] || 0) - (stats[attackProfile.pierceKey] || 0)),
 					);
-		if (!selectedAbility && mainResolution.profile.damage_type === "physical" && monster.evasion && rng() * 100 < monster.evasion)
-			damage = 0;
-		else if (!selectedAbility && monster.avoidance && rng() * 100 < monster.avoidance) damage = 0;
+		if (attackProfile.missKey && monster[attackProfile.missKey] && rng() * 100 < monster[attackProfile.missKey]) damage = 0;
 		damage = Math.max(0, damage);
 		const hpBefore = hp;
 		hp = Math.max(0, hp - Math.ceil(damage * (1 + partyDamageFactor)));
@@ -859,6 +868,13 @@ function simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, d
 			skill: "warrior",
 			amount: externalDamage / Number(candidate.external_party_characters || 1),
 		});
+	}
+	for (const ability of abilities) {
+		const uses = Number(abilityUses[ability.name] || 0);
+		if (!uses) continue;
+		const cooldownWindow = Math.ceil(uses * abilityCycleMs(ability, stats, mpPerSecond));
+		const respawnMs = Math.max(0, Math.round((monster.respawn || 0) * 1000));
+		elapsedMs = Math.max(elapsedMs, cooldownWindow - respawnMs);
 	}
 	elapsedMs += Math.max(0, Math.round((monster.respawn || 0) * 1000));
 	const characterShare = Math.round(monster.xp * stats.xpm);
@@ -956,15 +972,23 @@ function evaluateCombatPlan(profile, skill, plan, data, baselineRate) {
 			useCanonicalEnumeration
 				? enumerateCanonicalCandidates({ profile, skill, plan, band, skillLevels, data })
 				: band.candidates;
-		const evaluatedCandidates = candidates.map((candidate) =>
-			simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, data }),
-		);
+		const evaluatedCandidates = candidates.map((candidate) => ({
+			...simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, data }),
+			benchmark_candidate: candidate,
+		}));
 		const projectedSelected = chooseCandidate(
 			plan.selection_mode,
 			evaluatedCandidates,
 			baselineRate || evaluatedCandidates[0].rate_per_hour,
 		);
-		const selected = projectedSelected;
+		const selected = simulateSoloKill({
+			profile,
+			skill,
+			bandIndex,
+			candidate: { ...projectedSelected.benchmark_candidate, simulation_mode: "exact" },
+			skillLevels,
+			data,
+		});
 		const currentXp = player.skills[skill].xp;
 		const xpRemaining = Math.max(0, targetXp - currentXp);
 		const kills = xpRemaining === 0 ? 0 : Math.ceil(xpRemaining / selected.xp_per_kill);
@@ -1022,29 +1046,6 @@ function evaluateCombatPlan(profile, skill, plan, data, baselineRate) {
 	};
 }
 
-function merchantStarterResult(route) {
-	let state = createMerchantAccrual("benchmark-merchant");
-	let xp = 0;
-	let hours = 0;
-	while (xp < MAX_XP && hours < TARGET_HOURS.starter + 1) {
-		const now = hours * progression.STAND_HOUR_MS;
-		const settled = settleStand(state, progression.STAND_HOUR_MS, now + progression.STAND_HOUR_MS);
-		state = settled.state;
-		xp += settled.xp;
-		hours += 1;
-	}
-	return {
-		profile: "starter",
-		strategy: route.strategy,
-		duration_hours: hours,
-		target_hours: TARGET_HOURS.starter,
-		within_target: hours === TARGET_HOURS.starter,
-		xp,
-		base_xp: MAX_XP,
-		max_rolling_multiplier: 6,
-	};
-}
-
 function addLuckCredits(state, profile, hour, now, count) {
 	for (let index = 0; index < count; index += 1) {
 		const result = qualifyLuck(state, `${profile}:target:${hour}:${index}`, now);
@@ -1054,12 +1055,12 @@ function addLuckCredits(state, profile, hour, now, count) {
 	return state;
 }
 
-function addSaleCredits(state, profile, hour, now, count, serverTax) {
+function addSaleCredits(state, profile, hour, now, count, serverTax, goldReceived) {
 	for (let index = 0; index < count; index += 1) {
 		const result = recordSale(state, {
 			merchantOwnerId: `${profile}:merchant`,
 			externalOwnerId: `${profile}:buyer:${hour}:${index}`,
-			goldReceived: 100000,
+			goldReceived,
 			serverTax: Array.isArray(serverTax) ? serverTax[index] : serverTax,
 			sourceId: `${profile}:sale:${hour}:${index}`,
 			now,
@@ -1071,44 +1072,104 @@ function addSaleCredits(state, profile, hour, now, count, serverTax) {
 	return state;
 }
 
+function validateMerchantSchedule(route, profile) {
+	const schedule = route && route.schedule;
+	if (!schedule || typeof schedule !== "object" || Array.isArray(schedule))
+		throw new Error(`Merchant benchmark route ${profile} is missing an explicit schedule`);
+	const scheduleKeys = Object.keys(schedule).sort();
+	if (stableJson(scheduleKeys) !== stableJson(["after_level_gate", "before_level_gate", "level_gate", "stand_elapsed_ms"]))
+		throw new Error(`Merchant benchmark route ${profile} has incomplete or unused schedule fields`);
+	if (schedule.level_gate !== null && (!Number.isSafeInteger(schedule.level_gate) || schedule.level_gate < 1 || schedule.level_gate > progression.MAX_LEVEL))
+		throw new Error(`Merchant benchmark route ${profile} has an invalid level gate`);
+	if (!Number.isSafeInteger(schedule.stand_elapsed_ms) || schedule.stand_elapsed_ms <= 0 || schedule.stand_elapsed_ms > progression.STAND_HOUR_MS)
+		throw new Error(`Merchant benchmark route ${profile} has an invalid stand interval`);
+	for (const phaseName of ["before_level_gate", "after_level_gate"]) {
+		const phase = schedule[phaseName];
+		if (!phase || typeof phase !== "object" || Array.isArray(phase))
+			throw new Error(`Merchant benchmark route ${profile} is missing ${phaseName}`);
+		const phaseKeys = Object.keys(phase).sort();
+		if (stableJson(phaseKeys) !== stableJson(["luck_count", "sale_count", "sale_gold", "sale_server_tax"]))
+			throw new Error(`Merchant benchmark route ${profile}/${phaseName} has incomplete or unused fields`);
+		for (const field of ["luck_count", "sale_count"]) {
+			if (!Number.isSafeInteger(phase[field]) || phase[field] < 0)
+				throw new Error(`Merchant benchmark route ${profile}/${phaseName} has an invalid ${field}`);
+		}
+		if (phase.luck_count > progression.LUCK_MAX_TARGETS_PER_HOUR)
+			throw new Error(`Merchant benchmark route ${profile}/${phaseName} exceeds the Luck hour cap`);
+		if (!Number.isSafeInteger(phase.sale_gold) || (phase.sale_count > 0 && phase.sale_gold <= 0))
+			throw new Error(`Merchant benchmark route ${profile}/${phaseName} has an invalid sale_gold`);
+		const taxes = Array.isArray(phase.sale_server_tax) ? phase.sale_server_tax : [phase.sale_server_tax];
+		if (phase.sale_count > 0 && taxes.length !== 1 && taxes.length !== phase.sale_count)
+			throw new Error(`Merchant benchmark route ${profile}/${phaseName} has the wrong sale tax schedule length`);
+		if (taxes.some((tax) => !Number.isSafeInteger(tax) || tax < 0))
+			throw new Error(`Merchant benchmark route ${profile}/${phaseName} has an invalid sale tax`);
+	}
+	return schedule;
+}
+
 function runMerchantProfile(profile, route) {
-	if (profile === "starter") return merchantStarterResult(route);
-	let state = createMerchantAccrual("benchmark-merchant");
-	let xp = 0;
+	const schedule = validateMerchantSchedule(route, profile);
+	const player = createBenchmarkPlayer();
+	let state = player.info.merchant_accrual;
 	let hours = 0;
 	let level40ReachedAt = null;
-	while (xp < MAX_XP && hours < TARGET_HOURS[profile] + 1) {
-		const now = hours * progression.STAND_HOUR_MS;
-		const settlementAt = now + progression.STAND_HOUR_MS;
-		const afterLevel40 = xp >= cumulativeXp(40);
-		if (afterLevel40 && level40ReachedAt === null) level40ReachedAt = hours;
-		if (profile === "competent") {
-			if (!afterLevel40) state = addSaleCredits(state, profile, hours, settlementAt, 10, 14000);
-			else {
-				state = addLuckCredits(state, profile, hours, settlementAt, 5);
-				state = addSaleCredits(state, profile, hours, settlementAt, 5, [10867, 10867, 10867, 10867, 129]);
-			}
-		} else {
-			if (!afterLevel40) state = addSaleCredits(state, profile, hours, settlementAt, 50, 14000);
-			else {
-				state = addLuckCredits(state, profile, hours, settlementAt, 10);
-				state = addSaleCredits(state, profile, hours, settlementAt, 10, 14000);
-			}
-		}
-		const settled = settleStand(state, progression.STAND_HOUR_MS, settlementAt);
+	let baseUnits = 0;
+	let bonusUnits = 0;
+	let maxRollingUnits = 0;
+	while (player.skills.merchant.xp < MAX_XP && hours < TARGET_HOURS[profile] + 1) {
+		const now = hours * schedule.stand_elapsed_ms;
+		const settlementAt = now + schedule.stand_elapsed_ms;
+		const afterLevelGate = schedule.level_gate !== null && player.skills.merchant.xp >= cumulativeXp(schedule.level_gate);
+		const phase = afterLevelGate ? schedule.after_level_gate : schedule.before_level_gate;
+		if (afterLevelGate && level40ReachedAt === null) level40ReachedAt = hours;
+		state = addLuckCredits(state, profile, hours, settlementAt, phase.luck_count);
+		state = addSaleCredits(
+			state,
+			profile,
+			hours,
+			settlementAt,
+			phase.sale_count,
+			phase.sale_server_tax,
+			phase.sale_gold,
+		);
+		const settled = settleStand(state, schedule.stand_elapsed_ms, settlementAt);
 		state = settled.state;
-		xp += settled.xp;
+		if (settled.base_units + settled.bonus_units > progression.MAX_TOTAL_UNITS_PER_HOUR)
+			throw new Error(`Merchant benchmark route ${profile} exceeded the rolling total-unit cap`);
+		if (settled.bonus_units > settled.base_units * 5)
+			throw new Error(`Merchant benchmark route ${profile} exceeded the rolling bonus cap`);
+		baseUnits += settled.base_units;
+		bonusUnits += settled.bonus_units;
+		const rollingUnits =
+			state.rolling_awards.reduce((sum, award) => sum + award.base_units + award.bonus_units, 0) +
+			(state.saturated_award_units ? state.saturated_award_units.units : 0);
+		maxRollingUnits = Math.max(maxRollingUnits, rollingUnits);
+		if (settled.xp) {
+			const delta = awardPlayerSkillXp(player, "merchant", settled.xp, {
+				source: "merchant_stand",
+				sourceId: `benchmark-stand:${profile}:${hours}`,
+				emit: false,
+				now: settlementAt,
+			});
+			if (delta.duplicate) throw new Error(`Merchant benchmark route ${profile} produced a duplicate stand award`);
+		}
+		player.info.merchant_accrual = state;
 		hours += 1;
 	}
+	const xp = player.skills.merchant.xp;
 	return {
 		profile,
 		strategy: route.strategy,
+		schedule: clone(schedule),
 		duration_hours: hours,
 		target_hours: TARGET_HOURS[profile],
 		within_target: hours === TARGET_HOURS[profile],
 		xp,
-		base_xp: MAX_XP,
-		max_rolling_multiplier: 6,
+		base_xp: Math.floor(baseUnits / progression.XP_UNITS_PER_XP),
+		bonus_xp: Math.floor(bonusUnits / progression.XP_UNITS_PER_XP),
+		base_units: baseUnits,
+		bonus_units: bonusUnits,
+		max_rolling_multiplier: Number((maxRollingUnits / progression.BASE_UNITS_PER_HOUR).toFixed(6)),
 		level_40_reached_at_hour: level40ReachedAt,
 	};
 }
@@ -1177,27 +1238,27 @@ function runBenchmark({ fixturePath = FIXTURE_PATH, strictTargets = false } = {}
 	const regenerated = generateFixture(fixture, data);
 	const combat = { starter: {}, competent: {}, optimized: {} };
 	for (const skill of COMBAT_SKILLS)
-		combat.starter[skill] = evaluateCombatPlan("starter", skill, regenerated.combat.starter[skill], data, null);
+		combat.starter[skill] = evaluateCombatPlan("starter", skill, fixture.combat.starter[skill], data, null);
 	for (const skill of COMBAT_SKILLS) {
 		const baseline = combat.starter[skill].bands[0].rate_per_hour;
 		combat.competent[skill] = evaluateCombatPlan(
 			"competent",
 			skill,
-			regenerated.combat.competent[skill],
+			fixture.combat.competent[skill],
 			data,
 			baseline,
 		);
 		combat.optimized[skill] = evaluateCombatPlan(
 			"optimized",
 			skill,
-			regenerated.combat.optimized[skill],
+			fixture.combat.optimized[skill],
 			data,
 			baseline,
 		);
 	}
 	const merchant = {};
 	for (const profile of MERCHANT_PROFILES)
-		merchant[profile] = runMerchantProfile(profile, regenerated.merchant[profile]);
+		merchant[profile] = runMerchantProfile(profile, fixture.merchant[profile]);
 	const targetAlignment = Object.values(combat).every((profile) =>
 		Object.values(profile).every((result) => result.within_target),
 	);
@@ -1211,15 +1272,22 @@ function runBenchmark({ fixturePath = FIXTURE_PATH, strictTargets = false } = {}
 	);
 	const expectedCombatPass = Object.entries(combat).every(([profile, results]) =>
 		Object.entries(results).every(([skill, result]) =>
-			matchesExpected(summarizeCombatExpected(result), regenerated.combat[profile][skill].expected),
+			matchesExpected(summarizeCombatExpected(result), fixture.combat[profile][skill].expected),
 		),
 	);
 	const expectedMerchantPass = Object.entries(merchant).every(([profile, result]) =>
-		matchesExpected(summarizeMerchantExpected(result), regenerated.merchant[profile].expected),
+		matchesExpected(summarizeMerchantExpected(result), fixture.merchant[profile].expected),
 	);
 	const fixtureStable = stableJson(regenerated) === stableJson(fixture);
-	const ok = routeLegality && expectedCombatPass && expectedMerchantPass && fixtureStable;
-	const strict_ok = ok && targetAlignment && merchantTargetAlignment && styleParity;
+	const ok =
+		routeLegality &&
+		expectedCombatPass &&
+		expectedMerchantPass &&
+		fixtureStable &&
+		targetAlignment &&
+		merchantTargetAlignment &&
+		styleParity;
+	const strict_ok = ok;
 	const report = {
 		schema_version: 2,
 		ok,
@@ -1247,7 +1315,9 @@ function runBenchmark({ fixturePath = FIXTURE_PATH, strictTargets = false } = {}
 function main(argv = process.argv.slice(2)) {
 	const format = argv.includes("--format=json") ? "json" : "text";
 	const strictTargets = argv.includes("--strict-targets");
-	const report = runBenchmark({ strictTargets });
+	const fixtureArgument = argv.find((argument) => argument.startsWith("--fixture="));
+	const fixturePath = fixtureArgument ? fixtureArgument.slice("--fixture=".length) : FIXTURE_PATH;
+	const report = runBenchmark({ fixturePath, strictTargets });
 	if (format === "json") process.stdout.write(JSON.stringify(report) + "\n");
 	else process.stdout.write(JSON.stringify(report, null, 2) + "\n");
 	if (!report.ok) process.exitCode = 1;
@@ -1259,12 +1329,15 @@ module.exports = {
 	COMBAT_SKILLS,
 	FIXTURE_PATH,
 	MERCHANT_PROFILES,
+	abilityDamageAgainst,
 	chooseCandidate,
 	enumerateCanonicalCandidates,
+	evaluateCombatPlan,
 	generateFixture,
 	loadBenchmarkData,
 	loadFixture,
 	loadTargetOracle,
+	runMerchantProfile,
 	runBenchmark,
 	simulateSoloKill,
 	stableJson,

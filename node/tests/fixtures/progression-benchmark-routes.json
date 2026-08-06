@@ -53,7 +53,12 @@
           "selected_candidate_ids": [
             "goo-starter"
           ]
-        }
+        },
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ]
       },
       "paladin": {
         "strategy": "starter",
@@ -86,7 +91,12 @@
           "selected_candidate_ids": [
             "goo-starter"
           ]
-        }
+        },
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ]
       },
       "mage": {
         "strategy": "starter",
@@ -119,7 +129,12 @@
           "selected_candidate_ids": [
             "goo-starter"
           ]
-        }
+        },
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ]
       },
       "priest": {
         "strategy": "starter",
@@ -152,7 +167,12 @@
           "selected_candidate_ids": [
             "goo-starter"
           ]
-        }
+        },
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ]
       },
       "ranger": {
         "strategy": "starter",
@@ -185,7 +205,12 @@
           "selected_candidate_ids": [
             "goo-starter"
           ]
-        }
+        },
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ]
       },
       "rogue": {
         "strategy": "starter",
@@ -218,7 +243,12 @@
           "selected_candidate_ids": [
             "goo-starter"
           ]
-        }
+        },
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ]
       }
     },
     "competent": {
@@ -253,7 +283,16 @@
           "selected_candidate_ids": [
             "bee-route"
           ]
-        }
+        },
+        "enumeration": "canonical",
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ],
+        "party_counts": [
+          0
+        ]
       },
       "paladin": {
         "strategy": "fixture-reviewed permanent solo bee route",
@@ -286,7 +325,16 @@
           "selected_candidate_ids": [
             "bee-route"
           ]
-        }
+        },
+        "enumeration": "canonical",
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ],
+        "party_counts": [
+          0
+        ]
       },
       "mage": {
         "strategy": "fixture-reviewed permanent solo bee route",
@@ -319,7 +367,16 @@
           "selected_candidate_ids": [
             "bee-route"
           ]
-        }
+        },
+        "enumeration": "canonical",
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ],
+        "party_counts": [
+          0
+        ]
       },
       "priest": {
         "strategy": "fixture-reviewed permanent solo bee route",
@@ -352,7 +409,16 @@
           "selected_candidate_ids": [
             "bee-route"
           ]
-        }
+        },
+        "enumeration": "canonical",
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ],
+        "party_counts": [
+          0
+        ]
       },
       "ranger": {
         "strategy": "fixture-reviewed permanent solo bee route",
@@ -385,7 +451,16 @@
           "selected_candidate_ids": [
             "bee-route"
           ]
-        }
+        },
+        "enumeration": "canonical",
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ],
+        "party_counts": [
+          0
+        ]
       },
       "rogue": {
         "strategy": "fixture-reviewed permanent solo bee route",
@@ -418,7 +493,16 @@
           "selected_candidate_ids": [
             "bee-route"
           ]
-        }
+        },
+        "enumeration": "canonical",
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ],
+        "party_counts": [
+          0
+        ]
       }
     },
     "optimized": {
@@ -453,7 +537,17 @@
           "selected_candidate_ids": [
             "hen-route"
           ]
-        }
+        },
+        "enumeration": "canonical",
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ],
+        "party_counts": [
+          0,
+          1
+        ]
       },
       "paladin": {
         "strategy": "fixture-reviewed permanent solo chicken route",
@@ -486,7 +580,17 @@
           "selected_candidate_ids": [
             "hen-route"
           ]
-        }
+        },
+        "enumeration": "canonical",
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ],
+        "party_counts": [
+          0,
+          1
+        ]
       },
       "mage": {
         "strategy": "fixture-reviewed permanent solo chicken route",
@@ -519,7 +623,17 @@
           "selected_candidate_ids": [
             "hen-route"
           ]
-        }
+        },
+        "enumeration": "canonical",
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ],
+        "party_counts": [
+          0,
+          1
+        ]
       },
       "priest": {
         "strategy": "fixture-reviewed permanent solo chicken route",
@@ -552,7 +666,17 @@
           "selected_candidate_ids": [
             "hen-route"
           ]
-        }
+        },
+        "enumeration": "canonical",
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ],
+        "party_counts": [
+          0,
+          1
+        ]
       },
       "ranger": {
         "strategy": "fixture-reviewed permanent solo chicken route",
@@ -585,7 +709,17 @@
           "selected_candidate_ids": [
             "hen-route"
           ]
-        }
+        },
+        "enumeration": "canonical",
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ],
+        "party_counts": [
+          0,
+          1
+        ]
       },
       "rogue": {
         "strategy": "fixture-reviewed permanent solo chicken route",
@@ -618,13 +752,39 @@
           "selected_candidate_ids": [
             "hen-route"
           ]
-        }
+        },
+        "enumeration": "canonical",
+        "loadout_slots": [
+          "mainhand",
+          "helmet",
+          "shoes"
+        ],
+        "party_counts": [
+          0,
+          1
+        ]
       }
     }
   },
   "merchant": {
     "starter": {
       "strategy": "stand only",
+      "schedule": {
+        "stand_elapsed_ms": 3600000,
+        "level_gate": null,
+        "before_level_gate": {
+          "luck_count": 0,
+          "sale_count": 0,
+          "sale_gold": 0,
+          "sale_server_tax": 0
+        },
+        "after_level_gate": {
+          "luck_count": 0,
+          "sale_count": 0,
+          "sale_gold": 0,
+          "sale_server_tax": 0
+        }
+      },
       "expected": {
         "duration_hours": 2016,
         "xp": 900000000,
@@ -633,6 +793,28 @@
     },
     "competent": {
       "strategy": "stand plus bounded sales and five luck credits after 40",
+      "schedule": {
+        "stand_elapsed_ms": 3600000,
+        "level_gate": 40,
+        "before_level_gate": {
+          "luck_count": 0,
+          "sale_count": 10,
+          "sale_gold": 100000,
+          "sale_server_tax": 14000
+        },
+        "after_level_gate": {
+          "luck_count": 5,
+          "sale_count": 5,
+          "sale_gold": 100000,
+          "sale_server_tax": [
+            10867,
+            10867,
+            10867,
+            10867,
+            129
+          ]
+        }
+      },
       "expected": {
         "duration_hours": 672,
         "xp": 900000036,
@@ -641,6 +823,22 @@
     },
     "optimized": {
       "strategy": "stand plus bounded sales and ten luck credits after 40",
+      "schedule": {
+        "stand_elapsed_ms": 3600000,
+        "level_gate": 40,
+        "before_level_gate": {
+          "luck_count": 0,
+          "sale_count": 50,
+          "sale_gold": 100000,
+          "sale_server_tax": 14000
+        },
+        "after_level_gate": {
+          "luck_count": 10,
+          "sale_count": 10,
+          "sale_gold": 100000,
+          "sale_server_tax": 14000
+        }
+      },
       "expected": {
         "duration_hours": 336,
         "xp": 900000000,
