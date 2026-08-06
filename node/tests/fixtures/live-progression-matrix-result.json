@@ -823,6 +823,7 @@
             "mp": 0
           }
         },
+        "sickness_applied": true,
         "did_not_stack": true,
         "xptome_before": {
           "name": "xptome",
