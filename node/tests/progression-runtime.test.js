@@ -61,7 +61,7 @@ test("runtime requires persisted info.skills and repairs only the flattened alia
 
 	const legacyOnly = { id: "legacy", total_level: state.total_level, skills: state.skills, info: {}, p: {}, t: {} };
 	assert.throws(() => initializePlayerProgression(legacyOnly, 0), { code: "invalid_character_skill_state" });
-	for (const field of ["type", "level", "xp", "max_xp"]) {
+	for (const field of ["type", "ctype", "level", "xp", "max_xp"]) {
 		const legacyRoot = player();
 		legacyRoot[field] = field === "type" ? "warrior" : 1;
 		assert.throws(

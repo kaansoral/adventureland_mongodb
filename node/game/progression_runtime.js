@@ -106,7 +106,7 @@ function ensurePlayerContainers(player, now = Date.now()) {
 }
 
 function initializePlayerProgression(player, now = Date.now()) {
-	for (const field of ["type", "level", "xp", "max_xp"]) {
+	for (const field of ["type", "ctype", "level", "xp", "max_xp"]) {
 		if (Object.prototype.hasOwnProperty.call(player || {}, field)) {
 			throw runtimeError(
 				"invalid_character_skill_state",
