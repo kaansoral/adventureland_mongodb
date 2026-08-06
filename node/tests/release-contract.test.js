@@ -1163,6 +1163,15 @@ test("live progression release validation covers contribution maps, curves, even
 			mutate(malformed);
 			runValidator(malformed, true);
 		}
+		const missingHardcoreSkillEvidence = structuredClone(result);
+		delete missingHardcoreSkillEvidence.scenarios.deathSickness.hardcore.skill_xp_before;
+		runValidator(missingHardcoreSkillEvidence, true);
+		const unavailableHardcoreItemEvidence = structuredClone(result);
+		unavailableHardcoreItemEvidence.scenarios.deathSickness.hardcore.xptome_runtime_present = false;
+		runValidator(unavailableHardcoreItemEvidence, true);
+		const zeroHardcoreSkillBaseline = structuredClone(result);
+		zeroHardcoreSkillBaseline.scenarios.deathSickness.hardcore.hardcore_reset_baseline.skill_xp_nonzero = false;
+		runValidator(zeroHardcoreSkillBaseline, true);
 	} finally {
 		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 	}

@@ -1824,15 +1824,23 @@
           "excluded_unchanged": true
         },
         "skill_state_unchanged": true,
-        "skill_xp_assertion": "not_applicable_after_hardcore_reset",
-        "xptome_assertion": "not_applicable_after_hardcore_reset",
-        "xptome_before": null,
-        "xptome_after": null,
-        "xptome_untouched": null,
-        "xptome_runtime_present": false,
+        "skill_xp_assertion": "verified",
+        "skill_xp_before": "{\n  \"warrior\": {\n    \"level\": 2,\n    \"xp\": 93711\n  },\n  \"paladin\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"mage\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"priest\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"ranger\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"rogue\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"merchant\": {\n    \"level\": 2,\n    \"xp\": 93711\n  }\n}\n",
+        "skill_xp_after": "{\n  \"warrior\": {\n    \"level\": 2,\n    \"xp\": 93711\n  },\n  \"paladin\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"mage\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"priest\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"ranger\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"rogue\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"merchant\": {\n    \"level\": 2,\n    \"xp\": 93711\n  }\n}\n",
+        "xptome_assertion": "verified",
+        "xptome_before": {
+          "name": "xptome",
+          "gift": 1
+        },
+        "xptome_after": {
+          "name": "xptome",
+          "gift": 1
+        },
+        "xptome_untouched": true,
+        "xptome_runtime_present": true,
         "hardcore_reset_baseline": {
-          "xptome_present": false,
-          "skill_xp_nonzero": false
+          "xptome_present": true,
+          "skill_xp_nonzero": true
         },
         "live_rip": true
       }
