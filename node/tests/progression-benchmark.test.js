@@ -69,6 +69,47 @@ test("full benchmark covers every combat style and Merchant profile with stable 
 	assert.equal(report.checks.style_parity.pass, true);
 });
 
+test("reviewed Bee route keeps its independently pinned competent pacing", () => {
+	const data = loadBenchmarkData();
+	const fixture = loadFixture(FIXTURE_PATH);
+	const route = fixture.combat.competent.warrior.bands[0].candidates[0];
+	assert.equal(data.monsters.bee.xp, 13200);
+	assert.deepEqual(
+		{
+			id: route.id,
+			monster: route.monster,
+			uptime: route.uptime,
+			slots: route.slots,
+			consumables: route.consumables,
+			external_party_characters: route.external_party_characters,
+		},
+		{
+			id: "bee-route",
+			monster: "bee",
+			uptime: 0.8,
+			slots: { mainhand: "blade", helmet: "helmet", shoes: "shoes" },
+			consumables: "normal_sustainable",
+			external_party_characters: 0,
+		},
+	);
+
+	const result = runBenchmark({ fixturePath: FIXTURE_PATH }).combat.competent.warrior;
+	assert.deepEqual(
+		{
+			duration_hours: result.duration_hours,
+			rate_x: result.rate_x,
+			selected_candidate_id: result.bands[0].selected_candidate_id,
+			simulation_mode: result.bands[0].simulation_mode,
+		},
+		{
+			duration_hours: 710.229167,
+			rate_x: 2.789618,
+			selected_candidate_id: "bee-route",
+			simulation_mode: "exact",
+		},
+	);
+});
+
 test("fixture regeneration is byte-stable and preserves the committed reviewed expectations", () => {
 	const data = loadBenchmarkData();
 	const fixture = loadFixture(FIXTURE_PATH);
