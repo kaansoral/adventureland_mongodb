@@ -724,6 +724,7 @@
         "transfer_status": "succeeded",
         "mluck_status": "succeeded",
         "repeated_mluck_status": "succeeded",
+        "post_reconnect_mluck_status": "succeeded",
         "close_status": "succeeded",
         "merchant_xp_before": 142534361,
         "merchant_xp_after": 142537096,
@@ -735,16 +736,95 @@
         "transfer_merchant_xp_delta": 0,
         "sale_item": "hpot0",
         "repeated_target_rejected": true,
+        "repeated_target_not_recredited": true,
+        "repeated_persisted_after_disconnect": true,
+        "post_reconnect_action_succeeded": true,
+        "repeated_action_id": "merchant-action-repeat",
+        "post_reconnect_action_id": "merchant-action-reconnect",
+        "buyer_target_id": "B4lc3ypa9r5",
+        "seller_stable_id": "merchant-seller-fixture",
+        "seller_runtime_id_before_reconnect": "merchant-runtime-fixture",
+        "seller_runtime_id_after_reconnect": "merchant-runtime-fixture",
+        "merchant_id_before_reconnect": "merchant-seller-fixture",
+        "merchant_id_after_reconnect": "merchant-seller-fixture",
+        "merchant_id_matches_stable": true,
+        "first_target_use_count": 1,
+        "repeated_target_use_count": 1,
+        "post_reconnect_target_use_count": 1,
         "live_luck_target_count": 10,
         "live_luck_target_cap": 10,
         "live_luck_cap_bounded": true,
         "stand_closed": true,
         "stand_only_no_wall_clock_award": true,
-        "buyer_observed_seller": true
+        "buyer_observed_seller": true,
+        "sale_buyback_resale": {
+          "steps": [
+            {
+              "kind": "sale",
+              "item": "hpot0",
+              "list_status": "succeeded",
+              "buy_status": "succeeded"
+            },
+            {
+              "kind": "buyback",
+              "item": "mace",
+              "list_status": "succeeded",
+              "buy_status": "succeeded"
+            },
+            {
+              "kind": "resale",
+              "item": "mpot0",
+              "list_status": "succeeded",
+              "buy_status": "succeeded"
+            }
+          ],
+          "first_sale_net_gold": 100000,
+          "buyback_net_gold": 0,
+          "resale_net_gold": 200000,
+          "resale_credited_high_water_gold": 200000,
+          "sale_buyback_resale_high_water": true
+        }
+      },
+      "sources": {
+        "donation_accepted": true,
+        "dice_bet_accepted": true,
+        "dice_outcome_observed": true,
+        "donation_credit_positive": true,
+        "dice_credit_positive": true,
+        "donation_credit_units": 1,
+        "dice_credit_units": 1
+      },
+      "edges": {
+        "donation_credit_positive": true,
+        "dice_credit_positive": true,
+        "donation_hour_cap": true,
+        "sale_retry_idempotent": true,
+        "buyback_replay_zero": true,
+        "saturation_denied_without_error": true,
+        "direct_transfer_zero_xp": true,
+        "direct_purchase_zero_xp": true,
+        "bank_zero_xp": true,
+        "mail_zero_xp": true,
+        "direct_transfer_retry_zero_xp": true,
+        "account_registered_for_cleanup": true,
+        "sale_high_water_gold": 200000,
+        "stand_base_after_saturation": 1
+      },
+      "saturation": {
+        "stand_opened": true,
+        "stand_closed": true,
+        "donation_accepted": true,
+        "dice_bet_accepted": true,
+        "dice_outcome_observed": true,
+        "capped_actions_preserved_xp": true
       },
       "persisted": {
         "eligible_stand_ms": 3677,
-        "sale_owner": "US_m4WaGW8tMPApnZ9eLw0wIfqvRb17R",
+        "seller_id": "merchant-seller-fixture",
+        "merchant_id": "merchant-seller-fixture",
+        "reconnect_merchant_id": "merchant-seller-fixture",
+        "seller_id_matches_merchant_id": true,
+        "sale_owner": "merchant-buyer-fixture",
         "sale_net_gold": 1,
         "luck_targets": [
           "B4lc3ypa9r5",
@@ -760,6 +840,7 @@
         ],
         "luck_target_cap": 10,
         "luck_target_cap_bounded": true,
+        "buyer_target_use_count": 1,
         "positive_sale_attribution": true,
         "buyer_purchase_and_transfer_zero_xp": true,
         "pending_credit_count": 10,
