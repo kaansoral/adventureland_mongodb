@@ -896,6 +896,7 @@ test("browser death expression executes and validator rejects malformed evidence
 					skillXpBaseline: structuredClone(skills),
 					skillXpObserved: true,
 					skillXpEventCount: 2,
+					skillXpEventsOverflowed: false,
 					skillXpEvents: [warriorEvent, rogueEvent],
 					warriorEventCount: 1,
 					rogueEventCount: 1,
@@ -987,6 +988,35 @@ test("browser death expression executes and validator rejects malformed evidence
 	};
 	try {
 		runValidator(result);
+		const discardedEventResult = structuredClone(result);
+		const cappedXp = 900_000_000;
+		discardedEventResult.browser.ui.combat.skillXpBaseline.merchant = {
+			level: 99,
+			xp: cappedXp,
+		};
+		const cappedEvents = discardedEventResult.browser.ui.combat.skillXpEvents.map((event) => {
+			const next = structuredClone(event);
+			next.skills.merchant = { level: 99, xp: cappedXp, max_xp: null };
+			next.total_level += 98;
+			return next;
+		});
+		const discardedEvent = {
+			skill: "merchant",
+			accepted_xp: 0,
+			discarded_xp: 123,
+			from_level: 99,
+			to_level: 99,
+			xp: cappedXp,
+			max_xp: null,
+			total_level: 105,
+			skills: structuredClone(cappedEvents.at(-1).skills),
+		};
+		discardedEventResult.browser.ui.combat.skillXpEvents = [...cappedEvents, discardedEvent];
+		discardedEventResult.browser.ui.combat.skillXpEventCount = 3;
+		discardedEventResult.browser.ui.combat.warriorEventSnapshot = cappedEvents[0];
+		discardedEventResult.browser.ui.combat.rogueEventSnapshot = cappedEvents[1];
+		discardedEventResult.browser.ui.combat.postSwitch.eventSnapshot = cappedEvents[1];
+		runValidator(discardedEventResult);
 		const browserMutations = [
 			(candidate) => delete candidate.browser.ui.combat.skillXpEvents[0].skills.merchant,
 			(candidate) => { candidate.browser.ui.combat.skillXpEvents[1].skills.warrior.xp = 0; },
@@ -996,6 +1026,9 @@ test("browser death expression executes and validator rejects malformed evidence
 			(candidate) => { candidate.browser.ui.combat.warriorEventSnapshot.skills.warrior.max_xp = -1; },
 			(candidate) => { candidate.browser.ui.combat.postSwitch.xpAfter = 0; },
 			(candidate) => { candidate.browser.ui.combat.skillXpEventCount = 0; },
+			(candidate) => {
+				candidate.browser.ui.combat.skillXpEventsOverflowed = true;
+			},
 			(candidate) => { candidate.browser.ui.styleMatrix.transitions[0].mainhand = "mace"; },
 			(candidate) => { candidate.browser.ui.appearanceVariants[0].look = 4; },
 			(candidate) => { candidate.browser.ui.standLock.standOpenObserved = false; },
