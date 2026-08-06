@@ -43,6 +43,25 @@ function loadTargetOracle(filename = TARGET_ORACLE_PATH) {
 
 const TARGET_ORACLE = loadTargetOracle();
 const TARGET_HOURS = TARGET_ORACLE.targetHours;
+const BENCHMARK_LOADOUT_SLOTS = Object.freeze(["mainhand", "helmet", "shoes"]);
+const BENCHMARK_ITEM_TYPES = Object.freeze({
+	mainhand: "weapon",
+	helmets: "helmet",
+	helmet: "helmet",
+	chest: "chest",
+	pants: "pants",
+	shoes: "shoes",
+	gloves: "gloves",
+	cape: "cape",
+	amulet: "amulet",
+	ring1: "ring",
+	ring2: "ring",
+	earring1: "earring",
+	earring2: "earring",
+	belt: "belt",
+	offhand: "offhand",
+	orb: "orb",
+});
 
 function clone(value) {
 	return JSON.parse(JSON.stringify(value));
@@ -106,6 +125,7 @@ function loadBenchmarkData() {
 		character: publication.character,
 		conditions: design.conditions,
 		monsters: design.monsters,
+		sets: design.sets,
 		damageMultiplier: helpers.damage_multiplier,
 		stackMax: Number((publication.abilities.stack && publication.abilities.stack.max) || 0),
 	};
@@ -149,6 +169,189 @@ function createSeededRandom(seedText) {
 	};
 }
 
+function isExcludedBenchmarkItem(item, itemId) {
+	return Boolean(
+		!item ||
+		!itemId ||
+		item.ignore === true ||
+		itemId.startsWith("test") ||
+		item.cash !== undefined ||
+		item.p2w === true ||
+		item.event === true ||
+		item.quest ||
+		item.special === true ||
+		item.admin === true ||
+		item.test === true,
+	);
+}
+
+function requirementLevelSum(slots, data) {
+	return Object.values(slots || {}).reduce(
+		(sum, itemId) =>
+			sum + (data.itemRequirements[itemId] || []).reduce((itemSum, requirement) => itemSum + requirement.level, 0),
+		0,
+	);
+}
+
+function candidateKey(candidate) {
+	return [
+		...Object.entries(candidate.slots || {})
+			.sort(([left], [right]) => left.localeCompare(right))
+			.map(([slot, itemId]) => `${slot}:${itemId}`),
+		`monster:${candidate.monster}`,
+	].join("|");
+}
+
+function candidateIdentityKey(candidate) {
+	return `${candidateKey(candidate)}|party:${Number(candidate.external_party_characters || 0)}`;
+}
+
+function normalBenchmarkMonsters(data) {
+	const normal = Object.entries(data.monsters)
+		.filter(([, monster]) => {
+			return (
+				Number.isFinite(monster.hp) &&
+				monster.hp > 0 &&
+				Number.isFinite(monster.xp) &&
+				monster.xp > 0 &&
+				Number(monster.respawn) >= 0 &&
+				!monster.special &&
+				!monster.operator &&
+				!monster.rbuff &&
+				!monster.event &&
+				!monster.raid &&
+				!monster.boss &&
+				!monster.hide &&
+				!monster.respawn_as &&
+				!monster.immune &&
+				Number(monster.attack) > 0
+			);
+		})
+		.map(([id, monster]) => [id, monster]);
+	return normal.map(([id]) => id).sort();
+}
+
+function benchmarkItemChoices(slot, skillLevels, data) {
+	return Object.entries(data.items)
+		.filter(([itemId, item]) => {
+			if (isExcludedBenchmarkItem(item, itemId)) return false;
+			const expectedType = BENCHMARK_ITEM_TYPES[slot];
+			if (expectedType === "offhand")
+				return ["shield", "source", "quiver", "misc_offhand"].includes(item.type);
+			return item.type === expectedType;
+		})
+		.filter(([itemId]) => {
+			const requirements = data.itemRequirements[itemId];
+			return Array.isArray(requirements) && requirements.length && requirements.every((requirement) => {
+				return Number(skillLevels[requirement.skill] || 0) >= requirement.level;
+			});
+		})
+		.map(([itemId]) => itemId)
+		.sort();
+}
+
+function canonicalRequirementLevels(skill, data) {
+	const levels = new Set([1, progression.MAX_LEVEL]);
+	for (const requirements of Object.values(data.itemRequirements || {})) {
+		const own = requirements.find((requirement) => requirement.skill === skill);
+		if (!own || own.level <= 1 || own.level >= progression.MAX_LEVEL) continue;
+		if (requirements.every((requirement) => requirement.skill === skill || requirement.level <= 1)) levels.add(own.level);
+	}
+	for (const definition of Object.values(data.abilities || {})) {
+		if (definition && definition.skill === skill && Number(definition.level || 1) > 1)
+			levels.add(Math.min(progression.MAX_LEVEL, Number(definition.level)));
+	}
+	return [...levels].sort((left, right) => left - right);
+}
+
+function canonicalCombatBands(skill, plan, data) {
+	const template = plan.candidate_template || (plan.bands && plan.bands[0] && plan.bands[0].candidates && plan.bands[0].candidates[0]);
+	const levels = canonicalRequirementLevels(skill, data);
+	const bands = [];
+	for (let index = 0; index < levels.length - 1; index += 1) {
+		const fromLevel = levels[index];
+		const nextLevel = levels[index + 1];
+		const toLevel = nextLevel - 1;
+		if (fromLevel > toLevel) continue;
+		bands.push({
+			from_level: fromLevel,
+			to_level: toLevel,
+			target_level: nextLevel,
+			template,
+			monster_source: "all_normal",
+			loadout_slots: plan.loadout_slots || BENCHMARK_LOADOUT_SLOTS,
+			include_party_variants: false,
+		});
+	}
+	return bands;
+}
+
+function enumerateCanonicalCandidates({ profile, skill, plan, band, skillLevels, data }) {
+	const template =
+		band.template ||
+		plan.candidate_template ||
+		(band.candidates && band.candidates[0]) ||
+		(plan.bands && plan.bands[0] && plan.bands[0].candidates && plan.bands[0].candidates[0]);
+	if (!template) throw new Error(`Benchmark plan ${profile}/${skill} is missing a canonical candidate template`);
+	const loadoutSlots = band.loadout_slots || plan.loadout_slots || BENCHMARK_LOADOUT_SLOTS;
+	if (!Array.isArray(loadoutSlots) || !loadoutSlots.length)
+		throw new Error(`Benchmark plan ${profile}/${skill} has no canonical loadout slots`);
+	const pools = loadoutSlots.map((slot) => {
+		if (!BENCHMARK_ITEM_TYPES[slot]) throw new Error(`Unknown benchmark loadout slot ${slot}`);
+		const choices = benchmarkItemChoices(slot, skillLevels, data);
+		if (!choices.length) throw new Error(`No legal ${slot} choices for ${profile}/${skill}`);
+		return [slot, choices];
+	});
+	const monsters = Array.isArray(band.monsters)
+		? band.monsters.slice().sort()
+		: band.monster_source === "all_normal" || plan.monster_source === "all_normal" || profile !== "starter"
+			? normalBenchmarkMonsters(data)
+			: [template.monster];
+	if (!monsters.length) throw new Error(`Benchmark plan ${profile}/${skill} has no canonical monsters`);
+	const partyCounts =
+		profile === "optimized" && (band.include_party_variants === true || plan.include_party_variants === true || profile === "optimized")
+			? [0, 1]
+			: [Number(template.external_party_characters || 0)];
+	const routes = [];
+	const slots = {};
+	const visit = (index) => {
+		if (index < pools.length) {
+			const [slot, choices] = pools[index];
+			for (const itemId of choices) {
+				slots[slot] = itemId;
+				visit(index + 1);
+			}
+			delete slots[pools[index][0]];
+			return;
+		}
+		const mainResolution = resolveMainhand(slotInstances(slots), data.items);
+		if (!mainResolution || mainResolution.skill !== skill) return;
+		for (const monster of monsters) {
+			for (const externalPartyCharacters of partyCounts) {
+				const routeSlots = clone(slots);
+				const route = {
+					id: `canonical-${candidateIdentityKey({ slots: routeSlots, monster, external_party_characters: externalPartyCharacters })}`,
+					reviewed: true,
+					enumeration_source: "canonical",
+					legal_basis: "canonical real-data enumeration of normal items and permanent non-boss monsters",
+					slots: routeSlots,
+					monster,
+					uptime: Number(template.uptime),
+					consumables: template.consumables || (profile === "starter" ? "none" : "normal_sustainable"),
+					ability_policy: template.ability_policy || (profile === "starter" ? "basic_only" : "use_unlocked"),
+					external_party_characters: externalPartyCharacters,
+					party_damage_factor: Number(template.party_damage_factor || 0.25),
+					requirement_level_sum: requirementLevelSum(routeSlots, data),
+					simulation_mode: "projected",
+				};
+				routes.push(route);
+			}
+		}
+	};
+	visit(0);
+	return routes.sort((left, right) => candidateKey(left).localeCompare(candidateKey(right)));
+}
+
 function validateCandidateShape(candidate, context) {
 	if (!candidate || typeof candidate !== "object" || Array.isArray(candidate))
 		throw new Error(`Invalid benchmark candidate for ${context}`);
@@ -166,6 +369,13 @@ function validateCandidateShape(candidate, context) {
 		throw new Error(`Benchmark candidate ${context}/${candidate.id} is missing monster`);
 	if (!Number.isFinite(Number(candidate.uptime)) || Number(candidate.uptime) <= 0 || Number(candidate.uptime) > 1)
 		throw new Error(`Benchmark candidate ${context}/${candidate.id} has invalid uptime`);
+	if (candidate.requirement_level_sum !== undefined &&
+		(!Number.isSafeInteger(Number(candidate.requirement_level_sum)) || Number(candidate.requirement_level_sum) < 0))
+		throw new Error(`Benchmark candidate ${context}/${candidate.id} has invalid requirement_level_sum`);
+	if (!Number.isSafeInteger(Number(candidate.external_party_characters)) || Number(candidate.external_party_characters) < 0)
+		throw new Error(`Benchmark candidate ${context}/${candidate.id} has invalid external_party_characters`);
+	if (candidate.ability_policy !== undefined && !["basic_only", "use_unlocked"].includes(candidate.ability_policy))
+		throw new Error(`Benchmark candidate ${context}/${candidate.id} has invalid ability_policy`);
 }
 
 function skillLevelsSnapshot(player) {
@@ -182,7 +392,7 @@ function validateItemRoute(skill, slots, skillLevels, data, context) {
 	for (const [slot, itemId] of Object.entries(slots || {})) {
 		const item = data.items[itemId];
 		if (!item) throw new Error(`Benchmark route ${context} references missing item ${itemId}`);
-		if (itemId.startsWith("test") || item.a === true || item.cash === true)
+		if (isExcludedBenchmarkItem(item, itemId))
 			throw new Error(`Benchmark route ${context} uses excluded item ${itemId}`);
 		const requirements = data.itemRequirements[itemId];
 		if (!Array.isArray(requirements) || !requirements.length)
@@ -200,6 +410,11 @@ function validateItemRoute(skill, slots, skillLevels, data, context) {
 		if (slot === "offhand" && item.type === "weapon" && !mainResolution.profile.offhand_weapon) {
 			throw new Error(`Benchmark route ${context} has incompatible weapon offhand ${itemId}`);
 		}
+		if (slot === "offhand" && item.type === "weapon") {
+			const offhandResolution = resolveMainhand({ mainhand: { name: itemId } }, data.items);
+			if (!offhandResolution || offhandResolution.skill !== mainResolution.skill)
+				throw new Error(`Benchmark route ${context} has an offhand weapon from another active skill ${itemId}`);
+		}
 		if (slot === "offhand" && item.type !== "weapon" && !mainResolution.profile.allowed_offhands.includes(item.type)) {
 			throw new Error(`Benchmark route ${context} has incompatible offhand ${itemId}`);
 		}
@@ -215,10 +430,92 @@ function validateMonsterRoute(monsterId, data, context) {
 	if (monster.special || monster.operator || monster.rbuff) {
 		throw new Error(`Benchmark route ${context} uses excluded timed or special monster ${monsterId}`);
 	}
+	if (monster.event || monster.raid || monster.boss || monster.hide || monster.respawn_as || monster.immune || !(Number(monster.attack) > 0)) {
+		throw new Error(`Benchmark route ${context} uses unavailable monster ${monsterId}`);
+	}
 	return monster;
 }
 
-function simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, data }) {
+function unlockedDamageAbilities(skill, skillLevel, mainhand, abilities) {
+	return Object.entries(abilities || {})
+		.filter(([, definition]) => {
+			if (!definition || definition.applicability !== "skill" || definition.skill !== skill) return false;
+			if (Number(definition.level || 1) > skillLevel || !definition.hostile || definition.heal) return false;
+			if (definition.wtype) {
+				const allowed = Array.isArray(definition.wtype) ? definition.wtype : [definition.wtype];
+				if (!allowed.includes(mainhand.wtype)) return false;
+			}
+			if (definition.contribution) return false;
+			return (
+				Number(definition.damage_multiplier) > 0 ||
+				Number(definition.ratio) > 0 ||
+				(Number(definition.damage) > 0 && definition.damage_type)
+			);
+		})
+		.map(([name, definition]) => ({
+			name,
+			cost: Math.max(0, Number(definition.mp || 0)),
+			cooldown: Math.max(0, Number(definition.cooldown || 0)),
+			definition,
+		}))
+		.sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function abilityDamage(ability, stats, currentMp) {
+	const definition = ability.definition;
+	if (Number(definition.ratio) > 0) return Math.max(0, Math.floor(currentMp * definition.ratio));
+	if (Number(definition.damage) > 0) return Number(definition.damage);
+	if (Number(definition.damage_multiplier) > 0) return stats.attack * Number(definition.damage_multiplier);
+	return 0;
+}
+
+function consumableMpPerSecond(consumables, stats) {
+	if (consumables === "normal_sustainable") return 300 / 2;
+	if (consumables === "full_sustainable") return 400 / 2;
+	return 0;
+}
+
+function abilityResourceCost(ability, stats) {
+	return Number(ability.definition.ratio) > 0 ? stats.max_mp : ability.cost;
+}
+
+function abilityCycleMs(ability, stats, mpPerSecond) {
+	const cooldown = Math.max(stats.attack_ms, ability.cooldown || stats.attack_ms);
+	const resourceWait = mpPerSecond > 0 ? (abilityResourceCost(ability, stats) / mpPerSecond) * 1000 : Infinity;
+	return Math.max(cooldown, resourceWait);
+}
+
+function abilityDamageAgainst(ability, stats, monster, mainResolution, data) {
+	const rawDamage = abilityDamage(ability, stats, stats.max_mp);
+	if (rawDamage <= 0) return 0;
+	if (ability.definition.damage_type === "pure") return Math.ceil(rawDamage);
+	const defenseKey = mainResolution.profile.damage_type === "magical" ? "resistance" : "armor";
+	const pierceKey = mainResolution.profile.damage_type === "magical" ? "rpiercing" : "apiercing";
+	const abilityPiercing = ability.name === "piercingshot" ? 500 : Number(stats[pierceKey] || 0);
+	return Math.max(
+		0,
+		Math.ceil(Math.ceil(rawDamage) * data.damageMultiplier((monster[defenseKey] || 0) - abilityPiercing)),
+	);
+}
+
+function combatModifierProfile(skill, skillLevel, stats, data) {
+	const definitions = data.abilities || {};
+	const modifiers = [];
+	const add = (name, multiplier) => {
+		const definition = definitions[name];
+		if (!definition || definition.skill !== skill || Number(definition.level || 1) > skillLevel) return;
+		const duration = Number(definition.duration || 0);
+		const cooldown = Number(definition.cooldown || duration || 0);
+		if (duration <= 0 || cooldown <= 0 || !Number.isFinite(multiplier) || multiplier <= 0) return;
+		modifiers.push({ name, multiplier, uptime: Math.min(1, duration / cooldown) });
+	};
+	add("curse", 1.2);
+	add("huntersmark", 1.1);
+	add("darkblessing", 1.25);
+	return modifiers;
+}
+
+function simulateProjectedKill({ profile, skill, bandIndex, candidate, skillLevels, data }) {
 	const context = `${profile}/${skill}/band-${bandIndex}/${candidate.id}`;
 	validateCandidateShape(candidate, context);
 	const mainResolution = validateItemRoute(skill, candidate.slots, skillLevels, data, context);
@@ -227,6 +524,200 @@ function simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, d
 	const stats = calculateStats({
 		slots,
 		items: data.items,
+		sets: data.sets,
+		conditions: {},
+		conditionDefinitions: data.conditions,
+	});
+	if (stats.attack <= 0) {
+		return {
+			context,
+			slots: clone(candidate.slots),
+			monster: candidate.monster,
+			uptime: Number(candidate.uptime),
+			consumables: candidate.consumables || "none",
+			ability_policy: candidate.ability_policy || "basic_only",
+			ability_uses: {},
+			consumable_mp_per_second: 0,
+			external_party_characters: Number(candidate.external_party_characters || 0),
+			party_damage_factor: Number(candidate.party_damage_factor || 0),
+			requirement_level_sum: Number(candidate.requirement_level_sum || requirementLevelSum(candidate.slots, data)),
+			canonical_key: candidateKey(candidate),
+			stats: {
+				attack: stats.attack,
+				attack_ms: stats.attack_ms,
+				frequency: Number(stats.frequency.toFixed(9)),
+				xpm: Number(stats.xpm.toFixed(9)),
+				range: stats.range,
+				damage_type: stats.damage_type,
+			},
+			hits_per_kill: null,
+			elapsed_ms: 0,
+			character_share_xp: 0,
+			xp_split: {},
+			xp_per_kill: 0,
+			rate_per_hour: 0,
+			simulation_mode: "projected",
+		};
+	}
+	const defenseKey = mainResolution.profile.damage_type === "magical" ? "resistance" : "armor";
+	const pierceKey = mainResolution.profile.damage_type === "magical" ? "rpiercing" : "apiercing";
+	const basicDamage = Math.max(
+		1,
+		Math.ceil(
+			Math.ceil(stats.attack) * data.damageMultiplier((monster[defenseKey] || 0) - (stats[pierceKey] || 0)),
+		),
+	);
+	const hitChance = Math.max(
+		0,
+		1 -
+			(mainResolution.profile.damage_type === "physical" ? Number(monster.evasion || 0) : Number(monster.avoidance || 0)) / 100,
+	);
+	const basicDps = (basicDamage * hitChance * 1000) / stats.attack_ms;
+	const abilities =
+		(candidate.ability_policy || "basic_only") === "use_unlocked"
+			? unlockedDamageAbilities(skill, Number(skillLevels[skill] || 1), mainResolution.item, data.abilities)
+			: [];
+	const mpPerSecond = consumableMpPerSecond(candidate.consumables || "none", stats);
+	const modifiers = combatModifierProfile(skill, Number(skillLevels[skill] || 1), stats, data);
+	const modifierMultiplier = modifiers.reduce(
+		(multiplier, modifier) => multiplier * (1 + (modifier.multiplier - 1) * modifier.uptime),
+		1,
+	);
+	const abilityDps = {};
+	let totalDps = basicDps * modifierMultiplier;
+	const directOptions = abilities
+		.map((ability) => {
+			const damage = abilityDamageAgainst(ability, stats, monster, mainResolution, data);
+			const cycleMs = abilityCycleMs(ability, stats, mpPerSecond);
+			return {
+				ability,
+				damage,
+				cycleMs,
+				incrementalDps: Number.isFinite(cycleMs)
+					? Math.max(0, damage - basicDamage) * hitChance * 1000 / cycleMs
+					: 0,
+			};
+		})
+		.filter((entry) => entry.damage > basicDamage && entry.incrementalDps > 0)
+		.sort((left, right) => right.incrementalDps - left.incrementalDps || left.ability.name.localeCompare(right.ability.name));
+	const selectedDirect = directOptions[0] || null;
+	if (selectedDirect) {
+		abilityDps[selectedDirect.ability.name] = selectedDirect.incrementalDps;
+		totalDps += selectedDirect.incrementalDps;
+	}
+	const partyCount = Number(candidate.external_party_characters || 0);
+	const partyDamageFactor = Math.max(0, Number(candidate.party_damage_factor || 0)) * partyCount;
+	totalDps *= 1 + partyDamageFactor;
+	if (totalDps <= 0) {
+		return {
+			context,
+			slots: clone(candidate.slots),
+			monster: candidate.monster,
+			uptime: Number(candidate.uptime),
+			consumables: candidate.consumables || "none",
+			ability_policy: candidate.ability_policy || "basic_only",
+			ability_uses: {},
+			consumable_mp_per_second: Number(mpPerSecond.toFixed(6)),
+			external_party_characters: partyCount,
+			party_damage_factor: Number(candidate.party_damage_factor || 0),
+			requirement_level_sum: Number(candidate.requirement_level_sum || requirementLevelSum(candidate.slots, data)),
+			canonical_key: candidateKey(candidate),
+			stats: {
+				attack: stats.attack,
+				attack_ms: stats.attack_ms,
+				frequency: Number(stats.frequency.toFixed(9)),
+				xpm: Number(stats.xpm.toFixed(9)),
+				range: stats.range,
+				damage_type: stats.damage_type,
+			},
+			hits_per_kill: null,
+			elapsed_ms: 0,
+			character_share_xp: 0,
+			xp_split: {},
+			xp_per_kill: 0,
+			rate_per_hour: 0,
+			simulation_mode: "projected",
+		};
+	}
+	const activeMs = Math.ceil((monster.hp / totalDps) * 1000);
+	const elapsedMs = Math.max(
+		activeMs + Math.max(0, Math.round((monster.respawn || 0) * 1000)),
+		selectedDirect ? selectedDirect.cycleMs : 0,
+	);
+	const characterShare = Math.round(monster.xp * stats.xpm);
+	const encounterId = `${context}:encounter`;
+	const ledger = new ContributionLedger({ now: () => 0 });
+	ledger.openEncounter(encounterId, { monster: candidate.monster });
+	ledger.snapshotAction({
+		actionId: `${context}:action`,
+		characterId: "benchmark-player",
+		activeSkill: skill,
+		encounterIds: [encounterId],
+		kind: "combat",
+	});
+	ledger.recordDamage({
+		encounterId,
+		actionId: `${context}:action`,
+		characterId: "benchmark-player",
+		skill,
+		amount: 1,
+	});
+	for (let index = 0; index < partyCount; index += 1) {
+		const characterId = `benchmark-party-${index + 1}`;
+		const actionId = `${context}:party-action:${index}`;
+		ledger.snapshotAction({ actionId, characterId, activeSkill: "warrior", encounterIds: [encounterId], kind: "combat" });
+		ledger.recordDamage({ encounterId, actionId, characterId, skill: "warrior", amount: partyDamageFactor / Math.max(1, partyCount) });
+	}
+	const split = ledger.partition(characterShare, encounterId, "benchmark-player");
+	ledger.close(encounterId);
+	const splitXp = Object.values(split).reduce((sum, value) => sum + value, 0);
+	return {
+		context,
+		slots: clone(candidate.slots),
+		monster: candidate.monster,
+		uptime: Number(candidate.uptime),
+		consumables: candidate.consumables || "none",
+		ability_policy: candidate.ability_policy || "basic_only",
+		ability_uses: Object.fromEntries(
+			Object.entries(abilityDps).map(([name]) => {
+				const ability = abilities.find((entry) => entry.name === name);
+				return [name, Math.max(1, Math.ceil(activeMs / abilityCycleMs(ability, stats, mpPerSecond)))];
+			}),
+		),
+		consumable_mp_per_second: Number(mpPerSecond.toFixed(6)),
+		external_party_characters: partyCount,
+		requirement_level_sum: Number(candidate.requirement_level_sum || requirementLevelSum(candidate.slots, data)),
+		canonical_key: candidateKey(candidate),
+		stats: {
+			attack: stats.attack,
+			attack_ms: stats.attack_ms,
+			frequency: Number(stats.frequency.toFixed(9)),
+			xpm: Number(stats.xpm.toFixed(9)),
+			range: stats.range,
+			damage_type: stats.damage_type,
+		},
+		hits_per_kill: Math.max(1, Math.ceil((monster.hp / Math.max(1, basicDamage)) / (1 + partyDamageFactor))),
+		elapsed_ms: Math.round(elapsedMs / Number(candidate.uptime)),
+		character_share_xp: characterShare,
+		xp_split: split,
+		xp_per_kill: splitXp,
+		rate_per_hour: Number(((splitXp * 3600000) / Math.round(elapsedMs / Number(candidate.uptime))).toFixed(9)),
+		simulation_mode: "projected",
+	};
+}
+
+function simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, data }) {
+	const context = `${profile}/${skill}/band-${bandIndex}/${candidate.id}`;
+	if (candidate.simulation_mode === "projected")
+		return simulateProjectedKill({ profile, skill, bandIndex, candidate, skillLevels, data });
+	validateCandidateShape(candidate, context);
+	const mainResolution = validateItemRoute(skill, candidate.slots, skillLevels, data, context);
+	const monster = validateMonsterRoute(candidate.monster, data, context);
+	const slots = slotInstances(candidate.slots);
+	const stats = calculateStats({
+		slots,
+		items: data.items,
+		sets: data.sets,
 		conditions: {},
 		conditionDefinitions: data.conditions,
 	});
@@ -234,6 +725,37 @@ function simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, d
 	const rng = createSeededRandom(`${profile}:${skill}:${bandIndex}:${candidate.id}`);
 	const encounterId = `${context}:encounter`;
 	const actionId = `${context}:action`;
+	const maxHits = 200000;
+	const partyDamageFactor = Math.max(0, Number(candidate.party_damage_factor || 0)) * Number(candidate.external_party_characters || 0);
+	if (monster.hp > Math.max(1, stats.attack * 0.5) * (1 + partyDamageFactor) * maxHits) {
+		return {
+			context,
+			slots: clone(candidate.slots),
+			monster: candidate.monster,
+			uptime: Number(candidate.uptime),
+			consumables: candidate.consumables || "none",
+			ability_policy: candidate.ability_policy || "basic_only",
+			ability_uses: {},
+			consumable_mp_per_second: 0,
+			external_party_characters: Number(candidate.external_party_characters || 0),
+			requirement_level_sum: Number(candidate.requirement_level_sum || requirementLevelSum(candidate.slots, data)),
+			canonical_key: candidateKey(candidate),
+			stats: {
+				attack: stats.attack,
+				attack_ms: stats.attack_ms,
+				frequency: Number(stats.frequency.toFixed(9)),
+				xpm: Number(stats.xpm.toFixed(9)),
+				range: stats.range,
+				damage_type: stats.damage_type,
+			},
+			hits_per_kill: null,
+			elapsed_ms: 0,
+			character_share_xp: 0,
+			xp_split: {},
+			xp_per_kill: 0,
+			rate_per_hour: 0,
+		};
+	}
 	const ledger = new ContributionLedger({ now: () => 0 });
 	ledger.openEncounter(encounterId, { monster: candidate.monster });
 	ledger.snapshotAction({
@@ -249,38 +771,94 @@ function simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, d
 	let elapsedMs = 0;
 	let hits = 0;
 	let rogueStacks = 0;
-	const maxHits = 200000;
+	let mp = stats.max_mp;
+	let externalDamage = 0;
+	const abilityUses = {};
+	const abilityReadyAt = new Map();
+	const abilities =
+		(candidate.ability_policy || "basic_only") === "use_unlocked"
+			? unlockedDamageAbilities(skill, Number(skillLevels[skill] || 1), mainResolution.item, data.abilities)
+			: [];
+	const mpPerSecond = consumableMpPerSecond(candidate.consumables || "none", stats);
 	while (hp > 0) {
 		hits += 1;
 		if (hits > maxHits) throw new Error(`Benchmark route ${context} exceeded hit safety limit`);
+		mp = Math.min(stats.max_mp, mp + (mpPerSecond * stats.attack_ms) / 1000);
 		let attack = stats.attack;
+		let selectedAbility = null;
+		if (abilities.length) {
+			selectedAbility = abilities
+				.filter((ability) => (abilityReadyAt.get(ability.name) || 0) <= elapsedMs)
+				.filter((ability) => ability.cost <= mp || ability.definition.ratio > 0)
+				.sort(
+					(left, right) =>
+						abilityDamage(right, stats, mp) - abilityDamage(left, stats, mp) ||
+						left.cooldown - right.cooldown ||
+						left.name.localeCompare(right.name),
+				)
+				[0] || null;
+		}
+		if (selectedAbility) {
+			const cost = selectedAbility.definition.ratio > 0 ? mp : selectedAbility.cost;
+			if (cost <= mp) {
+				attack = abilityDamage(selectedAbility, stats, mp);
+				mp -= cost;
+				abilityReadyAt.set(selectedAbility.name, elapsedMs + selectedAbility.cooldown);
+				abilityUses[selectedAbility.name] = (abilityUses[selectedAbility.name] || 0) + 1;
+			} else selectedAbility = null;
+		}
 		if (skill === "rogue" && data.stackMax > 0) {
 			rogueStacks = Math.min(data.stackMax, rogueStacks + 1);
-			attack += rogueStacks;
+			if (!selectedAbility) attack += rogueStacks;
 		}
 		if (stats.crit > 0 && rng() * 100 < stats.crit) {
 			attack *= 2 + (stats.critdamage || 0) / 100;
 		}
-		let damage = Math.ceil(
-			Math.ceil(attack * (0.9 + rng() * 0.2)) *
-				data.damageMultiplier((monster[defenseKey] || 0) - (stats[pierceKey] || 0)),
-		);
-		if (mainResolution.profile.damage_type === "physical" && monster.evasion && rng() * 100 < monster.evasion)
+		let damage =
+			selectedAbility && selectedAbility.definition.damage_type === "pure"
+				? Math.ceil(attack)
+				: Math.ceil(
+						Math.ceil(attack * (0.9 + rng() * 0.2)) *
+							data.damageMultiplier((monster[defenseKey] || 0) - (stats[pierceKey] || 0)),
+					);
+		if (!selectedAbility && mainResolution.profile.damage_type === "physical" && monster.evasion && rng() * 100 < monster.evasion)
 			damage = 0;
-		else if (monster.avoidance && rng() * 100 < monster.avoidance) damage = 0;
+		else if (!selectedAbility && monster.avoidance && rng() * 100 < monster.avoidance) damage = 0;
 		damage = Math.max(0, damage);
 		const hpBefore = hp;
-		hp = Math.max(0, hp - damage);
+		hp = Math.max(0, hp - Math.ceil(damage * (1 + partyDamageFactor)));
+		const combinedDamage = hpBefore - hp;
+		const playerDamage = partyDamageFactor ? combinedDamage / (1 + partyDamageFactor) : combinedDamage;
+		externalDamage += Math.max(0, combinedDamage - playerDamage);
 		ledger.recordDamage({
 			encounterId,
 			actionId,
 			characterId: "benchmark-player",
 			skill,
-			amount: damage,
+			amount: playerDamage,
 			hpBefore,
 			hpAfter: hp,
 		});
+		if (selectedAbility) abilityUses[selectedAbility.name] = abilityUses[selectedAbility.name] || 1;
 		elapsedMs += stats.attack_ms;
+	}
+	for (let index = 0; index < Number(candidate.external_party_characters || 0); index += 1) {
+		const characterId = `benchmark-party-${index + 1}`;
+		const actionId = `${context}:party-action:${index}`;
+		ledger.snapshotAction({
+			actionId,
+			characterId,
+			activeSkill: "warrior",
+			encounterIds: [encounterId],
+			kind: "combat",
+		});
+		ledger.recordDamage({
+			encounterId,
+			actionId,
+			characterId,
+			skill: "warrior",
+			amount: externalDamage / Number(candidate.external_party_characters || 1),
+		});
 	}
 	elapsedMs += Math.max(0, Math.round((monster.respawn || 0) * 1000));
 	const characterShare = Math.round(monster.xp * stats.xpm);
@@ -294,7 +872,13 @@ function simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, d
 		monster: candidate.monster,
 		uptime: Number(candidate.uptime),
 		consumables: candidate.consumables || "none",
+		ability_policy: candidate.ability_policy || "basic_only",
+		ability_uses: abilityUses,
+		consumable_mp_per_second: Number(mpPerSecond.toFixed(6)),
 		external_party_characters: Number(candidate.external_party_characters || 0),
+		party_damage_factor: Number(candidate.party_damage_factor || 0),
+		requirement_level_sum: Number(candidate.requirement_level_sum || requirementLevelSum(candidate.slots, data)),
+		canonical_key: candidateKey(candidate),
 		stats: {
 			attack: stats.attack,
 			attack_ms: stats.attack_ms,
@@ -309,25 +893,36 @@ function simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, d
 		xp_split: split,
 		xp_per_kill: splitXp,
 		rate_per_hour: Number(((splitXp * 3600000) / Math.round(elapsedMs / Number(candidate.uptime))).toFixed(9)),
+		simulation_mode: "exact",
 	};
 }
 
 function chooseCandidate(mode, candidates, baselineRate) {
-	if (!candidates.length) throw new Error("Benchmark band has no candidates");
-	if (mode === "fixed") return candidates[0];
+	const viable = candidates.filter((candidate) => candidate.xp_per_kill > 0 && candidate.rate_per_hour > 0);
+	if (!viable.length) throw new Error("Benchmark band has no viable candidates");
+	if (mode === "fixed") return viable[0];
 	if (mode === "closest_target") {
 		const target = baselineRate * 3;
-		return candidates
+		const legal = viable.filter((candidate) => candidate.rate_per_hour <= baselineRate * 3.1 + 1e-9);
+		if (!legal.length) throw new Error(`No competent benchmark candidate is at or below the 3.1x rate ceiling (target ${target})`);
+		return legal
 			.slice()
 			.sort(
 				(a, b) =>
 					Math.abs(a.rate_per_hour - target) - Math.abs(b.rate_per_hour - target) ||
-					a.rate_per_hour - b.rate_per_hour ||
-					a.id.localeCompare(b.id),
+					Number(a.requirement_level_sum || 0) - Number(b.requirement_level_sum || 0) ||
+					candidateKey(a).localeCompare(candidateKey(b)),
 			)[0];
 	}
 	if (mode === "max_rate") {
-		return candidates.slice().sort((a, b) => b.rate_per_hour - a.rate_per_hour || a.id.localeCompare(b.id))[0];
+		return viable
+			.slice()
+			.sort(
+				(a, b) =>
+					b.rate_per_hour - a.rate_per_hour ||
+					Number(a.external_party_characters || 0) - Number(b.external_party_characters || 0) ||
+					candidateKey(a).localeCompare(candidateKey(b)),
+			)[0];
 	}
 	throw new Error(`Unknown benchmark selection mode ${mode}`);
 }
@@ -342,8 +937,10 @@ function evaluateCombatPlan(profile, skill, plan, data, baselineRate) {
 	const player = createBenchmarkPlayer();
 	const bands = [];
 	let durationMs = 0;
-	for (const [bandIndex, band] of (plan.bands || []).entries()) {
-		if (!Array.isArray(band.candidates) || !band.candidates.length)
+	const useCanonicalEnumeration = plan.enumeration === "canonical" || (profile !== "starter" && plan.enumeration !== "fixture");
+	const configuredBands = useCanonicalEnumeration ? canonicalCombatBands(skill, plan, data) : plan.bands || [];
+	for (const [bandIndex, band] of configuredBands.entries()) {
+		if (!useCanonicalEnumeration && (!Array.isArray(band.candidates) || !band.candidates.length))
 			throw new Error(`Benchmark plan ${profile}/${skill}/band-${bandIndex} has no candidates`);
 		const currentLevel = Number((player.skills[skill] && player.skills[skill].level) || 1);
 		const minimumLevel = Number(band.from_level || currentLevel || 1);
@@ -352,17 +949,22 @@ function evaluateCombatPlan(profile, skill, plan, data, baselineRate) {
 				`Benchmark plan ${profile}/${skill}/band-${bandIndex} starts at ${minimumLevel} before the skill reaches it`,
 			);
 		}
-		const targetXp =
-			band.to_level >= progression.MAX_LEVEL ? MAX_XP : cumulativeXp(Number(band.to_level || progression.MAX_LEVEL));
+		const targetLevel = Number(band.target_level || band.to_level || progression.MAX_LEVEL);
+		const targetXp = targetLevel >= progression.MAX_LEVEL ? MAX_XP : cumulativeXp(targetLevel);
 		const skillLevels = skillLevelsSnapshot(player);
-		const evaluatedCandidates = band.candidates.map((candidate) =>
+		const candidates =
+			useCanonicalEnumeration
+				? enumerateCanonicalCandidates({ profile, skill, plan, band, skillLevels, data })
+				: band.candidates;
+		const evaluatedCandidates = candidates.map((candidate) =>
 			simulateSoloKill({ profile, skill, bandIndex, candidate, skillLevels, data }),
 		);
-		const selected = chooseCandidate(
+		const projectedSelected = chooseCandidate(
 			plan.selection_mode,
 			evaluatedCandidates,
 			baselineRate || evaluatedCandidates[0].rate_per_hour,
 		);
+		const selected = projectedSelected;
 		const currentXp = player.skills[skill].xp;
 		const xpRemaining = Math.max(0, targetXp - currentXp);
 		const kills = xpRemaining === 0 ? 0 : Math.ceil(xpRemaining / selected.xp_per_kill);
@@ -382,7 +984,13 @@ function evaluateCombatPlan(profile, skill, plan, data, baselineRate) {
 			slots: selected.slots,
 			uptime: selected.uptime,
 			consumables: selected.consumables,
+			simulation_mode: selected.simulation_mode,
+			ability_policy: selected.ability_policy,
+			ability_uses: selected.ability_uses,
+			consumable_mp_per_second: selected.consumable_mp_per_second,
 			external_party_characters: selected.external_party_characters,
+			requirement_level_sum: selected.requirement_level_sum,
+			canonical_key: selected.canonical_key,
 			hits_per_kill: selected.hits_per_kill,
 			kill_time_ms: selected.elapsed_ms,
 			xp_per_kill: selected.xp_per_kill,
@@ -651,10 +1259,13 @@ module.exports = {
 	COMBAT_SKILLS,
 	FIXTURE_PATH,
 	MERCHANT_PROFILES,
+	chooseCandidate,
+	enumerateCanonicalCandidates,
 	generateFixture,
 	loadBenchmarkData,
 	loadFixture,
 	loadTargetOracle,
 	runBenchmark,
+	simulateSoloKill,
 	stableJson,
 };
