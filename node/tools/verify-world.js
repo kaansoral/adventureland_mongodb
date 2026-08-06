@@ -42,13 +42,13 @@ async function main(argv = process.argv.slice(2), env = process.env) {
 	const args = parseArgs(argv);
 	if (args.help) {
 		process.stdout.write(
-			"ADVENTURELAND_RESET_MONGODB_URI=... node node/tools/verify-world.js --database adventureland\n",
+			"ADVENTURELAND_MONGODB_URI=... node node/tools/verify-world.js --database adventureland\n",
 		);
 		return null;
 	}
 	const uri =
-		env.ADVENTURELAND_RESET_MONGODB_URI || "mongodb://127.0.0.1:27017/adventureland?replicaSet=adventureland-local";
-	const database = args.database || env.ADVENTURELAND_RESET_MONGODB_DATABASE || "adventureland";
+		env.ADVENTURELAND_MONGODB_URI || "mongodb://127.0.0.1:27017/adventureland?replicaSet=adventureland-local";
+	const database = args.database || env.ADVENTURELAND_MONGODB_DATABASE || "adventureland";
 	const client = new MongoClient(uri, { serverSelectionTimeoutMS: 3_000 });
 	try {
 		await client.connect();

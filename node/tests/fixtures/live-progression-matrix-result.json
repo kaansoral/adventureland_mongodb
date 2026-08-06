@@ -3,7 +3,7 @@
   "gate": "live-progression-matrix",
   "ok": true,
   "target": {
-    "database": "skill-reset-smoke-20260805T132519Z_328073",
+    "database": "skill-smoke-20260805T132519Z_328073",
     "disposable": true
   },
   "scenarios": {

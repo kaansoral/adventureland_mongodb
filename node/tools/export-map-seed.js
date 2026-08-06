@@ -105,13 +105,13 @@ async function main(argv = process.argv.slice(2), env = process.env) {
 	const args = parseArgs(argv);
 	if (args.help) {
 		process.stdout.write(
-			"ADVENTURELAND_RESET_MONGODB_URI=... node node/tools/export-map-seed.js [--database name] [--output-dir seeds]\n",
+			"ADVENTURELAND_MONGODB_URI=... node node/tools/export-map-seed.js [--database name] [--output-dir seeds]\n",
 		);
 		return null;
 	}
-	const uri = env.ADVENTURELAND_RESET_MONGODB_URI;
-	if (!uri) throw new Error("ADVENTURELAND_RESET_MONGODB_URI is required");
-	const database = args.database || env.ADVENTURELAND_RESET_MONGODB_DATABASE || "adventureland";
+	const uri = env.ADVENTURELAND_MONGODB_URI;
+	if (!uri) throw new Error("ADVENTURELAND_MONGODB_URI is required");
+	const database = args.database || env.ADVENTURELAND_MONGODB_DATABASE || "adventureland";
 	const client = new MongoClient(uri);
 	try {
 		await client.connect();
