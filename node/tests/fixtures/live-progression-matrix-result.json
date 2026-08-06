@@ -692,6 +692,7 @@
           "generation": 1,
           "monster": "goo",
           "target_id": "37",
+          "death_sickness_until": 1785936993507,
           "sickness_until": 1785936993507,
           "stats": {
             "affected": {
@@ -797,6 +798,7 @@
         "generation": 1,
         "monster": "goo",
         "target_id": "38",
+        "death_sickness_until": 1785937007841,
         "sickness_until": 1785937007841,
         "stats": {
           "affected": {
