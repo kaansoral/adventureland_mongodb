@@ -726,6 +726,7 @@
             "gift": 1
           }
         },
+        "sickness_until": 1785936993507,
         "sickness_applied": true,
         "stats_reduced": true,
         "respawn_sickness_persisted": true,
