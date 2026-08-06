@@ -1080,6 +1080,21 @@ test("live progression release validation covers contribution maps, curves, even
 	const result = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
 	result.target = { database: "skill-reset-test", disposable: true };
 	result.evidence = logPath;
+	const refreshSicknessTimestamps = (evidence, timestamp) => {
+		if (!evidence || typeof evidence !== "object") return;
+		for (const [key, value] of Object.entries(evidence)) {
+			if (key === "sickness_until" || key === "death_sickness_until")
+				evidence[key] = timestamp;
+			else if (value && typeof value === "object")
+				refreshSicknessTimestamps(value, timestamp);
+		}
+	};
+	const deathSickness = result.scenarios.deathSickness;
+	const firstSickness = Date.now() + 240_000;
+	refreshSicknessTimestamps(deathSickness.first_death, firstSickness);
+	refreshSicknessTimestamps(deathSickness.second_death, firstSickness + 1_000);
+	for (const source of ["environmental", "safe_pvp", "global_pvp", "hardcore"])
+		refreshSicknessTimestamps(deathSickness[source], firstSickness);
 	const runValidator = (candidate, expectedExit = false) => {
 		fs.writeFileSync(resultPath, JSON.stringify(candidate));
 		fs.writeFileSync(logPath, `${JSON.stringify(candidate)}\n`);
