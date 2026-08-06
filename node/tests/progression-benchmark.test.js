@@ -10,6 +10,8 @@ const {
 	FIXTURE_PATH,
 	COMBAT_SKILLS,
 	MERCHANT_PROFILES,
+	chooseCandidate,
+	enumerateCanonicalCandidates,
 	generateFixture,
 	loadBenchmarkData,
 	loadFixture,
@@ -96,4 +98,55 @@ test("benchmark rejects calibration-only fixture fields", () => {
 	broken.combat.starter.warrior.calibration = 1;
 
 	assert.throws(() => generateFixture(broken, loadBenchmarkData()), /Calibration is not permitted/);
+});
+
+test("canonical candidates retain legal high-grade items and permanent normal targets", () => {
+	const data = loadBenchmarkData();
+	const fixture = loadFixture(FIXTURE_PATH);
+	const plan = fixture.combat.competent.warrior;
+	const template = plan.candidate_template;
+	const routes = enumerateCanonicalCandidates({
+		profile: "competent",
+		skill: "warrior",
+		plan,
+		band: {
+			template,
+			monster_source: "all_normal",
+			loadout_slots: ["mainhand", "helmet", "shoes"],
+		},
+		skillLevels: { warrior: 1, paladin: 1, mage: 1, priest: 1, ranger: 1, rogue: 1, merchant: 1 },
+		data,
+	});
+
+	assert.ok(routes.length > 0);
+	assert.ok(routes.some((route) => route.slots.helmet === "oxhelmet"));
+	assert.ok(routes.every((route) => route.enumeration_source === "canonical"));
+	assert.ok(routes.every((route) => route.monster !== "target"));
+	assert.ok(routes.every((route) => route.simulation_mode === "projected"));
+});
+
+test("candidate selection enforces the competent ceiling and deterministic tie breaks", () => {
+	const candidate = (id, rate, requirement_level_sum, external_party_characters = 0) => ({
+		id,
+		rate_per_hour: rate,
+		xp_per_kill: 1,
+		requirement_level_sum,
+		external_party_characters,
+		slots: { mainhand: id },
+		monster: "goo",
+	});
+
+	const closest = chooseCandidate("closest_target", [
+		candidate("over-cap", 3.11, 1),
+		candidate("higher-requirement", 3, 20),
+		candidate("lower-requirement", 3, 10),
+	], 1);
+	assert.equal(closest.id, "lower-requirement");
+
+	const maximum = chooseCandidate("max_rate", [
+		candidate("party", 6, 1, 1),
+		candidate("solo-z", 6, 1, 0),
+		candidate("solo-a", 6, 1, 0),
+	], 1);
+	assert.equal(maximum.id, "solo-a");
 });
