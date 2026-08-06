@@ -15,7 +15,7 @@ var monsters={
 		],
 	},
 	"bee":{
-	"name":"Bee","speed":12,"hp":300,"xp":13672,"attack":16,"damage_type":"physical","respawn":2,"gold":40,"range":20,"frequency":0.5,"aggro":1,"aa":1,"rage":0.1,
+	"name":"Bee","speed":12,"hp":300,"xp":13200,"attack":16,"damage_type":"physical","respawn":2,"gold":40,"range":20,"frequency":0.5,"aggro":1,"aa":1,"rage":0.1,
 		"phresistance":60,
 		//"respawn_as":"goo",
 		"achievements":[

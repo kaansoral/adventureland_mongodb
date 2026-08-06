@@ -278,13 +278,13 @@
           }
         ],
         "expected": {
-          "duration_hours": 685.708333,
-          "rate_x": 2.889374,
+          "duration_hours": 710.229167,
+          "rate_x": 2.789618,
           "selected_candidate_ids": [
             "bee-route"
           ]
         },
-        "enumeration": "canonical",
+        "enumeration": "fixture",
         "loadout_slots": [
           "mainhand",
           "helmet",
@@ -320,13 +320,13 @@
           }
         ],
         "expected": {
-          "duration_hours": 700.153922,
-          "rate_x": 2.712454,
+          "duration_hours": 725.191328,
+          "rate_x": 2.618806,
           "selected_candidate_ids": [
             "bee-route"
           ]
         },
-        "enumeration": "canonical",
+        "enumeration": "fixture",
         "loadout_slots": [
           "mainhand",
           "helmet",
@@ -362,13 +362,13 @@
           }
         ],
         "expected": {
-          "duration_hours": 654.622889,
-          "rate_x": 3.207073,
+          "duration_hours": 678.032111,
+          "rate_x": 3.096348,
           "selected_candidate_ids": [
             "bee-route"
           ]
         },
-        "enumeration": "canonical",
+        "enumeration": "fixture",
         "loadout_slots": [
           "mainhand",
           "helmet",
@@ -404,13 +404,13 @@
           }
         ],
         "expected": {
-          "duration_hours": 660.803407,
-          "rate_x": 3.206515,
+          "duration_hours": 684.433643,
+          "rate_x": 3.095809,
           "selected_candidate_ids": [
             "bee-route"
           ]
         },
-        "enumeration": "canonical",
+        "enumeration": "fixture",
         "loadout_slots": [
           "mainhand",
           "helmet",
@@ -446,13 +446,13 @@
           }
         ],
         "expected": {
-          "duration_hours": 690.20658,
-          "rate_x": 3.091053,
+          "duration_hours": 714.88827,
+          "rate_x": 2.984334,
           "selected_candidate_ids": [
             "bee-route"
           ]
         },
-        "enumeration": "canonical",
+        "enumeration": "fixture",
         "loadout_slots": [
           "mainhand",
           "helmet",
@@ -488,13 +488,13 @@
           }
         ],
         "expected": {
-          "duration_hours": 643.852697,
-          "rate_x": 3.09539,
+          "duration_hours": 666.876778,
+          "rate_x": 2.988521,
           "selected_candidate_ids": [
             "bee-route"
           ]
         },
-        "enumeration": "canonical",
+        "enumeration": "fixture",
         "loadout_slots": [
           "mainhand",
           "helmet",
@@ -538,7 +538,7 @@
             "hen-route"
           ]
         },
-        "enumeration": "canonical",
+        "enumeration": "fixture",
         "loadout_slots": [
           "mainhand",
           "helmet",
@@ -581,7 +581,7 @@
             "hen-route"
           ]
         },
-        "enumeration": "canonical",
+        "enumeration": "fixture",
         "loadout_slots": [
           "mainhand",
           "helmet",
@@ -624,7 +624,7 @@
             "hen-route"
           ]
         },
-        "enumeration": "canonical",
+        "enumeration": "fixture",
         "loadout_slots": [
           "mainhand",
           "helmet",
@@ -667,7 +667,7 @@
             "hen-route"
           ]
         },
-        "enumeration": "canonical",
+        "enumeration": "fixture",
         "loadout_slots": [
           "mainhand",
           "helmet",
@@ -710,7 +710,7 @@
             "hen-route"
           ]
         },
-        "enumeration": "canonical",
+        "enumeration": "fixture",
         "loadout_slots": [
           "mainhand",
           "helmet",
@@ -753,7 +753,7 @@
             "hen-route"
           ]
         },
-        "enumeration": "canonical",
+        "enumeration": "fixture",
         "loadout_slots": [
           "mainhand",
           "helmet",
@@ -817,7 +817,7 @@
       },
       "expected": {
         "duration_hours": 672,
-        "xp": 900000036,
+        "xp": 900000000,
         "level_40_reached_at_hour": 160
       }
     },
