@@ -139,6 +139,36 @@ test("strict targets come from the checked-in independent target oracle", () => 
 	assert.deepEqual(oracle.targetHours, { starter: 2016, competent: 672, optimized: 336 });
 	assert.equal(oracle.durationTolerance, 0.1);
 	assert.equal(oracle.styleParityRatio, 1.15);
+	assert.deepEqual(Object.keys(oracle.reviewedOutputs.combat), ["starter", "competent", "optimized"]);
+	assert.deepEqual(Object.keys(oracle.reviewedOutputs.merchant), ["starter", "competent", "optimized"]);
+});
+
+test("full benchmark matches the independent reviewed output oracle", () => {
+	const report = runBenchmark({ fixturePath: FIXTURE_PATH });
+	const expected = loadTargetOracle().reviewedOutputs;
+	for (const profile of ["starter", "competent", "optimized"]) {
+		for (const skill of COMBAT_SKILLS) {
+			const actual = report.combat[profile][skill];
+			assert.deepEqual(
+				{
+					duration_hours: actual.duration_hours,
+					rate_x: actual.rate_x,
+					selected_candidate_ids: actual.bands.map((band) => band.selected_candidate_id),
+				},
+				expected.combat[profile][skill],
+				`${profile}/${skill} benchmark output drifted from the independent oracle`,
+			);
+		}
+		assert.deepEqual(
+			{
+				duration_hours: report.merchant[profile].duration_hours,
+				xp: report.merchant[profile].xp,
+				level_40_reached_at_hour: report.merchant[profile].level_40_reached_at_hour,
+			},
+			expected.merchant[profile],
+			`${profile}/merchant benchmark output drifted from the independent oracle`,
+		);
+	}
 });
 
 test("Merchant benchmark routes use common progression and report cap measurements", () => {

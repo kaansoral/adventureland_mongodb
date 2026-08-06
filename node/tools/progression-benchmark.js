@@ -29,15 +29,39 @@ function loadTargetOracle(filename = TARGET_ORACLE_PATH) {
 	) {
 		throw new Error("Benchmark target oracle is invalid");
 	}
+	if (!oracle.reviewed_outputs || !oracle.reviewed_outputs.combat || !oracle.reviewed_outputs.merchant)
+		throw new Error("Benchmark target oracle is missing reviewed outputs");
 	for (const profile of MERCHANT_PROFILES) {
 		if (!Number.isSafeInteger(oracle.target_hours[profile]) || oracle.target_hours[profile] <= 0) {
 			throw new Error(`Benchmark target oracle is missing ${profile}`);
 		}
+		if (!oracle.reviewed_outputs.combat[profile] || !oracle.reviewed_outputs.merchant[profile])
+			throw new Error(`Benchmark target oracle is missing reviewed outputs for ${profile}`);
+		for (const skill of COMBAT_SKILLS) {
+			const output = oracle.reviewed_outputs.combat[profile][skill];
+			if (
+				!output ||
+				!Number.isFinite(output.duration_hours) ||
+				!Number.isFinite(output.rate_x) ||
+				!Array.isArray(output.selected_candidate_ids) ||
+				!output.selected_candidate_ids.length
+			)
+				throw new Error(`Benchmark target oracle is missing reviewed output for ${profile}/${skill}`);
+		}
+		const merchantOutput = oracle.reviewed_outputs.merchant[profile];
+		if (
+			!merchantOutput ||
+			!Number.isFinite(merchantOutput.duration_hours) ||
+			!Number.isSafeInteger(merchantOutput.xp) ||
+			!(merchantOutput.level_40_reached_at_hour === null || Number.isSafeInteger(merchantOutput.level_40_reached_at_hour))
+		)
+			throw new Error(`Benchmark target oracle is missing Merchant reviewed output for ${profile}`);
 	}
 	return Object.freeze({
 		targetHours: Object.freeze({ ...oracle.target_hours }),
 		durationTolerance: oracle.duration_tolerance,
 		styleParityRatio: oracle.style_parity_ratio,
+		reviewedOutputs: oracle.reviewed_outputs,
 	});
 }
 
