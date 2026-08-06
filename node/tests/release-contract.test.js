@@ -1144,7 +1144,12 @@ test("live progression release validation covers contribution maps, curves, even
 		const mutations = [
 			(candidate) => { candidate.scenarios.freshCharacter.fixture.total_level = 6; },
 			(candidate) => { candidate.scenarios.gatedGear.below.state_unchanged = false; },
+			(candidate) => { candidate.scenarios.gatedGear.threshold_fixture.skills.merchant = 20; },
+			(candidate) => { candidate.scenarios.gatedGear.at_threshold.reconnect_total_level = 84; },
+			(candidate) => { candidate.scenarios.rankings.passed = false; },
 			(candidate) => { candidate.scenarios.rankings.merchant_order.pop(); },
+			(candidate) => { candidate.scenarios.rankings.merchant_order[0] = candidate.scenarios.rankings.merchant_order[1]; },
+			(candidate) => { candidate.scenarios.rankings.merchants_open_stands.push("RankTieLowijbk"); },
 			(candidate) => delete candidate.scenarios.contributions.persisted.skill_xp_delta.merchant,
 			(candidate) => delete candidate.scenarios.contributions.live_action.skill_xp_events[0].skills.merchant,
 			(candidate) => { candidate.scenarios.contributions.live_action.skill_xp_events[0].skills.warrior.maxXp += 1; },
