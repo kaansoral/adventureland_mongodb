@@ -321,6 +321,7 @@
           "id": "42",
           "type": "goo"
         },
+        "target_id": "42",
         "kill_observed": true,
         "kill_event": {
           "type": "death",
@@ -331,8 +332,12 @@
           {
             "skill": "warrior",
             "accepted_xp": 102,
+            "discarded_xp": 0,
             "from_level": 40,
             "to_level": 40,
+            "xp": 142534463,
+            "max_xp": 149937526,
+            "total_level": 123,
             "skills": {
               "warrior": {
                 "level": 40,
@@ -374,8 +379,12 @@
           {
             "skill": "paladin",
             "accepted_xp": 718,
+            "discarded_xp": 0,
             "from_level": 20,
             "to_level": 20,
+            "xp": 33830372,
+            "max_xp": 37484382,
+            "total_level": 123,
             "skills": {
               "warrior": {
                 "level": 40,
@@ -417,8 +426,12 @@
           {
             "skill": "rogue",
             "accepted_xp": 290,
+            "discarded_xp": 0,
             "from_level": 20,
             "to_level": 20,
+            "xp": 33829944,
+            "max_xp": 37484382,
+            "total_level": 123,
             "skills": {
               "warrior": {
                 "level": 40,
@@ -494,11 +507,53 @@
         "passive_partition": {},
         "pvp_partition": {}
       },
+      "passive_and_party_zero": true,
       "passive_and_pvp_zero": true,
+      "party_member_zero": {
+        "party_member": true,
+        "action_count": 0,
+        "invite_status": "succeeded",
+        "accept_status": "succeeded",
+        "party_member_id": "B4eox8ssive",
+        "target_id": "42",
+        "member_visible_to_attacker": true,
+        "target_visible_to_member": true,
+        "eligible_same_instance": true,
+        "target_observation": {
+          "target_id": "42",
+          "target_type": "monster",
+          "attacker_map": "main",
+          "attacker_instance": "main",
+          "member_map": "main",
+          "member_instance": "main",
+          "target_map": "main",
+          "target_instance": "main",
+          "target_location_source": "entity",
+          "party_member_action_count": 0,
+          "party_member_action_ids": []
+        }
+      },
       "passive_observer": {
         "character": "B4eox8ssive",
+        "party_member_id": "B4eox8ssive",
         "action_count": 0,
-        "party_member": false,
+        "party_member": true,
+        "party_visible": true,
+        "target_id": "42",
+        "member_visible_to_attacker": true,
+        "target_observation": {
+          "target_id": "42",
+          "target_type": "monster",
+          "attacker_map": "main",
+          "attacker_instance": "main",
+          "member_map": "main",
+          "member_instance": "main",
+          "target_map": "main",
+          "target_instance": "main",
+          "target_location_source": "entity",
+          "party_member_action_count": 0,
+          "party_member_action_ids": []
+        },
         "skill_xp_before": {
           "warrior": 0,
           "paladin": 0,
@@ -519,11 +574,102 @@
         },
         "skill_xp_unchanged": true
       },
+      "delayed_effect": {
+        "kind": "damage_over_time",
+        "ability": "burn",
+        "creation_skill": "warrior",
+        "creation_weapon": "fireblade",
+        "switched_skill_before_resolution": "rogue",
+        "switched_weapon_before_resolution": "claw",
+        "creation_action_id": "action-dot-1",
+        "creation_action_pid": "dot-pid-1",
+        "creation_hit_pid": "dot-pid-1",
+        "creation_action_target": "40",
+        "creation_action_attacker": "B4eox8ssive",
+        "resolution_source": "burn",
+        "resolution_attacker": "B4eox8ssive",
+        "resolution_target": "40",
+        "resolution_damage": 1,
+        "switch_complete_event_index": 57,
+        "burn_event_index": 59,
+        "burn_event_pid": "dot-pid-1",
+        "burn_action_pid_match": true,
+        "burn_attempts": 1,
+        "post_switch_resolution": true,
+        "isolated_target_id": "40",
+        "isolated_kill_event": {
+          "type": "death",
+          "id": "40"
+        },
+        "isolated_skill_xp_before": {
+          "warrior": 142534361,
+          "paladin": 33829654,
+          "mage": 0,
+          "priest": 0,
+          "ranger": 142534361,
+          "rogue": 33829654,
+          "merchant": 0
+        },
+        "isolated_skill_xp_after": {
+          "warrior": 142534550,
+          "paladin": 33829654,
+          "mage": 0,
+          "priest": 0,
+          "ranger": 142534361,
+          "rogue": 33830020,
+          "merchant": 0
+        },
+        "isolated_skill_xp_delta": {
+          "warrior": 189,
+          "paladin": 0,
+          "mage": 0,
+          "priest": 0,
+          "ranger": 0,
+          "rogue": 366,
+          "merchant": 0
+        },
+        "isolated_ledger_source_ids": [
+          "SR_matrix:main:40:B4eox8ssive:party:warrior"
+        ],
+        "isolated_encounter_ids": ["SR_matrix:main:40"],
+        "contribution_source_id": "SR_matrix:main:40:B4eox8ssive:party:warrior",
+        "isolated_xp_assigned_to_creation_skill": true,
+        "authoritative_linkage": {
+          "action_pid": "dot-pid-1",
+          "action_attacker": "B4eox8ssive",
+          "action_target": "40",
+          "burn_event_index": 59,
+          "burn_event_pid": "dot-pid-1",
+          "burn_action_pid": "dot-pid-1",
+          "switch_complete_event_index": 57,
+          "burn_target": "40",
+          "kill_target": "40",
+          "ledger_source_ids": [
+            "SR_matrix:main:40:B4eox8ssive:party:warrior"
+          ],
+          "encounter_ids": ["SR_matrix:main:40"]
+        },
+        "snapshot_retained": true
+      },
       "browser_server_counterpart": {
         "browser_opened": false,
         "server_side_use_ability_contract": true
       },
       "persisted": {
+        "target_id": "42",
+        "target_observation": {
+          "target_id": "42",
+          "target_type": "monster",
+          "attacker_map": "main",
+          "attacker_instance": "main",
+          "member_map": "main",
+          "member_instance": "main",
+          "target_map": "main",
+          "target_instance": "main",
+          "target_location_source": "entity",
+          "party_member_action_count": 0,
+          "party_member_action_ids": []
+        },
         "skill_xp_before": {
           "warrior": 142534361,
           "paladin": 33829654,
