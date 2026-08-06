@@ -1825,8 +1825,8 @@
         },
         "skill_state_unchanged": true,
         "skill_xp_assertion": "verified",
-        "skill_xp_before": "{\n  \"warrior\": {\n    \"level\": 2,\n    \"xp\": 93711\n  },\n  \"paladin\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"mage\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"priest\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"ranger\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"rogue\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"merchant\": {\n    \"level\": 2,\n    \"xp\": 93711\n  }\n}\n",
-        "skill_xp_after": "{\n  \"warrior\": {\n    \"level\": 2,\n    \"xp\": 93711\n  },\n  \"paladin\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"mage\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"priest\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"ranger\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"rogue\": {\n    \"level\": 1,\n    \"xp\": 0\n  },\n  \"merchant\": {\n    \"level\": 2,\n    \"xp\": 93711\n  }\n}\n",
+        "skill_xp_before": "{\"warrior\":{\"level\":2,\"xp\":93711},\"paladin\":{\"level\":1,\"xp\":0},\"mage\":{\"level\":1,\"xp\":0},\"priest\":{\"level\":1,\"xp\":0},\"ranger\":{\"level\":1,\"xp\":0},\"rogue\":{\"level\":1,\"xp\":0},\"merchant\":{\"level\":2,\"xp\":93711}}",
+        "skill_xp_after": "{\"warrior\":{\"level\":2,\"xp\":93711},\"paladin\":{\"level\":1,\"xp\":0},\"mage\":{\"level\":1,\"xp\":0},\"priest\":{\"level\":1,\"xp\":0},\"ranger\":{\"level\":1,\"xp\":0},\"rogue\":{\"level\":1,\"xp\":0},\"merchant\":{\"level\":2,\"xp\":93711}}",
         "xptome_assertion": "verified",
         "xptome_before": {
           "name": "xptome",
