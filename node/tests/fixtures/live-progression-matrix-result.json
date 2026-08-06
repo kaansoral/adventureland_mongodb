@@ -1322,7 +1322,16 @@
       },
       "environmental": {
         "source": "environmental-harakiri",
-        "response": "harakiri",
+        "response": null,
+        "authoritative_death_report": {
+          "channel": "start_state",
+          "response": null,
+          "rip": true,
+          "death_sickness_until": 1785936993507,
+          "hp": 0,
+          "mp": 0,
+          "max_mp": 80
+        },
         "sickness_applied": true,
         "stats": {
           "baseline": {
@@ -1534,7 +1543,16 @@
       },
       "hardcore": {
         "source": "hardcore-harakiri",
-        "response": "harakiri",
+        "response": null,
+        "authoritative_death_report": {
+          "channel": "player",
+          "response": null,
+          "rip": true,
+          "death_sickness_until": 1785937007841,
+          "hp": 0,
+          "mp": 0,
+          "max_mp": 80
+        },
         "sickness_applied": true,
         "stats": {
           "baseline": {
