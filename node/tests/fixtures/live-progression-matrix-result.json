@@ -1156,6 +1156,146 @@
             }
           }
         },
+        "expired_after_expiry": {
+          "warrior": {
+            "affected": {
+              "attack": 22,
+              "heal": 0,
+              "maxHp": 856,
+              "maxMp": 100,
+              "armor": 46,
+              "resistance": 11,
+              "frequency": 0.503125
+            },
+            "excluded": {
+              "speed": 50.625,
+              "range": 10,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 80,
+              "mp": 40
+            }
+          },
+          "paladin": {
+            "affected": {
+              "attack": 26,
+              "heal": 0,
+              "maxHp": 688,
+              "maxMp": 550,
+              "armor": 38,
+              "resistance": 41,
+              "frequency": 0.42217261904761905
+            },
+            "excluded": {
+              "speed": 50.5,
+              "range": 10,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 80,
+              "mp": 40
+            }
+          },
+          "mage": {
+            "affected": {
+              "attack": 30,
+              "heal": 0,
+              "maxHp": 100,
+              "maxMp": 700,
+              "armor": 10,
+              "resistance": 51,
+              "frequency": 0.3785218253968254
+            },
+            "excluded": {
+              "speed": 46.0625,
+              "range": 100,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 80,
+              "mp": 40
+            }
+          },
+          "priest": {
+            "affected": {
+              "attack": 30,
+              "heal": 30,
+              "maxHp": 100,
+              "maxMp": 610,
+              "armor": 10,
+              "resistance": 45,
+              "frequency": 0.37471230158730157
+            },
+            "excluded": {
+              "speed": 50.0625,
+              "range": 120,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 80,
+              "mp": 40
+            }
+          },
+          "ranger": {
+            "affected": {
+              "attack": 25,
+              "heal": 0,
+              "maxHp": 100,
+              "maxMp": 100,
+              "armor": 10,
+              "resistance": 11,
+              "frequency": 0.46406250000000004
+            },
+            "excluded": {
+              "speed": 48.28125,
+              "range": 110,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 80,
+              "mp": 40
+            }
+          },
+          "rogue": {
+            "affected": {
+              "attack": 18,
+              "heal": 0,
+              "maxHp": 100,
+              "maxMp": 100,
+              "armor": 10,
+              "resistance": 11,
+              "frequency": 0.5
+            },
+            "excluded": {
+              "speed": 51,
+              "range": 10,
+              "xpMultiplier": 1,
+              "luckMultiplier": 1,
+              "goldMultiplier": 1,
+              "tax": 0
+            },
+            "current": {
+              "hp": 80,
+              "mp": 40
+            }
+          }
+        },
         "all_styles_verified": true
       },
       "skill_xp_byte_for_byte_unchanged": true,
