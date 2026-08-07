@@ -91,3 +91,34 @@ test("Comm renders the current character payload fields", () => {
 	assert.match(rendered.value, /Warrior/);
 	assert.doesNotMatch(rendered.value, /undefined/);
 });
+
+test("Comm receives the observer secret stored in character info", () => {
+	const adventureFunctions = read("adventure_functions.js");
+	const characterToDict = functionSource(adventureFunctions, "character_to_dict", "characters_to_client");
+	const context = {
+		get_id: () => "CH_test",
+		character_active_skill: () => "warrior",
+		mssince: () => 10,
+		gf(object, key, fallback) {
+			return object && object[key] !== undefined ? object[key] : fallback;
+		},
+	};
+	vm.createContext(context);
+	const toDict = vm.runInContext(`(${characterToDict})`, context);
+
+	const serialized = toDict({
+		info: {
+			name: "cjstorrs",
+			skills: {},
+			secret: "observer-secret",
+			skin: "hair",
+			map: "main",
+			x: 0,
+			y: 0,
+		},
+		online: true,
+		server: "SR_USI",
+	});
+
+	assert.equal(serialized.secret, "observer-secret");
+});
