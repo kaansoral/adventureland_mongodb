@@ -2906,6 +2906,10 @@ function commence_attack(attacker, target, atype) {
 				info[p] = attacker[p];
 			}
 		});
+	} else if (info.heal) {
+		["crit", "critdamage"].forEach(function (p) {
+			if (attacker[p]) info[p] = attacker[p];
+		});
 	}
 	["apiercing", "rpiercing", "miss"].forEach(function (p) {
 		if (attacker[p]) {
@@ -3027,6 +3031,13 @@ function commence_attack(attacker, target, atype) {
 	action.place = atype;
 
 	return action;
+}
+
+function apply_critical_multiplier(attack, info, def) {
+	if (!info.crit || Math.random() * 100 >= info.crit) return attack;
+	var cmult = 2 + (info.critdamage || 0) / 100.0;
+	def.crit = cmult;
+	return attack * cmult;
 }
 
 function complete_attack(attacker, target, info) {
@@ -3302,6 +3313,7 @@ function complete_attack(attacker, target, info) {
 				if (target.s.poisoned) {
 					attack = round(attack * 0.25);
 				}
+				attack = apply_critical_multiplier(attack, info, def);
 			} else {
 				attack = o_attack;
 			}
@@ -3321,11 +3333,7 @@ function complete_attack(attacker, target, info) {
 			}
 			target.hits++;
 			if (first) {
-				if (info.crit && Math.random() * 100 < info.crit) {
-					var cmult = 2 + (info.critdamage || 0) / 100.0;
-					def.crit = cmult;
-					attack *= cmult;
-				}
+				attack = apply_critical_multiplier(attack, info, def);
 				if (attacker.active_skill == "rogue") {
 					var maxd = G.abilities.stack.max;
 					// if(G.monsters[target.type] && G.monsters[target.type].stationary) maxd=9999999999;

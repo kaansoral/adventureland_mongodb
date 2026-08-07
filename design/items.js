@@ -7458,7 +7458,35 @@ Object.assign(items.blade, { attack: 12, str: 36 });
 Object.assign(items.mace, { attack: 12, str: 28, int: 30 });
 Object.assign(items.staff, { attack: 15, int: 40 });
 Object.assign(items.wbook0, { attack: 11, int: 34 });
-Object.assign(items.bow, { attack: 12, dex: 39 });
-Object.assign(items.claw, { attack: 11, dex: 30 });
+Object.assign(items.bow, { attack: 12, str: 39 });
+Object.assign(items.claw, { attack: 11, str: 30 });
+
+var physical_weapon_types={"short_sword":true,"sword":true,"great_sword":true,"axe":true,"spear":true,"scythe":true,"hammer":true,"mace":true,"pmace":true,"basher":true,"bow":true,"crossbow":true,"dartgun":true,"fist":true,"dagger":true,"stars":true,"rapier":true};
+var magical_weapon_types={"staff":true,"great_staff":true,"wand":true,"wblade":true,"book":true};
+for(var item_name in items){
+	var current_item=items[item_name];
+	if(current_item.type!="weapon") continue;
+	var primary_stat=current_item.damage_type=="physical" || physical_weapon_types[current_item.wtype] ? "str" : current_item.damage_type=="magical" || magical_weapon_types[current_item.wtype] ? "int" : null;
+	if(!primary_stat) continue;
+	if(current_item[primary_stat]===undefined || current_item[primary_stat]===0) current_item[primary_stat]=Math.max(1,Math.ceil((current_item.tier||1)*8));
+	var defensive_value=(current_item.vit||0)+(current_item["for"]||0)+(current_item.hp||0)/48+(current_item.armor||0)+(current_item.resistance||0);
+	if(defensive_value) current_item[primary_stat]=(current_item[primary_stat]||0)+Math.ceil(defensive_value);
+	if(current_item[primary_stat]<=0) current_item[primary_stat]+=Math.max(1,Math.ceil((current_item.tier||1)*8));
+	delete current_item.vit;
+	delete current_item["for"];
+	delete current_item.hp;
+	delete current_item.armor;
+	delete current_item.resistance;
+	if(current_item.upgrade){
+		var upgrade_def=current_item.upgrade;
+		var defensive_upgrade=(upgrade_def.vit||0)+(upgrade_def["for"]||0)+(upgrade_def.hp||0)/48+(upgrade_def.armor||0)+(upgrade_def.resistance||0);
+		if(defensive_upgrade) upgrade_def[primary_stat]=(upgrade_def[primary_stat]||0)+defensive_upgrade;
+		delete upgrade_def.vit;
+		delete upgrade_def["for"];
+		delete upgrade_def.hp;
+		delete upgrade_def.armor;
+		delete upgrade_def.resistance;
+	}
+}
 
 if(typeof module!=="undefined") module.exports={items:items,sets:sets};
