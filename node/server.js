@@ -1275,7 +1275,11 @@ function calculate_gear_only_player_stats(player) {
 		getItemProperties: (instance) => calculate_item_properties(instance, { map: player.map }),
 	});
 	for (const [key, value] of Object.entries(calculated)) {
-		if (!["sets", "abilities", "auras", "damage_type", "projectile", "inventory_size", "hp", "mp"].includes(key))
+		if (
+			!["sets", "abilities", "auras", "damage_type", "projectile", "inventory_size", "hp", "mp", "gold"].includes(
+				key,
+			)
+		)
 			player[key] = value;
 	}
 	player.active_skill = activeSkill;
@@ -9943,7 +9947,7 @@ function init_io() {
 			if (!player) {
 				return;
 			}
-			var r = { id: data.id, goldm: player.goldm, opener: player.name, items: [] };
+			var r = { id: data.id, goldm: player.goldm || 1, opener: player.name, items: [] };
 			if (chest && simple_distance(chest, player) > 400) {
 				r.goldm = 1;
 				r.dry = true;
@@ -10028,7 +10032,7 @@ function init_io() {
 					if (!r.items.length) {
 						delete r.items;
 					}
-					resend(player, (reopen && "reopen+nc+inv") || "");
+					resend(player, (reopen && "reopen+nc+inv") || "reopen");
 					socket.emit("chest_opened", r);
 				} else if (chest) {
 					// var gold=round(chest.gold/parties[player.party].length);
@@ -10163,7 +10167,7 @@ function init_io() {
 								args: { color: "gold", size: "large" },
 							});
 						}
-						resend(current, (reopen[current.id] && "reopen+nc+inv") || "");
+						resend(current, (reopen[current.id] && "reopen+nc+inv") || "reopen");
 						current.socket.emit("chest_opened", r);
 					});
 				} else {

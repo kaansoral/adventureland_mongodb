@@ -5,6 +5,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 const vm = require("node:vm");
+const { WEAPON_PROFILES, deriveActiveSkill } = require("../game/active_skill");
+const { calculateStats } = require("../game/stats");
 
 const root = path.resolve(__dirname, "../..");
 const serverSource = fs.readFileSync(path.join(root, "node/server.js"), "utf8");
@@ -12,6 +14,14 @@ const serverSource = fs.readFileSync(path.join(root, "node/server.js"), "utf8");
 function loadIssuePlayerAward(context) {
 	const start = serverSource.indexOf("function issue_player_award(");
 	const end = serverSource.indexOf("\nfunction commence_attack", start);
+	assert.notEqual(start, -1);
+	assert.ok(end > start);
+	return vm.runInNewContext(`(${serverSource.slice(start, end)})`, context);
+}
+
+function loadCalculateGearOnlyPlayerStats(context) {
+	const start = serverSource.indexOf("function calculate_gear_only_player_stats(");
+	const end = serverSource.indexOf("\nfunction calculate_player_stats", start);
 	assert.notEqual(start, -1);
 	assert.ok(end > start);
 	return vm.runInNewContext(`(${serverSource.slice(start, end)})`, context);
@@ -101,4 +111,43 @@ test("slot gold rewards publish the updated character balance", () => {
 	assert.match(slotReward, /player\.gold \+= gold/);
 	assert.match(slotReward, /player\.socket\.emit\("game_log", \{ message: "Received/);
 	assert.match(slotReward, /\n\s+resend\(player, "reopen"\);/);
+});
+
+test("stat recalculation preserves the persistent character gold balance", () => {
+	const calculateGearOnlyPlayerStats = loadCalculateGearOnlyPlayerStats({
+		G: { items: {}, sets: {}, conditions: {} },
+		WEAPON_PROFILES,
+		calculateStats,
+		deriveActiveSkill,
+		calculate_item_properties: () => ({}),
+		merchantTax: () => 0.05,
+		calculate_common_stats: () => {},
+	});
+	const current = {
+		gold: 1234,
+		slots: {},
+		items: [],
+		s: {},
+		hp: 10,
+		mp: 10,
+		info: {},
+		map: "main",
+	};
+
+	calculateGearOnlyPlayerStats(current);
+
+	assert.equal(current.gold, 1234);
+});
+
+test("monster chest gold refreshes the character balance after loot", () => {
+	const start = serverSource.indexOf('socket.on("open_chest", function (data) {');
+	const end = serverSource.indexOf('\n\t\tsocket.on("auth", async function (data) {', start);
+	assert.notEqual(start, -1);
+	assert.ok(end > start);
+	const chestLoot = serverSource.slice(start, end);
+
+	assert.match(chestLoot, /goldm: player\.goldm \|\| 1/);
+	assert.match(chestLoot, /player\.gold \+= r\.gold/);
+	assert.match(chestLoot, /resend\(player, \(reopen && "reopen\+nc\+inv"\) \|\| "reopen"\);/);
+	assert.match(chestLoot, /resend\(current, \(reopen\[current\.id\] && "reopen\+nc\+inv"\) \|\| "reopen"\);/);
 });
