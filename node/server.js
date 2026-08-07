@@ -2589,6 +2589,7 @@ function issue_player_award(attacker, target) {
 		attacker.gold += gain_gold;
 		attacker.socket.emit("game_log", { message: "Pwned " + target.name, color: "#67C051" });
 		attacker.socket.emit("game_log", "Looted " + to_pretty_num(gain_gold) + " gold");
+		resend(attacker, "reopen");
 		attacker.socket.emit("disappearing_text", {
 			message: "+" + gain_gold,
 			x: target.x,
@@ -2604,6 +2605,7 @@ function issue_player_award(attacker, target) {
 			attacker.gold += gain_gold;
 			attacker.socket.emit("game_log", { message: name + " pwned " + target.name, color: "#67C051" });
 			attacker.socket.emit("game_log", "Looted " + to_pretty_num(gain_gold) + " gold");
+			resend(attacker, "reopen");
 			attacker.socket.emit("disappearing_text", {
 				message: "+" + gain_gold,
 				x: target.x,
@@ -13342,7 +13344,7 @@ function update_instance(instance) {
 						});
 						player.socket.emit("game_response", "slots_success");
 						player.socket.emit("game_log", { message: "Received " + to_pretty_num(gold) + " gold", color: "gold" });
-						// resend(player,"u+cid");
+						resend(player, "reopen");
 					} else {
 						player.socket.emit("game_response", "slots_fail");
 					}

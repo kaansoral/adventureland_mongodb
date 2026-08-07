@@ -18,6 +18,9 @@ package-lock.json
 /agentic
 /agentic/
 
+# Dreamers workspace artifacts
+.dreamers/
+
 # Python (legacy AppEngine removed; agentic/ scripts kept)
 *.py
 *.pyc

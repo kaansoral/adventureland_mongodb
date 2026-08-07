@@ -12,6 +12,6 @@
   normal workflow.
 - Test credentials and local runtime overrides belong only in the local runtime
   database or ignored environment files. Never commit them.
-- Preserve pre-existing unrelated edits, including `version.js`. Stage only
-  files required for the current task and verify the nested repository’s branch
-  before committing.
+- Preserve pre-existing unrelated edits, including `version.js`. Keep only
+  files required for the current task in scope and verify the nested
+  repository boundary before editing.
