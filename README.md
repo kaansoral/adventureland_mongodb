@@ -140,10 +140,11 @@ See `agentic/` for additional fix scripts that handle ID prefixing, repeated fie
 The game will create entities as needed. You can sign up for a new account through the web UI. You'll need to populate map data for the game server to function — the BFS precomputation (`node/precompute_bfs.js`) depends on map geometry being in the database.
 
 For the protocol-3 local release, run the deterministic progression contract
-scan from the umbrella repository. It validates map provenance, publication,
-and progression behavior without changing the local database. Existing
-class-based consumers are not supported after the skill/ability contract
-cutover.
+scan from the umbrella repository. It checks the semantic progression
+vocabulary without changing the local database. The read-only publication,
+world, and map-seed tools are separate checks for plans that explicitly call
+for them. Existing class-based consumers are not supported after the
+skill/ability contract cutover.
 
 ## Project Structure
 
