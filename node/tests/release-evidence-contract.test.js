@@ -674,6 +674,9 @@ test("browser death expression executes and validator rejects malformed evidence
 		runValidator(multibyteOversizedLog, true);
 		runValidator(result, true, "unsupported-gate");
 		runValidator(result, true, "browser-smoke", "other-database");
+		const configuredDatabase = structuredClone(result);
+		configuredDatabase.target.database = "adventureland";
+		runValidator(configuredDatabase, true, "browser-smoke", "adventureland");
 	} finally {
 		fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 	}
