@@ -630,7 +630,7 @@ function character_to_dict(character) {
 	if (character.online) {
 		data.online = mssince(character.last_online);
 		data.server = character.server;
-		data.secret = gf(character, "secret", gf(character.info, "secret", "12"));
+		data.secret = gf(character, "secret", "12");
 	}
 	if (gf(character, "rip")) data.rip = character.info.rip;
 	data.skin = character.info.skin;

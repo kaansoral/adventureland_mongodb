@@ -92,33 +92,31 @@ test("Comm renders the current character payload fields", () => {
 	assert.doesNotMatch(rendered.value, /undefined/);
 });
 
-test("Comm receives the observer secret stored in character info", () => {
-	const adventureFunctions = read("adventure_functions.js");
-	const characterToDict = functionSource(adventureFunctions, "character_to_dict", "characters_to_client");
+test("Comm can select a character before a socket exists", () => {
+	const game = read("js/game.js");
+	const observeCharacter = functionSource(game, "observe_character", "log_in");
+	const initArgs = [];
+	let hideNavCalls = 0;
 	const context = {
-		get_id: () => "CH_test",
-		character_active_skill: () => "warrior",
-		mssince: () => 10,
-		gf(object, key, fallback) {
-			return object && object[key] !== undefined ? object[key] : fallback;
+		window: {},
+		X: {
+			characters: [{ name: "cjstorrs", secret: "observer-secret", server: "SR_USI" }],
+			servers: [{ key: "SR_USI", address: "localhost:7192", path: "/socket.io/" }],
+		},
+		observing: null,
+		is_comm: true,
+		init_socket(args) {
+			initArgs.push(args);
+		},
+		hide_nav() {
+			hideNavCalls += 1;
 		},
 	};
 	vm.createContext(context);
-	const toDict = vm.runInContext(`(${characterToDict})`, context);
+	const observe = vm.runInContext(`(${observeCharacter})`, context);
 
-	const serialized = toDict({
-		info: {
-			name: "cjstorrs",
-			skills: {},
-			secret: "observer-secret",
-			skin: "hair",
-			map: "main",
-			x: 0,
-			y: 0,
-		},
-		online: true,
-		server: "SR_USI",
-	});
-
-	assert.equal(serialized.secret, "observer-secret");
+	assert.equal(observe("cjstorrs"), true);
+	assert.equal(initArgs.length, 1);
+	assert.equal(initArgs[0].secret, "observer-secret");
+	assert.equal(hideNavCalls, 1);
 });

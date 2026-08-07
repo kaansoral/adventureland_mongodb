@@ -371,8 +371,8 @@ function observe_character(name) {
 			for (var j = 0; j < X.servers.length; j++) {
 				var server = X.servers[j];
 				if (server.key == ch.server) {
-					if (socket && observing && observing.name == ch.name) {
-						socket.emit("o:home");
+					if (window.socket && observing && observing.name == ch.name) {
+						window.socket.emit("o:home");
 					} else {
 						server_address = server.address;
 						server_path = server.path;
