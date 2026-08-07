@@ -46,7 +46,7 @@ function render_characters() {
 			html += (char.name.length <= 8 && char.name) || char.name.substr(0, 8) + "..";
 			html += " <span style='color: #F3A05D'>[" + server_to_ui(char.server) + "]</span>";
 			html += "<br />";
-			html += "Lv." + char.level + " <span class='gray'>" + char.type.toTitleCase() + "</span>";
+			html += "Lv." + char.total_level + " <span class='gray'>" + (char.active_skill || "unknown").toTitleCase() + "</span>";
 			html += "</div>";
 		}
 	});

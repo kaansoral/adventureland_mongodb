@@ -1226,7 +1226,7 @@ function the_game(demo) {
 
 	if (!demo) {
 		load_game();
-		init_socket();
+		if (!is_comm) init_socket();
 	} else init_demo();
 }
 
@@ -1290,6 +1290,14 @@ function init_demo() {
 }
 
 var first_welcome = false;
+function release_socket(socket_instance) {
+	if (window.socket !== socket_instance) return false;
+	window.socket = null;
+	socket_instance.destroy();
+	disconnect();
+	return true;
+}
+
 function init_socket(args) {
 	if (!args) args = {};
 	if (!server_address) {
@@ -1301,8 +1309,9 @@ function init_socket(args) {
 		return;
 	}
 	if (window.socket) {
-		if (!socket_welcomed) return add_log("Another server connection in progress. Please wait.");
-		window.socket.destroy();
+		var previous_socket = window.socket;
+		window.socket = null;
+		previous_socket.destroy();
 	}
 	$(".disconnected").hide();
 	if (Local && (Cookies.get("windows") || Cookies.get("local_ip") || window.location.host == "advanture.land" || window.location.host == "x.qwazy.test"))
@@ -1327,6 +1336,11 @@ function init_socket(args) {
 			transports: ["websocket"],
 			query: query,
 		});
+	var socket_instance = window.socket;
+	socket_instance.on("connect_error", function () {
+		if (!release_socket(socket_instance)) return;
+		add_log("Unable to connect to the server. Please try again.", "red");
+	});
 	add_log("Connecting to the server.");
 	socket_ready = false;
 	socket_welcomed = false;
@@ -2863,10 +2877,8 @@ function init_socket(args) {
 		character.items[data.num].p = data.p;
 	});
 	socket.on("end", function (data) {});
-	socket.on("disconnect", function () {
-		socket.destroy();
-		window.socket = null;
-		disconnect();
+	socket_instance.on("disconnect", function () {
+		release_socket(socket_instance);
 	});
 	socket.on("disconnect_reason", function (reason) {
 		window.disconnect_reason = reason;
