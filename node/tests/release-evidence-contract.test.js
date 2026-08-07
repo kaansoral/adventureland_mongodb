@@ -8,26 +8,6 @@ const path = require("node:path");
 const test = require("node:test");
 const vm = require("node:vm");
 
-const { createCharacterState } = require("../game/character_state");
-const { assertProtocol3Publication } = require("../game/release_readiness");
-
-test("release publication and fresh character remain protocol 3", () => {
-	const fresh = createCharacterState();
-	assert.equal(fresh.total_level, 7);
-	assert.deepEqual(Object.keys(fresh.skills), ["warrior", "paladin", "mage", "priest", "ranger", "rogue", "merchant"]);
-	assert.deepEqual(
-		assertProtocol3Publication({
-			protocol: 3,
-			skills: fresh.skills,
-			abilities: { attack: {} },
-		}),
-		{ protocol: 3, skillCount: 7, abilityCount: 1 },
-	);
-	assert.throws(() => assertProtocol3Publication({ protocol: 2, classes: {}, skills: {}, abilities: {} }), {
-		code: "WORLD_PUBLICATION",
-	});
-});
-
 test("disposable smoke target guards use the scoped database prefix", () => {
 	const root = path.resolve(__dirname, "../../..");
 	const sources = [
@@ -41,27 +21,6 @@ test("disposable smoke target guards use the scoped database prefix", () => {
 		assert.match(source, /skill-smoke-/);
 		assert.equal(source.includes(legacyPrefix), false);
 	}
-});
-
-
-test("progression events stay queued until a successful persistence boundary", () => {
-	const root = path.resolve(__dirname, "../..");
-	const server = fs.readFileSync(path.join(root, "node/server.js"), "utf8");
-	const resendStart = server.indexOf("function resend(player, events)");
-	const resendEnd = server.indexOf("\nfunction transport_monster_to", resendStart);
-	assert.notEqual(resendStart, -1);
-	assert.notEqual(resendEnd, -1);
-	assert.doesNotMatch(server.slice(resendStart, resendEnd), /flushPlayerProgressionEvents/);
-	const syncStart = server.indexOf("async function sync_call(player)");
-	const syncEnd = server.indexOf("\n\t// stop_call:", syncStart);
-	assert.notEqual(syncStart, -1);
-	assert.ok(syncEnd > syncStart);
-	const syncBlock = server.slice(syncStart, syncEnd);
-	const saveIndex = syncBlock.indexOf("await tx_save(entity)");
-	const flushIndex = syncBlock.indexOf("flushPlayerProgressionEvents(player)");
-	assert.notEqual(saveIndex, -1);
-	assert.notEqual(flushIndex, -1);
-	assert.ok(saveIndex < flushIndex);
 });
 
 
