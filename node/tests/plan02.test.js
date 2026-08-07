@@ -20,8 +20,8 @@ const items = {
 	mace: item("weapon", "mace", { attack: 12, str: 28, int: 30 }),
 	staff: item("weapon", "staff", { attack: 15, int: 40 }),
 	wbook0: item("weapon", "book", { attack: 11, int: 34 }),
-	bow: item("weapon", "bow", { attack: 12, dex: 39 }),
-	claw: item("weapon", "fist", { attack: 11, dex: 30 }),
+	bow: item("weapon", "bow", { attack: 12, str: 39 }),
+	claw: item("weapon", "fist", { attack: 11, str: 30 }),
 	greatsword: item("weapon", "great_sword", { attack: 30 }),
 	shield: item("shield", null, { armor: 10 }),
 	rod: item("tool", "rod"),
@@ -356,8 +356,8 @@ test("style-bound effects are tagged and invalidated idempotently", () => {
 
 test("gear-only stats match the six starter golden inputs and ignore skill level", () => {
 	const expected = {
-		blade: ["warrior", 22, 856, 100, 0],
-		mace: ["paladin", 26, 688, 550, 0],
+		blade: ["warrior", 22, 100, 100, 0],
+		mace: ["paladin", 26, 100, 550, 0],
 		staff: ["mage", 30, 100, 700, 0],
 		wbook0: ["priest", 30, 100, 610, 30],
 		bow: ["ranger", 23, 100, 100, 0],
@@ -402,5 +402,5 @@ test("gear-only stats match the six starter golden inputs and ignore skill level
 	assert.equal(noWeapon.damage_type, null);
 	const sick = calculateStats({ slots: { mainhand: { name: "blade" } }, items, deathSickness: true });
 	assert.equal(sick.attack, 17);
-	assert.equal(sick.max_hp, 685);
+	assert.equal(sick.max_hp, 80);
 });

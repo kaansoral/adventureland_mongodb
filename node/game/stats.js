@@ -3,6 +3,7 @@
 const { WEAPON_PROFILES, resolveMainhand } = require("./active_skill");
 const { EXPECTED_BASELINE } = require("./skill_domain");
 const { applySicknessMultiplier } = require("./death_sickness");
+const { DEX_CRIT_CALIBRATION, calculateDexCritCalibration } = require("./stat_calibration");
 
 const BASELINE = Object.freeze({
 	...EXPECTED_BASELINE,
@@ -12,6 +13,9 @@ const BASELINE = Object.freeze({
 	gold: 0,
 	xp: 0,
 });
+
+const DEX_CRIT_CAP = 80;
+const GEAR_CRIT_CAP = 20;
 
 const ATTRIBUTES = new Set([
 	"hp",
@@ -23,6 +27,7 @@ const ATTRIBUTES = new Set([
 	"dex",
 	"int",
 	"vit",
+	"for",
 	"frequency",
 	"attack",
 	"crit",
@@ -79,18 +84,20 @@ function baseStats() {
 		courage: 0,
 		mcourage: 0,
 		pcourage: 0,
+		for: 0,
 		sets: {},
 		abilities: {},
 		auras: {},
 	};
 }
 
-function mergeProperty(stats, property, { noRange = false } = {}) {
+function mergeProperty(stats, property, { noRange = false, critSource = null } = {}) {
 	for (const [key, value] of Object.entries(property || {})) {
 		if (typeof value !== "number" || !Number.isFinite(value)) continue;
 		if (noRange && key === "range") continue;
 		if (!ATTRIBUTES.has(key)) continue;
 		if (key === "frequency") stats.frequency += value / 100;
+		else if (key === "crit" && critSource) stats[critSource] += value;
 		else if (key === "hp") stats.max_hp += value;
 		else if (key === "mp") stats.max_mp += value;
 		else if (key === "attack") stats._item_attack += value;
@@ -132,15 +139,24 @@ function applySetProperties(stats, slots, items, sets, getProperties) {
 	stats.sets = counts;
 	for (const [set, count] of Object.entries(counts)) {
 		const property = sets && sets[set] && sets[set][count];
-		if (property) mergeProperty(stats, getProperties ? getProperties({ name: set, count }, property) : property);
+		if (property)
+			mergeProperty(stats, getProperties ? getProperties({ name: set, count }, property) : property, {
+				critSource: "_gear_crit",
+			});
 	}
 }
 
 function applyConditionProperties(stats, conditions, conditionDefinitions) {
 	for (const [name, condition] of Object.entries(conditions || {})) {
-		mergeProperty(stats, condition);
-		if (conditionDefinitions && conditionDefinitions[name]) mergeProperty(stats, conditionDefinitions[name]);
+		mergeProperty(stats, condition, { critSource: "_effect_crit" });
+		if (conditionDefinitions && conditionDefinitions[name])
+			mergeProperty(stats, conditionDefinitions[name], { critSource: "_effect_crit" });
 	}
+}
+
+function dexCrit(dex, calibrationDex) {
+	const maximum = Math.max(1, calibrationDex);
+	return Math.min(DEX_CRIT_CAP, DEX_CRIT_CAP * Math.pow(Math.max(0, dex) / maximum, 1.5));
 }
 
 function calculateStats({
@@ -162,6 +178,8 @@ function calculateStats({
 	stats.xluck = 0;
 	stats.xgold = 0;
 	stats.xxp = 0;
+	stats._gear_crit = 0;
+	stats._effect_crit = 0;
 	const mainResolution = resolveMainhand(slots, items, profiles);
 	const resolvedActiveSkill = mainResolution && mainResolution.skill;
 	const main = mainResolution && mainResolution.item;
@@ -172,7 +190,10 @@ function calculateStats({
 		if (!instance || !items[instance.name]) continue;
 		const definition = items[instance.name];
 		const property = itemProperties(instance, definition, getItemProperties);
-		mergeProperty(stats, property, { noRange: slot === "offhand" && definition.type === "weapon" });
+		mergeProperty(stats, property, {
+			noRange: slot === "offhand" && definition.type === "weapon",
+			critSource: "_gear_crit",
+		});
 		if (definition.ability) {
 			stats.abilities[definition.ability] = {
 				...(stats.abilities[definition.ability] || {}),
@@ -200,8 +221,7 @@ function calculateStats({
 			stats._item_attack /= 3;
 		const itemAttack = stats._item_attack;
 		if (resolvedActiveSkill === "warrior" || resolvedActiveSkill === "ranger" || resolvedActiveSkill === "rogue") {
-			const primary = resolvedActiveSkill === "warrior" ? stats.str : stats.dex;
-			stats.attack = itemAttack * (primary / 20);
+			stats.attack = itemAttack * (stats.str / 20);
 		} else if (resolvedActiveSkill === "paladin") {
 			stats.attack = itemAttack * (stats.str / 20 + stats.int / 40);
 		} else if (resolvedActiveSkill === "mage") {
@@ -214,13 +234,23 @@ function calculateStats({
 		if (resolvedActiveSkill === "priest") stats.mcourage += Math.round(stats.int / 30);
 		if (resolvedActiveSkill === "paladin") stats.pcourage += Math.round(stats.str / 30 + stats.int / 30);
 	}
-	stats.max_hp += stats.str * 21 + stats.vit * 48;
+	stats.max_hp += stats.vit * 48;
 	stats.max_mp += stats.int * 15;
-	stats.speed += Math.min(stats.dex, 256) / 32 + Math.min(stats.str, 256) / 64;
-	stats.armor += Math.min(stats.str, 160) + Math.max(stats.str - 160, 0) * 0.25;
-	stats.resistance += Math.min(stats.int, 180) + Math.max(stats.int - 180, 0) * 0.25;
-	stats.frequency += Math.min(stats.dex, 160) / 640 + Math.max(stats.dex - 160, 0) / 925 + stats.int / 1575;
-	if (worldEffects) mergeProperty(stats, worldEffects);
+	if (profile && profile.damage_type === "physical") {
+		stats.frequency += Math.min(stats.dex, 160) / 640 + Math.max(stats.dex - 160, 0) / 925;
+	} else if (profile && profile.damage_type === "magical") {
+		stats.frequency *= 1 + Math.min(0.2, Math.max(stats.int, 0) / 2000);
+	}
+	if (worldEffects) mergeProperty(stats, worldEffects, { critSource: "_effect_crit" });
+	stats.crit = Math.max(
+		0,
+		Math.min(
+			100,
+			dexCrit(stats.dex, calculateDexCritCalibration(items, getItemProperties)) +
+				Math.min(GEAR_CRIT_CAP, stats._gear_crit) +
+				stats._effect_crit,
+		),
+	);
 	Object.assign(stats, applySicknessMultiplier(stats, deathSickness));
 	stats.attack = Math.max(0, Math.round(stats.attack));
 	stats.heal = Math.max(0, Math.round(stats.heal));
@@ -239,7 +269,17 @@ function calculateStats({
 	stats.hp = previousHp === null ? stats.max_hp : Math.max(0, Math.min(previousHp, stats.max_hp));
 	stats.mp = previousMp === null ? stats.max_mp : Math.max(0, Math.min(previousMp, stats.max_mp));
 	delete stats._item_attack;
+	delete stats._gear_crit;
+	delete stats._effect_crit;
 	return clone(stats);
 }
 
-module.exports = { BASELINE, calculateStats, baseStats, mergeProperty };
+module.exports = {
+	BASELINE,
+	DEX_CRIT_CAP,
+	GEAR_CRIT_CAP,
+	calculateStats,
+	baseStats,
+	dexCrit,
+	mergeProperty,
+};

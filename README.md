@@ -109,6 +109,29 @@ node server.js local
 
 The argument is a key from `servers` in `secretsandconfig/options.js`. The default `local` server runs on port **7192**.
 
+## Character stat model
+
+The character calculator keeps the existing player fields and weapon profiles,
+but separates stat ownership by output type:
+
+| Stat | Derived role |
+|---|---|
+| **STR** | Physical damage for melee and ranged physical weapons. It no longer adds derived HP, armor, or movement speed. |
+| **DEX** | Crit chance and physical attack cadence. It does not add physical damage, movement speed, or accuracy. |
+| **INT** | Magical damage and healing, `+15` max MP per point, and a capped magical cadence bonus. It no longer adds resistance or universal attack speed. |
+| **VIT** | `+48` max HP per point. |
+| **FOR** | Existing Fortitude damage reduction, supplied by equipment and effects. |
+
+Physical profiles use the existing DEX frequency curve. Magical profiles apply an
+INT cadence bonus capped at 20%; ability cooldown definitions are unchanged.
+Total crit combines a diminishing DEX contribution (capped at 80%), raw gear
+crit (capped at 20%), and temporary effects, with a hard 100% cap. Critical
+damage and healing use the existing multiplier and `data.crit` display marker.
+The direct `miss`, `evasion`, and `avoidance` checks remain unchanged; there is
+no accuracy stat. Derived values are recomputed during the normal login and
+equipment-refresh paths, so existing item instances do not require a database
+reset or manual respec.
+
 ## Seeding Game Data
 
 The database needs map data and game entities to function. You have two options:
