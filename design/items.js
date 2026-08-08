@@ -7489,4 +7489,1152 @@ for(var item_name in items){
 	}
 }
 
+// Pinned +0 through +4 weapon calibration generated from the pre-skill/class combat baseline.
+var weapon_progression = {
+	"claw": {
+		"attack": 305,
+		"frequency": 0.8,
+		"str": 4,
+		"int": 3,
+		"dex": 11,
+		"upgrade": {
+			"attack": 22.5,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"cclaw": {
+		"attack": 162,
+		"frequency": 12.64,
+		"str": 8,
+		"int": 7,
+		"dex": 30,
+		"upgrade": {
+			"attack": 18.867,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"throwingstars": {
+		"attack": 265,
+		"frequency": 0.8,
+		"str": 4,
+		"int": 3,
+		"dex": 11,
+		"upgrade": {
+			"attack": 18.75,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"snowflakes": {
+		"attack": 85,
+		"frequency": 25.089,
+		"str": 12,
+		"int": 11,
+		"dex": 50,
+		"upgrade": {
+			"attack": 13.454,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"firestars": {
+		"attack": 71,
+		"frequency": 37.855,
+		"str": 21,
+		"int": 20,
+		"dex": 95,
+		"upgrade": {
+			"attack": 16.674,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"fclaw": {
+		"attack": 135,
+		"frequency": 25.597,
+		"str": 12,
+		"int": 19,
+		"dex": 50,
+		"upgrade": {
+			"attack": 20.226,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"pclaw": {
+		"attack": 106,
+		"frequency": 37.855,
+		"str": 21,
+		"int": 20,
+		"dex": 95,
+		"upgrade": {
+			"attack": 19.153,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"stinger": {
+		"attack": 80,
+		"frequency": 12.64,
+		"str": 20,
+		"int": 7,
+		"dex": 30,
+		"upgrade": {
+			"attack": 8.75,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"dagger": {
+		"attack": 166,
+		"frequency": 25.089,
+		"str": 12,
+		"int": 11,
+		"dex": 50,
+		"upgrade": {
+			"attack": 22.13,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"daggerofthedead": {
+		"attack": 64,
+		"frequency": 37.855,
+		"str": 41,
+		"int": 20,
+		"dex": 95,
+		"upgrade": {
+			"attack": 10.648,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"dragondagger": {
+		"attack": 67,
+		"frequency": 51.003,
+		"str": 56,
+		"int": 35,
+		"dex": 170,
+		"upgrade": {
+			"attack": 12.599,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"hdagger": {
+		"attack": 105,
+		"frequency": 51.003,
+		"str": 36,
+		"int": 35,
+		"dex": 170,
+		"upgrade": {
+			"attack": 19.302,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"dartgun": {
+		"attack": 80,
+		"frequency": 51.828,
+		"str": 35,
+		"int": 48,
+		"dex": 170,
+		"upgrade": {
+			"attack": 54.286,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"bow": {
+		"attack": 560,
+		"frequency": 1.118,
+		"str": 3,
+		"int": 8,
+		"dex": 11,
+		"upgrade": {
+			"attack": 51.667,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"pouchbow": {
+		"attack": 560,
+		"frequency": 1.118,
+		"str": 3,
+		"int": 8,
+		"dex": 11,
+		"upgrade": {
+			"attack": 51.572,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"weaver": {
+		"attack": 284,
+		"frequency": 19.245,
+		"str": 9,
+		"int": 15,
+		"dex": 40,
+		"upgrade": {
+			"attack": 35.377,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"crossbow": {
+		"attack": 375,
+		"frequency": 25.533,
+		"str": 11,
+		"int": 18,
+		"dex": 50,
+		"upgrade": {
+			"attack": 50.909,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"hbow": {
+		"attack": 261,
+		"frequency": 13.021,
+		"str": 7,
+		"int": 13,
+		"dex": 30,
+		"upgrade": {
+			"attack": 30.592,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"merry": {
+		"attack": 261,
+		"frequency": 13.021,
+		"str": 7,
+		"int": 13,
+		"dex": 30,
+		"upgrade": {
+			"attack": 30.592,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"cupid": {
+		"attack": 236,
+		"frequency": 38.427,
+		"str": 20,
+		"int": 29,
+		"dex": 95,
+		"upgrade": {
+			"attack": 35.076,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"firebow": {
+		"attack": 331,
+		"frequency": 25.533,
+		"str": 11,
+		"int": 18,
+		"dex": 50,
+		"upgrade": {
+			"attack": 43.099,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"frostbow": {
+		"attack": 331,
+		"frequency": 25.533,
+		"str": 11,
+		"int": 18,
+		"dex": 50,
+		"upgrade": {
+			"attack": 43.099,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"t2bow": {
+		"attack": 331,
+		"frequency": 25.533,
+		"str": 11,
+		"int": 18,
+		"dex": 50,
+		"upgrade": {
+			"attack": 43.099,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"harpybow": {
+		"attack": 182,
+		"frequency": 51.828,
+		"str": 35,
+		"int": 48,
+		"dex": 170,
+		"upgrade": {
+			"attack": 28.404,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"t3bow": {
+		"attack": 182,
+		"frequency": 51.828,
+		"str": 35,
+		"int": 48,
+		"dex": 170,
+		"upgrade": {
+			"attack": 28.404,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"bowofthedead": {
+		"attack": 118,
+		"frequency": 38.427,
+		"str": 40,
+		"int": 29,
+		"dex": 95,
+		"upgrade": {
+			"attack": 17.538,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"gbow": {
+		"attack": 206,
+		"frequency": 38.427,
+		"str": 23,
+		"int": 29,
+		"dex": 95,
+		"upgrade": {
+			"attack": 30.479,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"bow4": {
+		"attack": 241,
+		"frequency": 52.527,
+		"str": 44,
+		"int": 59,
+		"dex": 215,
+		"upgrade": {
+			"attack": 37.131,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"spear": {
+		"attack": 92,
+		"frequency": 6.352,
+		"str": 20,
+		"int": 4,
+		"dex": 4,
+		"upgrade": {
+			"attack": 9.4,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"spearofthedead": {
+		"attack": 17,
+		"frequency": 38.046,
+		"str": 103,
+		"int": 23,
+		"dex": 23,
+		"upgrade": {
+			"attack": 2.841,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"scythe": {
+		"attack": 61,
+		"frequency": 51.447,
+		"str": 170,
+		"int": 42,
+		"dex": 42,
+		"upgrade": {
+			"attack": 13.412,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"blade": {
+		"attack": 151,
+		"frequency": 0.737,
+		"str": 11,
+		"int": 2,
+		"dex": 2,
+		"upgrade": {
+			"attack": 11.364,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"sword": {
+		"attack": 20,
+		"frequency": 38.046,
+		"str": 95,
+		"int": 23,
+		"dex": 23,
+		"upgrade": {
+			"attack": 2.693,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"swifty": {
+		"attack": 59,
+		"frequency": 18.864,
+		"str": 40,
+		"int": 9,
+		"dex": 21,
+		"upgrade": {
+			"attack": 7.125,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"fsword": {
+		"attack": 31,
+		"frequency": 25.66,
+		"str": 50,
+		"int": 20,
+		"dex": 12,
+		"upgrade": {
+			"attack": 3.55,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"rapier": {
+		"attack": 163,
+		"frequency": 25.089,
+		"str": 12,
+		"int": 11,
+		"dex": 50,
+		"upgrade": {
+			"attack": 14.583,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"basher": {
+		"attack": 27,
+		"frequency": 39.565,
+		"str": 50,
+		"int": 50,
+		"dex": 4,
+		"upgrade": {
+			"attack": 5.02,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"bataxe": {
+		"attack": 70,
+		"frequency": 31.567,
+		"str": 70,
+		"int": 17,
+		"dex": 17,
+		"upgrade": {
+			"attack": 13.143,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"axe3": {
+		"attack": 42,
+		"frequency": 51.447,
+		"str": 170,
+		"int": 42,
+		"dex": 42,
+		"upgrade": {
+			"attack": 9.08,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"fireblade": {
+		"attack": 31,
+		"frequency": 25.152,
+		"str": 50,
+		"int": 12,
+		"dex": 12,
+		"upgrade": {
+			"attack": 3.7,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"swordofthedead": {
+		"attack": 20,
+		"frequency": 38.046,
+		"str": 105,
+		"int": 23,
+		"dex": 23,
+		"upgrade": {
+			"attack": 2.73,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"woodensword": {
+		"attack": 68,
+		"frequency": 25.152,
+		"str": 50,
+		"int": 12,
+		"dex": 32,
+		"upgrade": {
+			"attack": 9.299,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 2
+		}
+	},
+	"heartwood": {
+		"attack": 22,
+		"frequency": 51.892,
+		"str": 200,
+		"int": 49,
+		"dex": 20,
+		"upgrade": {
+			"attack": 4.185,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 4
+		}
+	},
+	"glolipop": {
+		"attack": 108,
+		"frequency": 1.308,
+		"str": 11,
+		"int": 11,
+		"dex": 26,
+		"upgrade": {
+			"attack": 8.269,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"ololipop": {
+		"attack": 48,
+		"frequency": 1.308,
+		"str": 35,
+		"int": 11,
+		"dex": 2,
+		"upgrade": {
+			"attack": 3.584,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"mace": {
+		"attack": 118,
+		"frequency": 1.308,
+		"str": 11,
+		"int": 11,
+		"dex": 2,
+		"upgrade": {
+			"attack": 8.788,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"xmace": {
+		"attack": 14,
+		"frequency": 34.932,
+		"str": 70,
+		"int": 70,
+		"dex": 5,
+		"upgrade": {
+			"attack": 1.972,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"wbasher": {
+		"attack": 130,
+		"frequency": 13.308,
+		"str": 11,
+		"int": 11,
+		"dex": 2,
+		"upgrade": {
+			"attack": 14.545,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"hammer": {
+		"attack": 13,
+		"frequency": 59.574,
+		"str": 170,
+		"int": 170,
+		"dex": 10,
+		"upgrade": {
+			"attack": 2.186,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"vhammer": {
+		"attack": 13,
+		"frequency": 59.574,
+		"str": 170,
+		"int": 170,
+		"dex": 10,
+		"upgrade": {
+			"attack": 2.186,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"vstaff": {
+		"attack": 70,
+		"frequency": 58.532,
+		"str": 40,
+		"int": 200,
+		"dex": 41,
+		"upgrade": {
+			"attack": 8.244,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"vdagger": {
+		"attack": 164,
+		"frequency": 51.384,
+		"str": 42,
+		"int": 41,
+		"dex": 200,
+		"upgrade": {
+			"attack": 31.804,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"vsword": {
+		"attack": 21,
+		"frequency": 51.892,
+		"str": 200,
+		"int": 49,
+		"dex": 49,
+		"upgrade": {
+			"attack": 4.238,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"maceofthedead": {
+		"attack": 15,
+		"frequency": 42.617,
+		"str": 101,
+		"int": 95,
+		"dex": 6,
+		"upgrade": {
+			"attack": 2.47,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"pmaceofthedead": {
+		"attack": 37,
+		"frequency": 59.574,
+		"str": 190,
+		"int": 170,
+		"dex": 10,
+		"upgrade": {
+			"attack": 7.509,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"carrotsword": {
+		"attack": 30,
+		"frequency": 25.152,
+		"str": 50,
+		"int": 12,
+		"dex": 24,
+		"upgrade": {
+			"attack": 3.7,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"candycanesword": {
+		"attack": 31,
+		"frequency": 25.152,
+		"str": 50,
+		"int": 12,
+		"dex": 12,
+		"upgrade": {
+			"attack": 3.7,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"pinkie": {
+		"attack": 32,
+		"frequency": 19.94,
+		"str": 8,
+		"int": 40,
+		"dex": 9,
+		"upgrade": {
+			"attack": 3.839,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"wand": {
+		"attack": 100,
+		"frequency": 1.248,
+		"str": 2,
+		"int": 11,
+		"dex": 3,
+		"upgrade": {
+			"attack": 8.182,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"broom": {
+		"attack": 125,
+		"frequency": 1.576,
+		"str": 2,
+		"int": 11,
+		"dex": 3,
+		"upgrade": {
+			"attack": 14.092,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"staff": {
+		"attack": 125,
+		"frequency": 1.576,
+		"str": 2,
+		"int": 11,
+		"dex": 3,
+		"upgrade": {
+			"attack": 14.091,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"gstaff": {
+		"attack": 54,
+		"frequency": 57.989,
+		"str": 34,
+		"int": 170,
+		"dex": 35,
+		"upgrade": {
+			"attack": 6.269,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"sparkstaff": {
+		"attack": 78,
+		"frequency": 42.534,
+		"str": 19,
+		"int": 95,
+		"dex": 20,
+		"upgrade": {
+			"attack": 9.105,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"staff2": {
+		"attack": 64,
+		"frequency": 27.716,
+		"str": 10,
+		"int": 50,
+		"dex": 11,
+		"upgrade": {
+			"attack": 8.142,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"staff3": {
+		"attack": 53,
+		"frequency": 57.205,
+		"str": 34,
+		"int": 170,
+		"dex": 35,
+		"upgrade": {
+			"attack": 6.526,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"staff4": {
+		"attack": 102,
+		"frequency": 59.182,
+		"str": 43,
+		"int": 215,
+		"dex": 44,
+		"upgrade": {
+			"attack": 11.455,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"slimestaff": {
+		"attack": 83,
+		"frequency": 15.222,
+		"str": 6,
+		"int": 30,
+		"dex": 12,
+		"upgrade": {
+			"attack": 10.378,
+			"frequency": 0.308,
+			"str": 0,
+			"int": 0,
+			"dex": 2
+		}
+	},
+	"mushroomstaff": {
+		"attack": 92,
+		"frequency": 7.721,
+		"str": 4,
+		"int": 20,
+		"dex": 5,
+		"upgrade": {
+			"attack": 10.73,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"firestaff": {
+		"attack": 64,
+		"frequency": 27.716,
+		"str": 10,
+		"int": 50,
+		"dex": 11,
+		"upgrade": {
+			"attack": 8.142,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"ornamentstaff": {
+		"attack": 64,
+		"frequency": 27.716,
+		"str": 10,
+		"int": 50,
+		"dex": 11,
+		"upgrade": {
+			"attack": 8.142,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"staffofthedead": {
+		"attack": 44,
+		"frequency": 42.081,
+		"str": 51,
+		"int": 95,
+		"dex": 20,
+		"upgrade": {
+			"attack": 5.513,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"froststaff": {
+		"attack": 62,
+		"frequency": 27.778,
+		"str": 10,
+		"int": 52,
+		"dex": 11,
+		"upgrade": {
+			"attack": 7.197,
+			"frequency": 0.008,
+			"str": 0,
+			"int": 0.25,
+			"dex": 0
+		}
+	},
+	"oozingterror": {
+		"attack": 40,
+		"frequency": 50.047,
+		"str": 26,
+		"int": 150,
+		"dex": 27,
+		"upgrade": {
+			"attack": 4.734,
+			"frequency": 0.019,
+			"str": 0,
+			"int": 1,
+			"dex": 0
+		}
+	},
+	"harbringer": {
+		"attack": 46,
+		"frequency": 49.653,
+		"str": 26,
+		"int": 130,
+		"dex": 27,
+		"upgrade": {
+			"attack": 6.325,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"wblade": {
+		"attack": 55,
+		"frequency": 59.182,
+		"str": 43,
+		"int": 215,
+		"dex": 44,
+		"upgrade": {
+			"attack": 8.744,
+			"frequency": 0,
+			"str": 0,
+			"int": 0,
+			"dex": 0
+		}
+	},
+	"pmace": {
+		"attack": 47,
+		"frequency": 28.073,
+		"str": 50,
+		"int": 58,
+		"dex": 8,
+		"upgrade": {
+			"attack": 7.15,
+			"frequency": 0.127,
+			"str": 0,
+			"int": 2,
+			"dex": 1
+		}
+	},
+	"lmace": {
+		"attack": 37,
+		"frequency": 60.082,
+		"str": 176,
+		"int": 178,
+		"dex": 10,
+		"upgrade": {
+			"attack": 7.459,
+			"frequency": 0.127,
+			"str": 1,
+			"int": 2,
+			"dex": 0
+		}
+	},
+	"wbook0": {
+		"attack": 40,
+		"frequency": 1.845,
+		"str": 2,
+		"int": 17,
+		"dex": 3,
+		"compound": {
+			"attack": -5.1,
+			"frequency": 0.221,
+			"str": 0,
+			"int": 5,
+			"dex": 0
+		}
+	},
+	"wbook1": {
+		"attack": 7,
+		"frequency": 28.213,
+		"str": 10,
+		"int": 66,
+		"dex": 11,
+		"compound": {
+			"attack": -0.156,
+			"frequency": 0.153,
+			"str": 0,
+			"int": 5,
+			"dex": 0
+		}
+	},
+	"wbookhs": {
+		"attack": 8.8,
+		"frequency": 168.3,
+		"str": 10,
+		"int": 16,
+		"compound": {
+			"attack": -0.8,
+			"frequency": -14.5,
+			"str": 0,
+			"int": 6
+		}
+	}
+};
+for(var progression_weapon_id in weapon_progression){
+	var progression_weapon=items[progression_weapon_id];
+	if(!progression_weapon) continue;
+	var progression_values=weapon_progression[progression_weapon_id];
+	for(var progression_key in progression_values){
+		if(progression_key=="upgrade") continue;
+		progression_weapon[progression_key]=progression_values[progression_key];
+	}
+	if(progression_values.compound){
+		progression_weapon.compound={};
+		for(var progression_compound_key in progression_values.compound)
+			progression_weapon.compound[progression_compound_key]=progression_values.compound[progression_compound_key];
+		continue;
+	}
+	progression_weapon.upgrade=progression_weapon.upgrade||{};
+	for(var progression_upgrade_key in progression_values.upgrade)
+		progression_weapon.upgrade[progression_upgrade_key]=progression_values.upgrade[progression_upgrade_key];
+}
+// The calibration keeps each family in its historical band; target-aware TTK gates verify unlock handoffs.
+for(var normalized_weapon_id in weapon_progression){
+	var normalized_weapon=items[normalized_weapon_id];
+	if(!normalized_weapon) continue;
+	delete normalized_weapon.apiercing;
+	delete normalized_weapon.rpiercing;
+	delete normalized_weapon.miss;
+}
+
 if(typeof module!=="undefined") module.exports={items:items,sets:sets};

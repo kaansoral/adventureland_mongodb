@@ -1,0 +1,761 @@
+{
+  "schema_version": 1,
+  "catalog_manifest_sha256": "1e8e035a1ed83c022185aeb92ce79e5e173bdb32c7b27ba51028c032f9fcef60",
+  "catalog_identity_sha256": "899ee29d1a4812c808543036be88b442f61c51ff4ea24d7abdd8d3d4e7d99143",
+  "upgrade_levels": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "mob_bands": [
+    {
+      "from_level": 1,
+      "targets": {
+        "physical": "goo",
+        "magical": "goo",
+        "physical_evasion": "frog"
+      }
+    },
+    {
+      "from_level": 10,
+      "targets": {
+        "physical": "bee",
+        "magical": "minimush",
+        "physical_evasion": "frog"
+      }
+    },
+    {
+      "from_level": 20,
+      "targets": {
+        "physical": "crab",
+        "magical": "minimush",
+        "physical_evasion": "frog"
+      }
+    },
+    {
+      "from_level": 30,
+      "targets": {
+        "physical": "armadillo",
+        "magical": "nerfedbat",
+        "physical_evasion": "iceroamer"
+      }
+    },
+    {
+      "from_level": 40,
+      "targets": {
+        "physical": "croc",
+        "magical": "cgoo",
+        "physical_evasion": "greenjr"
+      }
+    },
+    {
+      "from_level": 50,
+      "targets": {
+        "physical": "crabx",
+        "magical": "greenjr",
+        "physical_evasion": "greenjr"
+      }
+    },
+    {
+      "from_level": 60,
+      "targets": {
+        "physical": "tortoise",
+        "magical": "bat",
+        "physical_evasion": "ghost"
+      }
+    },
+    {
+      "from_level": 70,
+      "targets": {
+        "physical": "prat",
+        "magical": "ghost",
+        "physical_evasion": "bigbird"
+      }
+    },
+    {
+      "from_level": 80,
+      "targets": {
+        "physical": "wolf",
+        "magical": "harpy",
+        "physical_evasion": "welemental"
+      }
+    },
+    {
+      "from_level": 90,
+      "targets": {
+        "physical": "bgoo",
+        "magical": "d_wiz",
+        "physical_evasion": "welemental"
+      }
+    },
+    {
+      "from_level": 95,
+      "targets": {
+        "physical": "rharpy",
+        "magical": "rharpy",
+        "physical_evasion": "welemental"
+      }
+    }
+  ],
+  "exceptions": {},
+  "ability_validation": {
+    "selected": [
+      "burst",
+      "smash",
+      "curse",
+      "poisonarrow",
+      "quickstab"
+    ],
+    "exceptions": {
+      "reflection": "Reactive defense, not a direct attack.",
+      "cburst": "Multi-target burst.",
+      "energize": "Resource transfer utility.",
+      "light": "Persistent area effect.",
+      "blink": "Movement utility.",
+      "magiport": "Teleport utility.",
+      "entangle": "Control utility.",
+      "alchemy": "Crafting utility.",
+      "charge": "Movement utility.",
+      "dash": "Movement utility.",
+      "taunt": "Threat utility.",
+      "agitate": "Area threat utility.",
+      "hardshell": "Defensive utility.",
+      "cleave": "Area attack.",
+      "stomp": "Area control attack.",
+      "warcry": "Party utility.",
+      "piercingshot": "Line attack with multiple targets.",
+      "huntersmark": "Target debuff utility.",
+      "track": "Tracking utility.",
+      "supershot": "Special-range attack outside the basic parity scenario.",
+      "3shot": "Multi-target attack.",
+      "5shot": "Multi-target attack.",
+      "4fingers": "Special melee attack outside the basic parity scenario.",
+      "rspeed": "Movement utility.",
+      "pickpocket": "Loot utility.",
+      "pcoat": "Defensive utility.",
+      "invis": "Stealth utility.",
+      "mentalburst": "Magical rogue attack outside the physical basic-attack scenario.",
+      "quickpunch": "Alternate rapid attack outside the single-target representative scenario.",
+      "stack": "Passive ability.",
+      "shadowstrike": "Special attack outside the basic parity scenario.",
+      "phaseout": "Defensive utility.",
+      "darkblessing": "Party utility.",
+      "absorb": "Defensive utility.",
+      "partyheal": "Healing utility.",
+      "revive": "Resurrection utility.",
+      "heal": "Healing ability.",
+      "selfheal": "Healing utility.",
+      "mshield": "Defensive utility.",
+      "purify": "Condition-cleansing utility."
+    },
+    "semantics": {
+      "burst": {
+        "effect": "mana_ratio",
+        "ratio": 0.555,
+        "cooldown": 6000,
+        "resource": "all_mp",
+        "mp_regen_per_second": 150
+      },
+      "smash": {
+        "effect": "attack_multiplier",
+        "damage_multiplier": 0.36,
+        "cooldown": 320,
+        "mp": 380,
+        "mp_regen_per_second": 150
+      },
+      "curse": {
+        "effect": "damage_taken_multiplier",
+        "damage_multiplier": 1.2,
+        "duration": 5000,
+        "cooldown": 5000,
+        "mp": 400,
+        "mp_regen_per_second": 150
+      },
+      "poisonarrow": {
+        "effect": "fixed_damage",
+        "damage": 200,
+        "cooldown": 300,
+        "mp": 360,
+        "mp_regen_per_second": 150
+      },
+      "quickstab": {
+        "effect": "attack_multiplier",
+        "damage_multiplier": 0.36,
+        "cooldown": 250,
+        "mp": 320,
+        "mp_regen_per_second": 150
+      }
+    }
+  },
+  "weapons": [
+    {
+      "weapon_id": "sparkstaff",
+      "weapon_type": "great_staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 60
+    },
+    {
+      "weapon_id": "gstaff",
+      "weapon_type": "great_staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 80
+    },
+    {
+      "weapon_id": "broom",
+      "weapon_type": "staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 1
+    },
+    {
+      "weapon_id": "staff",
+      "weapon_type": "staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 1
+    },
+    {
+      "weapon_id": "mushroomstaff",
+      "weapon_type": "staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 10
+    },
+    {
+      "weapon_id": "slimestaff",
+      "weapon_type": "staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 20
+    },
+    {
+      "weapon_id": "firestaff",
+      "weapon_type": "staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "froststaff",
+      "weapon_type": "staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "ornamentstaff",
+      "weapon_type": "staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "staff2",
+      "weapon_type": "staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "staffofthedead",
+      "weapon_type": "staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 60
+    },
+    {
+      "weapon_id": "harbringer",
+      "weapon_type": "staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 70
+    },
+    {
+      "weapon_id": "oozingterror",
+      "weapon_type": "staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 70
+    },
+    {
+      "weapon_id": "staff3",
+      "weapon_type": "staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 80
+    },
+    {
+      "weapon_id": "vstaff",
+      "weapon_type": "staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 90
+    },
+    {
+      "weapon_id": "staff4",
+      "weapon_type": "staff",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 95
+    },
+    {
+      "weapon_id": "wand",
+      "weapon_type": "wand",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 1
+    },
+    {
+      "weapon_id": "pinkie",
+      "weapon_type": "wand",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 30
+    },
+    {
+      "weapon_id": "wblade",
+      "weapon_type": "wblade",
+      "damage_type": "magical",
+      "skill": "mage",
+      "requirement_level": 95
+    },
+    {
+      "weapon_id": "wbasher",
+      "weapon_type": "basher",
+      "damage_type": "physical",
+      "skill": "paladin",
+      "requirement_level": 1
+    },
+    {
+      "weapon_id": "basher",
+      "weapon_type": "basher",
+      "damage_type": "physical",
+      "skill": "paladin",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "glolipop",
+      "weapon_type": "mace",
+      "damage_type": "physical",
+      "skill": "paladin",
+      "requirement_level": 1
+    },
+    {
+      "weapon_id": "mace",
+      "weapon_type": "mace",
+      "damage_type": "physical",
+      "skill": "paladin",
+      "requirement_level": 1
+    },
+    {
+      "weapon_id": "ololipop",
+      "weapon_type": "mace",
+      "damage_type": "physical",
+      "skill": "paladin",
+      "requirement_level": 1
+    },
+    {
+      "weapon_id": "xmace",
+      "weapon_type": "mace",
+      "damage_type": "physical",
+      "skill": "paladin",
+      "requirement_level": 50
+    },
+    {
+      "weapon_id": "maceofthedead",
+      "weapon_type": "mace",
+      "damage_type": "physical",
+      "skill": "paladin",
+      "requirement_level": 60
+    },
+    {
+      "weapon_id": "hammer",
+      "weapon_type": "mace",
+      "damage_type": "physical",
+      "skill": "paladin",
+      "requirement_level": 80
+    },
+    {
+      "weapon_id": "vhammer",
+      "weapon_type": "mace",
+      "damage_type": "physical",
+      "skill": "paladin",
+      "requirement_level": 80
+    },
+    {
+      "weapon_id": "pmace",
+      "weapon_type": "pmace",
+      "damage_type": "physical",
+      "skill": "paladin",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "lmace",
+      "weapon_type": "pmace",
+      "damage_type": "magical",
+      "skill": "paladin",
+      "requirement_level": 80
+    },
+    {
+      "weapon_id": "pmaceofthedead",
+      "weapon_type": "pmace",
+      "damage_type": "magical",
+      "skill": "paladin",
+      "requirement_level": 80
+    },
+    {
+      "weapon_id": "wbook0",
+      "weapon_type": "book",
+      "damage_type": "magical",
+      "skill": "priest",
+      "requirement_level": 1
+    },
+    {
+      "weapon_id": "wbook1",
+      "weapon_type": "book",
+      "damage_type": "magical",
+      "skill": "priest",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "wbookhs",
+      "weapon_type": "book",
+      "damage_type": "magical",
+      "skill": "priest",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "bow",
+      "weapon_type": "bow",
+      "damage_type": "physical",
+      "skill": "ranger",
+      "requirement_level": 1
+    },
+    {
+      "weapon_id": "pouchbow",
+      "weapon_type": "bow",
+      "damage_type": "physical",
+      "skill": "ranger",
+      "requirement_level": 1
+    },
+    {
+      "weapon_id": "hbow",
+      "weapon_type": "bow",
+      "damage_type": "physical",
+      "skill": "ranger",
+      "requirement_level": 20
+    },
+    {
+      "weapon_id": "merry",
+      "weapon_type": "bow",
+      "damage_type": "physical",
+      "skill": "ranger",
+      "requirement_level": 20
+    },
+    {
+      "weapon_id": "weaver",
+      "weapon_type": "bow",
+      "damage_type": "physical",
+      "skill": "ranger",
+      "requirement_level": 30
+    },
+    {
+      "weapon_id": "firebow",
+      "weapon_type": "bow",
+      "damage_type": "physical",
+      "skill": "ranger",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "frostbow",
+      "weapon_type": "bow",
+      "damage_type": "physical",
+      "skill": "ranger",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "t2bow",
+      "weapon_type": "bow",
+      "damage_type": "physical",
+      "skill": "ranger",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "bowofthedead",
+      "weapon_type": "bow",
+      "damage_type": "physical",
+      "skill": "ranger",
+      "requirement_level": 60
+    },
+    {
+      "weapon_id": "cupid",
+      "weapon_type": "bow",
+      "damage_type": "heal",
+      "skill": "ranger",
+      "requirement_level": 60
+    },
+    {
+      "weapon_id": "gbow",
+      "weapon_type": "bow",
+      "damage_type": "physical",
+      "skill": "ranger",
+      "requirement_level": 60
+    },
+    {
+      "weapon_id": "harpybow",
+      "weapon_type": "bow",
+      "damage_type": "physical",
+      "skill": "ranger",
+      "requirement_level": 80
+    },
+    {
+      "weapon_id": "t3bow",
+      "weapon_type": "bow",
+      "damage_type": "physical",
+      "skill": "ranger",
+      "requirement_level": 80
+    },
+    {
+      "weapon_id": "bow4",
+      "weapon_type": "bow",
+      "damage_type": "physical",
+      "skill": "ranger",
+      "requirement_level": 95
+    },
+    {
+      "weapon_id": "crossbow",
+      "weapon_type": "crossbow",
+      "damage_type": "physical",
+      "skill": "ranger",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "dartgun",
+      "weapon_type": "dartgun",
+      "damage_type": "physical",
+      "skill": "ranger",
+      "requirement_level": 80
+    },
+    {
+      "weapon_id": "stinger",
+      "weapon_type": "dagger",
+      "damage_type": "physical",
+      "skill": "rogue",
+      "requirement_level": 20
+    },
+    {
+      "weapon_id": "dagger",
+      "weapon_type": "dagger",
+      "damage_type": "physical",
+      "skill": "rogue",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "daggerofthedead",
+      "weapon_type": "dagger",
+      "damage_type": "physical",
+      "skill": "rogue",
+      "requirement_level": 60
+    },
+    {
+      "weapon_id": "dragondagger",
+      "weapon_type": "dagger",
+      "damage_type": "physical",
+      "skill": "rogue",
+      "requirement_level": 80
+    },
+    {
+      "weapon_id": "hdagger",
+      "weapon_type": "dagger",
+      "damage_type": "physical",
+      "skill": "rogue",
+      "requirement_level": 80
+    },
+    {
+      "weapon_id": "vdagger",
+      "weapon_type": "dagger",
+      "damage_type": "physical",
+      "skill": "rogue",
+      "requirement_level": 90
+    },
+    {
+      "weapon_id": "claw",
+      "weapon_type": "fist",
+      "damage_type": "physical",
+      "skill": "rogue",
+      "requirement_level": 1
+    },
+    {
+      "weapon_id": "cclaw",
+      "weapon_type": "fist",
+      "damage_type": "physical",
+      "skill": "rogue",
+      "requirement_level": 20
+    },
+    {
+      "weapon_id": "fclaw",
+      "weapon_type": "fist",
+      "damage_type": "physical",
+      "skill": "rogue",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "pclaw",
+      "weapon_type": "fist",
+      "damage_type": "physical",
+      "skill": "rogue",
+      "requirement_level": 60
+    },
+    {
+      "weapon_id": "rapier",
+      "weapon_type": "rapier",
+      "damage_type": "physical",
+      "skill": "rogue",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "throwingstars",
+      "weapon_type": "stars",
+      "damage_type": "physical",
+      "skill": "rogue",
+      "requirement_level": 1
+    },
+    {
+      "weapon_id": "snowflakes",
+      "weapon_type": "stars",
+      "damage_type": "physical",
+      "skill": "rogue",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "firestars",
+      "weapon_type": "stars",
+      "damage_type": "physical",
+      "skill": "rogue",
+      "requirement_level": 60
+    },
+    {
+      "weapon_id": "bataxe",
+      "weapon_type": "axe",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 50
+    },
+    {
+      "weapon_id": "axe3",
+      "weapon_type": "axe",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 80
+    },
+    {
+      "weapon_id": "scythe",
+      "weapon_type": "scythe",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 80
+    },
+    {
+      "weapon_id": "blade",
+      "weapon_type": "short_sword",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 1
+    },
+    {
+      "weapon_id": "candycanesword",
+      "weapon_type": "short_sword",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "carrotsword",
+      "weapon_type": "short_sword",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "fireblade",
+      "weapon_type": "short_sword",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "fsword",
+      "weapon_type": "short_sword",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "sword",
+      "weapon_type": "short_sword",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 60
+    },
+    {
+      "weapon_id": "swordofthedead",
+      "weapon_type": "short_sword",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 60
+    },
+    {
+      "weapon_id": "spear",
+      "weapon_type": "spear",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 10
+    },
+    {
+      "weapon_id": "spearofthedead",
+      "weapon_type": "spear",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 60
+    },
+    {
+      "weapon_id": "swifty",
+      "weapon_type": "sword",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 30
+    },
+    {
+      "weapon_id": "woodensword",
+      "weapon_type": "sword",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 40
+    },
+    {
+      "weapon_id": "heartwood",
+      "weapon_type": "sword",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 90
+    },
+    {
+      "weapon_id": "vsword",
+      "weapon_type": "sword",
+      "damage_type": "physical",
+      "skill": "warrior",
+      "requirement_level": 90
+    }
+  ],
+  "damage_profile_partitions": [
+    {
+      "skill": "paladin",
+      "weapon_type": "pmace",
+      "reason": "Physical pmace and magical pmace variants use distinct target mitigation, so progression handoffs are evaluated within each damage profile."
+    }
+  ]
+}

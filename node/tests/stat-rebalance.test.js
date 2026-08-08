@@ -140,11 +140,11 @@ test("weapon profiles retain their damage type and cadence metadata", () => {
 test("catalog fixtures preserve starter identities and publish role profiles", () => {
 	const items = loadItems();
 	for (const name of ["blade", "bow", "mace", "staff", "wbook0", "claw"]) assert.ok(items[name], name);
-	assert.equal(items.bow.str, 39);
-	assert.equal(items.claw.str, 30);
+	assert.equal(items.bow.str, 3);
+	assert.equal(items.claw.str, 4);
 	assert.equal(items.blade.vit, undefined);
 	assert.equal(items.blade.for, undefined);
-	assert.equal(items.daggerofthedead.str, 14);
+	assert.equal(items.daggerofthedead.str, 41);
 	assert.equal(items.cupid.str > 0, true);
 	assert.ok(items.helmet.armor > (items.tshirt0.armor || 0));
 	assert.ok(items.tshirt0.int > 0);
