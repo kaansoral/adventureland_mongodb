@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
+  "catalog_manifest_sha256": "8264f174c28fcf54ed94637b75e5b1193cce1cba7e114cba3da0394d48f081c6",
   "upgrade_levels": [0, 1, 2, 3, 4],
   "mob_bands": [
     { "from_level": 1, "targets": { "physical": "goo", "magical": "goo", "physical_evasion": "frog" } },

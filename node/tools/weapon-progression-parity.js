@@ -1,6 +1,7 @@
 "use strict";
 
 const childProcess = require("node:child_process");
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
@@ -11,6 +12,7 @@ const PARITY_FIXTURE_PATH = path.resolve(__dirname, "../tests/fixtures/weapon-pr
 const LEGACY_BASELINE_PATH = path.resolve(__dirname, "../tests/fixtures/weapon-progression-legacy-baseline.json");
 const LEGACY_REVISION = "99d1a8672438227948caf5a5f8c9d595466d8019";
 const COMBAT_SKILLS = Object.freeze(["warrior", "paladin", "mage", "priest", "ranger", "rogue"]);
+const REPOSITORY_PATH = path.resolve(__dirname, "../..");
 
 function loadJson(filename) {
 	return JSON.parse(fs.readFileSync(filename, "utf8"));
@@ -61,7 +63,7 @@ function loadPropertyCalculators() {
 		["multipliers.js", "items.js"],
 	);
 	const legacy = loadPropertyCalculator(
-		(filename) => childProcess.execFileSync("git", ["show", `${LEGACY_REVISION}:${filename === "old_common_functions.js" ? "js" : "design"}/${filename}`], { encoding: "utf8" }),
+		(filename) => childProcess.execFileSync("git", ["-C", REPOSITORY_PATH, "show", `${LEGACY_REVISION}:${filename === "old_common_functions.js" ? "js" : "design"}/${filename}`], { encoding: "utf8" }),
 		["multipliers.js", "items.js", "classes.js", "monsters.js"],
 	);
 	return { current, legacy };
@@ -98,6 +100,12 @@ function currentWeaponRows(data, fixture) {
 function validateParityFixture(fixture, data) {
 	const owners = combatWeaponOwners(data);
 	const exceptions = fixture.exceptions || {};
+	const catalogManifest = Object.entries(data.items)
+		.filter(([id, definition]) => definition.type === "weapon" && owners.has(definition.wtype))
+		.map(([weapon_id, definition]) => ({ weapon_id, weapon_type: definition.wtype, skill: owners.get(definition.wtype), requirement_level: (data.itemRequirements[weapon_id] || [])[0]?.level }))
+		.sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right)));
+	if (fixture.catalog_manifest_sha256 !== crypto.createHash("sha256").update(JSON.stringify(catalogManifest)).digest("hex"))
+		throw new Error("Weapon parity catalog manifest drifted; review the explicit 80-weapon manifest");
 	const classified = new Set(currentWeaponRows(data, fixture).map((row) => row.weapon_id));
 	const missingWeapons = [];
 	const unclassifiedWeapons = [];
@@ -110,6 +118,19 @@ function validateParityFixture(fixture, data) {
 		if (!data.items[weaponId] || !exception || typeof exception.reason !== "string" || !exception.reason) unclassifiedWeapons.push(weaponId);
 	}
 	return { missingWeapons: missingWeapons.sort(), unclassifiedWeapons: unclassifiedWeapons.sort() };
+}
+
+function buildHandoffs(rows) {
+	const grouped = new Map();
+	for (const row of rows) {
+		const key = `${row.skill}:${row.weapon_type}`;
+		if (!grouped.has(key)) grouped.set(key, []);
+		grouped.get(key).push(row);
+	}
+	return [...grouped.entries()].flatMap(([family, familyRows]) => {
+		const levels = [...new Set(familyRows.map((row) => row.requirement_level))].sort((a, b) => a - b);
+		return levels.slice(0, -1).map((level, index) => ({ family, from_level: level, to_level: levels[index + 1] }));
+	});
 }
 
 function levelWeight(level) {
@@ -155,9 +176,13 @@ function targetForLevel(fixture, level, archetype) {
 function basicTtk({ stats, monster, damageMultiplier }) {
 	const defense = stats.damage_type === "magical" ? monster.resistance || 0 : monster.armor || 0;
 	const piercing = stats.damage_type === "magical" ? stats.rpiercing || 0 : stats.apiercing || 0;
-	const damage = Math.max(1, Math.ceil(stats.attack * damageMultiplier(defense - piercing * 2)));
+	const damage = Math.max(1, Math.ceil(stats.attack * damageMultiplier(defense - piercing)));
+	const evasion = stats.damage_type === "physical" ? monster.evasion || 0 : 0;
+	const avoidance = monster.avoidance || 0;
+	const miss = stats.miss || 0;
+	const hitChance = Math.max(0.01, (1 - Math.min(100, evasion) / 100) * (1 - Math.min(100, avoidance) / 100) * (1 - Math.min(100, miss) / 100));
 	const hits = Math.ceil((monster.hp || 1) / damage);
-	return { damage, hits, ttk_ms: hits * stats.attack_ms };
+	return { damage, hits, hit_chance: hitChance, ttk_ms: Math.ceil((hits * stats.attack_ms) / hitChance) };
 }
 
 function assertStableMobBands(fixture, currentMonsters, legacyMonsters) {
@@ -195,25 +220,49 @@ function buildParityReport({ fixturePath = PARITY_FIXTURE_PATH, legacyBaselinePa
 				const legacy = legacyStats({ legacy: calculators.legacy, skill: weapon.skill, weaponId: weapon.weapon_id, level: weapon.requirement_level, upgradeLevel });
 				const currentTtk = basicTtk({ stats: current, monster, damageMultiplier: data.damageMultiplier });
 				const legacyFrequency = Math.max(0.01, legacy.frequency);
-				const legacyTtk = basicTtk({ stats: { ...legacy, attack_ms: Math.round(1000 / legacyFrequency), apiercing: 0, rpiercing: 0 }, monster, damageMultiplier: data.damageMultiplier });
+				const legacyTtk = basicTtk({ stats: { ...legacy, attack_ms: Math.round(1000 / legacyFrequency) }, monster, damageMultiplier: data.damageMultiplier });
+				const ttk_delta = Number((currentTtk.ttk_ms / legacyTtk.ttk_ms - 1).toFixed(6));
 				return {
 					upgrade_level: upgradeLevel,
-					current: { attack: current.attack, frequency: current.frequency, ttk_ms: currentTtk.ttk_ms },
-					legacy: { attack: legacy.attack, frequency: legacyFrequency, ttk_ms: legacyTtk.ttk_ms },
-					ttk_delta: Number((currentTtk.ttk_ms / legacyTtk.ttk_ms - 1).toFixed(6)),
+					current: { attack: current.attack, frequency: current.frequency, hit_chance: currentTtk.hit_chance, ttk_ms: currentTtk.ttk_ms },
+					legacy: { attack: legacy.attack, frequency: legacyFrequency, hit_chance: legacyTtk.hit_chance, ttk_ms: legacyTtk.ttk_ms },
+					ttk_delta,
+					parity_pass: Math.abs(ttk_delta) <= 0.1,
 				};
 			});
 			return { archetype, monster: target.id, mob_band: target.band, upgrades };
 		});
 		rows.push({ ...weapon, upgrade_levels: fixture.upgrade_levels, measurements });
 	}
-	return { schema_version: 1, source_revision: baseline.source_revision, data, rows };
+	const legacySnapshot = rows.map((row) => ({
+		weapon_id: row.weapon_id,
+		weapon_type: row.weapon_type,
+		skill: row.skill,
+		requirement_level: row.requirement_level,
+		measurements: row.measurements.map((measurement) => ({
+			archetype: measurement.archetype,
+			monster: measurement.monster,
+			upgrades: measurement.upgrades.map((upgrade) => ({ upgrade_level: upgrade.upgrade_level, legacy: upgrade.legacy })),
+		})),
+	}));
+	const legacy_snapshot_sha256 = crypto.createHash("sha256").update(stableJson(legacySnapshot)).digest("hex");
+	if (baseline.snapshot_sha256 && baseline.snapshot_sha256 !== legacy_snapshot_sha256)
+		throw new Error("Weapon parity legacy snapshot no longer matches the pinned baseline");
+	const handoffs = buildHandoffs(rows).map((handoff) => {
+		const familyRows = rows.filter((row) => `${row.skill}:${row.weapon_type}` === handoff.family);
+		const from = familyRows.filter((row) => row.requirement_level === handoff.from_level);
+		const to = familyRows.filter((row) => row.requirement_level === handoff.to_level);
+		return { ...handoff, from_weapon_ids: from.map((row) => row.weapon_id), to_weapon_ids: to.map((row) => row.weapon_id) };
+	});
+	return { schema_version: 1, source_revision: baseline.source_revision, legacy_snapshot_sha256, data, rows, handoffs };
 }
 
 function main(argv = process.argv.slice(2)) {
 	const report = buildParityReport();
-	const output = { schema_version: report.schema_version, source_revision: report.source_revision, rows: report.rows };
-	process.stdout.write(argv.includes("--format=json") ? JSON.stringify(output) + "\n" : stableJson(output));
+	const output = { schema_version: report.schema_version, source_revision: report.source_revision, rows: report.rows, handoffs: report.handoffs };
+	if (argv.includes("--format=markdown")) {
+		process.stdout.write(`# Weapon parity chart\n\nRows: ${report.rows.length}\n\n| Skill | Weapon | Level | Target | Upgrade | TTK delta | Pass |\n|---|---|---:|---|---:|---:|---|\n` + report.rows.flatMap((row) => row.measurements.flatMap((measurement) => measurement.upgrades.map((upgrade) => `| ${row.skill} | ${row.weapon_id} | ${row.requirement_level} | ${measurement.monster} | +${upgrade.upgrade_level} | ${(upgrade.ttk_delta * 100).toFixed(2)}% | ${upgrade.parity_pass ? "PASS" : "FAIL"} |`))).join("\n") + "\n");
+	} else process.stdout.write(argv.includes("--format=json") ? JSON.stringify(output) + "\n" : stableJson(output));
 }
 
 if (require.main === module) main();

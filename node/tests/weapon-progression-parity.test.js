@@ -19,6 +19,8 @@ test("parity fixture covers every current combat weapon or names an explicit exc
 	assert.equal(validateParityFixture(fixture, report.data).missingWeapons.length, 0);
 	assert.equal(validateParityFixture(fixture, report.data).unclassifiedWeapons.length, 0);
 	assert.ok(report.rows.length > 0);
+	assert.equal(report.rows.length, 80);
+	assert.ok(report.handoffs.length > 0);
 });
 
 test("parity fixture has every upgrade band and canonical target archetype", () => {
@@ -39,6 +41,7 @@ test("legacy baseline is pinned to the selected pre-skill/class revision", () =>
 	const baseline = loadLegacyBaseline(LEGACY_BASELINE_PATH);
 
 	assert.equal(baseline.source_revision, "99d1a8672438227948caf5a5f8c9d595466d8019");
+	assert.equal(baseline.snapshot_sha256, "c3135f7c4e5b10f6143db357d5f0b688d5bcb407ebca7f3f8615644993582102");
 	assert.deepEqual(baseline.legacy_levels, [1, 40, 41, 55, 56, 65, 66, 80, 81, 99]);
 });
 
@@ -48,6 +51,7 @@ test("parity output is deterministic and reports per-row current-versus-legacy d
 
 	assert.equal(JSON.stringify(first.rows), JSON.stringify(second.rows));
 	assert.equal(first.source_revision, second.source_revision);
+	assert.deepEqual(first.handoffs, second.handoffs);
 	for (const row of first.rows) {
 		for (const measurement of row.measurements) {
 			for (const upgrade of measurement.upgrades) {
@@ -55,6 +59,8 @@ test("parity output is deterministic and reports per-row current-versus-legacy d
 				assert.ok(Number.isFinite(upgrade.current.frequency));
 				assert.ok(Number.isFinite(upgrade.current.ttk_ms));
 				assert.ok(Number.isFinite(upgrade.legacy.ttk_ms));
+				assert.ok(upgrade.current.hit_chance > 0 && upgrade.current.hit_chance <= 1);
+				assert.ok(upgrade.legacy.hit_chance > 0 && upgrade.legacy.hit_chance <= 1);
 				assert.ok(Number.isFinite(upgrade.ttk_delta));
 			}
 		}

@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
   "source_revision": "99d1a8672438227948caf5a5f8c9d595466d8019",
+  "snapshot_sha256": "c3135f7c4e5b10f6143db357d5f0b688d5bcb407ebca7f3f8615644993582102",
   "legacy_levels": [1, 40, 41, 55, 56, 65, 66, 80, 81, 99]
 }
