@@ -144,7 +144,12 @@ test("catalog fixtures preserve starter identities and publish role profiles", (
 	assert.equal(items.claw.str, 4);
 	assert.equal(items.blade.vit, undefined);
 	assert.equal(items.blade.for, undefined);
-	assert.equal(items.daggerofthedead.str, 41);
+	assert.equal(items.blade.str, 11);
+	assert.equal(items.daggerofthedead.str, 16);
+	assert.equal(items.sword.str, 16);
+	assert.equal(items.axe3.str, 18);
+	assert.ok(items.axe3.attack > items.blade.attack);
+	assert.equal(items.wbookhs.compound.int, 0);
 	assert.equal(items.cupid.str > 0, true);
 	assert.ok(items.helmet.armor > (items.tshirt0.armor || 0));
 	assert.ok(items.tshirt0.int > 0);
@@ -157,6 +162,8 @@ test("catalog fixtures preserve starter identities and publish role profiles", (
 		if (physical.has(definition.wtype)) assert.ok(definition.str > 0, `${name} has STR`);
 		if (magical.has(definition.wtype)) assert.ok(definition.int > 0, `${name} has INT`);
 		if (!physical.has(definition.wtype) && !magical.has(definition.wtype)) continue;
+		for (const property of ["str", "int", "dex"])
+			assert.ok((definition[property] || 0) <= 20, `${name} keeps ${property} within the weapon budget`);
 		for (const property of ["vit", "for", "hp", "armor", "resistance"])
 			assert.equal(definition[property], undefined, `${name} does not carry ${property}`);
 	}

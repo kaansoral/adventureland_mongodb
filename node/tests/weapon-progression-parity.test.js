@@ -1,6 +1,8 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const test = require("node:test");
 
 const {
@@ -88,7 +90,25 @@ test("represented weapons retain their protected identity and finite +0 through 
 			for (const [property, value] of Object.entries(properties)) {
 				if (typeof value === "number") assert.ok(Number.isFinite(value), `${row.weapon_id}+${upgradeLevel} ${property}`);
 			}
+			for (const attribute of ["str", "int", "dex"])
+				assert.ok((properties[attribute] || 0) <= 20, `${row.weapon_id}+${upgradeLevel} keeps ${attribute} within budget`);
 		}
+	}
+});
+
+test("weapon normalization retains specialized hit and piercing mechanics", () => {
+	const itemCatalog = fs.readFileSync(path.resolve(__dirname, "../../design/items.js"), "utf8");
+	assert.doesNotMatch(itemCatalog, /delete\s+normalized_weapon\.(?:apiercing|rpiercing|miss)/);
+	const report = buildParityReport({ fixturePath: PARITY_FIXTURE_PATH, legacyBaselinePath: LEGACY_BASELINE_PATH });
+	const calculators = loadPropertyCalculators(report.data);
+	for (const [weaponId, mechanics] of Object.entries({
+		mushroomstaff: { rpiercing: 40 },
+		hbow: { apiercing: 40 },
+		daggerofthedead: { apiercing: 20 },
+		spearofthedead: { apiercing: 12 },
+	})) {
+		const properties = calculators.current.calculate_item_properties({ name: weaponId, level: 0 });
+		for (const [property, value] of Object.entries(mechanics)) assert.equal(properties[property], value, weaponId);
 	}
 });
 

@@ -8628,13 +8628,103 @@ for(var progression_weapon_id in weapon_progression){
 	for(var progression_upgrade_key in progression_values.upgrade)
 		progression_weapon.upgrade[progression_upgrade_key]=progression_values.upgrade[progression_upgrade_key];
 }
-// The calibration keeps each family in its historical band; target-aware TTK gates verify unlock handoffs.
+
+// Keep weapon power on the damage card: blade's 11 STR is the reference for later attack and cadence growth.
+function weapon_stat_budget(tier){
+	if(tier<=1.25) return 11;
+	if(tier<=1.5) return 12;
+	if(tier<=1.75) return 13;
+	if(tier<=2) return 14;
+	if(tier<=2.25) return 15;
+	if(tier<=2.5) return 16;
+	if(tier<=2.75) return 17;
+	if(tier<=3) return 18;
+	return 20;
+}
+function physical_frequency_from_dex(dex){
+	return Math.min(dex,160)/640+Math.max(dex-160,0)/925;
+}
+function weapon_skill(wtype){
+	if(["hammer","mace","pmace","basher"].indexOf(wtype)!=-1) return "paladin";
+	if(["staff","great_staff","wand","wblade"].indexOf(wtype)!=-1) return "mage";
+	if(wtype=="book") return "priest";
+	if(["bow","crossbow","dartgun"].indexOf(wtype)!=-1) return "ranger";
+	if(["fist","dagger","stars","rapier"].indexOf(wtype)!=-1) return "rogue";
+	return "warrior";
+}
+function weapon_profile_frequency(wtype){
+	if(wtype=="great_staff") return 0.25;
+	if(wtype=="wand") return 0.95;
+	if(["staff","wblade","book"].indexOf(wtype)!=-1) return 0.35;
+	if(wtype=="great_sword") return 0.42;
+	if(wtype=="axe") return 0.4;
+	if(wtype=="scythe") return 0.39;
+	if(wtype=="crossbow") return 0.04;
+	return ({"short_sword":0.5,"sword":0.5,"spear":0.5,"hammer":0.4,"mace":0.4,"pmace":0.4,"basher":0.28,"bow":0.4,"dartgun":0.4,"fist":0.45,"dagger":0.45,"stars":0.45,"rapier":0.45})[wtype]||0.5;
+}
+function magic_frequency_multiplier(intelligence){
+	return 1+Math.min(0.2,Math.max(intelligence,0)/2000);
+}
 for(var normalized_weapon_id in weapon_progression){
 	var normalized_weapon=items[normalized_weapon_id];
 	if(!normalized_weapon) continue;
-	delete normalized_weapon.apiercing;
-	delete normalized_weapon.rpiercing;
-	delete normalized_weapon.miss;
+	// The publication adapter migrates this legacy DEX field into its canonical
+	// 16 INT book bonus. Compound attack, rather than INT, carries its +1 through +4 growth.
+	if(normalized_weapon_id=="wbookhs"){
+		normalized_weapon.compound.attack=1.5;
+		normalized_weapon.compound.int=0;
+		continue;
+	}
+	var old_str=normalized_weapon.str||0;
+	var old_int=normalized_weapon.int||0;
+	var old_dex=normalized_weapon.dex||0;
+	var budget=weapon_stat_budget(normalized_weapon.tier||1);
+	var new_str=Math.min(old_str,budget);
+	var new_int=Math.min(old_int,budget);
+	var new_dex=Math.min(old_dex,budget);
+	var skill=normalized_weapon_id.indexOf("wbook")==0 ? "priest" : weapon_skill(normalized_weapon.wtype);
+	var old_multiplier=skill=="paladin" ? old_str/20+old_int/40 : (skill=="mage" || skill=="priest" ? old_int/20 : old_str/20);
+	var new_multiplier=skill=="paladin" ? new_str/20+new_int/40 : (skill=="mage" || skill=="priest" ? new_int/20 : new_str/20);
+	if(old_multiplier>0 && new_multiplier>0){
+		var attack_multiplier=old_multiplier/new_multiplier;
+		normalized_weapon.attack*=attack_multiplier;
+		if(normalized_weapon.upgrade) normalized_weapon.upgrade.attack=(normalized_weapon.upgrade.attack||0)*attack_multiplier;
+	}
+	if(skill=="mage" || skill=="priest"){
+		var profile_frequency=skill=="priest" ? 0.35 : weapon_profile_frequency(normalized_weapon.wtype);
+		normalized_weapon.frequency=((profile_frequency+(normalized_weapon.frequency||0)/100)*magic_frequency_multiplier(old_int)/magic_frequency_multiplier(new_int)-profile_frequency)*100;
+	}
+	else normalized_weapon.frequency=(normalized_weapon.frequency||0)+100*(physical_frequency_from_dex(old_dex)-physical_frequency_from_dex(new_dex));
+	normalized_weapon.str=new_str;
+	normalized_weapon.int=new_int;
+	normalized_weapon.dex=new_dex;
+	if(normalized_weapon.upgrade){
+		normalized_weapon.upgrade.str=0;
+		normalized_weapon.upgrade.int=0;
+		normalized_weapon.upgrade.dex=0;
+	}
+	// Books compound instead of upgrading. Preserve their +0 through +4 band
+	// with attack growth, rather than making INT itself compound past the budget.
+	if(normalized_weapon_id=="wbook0"){
+		normalized_weapon.attack=62;
+		normalized_weapon.compound.attack=2.5;
+		normalized_weapon.compound.int=0;
+	}
+	if(normalized_weapon_id=="wbook1"){
+		normalized_weapon.attack=36;
+		normalized_weapon.compound.attack=0.75;
+		normalized_weapon.compound.int=0;
+	}
+}
+
+// Retain the 5–10% +4-to-next-unlock handoff after rounding the published card values.
+var weapon_handoff_attack_adjustments={"mushroomstaff":0.965,"staff3":0.965,"vstaff":0.967,"staff4":0.966,"hbow":0.965,"merry":0.965,"weaver":0.972,"firebow":0.976,"frostbow":0.976,"t2bow":0.976,"bowofthedead":0.959,"gbow":0.959,"harpybow":0.965,"t3bow":0.965,"bow4":0.97,"fclaw":1.035,"pclaw":1.04};
+for(var handoff_weapon_id in weapon_handoff_attack_adjustments){
+	var handoff_weapon=items[handoff_weapon_id];
+	if(!handoff_weapon) continue;
+	var handoff_attack_multiplier=weapon_handoff_attack_adjustments[handoff_weapon_id];
+	handoff_weapon.attack*=handoff_attack_multiplier;
+	if(handoff_weapon.upgrade) handoff_weapon.upgrade.attack=(handoff_weapon.upgrade.attack||0)*handoff_attack_multiplier;
 }
 
 if(typeof module!=="undefined") module.exports={items:items,sets:sets};

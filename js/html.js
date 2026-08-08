@@ -3345,6 +3345,56 @@ function render_wishlist(num, page) {
 	dialogs_target = character;
 }
 
+function guide_weapon_owner(item) {
+	for (var skill in G.skills) {
+		if ((G.skills[skill].weapon_types || []).indexOf(item.wtype) != -1) return skill;
+	}
+	return null;
+}
+
+function guide_weapon_base_frequency(wtype) {
+	return {
+		short_sword: 0.5,
+		sword: 0.5,
+		great_sword: 0.42,
+		axe: 0.4,
+		spear: 0.5,
+		scythe: 0.39,
+		hammer: 0.4,
+		mace: 0.4,
+		pmace: 0.4,
+		basher: 0.28,
+		staff: 0.35,
+		great_staff: 0.25,
+		wand: 0.95,
+		wblade: 0.35,
+		book: 0.35,
+		bow: 0.4,
+		crossbow: 0.04,
+		dartgun: 0.4,
+		fist: 0.45,
+		dagger: 0.45,
+		stars: 0.65,
+		rapier: 1.15,
+	}[wtype];
+}
+
+function guide_weapon_metrics(item, prop) {
+	var skill = guide_weapon_owner(item),
+		item_attack = prop.attack || 0,
+		frequency = guide_weapon_base_frequency(item.wtype);
+	if (!skill || !item_attack || frequency === undefined) return null;
+	if (skill == "warrior" || skill == "ranger" || skill == "rogue") item_attack *= (prop.str || 0) / 20;
+	else if (skill == "paladin") item_attack *= (prop.str || 0) / 20 + (prop.int || 0) / 40;
+	else if (skill == "mage" || skill == "priest") item_attack *= (prop.int || 0) / 20;
+	if (skill == "priest") item_attack *= 1.6;
+	frequency += (prop.frequency || 0) / 100;
+	if (skill == "mage" || skill == "priest") frequency *= 1 + Math.min(0.2, Math.max(prop.int || 0, 0) / 2000);
+	else frequency += Math.min(prop.dex || 0, 160) / 640 + Math.max((prop.dex || 0) - 160, 0) / 925;
+	var hit_damage = Math.max(0, Math.round(item_attack));
+	return { hit_damage: hit_damage, attacks_per_second: frequency, dps: hit_damage * frequency };
+}
+
 var last_selector = "";
 function render_item(selector, args) {
 	if (args && args.actual) args.name = args.actual.name;
@@ -3431,7 +3481,8 @@ function render_item(selector, args) {
 		if (prop.dreturn) html += bold_prop_line("D.Return", to_pretty_float(prop.dreturn) + "%", "#E94959");
 		if (prop.crit) html += bold_prop_line("Crit", to_pretty_float(prop.crit) + "%", "#E52967");
 		if (prop.critdamage) html += bold_prop_line("Crit Damage", "+" + to_pretty_float(prop.critdamage) + "%", "#A8214E");
-		if (prop.attack) html += bold_prop_line("Damage", prop.attack, colors.attack);
+		var guide_metrics = args.guide && item.type == "weapon" && guide_weapon_metrics(item, prop);
+		if (prop.attack) html += bold_prop_line((guide_metrics && "Hit Damage") || "Damage", (guide_metrics && guide_metrics.hit_damage) || prop.attack, colors.attack);
 		if (item.damage_type) {
 			if (item.damage_type == "pure") html += bold_prop_line("Type", "Pure", "#AA9B55");
 			else if (item.damage_type == "magical") html += bold_prop_line("Type", "Magical", "#8998AA");
@@ -3461,7 +3512,9 @@ function render_item(selector, args) {
 		if (prop.stresistance) html += bold_prop_line("Status Res.", prop.stresistance, "#9FA7B6");
 		if (item.wspeed) html += bold_prop_line("Speed", item.wspeed.toTitleCase(), "gray");
 		if (prop.speed) html += bold_prop_line((item.wtype && "Run Speed") || "Speed", ((!args.monster && prop.speed > 0 && "+") || "") + prop.speed, colors.speed);
-		if (prop.frequency || args.monster) html += bold_prop_line("A.Speed", (prop.frequency || 1) * ((args.monster && 100) || 1), "#3BE681");
+		if (guide_metrics) html += bold_prop_line("Attacks / Sec", to_pretty_float(guide_metrics.attacks_per_second), "#3BE681");
+		else if (prop.frequency || args.monster) html += bold_prop_line("A.Speed", (prop.frequency || 1) * ((args.monster && 100) || 1), "#3BE681");
+		if (guide_metrics) html += bold_prop_line("Base DPS", to_pretty_float(guide_metrics.dps), colors.attack);
 		if (prop.output) html += bold_prop_line("Damage Output", ((prop.output > 0 && "+") || "") + prop.output + "%", "#D93319");
 		if (prop.incdmgamp) html += bold_prop_line("Incoming Damage", prop.incdmgamp + "%", "#D93319");
 		if (prop.stun) html += bold_prop_line("Stun", prop.stun + "%", "#784224");

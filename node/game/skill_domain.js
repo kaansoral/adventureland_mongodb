@@ -316,7 +316,7 @@ function validateItemRequirements(items, itemRequirements, registry, weaponOwner
 				(book.int !== 16 ||
 					book.dex !== undefined ||
 					!book.compound ||
-					book.compound.int !== 6 ||
+					book.compound.int !== 0 ||
 					book.compound.dex !== undefined))
 		) {
 			throw fail("invalid_game_data", `Priest book ${bookId} is not a normalized main-hand weapon`, { item: bookId });

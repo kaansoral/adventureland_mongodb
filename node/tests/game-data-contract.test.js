@@ -158,7 +158,7 @@ test("item normalization is independent, non-mutating, and precedence-safe", () 
 	const rawItems = {
 		wbook0: { type: "source", name: "Book", compound: {} },
 		wbook1: { type: "source", name: "Book 1", compound: {} },
-		wbookhs: { type: "source", name: "Holiday Book", dex: 16, compound: { dex: 6 } },
+		wbookhs: { type: "source", name: "Holiday Book", dex: 16, compound: { dex: 0 } },
 		pmace: {
 			type: "weapon",
 			wtype: "pmace",
@@ -196,7 +196,7 @@ test("item normalization is independent, non-mutating, and precedence-safe", () 
 	assert.equal(normalized.wbook0.wtype, "book");
 	assert.equal(normalized.wbookhs.int, 16);
 	assert.equal(normalized.wbookhs.dex, undefined);
-	assert.equal(normalized.wbookhs.compound.int, 6);
+	assert.equal(normalized.wbookhs.compound.int, 0);
 	assert.equal(normalized.wbookhs.compound.dex, undefined);
 	assert.equal(normalized.blade.class, undefined);
 	assert.deepEqual(plain(normalized.fury.requirements), requirements.fury);
@@ -349,7 +349,7 @@ test("progression validators reject every special-contract regression with diagn
 		(error) => error.code === "invalid_game_data" && /appearance/.test(error.message),
 	);
 	const badBookScaling = plain(data.items);
-	badBookScaling.wbookhs.compound.int = 7;
+	badBookScaling.wbookhs.compound.int = 1;
 	assert.throws(
 		() => validateItemRequirements(badBookScaling, plain(data.item_requirements), data.skills, ownerMap),
 		(error) => error.code === "invalid_game_data" && error.item === "wbookhs",
@@ -482,6 +482,7 @@ test("every equippable item has the explicit all-of requirement snapshot", () =>
 	assert.equal(data.items.vsword.tier, 3.25);
 	assert.deepEqual(plain(data.item_requirements.vsword), [{ skill: "warrior", level: 90 }]);
 	assert.ok(data.items.wbookhs.compound);
+	assert.equal(data.items.wbookhs.compound.int, 0);
 	assert.deepEqual(plain(data.item_requirements.wbookhs), [{ skill: "priest", level: 40 }]);
 	const independentRequirementMatrix = {
 		helmet: [{ skill: "warrior", level: 1 }],
@@ -857,7 +858,7 @@ test("the closed progression consumer inventory has no legacy skill lookups", ()
 		"docs/EXAMPLES.html",
 		"docs/directory.js",
 	];
-	const expectedProgressionRefs = { "htmls/index.html": 1, "js/html.js": 10, "js/game.js": 1 };
+	const expectedProgressionRefs = { "htmls/index.html": 1, "js/html.js": 12, "js/game.js": 1 };
 	const expectedAbilityRefs = {
 		"node/server.js": 43,
 		"node/server_functions.js": 20,
@@ -919,6 +920,7 @@ test("Priest books and starter appearance data use the new ownership boundary", 
 	}
 	assert.equal(data.items.wbookhs.int, 16);
 	assert.equal(data.items.wbookhs.dex, undefined);
+	assert.equal(data.items.wbookhs.compound.int, 0);
 	assert.deepEqual(plain(data.character.starter.slots), {});
 });
 

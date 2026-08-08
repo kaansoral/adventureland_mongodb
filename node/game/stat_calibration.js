@@ -17,7 +17,7 @@ const DEX_CRIT_CALIBRATION_LOADOUT = Object.freeze({
 	earring2: Object.freeze({ name: "dexearringx", level: 15, stat_type: "dex" }),
 });
 
-const DEX_CRIT_CALIBRATION = 896;
+const DEX_CRIT_CALIBRATION = 819;
 
 function calculateDexCritCalibration(items, getItemProperties) {
 	if (!items || !getItemProperties) return DEX_CRIT_CALIBRATION;
