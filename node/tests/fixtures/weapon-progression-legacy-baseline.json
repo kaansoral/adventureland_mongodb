@@ -1,0 +1,5 @@
+{
+  "schema_version": 1,
+  "source_revision": "99d1a8672438227948caf5a5f8c9d595466d8019",
+  "legacy_levels": [1, 40, 41, 55, 56, 65, 66, 80, 81, 99]
+}

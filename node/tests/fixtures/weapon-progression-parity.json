@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "upgrade_levels": [0, 1, 2, 3, 4],
+  "mob_bands": [
+    { "from_level": 1, "targets": { "physical": "goo", "magical": "goo", "physical_evasion": "frog" } },
+    { "from_level": 10, "targets": { "physical": "bee", "magical": "minimush", "physical_evasion": "frog" } },
+    { "from_level": 20, "targets": { "physical": "crab", "magical": "minimush", "physical_evasion": "frog" } },
+    { "from_level": 30, "targets": { "physical": "armadillo", "magical": "nerfedbat", "physical_evasion": "iceroamer" } },
+    { "from_level": 40, "targets": { "physical": "croc", "magical": "cgoo", "physical_evasion": "greenjr" } },
+    { "from_level": 50, "targets": { "physical": "crabx", "magical": "greenjr", "physical_evasion": "greenjr" } },
+    { "from_level": 60, "targets": { "physical": "tortoise", "magical": "bat", "physical_evasion": "ghost" } },
+    { "from_level": 70, "targets": { "physical": "prat", "magical": "ghost", "physical_evasion": "bigbird" } },
+    { "from_level": 80, "targets": { "physical": "wolf", "magical": "harpy", "physical_evasion": "welemental" } },
+    { "from_level": 90, "targets": { "physical": "bgoo", "magical": "d_wiz", "physical_evasion": "welemental" } },
+    { "from_level": 95, "targets": { "physical": "rharpy", "magical": "rharpy", "physical_evasion": "welemental" } }
+  ],
+  "exceptions": {}
+}
