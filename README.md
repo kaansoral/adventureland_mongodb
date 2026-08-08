@@ -132,6 +132,26 @@ no accuracy stat. Derived values are recomputed during the normal login and
 equipment-refresh paths, so existing item instances do not require a database
 reset or manual respec.
 
+## Weapon progression
+
+Legal combat weapons for Warrior, Paladin, Mage, Priest, Ranger, and Rogue now
+follow normalized family curves at their owning-skill unlocks. Each unlock is
+checked at mainhand upgrade levels +0 through +4; the previous unlock's +4 is
+kept 5–10% longer in expected basic-attack TTK than the next unlock's +0 across
+physical, magical, and physical-evasion target archetypes. Merchant has no
+combat weapon family.
+
+The parity runner and checked-in fixtures expose expected DPS/TTK, current
+versus pinned-legacy deltas, and target-aware handoff checks. The legacy table is
+a diagnostic reference; normalized family and handoff checks define the
+release curve. Existing item instances continue through the normal equipment
+refresh path, with no migration or respec step. To inspect the deterministic
+chart locally:
+
+```sh
+node tools/weapon-progression-parity.js --format=markdown
+```
+
 ## Seeding Game Data
 
 The database needs map data and game entities to function. You have two options:
