@@ -9,6 +9,7 @@ const {
 	buildParityReport,
 	loadParityFixture,
 	loadLegacyBaseline,
+	loadPropertyCalculators,
 	validateParityFixture,
 } = require("../tools/weapon-progression-parity");
 
@@ -21,6 +22,13 @@ test("parity fixture covers every current combat weapon or names an explicit exc
 	assert.ok(report.rows.length > 0);
 	assert.equal(report.rows.length, 80);
 	assert.ok(report.handoffs.length > 0);
+	for (const handoff of report.handoffs) {
+		assert.ok(handoff.comparisons.length > 0, handoff.family);
+		for (const comparison of handoff.comparisons) {
+			assert.ok(Number.isFinite(comparison.ttk_delta));
+			assert.ok(comparison.ttk_delta > -1);
+		}
+	}
 });
 
 test("parity fixture has every upgrade band and canonical target archetype", () => {
@@ -63,6 +71,37 @@ test("parity output is deterministic and reports per-row current-versus-legacy d
 				assert.ok(upgrade.legacy.hit_chance > 0 && upgrade.legacy.hit_chance <= 1);
 				assert.ok(Number.isFinite(upgrade.ttk_delta));
 			}
+		}
+	}
+});
+
+test("represented weapons retain their protected identity and finite +0 through +4 properties", () => {
+	const report = buildParityReport({ fixturePath: PARITY_FIXTURE_PATH, legacyBaselinePath: LEGACY_BASELINE_PATH });
+	const calculators = loadPropertyCalculators(report.data);
+	for (const row of report.rows) {
+		const definition = report.data.items[row.weapon_id];
+		assert.equal(definition.type, "weapon", row.weapon_id);
+		assert.equal(definition.wtype, row.weapon_type, row.weapon_id);
+		assert.equal(definition.requirements.length, 1, row.weapon_id);
+		for (const upgradeLevel of row.upgrade_levels) {
+			const properties = calculators.current.calculate_item_properties({ name: row.weapon_id, level: upgradeLevel });
+			for (const [property, value] of Object.entries(properties)) {
+				if (typeof value === "number") assert.ok(Number.isFinite(value), `${row.weapon_id}+${upgradeLevel} ${property}`);
+			}
+		}
+	}
+});
+
+test("normalized class curve keeps every +0 through +4 band and adjacent unlock handoff in range", () => {
+	const report = buildParityReport({ fixturePath: PARITY_FIXTURE_PATH, legacyBaselinePath: LEGACY_BASELINE_PATH });
+	assert.equal(report.curve.checks.length, 400);
+	assert.equal(report.curve.checks.filter((check) => check.curve_pass).length, report.curve.checks.length);
+	assert.equal(report.curve.handoffs.length, 36);
+	for (const handoff of report.curve.handoffs) {
+		assert.equal(handoff.comparisons.length, 3, handoff.family);
+		for (const comparison of handoff.comparisons) {
+			assert.ok(comparison.ttk_delta >= 0.05 && comparison.ttk_delta <= 0.1, `${handoff.family} ${comparison.archetype}`);
+			assert.equal(comparison.progression_pass, true, `${handoff.family} ${comparison.archetype}`);
 		}
 	}
 });
