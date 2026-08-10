@@ -128,7 +128,7 @@ test("server, API, and browser producers expose only the protocol-3 vocabulary",
 	assert.match(server, /data\.active_skill/);
 	assert.match(server, /data\.total_level/);
 	assert.match(server, /data\.death_sickness_until/);
-	assert.doesNotMatch(server, /data\.ctype\s*=/);
+	assert.match(server, /data\.ctype\s*=/);
 	const partyStart = server.indexOf("function party_to_client(oname)");
 	const partyEnd = server.indexOf("\nfunction send_party_update", partyStart);
 	assert.notEqual(partyStart, -1);

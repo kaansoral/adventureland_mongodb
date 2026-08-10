@@ -595,6 +595,7 @@ test("client condition projections do not expose Merchant source IDs", () => {
 	);
 	const projected = playerToClient(character);
 	assert.equal(projected.s.mluck.source_id, undefined);
+	assert.equal(projected.ctype, "warrior");
 	assert.equal(character.s.mluck.source_id, "private-real-id");
 });
 

@@ -824,6 +824,7 @@ function player_to_client(player, stranger) {
 		}
 	}
 	[
+		"name",
 		"hp",
 		"max_hp",
 		"mp",
@@ -906,6 +907,15 @@ function player_to_client(player, stranger) {
 		data.tp = true;
 	}
 	data.owner = (!player.private && player.owner) || "";
+	const playerSkills = player.skills || {};
+	const activeSkill = player.active_skill;
+	if (activeSkill && SKILL_IDS.includes(activeSkill)) {
+		data.ctype = activeSkill;
+	} else {
+		data.ctype = SKILL_IDS.reduce(function (best, skill) {
+			return (playerSkills[skill]?.level || 0) > (playerSkills[best]?.level || 0) ? skill : best;
+		}, SKILL_IDS[0]);
+	}
 
 	if (player.is_npc) {
 		// data.id="$"+data.id;
