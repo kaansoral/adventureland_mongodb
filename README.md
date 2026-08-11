@@ -100,6 +100,11 @@ node main.js
 
 The backend starts on port **8090** (configurable in `secretsandconfig/options.js`). Visit http://localhost:8090
 
+At startup, the world preflight validates the required map documents, recovery
+seed hash, and world indexes. Unrecognized legacy application collections are
+reported in the classification diagnostics but do not, by themselves, prevent
+the backend from starting.
+
 ### 8. Start the game server
 
 ```sh
@@ -140,6 +145,12 @@ checked at mainhand upgrade levels +0 through +4; the previous unlock's +4 is
 kept 5–10% longer in expected basic-attack TTK than the next unlock's +0 across
 physical, magical, and physical-evasion target archetypes. Merchant has no
 combat weapon family.
+
+In the in-game Guide → Items view, visible weapons are grouped under Warrior,
+Paladin, Mage, Priest, Ranger, and Rogue in combat-profile order. Each group is
+sorted by the existing level-0 Base DPS calculation, with item ID as the
+deterministic tie-breaker; ignored items remain hidden and the other item
+categories keep their existing layout and detail actions.
 
 The parity runner and checked-in fixtures expose expected DPS/TTK, current
 versus pinned-legacy deltas, and target-aware handoff checks. The legacy table is

@@ -185,11 +185,6 @@ async function readMapDocuments(db, options = {}) {
 async function verifyWorldState(db, options = {}) {
 	const collectionNames = options.collectionNames || (await readCollectionNames(db));
 	const classification = classifyCollections(collectionNames);
-	if (classification.unknown.length) {
-		throw worldError("WORLD_UNKNOWN_COLLECTION", "World contains an unclassified application collection", {
-			unknown: classification.unknown,
-		});
-	}
 	const maps = validateMapDocuments(await readMapDocuments(db), { maps: options.maps || DESIGN_MAPS });
 	if (options.mapHash && maps.sha256 !== options.mapHash)
 		throw worldError("WORLD_MAP_HASH", "World map hash does not match the expected value");

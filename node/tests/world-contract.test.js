@@ -42,7 +42,7 @@ async function withLocalHttp(handler, callback) {
 	}
 }
 
-test("world classification derives the required static map set and rejects unknown collections", () => {
+test("world classification derives the required static map set and reports unknown collections", () => {
 	const { classifyCollections, requiredMapIds } = require("../game/world_schema");
 	const ids = requiredMapIds(maps);
 	assert.equal(ids.length, 49);
@@ -128,10 +128,11 @@ test("world preflight verifies read-only map hashes, collections, and indexes", 
 	assert.deepEqual(world.classification.unknown, []);
 	assert.equal(world.maps.requiredCount, 49);
 	assert.equal(world.maps.sha256, seed.manifest.sha256);
-	await assert.rejects(
-		verifyWorldState(fakeWorldDb({ ...base, collectionNames: [...base.collectionNames, "unexpected"] }), { maps }),
-		{ code: "WORLD_UNKNOWN_COLLECTION" },
+	const legacyWorld = await verifyWorldState(
+		fakeWorldDb({ ...base, collectionNames: [...base.collectionNames, "unexpected"] }),
+		{ maps },
 	);
+	assert.deepEqual(legacyWorld.classification.unknown, ["unexpected"]);
 	await assert.rejects(
 		verifyWorldState(fakeWorldDb(base), { maps, mapHash: "0".repeat(64) }),
 		{ code: "WORLD_MAP_HASH" },

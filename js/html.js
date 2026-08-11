@@ -2836,7 +2836,13 @@ function render_all_items() {
 		["amulet", "Amulets", []],
 		["belt", "Belts", []],
 		["orb", "Orbs", []],
-		["weapon", "Weapons", []],
+		[
+			"weapon_profiles",
+			"",
+			guide_weapon_groups(G.items, G.skills, function (id) {
+				return calculate_item_properties({ name: id, level: 0 });
+			}),
+		],
 		["shield", "Shields", []],
 		["offhand", "Offhands", []],
 		["elixir", "Elixirs", []],
@@ -2850,7 +2856,7 @@ function render_all_items() {
 	var visited = {},
 		html = "<div style='border: 5px solid gray; background-color: black; padding: 10px; width: 434px'>";
 	object_sort(G.items, "gold_value").forEach(function (item) {
-		if (item[1].ignore) return;
+		if (item[1].ignore || item[1].type == "weapon") return;
 		for (var i = 0; i < types.length; i++) {
 			if (
 				!types[i][0] ||
@@ -2866,6 +2872,17 @@ function render_all_items() {
 		}
 	});
 	types.forEach(function (type) {
+		if (type[0] == "weapon_profiles") {
+			type[2].forEach(function (group) {
+				html += "<div class='gamebutton gamebutton-small' style='margin-bottom: 5px'>" + group.name + "</div>";
+				html += "<div style='margin-bottom: 10px'>";
+				group.weapons.forEach(function (weapon) {
+					html += item_container({ skin: weapon.item.skin, onclick: "render_item_info('" + weapon.id + "')" }, { name: weapon.id });
+				});
+				html += "</div>";
+			});
+			return;
+		}
 		html += "<div class='gamebutton gamebutton-small' style='margin-bottom: 5px'>" + type[1] + "</div>";
 		html += "<div style='margin-bottom: 10px'>";
 		type[2].forEach(function (item) {
@@ -3393,6 +3410,34 @@ function guide_weapon_metrics(item, prop) {
 	else frequency += Math.min(prop.dex || 0, 160) / 640 + Math.max((prop.dex || 0) - 160, 0) / 925;
 	var hit_damage = Math.max(0, Math.round(item_attack));
 	return { hit_damage: hit_damage, attacks_per_second: frequency, dps: hit_damage * frequency };
+}
+
+function guide_weapon_groups(items, skills, properties_for) {
+	var groups = [],
+		by_skill = {};
+	for (var skill in skills) {
+		if (skills[skill].kind != "combat") continue;
+		var group = { id: skill, name: skills[skill].name + " Weapons", weapons: [] };
+		groups.push(group);
+		by_skill[skill] = group;
+	}
+	for (var id in items) {
+		var item = items[id];
+		if (item.ignore || item.type != "weapon") continue;
+		var group = by_skill[guide_weapon_owner(item)];
+		if (!group) continue;
+		var metrics = guide_weapon_metrics(item, properties_for(id));
+		group.weapons.push({ id: id, item: item, dps: (metrics && metrics.dps) || 0 });
+	}
+	groups.forEach(function (group) {
+		group.weapons.sort(function (a, b) {
+			if (a.dps != b.dps) return a.dps - b.dps;
+			if (a.id < b.id) return -1;
+			if (a.id > b.id) return 1;
+			return 0;
+		});
+	});
+	return groups;
 }
 
 var last_selector = "";
