@@ -7420,11 +7420,13 @@ for(var wid in weapons){
 	}
 }
 
-// Craft-first sidegrades and materials. These use explicit upgrade curves so
-// their long-term +8/+9 and +3/+5 outcomes stay below established chase gear.
+// Craft-exclusive equipment and farmable materials. Explicit progression
+// curves keep most pieces below established chase gear while allowing three
+// costly, specialized crafts to contend without replacing incumbent choices.
 var items40={
 	"threadneedle":{
 		"type":"weapon",
+		"exclusive":true,
 		"wtype":"dagger",
 		"tier":1.4,
 		"skin":"threadneedle",
@@ -7441,6 +7443,7 @@ var items40={
 	},
 	"brinefang":{
 		"type":"weapon",
+		"exclusive":true,
 		"wtype":"short_sword",
 		"tier":2.25,
 		"skin":"brinefang",
@@ -7448,14 +7451,15 @@ var items40={
 		"range":7.5,
 		"resistance":8,
 		"damage_type":"physical",
-		"upgrade":{"attack":4.625,"range":1.5,"resistance":1.5},
+		"upgrade":{"attack":5,"range":1.5,"resistance":1.5},
 		"name":"Brinefang",
-		"explanation":"Reef glass gives this blade a defensive edge without dulling it.",
+		"explanation":"An endgame duelist's blade that stays close to peak damage while resisting magical pressure.",
 		"grades":[0,8,10,12],
 		"g":180000,
 	},
 	"molehook":{
 		"type":"tool",
+		"exclusive":true,
 		"wtype":"pickaxe",
 		"tier":1.5,
 		"skin":"molehook",
@@ -7471,6 +7475,7 @@ var items40={
 	},
 	"cinderwand":{
 		"type":"weapon",
+		"exclusive":true,
 		"wtype":"wand",
 		"tier":2,
 		"skin":"cinderwand",
@@ -7489,6 +7494,7 @@ var items40={
 	},
 	"pollenbow":{
 		"type":"weapon",
+		"exclusive":true,
 		"wtype":"bow",
 		"tier":1.25,
 		"skin":"pollenbow",
@@ -7505,6 +7511,7 @@ var items40={
 	},
 	"rimeknuckles":{
 		"type":"weapon",
+		"exclusive":true,
 		"wtype":"fist",
 		"tier":2.1,
 		"skin":"rimeknuckles",
@@ -7522,6 +7529,7 @@ var items40={
 	},
 	"lanternshield":{
 		"type":"shield",
+		"exclusive":true,
 		"tier":2.25,
 		"skin":"lanternshield",
 		"armor":70,
@@ -7535,6 +7543,7 @@ var items40={
 	},
 	"turtleshard":{
 		"type":"shield",
+		"exclusive":true,
 		"tier":1.75,
 		"skin":"turtleshard",
 		"armor":60,
@@ -7548,6 +7557,7 @@ var items40={
 	},
 	"ratkingbuckler":{
 		"type":"shield",
+		"exclusive":true,
 		"tier":1,
 		"skin":"ratkingbuckler",
 		"armor":32,
@@ -7561,20 +7571,22 @@ var items40={
 	},
 	"stormquiver":{
 		"type":"quiver",
+		"exclusive":true,
 		"tier":2.25,
 		"skin":"stormquiver",
 		"dex":4,
 		"armor":12,
 		"resistance":16,
 		"range":24,
-		"upgrade":{"dex":1,"armor":3,"resistance":3,"range":4},
+		"upgrade":{"dex":1.6,"armor":3,"resistance":3,"range":4},
 		"name":"Storm Quiver",
-		"explanation":"Trades explosive force and raw dexterity for reach and steadiness.",
+		"explanation":"An endgame kiting quiver that trades a little peak damage for exceptional reach and steadiness.",
 		"grades":[0,4,10,12],
 		"g":820000,
 	},
 	"thistlequiver":{
 		"type":"quiver",
+		"exclusive":true,
 		"tier":1.5,
 		"skin":"thistlequiver",
 		"dex":3,
@@ -7588,6 +7600,7 @@ var items40={
 	},
 	"scribeorb":{
 		"type":"source",
+		"exclusive":true,
 		"tier":1.75,
 		"skin":"scribeorb",
 		"int":10,
@@ -7601,6 +7614,7 @@ var items40={
 	},
 	"mossheart":{
 		"type":"source",
+		"exclusive":true,
 		"tier":2,
 		"skin":"mossheart",
 		"vit":10,
@@ -7613,6 +7627,7 @@ var items40={
 	},
 	"emberseal":{
 		"type":"ring",
+		"exclusive":true,
 		"skin":"emberseal",
 		"str":1,
 		"firesistance":7,
@@ -7624,6 +7639,7 @@ var items40={
 	},
 	"glacierseal":{
 		"type":"ring",
+		"exclusive":true,
 		"skin":"glacierseal",
 		"int":1,
 		"fzresistance":7,
@@ -7635,6 +7651,7 @@ var items40={
 	},
 	"venomband":{
 		"type":"ring",
+		"exclusive":true,
 		"skin":"venomband",
 		"dex":1,
 		"pnresistance":7,
@@ -7646,6 +7663,7 @@ var items40={
 	},
 	"saffronloop":{
 		"type":"earring",
+		"exclusive":true,
 		"class":["merchant"],
 		"skin":"saffronloop",
 		"vit":1,
@@ -7658,6 +7676,7 @@ var items40={
 	},
 	"moonshardearring":{
 		"type":"earring",
+		"exclusive":true,
 		"class":["mage","priest"],
 		"skin":"moonshardearring",
 		"int":2,
@@ -7670,6 +7689,7 @@ var items40={
 	},
 	"cloverstud":{
 		"type":"earring",
+		"exclusive":true,
 		"skin":"cloverstud",
 		"luck":4,
 		"vit":1,
@@ -7681,6 +7701,7 @@ var items40={
 	},
 	"anchorbelt":{
 		"type":"belt",
+		"exclusive":true,
 		"skin":"anchorbelt",
 		"armor":24,
 		"resistance":12,
@@ -7693,6 +7714,7 @@ var items40={
 	},
 	"windbelt":{
 		"type":"belt",
+		"exclusive":true,
 		"skin":"windbelt",
 		"dex":2,
 		"speed":2,
@@ -7705,6 +7727,7 @@ var items40={
 	},
 	"emberhood":{
 		"type":"helmet",
+		"exclusive":true,
 		"class":["mage","priest"],
 		"skin":"emberhood",
 		"int":2,
@@ -7719,6 +7742,7 @@ var items40={
 	},
 	"bogcrown":{
 		"type":"helmet",
+		"exclusive":true,
 		"class":["rogue","ranger"],
 		"skin":"bogcrown",
 		"dex":2,
@@ -7733,6 +7757,7 @@ var items40={
 	},
 	"ratworkcoat":{
 		"type":"chest",
+		"exclusive":true,
 		"skin":"ratworkcoat",
 		"vit":2,
 		"armor":18,
@@ -7746,6 +7771,7 @@ var items40={
 	},
 	"reefvest":{
 		"type":"chest",
+		"exclusive":true,
 		"class":["warrior","paladin"],
 		"skin":"reefvest",
 		"vit":2,
@@ -7760,6 +7786,7 @@ var items40={
 	},
 	"silkgrips":{
 		"type":"gloves",
+		"exclusive":true,
 		"class":["mage","priest"],
 		"skin":"silkgrips",
 		"int":2,
@@ -7774,6 +7801,7 @@ var items40={
 	},
 	"thundergrips":{
 		"type":"gloves",
+		"exclusive":true,
 		"class":["ranger"],
 		"skin":"thundergrips",
 		"dex":2,
@@ -7787,6 +7815,7 @@ var items40={
 	},
 	"bogwalkers":{
 		"type":"shoes",
+		"exclusive":true,
 		"class":["rogue","ranger"],
 		"skin":"bogwalkers",
 		"stat":3,
@@ -7802,6 +7831,7 @@ var items40={
 	},
 	"cinderboots":{
 		"type":"shoes",
+		"exclusive":true,
 		"class":["mage","priest"],
 		"skin":"cinderboots",
 		"stat":3,
@@ -7817,6 +7847,7 @@ var items40={
 	},
 	"rimeboots":{
 		"type":"shoes",
+		"exclusive":true,
 		"class":["warrior","paladin"],
 		"skin":"rimeboots",
 		"stat":3,
@@ -7832,6 +7863,7 @@ var items40={
 	},
 	"reedpants":{
 		"type":"pants",
+		"exclusive":true,
 		"class":["rogue","ranger"],
 		"skin":"reedpants",
 		"dex":2,
@@ -7845,6 +7877,7 @@ var items40={
 	},
 	"beastmantle":{
 		"type":"cape",
+		"exclusive":true,
 		"class":["warrior","paladin","rogue","ranger"],
 		"skin":"beastmantle",
 		"armor":16,
@@ -7861,15 +7894,16 @@ var items40={
 	},
 	"starcloak":{
 		"type":"cape",
+		"exclusive":true,
 		"class":["mage","priest"],
 		"skin":"starcloak",
 		"resistance":16,
-		"int":2,
+		"int":4,
 		"mp":120,
 		"speed":1,
-		"upgrade":{"resistance":2,"int":0.5,"mp":20,"speed":0.1},
+		"upgrade":{"resistance":2,"int":1,"mp":20,"speed":0.1},
 		"name":"Starcloak",
-		"explanation":"A costly caster sustain cape, not a replacement for offensive or event trophies.",
+		"explanation":"An endgame caster cape that nearly matches peak offense while favoring mana and magical endurance.",
 		"grades":[0,5,10,12],
 		"g":1800000,
 	},
