@@ -1179,6 +1179,13 @@ var imagesets = {
 		file: "/images/tiles/items/community.png?v=1",
 		load: true,
 	},
+	items40: {
+		size: 20,
+		rows: 4,
+		columns: 10,
+		file: "/images/tiles/items/items_40_remastered.png?v=1",
+		load: true,
+	},
 };
 var tilesets = {
 	castle: { file: "/images/tiles/map/castle.png?v=2" },

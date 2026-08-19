@@ -124,6 +124,7 @@ var drops = {
 			[2.0 / 10000000, "suckerpunch"],
 			[5.0 / 1000, "seashell"],
 			[1.0 / 1000, "crabclaw"],
+			[4.0 / 1000, "reefglass"],
 			[1.0 / 20000, "cclaw"],
 		],
 		bee: [
@@ -201,6 +202,7 @@ var drops = {
 		arcticbee: [
 			[0.00005, "essenceoffrost"],
 			[1.0 / 1000, "bfur"],
+			[1.0 / 2500, "frostcore"],
 		],
 		mole: [
 			[0.012, "gemfragment"],
@@ -213,6 +215,7 @@ var drops = {
 		crabx: [
 			[4.0 / 10000000, "suckerpunch"],
 			[2.0 / 100, "seashell"],
+			[4.0 / 100, "reefglass"],
 			[1.0 / 500, "cclaw"],
 			[1.0 / 10000, "cshell"],
 		],
@@ -245,6 +248,7 @@ var drops = {
 		tortoise: [
 			[2.0 / 10000, "shield"],
 			[1.0 / 1000, "seashell"],
+			[1.0 / 100, "reefglass"],
 		],
 		wolf: [[1.0 / 40, "leather"]],
 		wolfie: [[1.0 / 50, "leather"]],
@@ -268,6 +272,7 @@ var drops = {
 			[0.01, "forscroll"],
 			[1.0 / 400000, "cxjar", 1, "coolblueg"],
 			[1.0 / 80000, "sanguine"],
+			[1.0 / 10, "voidthread"],
 		],
 		fvampire: [
 			[0.3, "open", "statamulet"],
@@ -278,6 +283,7 @@ var drops = {
 			[1.0 / 200000, "cxjar", 1, "catbatg"],
 			[1.0 / 40, "offeringp"],
 			[1.0 / 50000, "sanguine"],
+			[1.0 / 10, "voidthread"],
 		],
 		//"phoenix":[[0.08,"intearring"],[0.08,"strearring"],[0.08,"dexearring"],[0.02,"firestaff"],[0.02,"fireblade"]],
 		phoenix: [
@@ -289,6 +295,8 @@ var drops = {
 			[0.04, "firestaff"],
 			[0.04, "firebow"],
 			[0.04, "fireblade"],
+			[1, "stormfeather", 3],
+			[1.0 / 50, "embercore"],
 			[1.0 / 40000, "fcape"],
 			[1.0 / 600, "offeringp"],
 			[1.0 / 64000000, "cxjar", 1, "hairdo606"],
@@ -303,6 +311,7 @@ var drops = {
 		bat: [
 			[4.0 / 1000, "wbook0"],
 			[5.0 / 1000, "bwing"],
+			[1.0 / 2000, "voidthread"],
 			[1.0 / 100000000, "cxjar", 1, "wings102"],
 		],
 		scorpion: [
@@ -344,6 +353,7 @@ var drops = {
 		icegolem: [
 			[5, "frozenkey"],
 			[10, "essenceoffrost"],
+			[1, "frostcore", 5],
 		],
 		fireroamer: [
 			[1.0 / 1442, "orbofstr"],
@@ -384,6 +394,7 @@ var drops = {
 			[0.1, "candy1"], //[1,"candy1v2"],[1,"candy1v2"],[1,"candy1v2"],[1,"candy1v2"],
 			[1.0 / 1000, "bcandle"],
 			[1.0 / 1000, "hdagger"],
+			[1, "ashleaf", 10],
 			[1, "glolipop"],
 		],
 		slenderman: [
@@ -454,6 +465,7 @@ var drops = {
 			[20, "essenceoffire"],
 			[10, "essenceoffire"],
 			[10, "essenceoffire"],
+			[1, "embercore", 5],
 			[0.2, "offering"],
 			[0.5, "lmace"],
 			[2.0 / 4 / 1000 / 1000, "cxjar", 1, "hat400"],
@@ -462,12 +474,16 @@ var drops = {
 		],
 		ent: [
 			[1, "essenceofnature"],
+			[1, "ashleaf", 20],
+			[1, "verdantcore", 2],
 			[0.02, "woodensword"],
 			[1 / 100000.0, "stick"],
 			[1 / 200000.0, "nheart"],
 		],
 		plantoid: [
 			[0.004, "essenceofnature"],
+			[0.02, "ashleaf"],
+			[1.0 / 3000, "verdantcore"],
 			[7.0 / 10000000, "ringofluck"],
 		],
 		grinch: [
@@ -479,7 +495,10 @@ var drops = {
 			[10, "iceskates"],
 			[1, "sweaterhs"],
 		],
-		bigbird: [[0.05, "feather0"]],
+		bigbird: [
+			[0.05, "feather0"],
+			[0.01, "stormfeather"],
+		],
 		harpy: [
 			[0.01, "feather1"],
 			[0.01, "feather1"],
@@ -1396,6 +1415,13 @@ var drops = {
 	cosmo2: [],
 	cosmo3: [],
 };
+
+// The elemental mage chain previously had no item drops. Void Thread gives
+// those encounters a deterministic crafting reward without adding direct gear.
+for (var xmage of ["xmagen", "xmagefi", "xmagefz"]) {
+	drops.monsters[xmage] = (drops.monsters[xmage] || []).concat([[1, "voidthread", 3]]);
+}
+drops.monsters.xmagex.push([1, "voidthread", 6]);
 
 // Populate cosmo2 - hairdo combinations
 var cosmo2_data = [
