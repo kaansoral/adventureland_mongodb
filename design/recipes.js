@@ -677,12 +677,13 @@ var craft={
 	},
 	"cloverstud":{
 		"items":[
-			[1,"vitearring",1],
-			[20,"ashleaf"],
-			[20,"spores"],
+			[1,"vitearring",2],
+			[1,"verdantcore"],
+			[40,"ashleaf"],
+			[40,"spores"],
 			[5,"gslime"],
 		],
-		"cost":90000,
+		"cost":280000,
 	},
 	"anchorbelt":{
 		"items":[

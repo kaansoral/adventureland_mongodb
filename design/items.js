@@ -7698,7 +7698,7 @@ var items40={
 		"compound":{"luck":2,"vit":1.5},
 		"name":"Clover Stud",
 		"explanation":"It has four leaves. You checked twice.",
-		"grades":[2,5,6,7],
+		"grades":[1,5,6,7],
 		"g":76000,
 	},
 	"anchorbelt":{
