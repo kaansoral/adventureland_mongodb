@@ -9188,7 +9188,7 @@ function init_io() {
 						player.socket.emit("eval", { code: "ui_move(" + spot.x + "," + spot.y + ")" });
 					}
 				}
-			} else if (data.name == "hardshell" || data.name == "power" || data.name == "xpower") {
+			} else if (data.name == "hardshell" || data.name == "power" || data.name == "xpower" || data.name == "shelter") {
 				consume_mp(player, gSkill.mp, mode.implicit_targets && player);
 				player.s[gSkill.condition] = {
 					ms: gSkill.duration || G.conditions[gSkill.condition].duration,

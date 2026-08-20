@@ -125,6 +125,16 @@ var conditions = {
 		buff: true,
 		explanation: "Greatly increases armor but limits maximum speed to 10.",
 	},
+	sheltered: {
+		skin: "lanternshield",
+		name: "Sheltered",
+		armor: 480,
+		resistance: 320,
+		set_speed: 10,
+		duration: 6000,
+		buff: true,
+		explanation: "Greatly increases armor and resistance but limits maximum speed to 10.",
+	},
 	reflection: {
 		skin: "buff_reflection",
 		name: "Reflective Shield",

@@ -244,6 +244,16 @@ var skills={
 		"use_range":true,
 		"range_multiplier":2,
 	},
+	"shelter":{
+		"type":"skill",
+		"skin":"lanternshield",
+		"slot":[["offhand","lanternshield"]],
+		"name":"Shelter",
+		"explanation":"Raise the lantern and shelter behind its flame.",
+		"condition":"sheltered",
+		"mp":240,
+		"cooldown":60000,
+	},
 	"rspeed":{
 		"type":"skill",
 		"skin":"buff_speed",
