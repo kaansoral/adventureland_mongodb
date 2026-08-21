@@ -3711,7 +3711,7 @@ function init_player(player) {
 		player.p.dt[dt] = new Date(player.p.dt[dt]);
 	}
 	for (var id in G.skills) {
-		if (G.skills[id]["class"] && G.skills[id]["class"].includes(player.type) && G.skills[id].persistent) {
+		if (G.skills[id]["class"] && G.skills[id]["class"].includes(player.type)) {
 			player.last[id] = player.p.dt[id] || new Date();
 			if ((G.skills[id].cooldown || G.skills[id].reuse_cooldown) > mssince(player.last[id])) {
 				player.hitchhikers.push([
@@ -3813,8 +3813,7 @@ function init_player_exit(player) {
 	for (var id in G.skills) {
 		if (
 			G.skills[id]["class"] &&
-			G.skills[id]["class"].includes(player.type) &&
-			G.skills[id].persistent &&
+			G.skills[id]["class"].includes(player.type)
 			player.last[id]
 		) {
 			player.p.dt[id] = player.last[id];
