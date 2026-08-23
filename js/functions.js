@@ -2616,7 +2616,7 @@ function buy_with_gold(name, quantity) {
 }
 
 function buy_with_shells(name, quantity) {
-	if (mssince(last_npc_right_click) < 100) return;
+	if (mssince(last_npc_right_click) < 100) return rejecting_promise({ reason: "npc_misclickp" });
 	var promise = push_deferred("buy_with_cash");
 	socket.emit("buy_with_cash", { name: name, quantity: quantity });
 	$(".buynum").html($(".buynum").data("q"));
@@ -2693,7 +2693,7 @@ var last_say = "normal";
 
 function say(message, code) {
 	message = "" + message;
-	if (!message || !message.length) return;
+	if (!message || !message.length) return resolving_promise({ success: false, reason: "empty" });
 	last_say = "normal";
 	if (message[0] == "/") {
 		message = message.substr(1, 2000);
@@ -3336,7 +3336,7 @@ function close_chests() {
 function open_chest(id) {
 	var chest = chests[id];
 	if (chest) {
-		if (chest.openning && ssince(chest.openning) < 5) return resolving_promise({ sucess: false, in_progress: true, reason: "openning" });
+		if (chest.openning && ssince(chest.openning) < 5) return resolving_promise({ success: false, sucess: false, in_progress: true, reason: "openning" });
 		draw_trigger(function () {
 			var chest = chests[id];
 			if (chest && !chest.openning) {

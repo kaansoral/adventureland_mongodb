@@ -861,16 +861,16 @@ function get_nearest_npc() {
 
 function use_hp_or_mp() {
 	if (safeties && mssince(last_potion) < min(200, character.ping * 3)) return resolving_promise({ reason: "safeties", success: false, used: false });
-	var used = true;
 	if (is_on_cooldown("use_hp")) return resolving_promise({ success: false, reason: "cooldown" });
-	if (character.mp / character.max_mp < 0.2) return use_skill("use_mp");
-	else if (character.hp / character.max_hp < 0.7) return use_skill("use_hp");
-	else if (character.mp / character.max_mp < 0.8) return use_skill("use_mp");
-	else if (character.hp < character.max_hp) return use_skill("use_hp");
-	else if (character.mp < character.max_mp) return use_skill("use_mp");
-	else used = false;
-	if (used) last_potion = new Date();
-	else return resolving_promise({ reason: "full", success: false, used: false });
+	var skill = null;
+	if (character.mp / character.max_mp < 0.2) skill = "use_mp";
+	else if (character.hp / character.max_hp < 0.7) skill = "use_hp";
+	else if (character.mp / character.max_mp < 0.8) skill = "use_mp";
+	else if (character.hp < character.max_hp) skill = "use_hp";
+	else if (character.mp < character.max_mp) skill = "use_mp";
+	if (!skill) return resolving_promise({ reason: "full", success: false, used: false });
+	last_potion = new Date();
+	return use_skill(skill);
 }
 
 function loot(id_or_arg) {
