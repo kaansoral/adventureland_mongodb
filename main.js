@@ -2,6 +2,7 @@ var fs = require("fs"),
 	path = require("path");
 var keys = require("./secretsandconfig/keys");
 var options = require("./secretsandconfig/options");
+var { get_seo_paths } = require("./seo_paths.js");
 
 eval("" + fs.readFileSync(path.resolve(__dirname, "common/init.js")));
 reinit_from_options();
@@ -552,12 +553,39 @@ app.get("/credits", async (req, res, next) => {
 app.get("/docs/:path0?/:path1?/:path2?/:path3?", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
-	domain.title = "Docs";
 	var p = [req.params.path0, req.params.path1, req.params.path2, req.params.path3];
-	for (var i = 0; i < p.length; i++) {
-		if (p[i]) domain.title += " /" + p[i];
-	}
+	set_docs_seo(domain, p);
 	res.status(200).send(nunjucks.render("htmls/docs.html", { domain: domain, user: user, content: "docs", dpath: p, extras: true }));
+});
+
+app.get("/robots.txt", function (req, res) {
+	res.type("text/plain").send("User-agent: *\nAllow: /\nSitemap: " + SEO_ORIGIN + "/sitemap.xml\n");
+});
+
+app.get("/sitemap.xml", function (req, res) {
+	var guide_articles = fs
+		.readdirSync(path.resolve(__dirname, "docs/guide"))
+		.filter(function (file) {
+			return file.endsWith(".html");
+		})
+		.map(function (file) {
+			return file.slice(0, -5);
+		});
+	var code_articles = fs
+		.readdirSync(path.resolve(__dirname, "docs/articles"))
+		.filter(function (file) {
+			return file.endsWith(".html");
+		})
+		.map(function (file) {
+			return file.slice(0, -5);
+		});
+	var paths = get_seo_paths({ docs: docs, guide_articles: guide_articles, code_articles: code_articles, items: items, monsters: monsters });
+	var urls = paths
+		.map(function (seo_path) {
+			return "\t<url><loc>" + SEO_ORIGIN + seo_path + "</loc></url>";
+		})
+		.join("\n");
+	res.type("application/xml").send('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls + "\n</urlset>\n");
 });
 
 // Runner, executor, logs pages

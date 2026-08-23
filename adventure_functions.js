@@ -332,6 +332,68 @@ extra_shells = 0;
 server_regions = { EU: "EU", US: "US", ASIA: "ASIA" };
 region_coords = { EU: [50, 8], US: [37, -100], ASIA: [1.3, 103.8] };
 allowed_name_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+SEO_ORIGIN = "https://adventure.land";
+SEO_IMAGE_URL = SEO_ORIGIN + "/images/first_logo.png";
+SEO_DESCRIPTION = "Adventure Land is a persistent code MMORPG where you control up to four characters with JavaScript, explore, trade, craft, and fight alongside other players.";
+
+function set_default_seo(domain, req) {
+	var request_path = (req && req.path) || "/";
+	domain.canonical_url = SEO_ORIGIN + request_path;
+	domain.seo_description = SEO_DESCRIPTION;
+	domain.seo_image_alt = "Adventure Land game world and logo";
+	domain.seo_image_url = SEO_IMAGE_URL;
+}
+
+function docs_seo_name(value) {
+	return (value || "Docs").replace(/[._-]+/g, " ").replace(/\b\w/g, function (letter) {
+		return letter.toUpperCase();
+	});
+}
+
+function set_docs_seo(domain, path_parts) {
+	var parts = path_parts.filter(function (part) {
+		return !!part;
+	});
+	var canonical_parts = parts.slice();
+	var ref_aliases = {
+		cnewyear: "event-lunarnewyear",
+		egghunt: "event-egghunt",
+		halloween: "event-halloween",
+		holidayseason: "event-holidayseason",
+		lunarnewyear: "event-lunarnewyear",
+		valentines: "event-valentines",
+	};
+	if (canonical_parts[0] === "ref" && ref_aliases[canonical_parts[1]]) canonical_parts[1] = ref_aliases[canonical_parts[1]];
+
+	var name = docs_seo_name(parts[parts.length - 1]);
+	if (parts[0] === "code" && parts[1] === "functions" && parts[2]) {
+		domain.title = parts[2] + "() — Adventure Land CODE Docs";
+		domain.seo_description = "CODE reference for " + parts[2] + "() in Adventure Land.";
+	} else if (parts[0] === "guide" && parts[1] === "all" && parts[2] === "items" && parts[3]) {
+		domain.title = name + " — Adventure Land Item Guide";
+		domain.seo_description = "Adventure Land item reference for " + name + ".";
+	} else if (parts[0] === "guide" && parts[1] === "all" && parts[2] === "monsters" && parts[3]) {
+		domain.title = name + " — Adventure Land Monster Guide";
+		domain.seo_description = "Adventure Land monster reference for " + name + ".";
+	} else if (parts.length) {
+		domain.title = name + " — Adventure Land Docs";
+		domain.seo_description = "Adventure Land guides, CODE references, game data, items, monsters, skills, and systems.";
+	} else {
+		domain.title = "Adventure Land Docs";
+		domain.seo_description = "Adventure Land guides, CODE references, game data, items, monsters, skills, and systems.";
+	}
+	domain.canonical_url =
+		SEO_ORIGIN +
+		"/docs" +
+		(canonical_parts.length
+			? "/" +
+			  canonical_parts
+					.map(function (part) {
+						return encodeURIComponent(part);
+					})
+					.join("/")
+			: "");
+}
 
 async function get_domain(req, user) {
 	var domain = await get_domain_common(req);
@@ -349,7 +411,7 @@ async function get_domain(req, user) {
 		pixi_lights: "2.0.3",
 		interact: "1.2.6",
 	};
-	domain.title = game_name;
+	domain.title = "Adventure Land — The Code MMORPG";
 	domain.name = game_name;
 	domain.scale = 2;
 	domain.perfect_pixels = true;
@@ -474,6 +536,7 @@ async function get_domain(req, user) {
 			domain.https = true;
 		}
 	}
+	set_default_seo(domain, req);
 	return domain;
 }
 
@@ -1226,6 +1289,7 @@ function shtml(path, vars) {
 }
 
 async function render_selection(req, res, user, domain, level, server) {
+	domain.canonical_url = SEO_ORIGIN + "/";
 	var servers = await get_servers();
 	if (!server) server = select_server(req, user, servers);
 	var total = 0,

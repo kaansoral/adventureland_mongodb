@@ -1,17 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
-		<title>{{domain.name}}</title>
+		<title>{{domain.title}}</title>
+		{% include "htmls/seo.html" %}
 		<link rel="apple-touch-icon-precomposed" href="/images/favicon.png" /> <!-- 152 -->
 		<link rel="icon" href="/images/favicon.png" /> <!-- 32 -->
 		<!--[if IE]><link rel="shortcut icon" href="/images/favicon.png"><![endif]--> <!-- .ico -->
 		<meta name="msapplication-TileImage" content="/images/favicon.png"> <!-- 144 -->
 		<meta name="google-site-verification" content="828I6vVcDPWUBQyONrSKy8Y5cMaibNSMxZSfiKzOQrk" />
-		<meta property="og:url" content="{{domain.url or 'http://adventure.land'}}"/>
-		<meta property="og:image" content="http://adventure.land/images/first_logo.png"/>
-		<meta property="og:title" content="Adventure Land"/>
-		<meta property="og:description" content="A Casual Browser Based MMORPG Where You Can Even Code Your Character! Very Early Access."/>
-		<meta name="description" content="A Casual Browser Based MMORPG Where You Can Even Code Your Character! Very Early Access."/>
 		<meta name="keywords" content="browser,mmorpg,pixel,2d,retro,code"/>
 		{% if domain.test_clicks %} <!-- until the click issue is definitely fixed--> {#  or 1 and not domain.test_fast #}
 			<script src="/js/pixi/4.0.2/pixi.min.js"></script>

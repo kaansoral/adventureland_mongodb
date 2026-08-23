@@ -1,19 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
 		<style>html,body{background-color:black;}</style>
-		<title>{{domain.name}}</title>
+		<title>{{domain.title}}</title>
+		{% include "htmls/seo.html" %}
 		{% if domain.electron and domain.no_html %}<script>require=parent.require;</script>{% endif %}
 		<link rel="apple-touch-icon-precomposed" href="/images/favicon3.png" /> <!-- 152 -->
 		<link rel="icon" href="/images/favicon3.png" /> <!-- 32 -->
 		<!--[if IE]><link rel="shortcut icon" href="/images/favicon3.png"><![endif]--> <!-- .ico -->
 		<meta name="msapplication-TileImage" content="/images/favicon3.png"> <!-- 144 -->
 		<meta name="google-site-verification" content="828I6vVcDPWUBQyONrSKy8Y5cMaibNSMxZSfiKzOQrk" />
-		<meta property="og:url" content="{{domain.url or 'http://adventure.land'}}"/>
-		<meta property="og:image" content="http://adventure.land/images/first_logo.png"/>
-		<meta property="og:title" content="Adventure Land"/>
-		<meta property="og:description" content="A Casual Browser Based MMORPG Where You Can Even Code Your Character! Very Early Access."/>
-		<meta name="description" content="A Casual Browser Based MMORPG Where You Can Even Code Your Character! Very Early Access."/>
 		<meta name="keywords" content="browser,mmorpg,pixel,2d,retro,code"/>
 		<script src="/js/pixi/{{domain.pixi_version}}/pixi.min.js{{domain.pixi_fversion}}"></script>
 		{% if not domain.no_graphics and 0 %} <script src="/js/pixi-display/{{domain.pixi_display_version}}/pixi-display.js"></script> {% endif %}
