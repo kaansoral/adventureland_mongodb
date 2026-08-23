@@ -43,6 +43,20 @@ fn is_external_url(url: &url::Url) -> bool {
     url.scheme() == "https" || url.scheme() == "mailto"
 }
 
+#[cfg(target_os = "macos")]
+fn set_macos_dock_icon() {
+    use objc2::{AllocAnyThread, MainThreadMarker};
+    use objc2_app_kit::{NSApplication, NSImage};
+    use objc2_foundation::NSData;
+
+    let main_thread = MainThreadMarker::new().expect("setting the macOS Dock icon off main thread");
+    let data = NSData::with_bytes(include_bytes!("../icons/icon.icns"));
+    let icon =
+        NSImage::initWithData(NSImage::alloc(), &data).expect("decoding the macOS Dock icon");
+    let app = NSApplication::sharedApplication(main_thread);
+    unsafe { app.setApplicationIconImage(Some(&icon)) };
+}
+
 fn lock_string(value: &Arc<Mutex<String>>) -> String {
     value.lock().map(|value| value.clone()).unwrap_or_default()
 }
@@ -287,6 +301,9 @@ pub fn run() {
             }
         }))
         .setup(move |app| {
+            #[cfg(target_os = "macos")]
+            set_macos_dock_icon();
+
             init_steam(steam_ticket, steam_error);
 
             WebviewWindowBuilder::new(app, "loader", tauri::WebviewUrl::App("loader.html".into()))
