@@ -122,6 +122,7 @@ docs = {
 		"kick_party_member",
 		"accept_magiport",
 		"unfriend",
+		"unfriend_complete",
 		"send_friend_request",
 		"accept_friend_request",
 		"respawn",

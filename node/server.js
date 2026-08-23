@@ -10723,23 +10723,35 @@ function init_io() {
 				requests[data.name + "-" + player.name] = false;
 			}
 			if (data.event == "unfriend") {
+				function finish_unfriend(response, extra) {
+					if (!players[socket.id]) return;
+					socket.emit(
+						"game_response",
+						Object.assign(
+							{
+								response: response,
+								name: data.name,
+								request_id: data.request_id,
+								cevent: response,
+							},
+							extra || {},
+						),
+					);
+				}
 				(async function () {
 					try {
 						var user1 = await get(player.owner);
-						var u2_id = data.name;
-						var user2 = await get(u2_id);
-						if (!user2) {
-							var char = await db.collection("character").findOne({ name: u2_id.toLowerCase().replace(/\s+/g, "") });
-							if (char) user2 = await get(char.owner);
-						}
+						var u2_id = "" + (data.name || "");
+						var char = await db.collection("character").findOne({ name: u2_id.toLowerCase().replace(/\s+/g, "") });
+						var user2 = (char && (await get(char.owner))) || (await db.collection("user").findOne({ _id: u2_id }));
 						if (!user1 || !user2) {
 							var p = players[socket.id];
-							if (p) socket.emit("game_response", { response: "unfriend_failed", reason: "nouser" });
+							if (p) finish_unfriend("unfriend_failed", { failed: true, reason: "nouser" });
 							return;
 						}
 						if (user1.server || user2.server) {
 							var p = players[socket.id];
-							if (p) socket.emit("game_response", { response: "unfriend_failed", reason: "bank" });
+							if (p) finish_unfriend("unfriend_failed", { failed: true, reason: "bank" });
 							return;
 						}
 						var R = await tx(
@@ -10763,15 +10775,21 @@ function init_io() {
 						);
 						if (R.failed) {
 							var p = players[socket.id];
-							if (p) socket.emit("game_response", { response: "unfriend_failed", reason: "unknown" });
+							if (p) finish_unfriend("unfriend_failed", { failed: true, reason: "unknown" });
 							return;
+						}
+						var p = players[socket.id];
+						if (p) {
+							p.friends = R.e1.friends;
+							resend(p, "redata");
+							finish_unfriend("unfriend_complete", { success: true, friends: R.e1.friends });
 						}
 						update_characters(R.e1, "not_friends", R.e2.name).catch(console.error);
 						update_characters(R.e2, "not_friends", R.e1.name).catch(console.error);
 					} catch (e) {
 						console.error("not_friends error", e);
 						var p = players[socket.id];
-						if (p) socket.emit("game_response", { response: "unfriend_failed", reason: "coms failure" });
+						if (p) finish_unfriend("unfriend_failed", { failed: true, reason: "coms_failure" });
 					}
 				})();
 			}

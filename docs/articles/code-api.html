@@ -47,6 +47,7 @@ attack(target).then(function (result) {
 	await accept_friend_request("Wizard");            // Friendship created
 	await send_mail_complete("Merchant", "Route", "Meet at the bank"); // Mail stored
 	await buy_with_shells_complete("computer", 1);    // Account and inventory updated
+	await unfriend_complete("FormerFriend");           // Both accounts updated
 	await wait_for(function () { return get_player("Wizard"); }, 5000);
 	await wait_for_event(character, "new_map", 5000);
 }

@@ -1697,6 +1697,7 @@ function init_socket(args) {
 		if (Dev) console.log(["game_response", data]);
 		var response = data.response || data;
 		try {
+			if (response == "unfriend_complete" && data.friends) character.friends = data.friends;
 			var cevent = false,
 				event = false;
 			if (data.cevent) ((cevent = data.cevent), delete data.cevent);

@@ -222,6 +222,8 @@ character.remove(listener);</div>
 <span data-event="mail_failed">mail_failed</span>
 <span data-event="shell_purchase_complete">shell_purchase_complete</span>
 <span data-event="shell_purchase_failed">shell_purchase_failed</span>
+<span data-event="unfriend_complete">unfriend_complete</span>
+<span data-event="unfriend_failed">unfriend_failed</span>
 <span data-event="mluck">mluck</span>
 <span data-event="cx_sent">cx_sent</span>
 <span data-event="cx_received">cx_received</span>
@@ -241,3 +243,5 @@ character.remove(listener);</div>
 <p><span class="dlabel">mail_sent</span> and <span class="dlabel">mail_failed</span> include <span class="dlabel">to</span>. Calls made through <span class="dlabel">send_mail_complete</span> also include a unique <span class="dlabel">request_id</span>, allowing simultaneous mail operations to be correlated without guessing from recipient or timing.</p>
 
 <p><span class="dlabel">shell_purchase_complete</span> and <span class="dlabel">shell_purchase_failed</span> include <span class="dlabel">name</span>, <span class="dlabel">quantity</span>, and a correlated <span class="dlabel">request_id</span>. Successful purchases also include <span class="dlabel">cost</span>; failures include <span class="dlabel">reason</span>.</p>
+
+<p><span class="dlabel">unfriend_complete</span> and <span class="dlabel">unfriend_failed</span> include <span class="dlabel">name</span> and <span class="dlabel">request_id</span>. Successful removal also includes the updated account <span class="dlabel">friends</span> array.</p>
