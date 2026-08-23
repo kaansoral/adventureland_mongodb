@@ -1,0 +1,79 @@
+<p><span class="dlabel">CODE globals</span></p>
+
+<p>These objects are supplied to every character CODE context. Treat them as live read-only inputs unless a documented option explicitly invites configuration.</p>
+
+<p><span class="dlabel" data-global="character">character</span></p>
+
+<p>Your live character proxy: stats, inventory, equipment, conditions, action progress, movement, social state, and event methods. See the Character Object reference.</p>
+
+<p><span class="dlabel" data-global="G">G</span></p>
+
+<p>Static and server-supplied game definitions. Common collections include:</p>
+
+<div class="code">G.items       // Item definitions
+G.skills      // Skill definitions
+G.conditions  // Condition definitions
+G.classes     // Class definitions
+G.monsters    // Base monster definitions
+G.maps        // Maps, NPCs, doors, spawns, and monster packs
+G.npcs        // NPC definitions
+G.events      // Joinable and announced event definitions
+G.craft       // Craft recipes
+G.tokens      // Token exchange tables
+G.projectiles // Projectile definitions</div>
+
+<p>Definitions describe inputs to runtime behavior; they do not replace server validation or live entity state.</p>
+
+<p><span class="dlabel" data-global="server">server</span></p>
+
+<div class="code">{
+	mode: "normal", // normal, hardcore, or test
+	pvp: false,
+	region: "EU",
+	id: "I",
+}</div>
+
+<p><span class="dlabel">server.pvp</span> describes the server. Use <span class="dlabel">in_pvp()</span> when the current map can independently enable PVP.</p>
+
+<p><span class="dlabel" data-global="game">game</span></p>
+
+<div class="code">{
+	platform: "web", // web or electron
+	graphics: true,
+	html: true,
+	cli: false,
+}</div>
+
+<p><span class="dlabel">game</span> also owns the game-event methods <span class="dlabel">on</span>, <span class="dlabel">once</span>, <span class="dlabel">all</span>, and <span class="dlabel">remove</span>.</p>
+
+<p><span class="dlabel" data-global="smart">smart</span></p>
+
+<div class="code">smart.moving          // A smart route is active
+smart.map              // Destination map
+smart.x                 // Destination x
+smart.y                 // Destination y
+smart.plot              // Current planned path
+smart.edge = 20         // Arrival tolerance
+smart.use_town = false  // Allow town in path search
+smart.prune.smooth      // Smooth redundant points
+smart.prune.map         // Prune routes that leave the destination map</div>
+
+<p><span class="dlabel">smart</span> exposes the current <span class="dlabel">smart_move</span> state and supported pathfinding options. Internal queue/search fields can change while a route is running; do not retain them as durable state.</p>
+
+<p><span class="dlabel" data-global="safeties">safeties</span></p>
+
+<p>Boolean request-burst safeguards used by chat, loot, and potion helpers. It is <span class="dlabel">true</span> by default. Disabling it does not change server rate limits and can make accidental request bursts disconnect the character.</p>
+
+<p><span class="dlabel" data-global="parent">parent</span></p>
+
+<p>The containing game window. It exposes low-level runtime objects such as <span class="dlabel">parent.entities</span>, <span class="dlabel">parent.chests</span>, and the original <span class="dlabel">parent.character</span>. Existing code that uses these remains compatible, but normal action code should prefer public routines and globals: they normalize data, register Promises before requests, and preserve safeguards.</p>
+
+<p><span class="dlabel">Nearby runtime collections</span></p>
+
+<div class="code">parent.entities // Visible characters, monsters, and citizen NPCs by ID
+get_chests()    // Visible chests by ID
+get_party()     // Cached party data
+get_servers()   // Cached server directory
+get_characters()// Cached account character summaries</div>
+
+<p>Visible entity references become stale after leaving view. Resolve them again with <span class="dlabel">get_entity</span>, <span class="dlabel">get_player</span>, or <span class="dlabel">get_monster</span> before acting.</p>
