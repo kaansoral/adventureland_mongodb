@@ -1473,6 +1473,20 @@ var smart = {
 	flags: {},
 };
 
+function smart_move_event(event, on_done) {
+	smart.moving = false;
+	return join(event).then(
+		function (data) {
+			if (on_done) on_done(!data.failed);
+			return data;
+		},
+		function (error) {
+			if (on_done) on_done(false);
+			throw error;
+		},
+	);
+}
+
 function smart_move(destination, on_done) {
 	// despite the name, smart_move isn't very smart or efficient, it's up to the players to implement a better movement method [05/02/17]
 	// on_done function is an old callback function for compatibility, smart_move also returns a Promise [25/03/20]
@@ -1487,10 +1501,7 @@ function smart_move(destination, on_done) {
 	} else if ("to" in destination || "map" in destination) {
 		if (destination.to == "town") destination.to = "main";
 		if (G.events[destination.to] && parent.S[destination.to] && G.events[destination.to].join) {
-			join(destination.to);
-			smart.moving = false;
-			smart.on_done(true);
-			return;
+			return smart_move_event(destination.to, on_done);
 		} else if (G.monsters[destination.to]) {
 			var locations = [],
 				theone;
@@ -1518,15 +1529,12 @@ function smart_move(destination, on_done) {
 		} else if (G.maps[destination.to || destination.map]) {
 			if (G.maps[destination.to || destination.map].event) {
 				if (parent.S[G.maps[destination.to || destination.map].event]) {
-					join(G.maps[destination.to || destination.map].event);
-					smart.moving = false;
-					smart.on_done(true);
-					return;
+					return smart_move_event(G.maps[destination.to || destination.map].event, on_done);
 				} else {
 					game_log("Path not found!", "#CF575F");
 					smart.moving = false;
-					smart.on_done(false, "failed");
-					return;
+					if (on_done) on_done(false);
+					return rejecting_promise({ reason: "event_not_live", event: G.maps[destination.to || destination.map].event });
 				}
 			} else {
 				smart.map = destination.to || destination.map;
