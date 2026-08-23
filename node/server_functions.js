@@ -3813,7 +3813,7 @@ function init_player_exit(player) {
 	for (var id in G.skills) {
 		if (
 			G.skills[id]["class"] &&
-			G.skills[id]["class"].includes(player.type)
+			G.skills[id]["class"].includes(player.type) &&
 			player.last[id]
 		) {
 			player.p.dt[id] = player.last[id];
