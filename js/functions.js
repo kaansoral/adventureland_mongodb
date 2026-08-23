@@ -1943,6 +1943,7 @@ function backup_code_cache_once() {
 	if (storage_get("code_cache") && !storage_get("code_cache_backup")) storage_set("code_cache_backup", storage_get("code_cache"));
 }
 
+var code_save_promise = null;
 function code_persistence_logic() {
 	if (explicit_slot) return;
 	try {
@@ -1959,10 +1960,33 @@ function code_persistence_logic() {
 		// if(gameplay=="hardcore") data["code_"+real_id+suffix]=codemirror_render.getValue();
 		data["slot_" + real_id + suffix] = code_slot;
 		storage_set("code_cache", JSON.stringify(data));
-		if (code_change) api_call("save_code", { code: codemirror_render.getValue(), slot: code_slot, auto: true }), (code_change = false);
-		console.log("Code saved!");
+		if (!code_change) return code_save_promise || resolving_promise({ success: true, no_change: true });
+		if (code_save_promise)
+			return code_save_promise.then(function () {
+				return code_persistence_logic();
+			});
+		var saved_code = codemirror_render.getValue();
+		code_change = false;
+		code_save_promise = api_call("save_code", { code: saved_code, slot: code_slot, auto: true }).then(
+			function (result) {
+				code_save_promise = null;
+				if (codemirror_render.getValue() != saved_code) code_change = true;
+				console.log("Code saved!");
+				return result;
+			},
+			function (error) {
+				code_save_promise = null;
+				code_change = true;
+				console.error("Code save failed", error);
+				return { success: false, failed: true, reason: "save_failed", error: error };
+			},
+		);
+		return code_save_promise;
 	} catch (e) {
+		code_save_promise = null;
+		code_change = true;
 		console.log(e);
+		return resolving_promise({ success: false, failed: true, reason: "save_failed", error: e });
 	}
 }
 
