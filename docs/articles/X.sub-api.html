@@ -1,20 +1,32 @@
-<p>Adventure Land communicates with it's backend through API calls. This backend system has access to all the servers and characters. While the API system is intended for manual use only, you can use this system to occasionally programatically check out your friends, or check out all the online merchants.</p>
+<p><span class="dlabel">The account API</span></p>
 
-<p>Keep in mind that the data format and method names can change at any time in the future without a warning.</p>
+<p><span class="dlabel">parent.api_call(method, args, options)</span> sends a POST request to Adventure Land's account/backend API. This is different from real-time character actions such as <span class="dlabel">attack</span>, <span class="dlabel">move</span>, or <span class="dlabel">send_item</span>, which use the character's game-server socket.</p>
 
-<div class='code'>
-parent.api_call('pull_merchants');
-parent.api_call('pull_friends');
-</div>
-
-<p>To catch the response:</p>
-
-
-<div class='code'>
-game.on('api_response',function(data){
-	if(data.type=="merchants")
-	{
-		show_json(data);
+<div class="code">async function inspect_account_data() {
+	try {
+		var result = await parent.api_call("pull_friends", {}, { timeout: 15000 });
+		show_json(result);
+	} catch (error) {
+		game_log("API failed: " + error.reason);
 	}
+}
+
+inspect_account_data();</div>
+
+<p>The returned Promise fulfills with the API result. Failed API results, network errors, and configured request timeouts reject with a structured error. Use <span class="dlabel">try/catch</span> or <span class="dlabel">.catch</span>.</p>
+
+<p>The optional <span class="dlabel">options.timeout</span> is measured in milliseconds. API calls are not intended for combat loops or high-frequency polling.</p>
+
+<p><span class="dlabel">Additional information events</span></p>
+
+<p>Some API responses carry additional information records. Those records are also emitted through <span class="dlabel">game.on("api_response", ...)</span> after the main request settles:</p>
+
+<div class="code">game.on("api_response", function (data) {
+	if (data.type == "merchants") show_json(data);
 });
-</div>
+
+parent.api_call("pull_merchants").catch(function (error) {
+	game_log("Merchant lookup failed: " + error.reason);
+});</div>
+
+<p>Prefer a documented public CODE routine when one exists. For example, use <span class="dlabel">upload_code</span> instead of calling <span class="dlabel">save_code</span> directly. Low-level API method names and payloads are advanced, compatibility-sensitive interfaces and can evolve independently of the public CODE function directory.</p>

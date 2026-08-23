@@ -1,1 +1,56 @@
-<p>Work in progress ...</p>
+<p><span class="dlabel">Game and CODE architecture</span></p>
+
+<p>Each character has two cooperating browser contexts:</p>
+
+<div class="code">Game frame
+  Owns the server socket, live entities, map state, rendering, CODE editor, and account API calls
+
+CODE frame (/runner)
+  Loads the public CODE functions, event listeners, compatibility helpers, and your code</div>
+
+<p>The CODE frame is deliberately separate. Restarting CODE replaces that frame and clears ordinary JavaScript variables, timers, listeners, and unfinished work from the old run. The game frame and character connection stay alive.</p>
+
+<p><span class="dlabel">How an action travels</span></p>
+
+<div class="code">Your code
+  -> public routine such as attack(target)
+  -> game frame registers the pending response
+  -> socket request reaches the game server
+  -> socket response reaches the game frame
+  -> the matching Promise fulfills or rejects in your CODE frame</div>
+
+<p>The response is registered before the request is sent. Requests sharing a response channel are queued in request order. Use the public routines instead of raw socket emits so response correlation, safeguards, timeouts, and compatibility behavior remain intact.</p>
+
+<p><span class="dlabel">Live data</span></p>
+
+<p><span class="dlabel">character</span>, nearby entities returned by functions such as <span class="dlabel">get_entity</span>, and the objects under <span class="dlabel">parent</span> are live runtime objects. Do not keep a nearby entity reference forever: an entity that leaves visibility stops updating. Fetch it again by ID or name when needed.</p>
+
+<p><span class="dlabel">G</span> contains game definitions such as items, skills, maps, monsters, and recipes. Definitions describe content; the server remains authoritative for whether an action is valid and what it finally costs or changes.</p>
+
+<p><span class="dlabel">Events</span></p>
+
+<div class="code">character.on("loot", function (data) {
+	show_json(data);
+});
+
+game.on("hit", function (data) {
+	// World event: may describe another entity.
+});</div>
+
+<p>Socket data is normalized by the game frame and forwarded to <span class="dlabel">character</span> or <span class="dlabel">game</span> listeners in the CODE frame. Character events concern your character; game events describe the visible world or server. See both event references for exact payloads.</p>
+
+<p><span class="dlabel">Account API</span></p>
+
+<p><span class="dlabel">parent.api_call</span> sends an HTTP request to the account/backend API. It is separate from real-time character socket actions. Public wrappers such as <span class="dlabel">upload_code</span> should be preferred when one exists.</p>
+
+<p><span class="dlabel">Multiple characters</span></p>
+
+<p><span class="dlabel">start_character</span> opens another owned character with its own game frame, socket, CODE frame, variables, and listeners. Communicate through <span class="dlabel">send_cm</span>; do not assume two characters share JavaScript memory merely because they are open in the same browser.</p>
+
+<p><span class="dlabel">Persistence boundaries</span></p>
+
+<div class="code">set("local-plan", { monster: "goo" }); // Browser-local JSON value
+pset("raw-key", "raw value");            // Platform persistent string
+upload_code(12, "helpers", source);        // Account-backed code slot; returns a Promise</div>
+
+<p>Choose storage deliberately. Ordinary variables last only for the current CODE run; <span class="dlabel">get/set</span> and <span class="dlabel">pget/pset</span> are local to the current platform profile; code slots are stored with the account.</p>

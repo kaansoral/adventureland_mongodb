@@ -1,7 +1,21 @@
-<p>Adventure Land uses a 2 dimensional coordinate system.</p>
+<p><span class="dlabel">Coordinate system</span></p>
 
-<p>If you start at (0,0) and move 100 pixels right, you end up at (100,0)</p>
+<p>Adventure Land maps use two-dimensional coordinates. Positive X moves right, negative X moves left, positive Y moves down, and negative Y moves up.</p>
 
-<p>If you start at (0,0) and move 100 pixels down, you end up at (0,100)</p>
+<div class="code">move(100, 0);   // Right of the origin
+move(0, 100);   // Below the origin
+move(-100, 0);  // Left of the origin
+move(0, -100);  // Above the origin</div>
 
-<p>Work in progress ...</p>
+<p><span class="dlabel">character.x</span> and <span class="dlabel">character.y</span> are your current map coordinates. A coordinate is meaningful only with its map and instance:</p>
+
+<div class="code">var here = {
+	map: character.map,
+	in: character.in,
+	x: character.x,
+	y: character.y
+};</div>
+
+<p>Two identical X/Y pairs on different maps or in different instances are not the same place. <span class="dlabel">distance</span> returns a very large value when compatible map or instance fields disagree.</p>
+
+<p>Nearby entities also expose <span class="dlabel">real_x</span> and <span class="dlabel">real_y</span> internally. Public movement routines and ordinary CODE should use <span class="dlabel">x</span>/<span class="dlabel">y</span> unless a documented function specifically requires otherwise.</p>

@@ -1803,8 +1803,6 @@ function init_socket(args) {
 				show_alert("Mail failed, reason: " + data.reason);
 			} else if (response == "mail_sent") {
 				ui_log("Mail sent to " + data.to + "!", "#C06978");
-			} else if (response == "mail_sent") {
-				ui_log("Mail sent to " + data.to + "!", "#C06978");
 			} else if (response == "mail_take_item_failed") {
 				ui_log("Can't retrieve the item, probably you took it already", "#C06978");
 				setTimeout(function () {

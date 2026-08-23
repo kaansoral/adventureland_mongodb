@@ -1,1 +1,33 @@
-<p>Work in progress ...</p>
+<p><span class="dlabel">Walking part of the way</span></p>
+
+<p>The midpoint between two coordinates is the average of their X values and the average of their Y values:</p>
+
+<div class="code">function midpoint(a, b) {
+	return {
+		x: (a.x + b.x) / 2,
+		y: (a.y + b.y) / 2
+	};
+}
+
+async function walk_halfway_to_target() {
+	var target = get_target();
+	if (target) {
+		var halfway = midpoint(character, target);
+		if (can_move_to(halfway)) await move(halfway.x, halfway.y);
+	}
+}
+
+walk_halfway_to_target();</div>
+
+<p>For any fraction from 0 to 1, interpolate between the start and destination:</p>
+
+<div class="code">function point_between(a, b, fraction) {
+	return {
+		x: a.x + (b.x - a.x) * fraction,
+		y: a.y + (b.y - a.y) * fraction
+	};
+}
+
+var quarter = point_between(character, { x: 100, y: -50 }, 0.25);</div>
+
+<p><span class="dlabel">move</span> does not pathfind around walls. Check the straight segment with <span class="dlabel">can_move_to</span>, or use <span class="dlabel">smart_move</span> when the route may cross obstacles or maps.</p>
