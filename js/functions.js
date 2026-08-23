@@ -2926,7 +2926,7 @@ function quantity(name, level) {
 function auto_craft(name, code) {
 	var issue = null;
 	if (!G.craft[name]) issue = "recipe";
-	else if (G.craft[name].gold < character.gold) issue = "gold";
+	else if (G.craft[name].cost > character.gold) issue = "gold";
 	else {
 		G.craft[name].items.forEach(function (i) {
 			if (quantity(i[1], i[2]) < i[0]) issue = "items";
