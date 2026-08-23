@@ -143,9 +143,11 @@ function is_character(entity) {
 
 function interact(name) {
 	if (name == "monsterhunt") {
+		var promise = parent.push_deferred("monsterhunt");
 		parent.socket.emit("monsterhunt");
-		return parent.push_deferred("monsterhunt"); // {started:true} / {completed:true} / {failed:true}
+		return promise; // {started:true} / {completed:true} / {failed:true}
 	}
+	return rejecting_promise({ reason: "invalid", interaction: name });
 }
 
 function enter(place, name) {
@@ -185,8 +187,9 @@ function shift(num, name) {
 
 function throw_item(num, x, y) {
 	// Throw an inventory item to the ground - only items with "throw":true are throwable this way - Like confetti's
+	var promise = parent.push_deferred("throw");
 	parent.socket.emit("throw", { num: num, x: x, y: y });
-	return parent.push_deferred("throw");
+	return promise;
 }
 
 function use_skill(name, target, extra_arg) {
@@ -213,14 +216,16 @@ function reduce_cooldown(name, ms) {
 
 function bank_deposit(gold) {
 	if (!character.bank) return rejecting_promise({ reason: "not_in_bank" });
+	var promise = parent.push_deferred("bank");
 	parent.socket.emit("bank", { operation: "deposit", amount: gold });
-	return parent.push_deferred("bank");
+	return promise;
 }
 
 function bank_withdraw(gold) {
 	if (!character.bank) return rejecting_promise({ reason: "not_in_bank" });
+	var promise = parent.push_deferred("bank");
 	parent.socket.emit("bank", { operation: "withdraw", amount: gold });
-	return parent.push_deferred("bank");
+	return promise;
 }
 
 function bank_store(num, pack, pack_num) {
@@ -245,8 +250,9 @@ function bank_store(num, pack, pack_num) {
 		if (!pack && !cp) return rejecting_promise({ reason: "bank_full" });
 		if (!pack) pack = cp;
 	}
+	var promise = parent.push_deferred("bank");
 	parent.socket.emit("bank", { operation: "swap", pack: pack, str: pack_num, inv: num });
-	return parent.push_deferred("bank");
+	return promise;
 }
 
 function bank_retrieve(pack, pack_num, num) {
@@ -255,20 +261,23 @@ function bank_retrieve(pack, pack_num, num) {
 	if (!character.bank) return rejecting_promise({ reason: "not_in_bank" });
 	if (!character.bank[pack] || !character.bank[pack][pack_num]) return rejecting_promise({ reason: "no_item" });
 	if (num === undefined) num = -1; // the server interprets -1 as first slot available
+	var promise = parent.push_deferred("bank");
 	parent.socket.emit("bank", { operation: "swap", pack: pack, str: pack_num, inv: num });
-	return parent.push_deferred("bank");
+	return promise;
 }
 
 function bank_swap(pack, a, b) {
 	// bank_swap("items0",0,1) -> swaps the first 2 items
+	var promise = parent.push_deferred("bank");
 	parent.socket.emit("bank", { operation: "move", pack: pack, a: a, b: b });
-	return parent.push_deferred("bank");
+	return promise;
 }
 
 function swap(a, b) {
 	// inventory move/swap
+	var promise = parent.push_deferred("imove");
 	parent.socket.emit("imove", { a: a, b: b });
-	return parent.push_deferred("imove");
+	return promise;
 }
 
 function locate_item(name) {
@@ -326,8 +335,9 @@ async function transport(map, spawn) {
 }
 
 async function town() {
+	var promise = parent.push_deferred("town");
 	parent.socket.emit("town");
-	var call = await parent.push_deferred("town");
+	var call = await promise;
 	if (call.failed) return call;
 	while (character.c.town) await sleep(2);
 	return { success: true };
@@ -537,8 +547,9 @@ function sell(num, quantity) {
 
 function consume(num) {
 	// consumes or uses an inventory item
+	var promise = parent.push_deferred("equip");
 	parent.socket.emit("equip", { num: num, consume: true });
-	return parent.push_deferred("equip");
+	return promise;
 }
 
 function equip_batch(data) {
@@ -557,8 +568,9 @@ function equip_batch(data) {
 			return rejecting_promise({ reason: "invalid" });
 		}
 	}
+	var promise = parent.push_deferred("equip_batch");
 	parent.socket.emit("equip_batch", data);
-	return parent.push_deferred("equip_batch");
+	return promise;
 }
 
 function equip(num, slot) {
@@ -567,15 +579,17 @@ function equip(num, slot) {
 		game_log("Can't equip " + num);
 		return rejecting_promise({ reason: "invalid" });
 	} else {
+		var promise = parent.push_deferred("equip");
 		parent.socket.emit("equip", { num: num, slot: slot });
-		return parent.push_deferred("equip");
+		return promise;
 	}
 }
 
 function unequip(slot) {
 	// show_json(character.slots) => to see slot options
+	var promise = parent.push_deferred("unequip");
 	parent.socket.emit("unequip", { slot: slot });
-	return parent.push_deferred("unequip");
+	return promise;
 }
 
 function lock_item(num) {
@@ -697,15 +711,17 @@ function move(x, y) {
 
 function cruise(speed) {
 	// to revert, just cruise(500) - since it just sets an upper cap for speed
+	var promise = parent.push_deferred("cruise");
 	parent.socket.emit("cruise", speed);
-	return parent.push_deferred("cruise");
+	return promise;
 }
 
 function equip_cx(slot, cx_name) {
 	// Equipped: show_json(character.cx)
 	// Available: show_json(character.acx)
+	var promise = parent.push_deferred("cx");
 	parent.socket.emit("cx", { slot: slot, name: cx_name });
-	return parent.push_deferred("cx");
+	return promise;
 }
 
 function show_json(e) {
@@ -896,8 +912,9 @@ function send_gold(receiver, gold) {
 		return rejecting_promise({ reason: "no_target" });
 	}
 	if (receiver.name) receiver = receiver.name;
+	var promise = parent.push_deferred("send");
 	parent.socket.emit("send", { name: receiver, gold: gold });
-	return parent.push_deferred("send");
+	return promise;
 }
 
 function send_item(receiver, num, quantity) {
@@ -906,8 +923,9 @@ function send_item(receiver, num, quantity) {
 		return rejecting_promise({ reason: "no_target" });
 	}
 	if (receiver.name) receiver = receiver.name;
+	var promise = parent.push_deferred("send");
 	parent.socket.emit("send", { name: receiver, num: num, q: quantity || 1 });
-	return parent.push_deferred("send");
+	return promise;
 }
 
 function send_cx(receiver, cx) {
@@ -917,15 +935,17 @@ function send_cx(receiver, cx) {
 		return rejecting_promise({ reason: "no_target" });
 	}
 	if (receiver.name) receiver = receiver.name;
+	var promise = parent.push_deferred("send");
 	parent.socket.emit("send", { name: receiver, cx: cx });
-	return parent.push_deferred("send");
+	return promise;
 }
 
 function send_mail(to, subject, message, item) {
 	// returns {success:false,in_progress:true}
 	item = (item && true) || false; // 0th slot is sent
+	var promise = parent.push_deferred("mail");
 	parent.socket.emit("mail", { to: to, subject: subject, message: message, item: item });
-	return parent.push_deferred("mail");
+	return promise;
 }
 
 function destroy(num) {
@@ -937,8 +957,9 @@ function destroy(num) {
 function send_party_invite(name, is_request) {
 	// name could be a player object, name, or id
 	if (is_object(name)) name = name.name;
+	var promise = parent.push_deferred("party");
 	parent.socket.emit("party", { event: (is_request && "request") || "invite", name: name });
-	return parent.push_deferred("party");
+	return promise;
 }
 
 function send_party_request(name) {
@@ -947,46 +968,54 @@ function send_party_request(name) {
 
 function accept_party_invite(name) {
 	parent.remove_chat("pin" + name);
+	var promise = parent.push_deferred("party");
 	parent.socket.emit("party", { event: "accept", name: name });
-	return parent.push_deferred("party");
+	return promise;
 }
 
 function accept_party_request(name) {
 	parent.remove_chat("rq" + name);
+	var promise = parent.push_deferred("party");
 	parent.socket.emit("party", { event: "raccept", name: name });
-	return parent.push_deferred("party");
+	return promise;
 }
 
 function leave_party() {
+	var promise = parent.push_deferred("party");
 	parent.socket.emit("party", { event: "leave" });
-	return parent.push_deferred("party");
+	return promise;
 }
 
 function kick_party_member(name) {
+	var promise = parent.push_deferred("party");
 	parent.socket.emit("party", { event: "kick", name: name });
-	return parent.push_deferred("party");
+	return promise;
 }
 
 function accept_magiport(name) {
 	parent.remove_chat("mp" + name);
+	var promise = parent.push_deferred("magiport");
 	parent.socket.emit("magiport", { name: name });
-	return parent.push_deferred("magiport");
+	return promise;
 }
 
 function unfriend(name) {
 	// instead of a name, an owner id also works, this is currently the only way to unfriend someone [20/08/18]
+	var promise = parent.push_deferred("friend");
 	parent.socket.emit("friend", { event: "unfriend", name: name });
-	return parent.push_deferred("friend");
+	return promise;
 }
 
 function respawn() {
+	var promise = parent.push_deferred("respawn");
 	parent.socket.emit("respawn");
-	return parent.push_deferred("respawn");
+	return promise;
 }
 
 function set_home() {
+	var promise = parent.push_deferred("set_home");
 	parent.socket.emit("set_home");
-	return parent.push_deferred("set_home");
+	return promise;
 }
 
 function handle_command(command, args) {
@@ -1589,13 +1618,16 @@ function stop(action, second) {
 		if (action != "smart") return move(character.real_x, character.real_y);
 		return resolving_promise({ success: true });
 	} else if (action == "invis") {
+		var promise = parent.push_deferred("stop");
 		parent.socket.emit("stop", { action: "invis" });
 	} else if (action == "teleport" || action == "town") {
+		var promise = parent.push_deferred("stop");
 		parent.socket.emit("stop", { action: "town" });
 	} else if (action == "revival") {
+		var promise = parent.push_deferred("stop");
 		parent.socket.emit("stop", { action: "revival" });
-	}
-	return push_deferred("stop");
+	} else return rejecting_promise({ reason: "invalid", action: action });
+	return promise;
 }
 
 var queue = [],
