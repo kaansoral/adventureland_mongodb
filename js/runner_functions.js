@@ -1566,9 +1566,11 @@ function smart_move(destination, on_done) {
 			cmap = character.map;
 		smart.on_done = function (done, reason) {
 			if (on_done) on_done(done);
-			smart_move({ map: cmap, x: cx, y: cy });
-			if (done) resolve_deferreds("smart_move", { success: true });
-			else reject_deferreds("smart_move", { reason: reason });
+			if (done) {
+				// Keep the original Promise pending until the requested round trip is complete.
+				// The return move shares the queue and settles both entries when it finishes.
+				smart_move({ map: cmap, x: cx, y: cy }).catch(function () {});
+			} else reject_deferreds("smart_move", { reason: reason });
 		};
 	} else
 		smart.on_done = function (done, reason) {
