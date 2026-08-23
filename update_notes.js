@@ -3,6 +3,16 @@ module.exports = [
 	{
 		deployed: null,
 		date: "[24/08/26]",
+		note: "Added 40 new items: 33 craftable pieces of equipment and 7 materials found across Adventure Land.",
+	},
+	{
+		deployed: null,
+		date: "[24/08/26]",
+		note: "Major CODE update: asynchronous functions now settle on their real server result, with complete documentation for all 185 public functions.",
+	},
+	{
+		deployed: null,
+		date: "[24/08/26]",
 		note: "New Steam client for macOS.",
 	},
 	{
