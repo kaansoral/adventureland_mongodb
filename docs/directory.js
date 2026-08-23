@@ -66,6 +66,7 @@ docs = {
 		"buy_with_gold",
 		"buy_with_shells",
 		"buy_with_shells_complete",
+		"bless_server",
 		"split",
 		"sell",
 		"consume",

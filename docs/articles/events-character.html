@@ -224,6 +224,8 @@ character.remove(listener);</div>
 <span data-event="mail_take_item_failed">mail_take_item_failed</span>
 <span data-event="shell_purchase_complete">shell_purchase_complete</span>
 <span data-event="shell_purchase_failed">shell_purchase_failed</span>
+<span data-event="blessed">blessed</span>
+<span data-event="blessed_fail">blessed_fail</span>
 <span data-event="unfriend_complete">unfriend_complete</span>
 <span data-event="unfriend_failed">unfriend_failed</span>
 <span data-event="mluck">mluck</span>
@@ -252,6 +254,8 @@ character.remove(listener);</div>
 <p><span class="dlabel">mail_item_taken</span> and <span class="dlabel">mail_take_item_failed</span> include the mail <span class="dlabel">id</span> and the <span class="dlabel">request_id</span> supplied by <span class="dlabel">take_mail_item</span>. Success includes the delivered <span class="dlabel">item</span>; failure includes a concrete <span class="dlabel">reason</span>. Inventory-space and already-claimed responses remain direct routine failures rather than character events.</p>
 
 <p><span class="dlabel">shell_purchase_complete</span> and <span class="dlabel">shell_purchase_failed</span> include <span class="dlabel">name</span>, <span class="dlabel">quantity</span>, and a correlated <span class="dlabel">request_id</span>. Successful purchases also include <span class="dlabel">cost</span>; failures include <span class="dlabel">reason</span>.</p>
+
+<p><span class="dlabel">blessed</span> and <span class="dlabel">blessed_fail</span> include <span class="dlabel">cost</span>, <span class="dlabel">result</span>, and the <span class="dlabel">request_id</span> supplied by <span class="dlabel">bless_server</span>. Success also includes <span class="dlabel">blessed_by</span> and the initial remaining <span class="dlabel">minutes</span>; failure includes a concrete <span class="dlabel">reason</span>. The routine normalizes its returned <span class="dlabel">response</span> to the result name while the server also preserves the original raw string response.</p>
 
 <p><span class="dlabel">unfriend_complete</span> and <span class="dlabel">unfriend_failed</span> include <span class="dlabel">name</span> and <span class="dlabel">request_id</span>. Successful removal also includes the updated account <span class="dlabel">friends</span> array.</p>
 

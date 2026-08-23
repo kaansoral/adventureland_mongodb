@@ -7619,6 +7619,23 @@ function init_io() {
 		});
 		socket.on("bless_server", function (data) {
 			var player = players[socket.id];
+			function finish_bless(response, extra) {
+				if (!players[socket.id]) return;
+				socket.emit("game_response", response);
+				if (!data.request_id) return;
+				socket.emit(
+					"game_response",
+					Object.assign(
+						{
+							response: "bless_result",
+							result: response,
+							request_id: data.request_id,
+							cevent: response,
+						},
+						extra || {},
+					),
+				);
+			}
 			if (!player || player.user || gameplay == "hardcore" || gameplay == "test") {
 				return fail_response("cant_in_bank");
 			}
@@ -7633,13 +7650,16 @@ function init_io() {
 					if (!user) {
 						player.blessing = false;
 						socket.emit("game_log", "Purchase failed");
-						socket.emit("game_response", "blessed_fail");
+						finish_bless("blessed_fail", { failed: true, reason: "nouser", cost: cost });
 						return;
 					}
 					var R = await tx(
 						async () => {
 							R.element = await tx_get(A.user);
-							if (A.amount > 0 && R.element.cash < A.amount) ex("not_enough");
+							if (A.amount > 0 && R.element.cash < A.amount) {
+								R.reason = "not_enough";
+								ex("not_enough");
+							}
 							R.element.cash -= A.amount;
 							await tx_save(R.element);
 						},
@@ -7648,7 +7668,7 @@ function init_io() {
 					player.blessing = false;
 					if (R.failed) {
 						socket.emit("game_log", "Purchase failed");
-						socket.emit("game_response", "blessed_fail");
+						finish_bless("blessed_fail", { failed: true, reason: R.reason || "purchase_failed", cost: cost });
 						return;
 					}
 					server_log("bless_server: done, cash=" + R.element.cash);
@@ -7658,7 +7678,7 @@ function init_io() {
 					S.blessed_by = player.name;
 
 					socket.emit("game_log", "Spent " + to_pretty_num(cost) + " shells");
-					socket.emit("game_response", "blessed");
+					finish_bless("blessed", { success: true, cost: cost, blessed_by: player.name, minutes: S.blessed_minutes });
 
 					resend(player, "reopen+nc+inv");
 					bless_loop();
@@ -7680,6 +7700,7 @@ function init_io() {
 				} catch (e) {
 					console.error("bless_server error", e);
 					player.blessing = false;
+					finish_bless("blessed_fail", { failed: true, reason: "coms_failure", cost: cost });
 				}
 			})();
 			success_response({ success: false, in_progress: true });

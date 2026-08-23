@@ -1,0 +1,13 @@
+<p><span class='dlabel'>bless_server(timeout_ms)</span></p>
+<p>Spends 1,200 shells to bless the current server for three days and waits for the account transaction and live server state to complete.</p>
+<p><b>Returns:</b> Promise resolving with the correlated blessed response. It rejects on insufficient shells, another blessing request already in progress, server failure, disconnect, or timeout.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Notes:</b> The timeout defaults to 15,000ms. Success includes cost, blessed_by, and the initial remaining minutes. A disconnect can make the final outcome unknown if the server transaction has already committed.</p>
+<p><b>Example:</b></p>
+<div class='code'>async function example() {
+	await bless_server();
+}
+example();</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

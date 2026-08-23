@@ -750,6 +750,59 @@ function buy_with_shells_complete(name, quantity, timeout_ms) {
 	);
 }
 
+function bless_server(timeout_ms) {
+	if (timeout_ms === undefined) timeout_ms = 15000;
+	timeout_ms = max(0, timeout_ms);
+	var socket = parent.socket,
+		request_id = randomStr(30),
+		cleanup = function () {},
+		completion = new Promise(function (resolve, reject) {
+			var settled = false;
+			function finish(data, failed) {
+				if (settled) return;
+				settled = true;
+				cleanup();
+				if (failed && !RESOLVE_ALL) reject(data);
+				else resolve(data);
+			}
+			function on_response(data) {
+				if (!data || data.response != "bless_result" || data.request_id != request_id) return;
+				if (data.result == "blessed") finish(Object.assign({}, data, { success: true, response: data.result, place: "bless_server" }));
+				else if (data.result == "blessed_fail")
+					finish(Object.assign({}, data, { failed: true, reason: data.reason || "blessed_fail", response: data.result, place: "bless_server" }), true);
+			}
+			function on_disconnect() {
+				finish({ failed: true, reason: "disconnected", place: "bless_server", request_id: request_id }, true);
+			}
+			var timer = setTimeout(function () {
+				finish({ failed: true, reason: "timeout", place: "bless_server", request_id: request_id }, true);
+			}, timeout_ms);
+			cleanup = function () {
+				clearTimeout(timer);
+				socket.off("game_response", on_response);
+				socket.off("disconnect", on_disconnect);
+			};
+			socket.on("game_response", on_response);
+			socket.on("disconnect", on_disconnect);
+		});
+	completion.catch(function () {});
+	var acknowledgement = parent.push_deferred("bless_server");
+	socket.emit("bless_server", { request_id: request_id });
+	return acknowledgement.then(
+		function (data) {
+			if (data.failed || !data.in_progress) {
+				cleanup();
+				return data;
+			}
+			return completion;
+		},
+		function (error) {
+			cleanup();
+			throw error;
+		},
+	);
+}
+
 function split(num, quantity) {
 	// splits the stack at from character.items[num] into a second stack of quantity
 	return parent.split(num, quantity);
