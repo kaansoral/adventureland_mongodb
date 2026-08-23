@@ -3167,8 +3167,8 @@ function npc_right_click(event) {
 				message: "This is not your home server. You are a resident of " + character.home + ". Would you like to set this server as your home?",
 				button: "Yes!",
 				onclick: function () {
-					socket.emit("set_home");
 					push_deferred("set_home");
+					socket.emit("set_home");
 				},
 			});
 		} else {
@@ -3302,8 +3302,8 @@ function npc_right_click(event) {
 						message: "Would you like to go on a hunt? However, I have to warn you. It's not for the faint-hearted!" + ((gameplay == "hardcore" && " [100 TOKENS!]") || ""),
 						button: "I CAN HANDLE IT!",
 						onclick: function () {
-							socket.emit("monsterhunt");
 							push_deferred("monsterhunt");
+							socket.emit("monsterhunt");
 						},
 					},
 					"return_html",
@@ -3311,8 +3311,8 @@ function npc_right_click(event) {
 			);
 		else if (character.s.monsterhunt.c) $("#merchant-item").html(render_interaction({ auto: true, skin: "daisy", message: "Go now, go! Come back after you completed your hunt ..." }, "return_html"));
 		else {
-			socket.emit("monsterhunt");
 			push_deferred("monsterhunt");
+			socket.emit("monsterhunt");
 			$("#merchant-item").html(render_interaction({ auto: true, skin: "daisy", message: "Well done, well done! A token for your service!" }, "return_html"));
 		}
 	}
@@ -3379,8 +3379,9 @@ function player_attack(event, code) {
 		d_text("FRIENDLY", character);
 		return rejecting_promise({ reason: "friendly" });
 	}
+	var promise = push_deferred("attack");
 	socket.emit("attack", { id: ctarget.id });
-	return push_deferred("attack");
+	return promise;
 }
 
 function player_heal(event, code) {
@@ -3401,8 +3402,9 @@ function player_heal(event, code) {
 			});
 		return rejecting_promise({ reason: "too_far", distance: distance(this, character) });
 	}
+	var promise = push_deferred("heal");
 	socket.emit("heal", { id: this.id });
-	return push_deferred("heal");
+	return promise;
 }
 
 function monster_attack(event, code) {
@@ -3416,8 +3418,9 @@ function monster_attack(event, code) {
 		}); // Added +10 - otherwise seems unfair [17/06/18]
 		return rejecting_promise({ reason: "too_far", distance: distance(this, character) });
 	}
+	var promise = push_deferred("attack");
 	socket.emit("attack", { id: this.id });
-	return push_deferred("attack");
+	return promise;
 }
 
 function player_right_click(event) {

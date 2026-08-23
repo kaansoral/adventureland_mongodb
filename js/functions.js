@@ -36,8 +36,9 @@ function send_target_logic() {
 	last_id_sent = (ctarget && ctarget.id) || "";
 	last_xid_sent = (xtarget && xtarget.id) || "";
 	if (change) {
+		var promise = push_deferred("target");
 		socket.emit("target", { id: last_id_sent, xid: last_xid_sent });
-		return push_deferred("target");
+		return promise;
 	}
 	return resolving_promise({ success: true, no_change: true });
 }
@@ -453,10 +454,10 @@ function add_magiport(name) {
 		"^",
 		"<span style='color: white'>" +
 			name +
-			"</span> wants to magiport you! \
-		<span class='clickable' style='color:#3E97AA' onclick='socket.emit(\"magiport\",{name:\"" +
+		"</span> wants to magiport you! \
+		<span class='clickable' style='color:#3E97AA' onclick='push_deferred(\"magiport\"); socket.emit(\"magiport\",{name:\"" +
 			name +
-			'"}); push_deferred("magiport"); remove_chat("mp' +
+			'"}); remove_chat("mp' +
 			name +
 			"\")'>Accept</span>",
 		undefined,
@@ -469,10 +470,10 @@ function add_invite(name) {
 		"^",
 		"<span style='color: white'>" +
 			name +
-			"</span> wants to party. \
-		<span class='clickable' style='color:green' onclick='socket.emit(\"party\",{event:\"accept\",name:\"" +
+		"</span> wants to party. \
+		<span class='clickable' style='color:green' onclick='push_deferred(\"party\"); socket.emit(\"party\",{event:\"accept\",name:\"" +
 			name +
-			'"}); push_deferred("party"); remove_chat("pin' +
+			'"}); remove_chat("pin' +
 			name +
 			"\")'>Accept</span>",
 		undefined,
@@ -519,10 +520,10 @@ function add_request(name) {
 		"^",
 		"<span style='color: white'>" +
 			name +
-			"</span> wants to join your party. \
-		<span class='clickable' style='color:#119CC1' onclick='socket.emit(\"party\",{event:\"raccept\",name:\"" +
+		"</span> wants to join your party. \
+		<span class='clickable' style='color:#119CC1' onclick='push_deferred(\"party\"); socket.emit(\"party\",{event:\"raccept\",name:\"" +
 			name +
-			'"}); push_deferred("party"); remove_chat("rq' +
+			'"}); remove_chat("rq' +
 			name +
 			"\")'>Accept</span>",
 		undefined,
@@ -535,10 +536,10 @@ function add_frequest(name) {
 		"^",
 		"<span style='color: white'>" +
 			name +
-			"</span> wants to be your friend. \
-		<span class='clickable' style='color:#DB7BB3' onclick='socket.emit(\"friend\",{event:\"accept\",name:\"" +
+		"</span> wants to be your friend. \
+		<span class='clickable' style='color:#DB7BB3' onclick='push_deferred(\"friend\"); socket.emit(\"friend\",{event:\"accept\",name:\"" +
 			name +
-			'"}); push_deferred("friend"); remove_chat("frq' +
+			'"}); remove_chat("frq' +
 			name +
 			"\")'>Accept</span>",
 		undefined,
@@ -798,8 +799,9 @@ function can_use(name) {
 
 function send_code_message(to, data) {
 	if (!is_array(to)) to = [to];
+	var promise = push_deferred("cm");
 	socket.emit("cm", { to: to, message: JSON.stringify(data) });
-	return push_deferred("cm");
+	return promise;
 }
 
 function get_nearby_hostiles(args) {
@@ -888,8 +890,8 @@ function show_mail_modal() {
 			button: "Send",
 			onclick: function () {
 				pcs();
-				socket.emit("mail", { to: $(".mrecipient").val(), subject: $(".msubject").val(), message: $(".mmsg").val() });
 				push_deferred("mail");
+				socket.emit("mail", { to: $(".mrecipient").val(), subject: $(".msubject").val(), message: $(".mmsg").val() });
 			},
 		},
 	]);
@@ -917,32 +919,34 @@ function use_skill(name, target, arg) {
 			if (target[i] && target[i].id) target[i] = target[i].id; // "3shot", "5shot"
 			if (target[i] && target[i][0] && target[i][0].id) target[i][0] = target[i][0].id; // "cburst"
 		}
+	function request(place, event, data) {
+		var promise = push_deferred(place);
+		socket.emit(event, data);
+		return promise;
+	}
 	if (name == "use_hp" || name == "hp") {
 		return use("hp");
 	} else if (name == "use_mp" || name == "mp") {
 		return use("mp");
 	} else if (name == "regen_hp") {
-		socket.emit("use", { item: "hp" });
-		return push_deferred("use");
+		return request("use", "use", { item: "hp" });
 	} else if (name == "regen_mp") {
-		socket.emit("use", { item: "mp" });
-		return push_deferred("use");
+		return request("use", "use", { item: "mp" });
 	} else if (name == "stop") {
 		move(character.real_x, character.real_y + 0.00001);
+		var promise = push_deferred("stop");
 		socket.emit("stop");
 		code_eval_if_r("stop('smart')");
-		return push_deferred("stop");
+		return promise;
 	} else if (name == "use_town" || name == "town") {
 		if (character.rip) {
-			socket.emit("respawn");
-			return push_deferred("respawn");
+			return request("respawn", "respawn");
 		} else {
-			socket.emit("town");
-			return push_deferred("town");
+			return request("town", "town");
 		}
 	} else if (name == "cburst") {
 		if (is_array(target)) {
-			socket.emit("skill", { name: "cburst", targets: target });
+			return request(name, "skill", { name: "cburst", targets: target });
 		} else {
 			var hostiles = get_nearby_hostiles({ range: character.range - 2, limit: 12 }),
 				targets = [],
@@ -951,29 +955,29 @@ function use_skill(name, target, arg) {
 			hostiles.forEach(function (hostile) {
 				targets.push([hostile.id, hmp]);
 			});
-			socket.emit("skill", { name: "cburst", targets: targets });
+			return request(name, "skill", { name: "cburst", targets: targets });
 		}
 	} else if (name == "3shot") {
 		if (is_array(target)) {
-			socket.emit("skill", { name: "3shot", ids: target });
+			return request(name, "skill", { name: "3shot", ids: target });
 		} else {
 			var hostiles = get_nearby_hostiles({ range: character.range - 2, limit: 3 }),
 				ids = [];
 			hostiles.forEach(function (hostile) {
 				ids.push(hostile.id);
 			});
-			socket.emit("skill", { name: "3shot", ids: ids });
+			return request(name, "skill", { name: "3shot", ids: ids });
 		}
 	} else if (name == "5shot") {
 		if (is_array(target)) {
-			socket.emit("skill", { name: "5shot", ids: target });
+			return request(name, "skill", { name: "5shot", ids: target });
 		} else {
 			var hostiles = get_nearby_hostiles({ range: character.range - 2, limit: 5 }),
 				ids = [];
 			hostiles.forEach(function (hostile) {
 				ids.push(hostile.id);
 			});
-			socket.emit("skill", { name: "5shot", ids: ids });
+			return request(name, "skill", { name: "5shot", ids: ids });
 		}
 	} else if (name == "pcoat") {
 		var position = item_position("poison");
@@ -981,47 +985,47 @@ function use_skill(name, target, arg) {
 			add_log("You don't have a poison sack", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
-		socket.emit("skill", { name: "pcoat", num: position });
+		return request(name, "skill", { name: "pcoat", num: position });
 	} else if (name == "revive") {
 		var position = item_position("essenceoflife");
 		if (position === undefined) {
 			add_log("You don't have an essence", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
-		socket.emit("skill", { name: "revive", num: position, id: target });
+		return request(name, "skill", { name: "revive", num: position, id: target });
 	} else if (name == "entangle") {
 		var position = item_position("essenceofnature");
 		if (position === undefined) {
 			add_log("You don't have an essence", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
-		socket.emit("skill", { name: "entangle", num: position, id: target });
+		return request(name, "skill", { name: "entangle", num: position, id: target });
 	} else if (name == "poisonarrow") {
 		var position = item_position("poison");
 		if (position === undefined) {
 			add_log("You don't have a poison sack", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
-		socket.emit("skill", { name: "poisonarrow", num: position, id: target });
+		return request(name, "skill", { name: "poisonarrow", num: position, id: target });
 	} else if (name == "shadowstrike" || name == "phaseout") {
 		var position = item_position("shadowstone");
 		if (position === undefined) {
 			add_log("You don't have any shadow stones", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
-		socket.emit("skill", { name: name, num: position });
+		return request(name, "skill", { name: name, num: position });
 	} else if (name == "throw") {
 		if (!character.items[arg]) {
 			add_log("Inventory slot is empty", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
-		socket.emit("skill", { name: name, num: arg, id: target });
-	} else if (name == "blink") socket.emit("skill", { name: "blink", x: target[0], y: target[1] });
+		return request(name, "skill", { name: name, num: arg, id: target });
+	} else if (name == "blink") return request(name, "skill", { name: "blink", x: target[0], y: target[1] });
 	else if (name == "dash") {
 		var d = character.direction;
-		socket.emit("skill", { name: "dash", x: get_x(character) + [0, -40, 40, 0][d], y: get_y(character) + [40, 0, 0, -40][d] });
+		return request(name, "skill", { name: "dash", x: get_x(character) + [0, -40, 40, 0][d], y: get_y(character) + [40, 0, 0, -40][d] });
 	} else if (name == "energize") {
-		socket.emit("skill", { name: "energize", id: target, mp: arg });
+		return request(name, "skill", { name: "energize", id: target, mp: arg });
 	} else if (name == "stack") return rejecting_promise({ reason: "passive_skill", skill: name });
 	else if (name == "warp") {
 		if (target && is_string(target) && !target[2]) target[2] = character.map;
@@ -1037,14 +1041,13 @@ function use_skill(name, target, arg) {
 			}
 			if (!trset) target = [Math.random() * 100, Math.random() * 100, "main"];
 		}
-		socket.emit("skill", { name: "warp", x: target[0], y: target[1], in: target[2] });
-	} else if (G.skills[name] && G.skills[name].target) socket.emit("skill", { name: name, id: target });
-	else if (G.skills[name]) socket.emit("skill", { name: name });
+		return request(name, "skill", { name: "warp", x: target[0], y: target[1], in: target[2] });
+	} else if (G.skills[name] && G.skills[name].target) return request(name, "skill", { name: name, id: target });
+	else if (G.skills[name]) return request(name, "skill", { name: name });
 	else {
 		add_log("Skill not found: " + name, "gray");
 		return rejecting_promise({ reason: "no_skill" });
 	}
-	return push_deferred(name);
 }
 
 function on_skill(key, event) {
@@ -1062,25 +1065,25 @@ function on_skill(key, event) {
 		if (num >= 0) {
 			var item = character.items[num];
 			if (G.items[item.name].type == "stand" || G.items[item.name].stand) {
+				push_deferred("merchant");
 				if (character.stand) socket.emit("merchant", { close: 1 });
 				else socket.emit("merchant", { num: num });
-				push_deferred("merchant");
 			} else {
-				socket.emit("equip", { num: num });
 				push_deferred("equip");
+				socket.emit("equip", { num: num });
 			}
 		} else add_log("Item not found", "gray");
 	} else if (name == "attack") {
 		var target = xtarget || ctarget;
 		if (target && target.id) {
-			socket.emit("attack", { id: target.id });
 			push_deferred("attack");
+			socket.emit("attack", { id: target.id });
 		} else add_log("No target", "gray");
 	} else if (name == "heal") {
 		var target = xtarget || ctarget;
 		if (target && target.id) {
-			socket.emit("heal", { id: target.id });
 			push_deferred("heal");
+			socket.emit("heal", { id: target.id });
 		} else add_log("No target", "gray");
 	} else if (name == "blink") {
 		if (event) blink_pressed = true;
@@ -1301,10 +1304,11 @@ function move(x, y, code) {
 	// console.log("engaged move "+character.angle);
 	var data = { x: character.real_x, y: character.real_y, going_x: character.going_x, going_y: character.going_y, m: character.m };
 	if (next_minteraction) (data.key = next_minteraction), (next_minteraction = null);
+	resolve_deferreds("move", { reason: "interrupted" });
+	var promise = code && push_deferred("move");
 	socket.emit("move", data);
 	last_move = new Date();
-	resolve_deferreds("move", { reason: "interrupted" });
-	if (code) return push_deferred("move");
+	if (code) return promise;
 }
 
 function arrow_movement_logic() {
@@ -2536,40 +2540,46 @@ function destroy_sprite(sprite, mode) {
 
 function wishlist(slot, name, price, q, level) {
 	if (!is_string(slot)) slot = "trade" + slot;
+	var promise = push_deferred("trade_wishlist");
 	socket.emit("trade_wishlist", { q: q, slot: slot, price: price, level: level, name: name });
 	$("#topleftcornerdialog").html("");
-	return push_deferred("trade_wishlist");
+	return promise;
 }
 
 function trade(slot, num, price, q) {
 	q = q || 1;
+	var promise = push_deferred("equip");
 	socket.emit("equip", { q: q, slot: slot, num: num, price: price });
 	$("#topleftcornerdialog").html("");
-	return push_deferred("equip");
+	return promise;
 }
 
 function giveaway(slot, num, q, minutes) {
+	var promise = push_deferred("equip");
 	socket.emit("equip", { q: q || 1, slot: slot, num: num, giveaway: true, minutes: minutes || 0 });
 	$("#topleftcornerdialog").html("");
-	return push_deferred("equip");
+	return promise;
 }
 
 function join_giveaway(slot, id, rid) {
+	var promise = push_deferred("join_giveaway");
 	socket.emit("join_giveaway", { slot: slot, id: id, rid: rid });
 	$("#topleftcornerdialog").html("");
-	return push_deferred("join_giveaway");
+	return promise;
 }
 
 function trade_buy(slot, id, rid, q) {
+	var promise = push_deferred("trade_buy");
 	socket.emit("trade_buy", { slot: slot, id: id, rid: rid, q: q || 1 });
 	$("#topleftcornerdialog").html("");
-	return push_deferred("trade_buy");
+	return promise;
 }
 
 function trade_sell(slot, id, rid, q) {
+	var promise = push_deferred("trade_sell");
 	socket.emit("trade_sell", { slot: slot, id: id, rid: rid, q: q || 1 });
 	$("#topleftcornerdialog").html("");
-	return push_deferred("trade_sell");
+	return promise;
 }
 
 function secondhand_buy(rid) {
@@ -2599,32 +2609,36 @@ function buy_with_gold(name, quantity) {
 	if (name == "scroll0") tut("buyscrolls");
 	if (name == "cscroll0") tut("buycscroll0");
 	if (mssince(last_npc_right_click) < 100) return rejecting_promise({ reason: "npc_misclickp" });
+	var promise = push_deferred("buy");
 	socket.emit("buy", { name: name, quantity: quantity });
 	$(".buynum").html($(".buynum").data("q"));
-	return push_deferred("buy");
+	return promise;
 }
 
 function buy_with_shells(name, quantity) {
 	if (mssince(last_npc_right_click) < 100) return;
+	var promise = push_deferred("buy_with_cash");
 	socket.emit("buy_with_cash", { name: name, quantity: quantity });
 	$(".buynum").html($(".buynum").data("q"));
-	return push_deferred("buy_with_cash");
+	return promise;
 }
 
 function split(num, quantity) {
+	var promise = push_deferred("split");
 	socket.emit("split", { num: num, quantity: quantity });
-	return push_deferred("split");
+	return promise;
 }
 
 function sell(num, quantity) {
 	if (!quantity) quantity = 1;
+	var promise = push_deferred("sell");
 	socket.emit("sell", { num: num, quantity: quantity });
 	try {
 		$(".sellnum").html(max(0, character.items[num].q - quantity));
 	} catch (e) {
 		$(".sellnum").html(0);
 	}
-	return push_deferred("sell");
+	return promise;
 }
 
 var last_ccfunc = null;
@@ -2664,13 +2678,15 @@ function get_code_function(name) {
 }
 
 function private_say(name, message, code) {
+	var promise = push_deferred("say");
 	socket.emit("say", { message: message, code: code, name: name });
-	return push_deferred("say");
+	return promise;
 }
 
 function party_say(message, code) {
+	var promise = push_deferred("say");
 	socket.emit("say", { message: message, code: code, party: true });
-	return push_deferred("say");
+	return promise;
 }
 
 var last_say = "normal";
@@ -2723,8 +2739,8 @@ function say(message, code) {
 			if (!is_electron) show_alert("Only works in game clients");
 			else electron_open_codes();
 		} else if (command == "leave") {
-			socket.emit("party", { event: "leave" });
 			push_deferred("party");
+			socket.emit("party", { event: "leave" });
 		} else if (command == "uptime") {
 			add_chat("", to_pretty_num(parseInt(msince(inception))) + " minutes " + parseInt(ssince(inception) % 60) + " seconds", "gray");
 		} else if (command == "duel" || command == "challenge") {
@@ -2740,14 +2756,14 @@ function say(message, code) {
 			if (!name) {
 				use_skill("stop");
 			} else if (name == "teleport" || name == "town") {
+				push_deferred("stop");
 				socket.emit("stop", { action: "town" });
-				push_deferred("stop");
 			} else if (name == "revival") {
+				push_deferred("stop");
 				socket.emit("stop", { action: "revival" });
-				push_deferred("stop");
 			} else if (name == "invis") {
-				socket.emit("stop", { action: "invis" });
 				push_deferred("stop");
+				socket.emit("stop", { action: "invis" });
 			} else {
 				stop_character_runner(name);
 			}
@@ -2803,8 +2819,8 @@ function say(message, code) {
 			var args = rest.split(" "),
 				name = args.shift();
 			var target = xtarget || ctarget;
-			if (name && name.length) socket.emit("party", { event: "invite", name: name }), push_deferred("party");
-			else if (target && !target.me && !target.npc && target.type == "character") socket.emit("party", { event: "invite", id: target.id }), push_deferred("party");
+			if (name && name.length) push_deferred("party"), socket.emit("party", { event: "invite", name: name });
+			else if (target && !target.me && !target.npc && target.type == "character") push_deferred("party"), socket.emit("party", { event: "invite", id: target.id });
 			else add_chat("", "Target someone to invite");
 		} else if (command == "kick") {
 			var args = rest.split(" "),
@@ -2824,8 +2840,8 @@ function say(message, code) {
 			var args = rest.split(" "),
 				name = args.shift();
 			var target = xtarget || ctarget;
-			if (name && name.length) socket.emit("friend", { event: "request", name: name }), push_deferred("friend");
-			else if (target && !target.me && !target.npc && target.type == "character") socket.emit("friend", { event: "request", name: target.name }), push_deferred("friend");
+			if (name && name.length) push_deferred("friend"), socket.emit("friend", { event: "request", name: name });
+			else if (target && !target.me && !target.npc && target.type == "character") push_deferred("friend"), socket.emit("friend", { event: "request", name: target.name });
 			else add_chat("", "Target someone to friend");
 		} else if (command == "guide") {
 			show_game_guide();
@@ -2857,47 +2873,54 @@ function say(message, code) {
 			add_chat("", "Command not found. Suggestion: /list");
 		}
 	} else {
+		var promise = push_deferred("say");
 		socket.emit("say", { message: message, code: code });
-		return push_deferred("say");
+		return promise;
 	}
 	return resolving_promise({ command: true });
 }
 
 function join(event) {
 	// event can be one of show_json(Object.keys(G.events))
+	var promise = push_deferred("join");
 	socket.emit("join", { name: event });
-	return push_deferred("join");
+	return promise;
 }
 
 function activate(num) {
 	if (character.items[num] && character.items[num]) {
+		var promise = push_deferred("booster");
 		socket.emit("booster", { num: num, action: "activate" });
-		return push_deferred("booster");
+		return promise;
 	} else return rejecting_promise({ reason: "no_item" });
 }
 
 function shift(num, to) {
+	var promise = push_deferred("booster");
 	socket.emit("booster", { num: num, action: "shift", to: to });
-	return push_deferred("booster");
+	return promise;
 }
 
 function open_merchant(num) {
+	var promise = push_deferred("merchant");
 	socket.emit("merchant", { num: num });
-	return push_deferred("merchant");
+	return promise;
 }
 
 function close_merchant() {
+	var promise = push_deferred("merchant");
 	socket.emit("merchant", { close: 1 });
-	return push_deferred("merchant");
+	return promise;
 }
 
 function toggle_merchant(num) {
+	var promise = push_deferred("merchant");
 	if (character.stand) {
 		socket.emit("merchant", { close: 1 });
 	} else {
 		socket.emit("merchant", { num: num });
 	}
-	return push_deferred("merchant");
+	return promise;
 }
 
 function donate(gold) {
@@ -2948,8 +2971,9 @@ function auto_craft(name, code) {
 				}
 			}
 		});
+		var promise = push_deferred("craft");
 		socket.emit("craft", { items: items });
-		return push_deferred("craft");
+		return promise;
 	}
 }
 
@@ -2959,9 +2983,10 @@ function upgrade(item, scroll, offering, code, calculate) {
 	if (!code && calculate && suppress_calculations) return;
 	if (!code && (item == null || (scroll == null && offering == null))) d_text("INVALID", character);
 	else {
+		var promise = push_deferred("upgrade");
 		socket.emit("upgrade", { item_num: item, scroll_num: scroll, offering_num: offering, clevel: (character.items[item] && character.items[item].level) || 0, calculate: calculate });
 		last_uping = new Date();
-		return push_deferred("upgrade");
+		return promise;
 	}
 }
 
@@ -2969,33 +2994,38 @@ function compound(item0, item1, item2, scroll, offering, code, calculate) {
 	if (!code && calculate && suppress_calculations) return;
 	if (!code && (item0 == null || item1 == null || item2 == null || scroll == null)) d_text("INVALID", character);
 	else {
+		var promise = push_deferred("compound");
 		socket.emit("compound", { items: [item0, item1, item2], scroll_num: scroll, offering_num: offering, clevel: character.items[item0].level || 0, calculate: calculate });
-		return push_deferred("compound");
+		return promise;
 	}
 }
 
 function lock_item(num) {
 	if (num === undefined) num = l_item;
+	var promise = push_deferred("locksmith");
 	socket.emit("locksmith", { num: num, operation: "lock" });
-	return push_deferred("locksmith");
+	return promise;
 }
 
 function destat_item(num) {
 	if (num === undefined) num = s_item;
+	var promise = push_deferred("destat");
 	socket.emit("destat", { num: num });
-	return push_deferred("destat");
+	return promise;
 }
 
 function seal_item(num) {
 	if (num === undefined) num = l_item;
+	var promise = push_deferred("locksmith");
 	socket.emit("locksmith", { num: num, operation: "seal" });
-	return push_deferred("locksmith");
+	return promise;
 }
 
 function unlock_item(num) {
 	if (num === undefined) num = l_item;
+	var promise = push_deferred("locksmith");
 	socket.emit("locksmith", { num: num, operation: "unlock" });
-	return push_deferred("locksmith");
+	return promise;
 }
 
 function deposit(amount) {
@@ -3006,8 +3036,9 @@ function deposit(amount) {
 	tut("deposit");
 	if (!amount) amount = $(".npcgold").html() || "";
 	amount = amount.replace_all(",", "").replace_all(".", "");
+	var promise = push_deferred("bank");
 	socket.emit("bank", { operation: "deposit", amount: parseInt(amount) });
-	return push_deferred("bank");
+	return promise;
 }
 
 function withdraw(amount) {
@@ -3017,8 +3048,9 @@ function withdraw(amount) {
 	}
 	if (!amount) amount = $(".npcgold").html() || "";
 	amount = amount.replace_all(",", "").replace_all(".", "");
+	var promise = push_deferred("bank");
 	socket.emit("bank", { operation: "withdraw", amount: parseInt(amount) });
-	return push_deferred("bank");
+	return promise;
 }
 
 var last_excanim = new Date(),
@@ -3144,8 +3176,9 @@ function poof(is_code) {
 	var delay = 2400;
 	exchange_type = "poof";
 	if (is_code || 1) {
+		var promise = push_deferred("destroy");
 		socket.emit("destroy", { num: p_item, q: 1, statue: true });
-		return push_deferred("destroy");
+		return promise;
 	}
 	function poof_trigger(p_item) {
 		return function () {
@@ -3169,8 +3202,9 @@ function exchange(is_code) {
 		d_text("INVALID", character);
 		return rejecting_promise({ reason: "invalid" });
 	} else {
+		var promise = push_deferred("exchange");
 		socket.emit("exchange", { item_num: e_item, q: character.items[e_item].q });
-		return push_deferred("exchange");
+		return promise;
 	}
 }
 
@@ -3180,8 +3214,9 @@ function exchange_buy(token, name) {
 		d_text("NO TOKENS", character);
 		return rejecting_promise({ reason: "no_tokens" });
 	} else {
+		var promise = push_deferred("exchange_buy");
 		socket.emit("exchange_buy", { num: num, name: name, q: character.items[num].q });
-		return push_deferred("exchange_buy");
+		return promise;
 	}
 }
 
@@ -3195,14 +3230,16 @@ function craft() {
 		d_text("INVALID", character);
 		return rejecting_promise({ reason: "invalid" });
 	} else {
+		var promise = push_deferred("craft");
 		socket.emit("craft", { items: items });
-		return push_deferred("craft");
+		return promise;
 	}
 }
 
 function dismantle() {
+	var promise = push_deferred("dismantle");
 	socket.emit("dismantle", { num: ds_item });
-	return push_deferred("dismantle");
+	return promise;
 }
 
 var u_retain = false,
@@ -3308,8 +3345,9 @@ function open_chest(id) {
 			}
 		});
 	}
+	var promise = push_deferred("open_chest");
 	socket.emit("open_chest", { id: id });
-	return push_deferred("open_chest");
+	return promise;
 }
 
 function generate_textures(name, stype) {
@@ -4327,14 +4365,15 @@ function use(item) {
 		var def = G.items[current.name];
 		(def.gives || []).forEach(function (p) {
 			if (p[0] == item && p[1] > 0 && !done) {
-				socket.emit("equip", { num: i });
 				done = push_deferred("equip");
+				socket.emit("equip", { num: i });
 			}
 		});
 	}
 	if (!done) {
+		var promise = push_deferred("use");
 		socket.emit("use", { item: item });
-		return push_deferred("use");
+		return promise;
 	}
 	return done;
 }
