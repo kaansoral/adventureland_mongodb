@@ -25,6 +25,7 @@ docs = {
 		"reduce_cooldown",
 		"bank_deposit",
 		"bank_withdraw",
+		"open_bank_pack",
 		"bank_store",
 		"bank_retrieve",
 		"bank_swap",

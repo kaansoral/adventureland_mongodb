@@ -230,6 +230,7 @@ character.remove(listener);</div>
 <span data-event="bank_withdraw">bank_withdraw</span>
 <span data-event="bank_store">bank_store</span>
 <span data-event="bank_new_pack">bank_new_pack</span>
+<span data-event="bank_new_pack_failed">bank_new_pack_failed</span>
 <span data-event="giveaway_join">giveaway_join</span>
 <span data-event="picked">picked</span>
 <span data-event="got_picked">got_picked</span>
@@ -249,5 +250,7 @@ character.remove(listener);</div>
 <p><span class="dlabel">shell_purchase_complete</span> and <span class="dlabel">shell_purchase_failed</span> include <span class="dlabel">name</span>, <span class="dlabel">quantity</span>, and a correlated <span class="dlabel">request_id</span>. Successful purchases also include <span class="dlabel">cost</span>; failures include <span class="dlabel">reason</span>.</p>
 
 <p><span class="dlabel">unfriend_complete</span> and <span class="dlabel">unfriend_failed</span> include <span class="dlabel">name</span> and <span class="dlabel">request_id</span>. Successful removal also includes the updated account <span class="dlabel">friends</span> array.</p>
+
+<p><span class="dlabel">bank_new_pack</span> and <span class="dlabel">bank_new_pack_failed</span> include <span class="dlabel">pack</span> and <span class="dlabel">shells</span> for shell purchases. Calls made through <span class="dlabel">open_bank_pack</span> also include a unique <span class="dlabel">request_id</span>.</p>
 
 <p><span class="dlabel">picked</span>, <span class="dlabel">pick_failed</span>, and the fishing/mining result events include a <span class="dlabel">request_id</span> when started through <span class="dlabel">use_skill_complete</span>. Fishing/mining failure events include <span class="dlabel">reason</span>; a <span class="dlabel">*_none</span> event means the timed action completed but produced no resource.</p>

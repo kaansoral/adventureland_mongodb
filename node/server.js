@@ -8416,8 +8416,30 @@ function init_io() {
 					player.gold -= gold;
 					player.user[data.pack] = [];
 					player.cuser[data.pack] = [];
-					success = { response: "bank_new_pack", pack: data.pack, gold: gold, cevent: true };
+					success = {
+						response: "bank_new_pack",
+						pack: data.pack,
+						gold: gold,
+						request_id: data.request_id,
+						cevent: true,
+					};
 				} else if (data.shells) {
+					function finish_bank_pack(response, extra) {
+						if (!players[socket.id]) return;
+						socket.emit(
+							"game_response",
+							Object.assign(
+								{
+									response: response,
+									pack: data.pack,
+									shells: shells,
+									request_id: data.request_id,
+									cevent: response,
+								},
+								extra || {},
+							),
+						);
+					}
 					if (player["unlocking_" + data.pack]) {
 						return fail_response("bank_opi");
 					}
@@ -8428,27 +8450,32 @@ function init_io() {
 							if (!user) {
 								player["unlocking_" + data.pack] = false;
 								socket.emit("game_log", "Purchase failed");
+								finish_bank_pack("bank_new_pack_failed", { failed: true, reason: "nouser" });
 								return;
 							}
 							var R = await tx(
 								async () => {
 									R.element = await tx_get(A.user);
+									if (R.element.info[A.pack]) ex("already_unlocked");
 									if (A.amount > 0 && R.element.cash < A.amount) ex("not_enough");
 									R.element.cash -= A.amount;
+									R.element.info[A.pack] = [];
 									await tx_save(R.element);
 								},
-								{ user: user, amount: shells },
+								{ user: user, amount: shells, pack: data.pack },
 							);
 							player["unlocking_" + data.pack] = false;
 							if (R.failed) {
 								socket.emit("game_log", "Purchase failed");
+								finish_bank_pack("bank_new_pack_failed", { failed: true, reason: R.reason || "purchase_failed" });
 								return;
 							}
 							server_log("bank_pack: done, cash=" + R.element.cash);
 							player.cash = R.element.cash;
 							player.user[data.pack] = [];
 							player.cuser[data.pack] = [];
-							game_response("bank_new_pack", { cevent: true, pack: data.pack, shells: shells });
+							resend(player, "reopen");
+							finish_bank_pack("bank_new_pack", { success: true });
 							add_event(R.element, "bill", ["cashflow"], {
 								info: {
 									message: player.name + " [" + get_id(user) + "] spent " + shells + " shells for: " + data.pack,
@@ -8457,10 +8484,10 @@ function init_io() {
 								},
 							});
 							update_characters(R.element, null, null, 0).catch(console.error);
-							resend(player, "reopen");
 						} catch (e) {
 							console.error("bank_pack error", e);
 							player["unlocking_" + data.pack] = false;
+							finish_bank_pack("bank_new_pack_failed", { failed: true, reason: "coms_failure" });
 						}
 					})();
 					success = { success: false, in_progress: true };
@@ -8567,8 +8594,10 @@ function init_io() {
 				player.user.gold = 0;
 				server_log("#X - GOLD BUG bank", 1);
 			}
+			var response_event = success.response && Object.assign({}, success);
 			resend(player, "reopen");
 			success_response(success);
+			if (response_event) socket.emit("game_response", response_event);
 		});
 		socket.on("throw", function (data) {
 			var player = players[socket.id];

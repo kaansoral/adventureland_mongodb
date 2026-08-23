@@ -317,6 +317,74 @@ function bank_withdraw(gold) {
 	return promise;
 }
 
+function open_bank_pack(pack, currency, timeout_ms) {
+	if (!character.bank) return rejecting_promise({ reason: "not_in_bank", place: "bank" });
+	if (!is_string(pack) || !bank_packs[pack]) return rejecting_promise({ reason: "invalid_pack", place: "bank" });
+	if (bank_packs[pack][0] != character.map) return rejecting_promise({ reason: "wrong_bank", place: "bank", pack: pack });
+	if (character.bank[pack]) return rejecting_promise({ reason: "already_unlocked", place: "bank", pack: pack });
+	if (currency != "gold" && currency != "shells") return rejecting_promise({ reason: "invalid_currency", place: "bank", pack: pack });
+	var data = { operation: "unlock", pack: pack };
+	data[currency] = 1;
+	if (currency == "gold") {
+		var promise = parent.push_deferred("bank");
+		parent.socket.emit("bank", data);
+		return promise.then(function (result) {
+			if (result.failed) return result;
+			return Object.assign({}, result, { response: "bank_new_pack", pack: pack });
+		});
+	}
+	if (timeout_ms === undefined) timeout_ms = 15000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		cleanup = function () {},
+		completion = new Promise(function (resolve, reject) {
+			var settled = false;
+			function finish(result, failed) {
+				if (settled) return;
+				settled = true;
+				cleanup();
+				if (failed && !RESOLVE_ALL) reject(result);
+				else resolve(result);
+			}
+			function on_response(result) {
+				if (!result || result.request_id != request_id) return;
+				if (result.response == "bank_new_pack") finish(Object.assign({ success: true, place: "bank" }, result));
+				else if (result.response == "bank_new_pack_failed")
+					finish(Object.assign({ failed: true, reason: result.reason || "bank_new_pack_failed", place: "bank" }, result), true);
+			}
+			function on_disconnect() {
+				finish({ failed: true, reason: "disconnected", place: "bank", pack: pack, request_id: request_id }, true);
+			}
+			var timer = setTimeout(function () {
+				finish({ failed: true, reason: "timeout", place: "bank", pack: pack, request_id: request_id }, true);
+			}, timeout_ms);
+			cleanup = function () {
+				clearTimeout(timer);
+				parent.socket.off("game_response", on_response);
+				parent.socket.off("disconnect", on_disconnect);
+			};
+			parent.socket.on("game_response", on_response);
+			parent.socket.on("disconnect", on_disconnect);
+		});
+	completion.catch(function () {});
+	data.request_id = request_id;
+	var acknowledgement = parent.push_deferred("bank");
+	parent.socket.emit("bank", data);
+	return acknowledgement.then(
+		function (result) {
+			if (result.failed || !result.in_progress) {
+				cleanup();
+				return result;
+			}
+			return completion;
+		},
+		function (error) {
+			cleanup();
+			throw error;
+		},
+	);
+}
+
 function bank_store(num, pack, pack_num) {
 	// bank_store(0) - Stores the first item in inventory in the first/best spot in bank
 	// bank_store(41,"items0",41) -> stores the last item on the last spot of bank's "items0"
