@@ -173,6 +173,7 @@ docs = {
 		"get_edited_code_slot",
 		"disconnect",
 		"wait_for",
+		"wait_for_event",
 		"smart_move",
 		"stop",
 		"performance_trick",

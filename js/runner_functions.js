@@ -1266,6 +1266,14 @@ character.on = function (event, f) {
 	character.listeners.push(def);
 	return def.id;
 };
+character.remove = function (id) {
+	for (var i = 0; i < character.listeners.length; i++) {
+		if (character.listeners[i].id == id) {
+			character.listeners.splice(i, 1);
+			break;
+		}
+	}
+};
 character.trigger = function (event, args) {
 	var new_listeners = [];
 	for (var i = 0; i < character.listeners.length; i++) {
@@ -1609,6 +1617,57 @@ async function wait_for(condition, timeout_ms, interval_ms) {
 		await sleep(min(interval_ms, remaining));
 	}
 	return rejecting_promise({ reason: "timeout", timeout: timeout_ms });
+}
+
+function wait_for_event(emitter, event, timeout_ms, filter) {
+	if (!emitter || !is_function(emitter.on) || (!is_function(emitter.remove) && !is_function(emitter.off))) return rejecting_promise({ reason: "invalid_emitter" });
+	if (!is_string(event) || !event) return rejecting_promise({ reason: "invalid_event" });
+	if (filter !== undefined && !is_function(filter)) return rejecting_promise({ reason: "invalid_filter" });
+	if (timeout_ms === undefined) timeout_ms = 10000;
+	timeout_ms = max(0, timeout_ms);
+	return new Promise(function (resolve, reject) {
+		var settled = false,
+			listener_id,
+			timer;
+		function cleanup() {
+			clearTimeout(timer);
+			try {
+				if (is_function(emitter.off)) emitter.off(event, on_event);
+				else emitter.remove(listener_id);
+			} catch (error) {}
+		}
+		function finish(data, failed) {
+			if (settled) return;
+			settled = true;
+			cleanup();
+			if (failed && !RESOLVE_ALL) reject(data);
+			else resolve(data);
+		}
+		function on_event(data) {
+			if (settled) return;
+			Promise.resolve()
+				.then(function () {
+					return !filter || filter(data);
+				})
+				.then(
+					function (matches) {
+						if (matches) finish(data, false);
+					},
+					function (error) {
+						finish({ failed: true, reason: "filter_error", error: "" + error, event: event }, true);
+					},
+				);
+		}
+		try {
+			listener_id = emitter.on(event, on_event);
+		} catch (error) {
+			finish({ failed: true, reason: "listener_error", error: "" + error, event: event }, true);
+			return;
+		}
+		timer = setTimeout(function () {
+			finish({ failed: true, reason: "timeout", timeout: timeout_ms, event: event }, true);
+		}, timeout_ms);
+	});
 }
 
 var smart = {

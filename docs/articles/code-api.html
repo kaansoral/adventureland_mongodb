@@ -15,19 +15,22 @@ safeties  // Request-burst safeguards; true by default</div>
 
 <p>Server actions return native Promises. Registering the response happens before the request is emitted, so even an immediate server response is correlated with the correct call.</p>
 
-<div class="code">try {
-	var result = await use_skill("attack", target);
-	game_log("Attack accepted: " + result.damage);
-} catch (error) {
-	game_log("Attack failed: " + error.reason);
+<div class="code">async function attack_once(target) {
+	try {
+		var result = await use_skill("attack", target);
+		game_log("Attack accepted: " + result.damage);
+	} catch (error) {
+		game_log("Attack failed: " + error.reason);
+	}
 }</div>
 
 <p>By default, successful actions fulfill and failures reject with a structured object containing <span class="dlabel">failed: true</span> and <span class="dlabel">reason</span>. Call <span class="dlabel">mode_resolve_all()</span> once at startup only when old code requires every action to fulfill:</p>
 
 <div class="code">mode_resolve_all();
 
-var result = await attack(target);
-if (result.failed) game_log(result.reason);</div>
+attack(target).then(function (result) {
+	if (result.failed) game_log(result.reason);
+});</div>
 
 <p>Calls using the same response channel are queued in request order. The queue is bounded: if abusive or broken code overflows it, the oldest Promise settles with <span class="dlabel">queue_overflow</span> instead of hanging forever.</p>
 
@@ -35,19 +38,23 @@ if (result.failed) game_log(result.reason);</div>
 
 <p>Most actions settle when the server accepts or refuses the action. Routines with a longer lifecycle wait for the meaningful completion point:</p>
 
-<div class="code">await start_character("Merchant", "merchant_code"); // CODE runner is active
-await smart_move("bank");                         // Destination reached
-await transport("main", 0);                      // Destination map loaded
-await town();                                     // Town channel completed
-await exchange(0);                                // Reward slot updated
-await accept_friend_request("Wizard");            // Friendship created
-await wait_for(function () { return get_player("Wizard"); }, 5000);</div>
+<div class="code">async function run_sequence() {
+	await start_character("Merchant", "merchant_code"); // CODE runner is active
+	await smart_move("bank");                         // Destination reached
+	await transport("main", 0);                      // Destination map loaded
+	await town();                                     // Town channel completed
+	await exchange(0);                                // Reward slot updated
+	await accept_friend_request("Wizard");            // Friendship created
+	await wait_for(function () { return get_player("Wizard"); }, 5000);
+	await wait_for_event(character, "new_map", 5000);
+}
+run_sequence();</div>
 
 <p>These routines reject on interruption, disconnection, or their documented timeout instead of leaving a Promise pending forever. A repeated identical active transport or smart route shares the existing trip; a conflicting route fails or interrupts according to that function's reference.</p>
 
 <p><span class="dlabel">Events and callbacks</span></p>
 
-<p>Use <span class="dlabel">character.on</span>, <span class="dlabel">character.once</span>, <span class="dlabel">character.all</span>, and the equivalent <span class="dlabel">game</span> event methods for current event code. The named <span class="dlabel">on_*</span> and <span class="dlabel">handle_*</span> functions remain supported override points for existing code.</p>
+<p>Use <span class="dlabel">character.on</span>, <span class="dlabel">character.once</span>, <span class="dlabel">character.all</span>, <span class="dlabel">character.remove</span>, and the equivalent <span class="dlabel">game</span> event methods for current event code. Use <span class="dlabel">wait_for_event</span> when one event belongs to an async sequence. The named <span class="dlabel">on_*</span> and <span class="dlabel">handle_*</span> functions remain supported override points for existing code.</p>
 
 <div class="code">character.on("cm", function (data) {
 	game_log(data.name + ": " + JSON.stringify(data.message));

@@ -1,8 +1,11 @@
 <p><span class='dlabel'>is_function(f)</span></p>
-<p>Checks whether a value is a function.</p>
+<p>Checks whether a value is a callable function, including native async and generator functions.</p>
 <p><b>Returns:</b> Boolean.</p>
 <p><b>Example:</b></p>
-<div class='code'>if (is_function(callback)) callback();</div>
+<div class='code'>async function example() {
+	if (is_function(callback)) await callback();
+}
+example();</div>
 
 <p></p>
 <span class='redlabel'>"source"</span>

@@ -1,0 +1,15 @@
+<p><span class='dlabel'>wait_for_event(emitter, event, timeout_ms, filter)</span></p>
+<p>Waits for the next matching event from character, game, or another emitter that supports on plus remove/off.</p>
+<p><b>Returns:</b> Promise resolving with the event data. It rejects with invalid_emitter, invalid_event, invalid_filter, listener_error, filter_error, or timeout.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Notes:</b> The optional filter may return a value or a Promise. Non-matching events keep the listener active. The listener and timer are removed on every settlement path, and mode_resolve_all() converts failures into fulfilled failure objects.</p>
+<p><b>Example:</b></p>
+<div class='code'>async function example() {
+	var loot = await wait_for_event(character, "loot", 5000, function (data) {
+		return data.gold &gt; 0;
+	});
+}
+example();</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

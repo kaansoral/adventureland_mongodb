@@ -1715,8 +1715,7 @@ function is_array(a)
 
 function is_function(f)
 { try{
-	var g = {};
-	return f && g.toString.call(f) === '[object Function]';
+	return typeof f === 'function';
 } catch(e){} return false; }
 
 function is_object(o)
