@@ -329,9 +329,10 @@ async function transport(map, spawn) {
 		i++ // 20 seconds
 	) {
 		if (character.map == map) return { success: true };
+		if (parent.socket.disconnected) return rejecting_promise({ reason: "disconnected", place: "transport" });
 		await sleep(1);
 	}
-	return { failed: true, reason: "timeout" };
+	return rejecting_promise({ reason: "timeout", place: "transport" });
 }
 
 async function town() {
