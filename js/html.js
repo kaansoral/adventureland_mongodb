@@ -1172,7 +1172,7 @@ function render_inventory(reset) {
 			html += "<span class='cbold' style='color: " + colors.cash + "'>SHELLS</span>: <span class='cashnum'>" + to_pretty_num(character.cash || 0) + "</span></div>";
 			html += "<div style='border-bottom: 5px solid gray; margin-bottom: 2px; margin-left: -5px; margin-right: -5px'></div>";
 			right_style = "";
-		} else if (is_electron) {
+		} else if (is_electron || is_tauri) {
 			html += "<div style='padding: 4px; display: inline-block' class='clickable' onclick='pcs(event); show_shells_info()'>"; // '
 			html += "<span class='cbold' style='color: " + colors.cash + "'>SHELLS</span>: <span class='cashnum'>" + to_pretty_num(character.cash || 0) + "</span></div>";
 			right_style = " display: inline-block; float: right";
@@ -1565,7 +1565,7 @@ function render_shells_buyer() {
 	html += "<div><span style='color: #5DAC40'>500</span> Shells = <span style='color: gold'>75,000,000</span> <span style='color: #71AF83' class='clickable' onclick='buy_shells(500)'>BUY</span></div>";
 	html +=
 		"<div><span style='color: #5DAC40'>1,000</span> Shells = <span style='color: gold'>150,000,000</span> <span style='color: #71AF83' class='clickable' onclick='buy_shells(1000)'>BUY</span></div>";
-	if (!is_electron)
+	if (!is_electron && !is_tauri)
 		prefix = "<a href='https://adventure.land/shells' class='cancela' target='_blank'><span class='clickable' onclick='rendered_target=null;' style='color: #359ECF'>Buy With $</span></a> | ";
 	html += "<div>" + prefix + "<span class='clickable' onclick='topleft_npc=false;' style='color: #555556'>Nope</span></div>";
 	html += "</div>";
@@ -3807,7 +3807,7 @@ function render_item(selector, args) {
 			if (cash) (html += "<div style='color: " + colors.cash + "'>" + to_pretty_num(item.cash) + " SHELLS</div>"), (f = "buy_with_shells");
 			else html += "<div style='color: gold'>" + to_pretty_num(value) + " GOLD</div>";
 			if (cash && character && item.cash >= character.cash) {
-				if (is_electron) {
+				if (is_electron || is_tauri) {
 					html += "<div style='border-top: solid 2px gray; margin-bottom: 2px; margin-top: 3px; margin-left: -1px; margin-right: -1px'></div>";
 					html += "<div style='color: #C3C3C3'>You can find SHELLS from gems, monsters. In future, from achievements.</div>";
 				} else {
@@ -5232,7 +5232,7 @@ function render_interaction(type, sub_type, args) {
 		var pack = args.pack,
 			gold = bank_packs[pack][1],
 			shells = bank_packs[pack][2];
-		if (is_electron) {
+		if (is_electron || is_tauri) {
 			html += "Hello! You don't seem to have an account open with me. Would you like to open one? It costs " + to_pretty_num(gold) + " Gold. We hold onto your items forever.";
 			html +=
 				"<span style='float: right; margin-top: 5px'><div class='slimbutton' onclick='socket.emit(\"bank\",{operation:\"unlock\",gold:1,pack:\"" +

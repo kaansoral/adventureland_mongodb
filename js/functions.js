@@ -6242,7 +6242,7 @@ function reflect_music() {
 }
 
 function sound_on() {
-	if (is_electron) Cookies.set("music", "on", { expires: 12 * 365 });
+	if (is_electron || is_tauri) Cookies.set("music", "on", { expires: 12 * 365 });
 	else if (character) set_setting(real_id, "music", "on");
 	sound_music = "1";
 	init_music();
@@ -6255,7 +6255,7 @@ function sound_on() {
 
 function sound_off(just_ui) {
 	if (!just_ui) {
-		if (is_electron) Cookies.set("music", "off", { expires: 12 * 365 });
+		if (is_electron || is_tauri) Cookies.set("music", "off", { expires: 12 * 365 });
 		else if (character) set_setting(real_id, "music", "off");
 		sound_music = "";
 		reflect_music();
@@ -6267,7 +6267,7 @@ function sound_off(just_ui) {
 }
 
 function sfx_on() {
-	if (is_electron) Cookies.set("sfx", "on", { expires: 12 * 365 });
+	if (is_electron || is_tauri) Cookies.set("sfx", "on", { expires: 12 * 365 });
 	else if (character) set_setting(real_id, "sfx", "on");
 	sound_sfx = "1";
 	init_fx();
@@ -6278,7 +6278,7 @@ function sfx_on() {
 }
 
 function sfx_off() {
-	if (is_electron) Cookies.set("sfx", "off", { expires: 12 * 365 });
+	if (is_electron || is_tauri) Cookies.set("sfx", "off", { expires: 12 * 365 });
 	else if (character) set_setting(real_id, "sfx", "off");
 	sound_sfx = "";
 	$(".sfxon").hide();

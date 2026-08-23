@@ -41,6 +41,6 @@ setInterval(function(){
 },1000/4); // Loops every 1/4 seconds.
 
 // Learn Javascript: https://www.codecademy.com/learn/introduction-to-javascript
-// Write your own CODE: https://github.com/kaansoral/adventureland_mongodb/blob/main/js/runner_functions.js{% if not domain.electron%}
+// Write your own CODE: https://github.com/kaansoral/adventureland_mongodb/blob/main/js/runner_functions.js{% if not domain.electron and not domain.tauri%}
 // NOTE: If the tab isn't focused, browsers slow down the game
 // NOTE: Use the performance_trick() function as a workaround{%endif%}
