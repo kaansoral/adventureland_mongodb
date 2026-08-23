@@ -1046,7 +1046,17 @@ async function send_cm(to, message) {
 		if (is_character_local(name)) send_local_cm(name, message), locals.push(name);
 		else to_server.push(name);
 	});
-	if (to_server.length) data = await send_server_cm(to_server, message); // message over the server - has a high call cost / character.cc
+	if (to_server.length)
+		try {
+			data = await send_server_cm(to_server, message); // message over the server - has a high call cost / character.cc
+		} catch (error) {
+			if (!error || !is_object(error)) error = { failed: true, reason: "cm_failed", error: error };
+			error.locals = (error.locals || []).concat(locals);
+			error.receivers = (error.receivers || []).concat(locals);
+			throw error;
+		}
+	data.locals = data.locals || [];
+	data.receivers = data.receivers || [];
 	locals.forEach(function (name) {
 		data.locals.push(name);
 		data.receivers.push(name);
