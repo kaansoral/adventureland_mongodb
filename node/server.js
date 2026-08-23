@@ -5191,6 +5191,21 @@ function init_io() {
 			}
 			var item = null;
 			var retries = 1;
+			function finish_mail(response, extra) {
+				if (!players[socket.id]) return;
+				socket.emit(
+					"game_response",
+					Object.assign(
+						{
+							response: response,
+							to: data.to,
+							request_id: data.request_id,
+							cevent: response,
+						},
+						extra || {},
+					),
+				);
+			}
 			if (player.gold < 48000) {
 				return fail_response("gold_not_enough");
 			}
@@ -5218,13 +5233,7 @@ function init_io() {
 					var to_char = await db.collection("character").findOne({ name: simplified_to });
 					if (!to_char) {
 						var player = players[socket.id];
-						if (player)
-							socket.emit("game_response", {
-								response: "mail_failed",
-								to: data.to,
-								reason: "nocharacter",
-								cevent: "mail_failed",
-							});
+						if (player) finish_mail("mail_failed", { reason: "nocharacter" });
 						if (player && item && player.esize) {
 							var r = JSON.parse(item);
 							add_item(player, r);
@@ -5236,13 +5245,7 @@ function init_io() {
 					var user1 = player.owner ? await get(player.owner) : null;
 					if (!user2) {
 						var player = players[socket.id];
-						if (player)
-							socket.emit("game_response", {
-								response: "mail_failed",
-								to: data.to,
-								reason: "nouser",
-								cevent: "mail_failed",
-							});
+						if (player) finish_mail("mail_failed", { reason: "nouser" });
 						if (player && item && player.esize) {
 							var r = JSON.parse(item);
 							add_item(player, r);
@@ -5252,13 +5255,7 @@ function init_io() {
 					}
 					if (!user1) {
 						var player = players[socket.id];
-						if (player)
-							socket.emit("game_response", {
-								response: "mail_failed",
-								to: data.to,
-								reason: "nouser",
-								cevent: "mail_failed",
-							});
+						if (player) finish_mail("mail_failed", { reason: "nouser" });
 						if (player && item && player.esize) {
 							var r = JSON.parse(item);
 							add_item(player, r);
@@ -5314,13 +5311,7 @@ function init_io() {
 					);
 					if (R.failed) {
 						var player = players[socket.id];
-						if (player)
-							socket.emit("game_response", {
-								response: "mail_failed",
-								to: data.to,
-								reason: "unknown",
-								cevent: "mail_failed",
-							});
+						if (player) finish_mail("mail_failed", { reason: "unknown" });
 						if (player && item && player.esize) {
 							var r = JSON.parse(item);
 							add_item(player, r);
@@ -5341,11 +5332,11 @@ function init_io() {
 						console.error("send_mail ud error", e);
 					}
 					var player = players[socket.id];
-					if (player) socket.emit("game_response", { response: "mail_sent", to: data.to, cevent: "mail_sent" });
+					if (player) finish_mail("mail_sent");
 				} catch (e) {
 					console.error("send_mail error", e);
 					var player = players[socket.id];
-					if (player) socket.emit("game_response", { response: "mail_failed", reason: "coms_failure" });
+					if (player) finish_mail("mail_failed", { reason: "coms_failure" });
 					if (item) console.log("#M unsent mail, lost item: " + item);
 				}
 			})();

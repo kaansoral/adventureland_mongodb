@@ -957,6 +957,59 @@ function send_mail(to, subject, message, item) {
 	return promise;
 }
 
+function send_mail_complete(to, subject, message, item, timeout_ms) {
+	if (is_object(to)) to = to.name;
+	if (!is_string(to) || !to) return rejecting_promise({ reason: "no_target", place: "mail" });
+	if (timeout_ms === undefined) timeout_ms = 15000;
+	timeout_ms = max(0, timeout_ms);
+	item = (item && true) || false;
+	var request_id = randomStr(30),
+		cleanup = function () {},
+		completion = new Promise(function (resolve, reject) {
+			var settled = false;
+			function finish(data, failed) {
+				if (settled) return;
+				settled = true;
+				cleanup();
+				if (failed && !RESOLVE_ALL) reject(data);
+				else resolve(data);
+			}
+			function on_response(data) {
+				if (!data || data.request_id != request_id) return;
+				if (data.response == "mail_sent") finish(Object.assign({ success: true, place: "mail" }, data));
+				else if (data.response == "mail_failed") finish(Object.assign({ failed: true, reason: data.reason || "mail_failed", place: "mail" }, data), true);
+			}
+			function on_disconnect() {
+				finish({ failed: true, reason: "disconnected", place: "mail", to: to, request_id: request_id }, true);
+			}
+			var timer = setTimeout(function () {
+				finish({ failed: true, reason: "timeout", place: "mail", to: to, request_id: request_id }, true);
+			}, timeout_ms);
+			cleanup = function () {
+				clearTimeout(timer);
+				parent.socket.off("game_response", on_response);
+				parent.socket.off("disconnect", on_disconnect);
+			};
+			parent.socket.on("game_response", on_response);
+			parent.socket.on("disconnect", on_disconnect);
+		});
+	var acknowledgement = parent.push_deferred("mail");
+	parent.socket.emit("mail", { to: to, subject: subject, message: message, item: item, request_id: request_id });
+	return acknowledgement.then(
+		function (data) {
+			if (data.failed || !data.in_progress) {
+				cleanup();
+				return data;
+			}
+			return completion;
+		},
+		function (error) {
+			cleanup();
+			throw error;
+		},
+	);
+}
+
 function destroy(num) {
 	// num: 0 to 41
 	parent.p_item = num;

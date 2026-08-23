@@ -45,6 +45,7 @@ attack(target).then(function (result) {
 	await town();                                     // Town channel completed
 	await exchange(0);                                // Reward slot updated
 	await accept_friend_request("Wizard");            // Friendship created
+	await send_mail_complete("Merchant", "Route", "Meet at the bank"); // Mail stored
 	await wait_for(function () { return get_player("Wizard"); }, 5000);
 	await wait_for_event(character, "new_map", 5000);
 }

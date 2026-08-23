@@ -111,6 +111,7 @@ docs = {
 		"send_item",
 		"send_cx",
 		"send_mail",
+		"send_mail_complete",
 		"destroy",
 		"send_party_invite",
 		"send_party_request",

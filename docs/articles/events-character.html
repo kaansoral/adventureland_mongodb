@@ -235,3 +235,5 @@ character.remove(listener);</div>
 <span data-event="fishing_none">fishing_none</span></div>
 
 <p>Response payloads include a <span class="dlabel">response</span> name when they originate from <span class="dlabel">game_response</span>, plus action-specific fields such as <span class="dlabel">name</span>, <span class="dlabel">num</span>, <span class="dlabel">cost</span>, <span class="dlabel">gold</span>, <span class="dlabel">reason</span>, or <span class="dlabel">slot</span>. Code should read the fields it needs and tolerate additional fields.</p>
+
+<p><span class="dlabel">mail_sent</span> and <span class="dlabel">mail_failed</span> include <span class="dlabel">to</span>. Calls made through <span class="dlabel">send_mail_complete</span> also include a unique <span class="dlabel">request_id</span>, allowing simultaneous mail operations to be correlated without guessing from recipient or timing.</p>
