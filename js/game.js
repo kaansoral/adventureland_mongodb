@@ -338,6 +338,14 @@ function log_in(user, character, auth, passphrase) {
 		ui_log("Game hasn't loaded yet");
 		return;
 	}
+	if (is_tauri && !tauri_auth_ready()) {
+		tauri_prepare_auth()
+			.then(function () {
+				log_in(user, character, auth, passphrase);
+			})
+			.catch(tauri_auth_error);
+		return;
+	}
 	clear_game_logs();
 	add_log("Connecting ...");
 	var no_html_value = no_html;
@@ -359,6 +367,11 @@ function log_in(user, character, auth, passphrase) {
 		data.epl = electron_data.platform;
 		if (data.epl == "mas") data.receipt = electron_mas_receipt();
 		if (data.epl == "steam") data.ticket = electron_steam_ticket();
+	}
+	if (is_tauri) {
+		Object.assign(data, tauri_auth_payload());
+		socket.once("tauri_auth", tauri_auth_result);
+		socket.once("tauri_auth_error", tauri_auth_error);
 	}
 	window.auth_sent = new Date();
 	socket.emit("auth", data);

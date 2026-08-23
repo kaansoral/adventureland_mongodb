@@ -79,7 +79,7 @@ async function signup_or_login_api(args) {
 
 	if (existing && existing.server && msince(existing.last_online) < 15 && msince(gf(existing, "last_auth", really_old)) < 15) return { failed: true, reason: "cant_login_inside_bank" };
 
-	if (!domain.electron && !args.only_login && !Dev) return { failed: true, reason: "cant_signup_on_web" };
+	if (!domain.electron && !domain.tauri && !args.only_login && !Dev) return { failed: true, reason: "cant_signup_on_web" };
 
 	if (existing && !args.only_signup) {
 		if (existing.password == hash_password(password, gf(existing, "salt", "5"))) {
@@ -163,7 +163,7 @@ async function signup_or_login_api(args) {
 			await tx_save(R.user);
 			await tx_save({ _id: "MK_email-" + A.email, type: "email", phrase: A.email, owner: get_id(R.user), created: new Date() });
 		},
-		{ email: email, password: password, signupth: signupth, referrer: referrer, slots: domain.electron ? 8 : 5, ip: get_ip(args.req), country: get_country(args.req) },
+		{ email: email, password: password, signupth: signupth, referrer: referrer, slots: domain.electron || domain.tauri ? 8 : 5, ip: get_ip(args.req), country: get_country(args.req) },
 	);
 
 	if (R.failed) return { failed: true, reason: R.reason };

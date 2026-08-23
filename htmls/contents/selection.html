@@ -263,8 +263,12 @@
 		{%if domain.electron %}
 		<!-- user.info.characters|length>1 and -->
 		<a class="textbutton mt5" style="display: block" href="/" target="_blank">&gt; New Game Window</a>
+		{% elif domain.tauri %}
+		<div class="textbutton mt5" onclick="pcs(); tauri_create_subwindow();">&gt; New Game Window</div>
 		{% endif %} {%if domain.electron %}
 		<div class="mt5 textbutton" onclick="pcs(); electron_dev_tools();">&gt; Open Inspector</div>
+		{% elif domain.tauri %}
+		<div class="mt5 textbutton" onclick="pcs(); tauri_dev_tools();">&gt; Open Inspector</div>
 		{% endif %} {% if domain.newcomer_ui %}
 		<div class="mt5 textbutton" onclick="pcs(); $('.menu').hide(); $('.freeui').show(); resize()">&gt; Stop Code</div>
 		{%endif%}

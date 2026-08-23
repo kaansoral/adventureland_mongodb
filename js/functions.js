@@ -2794,17 +2794,20 @@ function say(message, code) {
 			add_chat("", "/stop teleport");
 			add_chat("", "/disconnect");
 			add_chat("", "/disconnect CHARACTERNAME");
-			if (is_electron) add_chat("", "/new_window");
+			if (is_electron || is_tauri) add_chat("", "/new_window");
 			// add_chat("","/savecode /loadcode /runcode");
 		} else if (is_electron && (command == "new_window" || command == "window" || command == "newwindow")) {
 			window.open(base_url, "", { width: $(window).width(), height: $(window).height() });
+		} else if (is_tauri && (command == "new_window" || command == "window" || command == "newwindow")) {
+			tauri_create_subwindow();
 		} else if (command == "start") {
 			var args = rest.split(" "),
 				name = args.shift(),
 				code = args.shift();
 			if (name) start_character_runner(name, code);
 		} else if (command == "codes") {
-			if (!is_electron) show_alert("Only works in game clients");
+			if (is_tauri) show_alert("Local code folders aren't available in this client");
+			else if (!is_electron) show_alert("Only works in game clients");
 			else electron_open_codes();
 		} else if (command == "leave") {
 			push_deferred("party");

@@ -2,6 +2,9 @@
 	{% if domain.electron %}
 		<div class="blockbutton"
 		onclick="btc(event); electron_fullscreen()">Toggle Fullscreen</div>
+	{% elif domain.tauri %}
+		<div class="blockbutton"
+		onclick="btc(event); tauri_fullscreen()">Toggle Fullscreen</div>
 	{% endif %}
 
 	{#<div class="mt4 blockbutton promode {% if domain.newcomer_ui %}hidden{% endif %}"
@@ -49,6 +52,11 @@
 	{% if domain.electron %}
 		<div class="mt4 blockbutton promode {% if domain.newcomer_ui %}hidden{% endif %}"
 			onclick="btc(event); electron_dev_tools()">
+			Open Game Inspector</div>
+		<a class="mt4 blockbutton cancela" href="/" onclick='hide_modal(); show_alert("Signing Out")'>Sign Out to Main Menu</a>
+	{% elif domain.tauri %}
+		<div class="mt4 blockbutton promode {% if domain.newcomer_ui %}hidden{% endif %}"
+			onclick="btc(event); tauri_dev_tools()">
 			Open Game Inspector</div>
 		<a class="mt4 blockbutton cancela" href="/" onclick='hide_modal(); show_alert("Signing Out")'>Sign Out to Main Menu</a>
 	{% endif %}

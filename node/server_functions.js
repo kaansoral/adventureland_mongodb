@@ -835,6 +835,125 @@ function _parse_steam_ticket(player, outer, decrypted) {
 	return false;
 }
 
+var TAURI_STEAM_IDENTITY = "adventure-land-tauri-v1";
+
+function persisted_tauri_steam_id(owner, entity) {
+	if (entity && entity.platform === "steam" && /^[0-9]{16,20}$/.test(entity.pid || "")) return entity.pid;
+	if (owner && owner.platform === "steam" && /^[0-9]{16,20}$/.test(owner.pid || "")) return owner.pid;
+	return "";
+}
+
+function apply_tauri_steam_auth(player, steam_id) {
+	player.platform = "steam";
+	player.pid = steam_id;
+	player.auth_type = "steam";
+	player.auth_id = steam_id;
+	player.p.steam_id = steam_id;
+	delete player.s.authfail;
+}
+
+async function verify_tauri_steam_ticket(ticket) {
+	if (
+		typeof ticket !== "string" ||
+		ticket.length < 2 ||
+		ticket.length > 8192 ||
+		!/^[0-9a-f]+$/i.test(ticket) ||
+		ticket.length % 2
+	)
+		return "";
+	var controller = new AbortController();
+	var timeout = setTimeout(function () {
+		controller.abort();
+	}, 8000);
+	try {
+		var data = {
+			key: keys.steam_publisher_web_apikey,
+			appid: "777150",
+			ticket: ticket,
+			identity: TAURI_STEAM_IDENTITY,
+		};
+		var response = await fetch(
+			"https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1/?" + new URLSearchParams(data),
+			{
+				signal: controller.signal,
+			},
+		);
+		if (!response.ok) return "";
+		var body = await response.json();
+		var params = body && body.response && body.response.params;
+		if (!params || params.result !== "OK" || params.publisherbanned) return "";
+		var steam_id = "" + (params.steamid || "");
+		return /^[0-9]{16,20}$/.test(steam_id) ? steam_id : "";
+	} catch (e) {
+		console.error("#A Tauri Steam ticket verification failed");
+		return "";
+	} finally {
+		clearTimeout(timeout);
+	}
+}
+
+async function persist_tauri_steam_install(owner, entity, auth, steam_id) {
+	if (
+		owner.platform === "steam" &&
+		owner.pid === steam_id &&
+		entity.platform === "steam" &&
+		entity.pid === steam_id &&
+		entity.info &&
+		entity.info.p &&
+		entity.info.p.steam_id === steam_id
+	)
+		return true;
+	var R = await tx(
+		async () => {
+			R.owner = await tx_get(A.owner);
+			R.entity = await tx_get(A.entity);
+			if (!R.owner || !R.owner.info.auths.includes(A.auth)) ex("password_issue");
+			if (!R.entity || R.entity.owner !== get_id(R.owner)) ex("no_character");
+			R.owner.platform = "steam";
+			R.owner.pid = A.steam_id;
+			R.entity.platform = "steam";
+			R.entity.pid = A.steam_id;
+			R.entity.info = R.entity.info || {};
+			R.entity.info.p = R.entity.info.p || { dt: {} };
+			R.entity.info.p.steam_id = A.steam_id;
+			await tx_save(R.owner);
+			await tx_save(R.entity);
+		},
+		{ owner: get_id(owner), entity: get_id(entity), auth: auth, steam_id: steam_id },
+	);
+	if (R.failed) console.error("#A Tauri Steam install link failed: " + R.reason);
+	return !R.failed;
+}
+
+async function verify_tauri_steam_auth(player, owner, entity, data, socket) {
+	var steam_id = persisted_tauri_steam_id(owner, entity);
+	if (steam_id) {
+		if (!(await persist_tauri_steam_install(owner, entity, data.auth, steam_id))) {
+			socket.emit("tauri_auth_error", { reason: "steam_link_failed" });
+			return false;
+		}
+		apply_tauri_steam_auth(player, steam_id);
+		console.log("#A Tauri Steam persisted PID: " + player.name + " " + steam_id);
+		socket.emit("tauri_auth", { status: "persisted_steam_id", pid: steam_id });
+		return true;
+	}
+
+	steam_id = await verify_tauri_steam_ticket(data.ticket);
+	if (!steam_id) {
+		console.error("#A Tauri Steam authentication failed: " + player.name);
+		socket.emit("tauri_auth_error", { reason: "steam_auth_failed" });
+		return false;
+	}
+	if (!(await persist_tauri_steam_install(owner, entity, data.auth, steam_id))) {
+		socket.emit("tauri_auth_error", { reason: "steam_link_failed" });
+		return false;
+	}
+	apply_tauri_steam_auth(player, steam_id);
+	console.log("#A Tauri Steam ticket verified: " + player.name + " " + steam_id);
+	socket.emit("tauri_auth", { status: "steam_ticket_verified", pid: steam_id });
+	return true;
+}
+
 function verify_mas_receipt(player, receipt) {
 	if (player.p.mas_hash == quick_hash(receipt) && player.p.dt.mas_expire > new Date()) {
 		player.auth_type = "mas";

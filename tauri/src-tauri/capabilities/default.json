@@ -3,22 +3,14 @@
   "identifier": "default",
   "description": "Default capability for all Adventure Land windows",
   "windows": ["main", "sub-*", "loader"],
+  "remote": {
+    "urls": ["https://adventure.land/*", "https://*.adventure.land/*"]
+  },
   "permissions": [
-    "core:default",
-    "core:event:default",
-    "core:window:default",
-    "core:webview:default",
-    "shell:allow-open",
-    "dialog:allow-message",
-    "dialog:allow-ask",
-    "store:allow-get",
-    "store:allow-set",
-    "store:allow-load",
-    "store:allow-save",
-    "fs:default",
-    "fs:allow-read-text-file",
-    "fs:allow-write-text-file",
-    "fs:allow-create-dir",
-    "fs:allow-read-dir"
+    "allow-get-steam-auth",
+    "allow-create-subwindow",
+    "allow-open-external",
+    "allow-open-devtools",
+    "allow-toggle-fullscreen"
   ]
 }

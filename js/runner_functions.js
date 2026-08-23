@@ -75,7 +75,7 @@ server = {
 };
 
 game = {
-	platform: (parent.is_electron && "electron") || "web", // "electron" for Steam, Mac clients, "web" for https://adventure.land
+	platform: (parent.is_tauri && "tauri") || (parent.is_electron && "electron") || "web",
 	graphics: !parent.no_graphics, // if game.graphics is false, don't draw stuff to the game in your Code
 	html: !parent.no_html, // if game.html is false, this character is loaded in [CODE] mode
 	cli: parent.is_cli,

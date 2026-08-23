@@ -1,3 +1,7 @@
+{% if domain.tauri %}
+	<script>var is_tauri=1;</script>
+	<script src="/js/tauri_functions.js?v={{domain.v}}"></script>
+{% endif %}
 <script>
 	var inside="{% if not user %}login{%else%}selection{%endif%}";
 	var user_id="{{user and user._id or ''}}",user_auth="{{user and user.info.auths[0] or ''}}";
@@ -19,7 +23,7 @@
 	var Local='{{domain.Local or ""}}';
 	var Staging='{{domain.Staging or ""}}';
 
-	var is_electron='{%if domain.electron %}1{% endif %}',electron_data={};
+	var is_electron='{%if domain.electron %}1{% endif %}',is_tauri=window.is_tauri||'',electron_data={};
 	var is_comm=false;
 	var no_eval=false;
 	var VERSION='{{domain.v}}';
@@ -67,6 +71,7 @@
 				},200);
 		}catch(e){console.error(e);}
 	}
+	if(is_tauri) tauri_init();
 
 	if(is_cli)
 	{

@@ -399,6 +399,7 @@ async function get_domain(req, user) {
 	var domain = await get_domain_common(req);
 	domain.v = domain.Version = Version;
 	domain.electron = false;
+	domain.tauri = false;
 	domain.local = {
 		pixi: "4.8.2-roundpixels",
 		howler: "2.0.13",
@@ -501,7 +502,12 @@ async function get_domain(req, user) {
 			domain.times = 0;
 		}
 		domain.load_character = req.query.load || "";
-		if (req.headers["user-agent"] && req.headers["user-agent"].indexOf("Electron") !== -1) {
+		if (req.headers["user-agent"] && req.headers["user-agent"].indexOf("AdventureLandTauri/") !== -1) {
+			domain.tauri = true;
+			domain.platform = "steam";
+			if (req.cookies.music !== "off") domain.music_on = true;
+			if (req.cookies.sfx !== "off") domain.sfx_on = true;
+		} else if (req.headers["user-agent"] && req.headers["user-agent"].indexOf("Electron") !== -1) {
 			domain.electron = true;
 			if (req.query.buildid && req.query.buildid.indexOf("win32") !== -1) domain.platform = "steam";
 			if (req.query.buildid && req.query.buildid.indexOf("darwin") !== -1) domain.platform = "mac";

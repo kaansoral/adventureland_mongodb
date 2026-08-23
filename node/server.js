@@ -10672,6 +10672,8 @@ function init_io() {
 			} else if (data.epl == "steam" && data.ticket) {
 				player.platform = "steam";
 				verify_steam_ticket(player, data.ticket);
+			} else if (data.epl == "tauri_steam") {
+				await verify_tauri_steam_auth(player, owner, entity, data, socket);
 			} else {
 				player.platform = "web";
 				if (player.pid) {

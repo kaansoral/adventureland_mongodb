@@ -1,6 +1,6 @@
 <div id="pagewrapper">
 	<div id="pagewrapped" class="loginorselection hidewithmodals">
-		{% if domain.purchase_mode and not domain.electron %}
+		{% if domain.purchase_mode and not domain.electron and not domain.tauri %}
 			<div id="loginbuttons">
 				<div class="whiteheader mb4"><a class='cancela' href="https://store.steampowered.com/app/777150/Adventure_Land__The_Code_MMORPG/" target="_blank">&gt; Purchase on Steam <span style='color: #85C76B'>[Live!]</span></a></div>
 				<div class="whiteheader mb4"><a class='cancela' href="https://itunes.apple.com/app/adventure-land-code-mmorpg/id1442098247?mt=12" target="_blank">&gt; Purchase on Mac App Store <span style='color: #85C76B'>[Live!]</span></a></div>
@@ -59,7 +59,7 @@
 	{% set buttons="musts"%} {% include "htmls/contents/section_buttons.html" %}
 	{% set buttons="music"%} {% include "htmls/contents/section_buttons.html" %}
 </div>
-{% if domain.electron %}
+{% if domain.electron or domain.tauri %}
 	{% include "htmls/contents/selection_features.html" %}
 {% else %}
 	<div id="features" style="font-size: 24px; max-width: 320px" class="loginfeatures">
