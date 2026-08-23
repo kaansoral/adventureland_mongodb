@@ -38,13 +38,13 @@ G.projectiles // Projectile definitions</div>
 <p><span class="dlabel" data-global="game">game</span></p>
 
 <div class="code">{
-	platform: "web", // web or electron
+	platform: "web", // web, electron, or tauri
 	graphics: true,
 	html: true,
 	cli: false,
 }</div>
 
-<p><span class="dlabel">game</span> also owns the game-event methods <span class="dlabel">on</span>, <span class="dlabel">once</span>, <span class="dlabel">all</span>, and <span class="dlabel">remove</span>.</p>
+<p><span class="dlabel">game.platform</span> is <span class="dlabel">web</span> in a browser, <span class="dlabel">electron</span> in the legacy desktop client, and <span class="dlabel">tauri</span> in the current native client. <span class="dlabel">game</span> also owns the game-event methods <span class="dlabel">on</span>, <span class="dlabel">once</span>, <span class="dlabel">all</span>, and <span class="dlabel">remove</span>.</p>
 
 <p><span class="dlabel" data-global="smart">smart</span></p>
 
