@@ -1,0 +1,9 @@
+<p><span class='dlabel'>activate(num)</span></p>
+<p>Activates the item in an inventory slot, commonly a booster.</p>
+<p><b>Returns:</b> Promise returned by the item activation routine.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Example:</b></p>
+<div class='code'>activate(locate_item("xpbooster"));</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

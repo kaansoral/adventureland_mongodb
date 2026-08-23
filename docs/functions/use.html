@@ -1,0 +1,11 @@
+<p><span class='dlabel'>use(name,target)</span></p>
+<p>Backward-compatible multi-purpose helper: a numeric argument equips that inventory slot; a string argument uses that skill.</p>
+<p><b>Returns:</b> The Promise returned by equip or use_skill.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Notes:</b> Prefer the explicit equip and use_skill functions in new code. Existing use calls remain supported.</p>
+<p><b>Example:</b></p>
+<div class='code'>use("attack", target);
+use(0);</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

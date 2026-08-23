@@ -1,0 +1,9 @@
+<p><span class='dlabel'>send_gold(receiver, gold)</span></p>
+<p>Sends gold to a nearby character name or character object.</p>
+<p><b>Returns:</b> Promise resolving with the send response, or rejecting for no_target, range, amount, or another server failure.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Example:</b></p>
+<div class='code'>send_gold("Merchant", 100000);</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

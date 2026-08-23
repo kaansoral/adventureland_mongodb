@@ -1,0 +1,11 @@
+<p><span class='dlabel'>handle_command(command, args)</span></p>
+<p>Override point called for slash commands entered through chat.</p>
+<p><b>Returns:</b> Return true to claim a command; the default implementation returns -1 so normal handling continues.</p>
+<p><b>Example:</b></p>
+<div class='code'>function handle_command(command, args) {
+	if (command == "home") { smart_move("main"); return true; }
+	return -1;
+}</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

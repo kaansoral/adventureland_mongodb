@@ -1,1 +1,12 @@
-<p>Work in progress, returned Promise's aren't resolved yet!</p>
+<p><span class='dlabel'>use_skill(name, target, extra_arg)</span></p>
+<p>Uses a named skill with an optional target and skill-specific extra argument.</p>
+<p><b>Returns:</b> One Promise for the complete skill call, resolving with the aggregate server response or rejecting with a structured failure object.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Notes:</b> Targets may be entity objects, character names, monster IDs, coordinate arrays for blink, or arrays for multi-target skills. If target is omitted, get_target() is used. Multi-target skills return one aggregate Promise, not an array of Promises.</p>
+<p><b>Example:</b></p>
+<div class='code'>use_skill("energize", get_player("Warrior"), 100);
+use_skill("3shot", [target1, target2, target3]);
+use_skill("blink", [100, -50]);</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

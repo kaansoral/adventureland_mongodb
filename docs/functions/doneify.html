@@ -1,0 +1,9 @@
+<p><span class='dlabel'>doneify(fn,s_event,f_event)</span></p>
+<p>Legacy experiment that wraps an event-based function with a .done(callback) interface.</p>
+<p><b>Returns:</b> A wrapper function whose call returns an object containing done(callback).</p>
+<p><b>Notes:</b> Deprecated. Modern action functions return native Promises; use then, catch, or await. Kept only for backward compatibility.</p>
+<p><b>Example:</b></p>
+<div class='code'>var old_buy = doneify(buy, "buy_success", "buy_fail");</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

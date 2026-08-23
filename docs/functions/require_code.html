@@ -1,0 +1,10 @@
+<p><span class='dlabel'>require_code(name_or_slot)</span></p>
+<p>Synchronously evaluates a code slot or local code file in module scope and returns module.exports.</p>
+<p><b>Returns:</b> Exports object or any value assigned to module.exports.</p>
+<p><b>Notes:</b> The loaded file can use module.exports or exports. Use load_code when globals are intentional.</p>
+<p><b>Example:</b></p>
+<div class='code'>var helpers = require_code("helpers");
+helpers.start();</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

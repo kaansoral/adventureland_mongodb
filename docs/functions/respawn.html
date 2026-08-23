@@ -1,0 +1,9 @@
+<p><span class='dlabel'>respawn()</span></p>
+<p>Requests respawn for a dead character.</p>
+<p><b>Returns:</b> Promise resolving with the respawn response, or rejecting while alive, during cooldown, or for another server failure.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Example:</b></p>
+<div class='code'>if (character.rip) respawn();</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

@@ -1,0 +1,9 @@
+<p><span class='dlabel'>bank_store(num, pack, pack_num)</span></p>
+<p>Moves an inventory item into a bank pack, automatically selecting a stack or free bank slot when no pack is supplied.</p>
+<p><b>Returns:</b> Promise resolving with the bank response, or rejecting for conditions such as not_in_bank, no_item, or bank_full.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Example:</b></p>
+<div class='code'>bank_store(0, "items0", 0);</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

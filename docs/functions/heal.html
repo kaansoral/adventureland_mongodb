@@ -1,0 +1,11 @@
+<p><span class='dlabel'>heal(target)</span></p>
+<p>Performs the priest's normal heal against a visible character target.</p>
+<p><b>Returns:</b> Promise resolving with the heal/projectile response, or rejecting with a structured failure object such as not_found, too_far, cooldown, no_mp, or disabled.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Example:</b></p>
+<div class='code'>heal(character).then(function (data) {
+	game_log("Heal sent");
+});</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

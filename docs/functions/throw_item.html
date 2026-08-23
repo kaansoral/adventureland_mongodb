@@ -1,0 +1,9 @@
+<p><span class='dlabel'>throw_item(num, x, y)</span></p>
+<p>Throws a throwable inventory item onto map coordinates.</p>
+<p><b>Returns:</b> Promise resolving with the throw response, or rejecting with a structured failure object.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Example:</b></p>
+<div class='code'>throw_item(0, character.x + 20, character.y);</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

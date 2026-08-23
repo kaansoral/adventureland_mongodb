@@ -1,0 +1,11 @@
+<p><span class='dlabel'>on_cm(name,data)</span></p>
+<p>Backward-compatible override point called for an incoming CODE message.</p>
+<p><b>Returns:</b> Return value is ignored.</p>
+<p><b>Notes:</b> character.on("cm", callback) is the newer event form.</p>
+<p><b>Example:</b></p>
+<div class='code'>function on_cm(name, data) {
+	game_log(name + " sent " + JSON.stringify(data));
+}</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

@@ -1,0 +1,9 @@
+<p><span class='dlabel'>unlock_item(num)</span></p>
+<p>Unlocks an inventory item, or reports the remaining seal time for a sealed item.</p>
+<p><b>Returns:</b> Promise resolving with the unlock response. A sealed item may resolve with {success:false, in_progress:true, hours}; other failures reject.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Example:</b></p>
+<div class='code'>unlock_item(0);</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

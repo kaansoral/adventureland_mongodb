@@ -201,7 +201,7 @@ function use_skill(name, target, extra_arg) {
 	if (!target) target = get_target();
 	return parent.use_skill(name, target, extra_arg);
 	// Returns a Promise
-	// For "3shot", "5shot", "cburst" returns an array of Promise's - one for each target
+	// Multi-target skills return one Promise for the complete skill call
 }
 
 function reduce_cooldown(name, ms) {
@@ -450,7 +450,7 @@ function change_target_privately(target) {
 }
 
 function can_move_to(x, y) {
-	if (is_object(x)) (y = x.real_y), (x = x.real_x);
+	if (is_object(x)) ((y = x.real_y), (x = x.real_x));
 	return can_move({ map: character.map, x: character.real_x, y: character.real_y, going_x: x, going_y: y, base: character.base });
 }
 
@@ -819,7 +819,7 @@ function get_nearest_monster(args) {
 		if (args.no_target && current.target && current.target != character.name) continue;
 		if (args.path_check && !can_move_to(current)) continue;
 		var c_dist = parent.distance(character, current);
-		if (c_dist < min_d) (min_d = c_dist), (target = current);
+		if (c_dist < min_d) ((min_d = c_dist), (target = current));
 	}
 	return target;
 }
@@ -841,7 +841,7 @@ function get_nearest_hostile(args) {
 		if (args.friendship && in_arr(current.owner, parent.friends)) continue;
 		if (args.exclude && in_arr(current.name, args.exclude)) continue; // get_nearest_hostile({exclude:["Wizard"]}); Thanks
 		var c_dist = parent.distance(character, current);
-		if (c_dist < min_d) (min_d = c_dist), (target = current);
+		if (c_dist < min_d) ((min_d = c_dist), (target = current));
 	}
 	return target;
 }
@@ -855,7 +855,7 @@ function get_nearest_npc() {
 		var current = parent.entities[id];
 		if (current.type != "npc") continue;
 		var c_dist = parent.distance(character, current);
-		if (c_dist < min_d) (min_d = c_dist), (target = current);
+		if (c_dist < min_d) ((min_d = c_dist), (target = current));
 	}
 	return target;
 }
@@ -1037,8 +1037,7 @@ function accept_friend_request(name) {
 				else resolve(data);
 			}
 			function on_friend(data) {
-				if (data && data.event == "new" && (!data.name || data.name == name))
-					finish({ success: true, response: "friend_complete", place: "friend", name: data.name || name, friends: data.friends });
+				if (data && data.event == "new" && (!data.name || data.name == name)) finish({ success: true, response: "friend_complete", place: "friend", name: data.name || name, friends: data.friends });
 			}
 			function on_response(data) {
 				if (data && data.response == "friend_failed") finish({ failed: true, reason: data.reason || "friend_failed", response: data.response, place: "friend" }, true);
@@ -1099,7 +1098,7 @@ async function send_cm(to, message) {
 		data = { locals: [], receivers: [] };
 	if (!is_array(to)) to = [to];
 	to.forEach(function (name) {
-		if (is_character_local(name)) send_local_cm(name, message), locals.push(name);
+		if (is_character_local(name)) (send_local_cm(name, message), locals.push(name));
 		else to_server.push(name);
 	});
 	if (to_server.length)
@@ -1622,7 +1621,7 @@ function smart_move(destination, on_done) {
 	if (smart.moving) smart.on_done(false, "interrupted");
 	smart.map = "";
 	if (is_string(destination)) destination = { to: destination };
-	if (is_number(destination)) (destination = { x: destination, y: on_done }), (on_done = null);
+	if (is_number(destination)) ((destination = { x: destination, y: on_done }), (on_done = null));
 	if ("x" in destination) {
 		smart.map = destination.map || character.map;
 		smart.x = destination.x;
@@ -1670,15 +1669,15 @@ function smart_move(destination, on_done) {
 				smart.x = G.maps[smart.map].spawns[0][0];
 				smart.y = G.maps[smart.map].spawns[0][1];
 			}
-		} else if (destination.to == "upgrade" || destination.to == "compound") (smart.map = "main"), (smart.x = -204), (smart.y = -129);
-		else if (destination.to == "exchange") (smart.map = "main"), (smart.x = -26), (smart.y = -432);
-		else if (destination.to == "potions" && character.map == "halloween") (smart.map = "halloween"), (smart.x = 149), (smart.y = -182);
-		else if (destination.to == "potions" && in_arr(character.map, ["winterland", "winter_inn", "winter_cave"])) (smart.map = "winter_inn"), (smart.x = -84), (smart.y = -173);
-		else if (destination.to == "potions") (smart.map = "main"), (smart.x = 56), (smart.y = -122);
-		else if (destination.to == "scrolls") (smart.map = "main"), (smart.x = -465), (smart.y = -71);
+		} else if (destination.to == "upgrade" || destination.to == "compound") ((smart.map = "main"), (smart.x = -204), (smart.y = -129));
+		else if (destination.to == "exchange") ((smart.map = "main"), (smart.x = -26), (smart.y = -432));
+		else if (destination.to == "potions" && character.map == "halloween") ((smart.map = "halloween"), (smart.x = 149), (smart.y = -182));
+		else if (destination.to == "potions" && in_arr(character.map, ["winterland", "winter_inn", "winter_cave"])) ((smart.map = "winter_inn"), (smart.x = -84), (smart.y = -173));
+		else if (destination.to == "potions") ((smart.map = "main"), (smart.x = 56), (smart.y = -122));
+		else if (destination.to == "scrolls") ((smart.map = "main"), (smart.x = -465), (smart.y = -71));
 		else if (find_npc(destination.to)) {
 			var l = find_npc(destination.to);
-			(smart.map = l.map), (smart.x = l.x), (smart.y = l.y + 15);
+			((smart.map = l.map), (smart.x = l.x), (smart.y = l.y + 15));
 		}
 	}
 	if (!smart.map) {
@@ -1850,7 +1849,7 @@ function bfs() {
 	}
 
 	if (result === null) {
-		(result = best), (optimal = false);
+		((result = best), (optimal = false));
 		game_log("Path not found!", "#CF575F");
 		smart.moving = false;
 		smart.on_done(false, "failed");
@@ -1879,7 +1878,7 @@ function start_pathfinding() {
 	smart.searching = true;
 	smart.start_x = character.real_x;
 	smart.start_y = character.real_y;
-	(queue = []), (visited = {}), (start = 0), (best = null);
+	((queue = []), (visited = {}), (start = 0), (best = null));
 	if (game.cli) {
 		parent.CLI_OUT.push({ type: "smart_move", G: G, start_x: smart.start_x, start_y: smart.start_y, start_map: character.map, x: smart.x, y: smart.y, map: smart.map });
 	} else {
@@ -1999,7 +1998,7 @@ var last_message = "",
 	current_message = "";
 function code_draw() {
 	var t;
-	if (last_message != current_message) $("#gg").html(current_message), (last_message = current_message);
+	if (last_message != current_message) ($("#gg").html(current_message), (last_message = current_message));
 	if (!game.graphics)
 		t = setTimeout(code_draw, 16); // jsdom patch [18/04/19]
 	else requestAnimationFrame(code_draw);

@@ -1,0 +1,12 @@
+<p><span class='dlabel'>async wait_for(condition, timeout_ms, interval_ms)</span></p>
+<p>Polls a synchronous or asynchronous condition until it returns a truthy value.</p>
+<p><b>Returns:</b> Promise resolving with the condition's first truthy value. It rejects with invalid_condition, condition_error, or timeout.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Notes:</b> Defaults are a 10,000ms timeout and 50ms interval. Timeout and interval values below zero are clamped to zero.</p>
+<p><b>Example:</b></p>
+<div class='code'>var target = await wait_for(function () {
+	return get_nearest_monster({ type: "goo" });
+}, 5000, 50);</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

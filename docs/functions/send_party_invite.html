@@ -1,0 +1,9 @@
+<p><span class='dlabel'>send_party_invite(name, is_request)</span></p>
+<p>Invites a character to your party, or sends a join request when is_request is truthy.</p>
+<p><b>Returns:</b> Promise resolving with the party acknowledgement, or rejecting with a structured failure object.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Example:</b></p>
+<div class='code'>send_party_invite("Priest");</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

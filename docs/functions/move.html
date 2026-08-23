@@ -1,0 +1,10 @@
+<p><span class='dlabel'>move(x, y)</span></p>
+<p>Requests a direct walk to map coordinates.</p>
+<p><b>Returns:</b> Promise resolving when the move request is accepted, or rejecting when walking is unavailable or the server refuses it.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Notes:</b> For collision-aware multi-map travel use smart_move. The Promise does not mean the character has already arrived.</p>
+<p><b>Example:</b></p>
+<div class='code'>move(character.x + 100, character.y);</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

@@ -1,0 +1,79 @@
+<p><span class="dlabel">The CODE runtime</span></p>
+
+<p>Your code runs inside its character's CODE frame. The public function directory is the authoritative list of supported global routines. Every listed routine has its signature, return contract, notes, example, and shipped source.</p>
+
+<p><b>Core globals:</b></p>
+
+<div class="code">character // Your live character proxy
+G         // Game definitions: items, skills, maps, monsters, recipes, and more
+server    // { mode, pvp, region, id }
+game      // { platform, graphics, html, cli }
+smart     // Current smart_move state and pathfinding options
+safeties  // Request-burst safeguards; true by default</div>
+
+<p><span class="dlabel">Promises</span></p>
+
+<p>Server actions return native Promises. Registering the response happens before the request is emitted, so even an immediate server response is correlated with the correct call.</p>
+
+<div class="code">try {
+	var result = await use_skill("attack", target);
+	game_log("Attack accepted: " + result.damage);
+} catch (error) {
+	game_log("Attack failed: " + error.reason);
+}</div>
+
+<p>By default, successful actions fulfill and failures reject with a structured object containing <span class="dlabel">failed: true</span> and <span class="dlabel">reason</span>. Call <span class="dlabel">mode_resolve_all()</span> once at startup only when old code requires every action to fulfill:</p>
+
+<div class="code">mode_resolve_all();
+
+var result = await attack(target);
+if (result.failed) game_log(result.reason);</div>
+
+<p>Calls using the same response channel are queued in request order. The queue is bounded: if abusive or broken code overflows it, the oldest Promise settles with <span class="dlabel">queue_overflow</span> instead of hanging forever.</p>
+
+<p><span class="dlabel">Completion-aware routines</span></p>
+
+<p>Most actions settle when the server accepts or refuses the action. Routines with a longer lifecycle wait for the meaningful completion point:</p>
+
+<div class="code">await start_character("Merchant", "merchant_code"); // CODE runner is active
+await smart_move("bank");                         // Destination reached
+await transport("main", 0);                      // Destination map loaded
+await town();                                     // Town channel completed
+await exchange(0);                                // Reward slot updated
+await accept_friend_request("Wizard");            // Friendship created
+await wait_for(function () { return get_player("Wizard"); }, 5000);</div>
+
+<p>These routines reject on interruption, disconnection, or their documented timeout instead of leaving a Promise pending forever. A repeated identical active transport or smart route shares the existing trip; a conflicting route fails or interrupts according to that function's reference.</p>
+
+<p><span class="dlabel">Events and callbacks</span></p>
+
+<p>Use <span class="dlabel">character.on</span>, <span class="dlabel">character.once</span>, <span class="dlabel">character.all</span>, and the equivalent <span class="dlabel">game</span> event methods for current event code. The named <span class="dlabel">on_*</span> and <span class="dlabel">handle_*</span> functions remain supported override points for existing code.</p>
+
+<div class="code">character.on("cm", function (data) {
+	game_log(data.name + ": " + JSON.stringify(data.message));
+});
+
+game.on("game_event", function (event) {
+	show_json(event);
+});</div>
+
+<p><span class="dlabel">Compatibility</span></p>
+
+<p>Established names and call forms remain in place. Functions such as <span class="dlabel">use</span>, <span class="dlabel">destroy_item</span>, <span class="dlabel">is_player</span>, <span class="dlabel">is_pvp</span>, and callback arguments such as <span class="dlabel">smart_move(destination, on_done)</span> are documented as compatibility APIs. New code can use their clearer replacements without breaking old code.</p>
+
+<p><span class="dlabel">Persistence and shared code</span></p>
+
+<div class="code">set("farm", { monster: "goo", kills: 12 });
+var farm = get("farm");
+
+pset("route", "winterland");
+var route = pget("route");
+
+load_code("globals");
+var helpers = require_code("helpers");</div>
+
+<p><span class="dlabel">get/set</span> store JSON-serializable browser-local values. <span class="dlabel">pget/pset</span> use the platform's raw persistent string storage. <span class="dlabel">load_code</span> deliberately adds declarations to the current global scope; <span class="dlabel">require_code</span> isolates a module and returns its exports.</p>
+
+<p><span class="dlabel">Low-level socket access</span></p>
+
+<p><span class="dlabel">get_socket()</span> is available for listening to low-level events. Prefer the public action functions for requests: a raw socket emit does not register a CODE Promise, correlate a response, or apply the normal client safeguards.</p>
