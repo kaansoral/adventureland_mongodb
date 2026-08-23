@@ -1,215 +1,199 @@
-<p>Game events are ambient or global, they can either be broadcasted to the entire server or you can observe nearby happenings through these events.</p>
+<p><span class="dlabel">Game events</span></p>
 
-<div class='code'>
-// Register to a single event:
-game.on("level_up",function(data){
-	game_log(data.name+" is now level "+data.level+"!");
+<p>Game events describe ambient or server-wide activity visible to this client: combat around you, map changes, trades, public purchases, spawns, chat, deaths, and server notices.</p>
+
+<div class="code">var listener = game.on("level_up", function (data, event) {
+	game_log(data.name + " is now level " + data.level);
 });
 
-// Register to all events:
-game.all(function(name,data){
-	data.event_name=name;
-	show_json(data);
+game.once("event", function (data) {
+	game_log("Event: " + data.name);
 });
 
-</div>
+game.all(function (event, data) {
+	game_log(event + ": " + JSON.stringify(data));
+});
 
-<p>Data Reference:</p>
+game.remove(listener);</div>
 
-<span class='dlabel'>"event"</span>
-<div class='code'>
-{
+<p><span class="dlabel">game.on(event, callback)</span> and <span class="dlabel">game.once(event, callback)</span> return listener IDs. Remove either with <span class="dlabel">game.remove(id)</span>. An ordinary callback receives <span class="dlabel">(data, event)</span>; an all-events callback receives <span class="dlabel">(event, data)</span>.</p>
+
+<p><span class="dlabel">wait_for_event(game, event, timeout, filter)</span> is available when an event belongs to an async sequence.</p>
+
+<p><span class="dlabel" data-event="event">event</span></p>
+
+<div class="code">{
 	name: "snowman",
-	// Some others: "pinkgoo", "wabbit", "franky", "grinch"
-	// Optional coordinates:
-	map: "winterland",
-	x: 12,
-	y: 88,
-}
-</div>
+	map: "winterland", // Optional
+	x: 12,              // Optional
+	y: 88,              // Optional
+}</div>
 
-<span class='dlabel'>"trade"</span>
-<div class='code'>
-{
-	seller: "SellerName",
-	buyer: "BuyerName",
-	item: {name:"staff",level:9},
-	slot: "trade8",
-}
-</div>
+<p>Server event announcements use this event. The event name and optional location depend on the live event.</p>
 
-<span class='dlabel'>"action"</span>
-<div class='code'>
-{
-	source: "attack", // Can be positive or negative
-	actor: "CharacterName", // Monster ID or Character ID
-	target: "42", // Monster ID or Character ID
-	damage: 1390,
+<p><span class="dlabel" data-event="action">action</span></p>
+
+<div class="code">{
+	source: "attack",
+	actor: "AttackerID",
+	target: "TargetID",
+	damage: 1390,       // Or heal
 	projectile: "momentum",
-	eta: 50, // Arrival in milliseconds
-	pid: "abcd1234", // Projectile ID
-}
-{
-	source: "heal",
-	actor: "CharacterName",
-	target: "PartyMember",
-	heal: 1390,
-	projectile: "heal",
-	eta: 400,
-	pid: "abcd1234", // Projectile ID
-}
-{
-	source: "curse",
-	actor: "CharacterName",
-	target: "MortalEnemy",
-	projectile: "curse",
-	eta: 800,
-	pid: "abcd1234", // Projectile ID
-}
-{
-	source: "burst",
-	actor: "CharacterName",
-	target: "MortalEnemy",
-	ray: "burst",
-	instant: true,
-}
-// Warning: The formats might refine in the future [26/01/20]
-</div>
+	eta: 50,
+	pid: "abcd1234",
+}</div>
 
-<span class='dlabel'>"hit"</span>
-<div class='code'>
-{
-	source: "attack", // Can be positive or negative
-	actor: "CharacterName", // Monster ID or Character ID
-	target: "42", // Monster ID or Character ID
-	damage: 1390,
-	pid: "abcd1234", // Projectile ID
-	heal: 0, // Set if the projectile was healing
+<p>Emitted when a visible action launches. The actor and target can be character names or monster IDs. Rays and instant skills can use fields such as <span class="dlabel">ray</span> and <span class="dlabel">instant</span> instead of projectile travel.</p>
+
+<p><span class="dlabel" data-event="hit">hit</span></p>
+
+<div class="code">{
+	source: "attack",
+	actor: "AttackerID",
+	target: "TargetID",
+	damage: 1390,       // Or heal
 	crit: false,
 	kill: false,
 	evade: false,
 	miss: false,
-	avoid: false, // Outrunning the projectile
-	poison: false, // Whether the attack poisoned the target
-	freeze: false, // Whether the attack freezed the target
-	stun: false, // Whether the attack stunned the target
-	reflect: 0, // Reflected damage
-	dreturn: 0, // Returned damage
-	trigger: "sugarrush", // Set when the attack triggered a condition/buff
-	condition: "curse", // Could be both a positive or negative condition for the target
-	sneak: false, // Set if this was a Rogue sneak attack
-	stacked: [], // Array of ID's - If multiple opponents staying in the same spot got hit
-	mobbing: 88, // If 4+ monsters target you, their attacks increase the mobbing intensity/damage
-	unintentional: false, // true for the non-main targets of a stacked attack
-	aoe: false, // true for uncontrollable attacks like cleave and shadowstrike
-	// Not all properties are always set, if the value is false, [] or 0 - they are usually not set
-}
-</div>
+	avoid: false,
+	reflect: 0,
+	dreturn: 0,
+	condition: "curse",
+	trigger: "sugarrush",
+	stacked: [],
+	mobbing: 0,
+	unintentional: false,
+	aoe: false,
+}</div>
 
-<span class='dlabel'>"level_up"</span>
-<div class='code'>
-{
-	name: "CharacterName", // Character name
-	level: 72, // Characters' new level
-}
-</div>
+<p>Emitted for resolved visible combat. Optional false, zero, and empty fields are commonly omitted.</p>
 
-<span class='dlabel'>"death"</span>
-<div class='code'>
-{
-	id: "428", // Character Name or Monster ID 
-}
-</div>
+<p><span class="dlabel" data-event="trade">trade</span> and <span class="dlabel" data-event="sale">sale</span></p>
 
-<span class='dlabel'>"shutdown"</span>
-<div class='code'>
+<div class="code">// trade
 {
-	seconds: 20, // Server shutdown in 20 seconds 
+	seller: "SellerName",
+	buyer: "BuyerName",
+	item: { name: "staff", level: 9 },
+	num: 12,
+	slot: "trade8",
 }
-</div>
 
-<span class='dlabel'>"sell"</span>
-<div class='code'>
-{
-	// Item sold to an NPC
+// sale: the same shape, emitted locally when your character is the seller</div>
+
+<p><span class="dlabel" data-event="buy">buy</span>, <span class="dlabel" data-event="sell">sell</span>, <span class="dlabel" data-event="sbuy">sbuy</span>, and <span class="dlabel" data-event="fbuy">fbuy</span></p>
+
+<div class="code">{
 	name: "CharacterName",
-	item: {"name":"pants",level:8},
-}
-</div>
+	item: { name: "pants", level: 0 },
+}</div>
 
-<span class='dlabel'>"buy"</span>
-<div class='code'>
-{
-	// Item bought from an NPC
-	name: "CharacterName",
-	item: {"name":"pants",level:0},
-}
-</div>
+<p><span class="dlabel">buy</span> and <span class="dlabel">sell</span> are ordinary NPC activity. <span class="dlabel">sbuy</span> is a Ponty purchase; <span class="dlabel">fbuy</span> is a Lost and Found purchase.</p>
 
-<span class='dlabel'>"sbuy"</span>
-<div class='code'>
-{
-	// Item bought from Ponty
-	name: "CharacterName",
-	item: {"name":"pants",level:0},
-}
-</div>
+<p><span class="dlabel" data-event="item_sent">item_sent</span>, <span class="dlabel" data-event="gold_sent">gold_sent</span>, and <span class="dlabel" data-event="cx_sent">cx_sent</span></p>
 
-<span class='dlabel'>"fbuy"</span>
-<div class='code'>
+<div class="code">// item_sent
 {
-	// Item bought from Lost and Found
-	name: "CharacterName",
-	item: {"name":"pants",level:0},
-}
-</div>
-
-<span class='dlabel'>"item_sent"</span>
-<div class='code'>
-{
-	// Player to player item transfer
 	sender: "SenderName",
 	receiver: "ReceiverName",
-	item: {"name":"pants",level:0},
+	item: { name: "hpot0", q: 10 },
+	num: 12,
+	fnum: 0,
 }
-</div>
 
-<span class='dlabel'>"gold_sent"</span>
-<div class='code'>
+// gold_sent
 {
-	// Player to player gold transfer
 	sender: "SenderName",
 	receiver: "ReceiverName",
 	gold: 100,
 }
-</div>
 
-<span class='dlabel'>"cx_sent"</span>
-<div class='code'>
+// cx_sent
 {
-	// Player to player cosmetics transfer
 	sender: "SenderName",
 	receiver: "ReceiverName",
 	cx: "hat999",
-}
-</div>
+}</div>
 
-<span class='dlabel'>"mluck"</span>
-<div class='code'>
+<p>These are visible ambient transfer events. Your own transfer completion is also reported once through the corresponding character event.</p>
+
+<p><span class="dlabel" data-event="level_up">level_up</span> and <span class="dlabel" data-event="death">death</span></p>
+
+<div class="code">// level_up
 {
+	name: "CharacterName",
+	level: 72,
+}
+
+// death
+{
+	id: "CharacterNameOrMonsterID",
+}</div>
+
+<p><span class="dlabel" data-event="chat">chat</span></p>
+
+<div class="code">{
+	from: "CharacterNameOrOwnerID",
+	message: "Hello",
+}</div>
+
+<p>Public chat text is untrusted. Use <span class="dlabel">safe_log</span> before rendering it.</p>
+
+<p><span class="dlabel" data-event="new_map">new_map</span></p>
+
+<div class="code">{
+	name: "main",
+	in: "main",
+}</div>
+
+<p>This mirrors the character event after your client enters a new map.</p>
+
+<p><span class="dlabel" data-event="mluck">mluck</span></p>
+
+<div class="code">{
 	name: "MerchantName",
-	item: {name:"staff",level:0},
+	item: { name: "staff", level: 0 },
 	num: 12,
-}
-</div>
+}</div>
 
-<span class='dlabel'>"api_response"</span>
-<div class='code'>
-{
+<p><span class="dlabel" data-event="api_response">api_response</span></p>
+
+<div class="code">{
 	type: "servers_and_characters",
 	servers: [],
 	characters: [],
-}
-</div>
+}</div>
 
-<p>Work in progress ...</p>
+<p>Emitted for asynchronous API information delivered to the game. Fields depend on <span class="dlabel">type</span>.</p>
+
+<p><span class="dlabel" data-event="pvp_list">pvp_list</span> and <span class="dlabel" data-event="ccreport">ccreport</span></p>
+
+<p><span class="dlabel">pvp_list</span> carries the current PVP list when the server supplies one to CODE. <span class="dlabel">ccreport</span> carries the server call-cost report object.</p>
+
+<p><span class="dlabel">Dynamic events</span></p>
+
+<p>Some server UI and response messages declare their event name at runtime. When a message supplies <span class="dlabel">event: true</span>, its <span class="dlabel">type</span> or <span class="dlabel">response</span> becomes the game event name; when it supplies a string, that string is the name. The complete stable index currently includes:</p>
+
+<div class="code"><span data-event="event">event</span>
+<span data-event="action">action</span>
+<span data-event="hit">hit</span>
+<span data-event="trade">trade</span>
+<span data-event="sale">sale</span>
+<span data-event="buy">buy</span>
+<span data-event="sell">sell</span>
+<span data-event="sbuy">sbuy</span>
+<span data-event="fbuy">fbuy</span>
+<span data-event="item_sent">item_sent</span>
+<span data-event="gold_sent">gold_sent</span>
+<span data-event="cx_sent">cx_sent</span>
+<span data-event="level_up">level_up</span>
+<span data-event="death">death</span>
+<span data-event="chat">chat</span>
+<span data-event="new_map">new_map</span>
+<span data-event="mluck">mluck</span>
+<span data-event="api_response">api_response</span>
+<span data-event="pvp_list">pvp_list</span>
+<span data-event="ccreport">ccreport</span></div>
+
+<p>Dynamic payloads can gain fields over time. Read the fields your code needs and tolerate additions.</p>
