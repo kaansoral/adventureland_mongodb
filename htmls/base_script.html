@@ -38,6 +38,7 @@
 	// It's pretty complicated but there are 2 persistence, auto login routines, the above one is the first, the below one is the second, second one uses the URL data
 	var url_address='{{domain.url_address}}',url_path='{{domain.url_path}}',url_character='{{domain.url_character}}';
 	var update_notes={{domain.update_notes|to_json|safe}};
+	var update_notes_more={{domain.update_notes_more|to_json|safe}},last_deploy={{domain.last_deploy|to_json|safe}};
 	var server_regions={"US":"Americas","EU":"Europas","ASIA":"Eastlands"};
 	var X={};
 	function payment_logic(){};

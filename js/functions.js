@@ -547,17 +547,56 @@ function add_frequest(name) {
 }
 
 function add_update_notes() {
+	add_log("Last Update " + last_deploy, "gray");
 	update_notes.forEach(function (note) {
+		if (note.deployed != last_deploy) return;
 		var color = "gray";
-		//if(note.indexOf("Happy New Year")!=-1) color="#C82F17";
-		if (note.indexOf("Holiday") != -1) color = "#C82F17";
-		if (note.indexOf("Duelland") != -1) color = "#3BB7CB";
-		if (note.indexOf("Lunar") != -1) color = "#B02B16";
-		if (note.indexOf("Valentine") != -1) color = "#C987B7"; // ,color="#85C76B"
-		if (note.indexOf("Halloween") != -1) color = "#DE6E37";
-		if (note.indexOf("Egg Hunt Event") != -1) color = "#DE5CB8";
-		add_log(note, color);
+		//if(note.note.indexOf("Happy New Year")!=-1) color="#C82F17";
+		if (note.note.indexOf("Holiday") != -1) color = "#C82F17";
+		if (note.note.indexOf("Duelland") != -1) color = "#3BB7CB";
+		if (note.note.indexOf("Lunar") != -1) color = "#B02B16";
+		if (note.note.indexOf("Valentine") != -1) color = "#C987B7"; // ,color="#85C76B"
+		if (note.note.indexOf("Halloween") != -1) color = "#DE6E37";
+		if (note.note.indexOf("Egg Hunt Event") != -1) color = "#DE5CB8";
+		add_log(note.note, color);
 	});
+	if (!no_html) add_log("<span class='clickable' onclick='show_update_notes()'>All Update Notes</span>", "#63ABE4");
+}
+
+function render_update_notes() {
+	var html = "";
+	update_notes.forEach(function (entry) {
+		html += "<div style='margin-bottom: 8px'><span style='color: gray'>" + html_escape(entry.date) + "</span> " + html_escape(entry.note) + "</div>";
+	});
+	if (update_notes_more) html += "<div class='gamebutton' style='margin-top: 16px; text-align: center' onclick='load_more_update_notes()'>Load More</div>";
+	else html += "<div style='color: gray; margin-top: 16px; text-align: center'>The Beginning</div>";
+	$(".update-notes-list").html(html);
+	position_modals();
+}
+
+function show_update_notes() {
+	var html =
+		"<div style='font-size: 32px; text-align: center; margin-bottom: 4px'>Update Notes</div>" +
+		"<div style='color: gray; text-align: center; margin-bottom: 20px'>Last Update " +
+		html_escape(last_deploy) +
+		"</div><div class='update-notes-list'></div>";
+	show_modal(html, { wwidth: 720, hideinbackground: true, url: "/allnotes" });
+	render_update_notes();
+}
+
+var update_notes_loading = false;
+function load_more_update_notes() {
+	if (update_notes_loading || !update_notes_more) return;
+	update_notes_loading = true;
+	$.getJSON("/update-notes", { offset: update_notes.length })
+		.done(function (data) {
+			update_notes = update_notes.concat(data.notes || []);
+			update_notes_more = !!data.more;
+			render_update_notes();
+		})
+		.always(function () {
+			update_notes_loading = false;
+		});
 }
 
 var game_logs = [],

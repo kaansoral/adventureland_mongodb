@@ -5,7 +5,8 @@ var mode = process.argv[process.argv.length - 2],
 if (mode) suffix = "_" + mode;
 var options = require(process.env.HOME + "/adventureland/secretsandconfig/options" + suffix + ".js");
 
-const the_command = process.argv.slice(3).join(" ");
+var the_command = process.argv.slice(3).join(" ");
+if (/^pm2\s+(start|restart)\b/.test(the_command) && !/(^|\s)--time(\s|$)/.test(the_command)) the_command += " --time";
 console.log("> " + the_command);
 
 for (var key in options.machines) {

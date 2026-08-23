@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Development <!--Logs-->Blog*</title>
+		<title>Adventure Land - Update Notes</title>
 		<link rel="apple-touch-icon-precomposed" href="/images/favicon.png" /> <!-- 152 -->
 		<link rel="icon" href="/images/favicon.png" /> <!-- 32 -->
 		<!--[if IE]><link rel="shortcut icon" href="/images/favicon.png"><![endif]--> <!-- .ico -->
@@ -75,5 +75,13 @@
 			</script>
 		{% endif %}
 	</head>
-	<body><pre>{% include "stack/update_notes.txt" %}</pre></body>
+	<body>
+		<div id="devlogs">
+			<div style="font-size: 32px; color: white; margin-bottom: 4px">Update Notes</div>
+			<div id="devheader" style="margin-top: 0; margin-bottom: 20px">Last Update {{ domain.last_deploy|escape }}</div>
+			{% for entry in update_notes %}
+				<p><span class="devtitle">{{ entry.date|escape }}</span> {{ entry.note|escape }}</p>
+			{% endfor %}
+		</div>
+	</body>
 </html>

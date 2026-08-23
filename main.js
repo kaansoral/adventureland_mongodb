@@ -16,6 +16,7 @@ if (keys.mongodb_uri) {
 }
 
 eval("" + fs.readFileSync(path.resolve(__dirname, "version.js")));
+var update_notes = require("./update_notes.js");
 if (Local) {
 	const filePath = path.join(__dirname, "version.js");
 	let lines = fs.readFileSync(filePath, "utf-8").split("\n");
@@ -586,7 +587,13 @@ app.get("/macos", async (req, res, next) => {
 app.get("/allnotes", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
-	res.status(200).send(nunjucks.render("htmls/allnotes.html", { domain: domain, user: user }));
+	res.status(200).send(nunjucks.render("htmls/allnotes.html", { domain: domain, user: user, update_notes: update_notes }));
+});
+app.get("/update-notes", function (req, res) {
+	var page_size = 20,
+		offset = Math.max(0, parseInt(req.query.offset, 10) || 0),
+		notes = update_notes.slice(offset, offset + page_size);
+	res.status(200).send({ notes: notes, more: offset + notes.length < update_notes.length });
 });
 app.get("/roadmap", async (req, res, next) => {
 	var user = await get_user(req),

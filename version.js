@@ -1,5 +1,2 @@
-Version = 2537;
-
-update_notes=[
-	"Last Update [April 18th]",
-];
+Version = 2745;
+LastDeploy = "[24/07/26]";

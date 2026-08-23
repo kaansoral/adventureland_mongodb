@@ -1,10 +1,16 @@
 var path = require("path"),
-	f = require(path.resolve(__dirname, "script_functions.js"));
+	f = require(path.resolve(__dirname, "script_functions.js")),
+	lock_update_notes = require(path.resolve(__dirname, "lock_update_notes.js"));
 
-var mode = process.argv[process.argv.length - 1];
+var mode = process.argv[2] || "";
 var folder = "adventureland";
 
 console.log("Deploy started | mode: " + (mode || "default") + " | folder: " + folder);
+
+if (mode != "staging") {
+	var locked = lock_update_notes(path.resolve(__dirname, ".."));
+	console.log("Update notes locked | date: " + locked.date + " | notes: " + locked.notes);
+}
 
 f.execs("node ~/adventureland/scripts/precompute_images.js");
 
@@ -22,7 +28,6 @@ f.execs("rm -rf ~/deploy/" + folder + "/lib");
 f.execs("rm -rf ~/deploy/" + folder + "/python3");
 f.execs("rm -rf ~/deploy/" + folder + "/stack");
 f.execs("mkdir -p ~/deploy/" + folder + "/stack");
-f.execs("cp ~/adventureland/stack/update_notes.txt ~/deploy/" + folder + "/stack/update_notes.txt");
 f.execs("rm -rf ~/deploy/" + folder + "/electron");
 f.execs("find ~/deploy/" + folder + "/ -name '*.pxm' -delete");
 
