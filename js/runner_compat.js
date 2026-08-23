@@ -29,12 +29,12 @@ function use(name,target) // a multi-purpose use function, works for skills too
 	if(isNaN(name)) // if name is not an integer, use the skill
 	{
 		if(!target) target=get_target();
-		parent.use_skill(name,target);
+		return parent.use_skill(name,target);
 	}
 	else
 	{
 		// for example, if there is a potion at the first inventory slot, use(0) would use it
-		equip(name);
+		return equip(name);
 	}
 }
 
@@ -71,7 +71,7 @@ function is_pvp(){return in_pvp()}
 
 function is_player(e){return is_character(e);}
 
-function destroy_item(i){destroy(i)}
+function destroy_item(i){return destroy(i)}
 
 character.on("stacked",function(){ on_combined_damage(); });
 character.on("death",function(){ handle_death(); });
