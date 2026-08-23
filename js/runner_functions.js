@@ -540,6 +540,56 @@ function buy_with_shells(name, quantity) {
 	return parent.buy_with_shells(name, quantity);
 }
 
+function buy_with_shells_complete(name, quantity, timeout_ms) {
+	if (!is_string(name) || !name) return rejecting_promise({ reason: "invalid", place: "buy_with_cash" });
+	if (timeout_ms === undefined) timeout_ms = 15000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		cleanup = function () {},
+		completion = new Promise(function (resolve, reject) {
+			var settled = false;
+			function finish(data, failed) {
+				if (settled) return;
+				settled = true;
+				cleanup();
+				if (failed && !RESOLVE_ALL) reject(data);
+				else resolve(data);
+			}
+			function on_response(data) {
+				if (!data || data.request_id != request_id) return;
+				if (data.response == "shell_purchase_complete") finish(Object.assign({ success: true, place: "buy_with_cash" }, data));
+				else if (data.response == "shell_purchase_failed") finish(Object.assign({ failed: true, reason: data.reason || "shell_purchase_failed", place: "buy_with_cash" }, data), true);
+			}
+			function on_disconnect() {
+				finish({ failed: true, reason: "disconnected", place: "buy_with_cash", name: name, request_id: request_id }, true);
+			}
+			var timer = setTimeout(function () {
+				finish({ failed: true, reason: "timeout", place: "buy_with_cash", name: name, request_id: request_id }, true);
+			}, timeout_ms);
+			cleanup = function () {
+				clearTimeout(timer);
+				parent.socket.off("game_response", on_response);
+				parent.socket.off("disconnect", on_disconnect);
+			};
+			parent.socket.on("game_response", on_response);
+			parent.socket.on("disconnect", on_disconnect);
+		});
+	var acknowledgement = parent.buy_with_shells(name, quantity, request_id);
+	return acknowledgement.then(
+		function (data) {
+			if (data.failed || !data.in_progress) {
+				cleanup();
+				return data;
+			}
+			return completion;
+		},
+		function (error) {
+			cleanup();
+			throw error;
+		},
+	);
+}
+
 function split(num, quantity) {
 	// splits the stack at from character.items[num] into a second stack of quantity
 	return parent.split(num, quantity);

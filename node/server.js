@@ -7484,11 +7484,26 @@ function init_io() {
 			var name = data.name;
 			var def = G.items[data.name];
 			var quantity = min(max(parseInt(data.quantity) || 0, 1), (def && def.s) || 9999);
+			function finish_shell_purchase(response, extra) {
+				if (!players[socket.id]) return;
+				socket.emit(
+					"game_response",
+					Object.assign(
+						{
+							response: response,
+							name: name,
+							quantity: quantity,
+							request_id: data.request_id,
+							cevent: response,
+						},
+						extra || {},
+					),
+				);
+			}
 			if (!player || player.user || gameplay == "hardcore" || gameplay == "test") {
 				return fail_response("cant_in_bank");
 			}
-			var cost = def.cash * quantity;
-			if (!def.cash || def.ignore) {
+			if (!def || !def.cash || def.ignore) {
 				return fail_response("invalid");
 			}
 			if (def.p2w) {
@@ -7497,6 +7512,7 @@ function init_io() {
 			if (!def.s) {
 				quantity = 1;
 			}
+			var cost = def.cash * quantity;
 			if (!can_add_item(player, create_new_item(name, quantity))) {
 				return fail_response("no_space");
 			}
@@ -7505,12 +7521,16 @@ function init_io() {
 					var user = await get(player.owner);
 					if (!user) {
 						socket.emit("game_log", "Purchase failed");
+						finish_shell_purchase("shell_purchase_failed", { failed: true, reason: "nouser" });
 						return;
 					}
 					var R = await tx(
 						async () => {
 							R.element = await tx_get(A.user);
-							if (A.amount > 0 && R.element.cash < A.amount) ex("not_enough");
+							if (A.amount > 0 && R.element.cash < A.amount) {
+								R.reason = "not_enough";
+								ex("not_enough");
+							}
 							R.element.cash -= A.amount;
 							await tx_save(R.element);
 						},
@@ -7518,6 +7538,7 @@ function init_io() {
 					);
 					if (R.failed) {
 						socket.emit("game_log", "Purchase failed");
+						finish_shell_purchase("shell_purchase_failed", { failed: true, reason: R.reason || "purchase_failed" });
 						return;
 					}
 					server_log("buy_with_cash: done, cash=" + R.element.cash);
@@ -7534,8 +7555,10 @@ function init_io() {
 					});
 					update_characters(R.element, null, null, 0).catch(console.error);
 					resend(player, "reopen+nc+inv");
+					finish_shell_purchase("shell_purchase_complete", { success: true, cost: cost });
 				} catch (e) {
 					console.error("buy_with_cash error", e);
+					finish_shell_purchase("shell_purchase_failed", { failed: true, reason: "coms_failure" });
 				}
 			})();
 			success_response({ success: false, in_progress: true });

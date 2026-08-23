@@ -2682,10 +2682,10 @@ function buy_with_gold(name, quantity) {
 	return promise;
 }
 
-function buy_with_shells(name, quantity) {
+function buy_with_shells(name, quantity, request_id) {
 	if (mssince(last_npc_right_click) < 100) return rejecting_promise({ reason: "npc_misclickp" });
 	var promise = push_deferred("buy_with_cash");
-	socket.emit("buy_with_cash", { name: name, quantity: quantity });
+	socket.emit("buy_with_cash", { name: name, quantity: quantity, request_id: request_id });
 	$(".buynum").html($(".buynum").data("q"));
 	return promise;
 }
