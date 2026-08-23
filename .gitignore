@@ -7,6 +7,7 @@
 # Node
 /node_modules/
 /node/node_modules/
+/node/test.js
 /scripts/node_modules/
 /electron/node_modules/
 package-lock.json
