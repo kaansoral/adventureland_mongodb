@@ -339,7 +339,11 @@ async function town() {
 	parent.socket.emit("town");
 	var call = await promise;
 	if (call.failed) return call;
-	while (character.c.town) await sleep(2);
+	for (var i = 0; character.c.town && i < 10000; i++) {
+		if (parent.socket.disconnected) return rejecting_promise({ reason: "disconnected", place: "town" });
+		await sleep(1);
+	}
+	if (character.c.town) return rejecting_promise({ reason: "timeout", place: "town" });
 	return { success: true };
 }
 
@@ -676,11 +680,15 @@ function dismantle(item_num) {
 async function exchange(item_num) {
 	parent.e_item = item_num;
 	var call = await parent.exchange(1),
-		num = undefined,
+		num = call.num,
 		name = undefined;
 	if (!call.in_progress) return call;
 	if (character.q.exchange) num = character.q.exchange.num;
-	while (character.q.exchange || (character.items[num] && character.items[num].name == "placeholder")) await sleep(1);
+	for (var i = 0; (character.q.exchange || (character.items[num] && character.items[num].name == "placeholder")) && i < 30000; i++) {
+		if (parent.socket.disconnected) return rejecting_promise({ reason: "disconnected", place: "exchange" });
+		await sleep(1);
+	}
+	if (character.q.exchange || (character.items[num] && character.items[num].name == "placeholder")) return rejecting_promise({ reason: "timeout", place: "exchange" });
 	if (character.items[num]) name = character.items[num].name;
 	else num = undefined;
 	return { success: true, reward: name, num: num };
