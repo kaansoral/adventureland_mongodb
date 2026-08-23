@@ -1042,6 +1042,9 @@ function accept_friend_request(name) {
 			function on_response(data) {
 				if (data && data.response == "friend_failed") finish({ failed: true, reason: data.reason || "friend_failed", response: data.response, place: "friend" }, true);
 			}
+			function on_disconnect() {
+				finish({ failed: true, reason: "disconnected", place: "friend" }, true);
+			}
 			var timer = setTimeout(function () {
 				finish({ failed: true, reason: "timeout", place: "friend" }, true);
 			}, 15000);
@@ -1049,9 +1052,11 @@ function accept_friend_request(name) {
 				clearTimeout(timer);
 				parent.socket.off("friend", on_friend);
 				parent.socket.off("game_response", on_response);
+				parent.socket.off("disconnect", on_disconnect);
 			};
 			parent.socket.on("friend", on_friend);
 			parent.socket.on("game_response", on_response);
+			parent.socket.on("disconnect", on_disconnect);
 		});
 	var acknowledgement = parent.push_deferred("friend");
 	parent.socket.emit("friend", { event: "accept", name: name });
