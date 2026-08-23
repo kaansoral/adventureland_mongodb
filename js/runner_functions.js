@@ -939,8 +939,7 @@ function send_party_invite(name, is_request) {
 }
 
 function send_party_request(name) {
-	send_party_invite(name, 1);
-	return parent.push_deferred("party");
+	return send_party_invite(name, 1);
 }
 
 function accept_party_invite(name) {

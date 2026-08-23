@@ -1495,6 +1495,10 @@ function init_socket(args) {
 		rip_logic();
 		new_map_logic("start", { info: m_info });
 		new_game_logic();
+		if (no_html && window.parent && window.parent !== window && window.frameElement && parent.character_started_runner) {
+			var requested_name = window.frameElement.getAttribute("data-name");
+			if (requested_name) parent.character_started_runner(requested_name, character.name);
+		}
 		// ipass=data.ipass;
 		// setInterval(function(){ if(game_loaded) $.getJSON(location.protocol+"//"+server_address+":"+(parseInt(server_port)+40)+"/character?checkin=1&ipass="+ipass+"&id="+character.id+"&callback=?"); },30000); // + "?" = JSONP
 

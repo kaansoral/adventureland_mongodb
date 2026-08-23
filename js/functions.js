@@ -1796,6 +1796,11 @@ function start_character_runner(name, code_slot_or_name) {
 	return push_deferred(name);
 }
 
+function character_started_runner(requested_name, actual_name) {
+	if (!deferreds[requested_name] || !deferreds[requested_name].length) return;
+	resolve_deferred(requested_name, { name: actual_name || requested_name });
+}
+
 function stop_character_runner(name) {
 	var rid = "ichar" + name.toLowerCase();
 	$("#" + rid).remove();
