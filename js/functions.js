@@ -1022,7 +1022,7 @@ function use_skill(name, target, arg) {
 		socket.emit("skill", { name: "dash", x: get_x(character) + [0, -40, 40, 0][d], y: get_y(character) + [40, 0, 0, -40][d] });
 	} else if (name == "energize") {
 		socket.emit("skill", { name: "energize", id: target, mp: arg });
-	} else if (name == "stack") on_skill("attack");
+	} else if (name == "stack") return rejecting_promise({ reason: "passive_skill", skill: name });
 	else if (name == "warp") {
 		if (target && is_string(target) && !target[2]) target[2] = character.map;
 		else if (!target || !target[2] || is_string(target)) {
@@ -1550,8 +1550,9 @@ function transport_to(place, s) {
 		add_log("Can't reach the desertland. Yet.", "gray");
 		return;
 	}
+	var promise = push_deferred("transport");
 	socket.emit("transport", { to: place, s: s });
-	return push_deferred("transport");
+	return promise;
 }
 
 function show_transports() {
@@ -1762,8 +1763,9 @@ function code_travel(map) {
 }
 
 function direct_travel(to, s) {
+	var promise = push_deferred("transport");
 	socket.emit("transport", { to: to, s: s });
-	return push_deferred("transport");
+	return promise;
 }
 
 function start_character_runner(name, code_slot_or_name) {

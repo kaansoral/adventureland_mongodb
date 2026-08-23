@@ -148,7 +148,9 @@ var last_light = new Date(0);
 var current_map = "main",
 	current_in = "main",
 	draw_map = "main";
-var transporting = false;
+var transporting = false,
+	transporting_event = null,
+	transporting_data = null;
 /* */
 var current_status = "",
 	last_status = "";
@@ -1273,14 +1275,24 @@ function init_socket(args) {
 	original_onevent = socket.onevent;
 	original_emit = socket.emit;
 	socket.emit = function (packet) {
-		var is_transport = in_arr(arguments && arguments["0"], ["transport", "enter", "leave"]);
+		var event = arguments && arguments["0"];
+		var event_data = (arguments && arguments["1"]) || {};
+		var is_transport = in_arr(event, ["transport", "enter", "leave"]);
 		// if(is_transport) alert("transport intercepted");
 		if (mode.log_calls) console.log("CALL", JSON.stringify(arguments) + " " + new Date());
 		if (!(transporting && is_transport && ssince(transporting) < 8)) {
 			original_emit.apply(socket, arguments);
-			if (is_transport) transporting = new Date();
+			if (is_transport) {
+				transporting = new Date();
+				transporting_event = event;
+				transporting_data = { to: event_data.to, s: event_data.s || 0, place: event_data.place, name: event_data.name };
+			}
 		} else {
-			resolve_deferred(arguments["0"], { success: false, in_progress: true, place: "emit_override_in_gamejs" });
+			var same_request = transporting_event == event;
+			if (event == "transport") same_request = same_request && transporting_data.to == event_data.to && transporting_data.s == (event_data.s || 0);
+			else if (event == "enter") same_request = same_request && transporting_data.place == event_data.place && transporting_data.name == event_data.name;
+			if (same_request) resolve_last_deferred(event, { success: false, in_progress: true, place: "emit_override_in_gamejs" });
+			else reject_last_deferred(event, { failed: true, reason: "transport_in_progress", place: event });
 		}
 	};
 	socket.onevent = function (packet) {
@@ -4982,16 +4994,16 @@ function add_door(door) {
 				for (var p in party) {
 					var c = party[p];
 					if (c["map"] == door[4]) {
-						socket.emit("enter", { place: door[4], name: c["in"] });
 						push_deferred("enter");
+						socket.emit("enter", { place: door[4], name: c["in"] });
 						return;
 					}
 				}
 			}
 			setTimeout(function () {
 				show_confirm("Enter " + G.maps[door[4]].name + "? [Consumes a key!]", ["#D06631", "Yes"], "No!", function () {
-					socket.emit("enter", { place: door[4] });
 					push_deferred("enter");
+					socket.emit("enter", { place: door[4] });
 					hide_modal(true);
 				});
 			}, 10);
@@ -5001,8 +5013,8 @@ function add_door(door) {
 			add_log("Get closer", "gray");
 			return;
 		}
-		socket.emit("transport", { to: door[4], s: door[5] });
 		push_deferred("transport");
+		socket.emit("transport", { to: door[4], s: door[5] });
 	}
 	if (is_mobile) sprite.on("mousedown", door_right_click).on("touchstart", door_right_click);
 	sprite.on("rightdown", door_right_click);

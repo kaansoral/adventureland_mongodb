@@ -150,8 +150,9 @@ function interact(name) {
 
 function enter(place, name) {
 	// Possible places: "duelland" / "crypt" / "winter_instance"
+	var promise = parent.push_deferred("enter");
 	parent.socket.emit("enter", { place: place, name: name });
-	return parent.push_deferred("enter");
+	return promise;
 }
 
 function join(event) {
@@ -309,8 +310,9 @@ function item_value(item) {
 async function transport(map, spawn) {
 	// For "bank" - the response is {success:false,in_progress:true}
 	// You have to wait the entry through character.on("new_map",function(data){});
+	var promise = parent.push_deferred("transport");
 	parent.socket.emit("transport", { to: map, s: spawn });
-	var call = await parent.push_deferred("transport");
+	var call = await promise;
 	if (!call.in_progress) return call;
 	for (
 		var i = 0;
@@ -333,8 +335,9 @@ async function town() {
 
 function leave() {
 	// To leave "cyberland" / "jail" etc.
+	var promise = parent.push_deferred("leave");
 	parent.socket.emit("leave");
-	return parent.push_deferred("leave");
+	return promise;
 }
 
 function is_paused() {
@@ -1787,8 +1790,8 @@ function smart_move_logic() {
 		if (current.town) {
 			use("town");
 		} else if (current.transport) {
-			parent.socket.emit("transport", { to: current.map, s: current.s });
 			parent.push_deferred("transport");
+			parent.socket.emit("transport", { to: current.map, s: current.s });
 			// use("transporter",current.map);
 		} else if (character.map == current.map && ((smart.try_exact_spot && !smart.plot.length) || can_move_to(current.x, current.y))) {
 			// game_log("S "+current.x+" "+current.y);

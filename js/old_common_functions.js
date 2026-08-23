@@ -467,7 +467,13 @@ function push_deferred(name)
 		current.start=new Date();
 	if(!deferreds[name]) deferreds[name]=[];
 	deferreds[name].push(current);
-	if(deferreds[name].length>3200) deferreds[name].shift(); // outbreak
+	if(deferreds[name].length>3200)
+	{
+		var overflow=deferreds[name].shift(); // outbreak protection
+		var data={failed:true,reason:"queue_overflow",place:name};
+		if(RESOLVE_ALL) overflow.resolve(data);
+		else overflow.reject(data);
+	}
 	return current.promise;
 }
 
@@ -519,6 +525,14 @@ function resolve_deferred(name,data)
 	current_deferred=null
 }
 
+function resolve_last_deferred(name,data)
+{
+	if(!deferreds[name] || !deferreds[name].length) return resolve_deferred(name,data);
+	var last=deferreds[name].pop();
+	deferreds[name].unshift(last);
+	return resolve_deferred(name,data);
+}
+
 function reject_deferred(name,data)
 {
 	if(!data) data={failed:true};
@@ -537,6 +551,14 @@ function reject_deferred(name,data)
 		}catch(e){};
 	}
 	current_deferred=null
+}
+
+function reject_last_deferred(name,data)
+{
+	if(!deferreds[name] || !deferreds[name].length) return reject_deferred(name,data);
+	var last=deferreds[name].pop();
+	deferreds[name].unshift(last);
+	return reject_deferred(name,data);
 }
 
 function rejecting_promise(data)

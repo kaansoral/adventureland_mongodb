@@ -949,9 +949,9 @@ function render_transports_npc() {
 		for (var name in S.duels) {
 			var duel = S.duels[name];
 			html +=
-				'<div class=\'clickable\' onclick=\'socket.emit("enter",{place:"duelland",name:"' +
+				'<div class=\'clickable\' onclick=\'push_deferred("enter"); socket.emit("enter",{place:"duelland",name:"' +
 				duel.instance +
-				"\"}); push_deferred(\"enter\")'>&gt; Duelland <span style='color:gray'>" +
+				"\"})'>&gt; Duelland <span style='color:gray'>" +
 				duel.challenger +
 				"</span> vs <span style='color:gray'>" +
 				duel.vs +
