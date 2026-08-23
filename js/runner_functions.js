@@ -1575,15 +1575,38 @@ async function wait_for(condition, timeout_ms, interval_ms) {
 	timeout_ms = max(0, timeout_ms);
 	interval_ms = max(0, interval_ms);
 	var started = new Date();
-	while (mssince(started) <= timeout_ms) {
-		var result;
-		try {
-			result = await condition();
-		} catch (error) {
-			return rejecting_promise({ reason: "condition_error", error: "" + error });
-		}
-		if (result) return result;
-		await sleep(interval_ms);
+	while (true) {
+		var remaining = max(0, timeout_ms - mssince(started));
+		var observation = await new Promise(function (resolve) {
+			var settled = false;
+			var timer = setTimeout(function () {
+				if (settled) return;
+				settled = true;
+				resolve({ timeout: true });
+			}, remaining);
+			Promise.resolve()
+				.then(condition)
+				.then(
+					function (value) {
+						if (settled) return;
+						settled = true;
+						clearTimeout(timer);
+						resolve({ value: value });
+					},
+					function (error) {
+						if (settled) return;
+						settled = true;
+						clearTimeout(timer);
+						resolve({ error: error });
+					},
+				);
+		});
+		if (observation.timeout) break;
+		if (observation.error !== undefined) return rejecting_promise({ reason: "condition_error", error: "" + observation.error });
+		if (observation.value) return observation.value;
+		remaining = timeout_ms - mssince(started);
+		if (remaining <= 0) break;
+		await sleep(min(interval_ms, remaining));
 	}
 	return rejecting_promise({ reason: "timeout", timeout: timeout_ms });
 }
