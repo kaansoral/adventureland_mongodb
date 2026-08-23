@@ -547,9 +547,12 @@ function add_frequest(name) {
 }
 
 function add_update_notes() {
+	var latest_note_deploy = update_notes.length && update_notes[0].deployed;
 	add_log("Last Update " + last_deploy, "gray");
+	if (update_notes.length && latest_note_deploy != last_deploy)
+		add_log((latest_note_deploy && "Latest Notes " + latest_note_deploy) || "Pending Notes", "gray");
 	update_notes.forEach(function (note) {
-		if (note.deployed != last_deploy) return;
+		if (note.deployed != latest_note_deploy) return;
 		var color = "gray";
 		//if(note.note.indexOf("Happy New Year")!=-1) color="#C82F17";
 		if (note.note.indexOf("Holiday") != -1) color = "#C82F17";

@@ -3,7 +3,7 @@ module.exports = [
 	{
 		deployed: null,
 		date: "[23/08/26]",
-		note: "All update notes going back to 2016 are now available in-game.",
+		note: "All update notes going back to 2016 are now available in-game, with the latest notes always shown.",
 	},
 	{
 		deployed: "[24/07/26]",
