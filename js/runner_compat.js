@@ -85,29 +85,66 @@ character.on("cm",function(data){ on_cm(data.name,data.message) });
 function doneify(fn,s_event,f_event)
 {
 	return function(a,b,c,d,e,f){
-		var rxd=randomStr(30);
+		var context=this,args=arguments,rxd=randomStr(30),settled=false;
+		var resolve_completion,reject_completion,success_listener,failure_listener;
+		var completion=new Promise(function(resolve,reject){
+			resolve_completion=resolve;
+			reject_completion=reject;
+		});
+		function cleanup(){
+			if(success_listener) game.remove(success_listener);
+			if(failure_listener) game.remove(failure_listener);
+			success_listener=failure_listener=null;
+			if(parent.rxd==rxd) parent.rxd=null;
+		}
+		function finish(success,data){
+			if(settled) return;
+			settled=true;
+			cleanup();
+			if(success) resolve_completion(data);
+			else reject_completion(data);
+		}
+		if(s_event)
+		{
+			var on_success=function(event){
+				if(event && event.rxd==rxd)
+				{
+					on_success.delete=true;
+					finish(true,event);
+				}
+			};
+			success_listener=game.on(s_event,on_success);
+		}
+		if(f_event)
+		{
+			var on_failure=function(event){
+				if(event && event.rxd==rxd)
+				{
+					on_failure.delete=true;
+					finish(false,event);
+				}
+			};
+			failure_listener=game.on(f_event,on_failure);
+		}
+		completion.done=function(callback){
+			completion.then(function(data){callback(true,data)},function(data){callback(false,data)});
+			return completion;
+		};
 		parent.rxd=rxd;
-		fn(a,b,c,d,e,f);
-		return {done:function(callback){
-			game.once(s_event,function(event){
-				if(event.rxd==rxd)
-				{
-					callback(true,event);
-					this.delete=true; // remove the .on listener
-					parent.rxd=null;
-				}
-				// else game_log("rxd_mismatch");
-			});
-			game.once(f_event,function(event){
-				if(event.rxd==rxd)
-				{
-					callback(false,event);
-					this.delete=true; // remove the .on listener
-					parent.rxd=null;
-				}
-				// else game_log("rxd_mismatch");
-			});
-		}};
+		try
+		{
+			var returned=fn.apply(context,args);
+			if(returned && is_function(returned.then))
+			{
+				cleanup();
+				returned.then(function(data){finish(true,data)},function(data){finish(false,data)});
+			}
+		}
+		catch(error)
+		{
+			finish(false,error);
+		}
+		return completion;
 	};
 }
 // buy=doneify(buy,"buy_success","buy_fail");
