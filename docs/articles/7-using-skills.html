@@ -64,11 +64,11 @@ use_controlled_burst();
 
 <p>Multi-target skills still return one aggregate Promise, not an array of Promises. For ordinary skills, a fulfilled request means the server accepted that complete skill call; inspect the returned data for skill-specific results.</p>
 
-<p>Pickpocket, fishing, and mining are timed actions. Their existing <span class="dlabel">use_skill</span> Promise deliberately remains backward compatible and resolves with <span class="dlabel">in_progress: true</span> when the action starts. Use <span class="dlabel">use_skill_complete</span> when later code depends on the actual result:</p>
+<p>Pickpocket, fishing, and mining are timed actions. Their <span class="dlabel">use_skill</span> Promise waits past the initial <span class="dlabel">in_progress</span> response and settles with the actual result:</p>
 
 <div class='code'>async function fish_once() {
 	try {
-		var result = await use_skill_complete("fishing");
+		var result = await use_skill("fishing");
 		if (result.found === false) game_log("Nothing caught this time");
 		else game_log("Caught something");
 	} catch (error) {
@@ -78,4 +78,4 @@ use_controlled_burst();
 
 fish_once();</div>
 
-<p>The completion-safe form correlates the final event to its own request and removes its temporary listeners after success, failure, disconnect, or timeout. It defaults to 20 seconds, long enough for the declared fishing and mining durations. For every other skill it delegates directly to <span class="dlabel">use_skill</span>.</p>
+<p>For these timed actions, <span class="dlabel">use_skill</span> correlates the final event to its own request and removes temporary listeners after success, failure, disconnect, or timeout. The optional fourth argument controls the timeout and defaults to 20 seconds. Other skills keep their ordinary server-response behavior.</p>

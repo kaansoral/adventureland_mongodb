@@ -1,6 +1,7 @@
 <p><span class='dlabel'>on_friend_request(name)</span></p>
 <p>Override point called with the requesting character's name when a friend request arrives.</p>
 <p><b>Returns:</b> Return value is ignored.</p>
+<p><b>Notes:</b> The callback runs after the request has been added to the normal friend-request UI.</p>
 <p><b>Example:</b></p>
 <div class='code'>function on_friend_request(name) {
 	accept_friend_request(name);

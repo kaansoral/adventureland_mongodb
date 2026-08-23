@@ -1710,6 +1710,7 @@ function init_socket(args) {
 		if (Dev) console.log(["game_response", data]);
 		var response = data.response || data;
 		try {
+			if (response == "friend_complete" && data.friends) friends = data.friends;
 			if (response == "unfriend_complete" && data.friends) character.friends = data.friends;
 			var cevent = false,
 				event = false;
@@ -3072,6 +3073,11 @@ function init_socket(args) {
 				friends = data.friends;
 			}
 		});
+		if (data.event == "request") {
+			setTimeout(function () {
+				call_code_function("on_friend_request", data.name);
+			}, 200);
+		}
 	});
 	socket.on("party_update", function (data) {
 		draw_trigger(function () {

@@ -10781,6 +10781,16 @@ function init_io() {
 				return success_response("friend_rsent");
 			}
 			if (data.event == "accept") {
+				function finish_friend(response, extra) {
+					if (!players[socket.id]) return;
+					var result = Object.assign({ response: response }, extra || {});
+					if (data.request_id) {
+						result.name = data.name;
+						result.request_id = data.request_id;
+						result.cevent = response;
+					}
+					socket.emit("game_response", result);
+				}
 				if (!requests[data.name + "-" + player.name]) {
 					return fail_response("friend_expired");
 				}
@@ -10791,17 +10801,17 @@ function init_io() {
 						var user2 = await get(req.b);
 						if (!user1 || !user2) {
 							var p = players[socket.id];
-							if (p) socket.emit("game_response", { response: "friend_failed", reason: "nouser" });
+							if (p) finish_friend("friend_failed", { reason: "nouser" });
 							return;
 						}
 						if (user1.server || user2.server) {
 							var p = players[socket.id];
-							if (p) socket.emit("game_response", { response: "friend_failed", reason: "bank" });
+							if (p) finish_friend("friend_failed", { reason: "bank" });
 							return;
 						}
 						if (user1.friends.length >= 100 || user2.friends.length >= 100) {
 							var p = players[socket.id];
-							if (p) socket.emit("game_response", { response: "friend_failed", reason: "100limit" });
+							if (p) finish_friend("friend_failed", { reason: "100limit" });
 							return;
 						}
 						var R = await tx(
@@ -10823,15 +10833,22 @@ function init_io() {
 						);
 						if (R.failed) {
 							var p = players[socket.id];
-							if (p) socket.emit("game_response", { response: "friend_failed", reason: "unknown" });
+							if (p) finish_friend("friend_failed", { reason: "unknown" });
 							return;
+						}
+						var p = players[socket.id];
+						if (p && data.request_id) {
+							var current_user = get_id(R.e1) == p.owner ? R.e1 : R.e2;
+							p.friends = current_user.friends;
+							resend(p, "redata");
+							finish_friend("friend_complete", { success: true, friends: current_user.friends });
 						}
 						update_characters(R.e1, "friends", R.e2.name).catch(console.error);
 						update_characters(R.e2, "friends", R.e1.name).catch(console.error);
 					} catch (e) {
 						console.error("set_friends error", e);
 						var p = players[socket.id];
-						if (p) socket.emit("game_response", { response: "friend_failed", reason: "coms failure" });
+						if (p) finish_friend("friend_failed", { reason: "coms failure" });
 					}
 				})();
 				requests[data.name + "-" + player.name] = false;

@@ -1,10 +1,13 @@
-<p><span class='dlabel'>send_mail(to, subject, message, item)</span></p>
-<p>Starts sending in-game mail, optionally attaching the item in inventory slot 0.</p>
-<p><b>Returns:</b> Promise for the initial server response. A valid request resolves with {success:false, in_progress:true}; mail_sent or mail_failed arrives later.</p>
+<p><span class='dlabel'>send_mail(to, subject, message, item, timeout_ms)</span></p>
+<p>Sends in-game mail and waits for the database-backed mail operation to finish.</p>
+<p><b>Returns:</b> Promise resolving with the correlated mail_sent response. It rejects on the correlated mail_failed response, an initial server failure, disconnect, or timeout.</p>
 <p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
-<p><b>Notes:</b> The item argument is a boolean flag; when truthy, slot 0 is attached. The returned Promise does not wait for database-backed mail completion.</p>
+<p><b>Notes:</b> The item argument is a boolean flag; when truthy, inventory slot 0 is attached. The optional timeout defaults to 15,000ms. The Promise waits past the server's initial in-progress acknowledgement.</p>
 <p><b>Example:</b></p>
-<div class='code'>send_mail("Merchant", "Supplies", "For the next run", true);</div>
+<div class='code'>async function example() {
+	await send_mail("Merchant", "Supplies", "For the next run", false, 15000);
+}
+example();</div>
 
 <p></p>
 <span class='redlabel'>"source"</span>

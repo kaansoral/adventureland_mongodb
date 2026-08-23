@@ -192,26 +192,19 @@ function throw_item(num, x, y) {
 	return promise;
 }
 
-function use_skill(name, target, extra_arg) {
+function use_skill(name, target, extra_arg, timeout_ms) {
 	// target: object or string (character name or monster ID)
 	// for "blink": use_skill("blink",[x,y])
 	// for "3shot", "5shot" target can be an array of objects or strings (name or ID)
 	// example: use_skill("3shot",[target1,target2,target3])
 	// extra_arg is currently for use_skill("throw",target,inventory_num) and use_skill("energize",target,optional_mp)
-	if (!target) target = get_target();
-	return parent.use_skill(name, target, extra_arg);
-	// Returns a Promise
-	// Multi-target skills return one Promise for the complete skill call
-}
-
-function use_skill_complete(name, target, extra_arg, timeout_ms) {
 	var outcomes = {
 		pickpocket: { success: ["picked"], failure: ["pick_failed"] },
 		fishing: { success: ["fishing_success", "fishing_none"], failure: ["fishing_fail"] },
 		mining: { success: ["mining_success", "mining_none"], failure: ["mining_fail"] },
 	};
-	if (!outcomes[name]) return use_skill(name, target, extra_arg);
 	if (!target) target = get_target();
+	if (!outcomes[name]) return parent.use_skill(name, target, extra_arg);
 	if (timeout_ms === undefined) timeout_ms = 20000;
 	timeout_ms = max(0, timeout_ms);
 	var socket = parent.socket,
@@ -694,12 +687,7 @@ function buy_with_gold(name, quantity) {
 	return parent.buy_with_gold(name, quantity); // returns a Promise
 }
 
-function buy_with_shells(name, quantity) {
-	// returns {success:false,in_progress:true}
-	return parent.buy_with_shells(name, quantity);
-}
-
-function buy_with_shells_complete(name, quantity, timeout_ms) {
+function buy_with_shells(name, quantity, timeout_ms) {
 	if (!is_string(name) || !name) return rejecting_promise({ reason: "invalid", place: "buy_with_cash" });
 	if (timeout_ms === undefined) timeout_ms = 15000;
 	timeout_ms = max(0, timeout_ms);
@@ -1212,15 +1200,7 @@ function send_cx(receiver, cx) {
 	return promise;
 }
 
-function send_mail(to, subject, message, item) {
-	// returns {success:false,in_progress:true}
-	item = (item && true) || false; // 0th slot is sent
-	var promise = parent.push_deferred("mail");
-	parent.socket.emit("mail", { to: to, subject: subject, message: message, item: item });
-	return promise;
-}
-
-function send_mail_complete(to, subject, message, item, timeout_ms) {
+function send_mail(to, subject, message, item, timeout_ms) {
 	if (is_object(to)) to = to.name;
 	if (!is_string(to) || !to) return rejecting_promise({ reason: "no_target", place: "mail" });
 	if (timeout_ms === undefined) timeout_ms = 15000;
@@ -1365,14 +1345,8 @@ function accept_magiport(name) {
 	return promise;
 }
 
-function unfriend(name) {
+function unfriend(name, timeout_ms) {
 	// instead of a name, an owner id also works, this is currently the only way to unfriend someone [20/08/18]
-	var promise = parent.push_deferred("friend");
-	parent.socket.emit("friend", { event: "unfriend", name: name });
-	return promise;
-}
-
-function unfriend_complete(name, timeout_ms) {
 	if (is_object(name)) name = name.name || name.owner;
 	if (!is_string(name) || !name) return rejecting_promise({ reason: "no_target", place: "friend" });
 	if (timeout_ms === undefined) timeout_ms = 15000;
@@ -1433,10 +1407,13 @@ function send_friend_request(name) {
 	return promise;
 }
 
-function accept_friend_request(name) {
+function accept_friend_request(name, timeout_ms) {
 	if (is_object(name)) name = name.name;
-	if (!name) return rejecting_promise({ reason: "no_target" });
+	if (!name) return rejecting_promise({ reason: "no_target", place: "friend" });
+	if (timeout_ms === undefined) timeout_ms = 15000;
+	timeout_ms = max(0, timeout_ms);
 	var socket = parent.socket,
+		request_id = randomStr(30),
 		cleanup = function () {},
 		completion = new Promise(function (resolve, reject) {
 			var settled = false;
@@ -1448,17 +1425,20 @@ function accept_friend_request(name) {
 				else resolve(data);
 			}
 			function on_friend(data) {
-				if (data && data.event == "new" && (!data.name || data.name == name)) finish({ success: true, response: "friend_complete", place: "friend", name: data.name || name, friends: data.friends });
+				if (data && data.event == "new" && (!data.name || data.name == name))
+					finish({ success: true, response: "friend_complete", place: "friend", name: data.name || name, friends: data.friends, request_id: request_id });
 			}
 			function on_response(data) {
-				if (data && data.response == "friend_failed") finish({ failed: true, reason: data.reason || "friend_failed", response: data.response, place: "friend" }, true);
+				if (!data || data.request_id != request_id) return;
+				if (data.response == "friend_complete") finish(Object.assign({ success: true, place: "friend" }, data));
+				else if (data.response == "friend_failed") finish(Object.assign({ failed: true, reason: data.reason || "friend_failed", place: "friend" }, data), true);
 			}
 			function on_disconnect() {
-				finish({ failed: true, reason: "disconnected", place: "friend" }, true);
+				finish({ failed: true, reason: "disconnected", place: "friend", name: name, request_id: request_id }, true);
 			}
 			var timer = setTimeout(function () {
-				finish({ failed: true, reason: "timeout", place: "friend" }, true);
-			}, 15000);
+				finish({ failed: true, reason: "timeout", place: "friend", name: name, request_id: request_id }, true);
+			}, timeout_ms);
 			cleanup = function () {
 				clearTimeout(timer);
 				socket.off("friend", on_friend);
@@ -1470,7 +1450,7 @@ function accept_friend_request(name) {
 			socket.on("disconnect", on_disconnect);
 		});
 	var acknowledgement = parent.push_deferred("friend");
-	socket.emit("friend", { event: "accept", name: name });
+	socket.emit("friend", { event: "accept", name: name, request_id: request_id });
 	return acknowledgement.then(
 		function (data) {
 			if (data.failed || !data.in_progress) {

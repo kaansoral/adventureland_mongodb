@@ -1,9 +1,13 @@
-<p><span class='dlabel'>buy_with_shells(name, quantity)</span></p>
-<p>Starts an item purchase using shells.</p>
-<p><b>Returns:</b> Promise for the initial server response. A successful start may resolve with {success:false, in_progress:true}; later account updates complete the purchase.</p>
+<p><span class='dlabel'>buy_with_shells(name, quantity, timeout_ms)</span></p>
+<p>Buys an item with shells and waits for the account transaction and inventory update to complete.</p>
+<p><b>Returns:</b> Promise resolving with the correlated shell_purchase_complete response. It rejects on final purchase failure, an initial server failure, disconnect, or timeout.</p>
 <p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Notes:</b> The optional timeout defaults to 15,000ms. The Promise waits past the server's initial in-progress acknowledgement.</p>
 <p><b>Example:</b></p>
-<div class='code'>buy_with_shells("computer", 1);</div>
+<div class='code'>async function example() {
+	await buy_with_shells("computer", 1, 15000);
+}
+example();</div>
 
 <p></p>
 <span class='redlabel'>"source"</span>
