@@ -1015,6 +1015,62 @@ function unfriend(name) {
 	return promise;
 }
 
+function send_friend_request(name) {
+	if (is_object(name)) name = name.name;
+	if (!name) return rejecting_promise({ reason: "no_target" });
+	var promise = parent.push_deferred("friend");
+	parent.socket.emit("friend", { event: "request", name: name });
+	return promise;
+}
+
+function accept_friend_request(name) {
+	if (is_object(name)) name = name.name;
+	if (!name) return rejecting_promise({ reason: "no_target" });
+	var cleanup = function () {},
+		completion = new Promise(function (resolve, reject) {
+			var settled = false;
+			function finish(data, failed) {
+				if (settled) return;
+				settled = true;
+				cleanup();
+				if (failed && !RESOLVE_ALL) reject(data);
+				else resolve(data);
+			}
+			function on_friend(data) {
+				if (data && data.event == "new" && (!data.name || data.name == name))
+					finish({ success: true, response: "friend_complete", place: "friend", name: data.name || name, friends: data.friends });
+			}
+			function on_response(data) {
+				if (data && data.response == "friend_failed") finish({ failed: true, reason: data.reason || "friend_failed", response: data.response, place: "friend" }, true);
+			}
+			var timer = setTimeout(function () {
+				finish({ failed: true, reason: "timeout", place: "friend" }, true);
+			}, 15000);
+			cleanup = function () {
+				clearTimeout(timer);
+				parent.socket.off("friend", on_friend);
+				parent.socket.off("game_response", on_response);
+			};
+			parent.socket.on("friend", on_friend);
+			parent.socket.on("game_response", on_response);
+		});
+	var acknowledgement = parent.push_deferred("friend");
+	parent.socket.emit("friend", { event: "accept", name: name });
+	return acknowledgement.then(
+		function (data) {
+			if (data.failed || !data.in_progress) {
+				cleanup();
+				return data;
+			}
+			return completion;
+		},
+		function (error) {
+			cleanup();
+			throw error;
+		},
+	);
+}
+
 function respawn() {
 	var promise = parent.push_deferred("respawn");
 	parent.socket.emit("respawn");
@@ -1083,6 +1139,11 @@ function on_party_invite(name) {
 function on_party_request(name) {
 	// called by the inviter's name - request = someone requesting to join your existing party
 	// accept_party_request(name)
+}
+
+function on_friend_request(name) {
+	// called by the requesting character's name
+	// accept_friend_request(name)
 }
 
 function on_magiport(name) {
@@ -1501,6 +1562,26 @@ function get_edited_code_slot() {
 function disconnect() {
 	// Forces a limitdc
 	for (var i = 0; i < 300; i++) parent.socket.emit("cruise");
+}
+
+async function wait_for(condition, timeout_ms, interval_ms) {
+	if (!is_function(condition)) return rejecting_promise({ reason: "invalid_condition" });
+	if (timeout_ms === undefined) timeout_ms = 10000;
+	if (interval_ms === undefined) interval_ms = 50;
+	timeout_ms = max(0, timeout_ms);
+	interval_ms = max(0, interval_ms);
+	var started = new Date();
+	while (mssince(started) <= timeout_ms) {
+		var result;
+		try {
+			result = await condition();
+		} catch (error) {
+			return rejecting_promise({ reason: "condition_error", error: "" + error });
+		}
+		if (result) return result;
+		await sleep(interval_ms);
+	}
+	return rejecting_promise({ reason: "timeout", timeout: timeout_ms });
 }
 
 var smart = {
