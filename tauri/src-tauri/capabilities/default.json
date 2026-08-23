@@ -11,6 +11,11 @@
     "allow-create-subwindow",
     "allow-open-external",
     "allow-open-devtools",
-    "allow-toggle-fullscreen"
+    "allow-toggle-fullscreen",
+    "core:webview:allow-internal-toggle-devtools",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [{ "url": "https://*" }, { "url": "mailto:*" }]
+    }
   ]
 }
