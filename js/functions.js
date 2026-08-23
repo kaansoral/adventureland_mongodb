@@ -1012,16 +1012,17 @@ function use_skill(name, target, arg, request_id) {
 			});
 			return request(name, "skill", { name: "3shot", ids: ids });
 		}
-	} else if (name == "5shot") {
+	} else if (name == "5shot" || name == "fanofknives") {
 		if (is_array(target)) {
-			return request(name, "skill", { name: "5shot", ids: target });
+			return request(name, "skill", { name: name, ids: target });
 		} else {
-			var hostiles = get_nearby_hostiles({ range: character.range - 2, limit: 5 }),
+			var skill = G.skills[name],
+				hostiles = get_nearby_hostiles({ range: (skill.range || character.range) - 2, limit: skill.max_targets || 5 }),
 				ids = [];
 			hostiles.forEach(function (hostile) {
 				ids.push(hostile.id);
 			});
-			return request(name, "skill", { name: "5shot", ids: ids });
+			return request(name, "skill", { name: name, ids: ids });
 		}
 	} else if (name == "pcoat") {
 		var position = item_position("poison");

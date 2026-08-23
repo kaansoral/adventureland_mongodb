@@ -2581,6 +2581,14 @@ function init_socket(args) {
 					disappearing_clone(attacker, { x: (get_x(entity) + get_x(attacker) * 2) / 3.0, y: (get_y(entity) + get_y(attacker) * 2) / 3.0, random: true, rcolor: true });
 					disappearing_clone(attacker, { x: get_x(entity), y: get_y(entity), random: true, rcolor: true });
 				});
+			} else if (data.type == "fanofknives") {
+				var attacker = get_entity(data.name);
+				(data.ids || []).forEach(function (id) {
+					var entity = entities[id] || entities["DEAD" + id];
+					if (!attacker || !entity) return;
+					d_line(attacker, entity, { color: "#4FB8AE", size: 2 });
+				});
+				if (attacker) start_emblem(attacker, "rr1", { frames: 5 });
 			} else if (data.type == "track") {
 				var attacker = get_entity(data.name);
 				if (attacker) {

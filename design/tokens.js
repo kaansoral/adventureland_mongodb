@@ -11,6 +11,7 @@ var tokens={
 	"pvptoken":{
 		"hammer":120,
 		"harbringer":25,
+		"valourdirk":25,
 		"spear":1,
 		"t2bow":1,
 		"weaponbox":1,

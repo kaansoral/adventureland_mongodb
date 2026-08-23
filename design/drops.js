@@ -476,6 +476,7 @@ var drops = {
 			[1, "essenceofnature"],
 			[1, "ashleaf", 20],
 			[1, "verdantcore", 2],
+			[1 / 10000.0, "sapstone"],
 			[0.02, "woodensword"],
 			[1 / 100000.0, "stick"],
 			[1 / 200000.0, "nheart"],

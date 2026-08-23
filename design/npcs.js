@@ -103,7 +103,7 @@ var npcs={
 	"thief":{
 		"role":"merchant",
 		"items":[
-			"licence",null,null,null,null,
+			"licence","softstepgloves",null,null,null,
 			null,null,null,null,null,
 			null,null,null,null,null,
 			null,null,null,"scroll3","cscroll3",

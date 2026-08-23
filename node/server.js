@@ -3030,7 +3030,12 @@ function commence_attack(attacker, target, atype) {
 		mp_cost = attacker.mp_cost;
 	} else if (
 		attacker.is_player &&
-		(atype == "attack" || atype == "3shot" || atype == "5shot" || atype == "cleave" || atype == "shadowstrike")
+		(atype == "attack" ||
+			atype == "3shot" ||
+			atype == "5shot" ||
+			atype == "fanofknives" ||
+			atype == "cleave" ||
+			atype == "shadowstrike")
 	) {
 		var mp_mult = 1;
 		var att_mult = 1;
@@ -3041,6 +3046,10 @@ function commence_attack(attacker, target, atype) {
 		if (atype == "5shot") {
 			mp_mult = 0;
 			att_mult = 0.5;
+		}
+		if (atype == "fanofknives") {
+			mp_mult = 0;
+			att_mult = G.skills[atype].damage_multiplier;
 		}
 		if (atype == "cleave") {
 			mp_mult = 0.02;
@@ -9564,48 +9573,69 @@ function init_socket_io(socket_server) {
 					}
 				}
 				xy_emit(player, "ui", { type: data.name });
-			} else if (data.name == "3shot" || data.name == "5shot") {
+			} else if (data.name == "3shot" || data.name == "5shot" || data.name == "fanofknives") {
 				player.halt = true;
-				const targeted = {};
+				const targeted = new Set();
 				let c_resolve = null;
-				//console.log(data.ids);
-				if (is_array(data.ids)) {
-					// Only look at the first Xshot targets in the array if more are provided
-					for (const id of data.ids.slice(0, data.name === "5shot" ? 5 : 3)) {
-						// Prevent attacking the same entity twice
-						if (targeted[id]) {
-							continue;
-						}
-						targeted[id] = true;
+				let costTarget = null;
+				const targetCap = gSkill.max_targets || (data.name === "5shot" ? 5 : 3);
+				try {
+					if (is_array(data.ids)) {
+						// Cap hostile input before resolving any submitted entity ids.
+						for (const submittedId of data.ids.slice(0, targetCap)) {
+							const id = String(submittedId);
+							if (targeted.has(id)) {
+								continue;
+							}
+							targeted.add(id);
 
-						target = instances[player.in].monsters[id];
-						if (!target) {
-							target = instances[player.in].players[id];
-						}
+							target = instances[player.in].monsters[id];
+							if (!target) {
+								target = instances[player.in].players[id];
+							}
 
-						if (!target || is_invinc(target) || target.name == player.name) {
-							continue;
-						}
-						if (isTargetTooFar(target)) {
-							continue;
-						}
-						const attack = commence_attack(player, target, data.name);
-						if (!attack || !attack.projectile) {
-							continue;
-						}
-						if (!c_resolve) {
-							c_resolve = attack;
-							attack.pids = [attack.pid];
-							attack.targets = [attack.target];
-						} else {
-							c_resolve.pids.push(attack.pid);
-							c_resolve.targets.push(attack.target);
+							if (
+								!target ||
+								target.dead ||
+								target.rip ||
+								is_invinc(target) ||
+								is_invis(target) ||
+								target.name == player.name
+							) {
+								continue;
+							}
+							if (isTargetTooFar(target)) {
+								continue;
+							}
+							const attack = commence_attack(player, target, data.name);
+							if (!attack || !attack.projectile) {
+								continue;
+							}
+							if (!costTarget) {
+								costTarget = target;
+							}
+							if (!c_resolve) {
+								c_resolve = attack;
+								attack.pids = [attack.pid];
+								attack.targets = [attack.target];
+							} else {
+								c_resolve.pids.push(attack.pid);
+								c_resolve.targets.push(attack.target);
+							}
 						}
 					}
+				} finally {
+					player.halt = false;
 				}
-				player.halt = false;
 				player.to_resend = "u+cid";
-				consume_mp(player, gSkill.mp, target);
+				consume_mp(player, gSkill.mp, costTarget);
+				if (data.name == "fanofknives") {
+					xy_emit(player, "ui", {
+						type: "fanofknives",
+						name: player.name,
+						ids: (c_resolve && c_resolve.targets) || [],
+					});
+				}
 				if (!c_resolve) {
 					reject = { failed: true, place: data.name, reason: "no_target" };
 					disappearing_text(player.socket, player, "NO HITS");

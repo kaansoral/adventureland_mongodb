@@ -7997,7 +7997,97 @@ var items40={
 	},
 }
 
-var sub_dicts=[pots,armor,weapons,offhands,accessories,scrolls,premiums,gems,materials,collectables,misc,quest,orbs,elixirs,skill_items,crafting_items,pets,items40];
+// Rogue equipment approved through the Rogue: Five Ways In proposal. These
+// definitions live after the normal equipment loops, so every base and scaling
+// property is explicit.
+var rogue_ent_items={
+	"softstepgloves":{
+		"type":"gloves",
+		"exclusive":true,
+		"tier":1.75,
+		"scroll":true,
+		"class":["rogue"],
+		"skin":"softstepgloves",
+		"stat":2,
+		"armor":32,
+		"resistance":22,
+		"evasion":2,
+		"speed":2,
+		"upgrade":{"stat":1,"armor":5,"resistance":3,"evasion":0.25,"speed":0.25},
+		"name":"Softstep Gloves",
+		"explanation":"The fingers are reinforced. The palms make no sound at all.",
+		"grades":[2,7,10,12],
+		"g":420000,
+	},
+	"valourdirk":{
+		"type":"weapon",
+		"exclusive":true,
+		"wtype":"dagger",
+		"tier":2.75,
+		"class":["rogue"],
+		"skin":"valourdirk",
+		"attack":25,
+		"range":8,
+		"for":8,
+		"evasion":3,
+		"crit":2.5,
+		"damage_type":"physical",
+		"upgrade":{"attack":5.8,"range":1.5,"evasion":0.5,"crit":0.25},
+		"name":"Valour Dirk",
+		"explanation":"Notched once for every duel its owner remembers.",
+		"grades":[0,5,10,12],
+		"g":620000,
+		"cx":{"scale":0.5,"extension":true},
+	},
+	"knifebelt":{
+		"type":"belt",
+		"exclusive":true,
+		"class":["rogue"],
+		"skin":"knifebelt",
+		"dex":8,
+		"int":2,
+		"armor":12,
+		"mp_reduction":3,
+		"ability":"fanofknives",
+		"name":"Knife Belt",
+		"explanation":"Five knives, five pockets, and no room for a sixth.",
+		"g":900000,
+	},
+	"gloampendant":{
+		"type":"amulet",
+		"exclusive":true,
+		"class":["rogue"],
+		"skin":"gloampendant",
+		"dex":7,
+		"int":7,
+		"mp":250,
+		"mp_reduction":8,
+		"compound":{"dex":2,"int":2,"mp":75,"mp_reduction":1.5},
+		"name":"Gloam Pendant",
+		"explanation":"It grows cold whenever its wearer is seen.",
+		"grades":[1,4,6,7],
+		"g":420000,
+	},
+	"sapstone":{
+		"type":"orb",
+		"exclusive":true,
+		"class":["rogue"],
+		"skin":"sapstone",
+		"dex":16,
+		"vit":12,
+		"armor":24,
+		"resistance":24,
+		"frequency":4,
+		"name":"Sapstone",
+		"explanation":"Warm sap moves beneath its bark, slow as a heartbeat.",
+		"g":1800000,
+		"a":true,
+		// Reserved as a core ingredient for the proposed priest-only T4
+		// Worldroot Crook, giving duplicate drops a permanent crafting purpose.
+	},
+}
+
+var sub_dicts=[pots,armor,weapons,offhands,accessories,scrolls,premiums,gems,materials,collectables,misc,quest,orbs,elixirs,skill_items,crafting_items,pets,items40,rogue_ent_items];
 for(var i=0;i<sub_dicts.length;i++){
 	for(var key in sub_dicts[i]){
 		items[key]=sub_dicts[i][key];

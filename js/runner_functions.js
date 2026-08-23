@@ -195,8 +195,8 @@ function throw_item(num, x, y) {
 function use_skill(name, target, extra_arg, timeout_ms) {
 	// target: object or string (character name or monster ID)
 	// for "blink": use_skill("blink",[x,y])
-	// for "3shot", "5shot" target can be an array of objects or strings (name or ID)
-	// example: use_skill("3shot",[target1,target2,target3])
+	// for "3shot", "5shot", "fanofknives" target can be an array of objects or strings (name or ID)
+	// example: use_skill("fanofknives",[target1,target2,target3])
 	// extra_arg is currently for use_skill("throw",target,inventory_num) and use_skill("energize",target,optional_mp)
 	var outcomes = {
 		pickpocket: { success: ["picked"], failure: ["pick_failed"] },

@@ -1060,6 +1060,14 @@ var positions={
 	"frostcore":["items40",8,3],
 	"verdantcore":["items40",9,3],
 
+	// Rogue: Five Ways In
+	"softstepgloves":["rogueent",0,0],
+	"valourdirk":["rogueent",1,0],
+	"knifebelt":["rogueent",2,0],
+	"gloampendant":["rogueent",3,0],
+	"sapstone":["rogueent",4,0],
+	"fanofknives":["rogueent",5,0],
+
 	//trial
 	//"dragondagger":["",15,42],
 	//"claw":["",13,42],

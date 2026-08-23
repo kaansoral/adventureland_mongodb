@@ -124,6 +124,13 @@ var animations={
 		"directional":true,
 		"speed":1200,
 	},
+	"fanknife":{
+		"file":"/images/sprites/animations/FanKnife.png?v=1",
+		"frames":3,
+		"continuous":true,
+		"directional":true,
+		"speed":1200,
+	},
 	"garrow":{
 		"file":"/images/sprites/animations/garrow.png",
 		"frames":4,
@@ -311,6 +318,12 @@ var animations={
 	},
 	"arrow_hit":{
 		"file":"/images/sprites/animations/Slash0Arrow.png", // nice animation, damage-like
+		"frames":7,
+		"alpha":0.9,
+		"size":0.8,
+	},
+	"fanknife_hit":{
+		"file":"/images/sprites/animations/Slash0FanKnife.png?v=1",
 		"frames":7,
 		"alpha":0.9,
 		"size":0.8,

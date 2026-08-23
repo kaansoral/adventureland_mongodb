@@ -16,6 +16,11 @@ var projectiles={
 		"hit_animation":"slash2",
 		"hit_text":["STAB!","#41338B"],
 	},
+	"fanofknives":{
+		"animation":"fanknife",
+		"speed":560,
+		"hit_animation":"fanknife_hit",
+	},
 	"smash":{
 		"animation":"slash",
 		"speed":420,

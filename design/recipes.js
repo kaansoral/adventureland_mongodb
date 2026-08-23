@@ -701,6 +701,25 @@ var craft={
 		],
 		"cost":300000,
 	},
+	"knifebelt":{
+		"items":[
+			[1,"dexbelt",2],
+			[30,"spidersilk"],
+			[8,"voidthread"],
+			[20,"bwing"],
+			[12,"poison"],
+		],
+		"cost":350000,
+	},
+	"gloampendant":{
+		"items":[
+			[1,"dexamulet",2],
+			[12,"voidthread"],
+			[80,"bwing"],
+			[6,"essenceofether"],
+		],
+		"cost":420000,
+	},
 	"emberhood":{
 		"items":[
 			[1,"mmhat",5],

@@ -1186,6 +1186,13 @@ var imagesets = {
 		file: "/images/tiles/items/items_40_remastered.png?v=1",
 		load: true,
 	},
+	rogueent: {
+		size: 20,
+		rows: 1,
+		columns: 6,
+		file: "/images/tiles/items/rogue_ent.png?v=1",
+		load: true,
+	},
 };
 var tilesets = {
 	castle: { file: "/images/tiles/map/castle.png?v=2" },
