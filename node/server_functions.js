@@ -3046,7 +3046,7 @@ function realm_broadcast(event, data) {
 }
 
 function broadcast(event, data) {
-	io.emit(event, data);
+	for (var i = 0; i < game_ios.length; i++) game_ios[i].emit(event, data);
 	if (event == "notice" || (event == "server_message" && gameplay == "normal")) {
 		var to_log = false;
 		if (data.sname && data.sname != region + " " + server_name) {

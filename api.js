@@ -772,7 +772,15 @@ async function get_servers_api(args) {
 	var servers = [];
 	for (var i = 0; i < server_list.length; i++) {
 		var s = server_list[i];
-		servers.push({ address: s.address, path: s.path, region: s.region, name: s.name, pvp: s.info.pvp, gameplay: s.gameplay });
+		servers.push({
+			address: s.address,
+			path: s.path,
+			msgpack_path: s.msgpack_path,
+			region: s.region,
+			name: s.name,
+			pvp: s.info.pvp,
+			gameplay: s.gameplay,
+		});
 	}
 	return { success: true, servers: servers };
 }

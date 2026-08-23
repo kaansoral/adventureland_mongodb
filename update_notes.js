@@ -3,6 +3,11 @@ module.exports = [
 	{
 		deployed: null,
 		date: "[24/08/26]",
+		note: "Added an optional MessagePack socket transport for custom clients. Existing clients continue to work unchanged.",
+	},
+	{
+		deployed: null,
+		date: "[24/08/26]",
 		note: "Added 40 new items: 33 craftable pieces of equipment and 7 materials found across Adventure Land.",
 	},
 	{

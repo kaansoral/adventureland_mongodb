@@ -1,0 +1,62 @@
+<p><span class="dlabel">MessagePack socket transport</span></p>
+
+<p>Custom clients can use an optional MessagePack Socket.IO connection. It carries the same game events and JSON-compatible values with smaller binary frames. The ordinary client and existing custom clients continue to use the normal socket path; no migration is required.</p>
+
+<p>Each server directory entry provides two paths:</p>
+
+<div class="code">server.path          // Normal Socket.IO transport
+server.msgpack_path  // Optional MessagePack transport</div>
+
+<p>The MessagePack path is a separate endpoint. A connection must use its matching parser from the first packet onward. Do not connect a normal Socket.IO parser to <span class="dlabel">msgpack_path</span>, and do not use the MessagePack parser with <span class="dlabel">path</span>.</p>
+
+<p><span class="dlabel">Browser client</span></p>
+
+<p>Load Socket.IO first, then the Adventure Land parser:</p>
+
+<div class="code">&lt;script src="/js/socket.io/4.2.0/socket.io.min.js"&gt;&lt;/script&gt;
+&lt;script src="/js/socket.io-msgpack-parser.min.js"&gt;&lt;/script&gt;
+
+&lt;script&gt;
+var options = {
+	path: server.path,
+	transports: ["websocket"]
+};
+
+if (server.msgpack_path) {
+	options.path = server.msgpack_path;
+	options.parser = ALMsgpackParser;
+}
+
+var socket = io(server.address, options);
+&lt;/script&gt;</div>
+
+<p>The fallback is intentional: a custom client can still connect to a server that does not advertise the optional endpoint. In a standalone client, <span class="dlabel">server</span> is the selected entry from the server directory. Do not open a second game socket from ordinary character CODE.</p>
+
+<p><span class="dlabel">Node.js client</span></p>
+
+<p>The same generated parser file also exports a CommonJS module:</p>
+
+<div class="code">const { io } = require("socket.io-client");
+const msgpackParser = require("./socket.io-msgpack-parser.min.js");
+
+const options = {
+	path: server.path,
+	transports: ["websocket"]
+};
+
+if (server.msgpack_path) {
+	options.path = server.msgpack_path;
+	options.parser = msgpackParser;
+}
+
+const socket = io(server.address, options);</div>
+
+<p>Use the parser file shipped by Adventure Land so the wire format stays exact. Authentication, acknowledgements, event names, and event payloads are otherwise unchanged.</p>
+
+<p><span class="dlabel">Format and limits</span></p>
+
+<p>One Socket.IO packet becomes one MessagePack array. For example, <span class="dlabel">socket.emit("hello", "you")</span> is encoded as <span class="dlabel">[2, ["hello", "you"]]</span>. It is 13 bytes instead of the normal 17-byte JSON frame.</p>
+
+<p>Payloads follow JSON behavior: use strings, finite numbers, booleans, null, arrays, and ordinary objects. Dates become ISO strings; undefined object properties are omitted; undefined array entries and non-finite numbers become null. Binary values, MessagePack extensions, BigInt, circular objects, custom namespaces, and reserved Socket.IO event names are rejected.</p>
+
+<p>The optional endpoint is WebSocket-only and accepts at most 64 KiB in a client packet. Keep messages small and use the normal game event flow. A parser error closes only that connection; reconnect with the same parser and path rather than changing parsers on an open socket.</p>

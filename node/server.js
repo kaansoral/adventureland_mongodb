@@ -27,16 +27,30 @@ app.get("/", (req, res) => {
 	res.send("Hello World!");
 });
 //var io=require('socket.io')(app,{pingInterval:2400,pingTimeout:6000});
-var io = require("socket.io")(http_server, {
+const SocketIOServer = require("socket.io").Server;
+const msgpack_parser = require("./msgpack_parser");
+var socket_cors = {
+	origin: "*",
+	methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+	// credentials: true,
+};
+var io = new SocketIOServer(http_server, {
 	path: server_def.path,
 	pingInterval: 4000,
 	pingTimeout: 12000,
-	cors: {
-		origin: "*",
-		methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-		// credentials: true,
-	},
+	cors: socket_cors,
 }); // default is 25000 to 60000
+var msgpack_path = msgpack_parser.msgpackPath(server_def.path);
+var msgpack_io = new SocketIOServer(http_server, {
+	path: msgpack_path,
+	transports: ["websocket"],
+	maxHttpBufferSize: 64 * 1024,
+	pingInterval: 4000,
+	pingTimeout: 12000,
+	cors: socket_cors,
+	parser: msgpack_parser.createParser({ maxPacketBytes: 64 * 1024 }),
+});
+var game_ios = [io, msgpack_io];
 var url = require("url");
 const path = require("node:path");
 var { Worker, SHARE_ENV } = require("worker_threads");
@@ -346,6 +360,7 @@ async function init_game() {
 		Server.key = server_key;
 		Server.address = server_def.address;
 		Server.path = server_def.path;
+		Server.msgpack_path = msgpack_path;
 		Server.local_ip = server_def.local_ip;
 		Server.local_port = server_def.local_port;
 		Server.machine = server_def.machine;
@@ -4284,7 +4299,11 @@ function disconnect_old_sockets(socket) {
 }
 
 function init_io() {
-	io.on("connection", function (socket) {
+	for (var i = 0; i < game_ios.length; i++) init_socket_io(game_ios[i]);
+}
+
+function init_socket_io(socket_server) {
+	socket_server.on("connection", function (socket) {
 		if (socket.handshake.query.server_method) {
 			if (0 && socket.handshake.query.server_master == keys.SERVER_MASTER) {
 				// this was to make servers communicate with each other and disconnect overflows immediately [28/10/23]
@@ -11451,7 +11470,11 @@ function init_io() {
 					state: "bet",
 				};
 				tavern.roulette.players[player.socket.id] = true;
-				io.to("roulette").emit("bet", { name: player.name, type: "roulette", odds: data.odds, gold: data.gold });
+				for (var i = 0; i < game_ios.length; i++) {
+					game_ios[i]
+						.to("roulette")
+						.emit("bet", { name: player.name, type: "roulette", odds: data.odds, gold: data.gold });
+				}
 				socket.emit("tavern", player.bets[rid]);
 				resend(player, "reopen+nc");
 			}

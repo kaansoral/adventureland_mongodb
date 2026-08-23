@@ -629,6 +629,7 @@ function servers_to_client(domain, servers_data) {
 			key: get_id(server),
 			address: server.address,
 			path: server.path,
+			msgpack_path: server.msgpack_path,
 		});
 	}
 	return servers;
