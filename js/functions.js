@@ -3019,7 +3019,12 @@ function auto_craft(name, code) {
 	else if (G.craft[name].cost > character.gold) issue = "gold";
 	else {
 		G.craft[name].items.forEach(function (i) {
-			if (quantity(i[1], i[2]) < i[0]) issue = "items";
+			var enough = false;
+			for (var j = 0; j < character.items.length; j++) {
+				var item = character.items[j];
+				if (item && item.name == i[1] && (item.level || 0) == (i[2] || 0) && (item.q || 1) >= i[0]) enough = true;
+			}
+			if (!enough) issue = "items";
 		});
 	}
 	if (issue) {
