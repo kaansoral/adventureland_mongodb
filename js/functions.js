@@ -9,6 +9,49 @@ var draw_timeouts = [],
 var DTM = 1; // draw_timeout multiplier - floating point - ideally ~1, but if a 60fps calibrated animation is executed on 30fps, around ~2 [04/03/19]
 var DMS = 0; // ms after draw timeout trigger
 
+// Project-local override for the shared helper. Keeps the established signature while
+// ensuring AJAX failures reject instead of throwing inside the failure callback.
+function api_call(method, args, r_args) {
+	if (!args) args = {};
+	if (!r_args) r_args = {};
+	if (r_args.disable) r_args.disable.addClass("disable");
+	var P = new deferred();
+	var call_args = {
+		method: "POST",
+		dataType: "json",
+		contentType: "application/json; charset=utf-8",
+		url: "/api/" + method,
+		data: JSON.stringify(args),
+	};
+	if (r_args.timeout) call_args.timeout = r_args.timeout;
+	$.ajax(call_args)
+		.done(function (data) {
+			var infs = data && data.infs;
+			if (infs) delete data.infs;
+			if (data && !data.failed) P.resolve(data);
+			else P.reject(data || { failed: true, reason: "empty_response" });
+			if (r_args.disable) r_args.disable.removeClass("disable");
+			if (infs) handle_information(infs);
+		})
+		.fail(function (jqXHR, textStatus, errorThrown) {
+			var data = jqXHR && jqXHR.responseJSON;
+			var infs = data && data.infs;
+			if (infs) delete data.infs;
+			if (!data || !data.failed) {
+				data = {
+					failed: true,
+					reason: (textStatus == "timeout" && "timeout") || "network_error",
+					error: errorThrown || textStatus || "Request failed",
+					status: (jqXHR && jqXHR.status) || 0,
+				};
+			}
+			P.reject(data);
+			if (r_args.disable) r_args.disable.removeClass("disable");
+			if (infs) handle_information(infs);
+		});
+	return P.promise;
+}
+
 function server_to_ui(key) {
 	if (!key) return "";
 	if (X && X.servers) {
@@ -1967,7 +2010,7 @@ function code_persistence_logic() {
 			});
 		var saved_code = codemirror_render.getValue();
 		code_change = false;
-		code_save_promise = api_call("save_code", { code: saved_code, slot: code_slot, auto: true }).then(
+		code_save_promise = api_call("save_code", { code: saved_code, slot: code_slot, auto: true }, { timeout: 15000 }).then(
 			function (result) {
 				code_save_promise = null;
 				if (codemirror_render.getValue() != saved_code) code_change = true;

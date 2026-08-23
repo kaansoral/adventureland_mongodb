@@ -1475,7 +1475,7 @@ function require_code(name_or_slot) {
 
 function upload_code(slot_number, slot_name, code_string) {
 	// Some players use the code slots to persist data across platforms, but please use it sparingly :) [04/08/20]
-	return parent.api_call("save_code", { code: code_string, slot: slot_number, name: slot_name, auto: true, electron: true });
+	return parent.api_call("save_code", { code: code_string, slot: slot_number, name: slot_name, auto: true, electron: true }, { timeout: 15000 });
 }
 
 var active_code_slot = parent.code_slot || "";
