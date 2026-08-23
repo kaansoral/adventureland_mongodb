@@ -214,7 +214,8 @@ function use_skill_complete(name, target, extra_arg, timeout_ms) {
 	if (!target) target = get_target();
 	if (timeout_ms === undefined) timeout_ms = 20000;
 	timeout_ms = max(0, timeout_ms);
-	var request_id = randomStr(30),
+	var socket = parent.socket,
+		request_id = randomStr(30),
 		listener_ids = [],
 		listener_handlers = [],
 		completion_seen = false,
@@ -271,9 +272,9 @@ function use_skill_complete(name, target, extra_arg, timeout_ms) {
 					});
 					listener_ids = [];
 				});
-				parent.socket.off("disconnect", on_disconnect);
+				socket.off("disconnect", on_disconnect);
 			};
-			parent.socket.on("disconnect", on_disconnect);
+			socket.on("disconnect", on_disconnect);
 		});
 	completion.catch(function () {});
 	var acknowledgement = parent.use_skill(name, target, extra_arg, request_id);
@@ -335,7 +336,8 @@ function open_bank_pack(pack, currency, timeout_ms) {
 	}
 	if (timeout_ms === undefined) timeout_ms = 15000;
 	timeout_ms = max(0, timeout_ms);
-	var request_id = randomStr(30),
+	var socket = parent.socket,
+		request_id = randomStr(30),
 		cleanup = function () {},
 		completion = new Promise(function (resolve, reject) {
 			var settled = false;
@@ -360,16 +362,16 @@ function open_bank_pack(pack, currency, timeout_ms) {
 			}, timeout_ms);
 			cleanup = function () {
 				clearTimeout(timer);
-				parent.socket.off("game_response", on_response);
-				parent.socket.off("disconnect", on_disconnect);
+				socket.off("game_response", on_response);
+				socket.off("disconnect", on_disconnect);
 			};
-			parent.socket.on("game_response", on_response);
-			parent.socket.on("disconnect", on_disconnect);
+			socket.on("game_response", on_response);
+			socket.on("disconnect", on_disconnect);
 		});
 	completion.catch(function () {});
 	data.request_id = request_id;
 	var acknowledgement = parent.push_deferred("bank");
-	parent.socket.emit("bank", data);
+	socket.emit("bank", data);
 	return acknowledgement.then(
 		function (result) {
 			if (result.failed || !result.in_progress) {
@@ -701,7 +703,8 @@ function buy_with_shells_complete(name, quantity, timeout_ms) {
 	if (!is_string(name) || !name) return rejecting_promise({ reason: "invalid", place: "buy_with_cash" });
 	if (timeout_ms === undefined) timeout_ms = 15000;
 	timeout_ms = max(0, timeout_ms);
-	var request_id = randomStr(30),
+	var socket = parent.socket,
+		request_id = randomStr(30),
 		cleanup = function () {},
 		completion = new Promise(function (resolve, reject) {
 			var settled = false;
@@ -725,11 +728,11 @@ function buy_with_shells_complete(name, quantity, timeout_ms) {
 			}, timeout_ms);
 			cleanup = function () {
 				clearTimeout(timer);
-				parent.socket.off("game_response", on_response);
-				parent.socket.off("disconnect", on_disconnect);
+				socket.off("game_response", on_response);
+				socket.off("disconnect", on_disconnect);
 			};
-			parent.socket.on("game_response", on_response);
-			parent.socket.on("disconnect", on_disconnect);
+			socket.on("game_response", on_response);
+			socket.on("disconnect", on_disconnect);
 		});
 	var acknowledgement = parent.buy_with_shells(name, quantity, request_id);
 	return acknowledgement.then(
@@ -1170,7 +1173,8 @@ function send_mail_complete(to, subject, message, item, timeout_ms) {
 	if (timeout_ms === undefined) timeout_ms = 15000;
 	timeout_ms = max(0, timeout_ms);
 	item = (item && true) || false;
-	var request_id = randomStr(30),
+	var socket = parent.socket,
+		request_id = randomStr(30),
 		cleanup = function () {},
 		completion = new Promise(function (resolve, reject) {
 			var settled = false;
@@ -1194,14 +1198,14 @@ function send_mail_complete(to, subject, message, item, timeout_ms) {
 			}, timeout_ms);
 			cleanup = function () {
 				clearTimeout(timer);
-				parent.socket.off("game_response", on_response);
-				parent.socket.off("disconnect", on_disconnect);
+				socket.off("game_response", on_response);
+				socket.off("disconnect", on_disconnect);
 			};
-			parent.socket.on("game_response", on_response);
-			parent.socket.on("disconnect", on_disconnect);
+			socket.on("game_response", on_response);
+			socket.on("disconnect", on_disconnect);
 		});
 	var acknowledgement = parent.push_deferred("mail");
-	parent.socket.emit("mail", { to: to, subject: subject, message: message, item: item, request_id: request_id });
+	socket.emit("mail", { to: to, subject: subject, message: message, item: item, request_id: request_id });
 	return acknowledgement.then(
 		function (data) {
 			if (data.failed || !data.in_progress) {
@@ -1215,6 +1219,46 @@ function send_mail_complete(to, subject, message, item, timeout_ms) {
 			throw error;
 		},
 	);
+}
+
+function take_mail_item(mail_id, timeout_ms) {
+	if (!is_string(mail_id) || !mail_id) return rejecting_promise({ reason: "invalid_mail", place: "mail_take_item" });
+	if (timeout_ms === undefined) timeout_ms = 15000;
+	timeout_ms = max(0, timeout_ms);
+	var socket = parent.socket,
+		request_id = randomStr(30),
+		cleanup = function () {},
+		completion = new Promise(function (resolve, reject) {
+			var settled = false;
+			function finish(data, failed) {
+				if (settled) return;
+				settled = true;
+				cleanup();
+				if (failed && !RESOLVE_ALL) reject(data);
+				else resolve(data);
+			}
+			function on_response(data) {
+				if (!data || data.request_id != request_id) return;
+				if (data.response == "mail_item_taken") finish(Object.assign({ success: true, place: "mail_take_item" }, data));
+				else finish(Object.assign({ failed: true, reason: data.reason || data.response || "mail_take_item_failed", place: "mail_take_item" }, data), true);
+			}
+			function on_disconnect() {
+				finish({ failed: true, reason: "disconnected", place: "mail_take_item", id: mail_id, request_id: request_id }, true);
+			}
+			var timer = setTimeout(function () {
+				finish({ failed: true, reason: "timeout", place: "mail_take_item", id: mail_id, request_id: request_id }, true);
+			}, timeout_ms);
+			cleanup = function () {
+				clearTimeout(timer);
+				socket.off("game_response", on_response);
+				socket.off("disconnect", on_disconnect);
+			};
+			socket.on("game_response", on_response);
+			socket.on("disconnect", on_disconnect);
+		});
+	completion.catch(function () {});
+	socket.emit("mail_take_item", { id: mail_id, request_id: request_id });
+	return completion;
 }
 
 function destroy(num) {
@@ -1280,7 +1324,8 @@ function unfriend_complete(name, timeout_ms) {
 	if (!is_string(name) || !name) return rejecting_promise({ reason: "no_target", place: "friend" });
 	if (timeout_ms === undefined) timeout_ms = 15000;
 	timeout_ms = max(0, timeout_ms);
-	var request_id = randomStr(30),
+	var socket = parent.socket,
+		request_id = randomStr(30),
 		cleanup = function () {},
 		completion = new Promise(function (resolve, reject) {
 			var settled = false;
@@ -1304,14 +1349,14 @@ function unfriend_complete(name, timeout_ms) {
 			}, timeout_ms);
 			cleanup = function () {
 				clearTimeout(timer);
-				parent.socket.off("game_response", on_response);
-				parent.socket.off("disconnect", on_disconnect);
+				socket.off("game_response", on_response);
+				socket.off("disconnect", on_disconnect);
 			};
-			parent.socket.on("game_response", on_response);
-			parent.socket.on("disconnect", on_disconnect);
+			socket.on("game_response", on_response);
+			socket.on("disconnect", on_disconnect);
 		});
 	var acknowledgement = parent.push_deferred("friend");
-	parent.socket.emit("friend", { event: "unfriend", name: name, request_id: request_id });
+	socket.emit("friend", { event: "unfriend", name: name, request_id: request_id });
 	return acknowledgement.then(
 		function (data) {
 			if (data.failed || !data.in_progress) {
@@ -1338,7 +1383,8 @@ function send_friend_request(name) {
 function accept_friend_request(name) {
 	if (is_object(name)) name = name.name;
 	if (!name) return rejecting_promise({ reason: "no_target" });
-	var cleanup = function () {},
+	var socket = parent.socket,
+		cleanup = function () {},
 		completion = new Promise(function (resolve, reject) {
 			var settled = false;
 			function finish(data, failed) {
@@ -1362,16 +1408,16 @@ function accept_friend_request(name) {
 			}, 15000);
 			cleanup = function () {
 				clearTimeout(timer);
-				parent.socket.off("friend", on_friend);
-				parent.socket.off("game_response", on_response);
-				parent.socket.off("disconnect", on_disconnect);
+				socket.off("friend", on_friend);
+				socket.off("game_response", on_response);
+				socket.off("disconnect", on_disconnect);
 			};
-			parent.socket.on("friend", on_friend);
-			parent.socket.on("game_response", on_response);
-			parent.socket.on("disconnect", on_disconnect);
+			socket.on("friend", on_friend);
+			socket.on("game_response", on_response);
+			socket.on("disconnect", on_disconnect);
 		});
 	var acknowledgement = parent.push_deferred("friend");
-	parent.socket.emit("friend", { event: "accept", name: name });
+	socket.emit("friend", { event: "accept", name: name });
 	return acknowledgement.then(
 		function (data) {
 			if (data.failed || !data.in_progress) {

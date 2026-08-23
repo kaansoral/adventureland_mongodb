@@ -46,6 +46,7 @@ attack(target).then(function (result) {
 	await exchange(0);                                // Reward slot updated
 	await accept_friend_request("Wizard");            // Friendship created
 	await send_mail_complete("Merchant", "Route", "Meet at the bank"); // Mail stored
+	await take_mail_item("ML_your_mail_id");             // Attachment in inventory
 	await buy_with_shells_complete("computer", 1);    // Account and inventory updated
 	await unfriend_complete("FormerFriend");           // Both accounts updated
 	await wait_for(function () { return get_player("Wizard"); }, 5000);

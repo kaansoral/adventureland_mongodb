@@ -5145,39 +5145,93 @@ function init_io() {
 		});
 		socket.on("mail_take_item", function (data) {
 			var player = players[socket.id];
+			var request_id = data.request_id;
+			function finish_mail_item(response, extra) {
+				if (!players[socket.id]) return;
+				var result = Object.assign(
+					{
+						response: response,
+						id: data.id,
+						request_id: request_id,
+					},
+					extra || {},
+				);
+				if (in_arr(response, ["mail_item_taken", "mail_take_item_failed"])) result.cevent = response;
+				socket.emit("game_response", result);
+			}
+			async function set_mail_claim(mail, claim, value) {
+				return tx(
+					async () => {
+						var m = await tx_get(A.mail);
+						if (!m || m.taken !== A.claim) ex("claim_changed");
+						m.taken = A.value;
+						await tx_save(m);
+					},
+					{ mail: mail, claim: claim, value: value },
+				);
+			}
 			if (!player) {
 				return;
 			}
 			if (mode.prevent_external) {
-				return socket.emit("game_response", { response: "not_in_this_server" });
+				return finish_mail_item("not_in_this_server", { failed: true, reason: "not_in_this_server" });
 			}
-			if (!player.esize) {
-				return socket.emit("game_response", "inv_size");
-			}
+			var player_owner = player.owner;
 			(async function () {
+				var claim = "mailclaim_" + randomStr(40);
+				var delivered = false;
+				var delivered_item;
+				var mail;
 				try {
-					var mail = await get(data.id);
-					if (!mail) return socket.emit("game_response", { response: "mail_item_already_taken" });
+					mail = await get(data.id);
+					if (!mail) return finish_mail_item("mail_item_already_taken", { failed: true, reason: "invalid_mail" });
 					var R = await tx(
 						async () => {
 							var m = await tx_get(A.mail);
-							if (!m.item || m.taken) ex("failed");
-							m.taken = true;
+							if (!m || !m.owner || !in_arr(A.owner, m.owner)) ex("not_owner");
+							if (!m.item) ex("no_item");
+							if (m.taken) ex("already_taken");
+							m.taken = A.claim;
 							await tx_save(m);
 							R.item = m.info.item;
 						},
-						{ mail: mail },
+						{ mail: mail, owner: player_owner, claim: claim },
 					);
-					if (R.failed) return socket.emit("game_response", { response: "mail_item_already_taken" });
-					var player = players[socket.id];
-					if (!player) return;
+					if (R.failed) {
+						if (R.reason == "exception") {
+							var latest_mail = await get(data.id);
+							if (latest_mail && latest_mail.taken) R.reason = "already_taken";
+						}
+						if (in_arr(R.reason, ["already_taken", "no_item"])) {
+							return finish_mail_item("mail_item_already_taken", { failed: true, reason: R.reason });
+						}
+						return finish_mail_item("mail_take_item_failed", { failed: true, reason: R.reason || "claim_failed" });
+					}
+					var live_player = players[socket.id];
 					var item = JSON.parse(R.item);
-					add_item(player, item, { announce: false });
-					resend(player, "reopen");
-					socket.emit("game_response", { response: "mail_item_taken" });
+					if (!item || !item.name || !G.items[item.name]) ex("invalid_item");
+					if (!live_player || !can_add_item(live_player, item)) {
+						var released = await set_mail_claim(mail, claim, false);
+						if (released.failed) console.error("mail claim release failed: " + released.reason);
+						if (live_player) finish_mail_item("inv_size", { failed: true, reason: "inv_size" });
+						return;
+					}
+					add_item(live_player, item, { announce: false });
+					delivered = true;
+					delivered_item = item;
+					var completed = await set_mail_claim(mail, claim, true);
+					if (completed.failed) console.error("mail claim completion failed: " + completed.reason);
+					resend(live_player, "reopen");
+					finish_mail_item("mail_item_taken", { success: true, item: cache_item(item) });
 				} catch (e) {
 					console.error("take_item_from_mail error", e);
-					socket.emit("game_response", { response: "mail_take_item_failed" });
+					if (mail) {
+						var settled = await set_mail_claim(mail, claim, delivered);
+						if (settled.failed && settled.reason != "claim_changed")
+							console.error("mail claim recovery failed: " + settled.reason);
+					}
+					if (delivered) finish_mail_item("mail_item_taken", { success: true, item: cache_item(delivered_item) });
+					else finish_mail_item("mail_take_item_failed", { failed: true, reason: "coms_failure" });
 				}
 			})();
 		});

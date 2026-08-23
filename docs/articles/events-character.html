@@ -220,6 +220,8 @@ character.remove(listener);</div>
 <span data-event="exchange_buy">exchange_buy</span>
 <span data-event="mail_sent">mail_sent</span>
 <span data-event="mail_failed">mail_failed</span>
+<span data-event="mail_item_taken">mail_item_taken</span>
+<span data-event="mail_take_item_failed">mail_take_item_failed</span>
 <span data-event="shell_purchase_complete">shell_purchase_complete</span>
 <span data-event="shell_purchase_failed">shell_purchase_failed</span>
 <span data-event="unfriend_complete">unfriend_complete</span>
@@ -246,6 +248,8 @@ character.remove(listener);</div>
 <p>Response payloads include a <span class="dlabel">response</span> name when they originate from <span class="dlabel">game_response</span>, plus action-specific fields such as <span class="dlabel">name</span>, <span class="dlabel">num</span>, <span class="dlabel">cost</span>, <span class="dlabel">gold</span>, <span class="dlabel">reason</span>, or <span class="dlabel">slot</span>. Code should read the fields it needs and tolerate additional fields.</p>
 
 <p><span class="dlabel">mail_sent</span> and <span class="dlabel">mail_failed</span> include <span class="dlabel">to</span>. Calls made through <span class="dlabel">send_mail_complete</span> also include a unique <span class="dlabel">request_id</span>, allowing simultaneous mail operations to be correlated without guessing from recipient or timing.</p>
+
+<p><span class="dlabel">mail_item_taken</span> and <span class="dlabel">mail_take_item_failed</span> include the mail <span class="dlabel">id</span> and the <span class="dlabel">request_id</span> supplied by <span class="dlabel">take_mail_item</span>. Success includes the delivered <span class="dlabel">item</span>; failure includes a concrete <span class="dlabel">reason</span>. Inventory-space and already-claimed responses remain direct routine failures rather than character events.</p>
 
 <p><span class="dlabel">shell_purchase_complete</span> and <span class="dlabel">shell_purchase_failed</span> include <span class="dlabel">name</span>, <span class="dlabel">quantity</span>, and a correlated <span class="dlabel">request_id</span>. Successful purchases also include <span class="dlabel">cost</span>; failures include <span class="dlabel">reason</span>.</p>
 
