@@ -20,7 +20,7 @@ async function use_supershot() {
 use_supershot();
 </div>
 
-<p><span class="dlabel">use_skill</span> returns one Promise for the complete skill request. Client checks such as <span class="dlabel">is_in_range</span> and <span class="dlabel">is_on_cooldown</span> avoid obviously invalid calls; the server remains authoritative for class, equipment, target, MP, range, cooldown, conditions, and any skill-specific rules.</p>
+<p><span class="dlabel">use_skill</span> returns one Promise for the server response to the skill request. Client checks such as <span class="dlabel">is_in_range</span> and <span class="dlabel">is_on_cooldown</span> avoid obviously invalid calls; the server remains authoritative for class, equipment, target, MP, range, cooldown, conditions, and any skill-specific rules.</p>
 
 <div class="code">use_skill("invis");
 use_skill("mluck", get_player("LuckyCharacter"));</div>
@@ -62,4 +62,20 @@ use_controlled_burst();
 
 <div class='code'>use_skill("blink", [character.x + 10, character.y + 10]);</div>
 
-<p>Multi-target skills still return one aggregate Promise, not an array of Promises. A fulfilled request means the server accepted and completed that skill call; inspect the returned data for skill-specific results.</p>
+<p>Multi-target skills still return one aggregate Promise, not an array of Promises. For ordinary skills, a fulfilled request means the server accepted that complete skill call; inspect the returned data for skill-specific results.</p>
+
+<p>Pickpocket, fishing, and mining are timed actions. Their existing <span class="dlabel">use_skill</span> Promise deliberately remains backward compatible and resolves with <span class="dlabel">in_progress: true</span> when the action starts. Use <span class="dlabel">use_skill_complete</span> when later code depends on the actual result:</p>
+
+<div class='code'>async function fish_once() {
+	try {
+		var result = await use_skill_complete("fishing");
+		if (result.found === false) game_log("Nothing caught this time");
+		else game_log("Caught something");
+	} catch (error) {
+		game_log("Fishing failed: " + error.reason);
+	}
+}
+
+fish_once();</div>
+
+<p>The completion-safe form correlates the final event to its own request and removes its temporary listeners after success, failure, disconnect, or timeout. It defaults to 20 seconds, long enough for the declared fishing and mining durations. For every other skill it delegates directly to <span class="dlabel">use_skill</span>.</p>

@@ -204,6 +204,95 @@ function use_skill(name, target, extra_arg) {
 	// Multi-target skills return one Promise for the complete skill call
 }
 
+function use_skill_complete(name, target, extra_arg, timeout_ms) {
+	var outcomes = {
+		pickpocket: { success: ["picked"], failure: ["pick_failed"] },
+		fishing: { success: ["fishing_success", "fishing_none"], failure: ["fishing_fail"] },
+		mining: { success: ["mining_success", "mining_none"], failure: ["mining_fail"] },
+	};
+	if (!outcomes[name]) return use_skill(name, target, extra_arg);
+	if (!target) target = get_target();
+	if (timeout_ms === undefined) timeout_ms = 20000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		listener_ids = [],
+		listener_handlers = [],
+		completion_seen = false,
+		cleanup = function () {},
+		completion = new Promise(function (resolve, reject) {
+			var settled = false;
+			function finish(event, data, failed) {
+				if (settled) return;
+				settled = completion_seen = true;
+				cleanup();
+				data = Object.assign({}, data, {
+					response: event,
+					place: name,
+					request_id: request_id,
+				});
+				if (failed) {
+					data.failed = true;
+					data.reason = data.reason || event;
+					if (!RESOLVE_ALL) return reject(data);
+				} else {
+					data.success = true;
+					if (event == "fishing_none" || event == "mining_none") data.found = false;
+					else if (event == "fishing_success" || event == "mining_success") data.found = true;
+				}
+				resolve(data);
+			}
+			function listen(event, failed) {
+				var handler = function (data) {
+					if (data && data.request_id == request_id) finish(event, data, failed);
+				};
+				listener_handlers.push(handler);
+				listener_ids.push(character.on(event, handler));
+			}
+			outcomes[name].success.forEach(function (event) {
+				listen(event, false);
+			});
+			outcomes[name].failure.forEach(function (event) {
+				listen(event, true);
+			});
+			function on_disconnect() {
+				finish("skill_failed", { reason: "disconnected" }, true);
+			}
+			var timer = setTimeout(function () {
+				finish("skill_failed", { reason: "timeout", timeout: timeout_ms }, true);
+			}, timeout_ms);
+			cleanup = function () {
+				clearTimeout(timer);
+				listener_handlers.forEach(function (handler) {
+					handler.delete = true;
+				});
+				Promise.resolve().then(function () {
+					listener_ids.forEach(function (id) {
+						character.remove(id);
+					});
+					listener_ids = [];
+				});
+				parent.socket.off("disconnect", on_disconnect);
+			};
+			parent.socket.on("disconnect", on_disconnect);
+		});
+	completion.catch(function () {});
+	var acknowledgement = parent.use_skill(name, target, extra_arg, request_id);
+	return acknowledgement.then(
+		function (data) {
+			if (completion_seen) return completion;
+			if (data.failed || !data.in_progress) {
+				cleanup();
+				return data;
+			}
+			return completion;
+		},
+		function (error) {
+			cleanup();
+			throw error;
+		},
+	);
+}
+
 function reduce_cooldown(name, ms) {
 	// parent.next_skill contains Date objects of when the skills will be available next
 	// show_json(parent.next_skill) to get a better idea

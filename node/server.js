@@ -9126,6 +9126,7 @@ function init_io() {
 				player.c[data.name] = {
 					ms: gSkill.duration_min + Math.random() * (gSkill.duration_max - gSkill.duration_min),
 					target: target.name,
+					request_id: data.request_id,
 				};
 				player.to_resend = "u+cid";
 				resolve = { response: "data", place: data.name, success: false, in_progress: true };
@@ -9150,13 +9151,20 @@ function init_io() {
 					});
 				});
 				if (!the_zone || player.moving) {
-					xy_emit(player, "ui", { type: data.name + "_fail", name: player.name });
+					xy_emit(player, "ui", {
+						type: data.name + "_fail",
+						name: player.name,
+						cevent: true,
+						request_id: data.request_id,
+						reason: (!the_zone && "location") || "moving",
+					});
 					reject = { response: "data", place: data.name };
 				} else {
 					xy_emit(player, "ui", { type: data.name + "_start", name: player.name, direction: direction });
 					player.c[data.name] = {
 						ms: gSkill.duration_min + Math.random() * (gSkill.duration_max - gSkill.duration_min),
 						drop: the_zone.drop,
+						request_id: data.request_id,
 					};
 				}
 				resolve = { response: "data", place: data.name, success: false, in_progress: true };
@@ -13487,9 +13495,19 @@ function update_instance(instance) {
 				if (name == "pickpocket") {
 					var target = get_player(ref.target);
 					if (!target) {
-						player.socket.emit("game_response", { response: "pick_failed", cevent: true, reason: "player_gone" });
+						player.socket.emit("game_response", {
+							response: "pick_failed",
+							cevent: true,
+							reason: "player_gone",
+							request_id: ref.request_id,
+						});
 					} else if (distance(player, target) > 20) {
-						player.socket.emit("game_response", { response: "pick_failed", cevent: true, reason: "distance" });
+						player.socket.emit("game_response", {
+							response: "pick_failed",
+							cevent: true,
+							reason: "distance",
+							request_id: ref.request_id,
+						});
 					} else {
 						var num = floor(Math.random() * 42);
 						if (target.items[num] && target.items[num].v) {
@@ -13503,13 +13521,23 @@ function update_instance(instance) {
 							}
 							item.v = new Date();
 							add_item(player, item);
-							player.socket.emit("game_response", { response: "picked", slot: "mainhand", cevent: true });
+							player.socket.emit("game_response", {
+								response: "picked",
+								slot: "mainhand",
+								cevent: true,
+								request_id: ref.request_id,
+							});
 							consume_skill(player, "pickpocket", true);
 							resend(player, "reopen");
 							resend(target, "reopen");
 							target.socket.emit("game_response", { response: "got_picked", cevent: true });
 						} else {
-							player.socket.emit("game_response", { response: "pick_failed", cevent: true, reason: "misfortune" });
+							player.socket.emit("game_response", {
+								response: "pick_failed",
+								cevent: true,
+								reason: "misfortune",
+								request_id: ref.request_id,
+							});
 						}
 					}
 				}
@@ -13526,13 +13554,28 @@ function update_instance(instance) {
 								player.u = true;
 								player.cslots.mainhand = player.slots.mainhand = null;
 								player.socket.emit("game_log", "Your rod broke down ...");
-								player.socket.emit("game_response", { response: "data", cevent: "item_break", slot: "mainhand" });
+								player.socket.emit("game_response", {
+									response: "data",
+									cevent: "item_break",
+									slot: "mainhand",
+									request_id: ref.request_id,
+								});
 							}
 						}
-						player.socket.emit("game_response", { response: "data", cevent: "fishing_success", slot: "mainhand" });
+						player.socket.emit("game_response", {
+							response: "data",
+							cevent: "fishing_success",
+							slot: "mainhand",
+							request_id: ref.request_id,
+						});
 						resend(player, "reopen");
 					} else {
-						player.socket.emit("ui", { name: player.name, type: "fishing_none", cevent: true });
+						player.socket.emit("ui", {
+							name: player.name,
+							type: "fishing_none",
+							cevent: true,
+							request_id: ref.request_id,
+						});
 					}
 				}
 				if (name == "mining") {
@@ -13548,11 +13591,28 @@ function update_instance(instance) {
 								player.u = true;
 								player.cslots.mainhand = player.slots.mainhand = null;
 								player.socket.emit("game_log", "Your pickaxe broke down ...");
+								player.socket.emit("game_response", {
+									response: "data",
+									cevent: "item_break",
+									slot: "mainhand",
+									request_id: ref.request_id,
+								});
 							}
 						}
+						player.socket.emit("game_response", {
+							response: "data",
+							cevent: "mining_success",
+							slot: "mainhand",
+							request_id: ref.request_id,
+						});
 						resend(player, "reopen");
 					} else {
-						player.socket.emit("ui", { type: "mining_none" });
+						player.socket.emit("ui", {
+							name: player.name,
+							type: "mining_none",
+							cevent: true,
+							request_id: ref.request_id,
+						});
 					}
 				}
 				if (name == "revival") {

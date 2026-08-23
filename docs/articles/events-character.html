@@ -235,8 +235,12 @@ character.remove(listener);</div>
 <span data-event="got_picked">got_picked</span>
 <span data-event="pick_failed">pick_failed</span>
 <span data-event="item_break">item_break</span>
+<span data-event="fishing_fail">fishing_fail</span>
 <span data-event="fishing_success">fishing_success</span>
-<span data-event="fishing_none">fishing_none</span></div>
+<span data-event="fishing_none">fishing_none</span>
+<span data-event="mining_fail">mining_fail</span>
+<span data-event="mining_success">mining_success</span>
+<span data-event="mining_none">mining_none</span></div>
 
 <p>Response payloads include a <span class="dlabel">response</span> name when they originate from <span class="dlabel">game_response</span>, plus action-specific fields such as <span class="dlabel">name</span>, <span class="dlabel">num</span>, <span class="dlabel">cost</span>, <span class="dlabel">gold</span>, <span class="dlabel">reason</span>, or <span class="dlabel">slot</span>. Code should read the fields it needs and tolerate additional fields.</p>
 
@@ -245,3 +249,5 @@ character.remove(listener);</div>
 <p><span class="dlabel">shell_purchase_complete</span> and <span class="dlabel">shell_purchase_failed</span> include <span class="dlabel">name</span>, <span class="dlabel">quantity</span>, and a correlated <span class="dlabel">request_id</span>. Successful purchases also include <span class="dlabel">cost</span>; failures include <span class="dlabel">reason</span>.</p>
 
 <p><span class="dlabel">unfriend_complete</span> and <span class="dlabel">unfriend_failed</span> include <span class="dlabel">name</span> and <span class="dlabel">request_id</span>. Successful removal also includes the updated account <span class="dlabel">friends</span> array.</p>
+
+<p><span class="dlabel">picked</span>, <span class="dlabel">pick_failed</span>, and the fishing/mining result events include a <span class="dlabel">request_id</span> when started through <span class="dlabel">use_skill_complete</span>. Fishing/mining failure events include <span class="dlabel">reason</span>; a <span class="dlabel">*_none</span> event means the timed action completed but produced no resource.</p>

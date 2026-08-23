@@ -21,6 +21,7 @@ docs = {
 		//"can_use",
 		//"use",
 		"use_skill",
+		"use_skill_complete",
 		"reduce_cooldown",
 		"bank_deposit",
 		"bank_withdraw",

@@ -955,7 +955,7 @@ function show_confirm(text, ok, cancel, onclick) {
 	show_modal(html, { wrap: false });
 }
 
-function use_skill(name, target, arg) {
+function use_skill(name, target, arg, request_id) {
 	if (target && target.id) target = target.id;
 	if (target && is_array(target))
 		for (var i = 0; i < target.length; i++) {
@@ -963,6 +963,7 @@ function use_skill(name, target, arg) {
 			if (target[i] && target[i][0] && target[i][0].id) target[i][0] = target[i][0].id; // "cburst"
 		}
 	function request(place, event, data) {
+		if (request_id) data.request_id = request_id;
 		var promise = push_deferred(place);
 		socket.emit(event, data);
 		return promise;
