@@ -1576,12 +1576,33 @@ function init_socket(args) {
 		socket.emit("requested_ack", {});
 	});
 	socket.on("game_error", function (data) {
+		if (no_html && !game_loaded && window.parent && window.parent !== window && window.frameElement && parent.character_start_failed_runner) {
+			var requested_name = window.frameElement.getAttribute("data-name");
+			if (requested_name) parent.character_start_failed_runner(requested_name, data);
+		}
 		draw_trigger(function () {
 			if (is_string(data)) ui_error(data);
 			else ui_error(data.message);
 		});
 	});
 	socket.on("game_log", function (data) {
+		var start_error = (data && data.message) || data;
+		if (
+			no_html &&
+			!character &&
+			(start_error == "Authorization in progress." || start_error == "Wrong passphrase!") &&
+			window.parent &&
+			window.parent !== window &&
+			window.frameElement &&
+			parent.character_start_failed_runner
+		) {
+			var requested_name = window.frameElement.getAttribute("data-name");
+			if (requested_name)
+				parent.character_start_failed_runner(requested_name, {
+					reason: (start_error == "Authorization in progress." && "authorization_in_progress") || "wrong_passphrase",
+					message: start_error,
+				});
+		}
 		if ((data.message || data) == "You killed a Goo") tut("killagoo");
 		draw_trigger(function () {
 			if (is_string(data)) ui_log(data, "gray");

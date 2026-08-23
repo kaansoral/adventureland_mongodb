@@ -1768,7 +1768,24 @@ function direct_travel(to, s) {
 	return promise;
 }
 
+function owned_character(name) {
+	if (!is_string(name) || !window.X || !is_array(X.characters)) return null;
+	for (var i = 0; i < X.characters.length; i++) if (X.characters[i].name.toLowerCase() == name.toLowerCase()) return X.characters[i];
+	return null;
+}
+
+function owned_character_name(name) {
+	var owned = owned_character(name);
+	return owned && owned.name;
+}
+
 function start_character_runner(name, code_slot_or_name) {
+	var owned = owned_character(name);
+	if (!owned) return rejecting_promise({ reason: "character_not_found" });
+	name = owned.name;
+	if (character && name == character.name) return rejecting_promise({ reason: "already_running", name: name });
+	if (owned.online) return rejecting_promise({ reason: "already_running", name: name, server: owned.server });
+	if (deferreds[name] && deferreds[name].length) reject_deferreds(name, { reason: "interrupted", name: name });
 	var rid = "ichar" + name.toLowerCase();
 	if (gameplay == "test") rid += randomStr(10);
 	$("#" + rid).remove();
@@ -1803,7 +1820,20 @@ function character_started_runner(requested_name, actual_name) {
 	resolve_deferred(requested_name, { name: actual_name || requested_name });
 }
 
+function character_start_failed_runner(requested_name, error) {
+	if (!deferreds[requested_name] || !deferreds[requested_name].length) return;
+	var message = (error && error.message) || error || "Character start failed";
+	var reason = (error && error.reason) || "start_failed";
+	if (is_string(message) && message.indexOf("Failed: ") == 0) reason = message.substr(8);
+	reject_deferred(requested_name, { reason: reason, message: message, name: requested_name });
+	setTimeout(function () {
+		$("#ichar" + requested_name.toLowerCase()).remove();
+	}, 0);
+}
+
 function stop_character_runner(name) {
+	name = owned_character_name(name) || name;
+	if (deferreds[name] && deferreds[name].length) reject_deferreds(name, { reason: "interrupted", name: name });
 	var rid = "ichar" + name.toLowerCase();
 	$("#" + rid).remove();
 }
