@@ -647,7 +647,7 @@ app.all("/api", async (req, res, next) => {
 
 const PORT = process.env.PORT || options.port;
 app.listen(PORT, () => {
-	console.log(`\x1b[32mAdventure Land\x1b[0m listening on port ${PORT}`);
+	console.log(`\x1b[32mจตุรธาตุ\x1b[0m listening on port ${PORT}`);
 });
 
 process.on("uncaughtException", function (err) {

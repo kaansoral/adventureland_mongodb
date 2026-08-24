@@ -324,7 +324,7 @@ ip_to_subdomain = {
 	"195.201.105.60": "euw1",
 };
 HTTPS_MODE = true;
-game_name = "Adventure Land";
+game_name = "จตุรธาตุ";
 base_domain = new URL(options.base_url).hostname;
 secure_cookies = options.secure;
 SALES = 4 + 5 + 388 + 5101 + 125 / 20;
