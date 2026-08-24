@@ -1,64 +1,29 @@
 // Newest notes first. Add player-visible changes at the top with deployed: null.
 module.exports = [
 	{
-		deployed: null,
+		deployed: "[24/08/26]",
 		date: "[24/08/26]",
-		note: "Fixed the CONF panel appearing while a character connects.",
-	},
-	{
-		deployed: null,
-		date: "[24/08/26]",
-		note: "You can now buy Shells through Steam in the new client, with all active Shells bonuses included and smoother client reloads.",
-	},
-	{
-		deployed: null,
-		date: "[24/08/26]",
-		note: "Fixed repeated start_character calls for characters already running in the same client.",
-	},
-	{
-		deployed: null,
-		date: "[24/08/26]",
-		note: "Added the New Misc. cosmetic box with gravestones and six unlockable emote skills. Head Wiggle now works on full character looks.",
-	},
-	{
-		deployed: null,
-		date: "[24/08/26]",
-		note: "Strengthened Worldroot Crook's Intelligence, Strength, and resistance piercing, and refined its appearance.",
+		note: "Released the new Steam client for macOS with in-client Shells purchases, all active Shells bonuses, smoother reloads, and separate music and sound-effect volume controls.",
 	},
 	{
 		deployed: "[24/08/26]",
 		date: "[24/08/26]",
-		note: "CODE now exposes live server events, schedules, special monsters, and temporary effects through server.status, with a complete reference.",
+		note: "Added the New Misc. cosmetic box with gravestones and six unlockable emotes.",
 	},
 	{
 		deployed: "[24/08/26]",
 		date: "[24/08/26]",
-		note: "Added the Worldroot Crook, a Priest-only T4 staff crafted from a Harbringer +8 and rare materials.",
+		note: "Added 40 new items and Fan of Knives, with new crafting, shop, PvP Token, Ent, and material acquisition paths.",
 	},
 	{
 		deployed: "[24/08/26]",
 		date: "[24/08/26]",
-		note: "Added an optional MessagePack socket transport for custom clients. Existing clients continue to work unchanged.",
+		note: "Added the Worldroot Crook, a Priest-only T4 staff crafted from a Harbringer +8 and rare materials, with Intelligence, Strength, and resistance piercing.",
 	},
 	{
 		deployed: "[24/08/26]",
 		date: "[24/08/26]",
-		note: "Added five new Rogue items and Fan of Knives, with new shop, crafting, PvP Token, and Ent drop paths.",
-	},
-	{
-		deployed: "[24/08/26]",
-		date: "[24/08/26]",
-		note: "Added 40 new items: 33 craftable pieces of equipment and 7 materials found across Adventure Land.",
-	},
-	{
-		deployed: "[24/08/26]",
-		date: "[24/08/26]",
-		note: "Major CODE update: asynchronous functions now settle on their real server result, with complete documentation for all 185 public functions.",
-	},
-	{
-		deployed: "[24/08/26]",
-		date: "[24/08/26]",
-		note: "New Steam client for macOS.",
+		note: "Major CODE update: all public asynchronous functions now settle on real server results, with complete documentation, live server.status data, and optional MessagePack transport for custom clients.",
 	},
 	{
 		deployed: "[24/08/26]",
