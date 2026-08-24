@@ -67,8 +67,21 @@ function connectToServer(server) {
 
 <p><span class="dlabel">Format and limits</span></p>
 
-<p>One Socket.IO packet becomes one MessagePack array. For example, <span class="dlabel">socket.emit("hello", "you")</span> is encoded as <span class="dlabel">[2, ["hello", "you"]]</span>. It is 13 bytes instead of the normal 17-byte JSON frame.</p>
+<p>Each Socket.IO packet is one positional MessagePack array:</p>
+
+<div class="code">[0] or [0, data]  // Connect
+[1]               // Disconnect
+[2, data]         // Event
+[2, id, data]     // Event with acknowledgement
+[3, id, data]     // Acknowledgement
+[4, data]         // Connection error</div>
+
+<p>The root namespace is implicit, and packet field names are not sent. For example, <span class="dlabel">socket.emit("hello", "you")</span> becomes <span class="dlabel">[2, ["hello", "you"]]</span>: 13 bytes instead of 17 with the normal JSON frame or 29 with a generic MessagePack packet map.</p>
+
+<p>Most game events use less bandwidth because MessagePack stores numbers and collections compactly while the positional envelope stays small. Exact savings depend on the payload; WebSocket and TLS framing are unchanged.</p>
 
 <p>Payloads follow JSON behavior: use strings, finite numbers, booleans, null, arrays, and ordinary objects. Dates become ISO strings; undefined object properties are omitted; undefined array entries and non-finite numbers become null. Binary values, MessagePack extensions, BigInt, circular objects, custom namespaces, and reserved Socket.IO event names are rejected.</p>
 
 <p>The optional endpoint is WebSocket-only and accepts at most 64 KiB in a client packet. Keep messages small and use the normal game event flow. A parser error closes only that connection; reconnect with the same parser and path rather than changing parsers on an open socket.</p>
+
+<p>Thanks to <span class="dlabel">AriaHarper</span> for the analysis, suggestion, and nudge that inspired this transport.</p>
