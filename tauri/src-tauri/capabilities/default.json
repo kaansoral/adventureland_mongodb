@@ -8,6 +8,7 @@
   },
   "permissions": [
     "allow-get-steam-auth",
+    "allow-refresh-steam-auth",
     "allow-get-steam-purchase-authorization",
     "allow-reload-game",
     "allow-create-subwindow",

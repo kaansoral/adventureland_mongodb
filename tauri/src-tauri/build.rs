@@ -1,6 +1,7 @@
 fn main() {
     const COMMANDS: &[&str] = &[
         "get_steam_auth",
+        "refresh_steam_auth",
         "get_steam_purchase_authorization",
         "reload_game",
         "create_subwindow",

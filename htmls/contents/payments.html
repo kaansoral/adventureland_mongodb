@@ -1,7 +1,29 @@
 <script>
 	var extra_shells_pct = {{extra_shells or 0}};
 </script>
-<div style="width: 600px; display: inline-block; background: black" class="{%if inside=='payments'%}modal imodal{%endif%}">
+<style>
+	.steam-pbutton {
+		border-color: #6ecf28 !important;
+		background: #102610;
+		color: #6ecf28;
+		box-shadow: 0 0 10px rgba(110, 207, 40, 0.35);
+	}
+	.steam-pbutton:hover {
+		background: #183818;
+	}
+	.steam-pbutton.pfail {
+		border-color: #ac393e !important;
+		background: #2a1012;
+		color: #e85b61;
+		box-shadow: 0 0 10px rgba(172, 57, 62, 0.35);
+	}
+	.steam-pbutton.psuccess {
+		border-color: #5dac40 !important;
+		background: #102610;
+		color: #6ecf28;
+	}
+</style>
+<div style="width: 600px; display: inline-block" class="{%if inside=='payments'%}modal imodal{%endif%}">
 	<div style="/*margin-top: 5px; */ text-align: left">
 		<div class="inline-block vtop">
 			<div class="gamebutton block mb5" onclick="$('.pui').hide(); $('.mainpui').show(); set_pamount(10)">
@@ -26,16 +48,16 @@
 		</div>
 		<div class="inline-block vtop" style="width: 392px">
 			{% if domain.tauri %}
-			<div style="padding: 20px; background: black; font-size: 32px; border: 4px solid gray; width: 388px" class="pui mainpui">
-				<div>Steam</div>
-				<div style="font-size: 24px; color: gray; margin-top: 8px">The purchase opens in the Steam overlay.</div>
+			<div style="padding: 20px; background: black; font-size: 32px; border: 4px solid #47867d; width: 388px" class="pui mainpui">
+				<div style="color: #66c0f4">Steam</div>
+				<div style="font-size: 24px; color: #b5c7c5; margin-top: 8px">The purchase opens in the Steam overlay.</div>
 				{% if not user %}
 				<div style="border: 4px solid gray; text-align: center; padding: 6px 0px 6px 0px; margin-top: 12px" class="pbutton">Please Login First!</div>
 				{% else %}
-				<div style="border: 4px solid gray; text-align: center; padding: 6px 0px 6px 0px; margin-top: 12px" class="clickable pbutton" onclick="steam_pay()">Buy $25 with Steam</div>
+				<div style="border: 4px solid gray; text-align: center; padding: 10px 0px; margin-top: 12px" class="clickable pbutton steam-pbutton" onclick="steam_pay()">Buy $25 with Steam</div>
 				{% endif %}
 			</div>
-			<div class="pui mainpui" style="border: 4px solid gray; padding: 12px; background: black; font-size: 24px; color: gray; text-align: left; margin-top: 5px; width: 404px">
+			<div class="pui mainpui" style="border: 4px solid #47867d; padding: 12px; background: #071513; font-size: 24px; color: #b5c7c5; text-align: left; margin-top: 5px; width: 404px">
 				Steam handles the payment. Adventure Land never sees your payment details.
 				<div id="plog"></div>
 			</div>
@@ -68,7 +90,7 @@
 				<div id="plog"></div>
 			</div>
 			{% endif %}
-			<div class="pui mainpui" id="shells-calc" style="border: 4px solid gray; padding: 12px; background: black; font-size: 24px; text-align: left; margin-top: 5px; width: 404px; color: white">
+			<div class="pui mainpui" id="shells-calc" style="border: 4px solid {%if domain.tauri%}#2e6db4{%else%}gray{%endif%}; padding: 12px; background: black; font-size: 24px; text-align: left; margin-top: 5px; width: 404px; color: white">
 				<span id="shells-calc-line"></span>
 			</div>
 			<script>

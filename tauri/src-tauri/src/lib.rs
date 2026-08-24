@@ -21,6 +21,7 @@ const WIN_HEIGHT: f64 = 922.0;
 
 struct AppState {
     sub_counter: Mutex<u32>,
+    steam_client: Arc<Mutex<Option<steamworks::Client>>>,
     steam_ticket: Arc<Mutex<String>>,
     steam_error: Arc<Mutex<String>>,
     steam_purchases: Arc<Mutex<HashMap<u64, bool>>>,
@@ -93,12 +94,16 @@ fn lock_string(value: &Arc<Mutex<String>>) -> String {
 }
 
 fn init_steam(
+    client_state: Arc<Mutex<Option<steamworks::Client>>>,
     ticket: Arc<Mutex<String>>,
     error: Arc<Mutex<String>>,
     purchases: Arc<Mutex<HashMap<u64, bool>>>,
 ) {
     match steamworks::Client::init_app(STEAM_APP_ID) {
         Ok(client) => {
+            if let Ok(mut value) = client_state.lock() {
+                *value = Some(client.clone());
+            }
             let callback_ticket = ticket.clone();
             let callback_error = error.clone();
             let callback =
@@ -121,7 +126,7 @@ fn init_steam(
                         *value = "Steam did not issue an authentication ticket.".to_string();
                     }
                 });
-            let ticket_handle = client
+            client
                 .user()
                 .authentication_session_ticket_for_webapi(STEAM_IDENTITY);
             let callback_purchases = purchases.clone();
@@ -143,7 +148,6 @@ fn init_steam(
             std::thread::spawn(move || {
                 let _callback = callback;
                 let _purchase_callback = purchase_callback;
-                let _ticket_handle = ticket_handle;
                 loop {
                     client.run_callbacks();
                     std::thread::sleep(Duration::from_millis(50));
@@ -220,6 +224,39 @@ mod tests {
 
 #[tauri::command]
 async fn get_steam_auth(state: State<'_, AppState>) -> Result<SteamAuthData, String> {
+    for _ in 0..50 {
+        if !lock_string(&state.steam_ticket).is_empty()
+            || !lock_string(&state.steam_error).is_empty()
+        {
+            break;
+        }
+        std::thread::sleep(Duration::from_millis(100));
+    }
+    Ok(SteamAuthData {
+        ticket: lock_string(&state.steam_ticket),
+        error: lock_string(&state.steam_error),
+    })
+}
+
+#[tauri::command]
+async fn refresh_steam_auth(state: State<'_, AppState>) -> Result<SteamAuthData, String> {
+    if let Ok(mut value) = state.steam_ticket.lock() {
+        value.clear();
+    }
+    if let Ok(mut value) = state.steam_error.lock() {
+        value.clear();
+    }
+
+    let client = state
+        .steam_client
+        .lock()
+        .map_err(|_| "Steam client unavailable".to_string())?
+        .clone()
+        .ok_or_else(|| "Steam is unavailable. Start Adventure Land through Steam.".to_string())?;
+    client
+        .user()
+        .authentication_session_ticket_for_webapi(STEAM_IDENTITY);
+
     for _ in 0..50 {
         if !lock_string(&state.steam_ticket).is_empty()
             || !lock_string(&state.steam_error).is_empty()
@@ -365,11 +402,13 @@ fn build_menu(app: &AppHandle) -> Result<tauri::menu::Menu<tauri::Wry>, tauri::E
 }
 
 pub fn run() {
+    let steam_client = Arc::new(Mutex::new(None));
     let steam_ticket = Arc::new(Mutex::new(String::new()));
     let steam_error = Arc::new(Mutex::new(String::new()));
     let steam_purchases = Arc::new(Mutex::new(HashMap::new()));
     let state = AppState {
         sub_counter: Mutex::new(0),
+        steam_client: steam_client.clone(),
         steam_ticket: steam_ticket.clone(),
         steam_error: steam_error.clone(),
         steam_purchases: steam_purchases.clone(),
@@ -388,7 +427,12 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             set_macos_dock_icon();
 
-            init_steam(steam_ticket, steam_error, steam_purchases);
+            init_steam(
+                steam_client,
+                steam_ticket,
+                steam_error,
+                steam_purchases,
+            );
 
             WebviewWindowBuilder::new(app, "loader", tauri::WebviewUrl::App("loader.html".into()))
                 .title("Adventure Land")
@@ -473,6 +517,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             get_steam_auth,
+            refresh_steam_auth,
             get_steam_purchase_authorization,
             reload_game,
             create_subwindow,

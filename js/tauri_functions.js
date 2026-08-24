@@ -5,27 +5,40 @@ var tauri_auth_promise = null;
 var tauri_reload_pending = false;
 var tauri_invoke = window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke;
 
+function tauri_store_auth(data) {
+	data = data || {};
+	tauri_data = {
+		ready: true,
+		ticket: data.ticket || "",
+		error: data.error || "",
+	};
+	if (tauri_data.ticket) console.log("[Tauri Steam] Steam ticket ready.");
+	else console.log("[Tauri Steam] No Steam ticket available.");
+	return tauri_data;
+}
+
 function tauri_prepare_auth() {
 	if (!tauri_invoke) return Promise.reject(new Error("Tauri API unavailable"));
 	if (tauri_data.ready) return Promise.resolve(tauri_data);
 	if (tauri_auth_promise) return tauri_auth_promise;
 	var request = tauri_invoke("get_steam_auth")
-		.then(function (data) {
-			data = data || {};
-			tauri_data = {
-				ready: true,
-				ticket: data.ticket || "",
-				error: data.error || "",
-			};
-			if (tauri_data.ticket) console.log("[Tauri Steam] Steam ticket ready.");
-			else console.log("[Tauri Steam] No ticket; trying the saved account link.");
-			return tauri_data;
-		})
+		.then(tauri_store_auth)
 		.finally(function () {
 			if (tauri_auth_promise == request) tauri_auth_promise = null;
 		});
 	tauri_auth_promise = request;
 	return request;
+}
+
+function tauri_refresh_auth() {
+	if (!tauri_invoke) return Promise.reject(new Error("Tauri API unavailable"));
+	return tauri_invoke("refresh_steam_auth")
+		.catch(function (error) {
+			var message = "" + ((error && error.message) || error || "");
+			if (message.indexOf("refresh_steam_auth") !== -1) return tauri_invoke("get_steam_auth");
+			throw error;
+		})
+		.then(tauri_store_auth);
 }
 
 function tauri_auth_ready() {

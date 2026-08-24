@@ -4,8 +4,9 @@ var stripe_state = "pay",
 	steam_order_id = "";
 
 function p_log(message, color, support) {
-	if (inside != "payments") return;
-	$("#plog").html("<span style='color: white'>&gt;</span> <span style='color: " + color + "'>" + message + "</span>");
+	var target = $(".modal:last #plog");
+	if (!target.length) target = $("#plog");
+	target.html("<span style='color: white'>&gt;</span> <span style='color: " + color + "'>" + message + "</span>");
 }
 
 function set_pamount(amount) {
@@ -67,6 +68,7 @@ function steam_payment_message(reason) {
 
 function steam_payment_failed(error) {
 	var reason = (error && (error.reason || error.message)) || "steam_purchase_failed";
+	console.error("[Tauri Steam] Payment failed: " + reason);
 	if (reason == "steam_payment_pending" || reason == "steam_purchase_timeout") {
 		steam_state = "pending";
 		$(".pbutton").removeClass("pfail");
@@ -112,7 +114,7 @@ function steam_pay() {
 	steam_state = "process";
 	$("#plog").html("");
 	$(".pbutton").html("Contacting Steam ...");
-	tauri_prepare_auth()
+	tauri_refresh_auth()
 		.then(function (auth) {
 			if (!auth || !auth.ticket) throw new Error("steam_auth_failed");
 			return api_call("steam_payment_start", { usd: pamount, ticket: auth.ticket, sandbox: !!window.steam_payment_sandbox });
