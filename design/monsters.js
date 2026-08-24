@@ -31,7 +31,7 @@ var monsters={
 	"cutebee":{
 		"name":"ผึ้งน่ารัก","speed":12,"hp":300,"xp":400,"attack":16,"damage_type":"physical","respawn":-1,"gold":40,"range":20,"frequency":0.5,"aggro":1,"aa":1,"rage":0.05,
 		"phresistance":60,
-		"explanation":"Spawns in Mainland around every 480,000 Bee spawns",
+		"explanation":"เกิดในแผ่นดินหลัก ทุก ๆ การเกิดผึ้ง 480,000 ครั้ง",
 		//"for":912,
 		"avoidance":99.9,
 		"achievements":[
@@ -501,7 +501,7 @@ var monsters={
 		]
 	},
 	"ligerx":{
-		"name":"ไลเกอร์ X","speed":30,"hp":80000,"xp":120000,"attack":1800,"damage_type":"physical","respawn":16*60,"gold":20000,"range":80,"frequency":1.2,"aggro":0.2,"charge":60,"explanation":"A genetically modified and cybernetically enhanced beast!",
+		"name":"ไลเกอร์ X","speed":30,"hp":80000,"xp":120000,"attack":1800,"damage_type":"physical","respawn":16*60,"gold":20000,"range":80,"frequency":1.2,"aggro":0.2,"charge":60,"explanation":"สัตว์ร้ายที่ถูกดัดแปลงพันธุกรรมและเสริมไซเบอร์เนติกส์!",
 		"achievements":[
 			[1,"stat","luck",50],
 		]
@@ -1007,7 +1007,7 @@ var monsters={
 		"name":"ค้างคาวทอง","speed":24,"hp":24000,"xp":20000,"attack":50,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":0.7,"aggro":0.3,"aa":1,
 		"difficulty":100,
 		"phresistance":70,
-		"explanation":"Spawns in Cave of Darkness around every 80,000 Bat spawns",
+		"explanation":"เกิดในถ้ำแห่งความมืด ทุก ๆ การเกิดค้างคาว 80,000 ครั้ง",
 		"achievements":[
 			[1,"stat","gold",1],
 			[10,"stat","luck",1],
@@ -1021,7 +1021,7 @@ var monsters={
 		"name":"หุ่นทองคำ","speed":24,"hp":500000,"xp":420000,"attack":500,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":1,"aggro":0.2,"aa":1,
 		"difficulty":100,
 		"phresistance":75,
-		"explanation":"Spawns in Underground Hills around every 100,000 Sparkbot or Targetron spawns",
+		"explanation":"เกิดในเนินเขาใต้ดิน ทุก ๆ การเกิดสปาร์กบอทหรือทาร์เก็ตรอน 100,000 ครั้ง",
 		"achievements":[
 			[1,"stat","gold",1],
 			[10,"stat","luck",1],
@@ -1051,7 +1051,7 @@ var monsters={
 		"name":"เสือ","speed":24,"hp":12000,"xp":24800,"attack":960,"damage_type":"physical","respawn":30*60,"gold":480,"range":20,"frequency":0.8,"aggro":0,"rage":0,"reflection":100,"armor":540,
 			"announce":"#D65A3A",
 			"cute": true,
-			"explanation":"Legendary animal, rarely appears to players.",
+			"explanation":"สัตว์ในตำนาน ไม่ค่อยปรากฏให้ผู้เล่นเห็น",
 			"cooperative":true,
 			"avoidance":99,
 			"special":true,"immune":true,
