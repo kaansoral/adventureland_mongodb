@@ -21,6 +21,11 @@ var projectiles={
 		"speed":560,
 		"hit_animation":"fanknife_hit",
 	},
+	"worldroot":{
+		"animation":"worldroot_projectile",
+		"speed":400,
+		"hit_animation":"worldroot_impact",
+	},
 	"smash":{
 		"animation":"slash",
 		"speed":420,

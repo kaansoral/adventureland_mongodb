@@ -720,6 +720,18 @@ var craft={
 		],
 		"cost":420000,
 	},
+	"worldrootcrook":{
+		"items":[
+			[1,"harbringer",8],
+			[1,"sapstone"],
+			[1,"platinumingot"],
+			[3,"goldingot"],
+			[4,"ijx"],
+			[12,"ectoplasm"],
+			[1,"bcandle"],
+		],
+		"cost":250000000,
+	},
 	"emberhood":{
 		"items":[
 			[1,"mmhat",5],

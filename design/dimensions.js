@@ -1067,6 +1067,7 @@ var positions={
 	"gloampendant":["rogueent",3,0],
 	"sapstone":["rogueent",4,0],
 	"fanofknives":["rogueent",5,0],
+	"worldrootcrook":["worldroot",0,0],
 
 	//trial
 	//"dragondagger":["",15,42],

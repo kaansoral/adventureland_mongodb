@@ -3,6 +3,11 @@ module.exports = [
 	{
 		deployed: null,
 		date: "[24/08/26]",
+		note: "Added the Worldroot Crook, a Priest-only T4 staff crafted from a Harbringer +8 and rare materials.",
+	},
+	{
+		deployed: null,
+		date: "[24/08/26]",
 		note: "Added an optional MessagePack socket transport for custom clients. Existing clients continue to work unchanged.",
 	},
 	{

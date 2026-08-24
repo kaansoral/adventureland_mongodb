@@ -8082,12 +8082,39 @@ var rogue_ent_items={
 		"explanation":"Warm sap moves beneath its bark, slow as a heartbeat.",
 		"g":1800000,
 		"a":true,
-		// Reserved as a core ingredient for the proposed priest-only T4
-		// Worldroot Crook, giving duplicate drops a permanent crafting purpose.
+		// A core ingredient for the priest-only T4 Worldroot Crook, giving
+		// duplicate drops a permanent crafting purpose.
 	},
 }
 
-var sub_dicts=[pots,armor,weapons,offhands,accessories,scrolls,premiums,gems,materials,collectables,misc,quest,orbs,elixirs,skill_items,crafting_items,pets,items40,rogue_ent_items];
+// Priest end-game craft approved through the Worldroot Crook proposal. This
+// late definition is intentionally complete; tier normalization has run above.
+var worldroot_items={
+	"worldrootcrook":{
+		"type":"weapon",
+		"exclusive":true,
+		"wtype":"staff",
+		"tier":4,
+		"class":["priest"],
+		"skin":"worldrootcrook",
+		"attack":87,
+		"range":90,
+		"int":4,
+		"dex":16,
+		"vit":6,
+		"rpiercing":40,
+		"mp_reduction":4,
+		"projectile":"worldroot",
+		"damage_type":"magical",
+		"upgrade":{"attack":3.5,"range":2,"int":1,"dex":2,"vit":1,"rpiercing":7,"mp_reduction":1},
+		"name":"Worldroot Crook",
+		"explanation":"Its roots remember every hand that carried the light.",
+		"grades":[0,0,8,10],
+		"g":300000000,
+	},
+}
+
+var sub_dicts=[pots,armor,weapons,offhands,accessories,scrolls,premiums,gems,materials,collectables,misc,quest,orbs,elixirs,skill_items,crafting_items,pets,items40,rogue_ent_items,worldroot_items];
 for(var i=0;i<sub_dicts.length;i++){
 	for(var key in sub_dicts[i]){
 		items[key]=sub_dicts[i][key];

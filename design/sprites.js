@@ -1193,6 +1193,13 @@ var imagesets = {
 		file: "/images/tiles/items/rogue_ent.png?v=1",
 		load: true,
 	},
+	worldroot: {
+		size: 20,
+		rows: 1,
+		columns: 1,
+		file: "/images/tiles/items/worldroot_crook.png?v=1",
+		load: true,
+	},
 };
 var tilesets = {
 	castle: { file: "/images/tiles/map/castle.png?v=2" },

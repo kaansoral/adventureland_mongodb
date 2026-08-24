@@ -131,6 +131,14 @@ var animations={
 		"directional":true,
 		"speed":1200,
 	},
+	"worldroot_projectile":{
+		"file":"/images/sprites/animations/WorldrootProjectile.png?v=1",
+		"frames":4,
+		"continuous":true,
+		"directional":true,
+		"speed":400,
+		"framefps":9,
+	},
 	"garrow":{
 		"file":"/images/sprites/animations/garrow.png",
 		"frames":4,
@@ -327,6 +335,12 @@ var animations={
 		"frames":7,
 		"alpha":0.9,
 		"size":0.8,
+	},
+	"worldroot_impact":{
+		"file":"/images/sprites/animations/WorldrootImpact.png?v=1",
+		"frames":12,
+		"alpha":0.9,
+		"aspeed":"mild",
 	},
 	"icecrack":{
 		"file":"/images/sprites/animations/crackingIce.png", // nice animation, damage-like
