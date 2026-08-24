@@ -357,6 +357,26 @@ app.get("/shells", async (req, res, next) => {
 	res.status(200).send(nunjucks.render("htmls/payments.html", { domain: domain, user: user, server: server, extra_shells: extra_shells }));
 });
 
+app.get("/steam-purchase", async (req, res, next) => {
+	var domain = await get_domain(req);
+	res.set("Cache-Control", "no-store");
+	res.set("X-Robots-Tag", "noindex, nofollow");
+	res.status(200).send(nunjucks.render("htmls/steam_purchase.html", { domain: domain }));
+});
+
+app.get("/steam-purchase-status", async (req, res, next) => {
+	var order_id = "" + (req.query.order_id || ""),
+		return_token = "" + (req.query.token || "");
+	res.set("Cache-Control", "no-store");
+	if (!/^[0-9]{1,20}$/.test(order_id) || !/^[a-f0-9]{48}$/.test(return_token)) return res.status(404).send({ state: "invalid" });
+
+	var purchase = await db.collection(STEAM_PURCHASE_COLLECTION).findOne({ _id: order_id, return_token: return_token });
+	if (!purchase) return res.status(404).send({ state: "invalid" });
+	if (purchase.state === "delivered") return res.status(200).send({ state: "complete", shells: purchase.shells });
+	if (["declined", "init_failed", "checkout_unavailable", "failed"].indexOf(purchase.state) !== -1) return res.status(200).send({ state: "failed" });
+	return res.status(200).send({ state: "processing" });
+});
+
 // Resort Map Editor - GET
 app.get("/map/:name/:suffix?", async (req, res, next) => {
 	var name = req.params.name;

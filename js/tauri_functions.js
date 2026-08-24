@@ -180,6 +180,21 @@ function tauri_open_external(url) {
 	return tauri_invoke("open_external", { url: url });
 }
 
+function tauri_open_steam_checkout(url) {
+	return tauri_invoke("open_steam_checkout", { url: url })
+		.catch(function (error) {
+			var message = "" + ((error && error.message) || error || "");
+			if (message.indexOf("open_steam_checkout") === -1) throw error;
+			return tauri_open_external(url).then(function () {
+				return "browser";
+			});
+		})
+		.then(function (method) {
+			console.log("[Tauri Steam] Checkout opened using: " + method + ".");
+			return method;
+		});
+}
+
 function tauri_setup_external_links() {
 	document.addEventListener(
 		"click",

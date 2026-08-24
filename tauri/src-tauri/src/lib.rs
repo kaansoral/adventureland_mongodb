@@ -76,6 +76,14 @@ fn is_external_url(url: &url::Url) -> bool {
     url.scheme() == "https" || url.scheme() == "mailto"
 }
 
+fn is_steam_checkout_url(url: &url::Url) -> bool {
+    url.scheme() == "https"
+        && matches!(
+            url.host_str(),
+            Some("checkout.steampowered.com") | Some("store.steampowered.com")
+        )
+}
+
 #[cfg(target_os = "macos")]
 fn set_macos_dock_icon() {
     use objc2::{AllocAnyThread, MainThreadMarker};
@@ -166,7 +174,9 @@ fn init_steam(
 
 #[cfg(test)]
 mod tests {
-    use super::{is_external_url, is_game_url, STEAM_APP_ID, STEAM_IDENTITY};
+    use super::{
+        is_external_url, is_game_url, is_steam_checkout_url, STEAM_APP_ID, STEAM_IDENTITY,
+    };
     use std::sync::{Arc, Mutex};
     use std::time::Duration;
 
@@ -192,6 +202,22 @@ mod tests {
         ));
         assert!(!is_external_url(&"http://example.com/".parse().unwrap()));
         assert!(!is_external_url(&"file:///tmp/example".parse().unwrap()));
+    }
+
+    #[test]
+    fn accepts_only_steam_checkout_https_urls() {
+        assert!(is_steam_checkout_url(
+            &"https://checkout.steampowered.com/checkout/".parse().unwrap()
+        ));
+        assert!(is_steam_checkout_url(
+            &"https://store.steampowered.com/checkout/".parse().unwrap()
+        ));
+        assert!(!is_steam_checkout_url(
+            &"http://checkout.steampowered.com/checkout/".parse().unwrap()
+        ));
+        assert!(!is_steam_checkout_url(
+            &"https://checkout.steampowered.com.example.com/".parse().unwrap()
+        ));
     }
 
     #[test]
@@ -345,6 +371,39 @@ async fn open_external(app: AppHandle, url: String) -> Result<(), String> {
     app.opener()
         .open_url(parsed.as_str(), None::<&str>)
         .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn open_steam_checkout(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    url: String,
+) -> Result<String, String> {
+    let parsed = url::Url::parse(&url).map_err(|_| "Invalid Steam checkout URL")?;
+    if !is_steam_checkout_url(&parsed) {
+        return Err("Unsupported Steam checkout URL".to_string());
+    }
+
+    let client = state
+        .steam_client
+        .lock()
+        .ok()
+        .and_then(|client| client.clone());
+    if let Some(client) = client {
+        if client.utils().is_overlay_enabled() {
+            client
+                .friends()
+                .activate_game_overlay_to_web_page(parsed.as_str());
+            println!("[Tauri Steam] Checkout opened in the authenticated Steam overlay.");
+            return Ok("overlay".to_string());
+        }
+    }
+
+    app.opener()
+        .open_url(parsed.as_str(), None::<&str>)
+        .map_err(|error| error.to_string())?;
+    println!("[Tauri Steam] Steam overlay unavailable; checkout opened in the browser.");
+    Ok("browser".to_string())
 }
 
 #[tauri::command]
@@ -525,6 +584,7 @@ pub fn run() {
             reload_game,
             create_subwindow,
             open_external,
+            open_steam_checkout,
             open_devtools,
             toggle_fullscreen,
         ])

@@ -1,6 +1,6 @@
 # Tauri Steam client
 
-The Tauri client is intentionally narrow. It loads `https://adventure.land/` and creates a Steam Web API ticket so the server can link a Steam ID on first login. The permanent link is the Steam ID saved on the Adventure Land account and character; the client stores no authentication token or local file. Steam Shells purchases open Steam's web checkout, while the game verifies and finalizes the result server-side for exactly-once delivery.
+The Tauri client is intentionally narrow. It loads `https://adventure.land/` and creates a Steam Web API ticket so the server can link a Steam ID on first login. The permanent link is the Steam ID saved on the Adventure Land account and character; the client stores no authentication token or local file. Steam Shells purchases use Steam's authenticated overlay browser when available and otherwise open the system browser, while the game verifies and finalizes the result server-side for exactly-once delivery.
 
 It does not expose local files, code-sync folders, screenshots, HTTP mode, Keychain access, or arbitrary navigation to the remote game page. Electron remains the client for players who use local code-folder sync.
 

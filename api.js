@@ -1223,13 +1223,14 @@ function purchased_shells_for_usd(usd, event_bonus) {
 	return shells;
 }
 
-function steam_web_checkout_url(steam_url, order_id) {
+function steam_web_checkout_url(steam_url, order_id, return_token) {
 	try {
 		var checkout_url = new URL(steam_url);
 		if (checkout_url.protocol !== "https:") return "";
 		if (["checkout.steampowered.com", "store.steampowered.com"].indexOf(checkout_url.hostname) === -1) return "";
-		var return_url = new URL("https://adventure.land/shells");
-		return_url.searchParams.set("steam_purchase", order_id);
+		var return_url = new URL("https://adventure.land/steam-purchase");
+		return_url.searchParams.set("order_id", order_id);
+		return_url.searchParams.set("token", return_token);
 		checkout_url.searchParams.set("returnurl", return_url.toString());
 		return checkout_url.toString();
 	} catch (e) {
@@ -1283,6 +1284,7 @@ async function insert_steam_purchase(user, steam_id, usd, shells, event_bonus, s
 		if (order_id === "0") continue;
 		var purchase = {
 			_id: order_id,
+			return_token: crypto.randomBytes(24).toString("hex"),
 			owner: get_id(user),
 			steam_id: steam_id,
 			usd: usd,
@@ -1452,7 +1454,7 @@ async function steam_payment_start_api(args) {
 	}
 
 	purchase.trans_id = "" + (initialized.params.transid || "");
-	var steam_url = steam_web_checkout_url(initialized.params.steamurl, purchase._id);
+	var steam_url = steam_web_checkout_url(initialized.params.steamurl, purchase._id, purchase.return_token);
 	if (!steam_url) {
 		await db.collection(STEAM_PURCHASE_COLLECTION).updateOne({ _id: purchase._id }, { $set: { state: "checkout_unavailable", trans_id: purchase.trans_id, updated: new Date() } });
 		return { failed: true, reason: "steam_checkout_unavailable" };

@@ -6,6 +6,7 @@ fn main() {
         "reload_game",
         "create_subwindow",
         "open_external",
+        "open_steam_checkout",
         "open_devtools",
         "toggle_fullscreen",
     ];

@@ -155,8 +155,10 @@ function steam_pay() {
 			steam_order_id = data.order_id;
 			steam_state = "authorize";
 			$(".pbutton").html("Opening Steam ...");
-			p_log((data.sandbox ? "Sandbox: " : "") + "Complete the purchase in the Steam checkout window.", "gray");
-			return tauri_open_external(data.steam_url).then(function () {
+			p_log((data.sandbox ? "Sandbox: " : "") + "Opening the Steam checkout ...", "gray");
+			return tauri_open_steam_checkout(data.steam_url).then(function (method) {
+				if (method == "overlay") p_log((data.sandbox ? "Sandbox: " : "") + "Complete the purchase in the Steam overlay.", "gray");
+				else p_log((data.sandbox ? "Sandbox: " : "") + "Steam overlay unavailable. Complete the purchase in your browser.", "gray");
 				steam_poll_payment(steam_order_id, Date.now());
 			});
 		})
