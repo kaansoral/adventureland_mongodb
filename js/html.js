@@ -1172,7 +1172,11 @@ function render_inventory(reset) {
 			html += "<span class='cbold' style='color: " + colors.cash + "'>SHELLS</span>: <span class='cashnum'>" + to_pretty_num(character.cash || 0) + "</span></div>";
 			html += "<div style='border-bottom: 5px solid gray; margin-bottom: 2px; margin-left: -5px; margin-right: -5px'></div>";
 			right_style = "";
-		} else if (is_electron || is_tauri) {
+		} else if (is_tauri) {
+			html += "<div style='padding: 4px; display: inline-block' class='clickable' onclick='pcs(event); shells_click()'>"; // '
+			html += "<span class='cbold' style='color: " + colors.cash + "'>SHELLS</span>: <span class='cashnum'>" + to_pretty_num(character.cash || 0) + "</span></div>";
+			right_style = " display: inline-block; float: right";
+		} else if (is_electron) {
 			html += "<div style='padding: 4px; display: inline-block' class='clickable' onclick='pcs(event); show_shells_info()'>"; // '
 			html += "<span class='cbold' style='color: " + colors.cash + "'>SHELLS</span>: <span class='cashnum'>" + to_pretty_num(character.cash || 0) + "</span></div>";
 			right_style = " display: inline-block; float: right";
