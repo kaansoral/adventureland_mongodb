@@ -2,29 +2,27 @@
 
 <p>Custom clients can use an optional MessagePack Socket.IO connection. It carries the same game events and JSON-compatible values with smaller binary frames. The ordinary client and existing custom clients continue to use the normal socket path; no migration is required.</p>
 
+<p>This transport is for standalone clients and integrations outside character CODE. Character CODE already uses the game's active connection and cannot replace its parser.</p>
+
 <p>Each server directory entry provides two paths:</p>
 
 <div class="code">server.path          // Normal Socket.IO transport
 server.msgpack_path  // Optional MessagePack transport</div>
 
-<p>On the game page, the server directory is <span class="dlabel">X.servers</span>. Each entry contains fields including <span class="dlabel">key</span>, <span class="dlabel">region</span>, <span class="dlabel">name</span>, <span class="dlabel">address</span>, <span class="dlabel">path</span>, and <span class="dlabel">msgpack_path</span>. Select the entry your client intends to connect to. To find the currently selected server on an Adventure Land game page:</p>
+<p>External clients can retrieve the current server directory from the API. Browser-only clients should have their host supply the selected entry:</p>
 
-<div class="code">var server = X.servers.find(function (entry) {
-	return entry.address == server_address &amp;&amp; entry.path == server_path;
-});
+<div class="code">https://adventure.land/api/get_servers</div>
 
-if (!server) throw new Error("Selected server was not found in X.servers");</div>
-
-<p>Inside character CODE, <span class="dlabel">get_servers()</span> returns the same cached server directory. The transport example below is for a custom client or host page; ordinary character CODE should use its existing game connection.</p>
+<p>Select one response entry and use it as <span class="dlabel">server</span> in the examples below. The official game page keeps its server directory in <span class="dlabel">X.servers</span>; external clients should use the API instead.</p>
 
 <p>The MessagePack path is a separate endpoint. A connection must use its matching parser from the first packet onward. Do not connect a normal Socket.IO parser to <span class="dlabel">msgpack_path</span>, and do not use the MessagePack parser with <span class="dlabel">path</span>.</p>
 
 <p><span class="dlabel">Browser client</span></p>
 
-<p>Load Socket.IO first, then the Adventure Land parser:</p>
+<p>The parser is specific to Adventure Land's positional format. Generic Socket.IO MessagePack parsers are not compatible. <a href="https://adventure.land/js/socket.io-msgpack-parser.min.js">Download the Adventure Land parser</a>, or load it directly after Socket.IO:</p>
 
-<div class="code">&lt;script src="/js/socket.io/4.2.0/socket.io.min.js"&gt;&lt;/script&gt;
-&lt;script src="/js/socket.io-msgpack-parser.min.js"&gt;&lt;/script&gt;
+<div class="code">&lt;script src="https://adventure.land/js/socket.io/4.2.0/socket.io.min.js"&gt;&lt;/script&gt;
+&lt;script src="https://adventure.land/js/socket.io-msgpack-parser.min.js"&gt;&lt;/script&gt;
 
 &lt;script&gt;
 var options = {
@@ -37,14 +35,16 @@ if (server.msgpack_path) {
 	options.parser = ALMsgpackParser;
 }
 
-var socket = io(server.address, options);
+var socket = io("https://" + server.address, options);
 &lt;/script&gt;</div>
 
 <p>The fallback is intentional: a custom client can still connect to a server that does not advertise the optional endpoint.</p>
 
 <p><span class="dlabel">Node.js client</span></p>
 
-<p>The same generated parser file also exports a CommonJS module. Pass the entry selected from the server directory into the connection function:</p>
+<p>Download the same parser beside your external client. It also exports a CommonJS module:</p>
+
+<div class="code">curl -fsSLo socket.io-msgpack-parser.min.js https://adventure.land/js/socket.io-msgpack-parser.min.js</div>
 
 <div class="code">const { io } = require("socket.io-client");
 const msgpackParser = require("./socket.io-msgpack-parser.min.js");
@@ -60,7 +60,7 @@ function connectToServer(server) {
 		options.parser = msgpackParser;
 	}
 
-	return io(server.address, options);
+	return io("https://" + server.address, options);
 }</div>
 
 <p>Use the parser file shipped by Adventure Land so the wire format stays exact. Authentication, acknowledgements, event names, and event payloads are otherwise unchanged.</p>
