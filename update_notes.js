@@ -3,7 +3,7 @@ module.exports = [
 	{
 		deployed: null,
 		date: "[24/08/26]",
-		note: "Strengthened Worldroot Crook's Intelligence, Strength, and resistance piercing.",
+		note: "Strengthened Worldroot Crook's Intelligence, Strength, and resistance piercing, and refined its appearance.",
 	},
 	{
 		deployed: "[24/08/26]",
