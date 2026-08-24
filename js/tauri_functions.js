@@ -11,6 +11,7 @@ function tauri_store_auth(data) {
 		ready: true,
 		ticket: data.ticket || "",
 		error: data.error || "",
+		purchases: data.purchases === true,
 	};
 	if (tauri_data.ticket) console.log("[Tauri Steam] Steam ticket ready.");
 	else console.log("[Tauri Steam] No Steam ticket available.");

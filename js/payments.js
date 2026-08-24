@@ -61,6 +61,7 @@ function steam_payment_message(reason) {
 	if (reason == "steam_purchase_cancelled") return "Purchase cancelled.";
 	if (reason == "steam_auth_failed") return "Steam authentication failed. Please restart Adventure Land through Steam.";
 	if (reason == "steam_account_required") return "Log in through Steam before purchasing Shells.";
+	if (reason == "steam_client_update_required") return "Please update the Steam client and restart Adventure Land.";
 	if (reason == "steam_not_configured") return "Steam purchases aren't available yet.";
 	if (reason == "steam_payment_pending" || reason == "steam_purchase_timeout") return "Steam is still processing this purchase.";
 	return "Steam couldn't complete the purchase.";
@@ -116,6 +117,7 @@ function steam_pay() {
 	$(".pbutton").html("Contacting Steam ...");
 	tauri_refresh_auth()
 		.then(function (auth) {
+			if (!auth || !auth.purchases) throw new Error("steam_client_update_required");
 			if (!auth || !auth.ticket) throw new Error("steam_auth_failed");
 			return api_call("steam_payment_start", { usd: pamount, ticket: auth.ticket, sandbox: !!window.steam_payment_sandbox });
 		})

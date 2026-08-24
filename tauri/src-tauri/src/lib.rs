@@ -31,6 +31,7 @@ struct AppState {
 struct SteamAuthData {
     ticket: String,
     error: String,
+    purchases: bool,
 }
 
 #[derive(Serialize)]
@@ -235,6 +236,7 @@ async fn get_steam_auth(state: State<'_, AppState>) -> Result<SteamAuthData, Str
     Ok(SteamAuthData {
         ticket: lock_string(&state.steam_ticket),
         error: lock_string(&state.steam_error),
+        purchases: true,
     })
 }
 
@@ -268,6 +270,7 @@ async fn refresh_steam_auth(state: State<'_, AppState>) -> Result<SteamAuthData,
     Ok(SteamAuthData {
         ticket: lock_string(&state.steam_ticket),
         error: lock_string(&state.steam_error),
+        purchases: true,
     })
 }
 
