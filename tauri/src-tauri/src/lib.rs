@@ -1,4 +1,5 @@
 use serde::Serialize;
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tauri::{AppHandle, Manager, State, WebviewWindow, WebviewWindowBuilder};
@@ -9,6 +10,12 @@ const STEAM_APP_ID: u32 = 777150;
 const STEAM_IDENTITY: &str = "adventure-land-tauri-v1";
 const BASE_URL: &str = "https://adventure.land/";
 const USER_AGENT: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15 AdventureLandTauri/1.3.1";
+#[cfg(target_os = "macos")]
+const PLATFORM: &str = "darwin";
+#[cfg(target_os = "windows")]
+const PLATFORM: &str = "win32";
+#[cfg(target_os = "linux")]
+const PLATFORM: &str = "linux";
 const WIN_WIDTH: f64 = 1440.0;
 const WIN_HEIGHT: f64 = 922.0;
 
@@ -16,6 +23,7 @@ struct AppState {
     sub_counter: Mutex<u32>,
     steam_ticket: Arc<Mutex<String>>,
     steam_error: Arc<Mutex<String>>,
+    steam_purchases: Arc<Mutex<HashMap<u64, bool>>>,
 }
 
 #[derive(Serialize)]
@@ -24,8 +32,14 @@ struct SteamAuthData {
     error: String,
 }
 
+#[derive(Serialize)]
+struct SteamPurchaseAuthorization {
+    ready: bool,
+    authorized: bool,
+}
+
 fn game_url() -> String {
-    format!("{BASE_URL}?buildid={BUILD}-darwin-tauri")
+    format!("{BASE_URL}?buildid={BUILD}-{PLATFORM}-tauri")
 }
 
 fn is_game_url(url: &tauri::Url) -> bool {
@@ -61,7 +75,11 @@ fn lock_string(value: &Arc<Mutex<String>>) -> String {
     value.lock().map(|value| value.clone()).unwrap_or_default()
 }
 
-fn init_steam(ticket: Arc<Mutex<String>>, error: Arc<Mutex<String>>) {
+fn init_steam(
+    ticket: Arc<Mutex<String>>,
+    error: Arc<Mutex<String>>,
+    purchases: Arc<Mutex<HashMap<u64, bool>>>,
+) {
     match steamworks::Client::init_app(STEAM_APP_ID) {
         Ok(client) => {
             let callback_ticket = ticket.clone();
@@ -89,9 +107,25 @@ fn init_steam(ticket: Arc<Mutex<String>>, error: Arc<Mutex<String>>) {
             let ticket_handle = client
                 .user()
                 .authentication_session_ticket_for_webapi(STEAM_IDENTITY);
+            let callback_purchases = purchases.clone();
+            let purchase_callback = client.register_callback(
+                move |response: steamworks::MicroTxnAuthorizationResponse| {
+                    if response.app_id.0 != STEAM_APP_ID {
+                        return;
+                    }
+                    if let Ok(mut values) = callback_purchases.lock() {
+                        values.insert(response.order_id, response.authorized);
+                    }
+                    println!(
+                        "[Tauri Steam] Purchase authorization received for order {}: {}.",
+                        response.order_id, response.authorized
+                    );
+                },
+            );
 
             std::thread::spawn(move || {
                 let _callback = callback;
+                let _purchase_callback = purchase_callback;
                 let _ticket_handle = ticket_handle;
                 loop {
                     client.run_callbacks();
@@ -180,6 +214,25 @@ async fn get_steam_auth(state: State<'_, AppState>) -> Result<SteamAuthData, Str
     Ok(SteamAuthData {
         ticket: lock_string(&state.steam_ticket),
         error: lock_string(&state.steam_error),
+    })
+}
+
+#[tauri::command]
+fn get_steam_purchase_authorization(
+    order_id: String,
+    state: State<'_, AppState>,
+) -> Result<SteamPurchaseAuthorization, String> {
+    let order_id = order_id
+        .parse::<u64>()
+        .map_err(|_| "Invalid Steam order ID".to_string())?;
+    let authorization = state
+        .steam_purchases
+        .lock()
+        .map_err(|_| "Steam purchase state unavailable".to_string())?
+        .remove(&order_id);
+    Ok(SteamPurchaseAuthorization {
+        ready: authorization.is_some(),
+        authorized: authorization.unwrap_or(false),
     })
 }
 
@@ -285,10 +338,12 @@ fn build_menu(app: &AppHandle) -> Result<tauri::menu::Menu<tauri::Wry>, tauri::E
 pub fn run() {
     let steam_ticket = Arc::new(Mutex::new(String::new()));
     let steam_error = Arc::new(Mutex::new(String::new()));
+    let steam_purchases = Arc::new(Mutex::new(HashMap::new()));
     let state = AppState {
         sub_counter: Mutex::new(0),
         steam_ticket: steam_ticket.clone(),
         steam_error: steam_error.clone(),
+        steam_purchases: steam_purchases.clone(),
     };
 
     tauri::Builder::default()
@@ -304,7 +359,7 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             set_macos_dock_icon();
 
-            init_steam(steam_ticket, steam_error);
+            init_steam(steam_ticket, steam_error, steam_purchases);
 
             WebviewWindowBuilder::new(app, "loader", tauri::WebviewUrl::App("loader.html".into()))
                 .title("Adventure Land")
@@ -382,6 +437,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             get_steam_auth,
+            get_steam_purchase_authorization,
             create_subwindow,
             open_external,
             open_devtools,

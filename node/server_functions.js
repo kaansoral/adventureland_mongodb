@@ -835,8 +835,6 @@ function _parse_steam_ticket(player, outer, decrypted) {
 	return false;
 }
 
-var TAURI_STEAM_IDENTITY = "adventure-land-tauri-v1";
-
 function persisted_tauri_steam_id(owner, entity) {
 	if (entity && entity.platform === "steam" && /^[0-9]{16,20}$/.test(entity.pid || "")) return entity.pid;
 	if (owner && owner.platform === "steam" && /^[0-9]{16,20}$/.test(owner.pid || "")) return owner.pid;
@@ -850,46 +848,6 @@ function apply_tauri_steam_auth(player, steam_id) {
 	player.auth_id = steam_id;
 	player.p.steam_id = steam_id;
 	delete player.s.authfail;
-}
-
-async function verify_tauri_steam_ticket(ticket) {
-	if (
-		typeof ticket !== "string" ||
-		ticket.length < 2 ||
-		ticket.length > 8192 ||
-		!/^[0-9a-f]+$/i.test(ticket) ||
-		ticket.length % 2
-	)
-		return "";
-	var controller = new AbortController();
-	var timeout = setTimeout(function () {
-		controller.abort();
-	}, 8000);
-	try {
-		var data = {
-			key: keys.steam_publisher_web_apikey,
-			appid: "777150",
-			ticket: ticket,
-			identity: TAURI_STEAM_IDENTITY,
-		};
-		var response = await fetch(
-			"https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1/?" + new URLSearchParams(data),
-			{
-				signal: controller.signal,
-			},
-		);
-		if (!response.ok) return "";
-		var body = await response.json();
-		var params = body && body.response && body.response.params;
-		if (!params || params.result !== "OK" || params.publisherbanned) return "";
-		var steam_id = "" + (params.steamid || "");
-		return /^[0-9]{16,20}$/.test(steam_id) ? steam_id : "";
-	} catch (e) {
-		console.error("#A Tauri Steam ticket verification failed");
-		return "";
-	} finally {
-		clearTimeout(timeout);
-	}
 }
 
 async function persist_tauri_steam_install(owner, entity, auth, steam_id) {
@@ -1009,41 +967,6 @@ function verify_steam_ownership(player) {
 		})
 		.catch(function (err) {
 			console.log("verify_steam_ownership error", err);
-		});
-}
-
-function initiate_steam_microtxn(player) {
-	var url = "https://partner.steam-api.com/ISteamMicroTxn/InitTxn/v3/";
-	var orderid = parseInt(Math.random() * 1000000000 + 1);
-	console.log(orderid);
-	var data = {
-		key: keys.steam_publisher_web_apikey,
-		steamid: player.p.steam_id,
-		appid: "777150",
-		usersession: "web",
-		ipaddress: "85.98.170.74",
-		orderid: orderid,
-		itemcount: 1,
-		language: "en",
-		currency: "USD",
-		"itemid[0]": "123",
-		"qty[0]": 1,
-		"amount[0]": 999, // $9.99
-		"description[0]": "1000 Shells",
-	};
-	fetch(url, {
-		method: "POST",
-		headers: { "Content-Type": "application/x-www-form-urlencoded" },
-		body: new URLSearchParams(data),
-	})
-		.then(function (response) {
-			return response.text();
-		})
-		.then(function (body) {
-			console.log(body);
-		})
-		.catch(function (err) {
-			console.log("initiate_steam_microtxn error", err);
 		});
 }
 

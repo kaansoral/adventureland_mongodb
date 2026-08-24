@@ -2,6 +2,9 @@
 	<!-- <div class="gamebutton gamebutton-small" style="position: absolute; top: 5px; right: 5px">Updated December 16th</div> -->
 	<div style="font-size: 24px; color: #F4F4F4">
 		<div class="gamebutton gamebutton-large" style="border-color: #5DAC40">SHELLS</div> <div class="mb5"></div>
+		{% if domain.tauri %}
+		<div class="gamebutton gamebutton-small mr5 mt5 mb5" onclick="hide_modal(); show_payments()">Buy Shells with Steam</div>
+		{% endif %}
 		<div class="gamebutton gamebutton-small mr5 mt5 mb5">Where to Find</div>
 		<div class="gray"><span style="color: #F4F4F4">&gt;</span> You can get shells by farming green Goo's, from exchangeable items as rare rewards and through various other hidden and non-hidden ways in-game.</div>
 		<div class="gamebutton gamebutton-small mr5 mt10 mb5">Original Plan</div>

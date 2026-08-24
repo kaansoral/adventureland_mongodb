@@ -1211,6 +1211,279 @@ async function reset_tutorial_api(args) {
 
 // ==================== BILLING ====================
 
+var STEAM_SHELL_USD_AMOUNTS = [10, 25, 100, 500];
+var STEAM_PURCHASE_COLLECTION = "steam_purchase";
+
+function purchased_shells_for_usd(usd, event_bonus) {
+	var shells = usd * 80;
+	if (usd >= 500) shells = Math.floor(shells * 1.24);
+	else if (usd >= 100) shells = Math.floor(shells * 1.16);
+	else if (usd >= 25) shells = Math.floor(shells * 1.08);
+	if (event_bonus) shells = Math.floor((shells * (100 + event_bonus)) / 100.0);
+	return shells;
+}
+
+async function steam_microtxn_request(method, endpoint, data, sandbox) {
+	if (!keys.steam_publisher_web_apikey) return { success: false, config_error: true };
+	var controller = new AbortController();
+	var timeout = setTimeout(function () {
+		controller.abort();
+	}, 10000);
+	try {
+		var request_data = Object.assign(
+			{
+				key: keys.steam_publisher_web_apikey,
+				appid: TAURI_STEAM_APP_ID,
+				format: "json",
+			},
+			data,
+		);
+		var interface_name = sandbox ? "ISteamMicroTxnSandbox" : "ISteamMicroTxn";
+		var url = "https://partner.steam-api.com/" + interface_name + "/" + endpoint + "/";
+		var options = { method: method, signal: controller.signal };
+		if (method === "GET") url += "?" + new URLSearchParams(request_data);
+		else {
+			options.headers = { "Content-Type": "application/x-www-form-urlencoded" };
+			options.body = new URLSearchParams(request_data);
+		}
+		var response = await fetch(url, options);
+		var body = await response.json();
+		var steam_response = body && body.response;
+		var params = steam_response && steam_response.params;
+		var result = steam_response && (steam_response.result || (params && params.result));
+		return {
+			success: response.ok && result === "OK",
+			params: params || {},
+			error_code: steam_response && steam_response.error && steam_response.error.errorcode,
+		};
+	} catch (e) {
+		return { success: false, uncertain: true };
+	} finally {
+		clearTimeout(timeout);
+	}
+}
+
+async function insert_steam_purchase(user, steam_id, usd, shells, event_bonus, sandbox) {
+	for (var attempt = 0; attempt < 4; attempt++) {
+		var order_id = crypto.randomBytes(8).readBigUInt64BE().toString();
+		if (order_id === "0") continue;
+		var purchase = {
+			_id: order_id,
+			owner: get_id(user),
+			steam_id: steam_id,
+			usd: usd,
+			amount: usd * 100,
+			currency: "USD",
+			item_id: 777150000 + usd,
+			shells: shells,
+			extra_shells: event_bonus,
+			sandbox: sandbox,
+			state: "creating",
+			created: new Date(),
+			updated: new Date(),
+		};
+		try {
+			await db.collection(STEAM_PURCHASE_COLLECTION).insertOne(purchase);
+			return purchase;
+		} catch (e) {
+			if (!e || e.code !== 11000) throw e;
+		}
+	}
+	return null;
+}
+
+async function grant_steam_shell_purchase(purchase, args) {
+	var session = client.startSession();
+	var result = { success: false };
+	try {
+		await session.withTransaction(async function () {
+			var current_purchase = await db.collection(STEAM_PURCHASE_COLLECTION).findOne({ _id: purchase._id }, { session: session });
+			if (!current_purchase || current_purchase.owner !== get_id(args.user)) throw new Error("invalid_purchase");
+			var current_user = await db.collection("user").findOne({ _id: current_purchase.owner }, { session: session });
+			if (!current_user) throw new Error("missing_user");
+			if (current_purchase.state === "delivered") {
+				result = { success: true, already_delivered: true, cash: current_user.cash, shells: current_purchase.shells };
+				return;
+			}
+
+			current_user.cash = gf(current_user, "cash", 0) + current_purchase.shells;
+			await db.collection("user").replaceOne({ _id: current_user._id }, current_user, { session: session });
+
+			var referrer = null;
+			var referrer_shells = 0;
+			if (!current_purchase.sandbox && current_user.referrer && current_user.referrer !== current_user._id && current_purchase.shells >= 20) {
+				referrer = await db.collection("user").findOne({ _id: current_user.referrer }, { session: session });
+				if (referrer) {
+					referrer_shells = Math.round(current_purchase.shells * 0.1);
+					referrer.info = referrer.info || {};
+					referrer.info.rcash = gf(referrer, "rcash", 0) + referrer_shells;
+					referrer.info.referrer_events = gf(referrer, "referrer_events", 0) + 1;
+					referrer.cash = gf(referrer, "cash", 0) + referrer_shells;
+					await db.collection("user").replaceOne({ _id: referrer._id }, referrer, { session: session });
+				}
+			}
+
+			await db.collection(STEAM_PURCHASE_COLLECTION).updateOne(
+				{ _id: current_purchase._id },
+				{
+					$set: {
+						state: "delivered",
+						delivered: new Date(),
+						updated: new Date(),
+						referrer_shells: referrer_shells,
+					},
+				},
+				{ session: session },
+			);
+			result = {
+				success: true,
+				delivered: true,
+				cash: current_user.cash,
+				shells: current_purchase.shells,
+				user: current_user,
+				referrer: referrer,
+				referrer_shells: referrer_shells,
+			};
+		});
+	} catch (e) {
+		console.error("Steam Shells delivery transaction failed");
+		return { failed: true, reason: "delivery_failed" };
+	} finally {
+		await session.endSession();
+	}
+
+	if (result.delivered) {
+		var payment_type = purchase.sandbox ? "steam_sandbox" : "steam";
+		var payment_tags = purchase.sandbox ? ["payments", "sandbox"] : ["payments", "cashflow"];
+		add_event(result.user, payment_type, payment_tags, {
+			req: args.req,
+			info: {
+				message: purchase.sandbox ? "STEAM SANDBOX! " + result.user.name + " tested a " + purchase.usd + " USD purchase!" : "STEAM! " + result.user.name + " spent " + purchase.usd + " USD!",
+				usd: purchase.usd,
+				order_id: purchase._id,
+				trans_id: purchase.trans_id,
+			},
+		});
+		add_event(result.user, purchase.sandbox ? "steam_sandbox_shells" : "shells", purchase.sandbox ? ["sandbox"] : ["cashflow"], {
+			req: args.req,
+			info: {
+				message: "STEAM! " + result.user.name + " received " + result.shells + " SHELLS!",
+				usd: purchase.usd,
+				order_id: purchase._id,
+			},
+		});
+		update_characters(result.user, null, null, result.shells).catch(console.error);
+		if (result.referrer) {
+			add_event(result.referrer, "referrer_cash", ["cashflow", "referrer"], {
+				info: {
+					message: "Referrer: " + result.referrer.name + " received " + result.referrer_shells + " shells from " + result.user.name + "[" + get_id(result.user) + "]",
+					source: get_id(result.user),
+					order_id: purchase._id,
+				},
+			});
+			update_characters(result.referrer, null, null, result.referrer_shells).catch(console.error);
+		}
+		args.res.infs.push({ type: "success", message: "You received " + result.shells + " SHELLS!" });
+	}
+	return { success: true, cash: result.cash, shells: result.shells, already_delivered: result.already_delivered || false };
+}
+
+async function steam_payment_start_api(args) {
+	var domain = await get_domain(args.req, args.user);
+	var usd = Number(args.usd);
+	if (!domain.tauri) return { failed: true, reason: "tauri_required" };
+	if (STEAM_SHELL_USD_AMOUNTS.indexOf(usd) === -1) return { failed: true, reason: "invalid_amount" };
+
+	var saved_steam_id = "" + (args.user.pid || "");
+	if (args.user.platform !== "steam" || !/^[0-9]{16,20}$/.test(saved_steam_id)) return { failed: true, reason: "steam_account_required" };
+	var ticket_steam_id = await verify_tauri_steam_ticket(args.ticket);
+	if (!ticket_steam_id || ticket_steam_id !== saved_steam_id) return { failed: true, reason: "steam_auth_failed" };
+
+	var event_bonus = Math.max(0, parseInt(extra_shells) || 0);
+	var shells = purchased_shells_for_usd(usd, event_bonus);
+	var sandbox = args.sandbox === true && is_admin(args.user);
+	var purchase;
+	try {
+		purchase = await insert_steam_purchase(args.user, saved_steam_id, usd, shells, event_bonus, sandbox);
+	} catch (e) {
+		console.error("Steam purchase creation failed");
+	}
+	if (!purchase) return { failed: true, reason: "purchase_creation_failed" };
+
+	var initialized = await steam_microtxn_request(
+		"POST",
+		"InitTxn/v3",
+		{
+			steamid: saved_steam_id,
+			usersession: "client",
+			orderid: purchase._id,
+			itemcount: 1,
+			language: "en",
+			currency: purchase.currency,
+			"itemid[0]": purchase.item_id,
+			"qty[0]": 1,
+			"amount[0]": purchase.amount,
+			"description[0]": purchase.shells + " Shells",
+			"category[0]": "Shells",
+		},
+		sandbox,
+	);
+	if (!initialized.success) {
+		await db
+			.collection(STEAM_PURCHASE_COLLECTION)
+			.updateOne({ _id: purchase._id }, { $set: { state: initialized.uncertain ? "init_unknown" : "init_failed", error_code: initialized.error_code || null, updated: new Date() } });
+		return { failed: true, reason: initialized.config_error ? "steam_not_configured" : "steam_purchase_failed" };
+	}
+
+	purchase.trans_id = "" + (initialized.params.transid || "");
+	await db.collection(STEAM_PURCHASE_COLLECTION).updateOne({ _id: purchase._id }, { $set: { state: "initialized", trans_id: purchase.trans_id, updated: new Date() } });
+	console.log("#A Tauri Steam purchase initialized: " + purchase._id);
+	return { success: true, order_id: purchase._id, shells: purchase.shells, sandbox: purchase.sandbox };
+}
+
+async function steam_payment_finish_api(args) {
+	var domain = await get_domain(args.req, args.user);
+	var order_id = "" + (args.order_id || "");
+	if (!domain.tauri) return { failed: true, reason: "tauri_required" };
+	if (!/^[0-9]{1,20}$/.test(order_id)) return { failed: true, reason: "invalid_order" };
+
+	var purchase = await db.collection(STEAM_PURCHASE_COLLECTION).findOne({ _id: order_id });
+	if (!purchase || purchase.owner !== get_id(args.user)) return { failed: true, reason: "invalid_order" };
+	if (purchase.steam_id !== "" + (args.user.pid || "")) return { failed: true, reason: "steam_account_mismatch" };
+	if (purchase.state === "delivered") return grant_steam_shell_purchase(purchase, args);
+	if (!args.authorized) {
+		await db.collection(STEAM_PURCHASE_COLLECTION).updateOne({ _id: order_id, state: { $ne: "delivered" } }, { $set: { state: "declined", updated: new Date() } });
+		return { failed: true, reason: "steam_purchase_cancelled" };
+	}
+	if (["declined", "init_failed", "failed"].indexOf(purchase.state) !== -1) return { failed: true, reason: "steam_purchase_failed" };
+
+	await db.collection(STEAM_PURCHASE_COLLECTION).updateOne({ _id: order_id, state: { $ne: "delivered" } }, { $set: { state: "finalizing", authorized: new Date(), updated: new Date() } });
+	var finalized = await steam_microtxn_request("POST", "FinalizeTxn/v2", { orderid: order_id }, purchase.sandbox);
+	if (finalized.success) {
+		purchase.trans_id = "" + (finalized.params.transid || purchase.trans_id || "");
+		return grant_steam_shell_purchase(purchase, args);
+	}
+
+	var queried = await steam_microtxn_request("GET", "QueryTxn/v3", { orderid: order_id }, purchase.sandbox);
+	var status = queried.success && queried.params && queried.params.status;
+	var queried_steam_id = queried.success && "" + (queried.params.steamid || "");
+	if (status === "Succeeded" && queried_steam_id === purchase.steam_id) {
+		purchase.trans_id = "" + (queried.params.transid || purchase.trans_id || "");
+		return grant_steam_shell_purchase(purchase, args);
+	}
+	if (status === "Init" || status === "Approved" || finalized.uncertain || queried.uncertain) {
+		await db
+			.collection(STEAM_PURCHASE_COLLECTION)
+			.updateOne({ _id: order_id, state: { $ne: "delivered" } }, { $set: { state: status === "Init" ? "initialized" : "finalizing", updated: new Date() } });
+		return { failed: true, reason: "steam_payment_pending" };
+	}
+
+	await db
+		.collection(STEAM_PURCHASE_COLLECTION)
+		.updateOne({ _id: order_id, state: { $ne: "delivered" } }, { $set: { state: "failed", error_code: finalized.error_code || queried.error_code || null, updated: new Date() } });
+	return { failed: true, reason: "steam_purchase_failed" };
+}
+
 async function stripe_payment_api(args) {
 	var domain = await get_domain(args.req),
 		user = args.user;
@@ -1222,11 +1495,7 @@ async function stripe_payment_api(args) {
 		return { failed: true, reason: "issue_with_token_or_usd" };
 	}
 	usd = Math.max(1, parseInt(usd));
-	var shells = usd * 80;
-	if (usd >= 500) shells = Math.floor(shells * 1.24);
-	else if (usd >= 100) shells = Math.floor(shells * 1.16);
-	else if (usd >= 25) shells = Math.floor(shells * 1.08);
-	if (extra_shells) shells = Math.floor((shells * (100 + extra_shells)) / 100.0);
+	var shells = purchased_shells_for_usd(usd, extra_shells);
 
 	try {
 		var charge = await stripe.charges.create({
@@ -1618,6 +1887,21 @@ var REF = {
 		U: true,
 		response: { type: "any", optional: true },
 		usd: { type: "any" },
+	},
+	steam_payment_start: {
+		F: steam_payment_start_api,
+		P: true,
+		U: true,
+		ticket: { type: "string" },
+		usd: { type: "number" },
+		sandbox: { type: "boolean", optional: true },
+	},
+	steam_payment_finish: {
+		F: steam_payment_finish_api,
+		P: true,
+		U: true,
+		order_id: { type: "string" },
+		authorized: { type: "boolean" },
 	},
 	cli_time: { F: cli_time_api, P: true, U: true },
 

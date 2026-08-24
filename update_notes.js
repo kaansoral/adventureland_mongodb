@@ -3,6 +3,11 @@ module.exports = [
 	{
 		deployed: null,
 		date: "[24/08/26]",
+		note: "You can now buy Shells through Steam in the new client, with all active Shells bonuses included.",
+	},
+	{
+		deployed: null,
+		date: "[24/08/26]",
 		note: "Fixed repeated start_character calls for characters already running in the same client.",
 	},
 	{

@@ -1,5 +1,39 @@
 var crypto = require("crypto");
 
+var TAURI_STEAM_APP_ID = "777150";
+var TAURI_STEAM_IDENTITY = "adventure-land-tauri-v1";
+
+async function verify_tauri_steam_ticket(ticket) {
+	if (typeof ticket !== "string" || ticket.length < 2 || ticket.length > 8192 || !/^[0-9a-f]+$/i.test(ticket) || ticket.length % 2) return "";
+	if (!keys.steam_publisher_web_apikey) return "";
+	var controller = new AbortController();
+	var timeout = setTimeout(function () {
+		controller.abort();
+	}, 8000);
+	try {
+		var data = {
+			key: keys.steam_publisher_web_apikey,
+			appid: TAURI_STEAM_APP_ID,
+			ticket: ticket,
+			identity: TAURI_STEAM_IDENTITY,
+		};
+		var response = await fetch("https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1/?" + new URLSearchParams(data), {
+			signal: controller.signal,
+		});
+		if (!response.ok) return "";
+		var body = await response.json();
+		var params = body && body.response && body.response.params;
+		if (!params || params.result !== "OK" || params.publisherbanned) return "";
+		var steam_id = "" + (params.steamid || "");
+		return /^[0-9]{16,20}$/.test(steam_id) ? steam_id : "";
+	} catch (e) {
+		console.error("#A Tauri Steam ticket verification failed");
+		return "";
+	} finally {
+		clearTimeout(timeout);
+	}
+}
+
 // ==================== TIME UTILITIES ====================
 
 function dsince(t, ref) {

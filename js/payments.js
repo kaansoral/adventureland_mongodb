@@ -1,5 +1,7 @@
 var stripe_state = "pay",
-	pamount = 25;
+	pamount = 25,
+	steam_state = "pay",
+	steam_order_id = "";
 
 function p_log(message, color, support) {
 	if (inside != "payments") return;
@@ -8,6 +10,14 @@ function p_log(message, color, support) {
 
 function set_pamount(amount) {
 	pamount = parseInt(amount);
+	if (typeof is_tauri != "undefined" && is_tauri) {
+		steam_state = "pay";
+		steam_order_id = "";
+		$(".pbutton").removeClass("pfail psuccess");
+		$(".pbutton").html("Buy $" + pamount + " with Steam");
+		update_shells_calc();
+		return;
+	}
 	if (stripe_state == "success") {
 		setTimeout(function () {
 			if (inside != "payments") hide_modal();
@@ -24,7 +34,7 @@ function set_pamount(amount) {
 }
 
 function update_shells_calc() {
-	if (pamount < 25) {
+	if (pamount < 25 && !extra_shells_pct) {
 		$("#shells-calc").hide();
 		return;
 	}
@@ -44,6 +54,80 @@ function update_shells_calc() {
 	html += " = <span style='color:white'>" + to_pretty_num(subtotal) + "</span></span>";
 	$("#shells-calc-line").html(html);
 	$("#shells-calc").show();
+}
+
+function steam_payment_message(reason) {
+	if (reason == "steam_purchase_cancelled") return "Purchase cancelled.";
+	if (reason == "steam_auth_failed") return "Steam authentication failed. Please restart Adventure Land through Steam.";
+	if (reason == "steam_account_required") return "Log in through Steam before purchasing Shells.";
+	if (reason == "steam_not_configured") return "Steam purchases aren't available yet.";
+	if (reason == "steam_payment_pending" || reason == "steam_purchase_timeout") return "Steam is still processing this purchase.";
+	return "Steam couldn't complete the purchase.";
+}
+
+function steam_payment_failed(error) {
+	var reason = (error && (error.reason || error.message)) || "steam_purchase_failed";
+	if (reason == "steam_payment_pending" || reason == "steam_purchase_timeout") {
+		steam_state = "pending";
+		$(".pbutton").removeClass("pfail");
+		$(".pbutton").html("Check Steam Payment");
+	} else {
+		steam_state = reason == "steam_purchase_cancelled" ? "declined" : "failed";
+		$(".pbutton").addClass("pfail");
+		$(".pbutton").html(reason == "steam_purchase_cancelled" ? "Cancelled." : "Failed.");
+	}
+	p_log(steam_payment_message(reason), "#88E5BC");
+}
+
+function steam_payment_success(data) {
+	steam_state = "success";
+	$(".pbutton").removeClass("pfail").addClass("psuccess");
+	$(".pbutton").html("Success!");
+	if (window.character) character.cash = data.cash;
+	reset_inventory(1);
+	p_log("You received " + to_pretty_num(data.shells) + " Shells!", "#88E5BC");
+}
+
+function steam_finish_payment(authorized) {
+	steam_state = "finalizing";
+	$(".pbutton").html("Finalizing ...");
+	api_call("steam_payment_finish", { order_id: steam_order_id, authorized: !!authorized }).then(steam_payment_success).catch(steam_payment_failed);
+}
+
+function steam_pay() {
+	if (!is_tauri) return;
+	if (steam_state == "pending" && steam_order_id) {
+		steam_finish_payment(true);
+		return;
+	}
+	if (in_arr(steam_state, ["process", "authorize", "finalizing"])) {
+		p_log("Currently processing your Steam payment.", "gray");
+		return;
+	}
+	if (in_arr(steam_state, ["failed", "declined", "success"])) {
+		set_pamount(pamount);
+		return;
+	}
+
+	steam_state = "process";
+	$("#plog").html("");
+	$(".pbutton").html("Contacting Steam ...");
+	tauri_prepare_auth()
+		.then(function (auth) {
+			if (!auth || !auth.ticket) throw new Error("steam_auth_failed");
+			return api_call("steam_payment_start", { usd: pamount, ticket: auth.ticket, sandbox: !!window.steam_payment_sandbox });
+		})
+		.then(function (data) {
+			steam_order_id = data.order_id;
+			steam_state = "authorize";
+			$(".pbutton").html("Approve in Steam ...");
+			p_log((data.sandbox ? "Sandbox: " : "") + "Approve or cancel the purchase in Steam.", "gray");
+			return tauri_wait_for_steam_purchase(steam_order_id);
+		})
+		.then(function (authorization) {
+			steam_finish_payment(authorization.authorized);
+		})
+		.catch(steam_payment_failed);
 }
 
 function stripe_pay() {

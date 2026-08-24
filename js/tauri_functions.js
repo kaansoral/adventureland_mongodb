@@ -57,6 +57,30 @@ function tauri_get_data() {
 	return { platform: "steam" };
 }
 
+function tauri_wait_for_steam_purchase(order_id, timeout_ms) {
+	if (!tauri_invoke) return Promise.reject(new Error("Tauri API unavailable"));
+	var started = Date.now();
+	timeout_ms = timeout_ms || 10 * 60 * 1000;
+	return new Promise(function (resolve, reject) {
+		function check() {
+			tauri_invoke("get_steam_purchase_authorization", { orderId: "" + order_id })
+				.then(function (result) {
+					if (result && result.ready) {
+						resolve({ authorized: !!result.authorized });
+						return;
+					}
+					if (Date.now() - started >= timeout_ms) {
+						reject(new Error("steam_purchase_timeout"));
+						return;
+					}
+					setTimeout(check, 500);
+				})
+				.catch(reject);
+		}
+		check();
+	});
+}
+
 function tauri_dev_tools() {
 	return tauri_invoke("open_devtools");
 }

@@ -8,6 +8,7 @@
   },
   "permissions": [
     "allow-get-steam-auth",
+    "allow-get-steam-purchase-authorization",
     "allow-create-subwindow",
     "allow-open-external",
     "allow-open-devtools",
