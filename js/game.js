@@ -378,9 +378,9 @@ function disconnect() {
 		message = "REJECTED";
 		// add_log("Hey there, Adventurer! To make the game fun for everyone, as requested by our community, you can only connect with 2 characters to a normal server, 1 additional character to a PVP server and 1 merchant. If you wish to support our game, a 'Stone of Wisdom' currently allows you to bypass limitations for the wearer.","#83BDCF");
 		// add_log("Ps. This is the third version of our prototype limits enforcer. If it's unfair, please email hello@adventure.land","#CF888A");
-		add_log("Oops. You exceeded the limitations.", "#83BDCF");
+		add_log("อุ๊ปส์. คุณเกินขีดจำกัดแล้ว.", "#83BDCF");
 		// add_log("You can use one character on a normal server, one additional character on a PVP server and one merchant.","#CF888A");
-		add_log("You can have 3 characters and one merchant online at most.", "#CF888A");
+		add_log("คุณมีตัวละครได้สูงสุด 3 ตัวและพ่อค้าอีก 1 ตัวออนไลน์พร้อมกัน", "#CF888A");
 	} else if (window.disconnect_reason) add_log("Disconnect Reason: " + window.disconnect_reason, "gray");
 	if (inside != "game") {
 		return;
@@ -1239,7 +1239,7 @@ function init_socket(args) {
 		return;
 	}
 	if (window.socket) {
-		if (!socket_welcomed) return add_log("Another server connection in progress. Please wait.");
+		if (!socket_welcomed) return add_log("กำลังเชื่อมต่อเซิร์ฟเวอร์อื่นอยู่ กรุณารอ");
 		window.socket.destroy();
 	}
 	$(".disconnected").hide();
@@ -2543,7 +2543,7 @@ function init_socket(args) {
 				if (player) {
 					v_shake_i2(player);
 					if (player.me) {
-						add_log("Disrupted by a dampening field", "#A772D0");
+						add_log("ถูกรบกวนด้วยสนามหน่วงเหนี่ยว", "#A772D0");
 						delete character.fading_out;
 						delete character.s.magiport;
 						delete character.s.blink;
@@ -3061,7 +3061,7 @@ function init_socket(args) {
 				html += "<div>- Sold " + prefix + "'" + item + "' to " + h[1] + " for " + to_pretty_num(h[3]) + " gold</div>";
 			}
 		});
-		if (!data.length) add_log("No trade recorded yet.", "gray");
+		if (!data.length) add_log("ยังไม่มีการซื้อขายที่บันทึกไว้", "gray");
 		else show_modal(html);
 	});
 	socket.on("track", function (list) {
@@ -4117,9 +4117,9 @@ function player_effects_logic(sprite) {
 	}
 
 	if (sprite.me && sprite.fear && (!sprite.last_fear || sprite.last_fear < sprite.fear)) {
-		if (character.fear > 3) add_log("You are petrified", "#B03736");
-		else if (character.fear > 1) add_log("You are terrified", "#B04157");
-		else if (character.fear) add_log("You are getting scared", "gray");
+		if (character.fear > 3) add_log("คุณถูกกลายเป็นหิน", "#B03736");
+		else if (character.fear > 1) add_log("คุณหวาดกลัว", "#B04157");
+		else if (character.fear) add_log("คุณกำลังกลัว", "gray");
 	}
 	if (sprite.me) sprite.last_fear = sprite.fear;
 }
@@ -4934,7 +4934,7 @@ function add_machine(machine) {
 
 	function machine_click(event) {
 		if (machine.type == "dice") render_dice(); // add_log("Curious device","gray");//
-		if (machine.type == "wheel") add_log("The hostess isn't around", "gray");
+		if (machine.type == "wheel") add_log("พนักงานต้อนรับไม่อยู่", "gray");
 		if (machine.type == "slots")
 			render_interaction({
 				auto: true,
@@ -4972,7 +4972,7 @@ function add_door(door) {
 	function door_right_click(event) {
 		if (event) event.stopPropagation();
 		// if(distance(character,{x:door[0]+door[2]/2,y:door[1]+door[3]/2})>100) {add_log("Get closer","gray"); return;}
-		if (is_electron && electron_data.platform == "mas" && door[4] == "tavern") return show_alert("You can't enter the Tavern from Mac App Store :|");
+		if (is_electron && electron_data.platform == "mas" && door[4] == "tavern") return show_alert("คุณเข้าโรงเตี๊ยมจาก Mac App Store ไม่ได้ :|");
 		if (door[7] == "key") {
 			if (character.party) {
 				for (var p in party) {
@@ -5028,7 +5028,7 @@ function add_quirk(quirk) {
 		else if (quirk[4] == "upgrade") render_upgrade_shrine(1);
 		else if (quirk[4] == "compound") render_compound_shrine(1);
 		else if (quirk[4] == "list_pvp") socket.emit("list_pvp");
-		else if (quirk[4] == "invisible_statue") render_none_shrine(), add_log("An invisible statue!", "gray");
+		else if (quirk[4] == "invisible_statue") render_none_shrine(), add_log("รูปปั้นล่องหน!", "gray");
 		try {
 			if (event) event.stopPropagation();
 		} catch (e) {}

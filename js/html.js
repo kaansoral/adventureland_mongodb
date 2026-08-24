@@ -2704,7 +2704,7 @@ function render_function_reference(n, f, c) {
 	}
 	if (!f && !window[n]) {
 		render_function_html = "";
-		return add_log("Reference not found", "gray");
+		return add_log("ไม่พบเอกสารอ้างอิง", "gray");
 	} else if (!f) f = window[n];
 	var html = "",
 		rid = randomStr(10);

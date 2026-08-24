@@ -598,7 +598,7 @@ function add_holiday_log() {
 	$("#gamelog").append(
 		"<div class='gameentry' style='color: " +
 			"white" +
-			'\'>Would you like to turn on the Holiday Tunes? <span style=\'color: #C82F17\' class=\'clickable\' onclick=\'xmas_tunes=true; sound_music="1"; init_music(); reflect_music();  $(".musicoff").hide(); $(".musicon").show(); add_log("As a reminder, you can control Music from CONF","gray"); $(this).parent().remove();\'>Yes!</span></div>',
+			'\'>Would you like to turn on the Holiday Tunes? <span style=\'color: #C82F17\' class=\'clickable\' onclick=\'xmas_tunes=true; sound_music="1"; init_music(); reflect_music();  $(".musicoff").hide(); $(".musicon").show(); add_log("เตือนความจำ คุณสามารถควบคุมเพลงได้จากตั้งค่า","gray"); $(this).parent().remove();\'>Yes!</span></div>',
 	);
 	var entity = $("#gamelog")[0];
 	$("#gamelog").scrollTop(entity && entity.scrollHeight);
@@ -936,7 +936,7 @@ function use_skill(name, target, arg) {
 	} else if (name == "pcoat") {
 		var position = item_position("poison");
 		if (position === undefined) {
-			add_log("You don't have a poison sack", "gray");
+			add_log("คุณไม่มีถุงพิษ", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
 		socket.emit("skill", { name: "pcoat", num: position });
@@ -957,14 +957,14 @@ function use_skill(name, target, arg) {
 	} else if (name == "poisonarrow") {
 		var position = item_position("poison");
 		if (position === undefined) {
-			add_log("You don't have a poison sack", "gray");
+			add_log("คุณไม่มีถุงพิษ", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
 		socket.emit("skill", { name: "poisonarrow", num: position, id: target });
 	} else if (name == "shadowstrike" || name == "phaseout") {
 		var position = item_position("shadowstone");
 		if (position === undefined) {
-			add_log("You don't have any shadow stones", "gray");
+			add_log("คุณไม่มีหินเงา", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
 		socket.emit("skill", { name: name, num: position });
@@ -1501,11 +1501,11 @@ function transport_to(place, s) {
 		return;
 	}
 	if (place == "underworld") {
-		add_log("Can't reach the underworld. Yet.", "gray");
+		add_log("ยังไปถึงยมโลกไม่ได้.", "gray");
 		return;
 	}
 	if (place == "desert") {
-		add_log("Can't reach the desertland. Yet.", "gray");
+		add_log("ยังไปถึงทะเลทรายไม่ได้.", "gray");
 		return;
 	}
 	socket.emit("transport", { to: place, s: s });
@@ -1684,7 +1684,7 @@ function character_window_eval(name, snippet) {
 	var rid = "ichar" + name.toLowerCase();
 	var weval = document.getElementById(rid) && document.getElementById(rid).contentWindow && document.getElementById(rid).contentWindow.eval;
 	if (!weval) {
-		add_log("Character not found!", "#993D42");
+		add_log("ไม่พบตัวละคร!", "#993D42");
 		return undefined;
 	}
 	var result = true;
@@ -1840,7 +1840,7 @@ function free_character(name) {
 		smart_eval($(".onbackbutton").attr("onclick"));
 		add_log("Done!");
 	} else {
-		add_log("Character not found!");
+		add_log("ไม่พบตัวละคร!");
 	}
 }
 
@@ -2641,7 +2641,7 @@ function say(message, code) {
 				code = args.shift();
 			if (name) start_character_runner(name, code);
 		} else if (command == "codes") {
-			if (!is_electron) show_alert("Only works in game clients");
+			if (!is_electron) show_alert("ใช้ได้เฉพาะในไคลเอนต์เกม");
 			else electron_open_codes();
 		} else if (command == "leave") {
 			socket.emit("party", { event: "leave" });
@@ -2921,7 +2921,7 @@ function unlock_item(num) {
 
 function deposit(amount) {
 	if (!G.maps[current_map].mount) {
-		add_log("Not in the bank.", "gray");
+		add_log("ไม่อยู่ในธนาคาร.", "gray");
 		return rejecting_promise({ reason: "not_in_bank" });
 	}
 	tut("deposit");
@@ -2933,7 +2933,7 @@ function deposit(amount) {
 
 function withdraw(amount) {
 	if (!G.maps[current_map].mount) {
-		add_log("Not in the bank.", "gray");
+		add_log("ไม่อยู่ในธนาคาร.", "gray");
 		return rejecting_promise({ reason: "not_in_bank" });
 	}
 	if (!amount) amount = $(".npcgold").html() || "";
@@ -5429,12 +5429,12 @@ function new_map_logic(place, data) {
 	I = data.info || {};
 	//console.log(JSON.stringify(I));
 
-	if (current_map == "resort") add_log("Resort is a prototype with work in progress", "#ADA9E4");
+	if (current_map == "resort") add_log("รีสอร์ทเป็นต้นแบบที่อยู่ระหว่างพัฒนา", "#ADA9E4");
 	if (current_map == "tavern") {
 		if (I.dice == "roll") (map_machines.dice.shuffling = true), (map_machines.dice.num = undefined), delete map_machines.dice.lock_start, (map_machines.dice.locked = 0);
 		if (I.dice == "lock") (map_machines.dice.shuffling = true), (map_machines.dice.num = I.num), (map_machines.dice.lock_start = future_ms(-1200)), (map_machines.dice.locked = 0);
 		if (I.dice == "bets") (map_machines.dice.shuffling = false), (map_machines.dice.num = I.num), (map_machines.dice.seconds = I.seconds), (map_machines.dice.count_start = future_s(-I.seconds));
-		add_log("Tavern is a prototype with work in progress", "#63ABE4");
+		add_log("โรงเตี๊ยมเป็นต้นแบบที่อยู่ระหว่างพัฒนา", "#63ABE4");
 	} else (dice_bet.active = false), (topleft_npc = false);
 
 	if (is_pvp && (place == "start" || place == "welcome")) add_log("นี่คือเซิร์ฟเวอร์ PVP ระวังตัวด้วย!", "#E1664C");
