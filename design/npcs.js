@@ -382,7 +382,7 @@ var npcs={
 		//"delay":0,
 		"level":12,
 		"says":["Heyoo","Greetings","I want a Puppy!","I want a Kitten!","Sup","Nice day","I wonder why everyone's sitting on my head all of a sudden ..."],
-		"interaction":["Hey There! This town is the safest place around. Outside can be dangerous.","Heyo, I don't understand how those shop owners can just stand around all day. I got to be moving. Kind of restless.","Just finished school and I've got to go get a real job now. I might become an adventurer since they seem to make a lot of money.","A friend of mine said the frog thingies in the beach drop some old money or sth like that."],
+		"interaction":["หวัดดี! เมืองนี้เป็นที่ที่ปลอดภัยที่สุด ข้างนอกอันตรายนะ","เฮ้โย ฉันไม่เข้าใจว่าพวกเจ้าของร้านยืนอยู่เฉย ๆ ทั้งวันได้ยังไง ฉันต้องขยับตัวตลอด ค่อนข้างกระสับกระส่าย","เพิ่งจบโรงเรียน ต้องไปหางานจริงแล้ว ฉันอาจจะเป็นนักผจญภัยเพราะดูเหมือนจะทำเงินได้เยอะ","เพื่อนฉันบอกว่าพวกกบที่ชายหาดดรอปเงินเก่า ๆ หรืออะไรประมาณนั้น"],
 		"aura":{
 			"luck":200,
 		},
@@ -399,7 +399,7 @@ var npcs={
 		"steps":12, //defaultis 40, the walking multiplier
 		"level":120,
 		"says":["What is your name","Bartender give me your strongest liquor","How are you stranger","I wonder what my wife is doing at home","This inns food isn't as good homemade","Don't buy the food here","Do I smell","Good day","Greetings","Hello Stranger","Welcome","Its warm in here","*rubs beard*","Id like a beer","What beer should I buy","I need to rent a room","This place is pretty nice","Hi there"],
-		"interaction":["If you don't have a beer in your hand then what are you doing in here!?","Sit down and tell me a tale!","If you can't handle the cold then stay inside.. not saying I can't handle the cold.."],
+		"interaction":["ถ้ามือคุณไม่มีเบียร์แล้วมาทำอะไรในนี้!?","นั่งลงแล้วเล่าเรื่องให้ฟังหน่อยสิ!","ถ้าทนหนาวไม่ไหวก็อยู่ในบ้าน.. ไม่ได้บอกว่าฉันทนหนาวไม่ไหว.."],
 	},
 	"citizen2":{
 		"name":"สจ๊วต",
@@ -411,7 +411,7 @@ var npcs={
 		"hp":2400,
 		"delay":12000,
 		"level":32,
-		"interaction":["Ehh. Back in my day we didn't have all these fancy additions in town, we had the essentials and that's it."],
+		"interaction":["เอ่อ สมัยฉันเรายังไม่มีของตกแต่งหรูหราแบบนี้ในเมือง เรามีแค่ของจำเป็นเท่านั้น"],
 	},
 	"citizen3":{
 		"name":"เรนี่",
@@ -423,7 +423,7 @@ var npcs={
 		"hp":3200,
 		"delay":3600,
 		"level":32,
-		"interaction":["I Grind 24 hours a day! 7 days a week! Never Stop! Never Give up! Always Training!!","My body fat ratio is just 18%. Can you believe it? Yes!","Do you even lift Bro.","Hi, I do laps around this town all the time. Gotta stay in shape."],
+		"interaction":["ฉันฟาร์ม 24 ชั่วโมง! 7 วันต่อสัปดาห์! ไม่เคยหยุด! ไม่ยอมแพ้! ซ้อมตลอด!!","เปอร์เซ็นต์ไขมันในร่างกายฉันแค่ 18% เชื่อไหม? จริง ๆ นะ!","ยกเวทบ้างไหมพี่","สวัสดี ฉันวิ่งรอบเมืองตลอดเวลา ต้องรักษารูปร่าง"],
 	},
 	"citizen4":{
 		"name":"เทวดา",
@@ -436,7 +436,7 @@ var npcs={
 		"hp":24000,
 		"delay":6000,
 		"level":80,
-		"interaction":["I used to sell potions around here, but I decided to retire.","Always nice to see smiling new faces.","Are you new here? Welcome.","This town has grown a lot, I was around when it was just one small block of land."],
+		"interaction":["ฉันเคยขายยาที่นี่ แต่ตัดสินใจเกษียณแล้ว","ดีใจเสมอที่เห็นหน้าใหม่ยิ้มแย้ม","มาใหม่เหรอ? ยินดีต้อนรับ","เมืองนี้โตขึ้นมาก ตอนเป็นเพียงแผ่นดินเล็ก ๆ ฉันก็อยู่แล้ว"],
 		"aura":{
 			"gold":200,
 		},
@@ -453,7 +453,7 @@ var npcs={
 		"delay":1200,
 		"steps":12,
 		"level":90,
-		"interaction":["It is pretty cold outside. I should invest in a hat.","I came here to pursue a beast called \"Stompy\". I've heard this creature lives in the Ice Mountains nearby.","I came here for adventure, but now I'm stuck in this bar due to the cold."],
+		"interaction":["ข้างนอกค่อนข้างหนาว ฉันควรซื้อหมวกสักใบ","I came here to pursue a beast called \"Stompy\" ฉันเคยได้ยินว่าสัตว์ร้ายนี้อยู่ในเทือกเขาน้ำแข็งแถวนี้","ฉันมาที่นี่เพื่อการผจญภัย แต่ตอนนี้ติดอยู่ในบาร์เพราะอากาศหนาว"],
 	},
 	"citizen6":{
 		"name":"เฟรดริก",
@@ -466,7 +466,7 @@ var npcs={
 		"delay":1200,
 		"steps":12,
 		"level":90,
-		"interaction":["Hi, I'm a mail man! But no one sends mail out here much. So I guess it's a pretty easy job.","Careful it's cold outside. But it's nice and warm in here."],
+		"interaction":["สวัสดี ฉันเป็นบุรุษไปรษณีย์! แต่แทบไม่มีใครส่งจดหมายแถวนี้ งานเลยง่ายมาก","ข้างนอกหนาวนะ แต่ข้างในอุ่นสบาย"],
 	},
 	"citizen7":{
 		"name":"ลูซี่",
@@ -478,7 +478,7 @@ var npcs={
 		"hp":3200,
 		"delay":1200,
 		"level":48,
-		"interaction":["Hi! Would you like to know a secret? I love the snow.","Make sure you keep moving, don't want to catch a cold out here.","I have heard that Santa sometimes visits here during Xmas!"],
+		"interaction":["สวัสดี! อยากรู้ความลับไหม? ฉันชอบหิมะ","ขยับตัวตลอดนะ ไม่อยากให้เป็นหวัดแถวนี้","ฉันได้ยินว่าซานต้าบางครั้งมาที่นี่ช่วงคริสต์มาส!"],
 	},
 	"citizen8":{
 		"name":"ไวเออร์",
@@ -490,7 +490,7 @@ var npcs={
 		"hp":16000,
 		"delay":1200,
 		"level":78,
-		"interaction":["Are you here to kill Stompy too? Well I guess let the best adventurer get to him first!","My hair was actually black, before it happened."],
+		"interaction":["มาล่าสตอมปี้ด้วยเหรอ? เอาเป็นว่าให้นักผจญภัยที่เก่งที่สุดไปก่อนละกัน!","จริง ๆ แล้วผมฉันเป็นสีดำ ก่อนที่มันจะเกิดเรื่อง"],
 	},
 	"citizen9":{
 		"name":"ลิลิธ",
@@ -502,7 +502,7 @@ var npcs={
 		"hp":12000,
 		"delay":1200,
 		"level":92,
-		"interaction":["Greetings Adventurer, are you here to kill some monsters? Great! Always looking for help keeping this land safe.","Believe it or not. I am the highest ranking officer in these parts. I work hard to keep this town operating and safe."],
+		"interaction":["สวัสดีนักผจญภัย มาฆ่ามอนสเตอร์เหรอ? เยี่ยม! ต้องการความช่วยเหลือดูแลแผ่นดินนี้ให้ปลอดภัยเสมอ","เชื่อหรือไม่ ฉันคือนายทหารยศสูงสุดในแถบนี้ ฉันทำงานหนักเพื่อให้เมืองนี้ดำเนินต่อไปและปลอดภัย"],
 	},
 	"citizen10":{
 		"name":"แคโรไลน์",
@@ -517,7 +517,7 @@ var npcs={
 		"heal":2400,
 		"seek":"cuteness",
 		"class":"priest",
-		"interaction":["Hey Hey guess what! I like the color Pink! I bet you couldn't guess that.","If Santa ever comes back, I hope I could be his little helper.","Make sure you wear warm clothes, it's a little chilly out here."],
+		"interaction":["เฮ้ เฮ้ รู้ไหม! ฉันชอบสีชมพู! พนันเลยว่าคุณเดาไม่ถูก","ถ้าซานต้ากลับมา ฉันหวังว่าจะได้เป็นผู้ช่วยตัวน้อยของเขา","ใส่เสื้อผ้าหนา ๆ นะ ข้างนอกหนาวเล็กน้อย"],
 	},
 	"citizen11":{
 		"name":"บารอน",
@@ -533,7 +533,7 @@ var npcs={
 		"hp":120000,
 		"delay":12000,
 		"level":120,
-		"interaction":["Guard.    Village.    Protect.    Innocents.","Brothers.     Rest.     Here.    Protect.    Over.    Their.    Graves.","Remember.    The.    Fallen.    Never.    Forget.  Their.    Sacrifices.","Heal.    The.    Fallen."],
+		"interaction":["ยาม.    ทหาร.    หมู่บ้าน.    ปกป้อง.    ผู้บริสุทธิ์.","เหล่าพี่น้อง.     พัก.     ที่นี่.    ปกป้อง.    เหนือ.    หลุม.    ศพ.    ของ.    พวกเขา.","จดจำ.    ผู้.    ล้มลง.    ไม่มีวัน.    ลืม.    การ.    เสียสละ.    ของ.    พวกเขา.","เยียวยา.    ผู้.    ล้มลง."],
 	},
 	"citizen12":{
 		"name":"มาร์เวน",
@@ -545,7 +545,7 @@ var npcs={
 		"hp":1200,
 		"delay":3200,
 		"level":42,
-		"interaction":["I watch over the graves. Sometimes people leave 'gifts' on a grave. Ehhh, sometimes I clean the graves of these items."],
+		"interaction":["ฉันดูแลหลุมศพ บางครั้งคนทิ้ง 'ของขวัญ' ไว้บนหลุมศพ เอ่อ บางครั้งฉันเก็บของพวกนั้นออกจากหลุมศพ"],
 	},
 	"citizen13":{
 		"name":"ดิเวียน",
@@ -557,7 +557,7 @@ var npcs={
 		"hp":1200,
 		"delay":3200,
 		"level":42,
-		"interaction":["I am a firm believer that the dark arts would solve a lot of problems if it was acceptable to practice them.","Did you know that Ms. Dracul used to be a member of this village... before she transcended the limitations of mankind. I wish I had the courage to do the rituals required.","Dracul is a very well-known name around these parts. I wish I could be like them..","I heard there is a way to get +13 items, anything can turn into one, but you can't even see it ..."],
+		"interaction":["ฉันเชื่อมั่นว่าวิชามืดจะแก้ปัญหาได้มากมายถ้าได้รับการยอมรับให้ฝึกฝน","รู้ไหมว่าคุณนายดรากุลเคยเป็นสมาชิกของหมู่บ้านนี้... ก่อนที่เธอจะก้าวข้ามขีดจำกัดของมนุษย์ ฉันอยากมีความกล้าทำพิธีกรรมที่ต้องใช้สักครั้ง","ดรากุลเป็นชื่อที่โด่งดังมากในแถบนี้ ฉันอยากเป็นแบบพวกเขาจัง..","ฉันได้ยินว่ามีวิธีที่จะได้ไอเทม +13 อะไรก็ได้แปลงเป็นมันได้ แต่คุณมองไม่เห็นมันด้วยซ้ำ ..."],
 	},
 	"citizen14":{
 		"name":"ไวโอเล็ต",
@@ -569,7 +569,7 @@ var npcs={
 		"delay":4000,
 		"level":70,
 		"says":["Hello there","Where's that boy?","SON!!!","Play time is over!","Welcome","Same old same old","Ohh a visitor","Well hi there","It's getting late","Home sweet home","Are you hungry?"],
-		"interaction":["Have you seen my son? He should be around here somewhere.","It's not a very nice neighborhood around here, But the rent is cheap!","I heard somewhere that's there's some sort of pumpkin person walking around? That just sounds silly to me"],
+		"interaction":["เห็นลูกชายฉันไหม? เขาน่าจะอยู่แถวนี้สักที่","แถวนี้ไม่ค่อยดีเท่าไร แต่ค่าเช่าถูก!","ฉันได้ยินว่ามีคนหัวฟักทองเดินไปเดินมา? ฟังดูไร้สาระสำหรับฉัน"],
 	},
 	"citizen15":{
 		"name":"ทิมมี่",
@@ -581,7 +581,7 @@ var npcs={
 		"delay":200,
 		"level":4,
 		"says":["I think I saw a pumpkin move!!","I like pumpkins","Size doesn't matter!","You found me","Boo!!","Weee","Hello","*Mumble Mumble*"],
-		"interaction":["Be careful around here? It's really dangerous up to the north.","I like to play with the pumpkins, but sometimes they don't want to play and just walk away..","My imaginary friend is real! And a pumpkin!!"],
+		"interaction":["ระวังแถวนี้ด้วยนะ ข้างบนทางเหนืออันตรายมาก","ฉันชอบเล่นกับฟักทอง แต่บางครั้งมันไม่อยากเล่นแล้วก็เดินจากไป..","เพื่อนในจินตนาการของฉันมีจริง! และเป็นฟักทองด้วย!!"],
 	},
 	"citizen16":{
 		"name":"คันน์",
@@ -601,7 +601,7 @@ var npcs={
 		"hp":12000,
 		"delay":1000,
 		"level":72,
-		"interaction":["What? What? WHAT?!","I don't really have much tolerance for anyone.","I follow only the most badass!"],
+		"interaction":["อะไรนะ? อะไรนะ? อะไรนะ?!","ฉันไม่ค่อยมีความอดทนกับใครสักเท่าไร","ฉันตามแต่คนที่เจ๋งที่สุดเท่านั้น!"],
 	},
 	"holo0":{
 		"name":"กรีน",
@@ -685,7 +685,7 @@ var npcs={
 		"delay":5000,
 		"level":72,
 		"says":["Oh, Hello!"],
-		"interaction":["Wanna taste my daggers?"],
+		"interaction":["อยากชิมมีดสั้นของฉันไหม?"],
 	},
 	"bouncer":{
 		"name":"โวจ",
@@ -694,7 +694,7 @@ var npcs={
 		"type":"fullstatic",
 		"level":88,
 		"says":["What?","BOUNCE"],
-		"interaction":["Wanna taste my daggers? One move out of line. And you will!","Come on! One sexist word out of your mouth. Just one. Let's see what your tombstone looks like."],
+		"interaction":["อยากชิมมีดสั้นของฉันไหม? ขยับผิดท่าเมื่อไหร่ล่ะก็ ได้ชิมแน่!","มาเลย! พูดคำเหยียดเพศออกมาสักคำ แค่คำเดียว มาดูกันว่าหน้าอนุสาวรีย์ของคุณจะเป็นยังไง"],
 	},
 	"goldnpc":{
 		"name":"คุณรวย",

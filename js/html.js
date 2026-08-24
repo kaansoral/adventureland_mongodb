@@ -4735,7 +4735,7 @@ function render_skills() {
 	});
 	html += "</div>";
 	html +=
-		"<div class='textbutton' style='margin-left: 5px'><span class='clickable' onclick='btc(event); show_json(G.skills)'>SKILLS</span><!-- <span style='float:right; color: #7C7C7C; margin-right: 5px' class='clickable' onclick='btc(event); show_modal($(\"#keymapguide\").html())'><span style='color:#60B8C7'>&gt;</span> CONFIG <span style='color:#60B8C7'>&lt;</span></span>--></div>";
+		"<div class='textbutton' style='margin-left: 5px'><span class='clickable' onclick='btc(event); show_json(G.skills)'>สกิล</span><!-- <span style='float:right; color: #7C7C7C; margin-right: 5px' class='clickable' onclick='btc(event); show_modal($(\"#keymapguide\").html())'><span style='color:#60B8C7'>&gt;</span> CONFIG <span style='color:#60B8C7'>&lt;</span></span>--></div>";
 	var s = [],
 		slast = 0,
 		a = [],
@@ -5289,7 +5289,7 @@ function load_nearby(fallback) {
 				actions = "";
 			if (!is_player(player)) return;
 			if (!player.afk) afk = "<span style='color: #34bf15'>ACTIVE</span>";
-			else if (player.afk == "code") afk = "<span style='color: gray'>CODE</span>";
+			else if (player.afk == "code") afk = "<span style='color: gray'>โค้ด</span>";
 			else if (player.afk == "bot") afk = "<span style='color: gray'>BOT</span>";
 			//if(!player.party) actions+=" <span style='color: #2799DD'>PM</span>";
 			if (player.owner && in_arr(player.owner, friends)) actions += " <span style='color: #EC82C4'>FRIENDS!</span>";
@@ -5388,7 +5388,7 @@ function load_server_list(info) {
 					party = player.party,
 					name = player.name;
 				if (!player.afk) afk = "<span style='color: #34bf15'>ACTIVE</span>";
-				else if (player.afk == "code") afk = "<span style='color: gray'>CODE</span>";
+				else if (player.afk == "code") afk = "<span style='color: gray'>โค้ด</span>";
 				else if (player.afk == "bot") afk = "<span style='color: gray'>BOT</span>";
 				if (!player.party && player.name != character.name && player.name != "Hidden")
 					party = "<span style='color: #34BCAF' class='clickable' onclick='parent.socket.emit(\"party\",{event:\"invite\",name:\"" + player.name + '"}); push_deferred("party")\'>Invite</span>';

@@ -195,19 +195,19 @@
 					<div class="gamebutton promode {% if domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); visualize();">V</div>
 				{% endif %}
 				<div class="gamebutton promode {% if domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); tut('snippet'); show_snippet()">X</div>
-				<div class="gamebutton promode {% if domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); tut('code'); toggle_code()">CODE</div>
+				<div class="gamebutton promode {% if domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); tut('code'); toggle_code()">โค้ด</div>
 				<div class="gamebutton" onclick="btc(event); tut('com'); render_com()">COM<span class='comcount' style='color: #9083BC'>{% if user_data and user_data.info.mail%} [{{user_data.info.mail}}]{% endif%}</spam></div>
 				<div class="gamebutton newcomermode {% if not domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); toggle_character()">CHAR</div>
 				<div class="gamebutton newcomermode {% if not domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); render_inventory()">INV</div>
 				<div class="gamebutton newcomermode {% if not domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); toggle_stats()">STATS</div>
-				<div class="gamebutton" onclick="btc(event); tut('skills'); render_skills()">SKILLS</div>
-				<div class="gamebutton" onclick="btc(event); tut('guide'); show_game_guide();">GUIDE</div> {# newcomermode {% if not domain.newcomer_ui%}hidden{% endif%} #}
+				<div class="gamebutton" onclick="btc(event); tut('skills'); render_skills()">สกิล</div>
+				<div class="gamebutton" onclick="btc(event); tut('guide'); show_game_guide();">คู่มือ</div> {# newcomermode {% if not domain.newcomer_ui%}hidden{% endif%} #}
 				{# <div class="gamebutton promode {% if domain.newcomer_ui %}hidden{% endif%}" onclick="btc(event); ping()">PING</div> #}
-				<div class="gamebutton newcomermode {% if not domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); tut('code'); toggle_code()">CODE</div>
-				<div class="gamebutton" onclick="btc(event); tut('travel'); render_travel();">TRAVEL</div>
+				<div class="gamebutton newcomermode {% if not domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); tut('code'); toggle_code()">โค้ด</div>
+				<div class="gamebutton" onclick="btc(event); tut('travel'); render_travel();">เดินทาง</div>
 				<div class="gamebutton townb newcomermode {% if not domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); socket.emit('town'); push_deferred('town'); hide_transports();">TOWN</div>
 				<div class="gamebutton rewardsbutton hidden" style='border-color:#60B879' onclick="btc(event); render_rewards();">REWARDS</div>
-				<div class="gamebutton" onclick="btc(event); tut('settings'); show_settings()">CONF</div>
+				<div class="gamebutton" onclick="btc(event); tut('settings'); show_settings()">ตั้งค่า</div>
 				<!-- <div class="codeui hidden" style="text-align: right; margin-top: 5px">
 					{% if domain.Dev or 1 %}
 						<div class="gamebutton" onclick="btc(event); render_code_articles()" style="border-color: #f59b2c;  border-color: #D46E33; /*border-color: #38B54E*/">LEARN</div>

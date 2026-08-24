@@ -862,7 +862,7 @@ function update_tutorial_ui() {
 
 	$(".tutprogress").html(completion);
 	if (X.tutorial.step > 1) $(".flasht").removeClass("flasht");
-	$("#tutorialui").html("TUTORIAL " + (X.tutorial.step + 1) + " / " + G.docs.tutorial.length);
+	$("#tutorialui").html("บทเรียน " + (X.tutorial.step + 1) + " / " + G.docs.tutorial.length);
 	$("#tutorialslider").css("width", ((X.tutorial.step + 1) * 100) / G.docs.tutorial.length + "%");
 	if (X.tutorial.finished || !tutorial_ui) $(".tutorialui").hide();
 	else $(".tutorialui").show();
@@ -1451,7 +1451,7 @@ function init_socket(args) {
 				"#B2D5DF",
 			);
 			$(".saferespawn").show();
-		} else add_log("Note: Game dynamics and drops aren't final, they are evolving with every update", "gray");
+		} else add_log("หมายเหตุ: กลไกและดรอปของเกมยังไม่สิ้นสุด มันพัฒนาอยู่ตลอดทุกอัปเดต", "gray");
 		if (data.blessed_by) {
 			add_chat("", "This server has been blessed by " + data.blessed_by, "#8F70D8");
 		}
