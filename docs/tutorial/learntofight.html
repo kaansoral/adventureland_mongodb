@@ -1,12 +1,12 @@
-<p>For this step, you need to be at the starting/spawn area. <span class='elabel' onclick="code_eval('smart_move(&quot;goo&quot;)')">Move There</span></p>
+<p>สำหรับขั้นตอนนี้ คุณต้องอยู่ที่พื้นที่เริ่มต้น/เกิด. <span class='elabel' onclick="code_eval('smart_move(&quot;goo&quot;)')">Move There</span></p>
 
 {% for task in tutorial_data("learntofight").tasks %}
 	{% if loop.first %}<div style='margin-left:-24px; margin-right: -24px; border-bottom: 5px solid gray'></div>{% endif %}
 	<p style='margin-top: 16px; margin-bottom: 16px; line-height: 16px'><span style='font-size: 80px; color:#4A4A4A;' class='tuttask tuttask{{task}}'>o</span> <span style='vertical-align:text-top; color: #DC4C6E'>{{task_name(task)}}</span> <span style='vertical-align:text-top; color:#85C76B; display:none' class='tuttaskd tuttaskd{{task}}'>DONE</span></p>
 	{% if task == "killagoo" %}
-		<p><span class='spgoo'></span> Defeat your first Goo. Left click to target the Goo. Right click to attack.</p>
+		<p><span class='spgoo'></span> กำจัดวุ้นธาตุตัวแรกของคุณ คลิกซ้ายเพื่อกำหนดเป้า คลิกขวาเพื่อโจมตี</p>
 	{% elif task == "firstloot" %}
-		<p><span class='spchest6'></span> Loot the chest by simply clicking on it!</p>
+		<p><span class='spchest6'></span> ปล้นหีบสมบัติด้วยการคลิกที่มัน!</p>
 	{% endif %}
 	<div style='margin-bottom: 16px'></div>
 	{% if not loop.last %}<div style='margin-left:-24px; margin-right: -24px; border-bottom: 5px solid gray'></div>{% endif %}
