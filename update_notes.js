@@ -1,6 +1,11 @@
 // Newest notes first. Add player-visible changes at the top with deployed: null.
 module.exports = [
 	{
+		deployed: null,
+		date: "[24/08/26]",
+		note: "CODE now exposes live server events, schedules, special monsters, and temporary effects through server.status, with a complete reference.",
+	},
+	{
 		deployed: "[24/08/26]",
 		date: "[24/08/26]",
 		note: "Added the Worldroot Crook, a Priest-only T4 staff crafted from a Harbringer +8 and rare materials.",

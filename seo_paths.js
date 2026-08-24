@@ -9,6 +9,7 @@ const DOCS_PATHS = [
 	"/docs/code/game/events",
 	"/docs/code/links",
 	"/docs/code/monster/reference",
+	"/docs/code/server/status",
 	"/docs/guide",
 	"/docs/guide/all/cosmetics",
 	"/docs/guide/all/events",
@@ -77,6 +78,7 @@ function get_seo_paths(args) {
 	var article_routes = {
 		"data-character": "/docs/code/character/reference",
 		"data-monster": "/docs/code/monster/reference",
+		"data-server-status": "/docs/code/server/status",
 		"events-character": "/docs/code/character/events",
 		"events-game": "/docs/code/game/events",
 	};

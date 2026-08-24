@@ -370,6 +370,7 @@ docs = {
 	],
 	references: [
 		["code-globals", "CODE Globals", "G,server,game,smart,safeties,parent"],
+		["data-server-status", "Server Status", "server,status,events,bosses,schedule,parent.S"],
 		["data-character", "Character Objects", "characters,players"],
 		["data-monster", "Monster Objects", "monsters,entity"],
 		//["data-npc","NPC Objects","npcs"],

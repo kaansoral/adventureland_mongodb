@@ -73,6 +73,14 @@ server = {
 	region: parent.server_region, // "EU", "US", "ASIA"
 	id: parent.server_identifier, // "I", "II", "PVP", "TEST"
 };
+Object.defineProperty(server, "status", {
+	// Live server-wide event and schedule data. The parent replaces S on updates,
+	// so this must remain a getter rather than capturing parent.S once.
+	get: function () {
+		return parent.S;
+	},
+	enumerable: true,
+});
 
 game = {
 	platform: (parent.is_tauri && "tauri") || (parent.is_electron && "electron") || "web",

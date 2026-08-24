@@ -3306,6 +3306,8 @@ function render_code_docs() {
 		"<div class='gamebutton' style='display: block; /*border-color: #EF688C;*/ margin-bottom: 4px' onclick='pcs(); open_article(\"data-character\",\"/docs/code/character/reference\")'><span style='color:#64B454'>[C]</span> Character Reference</div>";
 	html +=
 		"<div class='gamebutton' style='display: block; /*border-color: #EF688C;*/ margin-bottom: 4px' onclick='pcs(); open_article(\"data-monster\",\"/docs/code/monster/reference\")'><span style='color:#58A1B0'>[M]</span> Monster Reference</div>";
+	html +=
+		"<div class='gamebutton' style='display: block; /*border-color: #EF688C;*/ margin-bottom: 4px' onclick='pcs(); open_article(\"data-server-status\",\"/docs/code/server/status\")'><span style='color:#69BE86'>[S]</span> Server Status</div>";
 	//html+="<div class='gamebutton' style='display: block; /*border-color: #F0924A;*/ margin-bottom: 4px' onclick='pcs(); add_log(\"Coming soon!\")'>Javascript Events <span style='color:gray'>[Soon]</span></div>";
 	html +=
 		"<div class='gamebutton' style='display: block; /*border-color: #F0924A;*/ margin-bottom: 4px' onclick='pcs(); open_article(\"events-game\",\"/docs/code/game/events\")'><span style='color:#8468BB'>[E]</span> Game Events</div>";
