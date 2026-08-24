@@ -1,7 +1,7 @@
 <script>
 	var extra_shells_pct = {{extra_shells or 0}};
 </script>
-<div style="width: 600px; display: inline-block" class="{%if inside=='payments'%}modal imodal{%endif%}">
+<div style="width: 600px; display: inline-block; background: black" class="{%if inside=='payments'%}modal imodal{%endif%}">
 	<div style="/*margin-top: 5px; */ text-align: left">
 		<div class="inline-block vtop">
 			<div class="gamebutton block mb5" onclick="$('.pui').hide(); $('.mainpui').show(); set_pamount(10)">
@@ -22,13 +22,7 @@
 			<div class="gamebutton block mb5" onclick="$('.pui').hide(); $('.aboutpui').show()" style="color: #5dac40; /*#43C7D1*/">About<br />SHELLS</div>
 			{#
 			<div class="gamebutton block" onclick="$('.pui').hide(); $('.alternativepui').show()">Alternative<br />Payments</div>
-			#} {% if 0 and user %}
-			<div class="gamebutton block" onclick="setTimeout(function(){ if(inside!='payments')hide_modal(); show_sroffers() },20);" style="color: #d1769e">
-				{#Alternative<br />OPTIONS#} <span style="color: #009cde">Paypal</span><br />
-				<span style="color: #e49514">Mobile</span><br />
-				<span style="color: #52d2e6">Rewards</span><br />
-			</div>
-			{% endif %}
+			#}
 		</div>
 		<div class="inline-block vtop" style="width: 392px">
 			{% if domain.tauri %}

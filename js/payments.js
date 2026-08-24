@@ -199,8 +199,7 @@ function stripe_result(result, cash) {
 }
 
 function shells_click() {
-	if (stripe_enabled) show_payments();
-	else show_sroffers();
+	show_payments();
 }
 
 function show_payments() {
@@ -242,21 +241,6 @@ function show_poffers() {
 	html += "</div>";
 
 	html += "<div class='gamebutton clickable' onclick='$(\".paymentsui\").remove()' style='position: fixed; z-index: 10000; top: 0px; right: 0px'>Back &gt;</div>";
-
-	html += "</div>";
-	$("body").append(html);
-}
-
-function show_sroffers() {
-	var html = "";
-	html += "<div style='position: fixed; top: 0px; bottom: 0px; left: 0px; right: 0px; z-index: 9999; background: rgba(0,0,0,0.5); overflow-y: scroll' class='paymentsui'>";
-
-	html += "<div style='margin-top: 40px; margin-left: " + round(($(window).width() - 728) / 2) + "px; z-index: 9000'>";
-	html += '<iframe src="https://wall.superrewards.com/super/offers?h=shmimyttqnb.811777903063&uid=' + user_id + '" frameborder="0" width="728" height="2400" scrolling="no"';
-	html += 'style="border: 5px solid gray; background: #FAFAFA"></iframe>';
-	html += "</div>";
-
-	html += "<div class='gamebutton clickable' onclick='$(\".paymentsui\").remove()' style='position: fixed; z-index: 10000; bottom: 0px; right: 0px'>BACK &gt;</div>";
 
 	html += "</div>";
 	$("body").append(html);
