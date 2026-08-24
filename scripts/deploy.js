@@ -19,7 +19,12 @@ f.execs("node ~/adventureland/scripts/precompute_images.js");
 
 f.execs("rm -rf ~/deploy/" + folder + "");
 f.execs("mkdir ~/deploy/" + folder + "");
-f.execs("rsync -r --whole-file --exclude=.electron --exclude=node_modules ~/adventureland/* ~/deploy/" + folder + "");
+// Package the committed tree, not unrelated local drafts or ignored files.
+// Deployment-generated metadata is overlaid explicitly below.
+f.execs("git -C ~/adventureland archive --format=tar HEAD | tar -xf - -C ~/deploy/" + folder);
+f.execs("cp ~/adventureland/version.js ~/deploy/" + folder + "/version.js");
+f.execs("cp ~/adventureland/update_notes.js ~/deploy/" + folder + "/update_notes.js");
+f.execs("cp ~/adventureland/design/precomputed_images.js ~/deploy/" + folder + "/design/precomputed_images.js");
 
 f.execs("rm -rf ~/deploy/" + folder + "/node/node_modules");
 f.execs("rm -rf ~/deploy/" + folder + "/node_modules");

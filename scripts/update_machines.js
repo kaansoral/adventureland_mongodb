@@ -24,7 +24,7 @@ for (var id in options.machines) {
 		f.execso(command);
 	}
 	var command =
-		"rsync -ru -e 'ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o BatchMode=yes -p " +
+		"rsync -rc -e 'ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o BatchMode=yes -p " +
 		(machine.ssh_port || 22) +
 		" -i " +
 		machine.key +
