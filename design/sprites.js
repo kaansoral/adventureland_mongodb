@@ -1186,18 +1186,11 @@ var imagesets = {
 		file: "/images/tiles/items/items_40_remastered.png?v=1",
 		load: true,
 	},
-	rogueent: {
+	rawitems: {
 		size: 20,
-		rows: 1,
-		columns: 6,
-		file: "/images/tiles/items/rogue_ent.png?v=1",
-		load: true,
-	},
-	worldroot: {
-		size: 20,
-		rows: 1,
-		columns: 1,
-		file: "/images/tiles/items/worldroot_crook.png?v=1",
+		rows: 40,
+		columns: 20,
+		file: "/images/tiles/items/raw_items.png?v=1",
 		load: true,
 	},
 };

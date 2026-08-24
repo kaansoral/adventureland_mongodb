@@ -1061,13 +1061,16 @@ var positions={
 	"verdantcore":["items40",9,3],
 
 	// Rogue: Five Ways In
-	"softstepgloves":["rogueent",0,0],
-	"valourdirk":["rogueent",1,0],
-	"knifebelt":["rogueent",2,0],
-	"gloampendant":["rogueent",3,0],
-	"sapstone":["rogueent",4,0],
-	"fanofknives":["rogueent",5,0],
-	"worldrootcrook":["worldroot",0,0],
+	// Approved native 20x20 items and skill glyphs. Append row-major; never
+	// reorder existing cells because these coordinates are persistent.
+	"softstepgloves":["rawitems",0,0],
+	"valourdirk":["rawitems",1,0],
+	"knifebelt":["rawitems",2,0],
+	"gloampendant":["rawitems",3,0],
+	"sapstone":["rawitems",4,0],
+	"fanofknives":["rawitems",5,0],
+	"worldrootcrook":["rawitems",6,0],
+	"cinderwand_r":["rawitems",7,0],
 
 	//trial
 	//"dragondagger":["",15,42],

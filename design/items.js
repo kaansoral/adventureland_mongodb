@@ -3946,6 +3946,7 @@ var weapons={
 		"wtype":"wand",
 		"tier":2,
 		"skin":"cinderwand",
+		"skin_r":"cinderwand_r",
 		"int":2,
 		"firesistance":4,
 		"damage_type":"magical",
@@ -3956,7 +3957,7 @@ var weapons={
 		"name":"Cinder Wand",
 		"explanation":"Warm to the touch. Alarmingly warm when pointed at something.",
 		"g":220000,
-		"cx":{"scale":0.5,"extension":true},
+		"cx":{"accent":"#D87F0E","scale":0.5,"extension":true},
 	},
 	"pollenbow":{
 		"type":"weapon",
@@ -3971,6 +3972,7 @@ var weapons={
 		"name":"Pollen Bow",
 		"explanation":"Every arrow leaves a faint trail of pollen behind.",
 		"g":110000,
+		"cx":{"accent":"#3B9A5C"},
 	},
 	"rimeknuckles":{
 		"type":"weapon",
