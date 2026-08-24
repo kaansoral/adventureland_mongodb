@@ -29,7 +29,7 @@ var npcs={
 		"cx":{"hat":"hat221"},
 		"says":"Huu Huu",
 		"color":"#3FEEA2",
-		"name":"Divian",
+		"name":"ดิเวียน",
 	},
 	"pvptokens":{
 		"role":"pvptokens",
@@ -40,7 +40,7 @@ var npcs={
 		//"atype":"flow",
 		"stand":"wstand_texture",
 		"aspeed":"slow",
-		"name":"Gn. Spence",
+		"name":"ยศ. สเปนซ์",
 		"side_interaction":{"auto":true,"skin":"pknight","message":"These tokens of honor represent victory. Make sure to join all the PVP events and spend some time in PVP realms. Glorious!"},
 	},
 	"funtokens":{
@@ -52,7 +52,7 @@ var npcs={
 		"atype":"flow",
 		"stand":"standg_texture",
 		"aspeed":"slow",
-		"name":"Tricksy",
+		"name":"ทริกซี่",
 		"side_interaction":{"auto":true,"skin":"ftokener","message":"Bring your fun tokens to me and I'll give you some exciting items!"},
 	},
 	"friendtokens":{
@@ -64,12 +64,12 @@ var npcs={
 		"atype":"flow",
 		"stand":"fstand_texture",
 		"aspeed":"slow",
-		"name":"Fvona",
+		"name":"ฟโวน่า",
 		"side_interaction":{"auto":true,"skin":"xxschar2h","message":"Invite your friends to Adventure Land to win some of these goodie goodies!"},
 	},
 	"shellsguy":{
 		"role":"shells",
-		"name":"Mr. Dworf",
+		"name":"คุณดวอร์ฟ",
 		"skin":"fancyd",
 		"type":"fullstatic",
 		"says":"Sup",
@@ -77,7 +77,7 @@ var npcs={
 	"monsterhunter":{
 		"role":"monstertokens",
 		"token":"monstertoken",
-		"name":"Daisy",
+		"name":"เดซี่",
 		"skin":"daisy",
 		"type":"fullstatic",
 		"says":"Hi!",
@@ -94,7 +94,7 @@ var npcs={
 	"mcollector":{
 		"role":"mcollector",
 		"quest":"mcollector",
-		"name":"Cole",
+		"name":"โคล",
 		"skin":"proft",
 		"type":"fullstatic",
 		"says":"Hmm",
@@ -113,7 +113,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"Careful",
 		"color":"#E7E2E7",
-		"name":"Crun",
+		"name":"ครัน",
 	},
 	"fancypots":{
 		"role":"merchant",
@@ -128,7 +128,7 @@ var npcs={
 		"atype":"flow",
 		"says":"Woo. Hic.",
 		"color":"#E57636",
-		"name":"Ernis",
+		"name":"เออนิส",
 		"side_interaction":{"auto":true,"skin":"potiongirl","message":"Hello there. Are you injured or in need of some potions? My family and I pride ourselves with having the best quality potions and elixirs around. Take as much as you need. *hic*"},
 	},
 	"tbartender":{
@@ -143,7 +143,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"Hello there",
 		"color":"#EBECEE",
-		"name":"Jaqk",
+		"name":"แจ๊ค",
 		"side_interaction":{"auto":true,"skin":"showoffi","message":"Hello there, partner! Care for a drink? Good luck on the games! Don't lose all your gold at once, heh."},
 	},
 	"wbartender":{
@@ -158,7 +158,7 @@ var npcs={
 		"says":"Welcome!",
 		"color":"#67CCB2",
 		"type":"fullstatic",
-		"name":"Warin",
+		"name":"วาริน",
 	},
 	"scrolls":{
 		"role":"merchant",
@@ -170,7 +170,7 @@ var npcs={
 		],
 		"skin":"scrolls",
 		"says":"Good Luck",
-		"name":"Lucas",
+		"name":"ลูกัส",
 	},
 	"secondhands":{
 		"role":"secondhands",
@@ -178,7 +178,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"There's some good stuff in here",
 		"color":"#7E65D3",
-		"name":"Ponty",
+		"name":"ปอนตี้",
 		"side_interaction":{"auto":true,"skin":"blingbling","message":"They sell them. I buy them. You buy them from me for higher prices. Win win. I win. Bling!"},
 	},
 	"rewards":{
@@ -193,7 +193,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"Rewards!",
 		"color":"#7E65D3",
-		"name":"Werdars",
+		"name":"เวอร์ดาร์ส",
 	},
 	"lostandfound":{
 		"role":"lostandfound",
@@ -201,7 +201,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"Finders keepers",
 		"color":"#7E65D3",
-		"name":"Ron",
+		"name":"รอน",
 	},
 	"holo":{
 		"role":"resort",
@@ -209,7 +209,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"\u25b3 \u25bd \u25b2 \u25bc",
 		"color":"#EBECEE",
-		"name":"Z",
+		"name":"ซี",
 	},
 	"tavern":{
 		"role":"tavern",
@@ -217,10 +217,10 @@ var npcs={
 		"type":"fullstatic",
 		"says":"Hi",
 		"color":"#EBECEE",
-		"name":"Jaqk",
+		"name":"แจ๊ค",
 	},
 	"pete":{
-		"name":"Pete",
+		"name":"พีท",
 		"role":"petkeeper",
 		"skin":"lionsuit",
 		"type":"fullstatic",
@@ -228,7 +228,7 @@ var npcs={
 		"color":"#EBECEE",
 	},
 	"guard":{
-		"name":"Guard",
+		"name":"ทหารยาม",
 		"role":"guard",
 		"says":"...",
 		"skin":"thehelmet",
@@ -248,7 +248,7 @@ var npcs={
 		"aspeed":"fast",
 		"atype":"flow",
 		"color":"#B7161F",
-		"name":"New Year Tree",
+		"name":"ต้นไม้ปีใหม่",
 	},
 	"lotterylady":{
 		"role":"lottery",
@@ -256,7 +256,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"Hi Dear",
 		"color":"#DF5AC5",
-		"name":"Rose",
+		"name":"โรส",
 	},
 	"mistletoe":{
 		"role":"quest",
@@ -265,7 +265,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"Uhhh",
 		"color":"#E376E5",
-		"name":"Faith",
+		"name":"เฟธ",
 	},
 	"ornaments":{
 		"role":"quest",
@@ -274,7 +274,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"Hmm. Hmm. Hmm.",
 		"color":"#E56D39",
-		"name":"Jayson",
+		"name":"เจสัน",
 	},
 	"santa":{
 		"role":"santa",
@@ -282,7 +282,7 @@ var npcs={
 		"skin":"santa",
 		"says":"Ho Ho Ho",
 		"color":"#DF2A2F",
-		"name":"Santa",
+		"name":"ซานต้า",
 	},
 	"witch":{
 		"role":"witch",
@@ -291,7 +291,7 @@ var npcs={
 		"says":"Brew Brew Brew",
 		"color":"#AF6AE2",
 		"aspeed":"slow",
-		"name":"Witch",
+		"name":"แม่มด",
 	},
 	"jailer":{
 		"role":"jailer",
@@ -299,7 +299,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"Tu-tu-tu",
 		"color":"#62C3DF",
-		"name":"Jailord",
+		"name":"เจลอร์ด",
 	},
 	"leathermerchant":{
 		"role":"quest",
@@ -308,7 +308,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"Have leathers?",
 		"color":"#6E4430",
-		"name":"Landon",
+		"name":"แลนดอน",
 	},
 	"gemmerchant":{
 		"role":"quest",
@@ -317,7 +317,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"Bling",
 		"color":"#A058DF",
-		"name":"Mine Heathcliff",
+		"name":"มายน์ ฮีธคลิฟฟ์",
 	},
 	"fisherman":{
 		"role":"quest",
@@ -326,7 +326,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"Beautiful",
 		"color":"#429DDF",
-		"name":"Tristian",
+		"name":"ทริสเทียน",
 	},
 	"pwincess":{
 		"role":"quest",
@@ -335,7 +335,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"eek",
 		"color":"#FECDF7",
-		"name":"Wynifreed",
+		"name":"วินิฟรีด",
 	},
 	"firstc":{
 		"role":"companion",
@@ -351,7 +351,7 @@ var npcs={
 	},
 	"pvp":{
 		"role":"pvp_announcer",
-		"name":"Ace",
+		"name":"เอซ",
 		"allow":false,
 		"speed":40,
 		"hp":5000,
@@ -360,7 +360,7 @@ var npcs={
 	},
 	"bean":{
 		"role":"events",
-		"name":"Bean",
+		"name":"บีน",
 		"allow":false,
 		"speed":30,
 		"hp":3200,
@@ -369,7 +369,7 @@ var npcs={
 		"moving":true,
 	},
 	"citizen0":{
-		"name":"Kane", //can't change this name, hardcoded to server_loot
+		"name":"เคน", //can't change this name, hardcoded to server_loot
 		"role":"citizen",
 		"skin":"greencap",
 		"type":"fullstatic",
@@ -388,7 +388,7 @@ var npcs={
 		},
 	},
 	"citizen1":{
-		"name":"Kilgore",
+		"name":"คิลกอร์",
 		"role":"citizen",
 		"skin":"fxrogue",
 		"type":"fullstatic",
@@ -402,7 +402,7 @@ var npcs={
 		"interaction":["If you don't have a beer in your hand then what are you doing in here!?","Sit down and tell me a tale!","If you can't handle the cold then stay inside.. not saying I can't handle the cold.."],
 	},
 	"citizen2":{
-		"name":"Stewart",
+		"name":"สจ๊วต",
 		"role":"citizen",
 		"skin":"oldcitizen",
 		"type":"fullstatic",
@@ -414,7 +414,7 @@ var npcs={
 		"interaction":["Ehh. Back in my day we didn't have all these fancy additions in town, we had the essentials and that's it."],
 	},
 	"citizen3":{
-		"name":"Reny",
+		"name":"เรนี่",
 		"role":"citizen",
 		"skin":"renaldo",
 		"type":"fullstatic",
@@ -426,7 +426,7 @@ var npcs={
 		"interaction":["I Grind 24 hours a day! 7 days a week! Never Stop! Never Give up! Always Training!!","My body fat ratio is just 18%. Can you believe it? Yes!","Do you even lift Bro.","Hi, I do laps around this town all the time. Gotta stay in shape."],
 	},
 	"citizen4":{
-		"name":"Angel",
+		"name":"เทวดา",
 		"role":"citizen",
 		"skin":"angel",
 		"type":"fullstatic",
@@ -443,7 +443,7 @@ var npcs={
 		"modal":"npc-angel",
 	},
 	"citizen5":{
-		"name":"Grundur",
+		"name":"กรันดูร์",
 		"role":"citizen",
 		"skin":"generalg",
 		"type":"fullstatic",
@@ -456,7 +456,7 @@ var npcs={
 		"interaction":["It is pretty cold outside. I should invest in a hat.","I came here to pursue a beast called \"Stompy\". I've heard this creature lives in the Ice Mountains nearby.","I came here for adventure, but now I'm stuck in this bar due to the cold."],
 	},
 	"citizen6":{
-		"name":"Fredric",
+		"name":"เฟรดริก",
 		"role":"citizen",
 		"skin":"mailman",
 		"type":"fullstatic",
@@ -469,7 +469,7 @@ var npcs={
 		"interaction":["Hi, I'm a mail man! But no one sends mail out here much. So I guess it's a pretty easy job.","Careful it's cold outside. But it's nice and warm in here."],
 	},
 	"citizen7":{
-		"name":"Lucy",
+		"name":"ลูซี่",
 		"role":"citizen",
 		"skin":"lucy",
 		"type":"fullstatic",
@@ -481,7 +481,7 @@ var npcs={
 		"interaction":["Hi! Would you like to know a secret? I love the snow.","Make sure you keep moving, don't want to catch a cold out here.","I have heard that Santa sometimes visits here during Xmas!"],
 	},
 	"citizen8":{
-		"name":"Wyr",
+		"name":"ไวเออร์",
 		"role":"citizen",
 		"skin":"frozenrogue",
 		"type":"fullstatic",
@@ -493,7 +493,7 @@ var npcs={
 		"interaction":["Are you here to kill Stompy too? Well I guess let the best adventurer get to him first!","My hair was actually black, before it happened."],
 	},
 	"citizen9":{
-		"name":"Lilith",
+		"name":"ลิลิธ",
 		"role":"citizen",
 		"skin":"lilith",
 		"type":"fullstatic",
@@ -505,7 +505,7 @@ var npcs={
 		"interaction":["Greetings Adventurer, are you here to kill some monsters? Great! Always looking for help keeping this land safe.","Believe it or not. I am the highest ranking officer in these parts. I work hard to keep this town operating and safe."],
 	},
 	"citizen10":{
-		"name":"Caroline",
+		"name":"แคโรไลน์",
 		"role":"citizen",
 		"skin":"pink",
 		"type":"fullstatic",
@@ -520,7 +520,7 @@ var npcs={
 		"interaction":["Hey Hey guess what! I like the color Pink! I bet you couldn't guess that.","If Santa ever comes back, I hope I could be his little helper.","Make sure you wear warm clothes, it's a little chilly out here."],
 	},
 	"citizen11":{
-		"name":"Baron",
+		"name":"บารอน",
 		"role":"citizen",
 		"skin":"baron",
 		"class":"priest",
@@ -536,7 +536,7 @@ var npcs={
 		"interaction":["Guard.    Village.    Protect.    Innocents.","Brothers.     Rest.     Here.    Protect.    Over.    Their.    Graves.","Remember.    The.    Fallen.    Never.    Forget.  Their.    Sacrifices.","Heal.    The.    Fallen."],
 	},
 	"citizen12":{
-		"name":"Marven",
+		"name":"มาร์เวน",
 		"role":"citizen",
 		"skin":"marven",
 		"type":"fullstatic",
@@ -548,7 +548,7 @@ var npcs={
 		"interaction":["I watch over the graves. Sometimes people leave 'gifts' on a grave. Ehhh, sometimes I clean the graves of these items."],
 	},
 	"citizen13":{
-		"name":"Divian",
+		"name":"ดิเวียน",
 		"role":"citizen",
 		"skin":"grogue",
 		"type":"fullstatic",
@@ -560,7 +560,7 @@ var npcs={
 		"interaction":["I am a firm believer that the dark arts would solve a lot of problems if it was acceptable to practice them.","Did you know that Ms. Dracul used to be a member of this village... before she transcended the limitations of mankind. I wish I had the courage to do the rituals required.","Dracul is a very well-known name around these parts. I wish I could be like them..","I heard there is a way to get +13 items, anything can turn into one, but you can't even see it ..."],
 	},
 	"citizen14":{
-		"name":"Violet",
+		"name":"ไวโอเล็ต",
 		"role":"citizen",
 		"skin":"spkw",
 		"type":"fullstatic",
@@ -572,7 +572,7 @@ var npcs={
 		"interaction":["Have you seen my son? He should be around here somewhere.","It's not a very nice neighborhood around here, But the rent is cheap!","I heard somewhere that's there's some sort of pumpkin person walking around? That just sounds silly to me"],
 	},
 	"citizen15":{
-		"name":"Timmy",
+		"name":"ทิมมี่",
 		"role":"citizen",
 		"skin":"spkc",
 		"type":"fullstatic",
@@ -584,7 +584,7 @@ var npcs={
 		"interaction":["Be careful around here? It's really dangerous up to the north.","I like to play with the pumpkins, but sometimes they don't want to play and just walk away..","My imaginary friend is real! And a pumpkin!!"],
 	},
 	"citizen16":{
-		"name":"Cunn",
+		"name":"คันน์",
 		"role":"citizen",
 		"skin":"cunn",
 		"class":"ranger",
@@ -604,7 +604,7 @@ var npcs={
 		"interaction":["What? What? WHAT?!","I don't really have much tolerance for anyone.","I follow only the most badass!"],
 	},
 	"holo0":{
-		"name":"Green",
+		"name":"กรีน",
 		"role":"citizen",
 		"skin":"greengreen",
 		"type":"fullstatic",
@@ -616,7 +616,7 @@ var npcs={
 		"interaction":["rbin"],
 	},
 	"holo1":{
-		"name":"Pink",
+		"name":"พิงก์",
 		"role":"citizen",
 		"skin":"pinkie",
 		"type":"fullstatic",
@@ -628,7 +628,7 @@ var npcs={
 		"interaction":["rbin"],
 	},
 	"holo2":{
-		"name":"Purple",
+		"name":"เพอร์เพิล",
 		"role":"citizen",
 		"skin":"purpo",
 		"type":"fullstatic",
@@ -640,7 +640,7 @@ var npcs={
 		"interaction":["rbin"],
 	},
 	"holo3":{
-		"name":"Scarf",
+		"name":"สคาร์ฟ",
 		"role":"citizen",
 		"skin":"scarf",
 		"type":"fullstatic",
@@ -652,7 +652,7 @@ var npcs={
 		"interaction":["rbin"],
 	},
 	"holo4":{
-		"name":"Twig",
+		"name":"ทวิก",
 		"role":"citizen",
 		"skin":"twig",
 		"type":"fullstatic",
@@ -664,7 +664,7 @@ var npcs={
 		"interaction":["rbin"],
 	},
 	"holo5":{
-		"name":"Bobo",
+		"name":"โบโบ้",
 		"role":"citizen",
 		"skin":"bobo",
 		"type":"fullstatic",
@@ -676,7 +676,7 @@ var npcs={
 		"interaction":["rbin"],
 	},
 	"princess":{
-		"name":"Princess",
+		"name":"เจ้าหญิง",
 		"role":"citizen",
 		"skin":"princess",
 		"type":"fullstatic",
@@ -688,7 +688,7 @@ var npcs={
 		"interaction":["Wanna taste my daggers?"],
 	},
 	"bouncer":{
-		"name":"Wogue",
+		"name":"โวจ",
 		"role":"bouncer",
 		"skin":"bouncer",
 		"type":"fullstatic",
@@ -697,7 +697,7 @@ var npcs={
 		"interaction":["Wanna taste my daggers? One move out of line. And you will!","Come on! One sexist word out of your mouth. Just one. Let's see what your tombstone looks like."],
 	},
 	"goldnpc":{
-		"name":"Mr. Rich",
+		"name":"คุณรวย",
 		"role":"gold",
 		"skin":"goblin_a",
 		"says":"GOLD!",
@@ -705,7 +705,7 @@ var npcs={
 		"aspeed":"slow",
 	},
 	"wizardrepeater":{
-		"name":"Wizard",
+		"name":"พ่อมด",
 		"role":"repeater",
 		"skin":"wizard",
 		"color":"#66BB52",
@@ -714,7 +714,7 @@ var npcs={
 		"interval":3000,
 	},
 	"wnpc":{
-		"name":"Wizard",
+		"name":"พ่อมด",
 		"role":"thesearch",
 		"quest":"glitch",
 		"skin":"wizard",
@@ -725,16 +725,16 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"craftsman":{
-		"name":"Joe",
+		"name":"โจ",
 		"role":"craftsman",
 		"skin":"npcc",
 		"color":"#9EACAE",
 		"says":"Give it to me",
 		"type":"fullstatic",
-		"name":"Leo",
+		"name":"ลีโอ",
 	},
 	"items0":{
-		"name":"Gabrielle",
+		"name":"กาเบรียลล์",
 		"role":"items",
 		"pack":"items0",
 		"skin":"gabrielle",
@@ -743,7 +743,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items1":{
-		"name":"Gabriella",
+		"name":"กาเบรียลล่า",
 		"role":"items",
 		"pack":"items1",
 		"skin":"gabrielle",
@@ -752,7 +752,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items2":{
-		"name":"Ledia",
+		"name":"เลเดีย",
 		"role":"items",
 		"pack":"items2",
 		"skin":"lady3",
@@ -761,7 +761,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items3":{
-		"name":"Lidia",
+		"name":"ลิเดีย",
 		"role":"items",
 		"pack":"items3",
 		"skin":"lady3",
@@ -770,7 +770,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items4":{
-		"name":"Christie",
+		"name":"คริสตี้",
 		"role":"items",
 		"pack":"items4",
 		"skin":"lady4",
@@ -779,7 +779,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items5":{
-		"name":"Christina",
+		"name":"คริสติน่า",
 		"role":"items",
 		"pack":"items5",
 		"skin":"lady4",
@@ -788,7 +788,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items6":{
-		"name":"Jane",
+		"name":"เจน",
 		"role":"items",
 		"pack":"items6",
 		"skin":"lady2",
@@ -797,7 +797,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items7":{
-		"name":"Janet",
+		"name":"เจเน็ต",
 		"role":"items",
 		"pack":"items7",
 		"skin":"lady2",
@@ -815,7 +815,7 @@ var npcs={
 		"skin":"daggers",
 		"says":"Blades, blades, blades",
 		"atype":"flow",
-		"name":"Gabriel",
+		"name":"กาเบรียล",
 	},
 	"premium":{
 		"old_role":"premium",
@@ -829,7 +829,7 @@ var npcs={
 		"skin":"pflow",
 		"says":"MMM",
 		"atype":"flow",
-		"name":"Garwyn",
+		"name":"การ์วิน",
 	},
 	"antip2w":{
 		"old_role":"merchant",
@@ -844,7 +844,7 @@ var npcs={
 		"skin":"fancyd",
 		"says":"Sup",
 		"type":"fullstatic",
-		"name":"Mr. Dworf",
+		"name":"คุณดวอร์ฟ",
 		"old_side_interaction":{"auto":true,"skin":"fancyd","message":"I'm the Anti-P2W Authority around here. Making sure all critical items can be bought with gold. Prices can fluctuate based on inflation."},
 		"side_interaction":{"auto":true,"skin":"fancyd","message":"Hey there, good looking fellow. Would you be interested in looking better?"},
 	},
@@ -871,7 +871,7 @@ var npcs={
 		"role":"exchange",
 		"skin":"magic",
 		"says":"Good Luck!",
-		"name":"Xyn",
+		"name":"ซีน",
 	},
 	"shrine":{
 		"role":"shrine",
@@ -888,21 +888,21 @@ var npcs={
 		"skin":"newupgrade",
 		"says":"+1",
 		"atype":"flow",
-		"name":"Cue",
+		"name":"คิว",
 	},
 	"locksmith":{
 		"role":"locksmith",
 		"skin":"asoldier",
 		"says":"X",
 		"type":"fullstatic",
-		"name":"Smith",
+		"name":"สมิธ",
 	},
 	"scrollsmith":{
 		"role":"scrollsmith",
 		"skin":"bsoldier",
 		"says":"X",
 		"type":"fullstatic",
-		"name":"Sir Bob",
+		"name":"เซอร์บ็อบ",
 	},
 	"transporter":{
 		"role":"transport",
@@ -918,14 +918,14 @@ var npcs={
 			"test":0,
 			"d_e":0,
 		},
-		"name":"Alia",
+		"name":"อาเลีย",
 	},
 	"appearance":{
 		"role":"cx",
 		"quest":"cx",
 		"skin":"zengirl",
 		"says":"Now!",
-		"name":"Haila",
+		"name":"ไฮลา",
 		"color":"#D95CB4",
 		"aspeed":"slow",
 	},
@@ -939,7 +939,7 @@ var npcs={
 };
 for(var i=8;i<48;i++){
 	npcs["items"+i]={
-		"name":"X"+i,
+		"name":"เอ็กซ์"+i,
 		"role":"items",
 		"pack":"items"+i,
 		"skin":"mabw",

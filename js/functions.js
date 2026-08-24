@@ -970,7 +970,7 @@ function use_skill(name, target, arg) {
 		socket.emit("skill", { name: name, num: position });
 	} else if (name == "throw") {
 		if (!character.items[arg]) {
-			add_log("Inventory slot is empty", "gray");
+			add_log("ช่องเก็บของว่างเปล่า", "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
 		socket.emit("skill", { name: name, num: arg, id: target });
@@ -999,7 +999,7 @@ function use_skill(name, target, arg) {
 	} else if (G.skills[name] && G.skills[name].target) socket.emit("skill", { name: name, id: target });
 	else if (G.skills[name]) socket.emit("skill", { name: name });
 	else {
-		add_log("Skill not found: " + name, "gray");
+		add_log("ไม่พบสกิล: " + name, "gray");
 		return rejecting_promise({ reason: "no_skill" });
 	}
 	return push_deferred(name);
@@ -1027,7 +1027,7 @@ function on_skill(key, event) {
 				socket.emit("equip", { num: num });
 				push_deferred("equip");
 			}
-		} else add_log("Item not found", "gray");
+		} else add_log("ไม่พบไอเทม", "gray");
 	} else if (name == "attack") {
 		var target = xtarget || ctarget;
 		if (target && target.id) {
@@ -2854,9 +2854,9 @@ function auto_craft(name, code) {
 		});
 	}
 	if (issue) {
-		if (issue == "recipe") add_log("Can't craft that item", "gray");
-		else if (issue == "gold") add_log("Not enough gold", "gray");
-		else if (issue == "items") add_log("Don't have the required items", "gray");
+		if (issue == "recipe") add_log("ไม่สามารถคราฟต์ไอเทมนี้ได้", "gray");
+		else if (issue == "gold") add_log("ทองไม่พอ", "gray");
+		else if (issue == "items") add_log("ไม่มีไอเทมที่ต้องใช้", "gray");
 		if (code) return rejecting_promise({ reason: issue });
 	} else {
 		var items = [],
@@ -5437,7 +5437,7 @@ function new_map_logic(place, data) {
 		add_log("Tavern is a prototype with work in progress", "#63ABE4");
 	} else (dice_bet.active = false), (topleft_npc = false);
 
-	if (is_pvp && (place == "start" || place == "welcome")) add_log("This is a PVP Server. Be careful!", "#E1664C");
+	if (is_pvp && (place == "start" || place == "welcome")) add_log("นี่คือเซิร์ฟเวอร์ PVP ระวังตัวด้วย!", "#E1664C");
 	if (place == "map" && !is_pvp && G.maps[current_map].safe_pvp && !warned[current_map])
 		(warned[current_map] = 1), add_log("This is a Safe PVP Zone. You can lose recently looted items if someone defeats you!", "#E1664C");
 	else if (place == "map" && !is_pvp && G.maps[current_map].pvp && !warned[current_map]) (warned[current_map] = 1), add_log("This is a PVP Zone. Be careful!", "#E1664C");

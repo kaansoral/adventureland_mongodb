@@ -370,21 +370,21 @@ function render_server() {
 function render_character_sheet() {
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top; text-align: left' class='disableclicks'>";
 	html += "<div><span style='color:gray'>Class:</span> " + to_title(character.ctype) + "</div>";
-	html += "<div><span style='color:gray'>Level:</span> " + character.level + "</div>";
-	html += "<div><span style='color:gray'>XP:</span> " + to_pretty_num(character.xp) + " / " + to_pretty_num(character.max_xp) + "</div>";
+	html += "<div><span style='color:gray'>เลเวล:</span> " + character.level + "</div>";
+	html += "<div><span style='color:gray'>ค่าประสบการณ์:</span> " + to_pretty_num(character.xp) + " / " + to_pretty_num(character.max_xp) + "</div>";
 	var divider = 1,
 		disclaimer = "";
 	if (pvp && !(!is_pvp && G.maps[character.map].safe_pvp)) (divider = 10), (disclaimer = "<span style='color:#605B85'>(PVP)</span>");
 	var lost_xp = floor(min(max((character.max_xp * 0.01) / divider, (character.xp * 0.02) / divider), character.xp));
-	if (character.ctype != "merchant") html += "<div><span style='color:gray'>Max XP Loss:</span> " + to_pretty_num(lost_xp) + " " + disclaimer + "</div>";
+	if (character.ctype != "merchant") html += "<div><span style='color:gray'>ค่าประสบการณ์ที่เสียสูงสุด:</span> " + to_pretty_num(lost_xp) + " " + disclaimer + "</div>";
 	if (character.party && party && party[character.name])
-		html += "<div><span style='color:" + colors.party_xp + "'>Party:</span> " + round(party[character.name].share * 100) + "% <span style='color:gray'>(Your Share)</span></div>";
+		html += "<div><span style='color:" + colors.party_xp + "'>Party:</span> " + round(party[character.name].share * 100) + "% <span style='color:gray'>(ส่วนของคุณ)</span></div>";
 	if (character.ctype == "merchant") html += "<div><span style='color:gray'>Tax:</span> " + character.tax * 100 + "%</div>";
 	if (character.ctype == "priest") {
 		html += "<div><span style='color:gray'>Heal:</span> " + character.heal + "</div>";
 	}
-	html += "<div><span style='color:gray'>Attack:</span> " + character.attack + "</div>";
-	html += "<div><span style='color:gray'>Attack Speed:</span> " + round(character.frequency * 100) + "</div>";
+	html += "<div><span style='color:gray'>พลังโจมตี:</span> " + character.attack + "</div>";
+	html += "<div><span style='color:gray'>ความเร็วโจมตี:</span> " + round(character.frequency * 100) + "</div>";
 	html += "<div><span style='color:gray'>Strength:</span> " + character.str + "</div>";
 	html += "<div><span style='color:gray'>Intelligence:</span> " + character["int"] + "</div>";
 	html += "<div><span style='color:gray'>Dexterity:</span> " + character.dex + "</div>";
@@ -411,7 +411,7 @@ function render_character_sheet() {
 		character.pcourage +
 		"</div>";
 	html += "<div><span style='color:gray'>Speed:</span> " + character.speed + "</div>";
-	html += "<div><span style='color:gray'>MP Cost:</span> " + character.mp_cost + "</div>";
+	html += "<div><span style='color:gray'>ค่ามานา:</span> " + character.mp_cost + "</div>";
 	if (character.lifesteal) html += "<div><span style='color:gray'>Lifesteal:</span> " + to_pretty_float(character.lifesteal) + "%</div>";
 	if (character.manasteal) html += "<div><span style='color:gray'>Manasteal:</span> " + to_pretty_float(character.manasteal) + "%</div>";
 	if (character.dreturn) html += "<div><span style='color:gray'>Damage Return:</span> " + to_pretty_float(character.dreturn) + "%</div>";
@@ -425,26 +425,26 @@ function render_character_sheet() {
 	if (character.goldm != 1) {
 		if (character.party && party && party[character.name] && party[character.name].gold)
 			html +=
-				"<div><span style='color:gray'>Gold:</span> " +
+				"<div><span style='color:gray'>ทอง:</span> " +
 				round(character.goldm * 100 - party[character.name].gold) +
 				"% <span style='color:" +
 				colors.gold +
 				"'>+" +
 				party[character.name].gold +
 				"%</span></div>";
-		else html += "<div><span style='color:gray'>Gold:</span> " + round(character.goldm * 100) + "%</div>";
+		else html += "<div><span style='color:gray'>ทอง:</span> " + round(character.goldm * 100) + "%</div>";
 	}
 	if (character.xpm != 1) {
 		if (character.party && party && party[character.name] && party[character.name].xp)
 			html +=
-				"<div><span style='color:gray'>Experience:</span> " +
+				"<div><span style='color:gray'>ประสบการณ์:</span> " +
 				round(character.xpm * 100 - party[character.name].xp) +
 				"% <span style='color:" +
 				colors.stat_xp +
 				"'>+" +
 				party[character.name].xp +
 				"%</span></div>";
-		else html += "<div><span style='color:gray'>Experience:</span> " + round(character.xpm * 100) + "%</div>";
+		else html += "<div><span style='color:gray'>ประสบการณ์:</span> " + round(character.xpm * 100) + "%</div>";
 	}
 	if (character.luckm != 1) {
 		if (character.party && party && party[character.name] && party[character.name].luck)
@@ -546,7 +546,7 @@ function render_mimickers() {
 function render_npc(npc) {
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top;' class='renderedinfo'>";
 	html += bold_prop_line("NPC", npc.name, "gray");
-	html += bold_prop_line("LEVEL", npc.level, "orange");
+	html += bold_prop_line("เลเวล", npc.level, "orange");
 	html += "</div>";
 	$("#topleftcornerui").html(html);
 }
@@ -572,8 +572,8 @@ function render_monster(monster) {
 		stunned: !monster.attack && monster.s.stunned,
 		poisoned: !monster.attack && monster.s.poisoned,
 	});
-	html += info_line({ name: "XP", color: "green", value: xp });
-	if (monster.attack) html += info_line({ name: "ATT", color: "#316EE6", value: smart_num(monster.attack, 10000), stunned: monster.s.stunned, poisoned: monster.s.poisoned });
+	html += info_line({ name: "EXP", color: "green", value: xp });
+	if (monster.attack) html += info_line({ name: "โจมตี", color: "#316EE6", value: smart_num(monster.attack, 10000), stunned: monster.s.stunned, poisoned: monster.s.poisoned });
 	if (def.avoidance) html += info_line({ name: "AVOIDANCE", color: "gray", value: def.avoidance + "%" });
 	if (def.evasion) html += info_line({ name: "EVASION", color: "gray", value: def.evasion + "%" });
 	if (def.reflection) html += info_line({ name: "REFLECT.", color: "gray", value: def.reflection + "%" });
@@ -582,9 +582,9 @@ function render_monster(monster) {
 	if (monster.resistance) html += info_line({ name: "RESIST.", color: "gray", value: monster.resistance });
 	if (def.rpiercing) html += info_line({ name: "PIERCE.", color: "gray", value: def.rpiercing });
 	if (def.apiercing) html += info_line({ name: "PIERCE.", color: "gray", value: def.apiercing });
-	if (def.explosion) html += info_line({ name: "EXPL.", color: "gray", value: def.explosion });
+	if (def.explosion) html += info_line({ name: "ระเบิด", color: "gray", value: def.explosion });
 	if (monster.lifesteal) html += info_line({ name: "LIFESTEAL", color: colors.lifesteal, value: monster.lifesteal + "%" });
-	if (monster["1hp"]) html += info_line({ line: "1HP HITS", color: "#AEAEAE" });
+	if (monster["1hp"]) html += info_line({ line: "โจมตี 1HP", color: "#AEAEAE" });
 	if (monster.cooperative) html += info_line({ line: "COOPERATIVE", color: "#AEAEAE" });
 	if (def.immune) html += info_line({ line: "IMMUNE", color: "#AEAEAE" });
 	if (def.peaceful) html += info_line({ line: "PEACEFUL", color: "#54B25F" });
@@ -715,7 +715,7 @@ function render_character(player) {
 		onclick: "render_cosmetics(xtarget||ctarget,{toggle:true})",
 	});
 	html += "<div class='ihtml'>";
-	ihtml += info_line({ name: "LEVEL", color: "orange", value: player.level, afk: player.afk });
+	ihtml += info_line({ name: "เลเวล", color: "orange", value: player.level, afk: player.afk });
 	ihtml += info_line({ name: "HP", color: colors.hp, value: player.hp + "/" + player.max_hp });
 	ihtml += info_line({ name: "MP", color: "#365DC5", value: player.mp + "/" + player.max_mp });
 	if (player.heal) ihtml += info_line({ name: "HEAL", color: "#CB83AC", value: round(player.heal) });

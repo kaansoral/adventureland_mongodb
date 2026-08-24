@@ -1,6 +1,6 @@
 var classes={
 	"warrior":{
-		"description":"Warriors are strong melee characters. Ideal for both PVE and PVP. Can't go wrong with a warrior.",
+		"description":"นักรบคือนักต่อสู้ระยะประชิดที่แข็งแกร่ง เหมาะทั้ง PVE และ PVP เลือกนักรบไม่ผิดหวัง",
 		"stats":{
 			"str":10,
 			"dex":2,
@@ -118,7 +118,7 @@ var classes={
 		"pcourage":2,
 	},
 	"paladin":{
-		"description":"Paladins are an unbalanced mix-use class!",
+		"description":"ปาลาดินคือคลาสผสมที่ทรงพลังเกินสมดุล!",
 		"stats":{
 			"str":10,
 			"dex":2,
@@ -183,7 +183,7 @@ var classes={
 		"pcourage":5,
 	},
 	"rogue":{
-		"description":"Rogue's are the ideal assassins. Their invis ability makes them super-fun for PVP. They are fast. Not ideal for beginners.",
+		"description":"โจรคือนักสังหารในอุดมคติ ความสามารถล่องหนทำให้สนุกสุด ๆ ใน PVP พวกเขาว่องไวมาก แต่ไม่เหมาะสำหรับมือใหม่",
 		"stats":{
 			"str":4,
 			"dex":10,
@@ -255,7 +255,7 @@ var classes={
 		"pcourage":2,
 	},
 	"ranger":{
-		"description":"Rangers are skilled archers. Expert trackers. Their high range makes them very suitable for beginners.",
+		"description":"นักล่าคือพลธนูผู้ชำนาญ ผู้ติดตามรอยที่เก่งกาจ ระยะโจมตีที่ไกลทำให้เหมาะกับผู้เริ่มต้น",
 		"stats":{
 			"str":3,
 			"dex":10,
@@ -313,7 +313,7 @@ var classes={
 		"pcourage":2,
 	},
 	"mage":{
-		"description":"Mage's are the ideal characters for beginners. They are easy and fun to play. Both PVE and PVP.",
+		"description":"พ่อมดคือตัวละครในอุดมคติสำหรับผู้เริ่มต้น เล่นง่ายและสนุก ทั้ง PVE และ PVP",
 		"stats":{
 			"str":2,
 			"dex":3,
@@ -386,7 +386,7 @@ var classes={
 		"pcourage":2,
 	},
 	"priest":{
-		"description":"Priest's are the healers of the realm. They are not ideal for beginners or solo players. They can't inflict a lot of damage. Every serious party needs at least one priest.",
+		"description":"นักบวชคือผู้รักษาแห่งอาณาจักร ไม่เหมาะสำหรับมือใหม่หรือผู้เล่นเดี่ยว พวกเขาสร้างดาเมจได้ไม่มาก แต่ทุกปาร์ตี้ที่จริงจังต้องมีนักบวชอย่างน้อยหนึ่งคน",
 		"stats":{
 			"str":2,
 			"dex":3,
@@ -450,7 +450,7 @@ var classes={
 		"pcourage":2,
 	},
 	"merchant":{
-		"description":"While your main characters are out there adventuring, merchants can wait in town and market your loots. Server and character limits don't apply to merchants. They gain experience when they sell or buy something.",
+		"description":"ในขณะที่ตัวละครหลักออกผจญภัย พ่อค้าสามารถรออยู่ในเมืองเพื่อขายของที่ปล้นมาได้ ข้อจำกัดของเซิร์ฟเวอร์และตัวละครไม่ใช้กับพ่อค้า พวกเขาได้รับประสบการณ์เมื่อซื้อหรือขายของ",
 		"stats":{
 			"str":1,
 			"dex":4,

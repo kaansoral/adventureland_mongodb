@@ -230,7 +230,7 @@ setInterval(function () {
 				data.time = new Date(data.time);
 				if (new Date() < data.time) {
 					if (reload_state != "synced") {
-						add_log("Reload Synced", colors.serious_green);
+						add_log("ซิงค์ใหม่แล้ว", colors.serious_green);
 					}
 					reload_state = "synced";
 				}
@@ -301,7 +301,7 @@ setInterval(function () {
 }, 200);
 
 function code_button() {
-	add_log("Executed");
+	add_log("ดำเนินการแล้ว");
 	add_tint(".mpui", { ms: 3000 });
 }
 
@@ -329,7 +329,7 @@ function observe_character(name) {
 }
 
 function log_in(user, character, auth, passphrase) {
-	if (!socket) return show_alert("Connect to a server first!");
+	if (!socket) return show_alert("เชื่อมต่อเซิร์ฟเวอร์ก่อน!");
 	real_id = character;
 	if (!passphrase) passphrase = storage_get("passphrase") || "";
 	if (!game_loaded) {
@@ -337,7 +337,7 @@ function log_in(user, character, auth, passphrase) {
 		return;
 	}
 	clear_game_logs();
-	add_log("Connecting ...");
+	add_log("กำลังเชื่อมต่อ ...");
 	var no_html_value = no_html;
 	if (no_html && parent && parent.character) no_html_value = parent.character.name;
 	var data = {
@@ -389,10 +389,10 @@ function disconnect() {
 		// Just reload, better to have more players ;) [23/09/17]
 		auto_reload = true;
 		title_m = "Reloading";
-		add_log("Auto Reload Active", colors.serious_red);
+		add_log("เปิดโหลดซ้ำอัตโนมัติ", colors.serious_red);
 		reload_state = "start";
 	} else if (character_to_load) {
-		add_log("Retrying in 2500ms", "gray");
+		add_log("ลองใหม่ใน 2500ms", "gray");
 		setTimeout(function () {
 			if (is_cli) CLI_OUT.push({ type: "kill" });
 			else window.location.href = page.url; //location.reload(true);
@@ -1231,10 +1231,10 @@ var first_welcome = false;
 function init_socket(args) {
 	if (!args) args = {};
 	if (!server_address) {
-		add_log("Welcome");
-		add_log("No live server found", "red");
-		add_log("Please check again in 2-3 minutes");
-		add_log("Spend this time in our Discord chat room", colors.code_blue);
+		add_log("ยินดีต้อนรับ");
+		add_log("ไม่พบเซิร์ฟเวอร์ที่ใช้งาน", "red");
+		add_log("กรุณาลองใหม่อีกครั้งใน 2-3 นาที");
+		add_log("ใช้เวลารอในห้องแชท Discord", colors.code_blue);
 		add_update_notes();
 		return;
 	}
@@ -1265,7 +1265,7 @@ function init_socket(args) {
 			transports: ["websocket"],
 			query: query,
 		});
-	add_log("Connecting to the server.");
+	add_log("กำลังเชื่อมต่อเซิร์ฟเวอร์.");
 	socket_ready = false;
 	socket_welcomed = false;
 	observing = null;
@@ -1442,7 +1442,7 @@ function init_socket(args) {
 		}
 		if (character.ctype == "merchant" || recording_mode || 1) options.show_names = true;
 		clear_game_logs();
-		add_log("Connected!");
+		add_log("เชื่อมต่อแล้ว!");
 		if (S.holidayseason) add_holiday_log();
 		// add_greenlight_log();
 		if (gameplay == "hardcore") {
@@ -1534,7 +1534,7 @@ function init_socket(args) {
 	});
 	socket.on("correction", function (data) {
 		if (can_move({ map: character.map, x: character.real_x, y: character.real_y, going_x: data.x, going_y: data.y, base: character.base })) {
-			add_log("Location corrected", "gray");
+			add_log("แก้ไขตำแหน่งแล้ว", "gray");
 			console.log("Character correction");
 			character.real_x = parseFloat(data.x);
 			character.real_y = parseFloat(data.y);
@@ -2428,9 +2428,9 @@ function init_socket(args) {
 			} else if (data.type == "fishing_fail") {
 				var sender = get_player(data.name);
 				if (sender) v_shake_i2(sender);
-				if (sender.me) add_log("Failed to fish", "gray");
+				if (sender.me) add_log("ตกปลาไม่สำเร็จ", "gray");
 			} else if (data.type == "fishing_none") {
-				add_log("Didn't catch anything", "gray");
+				add_log("ไม่ได้ปลาอะไรเลย", "gray");
 			} else if (data.type == "fishing_start") {
 				var sender = get_player(data.name);
 				if (sender) {
@@ -2440,9 +2440,9 @@ function init_socket(args) {
 			} else if (data.type == "mining_fail") {
 				var sender = get_player(data.name);
 				if (sender) v_shake_i2(sender);
-				if (sender.me) add_log("Failed to mine", "gray");
+				if (sender.me) add_log("ขุดแร่ไม่สำเร็จ", "gray");
 			} else if (data.type == "mining_none") {
-				add_log("Didn't mine anything", "gray");
+				add_log("ไม่ได้แร่อะไรเลย", "gray");
 			} else if (data.type == "mining_start") {
 				var sender = get_player(data.name);
 				if (sender) {

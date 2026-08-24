@@ -1,80 +1,80 @@
 var achievements={
 	"reach40":{
-		"name":"Become Level 40",
+		"name":"ถึงเลเวล 40",
 		"item":"gem1",
 	},
 	"reach50":{
-		"name":"Become Level 50",
+		"name":"ถึงเลเวล 50",
 		"shells":50,
 	},
 	"reach60":{
-		"name":"Become Level 60",
+		"name":"ถึงเลเวล 60",
 		"shells":100,
 	},
 	"reach70":{
-		"name":"Become Level 70",
+		"name":"ถึงเลเวล 70",
 		"shells":200,
 	},
 	"reach80":{
-		"name":"Become Level 80",
+		"name":"ถึงเลเวล 80",
 		"shells":200,
 	},
 	"reach90":{
-		"name":"Is it even possible?!",
+		"name":"เป็นไปได้ด้วยเหรอ?!",
 		"explanation":"Reach Level 90",
 		"shells":20000,
 	},
 	"upgrade10":{
-		"name":"The Final Frontier",
+		"name":"สุดขอบฟ้า",
 	},
 	"100boss":{
-		"name":"100th Boss",
+		"name":"บอสตัวที่ 100",
 		"explanation":"Defeat 100 Bosses",
 	},
 	"abtesting":{
-		"name":"1000 Test Kills",
+		"name":"สังหารทดสอบ 1000",
 		"explanation":"Get 1000 kills during the A/B Testing Event",
 		"title":"abtesting",
 		"count":1000,
 	},
 	"1000boss":{
-		"name":"1000th Boss",
+		"name":"บอสตัวที่ 1000",
 		"explanation":"Defeat 1,000 Bosses",
 	},
 	"monsterhunter":{
-		"name":"Monster Hunter",
+		"name":"นักล่ามอนสเตอร์",
 		"explanation":"Kill 1,000,000 Monsters",
 	},
 	"discoverlair":{
-		"name":"[Discover] Lair",
+		"name":"[ค้นพบ] ถ้ำลับ",
 		"explanation":"Find the lair of the Spider Queen."
 	},
 	"firehazard":{
-		"name":"Fire Hazard",
+		"name":"ภัยเพลิง",
 		"count":20000,
 		"explanation":"Last hit 20,000 monsters consecutively with only burn damage using same weapon!",
 		"title":"firehazard",
 	},
 	"lucky":{
-		"name":"Lucky",
+		"name":"ผู้โชคดี",
 		"explanation":"Succeed with the exact % on an upgrade or compound.",
 		"title":"lucky",
 	},
 	"stomped":{
-		"name":"Stomped",
+		"name":"ผู้ถูกเหยียบ",
 		"count":1200,
 		"explanation":"Get hit 1,200 times randomly by Stompy, without getting hit by any other monster!",
 		"title":"stomped",
 	},
 	"gooped":{
-		"name":"Gooped",
+		"name":"วุ้นธาตุผู้พิชิต",
 		"count":60000000,
 		"rr":40000,
 		"explanation":"Receive 60M damage from Goo's",
 		"title":"gooped",
 	},
 	"festive":{
-		"name":"Festive",
+		"name":"เทศกาล",
 		"count":400000,
 		"explanation":"Deal 400K damage to Grinch",
 		"title":"festive",

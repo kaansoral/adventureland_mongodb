@@ -1,6 +1,6 @@
 var monsters={
 	"goo":{
-		"name":"Goo","speed":6,"charge":12,"hp":100,"xp":100,"attack":5,"damage_type":"physical","respawn":1,"gold":20,"range":15,"frequency":0.4,"aggro":0,"aa":1,
+		"name":"วุ้นธาตุ","speed":6,"charge":12,"hp":100,"xp":100,"attack":5,"damage_type":"physical","respawn":1,"gold":20,"range":15,"frequency":0.4,"aggro":0,"aa":1,
 		//"immune":true,
 		//"respawn_as":"bee",
 		//"explosion":2000,
@@ -15,7 +15,7 @@ var monsters={
 		],
 	},
 	"bee":{
-		"name":"Bee","speed":12,"hp":300,"xp":400,"attack":16,"damage_type":"physical","respawn":2,"gold":40,"range":20,"frequency":0.5,"aggro":1,"aa":1,"rage":0.1,
+		"name":"ผึ้ง","speed":12,"hp":300,"xp":400,"attack":16,"damage_type":"physical","respawn":2,"gold":40,"range":20,"frequency":0.5,"aggro":1,"aa":1,"rage":0.1,
 		"phresistance":60,
 		//"respawn_as":"goo",
 		"achievements":[
@@ -29,7 +29,7 @@ var monsters={
 		]
 	},
 	"cutebee":{
-		"name":"Cute Bee","speed":12,"hp":300,"xp":400,"attack":16,"damage_type":"physical","respawn":-1,"gold":40,"range":20,"frequency":0.5,"aggro":1,"aa":1,"rage":0.05,
+		"name":"ผึ้งน่ารัก","speed":12,"hp":300,"xp":400,"attack":16,"damage_type":"physical","respawn":-1,"gold":40,"range":20,"frequency":0.5,"aggro":1,"aa":1,"rage":0.05,
 		"phresistance":60,
 		"explanation":"Spawns in Mainland around every 480,000 Bee spawns",
 		//"for":912,
@@ -41,7 +41,7 @@ var monsters={
 		"cute":true,
 	},
 	"squig":{
-		"name":"Squig","speed":10,"hp":1000,"xp":600,"attack":7,"damage_type":"physical","respawn":12,"gold":100,"range":15,"frequency":0.5,"aggro":0,"aa":1,
+		"name":"สควิก","speed":10,"hp":1000,"xp":600,"attack":7,"damage_type":"physical","respawn":12,"gold":100,"range":15,"frequency":0.5,"aggro":0,"aa":1,
 		"achievements":[
 			[10,"stat","mp",5],
 			[100,"stat","mp",5],
@@ -53,7 +53,7 @@ var monsters={
 		]
 	},
 	"squigtoad":{
-		"name":"Squigtoad","speed":16,"hp":9600,"xp":32000,"attack":24,"damage_type":"physical","respawn":120,"gold":200,"range":20,"frequency":0.6,"aggro":0,
+		"name":"สควิกโทด","speed":16,"hp":9600,"xp":32000,"attack":24,"damage_type":"physical","respawn":120,"gold":200,"range":20,"frequency":0.6,"aggro":0,
 		"difficulty":3,
 		"achievements":[
 			[10,"stat","mp",5],
@@ -66,7 +66,7 @@ var monsters={
 		]
 	},
 	"tortoise":{
-		"name":"Tortoise","speed":10,"hp":7200,"xp":5200,"attack":36,"damage_type":"physical","respawn":12,"gold":60,"range":15,"frequency":0.5,"aggro":0,"armor":200,
+		"name":"เต่า","speed":10,"hp":7200,"xp":5200,"attack":36,"damage_type":"physical","respawn":12,"gold":60,"range":15,"frequency":0.5,"aggro":0,"armor":200,
 		"achievements":[
 			[10,"stat","hp",10],
 			[100,"stat","mp",10],
@@ -78,7 +78,7 @@ var monsters={
 		]
 	},
 	"frog":{
-		"name":"Froggie","speed":10,"hp":600,"xp":7200,"attack":24,"damage_type":"physical","respawn":960,"gold":300,"range":15,"frequency":0.5,"aggro":0,"evasion":99,
+		"name":"กบ","speed":10,"hp":600,"xp":7200,"attack":24,"damage_type":"physical","respawn":960,"gold":300,"range":15,"frequency":0.5,"aggro":0,"evasion":99,
 			"difficulty":12,
 		"achievements":[
 			[1,"stat","mp",10],
@@ -91,7 +91,7 @@ var monsters={
 		]
 	},
 	"rat":{
-		"name":"Rat","speed":12,"hp":820,"xp":640,"attack":80,"damage_type":"physical","respawn":2,"gold":32,"range":40,"frequency":0.5,"aggro":1,"rage":1,
+		"name":"หนู","speed":12,"hp":820,"xp":640,"attack":80,"damage_type":"physical","respawn":2,"gold":32,"range":40,"frequency":0.5,"aggro":1,"rage":1,
 		"difficulty":1.4,
 		"achievements":[
 			[10,"stat","hp",10],
@@ -104,14 +104,14 @@ var monsters={
 		]
 	},
 	"jrat":{
-		"name":"Rat","skin":"rat","speed":12,"hp":4000,"xp":100,"attack":240,"damage_type":"physical","respawn":42,"gold":5,"range":40,"frequency":0.5,"aggro":0,
+		"name":"หนู","skin":"rat","speed":12,"hp":4000,"xp":100,"attack":240,"damage_type":"physical","respawn":42,"gold":5,"range":40,"frequency":0.5,"aggro":0,
 		"difficulty":0.2,
 		"achievements":[
 			[1000000,"stat","for",5],
 		]
 	},
 	"croc":{
-		"name":"Croc","speed":10,"hp":3200,"xp":3600,"attack":48,"damage_type":"physical","respawn":6,"gold":55,"range":15,"frequency":0.5,"aggro":0.2,"rage":1,"aa":0,
+		"name":"จระเข้","speed":10,"hp":3200,"xp":3600,"attack":48,"damage_type":"physical","respawn":6,"gold":55,"range":15,"frequency":0.5,"aggro":0.2,"rage":1,"aa":0,
 			"armor":40,
 		"achievements":[
 			[10,"stat","hp",10],
@@ -124,7 +124,7 @@ var monsters={
 		]
 	},
 	"mole":{
-		"name":"Mole","speed":18,"charge":60,"hp":12400,"xp":8000,"attack":480,"damage_type":"physical","respawn":6,"gold":120,"range":15,"frequency":0.8,"aggro":1,"rage":1,"apiercing":320,
+		"name":"ตัวตุ่น","speed":18,"charge":60,"hp":12400,"xp":8000,"attack":480,"damage_type":"physical","respawn":6,"gold":120,"range":15,"frequency":0.8,"aggro":1,"rage":1,"apiercing":320,
 			"difficulty":1.2,
 		"achievements":[
 			[10,"stat","hp",10],
@@ -137,7 +137,7 @@ var monsters={
 		]
 	},
 	"crab":{
-		"name":"Tiny Crab","speed":6,"hp":400,"xp":500,"attack":24,"damage_type":"physical","respawn":0.64,"gold":30,"range":15,"frequency":0.4,"aggro":0.2,"size":0.5,
+		"name":"ปูน้อย","speed":6,"hp":400,"xp":500,"attack":24,"damage_type":"physical","respawn":0.64,"gold":30,"range":15,"frequency":0.4,"aggro":0.2,"size":0.5,
 			"armor":160,
 		"achievements":[
 			[10,"stat","hp",10],
@@ -151,7 +151,7 @@ var monsters={
 		]
 	},
 	"crabx":{
-		"name":"Huge Crab","speed":8,"charge":30,"hp":4200,"xp":3600,"attack":240,"damage_type":"physical","respawn":4,"gold":120,"range":15,"frequency":0.3,"aggro":0.5,
+		"name":"ปูใหญ่","speed":8,"charge":30,"hp":4200,"xp":3600,"attack":240,"damage_type":"physical","respawn":4,"gold":120,"range":15,"frequency":0.3,"aggro":0.5,
 			"armor":210,
 		"achievements":[
 			[10,"stat","hp",10],
@@ -165,7 +165,7 @@ var monsters={
 	},
 	"crabxx":{
 		"skin":"crabx",
-		"name":"Giga Crab","speed":30,"charge":80,"hp":960000,"xp":720000,"attack":16000,"damage_type":"physical","respawn":-1,"gold":120,"range":45,"size":1.5,"frequency":0.3,"aggro":0,
+		"name":"ปูยักษ์","speed":30,"charge":80,"hp":960000,"xp":720000,"attack":16000,"damage_type":"physical","respawn":-1,"gold":120,"range":45,"size":1.5,"frequency":0.3,"aggro":0,
 			"armor":320,
 		"difficulty":10,
 		"special":true,
@@ -179,7 +179,7 @@ var monsters={
 		]
 	},
 	"armadillo":{
-		"name":"Armadillo","speed":14,"hp":1600,"xp":1720,"attack":20,"damage_type":"physical","respawn":3,"gold":80,"range":20,"frequency":0.5,"aggro":0,"dreturn":30,
+		"name":"ตัวนิ่มเหล็ก","speed":14,"hp":1600,"xp":1720,"attack":20,"damage_type":"physical","respawn":3,"gold":80,"range":20,"frequency":0.5,"aggro":0,"dreturn":30,
 			"armor":60,
 			"difficulty":1.1,
 		"achievements":[
@@ -193,7 +193,7 @@ var monsters={
 		]
 	},
 	"porcupine":{
-		"name":"Porcupine","speed":10,"charge":30,"hp":3800,"xp":3200,"attack":16,"damage_type":"physical","respawn":2,"gold":40,"range":20,"frequency":0.5,"aggro":1,"rage":0.4,"dreturn":4800,
+		"name":"เม่น","speed":10,"charge":30,"hp":3800,"xp":3200,"attack":16,"damage_type":"physical","respawn":2,"gold":40,"range":20,"frequency":0.5,"aggro":1,"rage":0.4,"dreturn":4800,
 			"armor":120,
 			"difficulty":1.2,
 		"achievements":[
@@ -207,19 +207,19 @@ var monsters={
 		]
 	},
 	"hen":{
-		"name":"Chicken","speed":10,"hp":60,"xp":10,"attack":48,"damage_type":"physical","respawn":200,"gold":40,"range":20,"frequency":1.5,"aggro":1,"rage":0.2,"cute":true,
+		"name":"ไก่","speed":10,"hp":60,"xp":10,"attack":48,"damage_type":"physical","respawn":200,"gold":40,"range":20,"frequency":1.5,"aggro":1,"rage":0.2,"cute":true,
 		"achievements":[
 			[1000,"stat","gold",2],
 		]
 	},
 	"rooster":{
-		"name":"Chicken","speed":7,"hp":60,"xp":10,"attack":48,"damage_type":"physical","respawn":200,"gold":40,"range":20,"frequency":1.5,"aggro":1,"rage":0.2,"cute":true,
+		"name":"ไก่","speed":7,"hp":60,"xp":10,"attack":48,"damage_type":"physical","respawn":200,"gold":40,"range":20,"frequency":1.5,"aggro":1,"rage":0.2,"cute":true,
 		"achievements":[
 			[1000,"stat","for",1],
 		]
 	},
 	"osnake":{
-		"name":"Snake","speed":12,"hp":720,"xp":1600,"attack":24,"damage_type":"physical","respawn":60,"gold":150,"range":20,"frequency":0.6,"aggro":0,
+		"name":"งู","speed":12,"hp":720,"xp":1600,"attack":24,"damage_type":"physical","respawn":60,"gold":150,"range":20,"frequency":0.6,"aggro":0,
 		"difficulty":2,
 		"achievements":[
 			[10,"stat","mp",10],
@@ -232,7 +232,7 @@ var monsters={
 		]
 	},
 	"snake":{
-		"name":"Snake","speed":12,"hp":720,"xp":960,"attack":24,"damage_type":"physical","respawn":3,"gold":60,"range":20,"frequency":0.6,"aggro":0,
+		"name":"งู","speed":12,"hp":720,"xp":960,"attack":24,"damage_type":"physical","respawn":3,"gold":60,"range":20,"frequency":0.6,"aggro":0,
 		"achievements":[
 			[10,"stat","mp",5],
 			[100,"stat","hp",10],
@@ -244,7 +244,7 @@ var monsters={
 		]
 	},
 	"scorpion":{
-		"name":"Scorpion","speed":24,"hp":24000,"xp":20000,"attack":100,"damage_type":"physical","respawn":6,"gold":100,"range":32,"frequency":0.8,"aggro":0.3,
+		"name":"แมงป่อง","speed":24,"hp":24000,"xp":20000,"attack":100,"damage_type":"physical","respawn":6,"gold":100,"range":32,"frequency":0.8,"aggro":0.3,
 		"armor":200,
 		"achievements":[
 			[10,"stat","mp",10],
@@ -257,7 +257,7 @@ var monsters={
 		]
 	},
 	"gscorpion":{
-		"name":"Scorpion","speed":24,"hp":32000,"xp":48000,"attack":120,"damage_type":"physical","respawn":6,"gold":240,"range":32,"frequency":0.8,"aggro":0.3,
+		"name":"แมงป่อง","speed":24,"hp":32000,"xp":48000,"attack":120,"damage_type":"physical","respawn":6,"gold":240,"range":32,"frequency":0.8,"aggro":0.3,
 		"armor":300,
 		"achievements":[
 			[10,"stat","hp",10],
@@ -270,7 +270,7 @@ var monsters={
 		]
 	},
 	"xscorpion":{
-		"name":"Scorpion","speed":24,"hp":140000,"xp":172000,"attack":720,"damage_type":"physical","respawn":16,"gold":920,"range":32,"frequency":0.8,"aggro":0.3,
+		"name":"แมงป่อง","speed":24,"hp":140000,"xp":172000,"attack":720,"damage_type":"physical","respawn":16,"gold":920,"range":32,"frequency":0.8,"aggro":0.3,
 		"armor":400,
 		"achievements":[
 			[10,"stat","mp",10],
@@ -283,7 +283,7 @@ var monsters={
 		],
 	},
 	"bscorpion":{
-		"name":"Black Scorpion","speed":24,"hp":576900,"xp":634800,"armor":600,"resistance":400,"attack":3200,"damage_type":"physical","respawn":6,"gold":920,"range":32,"frequency":0.6,"aggro":0.8,
+		"name":"แมงป่องดำ","speed":24,"hp":576900,"xp":634800,"armor":600,"resistance":400,"attack":3200,"damage_type":"physical","respawn":6,"gold":920,"range":32,"frequency":0.6,"aggro":0.8,
 		"armor":500,
 		"resistance":240,
 		"crit":10,
@@ -304,7 +304,7 @@ var monsters={
 		],
 	},
 	"ghost":{
-		"name":"Ghost","speed":12,"hp":12000,"xp":16000,"attack":200,"damage_type":"magical","respawn":4,"gold":600,"range":120,"frequency":1,"aggro":0.05,"hit":"explode_p","evasion":20,"resistance":400,
+		"name":"ผี","speed":12,"hp":12000,"xp":16000,"attack":200,"damage_type":"magical","respawn":4,"gold":600,"range":120,"frequency":1,"aggro":0.05,"hit":"explode_p","evasion":20,"resistance":400,
 		"phresistance":90,
 		"achievements":[
 			[10,"stat","mp",10],
@@ -317,7 +317,7 @@ var monsters={
 		]
 	},
 	"harpy":{
-		"name":"Harpy","speed":12,"charge":96,"hp":160000,"xp":192000,"attack":1720,"damage_type":"magical","respawn":4,"gold":600,"range":220,"frequency":0.8,"aggro":0.01,"hit":"explode_p","resistance":600,"armor":160,
+		"name":"นางนภา","speed":12,"charge":96,"hp":160000,"xp":192000,"attack":1720,"damage_type":"magical","respawn":4,"gold":600,"range":220,"frequency":0.8,"aggro":0.01,"hit":"explode_p","resistance":600,"armor":160,
 			//"cooperative":true,
 			"difficulty":2,
 			"rpiercing":160,
@@ -334,7 +334,7 @@ var monsters={
 		]
 	},
 	"rharpy":{
-		"name":"Rebel Harpy","speed":18,"charge":116,"hp":320000,"xp":332000,"attack":1420,"damage_type":"magical","respawn":400,"gold":600,"range":30,"frequency":0.7,"aggro":1.2,"rage":1.2,"hit":"momentum","resistance":240,"armor":360,
+		"name":"นางนภาผู้กบฏ","speed":18,"charge":116,"hp":320000,"xp":332000,"attack":1420,"damage_type":"magical","respawn":400,"gold":600,"range":30,"frequency":0.7,"aggro":1.2,"rage":1.2,"hit":"momentum","resistance":240,"armor":360,
 			"cooperative":true,
 			"difficulty":3,
 			"apiercing":160,
@@ -350,7 +350,7 @@ var monsters={
 		]
 	},
 	"fvampire":{
-		"name":"Ms. Dracul","speed":40,"hp":240000,"xp":200000,"attack":875,"damage_type":"magical","respawn":24*60,"gold":24000,"range":120,"frequency":1.2,"aggro":0.05,"hit":"explode_c","prefix":"","resistance":300,"armor":100,
+		"name":"คุณนายดรากุล","speed":40,"hp":240000,"xp":200000,"attack":875,"damage_type":"magical","respawn":24*60,"gold":24000,"range":120,"frequency":1.2,"aggro":0.05,"hit":"explode_c","prefix":"","resistance":300,"armor":100,
 		"humanoid":true,
 		"rbuff":"mlifesteal",
 		"achievements":[
@@ -364,7 +364,7 @@ var monsters={
 		]
 	},
 	"minimush":{
-		"name":"Pom Pom","speed":12,"hp":500,"xp":600,"attack":120,"damage_type":"magical","respawn":4,"gold":70,"range":120,"frequency":1,"aggro":0.05,"hit":"explode_p",
+		"name":"ปอมปอม","speed":12,"hp":500,"xp":600,"attack":120,"damage_type":"magical","respawn":4,"gold":70,"range":120,"frequency":1,"aggro":0.05,"hit":"explode_p",
 		"resistance":120,
 		"achievements":[
 			[10,"stat","hp",10],
@@ -377,7 +377,7 @@ var monsters={
 		]
 	},
 	"spider":{
-		"name":"Spider","speed":24,"hp":18000,"xp":12000,"attack":80,"damage_type":"physical","respawn":14,"gold":180,"range":32,"frequency":1,"aggro":0.3,
+		"name":"แมงมุม","speed":24,"hp":18000,"xp":12000,"attack":80,"damage_type":"physical","respawn":14,"gold":180,"range":32,"frequency":1,"aggro":0.3,
 		"achievements":[
 			[10,"stat","mp",10],
 			[100,"stat","mp",10],
@@ -389,7 +389,7 @@ var monsters={
 		]
 	},
 	"bat":{
-		"name":"Bat","speed":24,"hp":9600,"xp":8000,"attack":50,"damage_type":"physical","respawn":12,"gold":120,"range":35,"frequency":0.7,"aggro":0.3,"aa":1,
+		"name":"ค้างคาว","speed":24,"hp":9600,"xp":8000,"attack":50,"damage_type":"physical","respawn":12,"gold":120,"range":35,"frequency":0.7,"aggro":0.3,"aa":1,
 		"resistance":120,
 		"phresistance":35,
 		"achievements":[
@@ -404,7 +404,7 @@ var monsters={
 	},
 	"nerfedbat":{
 		"skin":"bat",
-		"name":"Bat","speed":24,"hp":2400,"xp":400,"attack":50,"damage_type":"physical","respawn":12,"gold":120,"range":35,"frequency":0.7,"aggro":0.3,"aa":1,
+		"name":"ค้างคาว","speed":24,"hp":2400,"xp":400,"attack":50,"damage_type":"physical","respawn":12,"gold":120,"range":35,"frequency":0.7,"aggro":0.3,"aa":1,
 		"resistance":120,
 		"phresistance":35,
 		"achievements":[
@@ -413,13 +413,13 @@ var monsters={
 		]
 	},
 	"dknight2":{
-		"name":"Dark Knight","speed":28,"hp":86000,"xp":72000,"attack":2275,"damage_type":"physical","respawn":40,"gold":800,"range":32,"frequency":1.2,"aggro":0.3,"armor":200,"hide":true,
+		"name":"อัศวินมืด","speed":28,"hp":86000,"xp":72000,"attack":2275,"damage_type":"physical","respawn":40,"gold":800,"range":32,"frequency":1.2,"aggro":0.3,"armor":200,"hide":true,
 		"achievements":[
 			[1,"stat","luck",50],
 		]
 	},
 	"mvampire":{
-		"name":"Dracul","speed":40,"hp":240000,"xp":200000,"attack":245,"damage_type":"magical","respawn":18*60,"gold":16000,"range":120,"frequency":1.2,"aggro":0.05,"hit":"explode_c","prefix":"","resistance":150,"armor":90,
+		"name":"ดรากุล","speed":40,"hp":240000,"xp":200000,"attack":245,"damage_type":"magical","respawn":18*60,"gold":16000,"range":120,"frequency":1.2,"aggro":0.05,"hit":"explode_c","prefix":"","resistance":150,"armor":90,
 		"humanoid":true,
 		"rbuff":"mlifesteal",
 		"achievements":[
@@ -433,7 +433,7 @@ var monsters={
 		]
 	},
 	"phoenix":{
-		"name":"Phoenix","speed":50,"hp":160000,"xp":180000,"attack":125,"damage_type":"magical","respawn":32,"gold":7200,"range":120,"frequency":1.2,"aggro":0.2,"aa":1,"hit":"explode_a","prefix":"the",
+		"name":"นกไฟ","speed":50,"hp":160000,"xp":180000,"attack":125,"damage_type":"magical","respawn":32,"gold":7200,"range":120,"frequency":1.2,"aggro":0.2,"aa":1,"hit":"explode_a","prefix":"the",
 		"phresistance":40,
 		"resistance":160,
 		"cooperative":true,
@@ -448,7 +448,7 @@ var monsters={
 		]
 	},
 	"cgoo":{
-		"name":"Irradiated Goo","speed":9,"hp":2400,"xp":4800,"attack":320,"damage_type":"physical","respawn":48,"gold":240,"range":64,"frequency":1.2,"aggro":0.1,"aa":1,
+		"name":"วุ้นพิษรังสี","speed":9,"hp":2400,"xp":4800,"attack":320,"damage_type":"physical","respawn":48,"gold":240,"range":64,"frequency":1.2,"aggro":0.1,"aa":1,
 		"resistance":260,
 		"difficulty":6,
 		"achievements":[
@@ -462,7 +462,7 @@ var monsters={
 		]
 	},
 	"bgoo":{
-		"name":"Brawl Goo","skin":"goo4","speed":6,"charge":12,"hp":100000,"xp":100000,"attack":5,"damage_type":"physical","respawn":-1,"gold":20,"range":15,"frequency":0.4,"aggro":0,"aa":1,
+		"name":"วุ้นนักสู้","skin":"goo4","speed":6,"charge":12,"hp":100000,"xp":100000,"attack":5,"damage_type":"physical","respawn":-1,"gold":20,"range":15,"frequency":0.4,"aggro":0,"aa":1,
 		"armor":200,
 		"resistance":200,
 		"cooperative":true,
@@ -476,7 +476,7 @@ var monsters={
 		],
 	},
 	"rgoo":{
-		"name":"Rainbow Goo","skin":"gooD","speed":9,"hp":1000000,"xp":48000000,"attack":320,"damage_type":"physical","respawn":-1,"gold":240,"range":64,"frequency":1.2,"aggro":0.1,"aa":1,
+		"name":"วุ้นสีรุ้ง","skin":"gooD","speed":9,"hp":1000000,"xp":48000000,"attack":320,"damage_type":"physical","respawn":-1,"gold":240,"range":64,"frequency":1.2,"aggro":0.1,"aa":1,
 		"armor":300,
 		"resistance":300,
 		"size":1.5,
@@ -488,7 +488,7 @@ var monsters={
 		]
 	},
 	"skeletor":{
-		"name":"Skeletor","speed":40,"hp":80000,"xp":120000,"attack":1800,"damage_type":"physical","respawn":16*60,"gold":20000,"range":80,"frequency":1.2,"aggro":0.2,
+		"name":"สเกลเลเตอร์","speed":40,"hp":80000,"xp":120000,"attack":1800,"damage_type":"physical","respawn":16*60,"gold":20000,"range":80,"frequency":1.2,"aggro":0.2,
 		"slots":{"mainhand":{"name":"scythe","level":8}},
 		"achievements":[
 			[1,"stat","for",1],
@@ -501,7 +501,7 @@ var monsters={
 		]
 	},
 	"ligerx":{
-		"name":"Liger X","speed":30,"hp":80000,"xp":120000,"attack":1800,"damage_type":"physical","respawn":16*60,"gold":20000,"range":80,"frequency":1.2,"aggro":0.2,"charge":60,"explanation":"A genetically modified and cybernetically enhanced beast!",
+		"name":"ไลเกอร์ X","speed":30,"hp":80000,"xp":120000,"attack":1800,"damage_type":"physical","respawn":16*60,"gold":20000,"range":80,"frequency":1.2,"aggro":0.2,"charge":60,"explanation":"A genetically modified and cybernetically enhanced beast!",
 		"achievements":[
 			[1,"stat","luck",50],
 		]
@@ -509,7 +509,7 @@ var monsters={
 
 	//main2
 	"bigbird":{
-		"name":"Hawk","speed":24,"charge":52,"hp":32000,"xp":30000,"attack":480,"damage_type":"physical","respawn":12,"gold":480,"range":20,"frequency":0.8,"aggro":1,"rage":0.4,"evasion":20,"aa":1,
+		"name":"เหยี่ยว","speed":24,"charge":52,"hp":32000,"xp":30000,"attack":480,"damage_type":"physical","respawn":12,"gold":480,"range":20,"frequency":0.8,"aggro":1,"rage":0.4,"evasion":20,"aa":1,
 		"phresistance":30,
 		"achievements":[
 			[10,"stat","mp",10],
@@ -522,7 +522,7 @@ var monsters={
 		]
 	},
 	"poisio":{
-		"name":"Poisio","speed":24,"hp":3600,"xp":4000,"attack":240,"damage_type":"physical","respawn":6,"gold":80,"range":20,"frequency":0.6,"aggro":1,"rage":0.2,
+		"name":"พอยเซียว","speed":24,"hp":3600,"xp":4000,"attack":240,"damage_type":"physical","respawn":6,"gold":80,"range":20,"frequency":0.6,"aggro":1,"rage":0.2,
 		"achievements":[
 			[10,"stat","mp",10],
 			[100,"stat","hp",20],
@@ -535,7 +535,7 @@ var monsters={
 	},
 	//winter
 	"stompy":{
-		"name":"Stompy","speed":40,"charge":80,"hp":640000,"xp":600000,"attack":3600,"damage_type":"physical","respawn":36*60,"gold":80000,"range":64,"frequency":0.8,"aggro":0.2,
+		"name":"สตอมปี้","speed":40,"charge":80,"hp":640000,"xp":600000,"attack":3600,"damage_type":"physical","respawn":36*60,"gold":80000,"range":64,"frequency":0.8,"aggro":0.2,
 		"achievements":[
 			[1,"stat","hp",50],
 			[10,"stat","mp",20],
@@ -547,7 +547,7 @@ var monsters={
 		]
 	},
 	"arcticbee":{
-		"name":"Arctic Bee","speed":12,"hp":1600,"xp":1800,"attack":64,"damage_type":"physical","respawn":1,"gold":60,"range":20,"frequency":0.6,"aggro":1,"aa":1,"rage":0.05,
+		"name":"ผึ้งน้ำแข็ง","speed":12,"hp":1600,"xp":1800,"attack":64,"damage_type":"physical","respawn":1,"gold":60,"range":20,"frequency":0.6,"aggro":1,"aa":1,"rage":0.05,
 		"phresistance":50,
 		"achievements":[
 			[10,"stat","mp",10],
@@ -560,7 +560,7 @@ var monsters={
 		]
 	},
 	"wolf":{
-		"name":"White Wolf","speed":24,"charge":152,"hp":48000,"xp":48800,"attack":480,"damage_type":"physical","respawn":12,"gold":480,"range":20,"frequency":0.8,"aggro":1,"rage":1,"resistance":200,"armor":300,
+		"name":"หมาป่าขาว","speed":24,"charge":152,"hp":48000,"xp":48800,"attack":480,"damage_type":"physical","respawn":12,"gold":480,"range":20,"frequency":0.8,"aggro":1,"rage":1,"resistance":200,"armor":300,
 		"achievements":[
 			[1,"stat","hp",20],
 			[100,"stat","mp",20],
@@ -573,7 +573,7 @@ var monsters={
 		//"supporter":true,
 	},
 	"wolfie":{
-		"name":"Dark Hound","speed":24,"charge":52,"hp":19200,"xp":16400,"attack":320,"damage_type":"physical","respawn":12,"gold":360,"range":20,"frequency":0.8,"aggro":1,"rage":1,"resistance":100,"armor":200,
+		"name":"สุนัขปีศาจ","speed":24,"charge":52,"hp":19200,"xp":16400,"attack":320,"damage_type":"physical","respawn":12,"gold":360,"range":20,"frequency":0.8,"aggro":1,"rage":1,"resistance":100,"armor":200,
 		"achievements":[
 			[1,"stat","hp",20],
 			[100,"stat","mp",20],
@@ -585,7 +585,7 @@ var monsters={
 		]
 	},
 	"boar":{
-		"name":"Wild Boar","speed":20,"charge":40,"hp":12000,"xp":10800,"attack":240,"damage_type":"physical","respawn":10,"gold":240,"range":24,"frequency":0.7,"aggro":1,"rage":1,"armor":100,
+		"name":"หมูป่า","speed":20,"charge":40,"hp":12000,"xp":10800,"attack":240,"damage_type":"physical","respawn":10,"gold":240,"range":24,"frequency":0.7,"aggro":1,"rage":1,"armor":100,
 		"achievements":[
 			[10,"stat","hp",10],
 			[100,"stat","mp",20],
@@ -597,7 +597,7 @@ var monsters={
 		]
 	},
 	"iceroamer":{
-		"name":"Water Spirit","speed":20,"hp":3600,"xp":4200,"attack":120,"damage_type":"magical","respawn":2,"gold":180,"range":100,"frequency":0.7,"aggro":0.2,"reflection":8,"rpiercing":320,"evasion":10,"hit":"explode_p",
+		"name":"วิญญาณธารา","speed":20,"hp":3600,"xp":4200,"attack":120,"damage_type":"magical","respawn":2,"gold":180,"range":100,"frequency":0.7,"aggro":0.2,"reflection":8,"rpiercing":320,"evasion":10,"hit":"explode_p",
 		"phresistance":50,
 		"achievements":[
 			[10,"stat","mp",10],
@@ -610,7 +610,7 @@ var monsters={
 		]
 	},
 	"fireroamer":{
-		"name":"Fire Spirit","speed":24,"hp":84000,"xp":64200,"attack":320,"damage_type":"magical","respawn":2,"gold":180,"range":280,"frequency":1.2,"aggro":0.2,"rpiercing":320,"evasion":4,"resistance":320,"armor":120,"hit":"explode_p",
+		"name":"วิญญาณเพลิง","speed":24,"hp":84000,"xp":64200,"attack":320,"damage_type":"magical","respawn":2,"gold":180,"range":280,"frequency":1.2,"aggro":0.2,"rpiercing":320,"evasion":4,"resistance":320,"armor":120,"hit":"explode_p",
 		"phresistance":50,
 		"difficulty":1.1,
 		"abilities":{"burn":{"unlimited":true,"attr0":100}},
@@ -625,7 +625,7 @@ var monsters={
 		]
 	},
 	"bbpompom":{
-		"name":"Pom Pom","speed":18,"hp":6400,"xp":6000,"attack":320,"damage_type":"magical","respawn":4,"gold":280,"range":280,"frequency":0.6,"aggro":0.2,"resistance":160,"hit":"explode_p",
+		"name":"ปอมปอม","speed":18,"hp":6400,"xp":6000,"attack":320,"damage_type":"magical","respawn":4,"gold":280,"range":280,"frequency":0.6,"aggro":0.2,"resistance":160,"hit":"explode_p",
 		"achievements":[
 			[10,"stat","mp",10],
 			[100,"stat","mp",20],
@@ -638,7 +638,7 @@ var monsters={
 	},
 	//underground
 	"prat":{
-		"name":"Vampire Rat","speed":12,"charge":86,"hp":9200,"xp":7600,"attack":320,"armor":160,"damage_type":"physical","respawn":4,"range":32,"frequency":1.6,"aggro":1,"rage":0.4,"lifesteal":120,
+		"name":"หนูแวมไพร์","speed":12,"charge":86,"hp":9200,"xp":7600,"attack":320,"armor":160,"damage_type":"physical","respawn":4,"range":32,"frequency":1.6,"aggro":1,"rage":0.4,"lifesteal":120,
 		"achievements":[
 			[1,"stat","hp",10],
 			[100,"stat","hp",20],
@@ -650,7 +650,7 @@ var monsters={
 		]
 	},
 	"pppompom":{
-		"name":"Pom Pom","speed":18,"hp":64000,"xp":62400,"attack":920,"damage_type":"physical","respawn":4,"gold":280,"range":300,"frequency":1.32,"aggro":0.2,"resistance":480,"hit":"explode_p",
+		"name":"ปอมปอม","speed":18,"hp":64000,"xp":62400,"attack":920,"damage_type":"physical","respawn":4,"gold":280,"range":300,"frequency":1.32,"aggro":0.2,"resistance":480,"hit":"explode_p",
 		"difficulty":1.20,
 		"poisonous":true,
 		"achievements":[
@@ -664,7 +664,7 @@ var monsters={
 		]
 	},
 	"oneeye":{
-		"name":"One Eye","speed":24,"hp":420000,"xp":582000,"armor":160,"resistance":160,"attack":480,"damage_type":"physical","respawn":4,"gold":32,"range":40,"frequency":3,"aggro":1,"rage":0,
+		"name":"ตาเดียว","speed":24,"hp":420000,"xp":582000,"armor":160,"resistance":160,"attack":480,"damage_type":"physical","respawn":4,"gold":32,"range":40,"frequency":3,"aggro":1,"rage":0,
 		"phresistance":30,
 		"difficulty":1.20,
 		"abilities":{
@@ -682,7 +682,7 @@ var monsters={
 	},
 	//halloween2
 	"mummy":{
-		"name":"Mummy","speed":16,"charge":96,"hp":12000,"xp":16000,"attack":420,"damage_type":"physical","respawn":24,"gold":100,"range":48,"frequency":1.2,"aggro":1.5,"rage":1.5,
+		"name":"มัมมี่","speed":16,"charge":96,"hp":12000,"xp":16000,"attack":420,"damage_type":"physical","respawn":24,"gold":100,"range":48,"frequency":1.2,"aggro":1.5,"rage":1.5,
 		"difficulty":2,
 		"achievements":[
 			[1,"stat","hp",20],
@@ -707,7 +707,7 @@ var monsters={
 		]
 	},
 	"booboo":{
-		"name":"Boo Boo","speed":16,"charge":96,"hp":8000,"xp":12000,"attack":220,"damage_type":"pure","respawn":48,"gold":30,"range":420,"frequency":1.2,"aggro":1.5,"aa":1,"rage":1.5,
+		"name":"ผีน้อย","speed":16,"charge":96,"hp":8000,"xp":12000,"attack":220,"damage_type":"pure","respawn":48,"gold":30,"range":420,"frequency":1.2,"aggro":1.5,"aa":1,"rage":1.5,
 		"phresistance":50,
 		"difficulty":1.25,
 		"achievements":[
@@ -721,7 +721,7 @@ var monsters={
 		]
 	},
 	"pinkgoblin":{
-		"name":"Pink Goblin","speed":40,"hp":420000,"xp":460000,
+		"name":"ก็อบลินชมพู","speed":40,"hp":420000,"xp":460000,
 		"attack":2400,
 		"damage_type":"magical","respawn":40,"gold":16000,"range":240,"frequency":0.4,"aggro":0,"hit":"explode_p","prefix":"","resistance":350,"armor":200,
 		"abilities":{"self_healing":{"heal":96000,"cooldown":4000}},
@@ -737,7 +737,7 @@ var monsters={
 		]
 	},
 	"stoneworm":{
-		"name":"Stone Worm","speed":12,"charge":46,"hp":2200,"xp":2400,"attack":360,"damage_type":"physical","respawn":1,"gold":64,"range":20,"frequency":0.6,"aggro":1,"rage":1,"apiercing":800,"balance":"Spadar",
+		"name":"หนอนหิน","speed":12,"charge":46,"hp":2200,"xp":2400,"attack":360,"damage_type":"physical","respawn":1,"gold":64,"range":20,"frequency":0.6,"aggro":1,"rage":1,"apiercing":800,"balance":"Spadar",
 		"achievements":[
 			[10,"stat","hp",10],
 			[100,"stat","mp",20],
@@ -749,7 +749,7 @@ var monsters={
 		]
 	},
 	"mrgreen":{
-		"name":"Mr. Green","speed":40,"charge":90,"hp":36000000,"xp":48000000,"attack":1200,"damage_type":"physical",
+		"name":"คุณกรีน","speed":40,"charge":90,"hp":36000000,"xp":48000000,"attack":1200,"damage_type":"physical",
 		"respawn":94*60,"phresistance":100,
 		"gold":16000,"range":620,"frequency":1.6,"aggro":1,"rage":1,"apiercing":320,"resistance":900,"cooperative":true,"announce":"#256943",
 		"cbuff":[[60,"halloween0"],[70,"halloween1"],[200,"halloween2"]],
@@ -767,7 +767,7 @@ var monsters={
 		]
 	},
 	"slenderman":{
-		"name":"Slenderman","speed":280,"hp":66666,"xp":4800,"attack":3600,"damage_type":"physical","respawn":60*10,"gold":16000,"range":52,"frequency":0.3,"aggro":0.05,
+		"name":"สเลนเดอร์แมน","speed":280,"hp":66666,"xp":4800,"attack":3600,"damage_type":"physical","respawn":60*10,"gold":16000,"range":52,"frequency":0.3,"aggro":0.05,
 		"reflection":96,
 		"immune":true,
 		"special":true,
@@ -782,7 +782,7 @@ var monsters={
 		]
 	},
 	"mrpumpkin":{
-		"name":"Mr. Pumpkin","speed":40,"hp":36000000,"xp":48000000,"attack":1200,"damage_type":"magical",
+		"name":"คุณฟักทอง","speed":40,"hp":36000000,"xp":48000000,"attack":1200,"damage_type":"magical",
 		"respawn":54*60,
 		"phresistance":100,
 		"gold":16000,"range":520,"frequency":1,"aggro":0.05,"hit":"explode_c","cooperative":true,"announce":"#FD8940",
@@ -801,7 +801,7 @@ var monsters={
 		]
 	},
 	"greenjr":{
-		"name":"Green Jr.","speed":60,"charge":120,"hp":4200,"xp":120000,"attack":30,"damage_type":"physical",
+		"name":"จูเนียร์เขียว","speed":60,"charge":120,"hp":4200,"xp":120000,"attack":30,"damage_type":"physical",
 		"cbuff":[[60,"halloween0"],[70,"halloween1"],[200,"halloween2"]],
 		"respawn":480 && 12*72*60, //sprocess_game_data
 		"gold":16000,"range":80,"frequency":20,"aggro":1,"rage":1,"rpiercing":420,"resistance":400,"evasion":40,"reflection":4,
@@ -817,7 +817,7 @@ var monsters={
 		]
 	},
 	"jr":{
-		"name":"Jr.","speed":40,"charge":90,"hp":3200,"xp":80000,"attack":10,"damage_type":"magical",
+		"name":"จูเนียร์","speed":40,"charge":90,"hp":3200,"xp":80000,"attack":10,"damage_type":"magical",
 		"cbuff":[[60,"halloween0"],[70,"halloween1"],[200,"halloween2"]],
 		"respawn":480 && 6*72*60, //sprocess_game_data
 		"gold":6000,"range":30,"frequency":20,"aggro":1,"rage":1,"resistance":400,"evasion":80,
@@ -838,7 +838,7 @@ var monsters={
 
 	//prototypes
 	"plantoid":{
-		"name":"Sprawling","speed":20,"hp":120000,"xp":96000,"attack":640,"damage_type":"physical","respawn":18,"gold":1,"range":80,"frequency":1.2,"aggro":0.2,"armor":160,"resistance":190,
+		"name":"สปรอลลิ่ง","speed":20,"hp":120000,"xp":96000,"attack":640,"damage_type":"physical","respawn":18,"gold":1,"range":80,"frequency":1.2,"aggro":0.2,"armor":160,"resistance":190,
 		"achievements":[
 			[1,"stat","mp",10],
 			[100,"stat","hp",20],
@@ -850,7 +850,7 @@ var monsters={
 		]
 	},
 	"icegolem":{
-		"name":"Ice Golem","speed":12,"charge":48,"hp":16000000,"xp":92000000,"attack":2400,"damage_type":"physical","respawn":-1,"gold":1,"range":64,"frequency":1.2,"aggro":0.2,"resistance":800,"armor":800,
+		"name":"โกเลมน้ำแข็ง","speed":12,"charge":48,"hp":16000000,"xp":92000000,"attack":2400,"damage_type":"physical","respawn":-1,"gold":1,"range":64,"frequency":1.2,"aggro":0.2,"resistance":800,"armor":800,
 		"announce":true,
 		"special":true,
 		"phresistance":40,
@@ -863,7 +863,7 @@ var monsters={
 		]
 	},
 	"ent":{
-		"name":"Ent","speed":12,"charge":48,"hp":8000000,"xp":9200000,"attack":3600,"damage_type":"physical","respawn":12,"gold":1,"range":64,"frequency":1.2,"aggro":0.2,"resistance":100,"armor":100,
+		"name":"ต้นไม้ยักษ์","speed":12,"charge":48,"hp":8000000,"xp":9200000,"attack":3600,"damage_type":"physical","respawn":12,"gold":1,"range":64,"frequency":1.2,"aggro":0.2,"resistance":100,"armor":100,
 		"phresistance":15,
 		"abilities":{
 			"mtangle":{"cooldown":3200}
@@ -879,7 +879,7 @@ var monsters={
 		]
 	},
 	"sparkbot":{
-		"name":"Spark Bot","speed":20,"charge":75,"hp":325000,"xp":400000,"attack":754,"damage_type":"magical","respawn":6,"gold":1,"range":185,"frequency":1.56,"aggro":0.1,"reflection":8,"armor":140,"resistance":160,
+		"name":"หุ่นประกายไฟ","speed":20,"charge":75,"hp":325000,"xp":400000,"attack":754,"damage_type":"magical","respawn":6,"gold":1,"range":185,"frequency":1.56,"aggro":0.1,"reflection":8,"armor":140,"resistance":160,
 		"achievements":[
 			[1,"stat","hp",10],
 			[100,"stat","mp",25],
@@ -891,7 +891,7 @@ var monsters={
 		]
 	},
 	"targetron":{
-		"name":"Targetron","speed":20,"charge":60,"hp":325000,"xp":400000,"attack":377,"damage_type":"physical","respawn":6,"gold":15,"range":200,"frequency":3.12,"aggro":0.1,"dreturn":2,"armor":160,"resistance":140,"explosion":15,
+		"name":"ทาร์เก็ตรอน","speed":20,"charge":60,"hp":325000,"xp":400000,"attack":377,"damage_type":"physical","respawn":6,"gold":15,"range":200,"frequency":3.12,"aggro":0.1,"dreturn":2,"armor":160,"resistance":140,"explosion":15,
 		"achievements":[
 			[1,"stat","mp",10],
 			[100,"stat","hp",25],
@@ -903,7 +903,7 @@ var monsters={
 		]
 	},
 	"dryad":{
-		"name":"Dryad","speed":24,"charge":48,"hp":80000,"xp":60000,"attack":400,"damage_type":"magical","respawn":2,"gold":1,"range":160,"frequency":1,"aggro":0.1,"armor":65,"resistance":100,
+		"name":"นางไม้","speed":24,"charge":48,"hp":80000,"xp":60000,"attack":400,"damage_type":"magical","respawn":2,"gold":1,"range":160,"frequency":1,"aggro":0.1,"armor":65,"resistance":100,
 		"abilities":{
 			"mtangle":{"cooldown":5000}
 		},
@@ -918,7 +918,7 @@ var monsters={
 		]
 	},
 	"odino":{
-		"name":"Dino","speed":28,"charge":52,"hp":165000,"xp":140000,"attack":550,"damage_type":"physical","respawn":3,"gold":1,"range":50,"frequency":0.9,"aggro":0.2,"armor":135,"resistance":65,"apiercing":25,
+		"name":"ไดโน","speed":28,"charge":52,"hp":165000,"xp":140000,"attack":550,"damage_type":"physical","respawn":3,"gold":1,"range":50,"frequency":0.9,"aggro":0.2,"armor":135,"resistance":65,"apiercing":25,
 		"crit":5,
 		"achievements":[
 			[1,"stat","hp",10],
@@ -931,17 +931,17 @@ var monsters={
 		]
 	},
 	"spiderr":{
-		"name":"Red Spider Queen","speed":0,"charge":0,"hp":4500000,"xp":9000000,"difficulty":15,"attack":10000,"damage_type":"physical","stationary":true,"respawn":-1,"gold":1,"range":640,"frequency":0.4,"aggro":1,"rage":1,
+		"name":"ราชินีแมงมุมแดง","speed":0,"charge":0,"hp":4500000,"xp":9000000,"difficulty":15,"attack":10000,"damage_type":"physical","stationary":true,"respawn":-1,"gold":1,"range":640,"frequency":0.4,"aggro":1,"rage":1,
 		"armor":65,"resistance":80,
 		"spawns":[[8000,"spider"]],
 	},
 	"spiderbl":{
-		"name":"Black Spider Queen","speed":0,"charge":0,"hp":4500000,"xp":9000000,"difficulty":12,"attack":1200,"damage_type":"physical","stationary":true,"respawn":-1,"gold":1,"range":640,"frequency":1.1,"aggro":1,"rage":1,
+		"name":"ราชินีแมงมุมดำ","speed":0,"charge":0,"hp":4500000,"xp":9000000,"difficulty":12,"attack":1200,"damage_type":"physical","stationary":true,"respawn":-1,"gold":1,"range":640,"frequency":1.1,"aggro":1,"rage":1,
 		"armor":110,"resistance":135,
 		"spawns":[[6000,"spider"]],
 	},
 	"spiderbr":{
-		"name":"Brown Spider Queen","speed":0,"charge":0,"hp":4500000,"xp":9000000,"difficulty":10,"attack":840,"damage_type":"physical","stationary":true,"respawn":-1,"gold":1,"range":640,"frequency":2,"aggro":1,"rage":1,
+		"name":"ราชินีแมงมุมน้ำตาล","speed":0,"charge":0,"hp":4500000,"xp":9000000,"difficulty":10,"attack":840,"damage_type":"physical","stationary":true,"respawn":-1,"gold":1,"range":640,"frequency":2,"aggro":1,"rage":1,
 		"armor":90,"resistance":115,
 		"spawns":[[5000,"spider"]],
 	},
@@ -953,14 +953,14 @@ var monsters={
 	//misc
 	"greenfairy":{
 		"phresistance":70,
-		"name":"Fairy","speed":10,"hp":3600000,"xp":2000000,"attack":3000,"damage_type":"magical","respawn":0,"gold":1000,"range":999999,"frequency":100,"aggro":0,"hit":"explode_c","aa":1,
+		"name":"นางฟ้า","speed":10,"hp":3600000,"xp":2000000,"attack":3000,"damage_type":"magical","respawn":0,"gold":1000,"range":999999,"frequency":100,"aggro":0,"hit":"explode_c","aa":1,
 		"achievements":[
 			[10,"stat","luck",2],
 		],
 	},
 	"redfairy":{
 		"phresistance":70,
-		"name":"Fairy","speed":10,"hp":4800000,"xp":2000000,"attack":4000,"damage_type":"magical","respawn":0,"gold":1000,"range":999999,"frequency":100,"aggro":0,"hit":"explode_c","aa":1,
+		"name":"นางฟ้า","speed":10,"hp":4800000,"xp":2000000,"attack":4000,"damage_type":"magical","respawn":0,"gold":1000,"range":999999,"frequency":100,"aggro":0,"hit":"explode_c","aa":1,
 		"achievements":[
 			[10,"stat","gold",2],
 		],
@@ -968,13 +968,13 @@ var monsters={
 	},
 	"bluefairy":{
 		"phresistance":70,
-		"name":"Fairy","speed":10,"hp":4000000,"xp":2000000,"attack":2400,"damage_type":"magical","respawn":0,"gold":1000,"range":999999,"frequency":100,"aggro":0,"hit":"explode_c","aa":1,
+		"name":"นางฟ้า","speed":10,"hp":4000000,"xp":2000000,"attack":2400,"damage_type":"magical","respawn":0,"gold":1000,"range":999999,"frequency":100,"aggro":0,"hit":"explode_c","aa":1,
 		"achievements":[
 			[10,"stat","xp",2],
 		],
 	},
 	"rudolph":{
-		"name":"Reindeer","speed":24,"hp":12000000,"xp":2000000,"attack":1600,"damage_type":"magical","respawn":60*60,"gold":10000,"range":999999,"frequency":10,"aggro":0,"hit":"explode_c","prefix":"the",
+		"name":"กวางเรนเดียร์","speed":24,"hp":12000000,"xp":2000000,"attack":1600,"damage_type":"magical","respawn":60*60,"gold":10000,"range":999999,"frequency":10,"aggro":0,"hit":"explode_c","prefix":"the",
 		"resistance":1200,
 		"armor":1200,
 		"achievements":[
@@ -983,7 +983,7 @@ var monsters={
 		]
 	},
 	"grinch":{
-		"name":"Grinch","speed":40,"hp":24000000,"xp":12000,
+		"name":"กรินช์","speed":40,"hp":24000000,"xp":12000,
 		"humanoid":true,
 		"cooperative":true,
 		"global":true, //chest spawns on player
@@ -1004,7 +1004,7 @@ var monsters={
 
 	//killmany
 	"goldenbat":{
-		"name":"Golden Bat","speed":24,"hp":24000,"xp":20000,"attack":50,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":0.7,"aggro":0.3,"aa":1,
+		"name":"ค้างคาวทอง","speed":24,"hp":24000,"xp":20000,"attack":50,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":0.7,"aggro":0.3,"aa":1,
 		"difficulty":100,
 		"phresistance":70,
 		"explanation":"Spawns in Cave of Darkness around every 80,000 Bat spawns",
@@ -1018,7 +1018,7 @@ var monsters={
 		]
 	},
 	"goldenbot":{
-		"name":"Golden Bot","speed":24,"hp":500000,"xp":420000,"attack":500,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":1,"aggro":0.2,"aa":1,
+		"name":"หุ่นทองคำ","speed":24,"hp":500000,"xp":420000,"attack":500,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":1,"aggro":0.2,"aa":1,
 		"difficulty":100,
 		"phresistance":75,
 		"explanation":"Spawns in Underground Hills around every 100,000 Sparkbot or Targetron spawns",
@@ -1032,7 +1032,7 @@ var monsters={
 		]
 	},
 	"tinyp":{
-		"name":"Fairy","speed":24,"hp":5600,"xp":12000,"attack":240,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":5,"aggro":0.3,"aa":1,
+		"name":"นางฟ้า","speed":24,"hp":5600,"xp":12000,"attack":240,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":5,"aggro":0.3,"aa":1,
 		"escapist":true,"roam":true,"cute":true,
 		"abilities":{"self_healing":{"heal":1200,"cooldown":10}},
 		"special":true,"immune":true,
@@ -1048,7 +1048,7 @@ var monsters={
 
 	//specials
 	"tiger":{
-		"name":"Tiger","speed":24,"hp":12000,"xp":24800,"attack":960,"damage_type":"physical","respawn":30*60,"gold":480,"range":20,"frequency":0.8,"aggro":0,"rage":0,"reflection":100,"armor":540,
+		"name":"เสือ","speed":24,"hp":12000,"xp":24800,"attack":960,"damage_type":"physical","respawn":30*60,"gold":480,"range":20,"frequency":0.8,"aggro":0,"rage":0,"reflection":100,"armor":540,
 			"announce":"#D65A3A",
 			"cute": true,
 			"explanation":"Legendary animal, rarely appears to players.",
@@ -1065,7 +1065,7 @@ var monsters={
 		//"supporter":true,
 	},
 	"goblin":{
-		"name":"Sneaky Goblin","speed":30,"hp":50,"xp":640000,"attack":0,"damage_type":"physical","respawn":-1,"gold":4000000,"range":2,"frequency":1,"aggro":0,"evasion":99.95,"reflection":99.95,"special":true,"immune":true,
+		"name":"ก็อบลินเจ้าเล่ห์","speed":30,"hp":50,"xp":640000,"attack":0,"damage_type":"physical","respawn":-1,"gold":4000000,"range":2,"frequency":1,"aggro":0,"evasion":99.95,"reflection":99.95,"special":true,"immune":true,
 		"phresistance":30,
 		"achievements":[
 			[1,"stat","gold",2],
@@ -1075,7 +1075,7 @@ var monsters={
 		]
 	},
 	"pinkgoo":{
-		"name":"Love Goo","speed":8,"hp":40,"xp":12000,"attack":100,"damage_type":"physical","respawn":60*60,"gold":10000,"range":20,"frequency":1,"aggro":0,"avoidance":98.0,"special":true,"immune":true,"1hp":true,"cooperative":true,
+		"name":"วุ้นรัก","speed":8,"hp":40,"xp":12000,"attack":100,"damage_type":"physical","respawn":60*60,"gold":10000,"range":20,"frequency":1,"aggro":0,"avoidance":98.0,"special":true,"immune":true,"1hp":true,"cooperative":true,
 		"phresistance":30,
 		"achievements":[
 			[10,"stat","vit",1],
@@ -1085,7 +1085,7 @@ var monsters={
 		]
 	},
 	"snowman":{
-		"name":"Snowman","speed":8,"hp":1200,"xp":12000,"attack":80,"damage_type":"physical","respawn":60*60,"gold":10000,"range":20,"frequency":1,"aggro":0,"special":true,"immune":true,"cooperative":true,"1hp":true,"announce":"#B1DCEF",
+		"name":"ตุ๊กตาหิมะ","speed":8,"hp":1200,"xp":12000,"attack":80,"damage_type":"physical","respawn":60*60,"gold":10000,"range":20,"frequency":1,"aggro":0,"special":true,"immune":true,"cooperative":true,"1hp":true,"announce":"#B1DCEF",
 		"s":{"fullguardx":{"ms":5*60*1000}},
 		"achievements":[
 			[10,"stat","mp",10],
@@ -1097,7 +1097,7 @@ var monsters={
 		]
 	},
 	"dragold":{
-		"name":"Dragold","speed":22,"hp":12800000*2,"xp":12000000*2,"attack":800,"damage_type":"magical","respawn":3*60*60,"gold":10000,"range":320,"frequency":1,"aggro":0,"special":true,"cooperative":true,"announce":"#D7B717","armor":240,"resistance":320,
+		"name":"ดราโกลด์","speed":22,"hp":12800000*2,"xp":12000000*2,"attack":800,"damage_type":"magical","respawn":3*60*60,"gold":10000,"range":320,"frequency":1,"aggro":0,"special":true,"cooperative":true,"announce":"#D7B717","armor":240,"resistance":320,
 		"s":{"fullguardx":{"ms":2*60*1000}},
 		"phresistance":65,
 		"abilities":{"multi_burn":{"cooldown":24000,"damage":4000}},
@@ -1109,7 +1109,7 @@ var monsters={
 		"projectile":"fireball",
 	},
 	"wabbit":{
-		"name":"Wabbit","speed":60,"hp":32000,"armor":180,"resistance":180,"xp":1000000,"attack":60,"damage_type":"physical","respawn":60*60,"gold":1000,"range":20,"frequency":1,"aggro":0,"avoidance":98.8,"special":true,"immune":true,"cooperative":true,"operator":true,"rbuff":"easterluck","s":{"fullguard":{"ms":5*60*1000}},
+		"name":"กระต่ายเวหา","speed":60,"hp":32000,"armor":180,"resistance":180,"xp":1000000,"attack":60,"damage_type":"physical","respawn":60*60,"gold":1000,"range":20,"frequency":1,"aggro":0,"avoidance":98.8,"special":true,"immune":true,"cooperative":true,"operator":true,"rbuff":"easterluck","s":{"fullguard":{"ms":5*60*1000}},
 		"phresistance":70,
 		"achievements":[
 			[1,"stat","xp",1],
@@ -1122,7 +1122,7 @@ var monsters={
 
 	},
 	"franky":{
-		"name":"Franky","speed":48,"charge":64,"hp":120000000,"xp":200000000,"attack":2910,"damage_type":"magical","hit":"explode_c","respawn":-1,"gold":10000,"range":948,"frequency":1.6,"aggro":1,"rage":0,"special":true,"cooperative":true,"spawns":[[200,"nerfedmummy"]],"announce":"#9D99EF",
+		"name":"แฟรงกี้","speed":48,"charge":64,"hp":120000000,"xp":200000000,"attack":2910,"damage_type":"magical","hit":"explode_c","respawn":-1,"gold":10000,"range":948,"frequency":1.6,"aggro":1,"rage":0,"special":true,"cooperative":true,"spawns":[[200,"nerfedmummy"]],"announce":"#9D99EF",
 		"phresistance":70,
 		"humanoid":true,
 		"achievements":[
@@ -1136,7 +1136,7 @@ var monsters={
 	},
 	//The Tomb
 	"gredpro":{
-		"name":"Protector of Fire","speed":24,"charge":84,"hp":2800000,"xp":720000,"attack":1120,"damage_type":"magical","hit":"explode_c","respawn":-1,"gold":10000,"range":948,"frequency":1.46,"aggro":1,"rage":0,
+		"name":"ผู้พิทักษ์เพลิง","speed":24,"charge":84,"hp":2800000,"xp":720000,"attack":1120,"damage_type":"magical","hit":"explode_c","respawn":-1,"gold":10000,"range":948,"frequency":1.46,"aggro":1,"rage":0,
 		"slots":{"mainhand":{"name":"firestaff","level":12}},
 		"abilities":{"burn":{"unlimited":true,"attr0":100}},
 		"achievements":[
@@ -1147,7 +1147,7 @@ var monsters={
 		],
 	},
 	"ggreenpro":{
-		"name":"Protector of Nature","speed":24,"charge":84,"hp":3200000,"xp":10800000,"attack":1220,"damage_type":"physical","hit":"explode_c","respawn":-1,"gold":10000,"range":948,"frequency":1.66,"aggro":1,"rage":0,
+		"name":"ผู้พิทักษ์ธรรมชาติ","speed":24,"charge":84,"hp":3200000,"xp":10800000,"attack":1220,"damage_type":"physical","hit":"explode_c","respawn":-1,"gold":10000,"range":948,"frequency":1.66,"aggro":1,"rage":0,
 		"slots":{"mainhand":{"name":"woodensword","level":12}},
 		"abilities":{
 			"tangle":{"cooldown":1600},
@@ -1161,7 +1161,7 @@ var monsters={
 		],
 	},
 	"gbluepro":{
-		"name":"Protector of Frost","speed":24,"charge":84,"hp":2400000,"xp":3600000,"attack":820,"damage_type":"magical","hit":"explode_c","respawn":-1,"gold":10000,"range":948,"frequency":1.26,"aggro":1,"rage":0,
+		"name":"ผู้พิทักษ์น้ำแข็ง","speed":24,"charge":84,"hp":2400000,"xp":3600000,"attack":820,"damage_type":"magical","hit":"explode_c","respawn":-1,"gold":10000,"range":948,"frequency":1.26,"aggro":1,"rage":0,
 		//"cooperative":true,
 		"slots":{"mainhand":{"name":"froststaff","level":12}},
 		"abilities":{"multi_freeze":{"cooldown":4000,"damage":800}},
@@ -1174,7 +1174,7 @@ var monsters={
 		//"article":"event-mae",
 	},
 	"gpurplepro":{
-		"name":"Protector of Darkness","speed":48,"charge":84,"hp":3600000,"xp":14400000,"difficulty":25,"attack":5320,"damage_type":"magical","hit":"explode_c","respawn":-1,"gold":10000,"range":948,"frequency":1.56,"aggro":1,"rage":0,
+		"name":"ผู้พิทักษ์ความมืด","speed":48,"charge":84,"hp":3600000,"xp":14400000,"difficulty":25,"attack":5320,"damage_type":"magical","hit":"explode_c","respawn":-1,"gold":10000,"range":948,"frequency":1.56,"aggro":1,"rage":0,
 		//"cooperative":true,
 		"slots":{"mainhand":{"name":"oozingterror","level":12}},
 		//"abilities":{"putrid":{"curse":true,"poison":true}},
@@ -1192,7 +1192,7 @@ var monsters={
 	},
 	//crypt
 	"a1":{
-		"name":"Spike","speed":32,"charge":67,"hp":18700000,"xp":32000000,"difficulty":8,"attack":4240,"damage_type":"magical","respawn":-1,"gold":120000,"range":147,"frequency":1.2,"aggro":1,"rage":1,"roam":true,
+		"name":"สไปก์","speed":32,"charge":67,"hp":18700000,"xp":32000000,"difficulty":8,"attack":4240,"damage_type":"magical","respawn":-1,"gold":120000,"range":147,"frequency":1.2,"aggro":1,"rage":1,"roam":true,
 		"phresistance":10,
 		"armor":120,"resistance":260,
 		"slots":{"mainhand":{"name":"vstaff","level":10}},
@@ -1207,7 +1207,7 @@ var monsters={
 		],
 	},
 	"a2":{
-		"name":"Bill","speed":32,"charge":96,"hp":420000,"xp":1200000,"difficulty":8,"attack":2240,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":1.4,"aggro":1,"rage":1,"roam":true,
+		"name":"บิล","speed":32,"charge":96,"hp":420000,"xp":1200000,"difficulty":8,"attack":2240,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":1.4,"aggro":1,"rage":1,"roam":true,
 		"armor":220,"resistance":160,
 		"phresistance":15,
 		"slots":{"mainhand":{"name":"vdagger","level":9},"offhand":{"name":"vdagger","level":10}},
@@ -1224,7 +1224,7 @@ var monsters={
 		"humanoid":true,
 	},
 	"a3":{
-		"name":"Lestat","speed":32,"charge":80,"hp":342000,"xp":9600000,"difficulty":8,"attack":1520,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":1.2,"aggro":1,"rage":1,"roam":true,
+		"name":"เลสแทท","speed":32,"charge":80,"hp":342000,"xp":9600000,"difficulty":8,"attack":1520,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":1.2,"aggro":1,"rage":1,"roam":true,
 		"phresistance":20,
 		"armor":220,"resistance":160,
 		"slots":{"mainhand":{"name":"vhammer","level":10},"offhand":{"name":"vhammer","level":10}},
@@ -1241,7 +1241,7 @@ var monsters={
 		"humanoid":true,
 	},
 	"a4":{
-		"name":"Orlok","speed":42,"charge":86,"hp":560000,"xp":1600000,"difficulty":8,"attack":720,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":1.5,"aggro":1,"rage":1,"roam":true,
+		"name":"ออร์ล็อก","speed":42,"charge":86,"hp":560000,"xp":1600000,"difficulty":8,"attack":720,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":1.5,"aggro":1,"rage":1,"roam":true,
 		"phresistance":25,
 		"armor":320,"resistance":160,
 		"slots":{"mainhand":{"name":"scythe","level":9}},
@@ -1255,7 +1255,7 @@ var monsters={
 		],
 	},
 	"a5":{
-		"name":"Elena","speed":32,"charge":76,"hp":230000,"xp":1200000,"difficulty":8,"attack":240,"damage_type":"magical","respawn":-1,"gold":120000,"range":135,"frequency":0.3,"aggro":1,"rage":1,"roam":true,
+		"name":"เอเลนา","speed":32,"charge":76,"hp":230000,"xp":1200000,"difficulty":8,"attack":240,"damage_type":"magical","respawn":-1,"gold":120000,"range":135,"frequency":0.3,"aggro":1,"rage":1,"roam":true,
 		"phresistance":25,
 		"armor":60,"resistance":240,
 		"abilities":{
@@ -1272,7 +1272,7 @@ var monsters={
 		],
 	},
 	"a6":{
-		"name":"Marceline","speed":32,"charge":86,"hp":320000,"xp":880000,"difficulty":8,"attack":8960,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":2,"aggro":1,"rage":1,"roam":true,
+		"name":"มาร์เซอลีน","speed":32,"charge":86,"hp":320000,"xp":880000,"difficulty":8,"attack":8960,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":2,"aggro":1,"rage":1,"roam":true,
 		"phresistance":30,
 		"armor":220,"resistance":120,
 		"slots":{"mainhand":{"name":"scythe","level":9}},
@@ -1293,7 +1293,7 @@ var monsters={
 		"humanoid":true,
 	},
 	"a7":{
-		"name":"Lucinda","speed":32,"charge":72,"hp":720000,"xp":1200000,"difficulty":8,"attack":910,"damage_type":"magical","respawn":-1,"gold":120000,"range":135,"frequency":1.2,"aggro":1,"rage":1,"roam":true,
+		"name":"ลูซินดา","speed":32,"charge":72,"hp":720000,"xp":1200000,"difficulty":8,"attack":910,"damage_type":"magical","respawn":-1,"gold":120000,"range":135,"frequency":1.2,"aggro":1,"rage":1,"roam":true,
 		"phresistance":30,
 		"armor":50,"resistance":200,
 		"slots":{"mainhand":{"name":"oozingterror","level":10}},
@@ -1310,7 +1310,7 @@ var monsters={
 		"humanoid":true,
 	},
 	"a8":{
-		"name":"Angel","speed":32,"charge":76,"hp":560000,"xp":1200000,"difficulty":8,"attack":2680,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":4,"aggro":1,"rage":1,"roam":true,
+		"name":"เทวดา","speed":32,"charge":76,"hp":560000,"xp":1200000,"difficulty":8,"attack":2680,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":4,"aggro":1,"rage":1,"roam":true,
 		"phresistance":35,
 		"armor":220,"resistance":220,
 		"slots":{"mainhand":{"name":"pinkie","level":10},"offhand":{"name":"pinkie","level":10}},
@@ -1327,14 +1327,14 @@ var monsters={
 	},
 	"vbat":{
 		"phresistance":70,
-		"name":"Vampireling","speed":24,"charge":84,"hp":156000,"xp":720000,"difficulty":17,"attack":1240,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":1.56,"aggro":0.3,"rage":0.1,"aa":1,
+		"name":"แวมไพร์น้อย","speed":24,"charge":84,"hp":156000,"xp":720000,"difficulty":17,"attack":1240,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":1.56,"aggro":0.3,"rage":0.1,"aa":1,
 	},
 	//mage
 	"xmagefz":{
 		"hide":true,
 		"immune":true,
 		"phresistance":20,
-		"name":"Mage","speed":24,"charge":84,"hp":4800000,"xp":7200000,"attack":1640,"damage_type":"magical","respawn":0,"gold":120000,"range":135,"frequency":1.26,"aggro":1.8,"rage":1.8,
+		"name":"พ่อมด","speed":24,"charge":84,"hp":4800000,"xp":7200000,"attack":1640,"damage_type":"magical","respawn":0,"gold":120000,"range":135,"frequency":1.26,"aggro":1.8,"rage":1.8,
 		"armor":120,"resistance":360,
 		"respawn_as":"xmagefi",
 		"slots":{"mainhand":{"name":"vstaff","level":13}},
@@ -1348,7 +1348,7 @@ var monsters={
 		"hide":true,
 		"immune":true,
 		"phresistance":35,
-		"name":"Mage","speed":24,"charge":84,"hp":5600000,"xp":1440000,"difficulty":0,"attack":2240,"damage_type":"magical","respawn":0,"gold":120000,"range":135,"frequency":1.46,"aggro":1.8,"rage":1.8,
+		"name":"พ่อมด","speed":24,"charge":84,"hp":5600000,"xp":1440000,"difficulty":0,"attack":2240,"damage_type":"magical","respawn":0,"gold":120000,"range":135,"frequency":1.46,"aggro":1.8,"rage":1.8,
 		"armor":220,"resistance":360,
 		"slots":{"mainhand":{"name":"firestaff","level":13}},
 		"respawn_as":"xmagen",
@@ -1362,7 +1362,7 @@ var monsters={
 		"hide":true,
 		"immune":true,
 		"phresistance":50,
-		"name":"Mage","speed":24,"charge":84,"hp":6400000,"xp":21600000,"difficulty":0,"attack":2440,"damage_type":"magical","respawn":0,"gold":120000,"range":135,"frequency":1.66,"aggro":1.8,"rage":1.8,
+		"name":"พ่อมด","speed":24,"charge":84,"hp":6400000,"xp":21600000,"difficulty":0,"attack":2440,"damage_type":"magical","respawn":0,"gold":120000,"range":135,"frequency":1.66,"aggro":1.8,"rage":1.8,
 		"reflection":30,
 		"armor":320,"resistance":360,
 		"slots":{"mainhand":{"name":"mushroomstaff","level":13}},
@@ -1375,7 +1375,7 @@ var monsters={
 		"humanoid":true,
 	},
 	"xmagex":{
-		"name":"Dark Mage","speed":24,"charge":84,"hp":7200000,"xp":28800000,"difficulty":64,"attack":10640,"damage_type":"magical","respawn":-1,"gold":120000,"range":135,"frequency":1.56,"aggro":1.8,"rage":1.8,
+		"name":"พ่อมดมืด","speed":24,"charge":84,"hp":7200000,"xp":28800000,"difficulty":64,"attack":10640,"damage_type":"magical","respawn":-1,"gold":120000,"range":135,"frequency":1.56,"aggro":1.8,"rage":1.8,
 		"phresistance":65,
 		"armor":360,"resistance":420,
 		"immune":true,
@@ -1396,7 +1396,7 @@ var monsters={
 	},
 	//cyberland
 	"mechagnome":{
-		"name":"Mech-a Gnome","speed":1,"charge":120,"hp":164000,"xp":80000,"attack":48,"damage_type":"physical","respawn":480,"gold":6000,"range":30,"frequency":4,"aggro":0,"rage":0,"resistance":600,"armor":600,"abilities":{"portal":{"cooldown":0}},
+		"name":"กิโนมจักรกล","speed":1,"charge":120,"hp":164000,"xp":80000,"attack":48,"damage_type":"physical","respawn":480,"gold":6000,"range":30,"frequency":4,"aggro":0,"rage":0,"resistance":600,"armor":600,"abilities":{"portal":{"cooldown":0}},
 		"achievements":[
 			[1,"stat","hp",10],
 			[10,"stat","hp",20],
@@ -1421,7 +1421,7 @@ var monsters={
 	"target_r500":{"name":"Target Automatron","speed":12,"hp":50000,"xp":1000,"resistance":500,"evasion":50,"attack":0,"damage_type":"physical","respawn":0,"gold":20,"range":1,"frequency":0.1,"aggro":0,"stationary":false,"unlist":true,"orientation":0,"humanoid":true,},
 	"target_r750":{"name":"Target Automatron","speed":36,"hp":50000,"xp":1000,"resistance":750,"attack":0,"damage_type":"physical","respawn":0,"gold":20,"range":1,"frequency":0.1,"aggro":0,"stationary":false,"unlist":true,"orientation":0,"abilities":{"portal":{"cooldown":0}},"humanoid":true,},
 	"target_ar900":{
-		"name":"Target Automatron","speed":12,"hp":50000,"xp":1000,"resistance":900,"armor":900,"attack":0,"damage_type":"physical","respawn":0,"gold":20,"range":1,"frequency":0.1,"aggro":0,"stationary":false,"unlist":true,"orientation":0,
+		"name":"หุ่นเป้า","speed":12,"hp":50000,"xp":1000,"resistance":900,"armor":900,"attack":0,"damage_type":"physical","respawn":0,"gold":20,"range":1,"frequency":0.1,"aggro":0,"stationary":false,"unlist":true,"orientation":0,
 		"achievements":[
 			[100,"stat","for",1],
 		],
