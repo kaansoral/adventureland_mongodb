@@ -1,37 +1,37 @@
 // Newest notes first. Add player-visible changes at the top with deployed: null.
 module.exports = [
 	{
-		deployed: null,
+		deployed: "[24/08/26]",
 		date: "[24/08/26]",
 		note: "Added the Worldroot Crook, a Priest-only T4 staff crafted from a Harbringer +8 and rare materials.",
 	},
 	{
-		deployed: null,
+		deployed: "[24/08/26]",
 		date: "[24/08/26]",
 		note: "Added an optional MessagePack socket transport for custom clients. Existing clients continue to work unchanged.",
 	},
 	{
-		deployed: null,
+		deployed: "[24/08/26]",
 		date: "[24/08/26]",
 		note: "Added five new Rogue items and Fan of Knives, with new shop, crafting, PvP Token, and Ent drop paths.",
 	},
 	{
-		deployed: null,
+		deployed: "[24/08/26]",
 		date: "[24/08/26]",
 		note: "Added 40 new items: 33 craftable pieces of equipment and 7 materials found across Adventure Land.",
 	},
 	{
-		deployed: null,
+		deployed: "[24/08/26]",
 		date: "[24/08/26]",
 		note: "Major CODE update: asynchronous functions now settle on their real server result, with complete documentation for all 185 public functions.",
 	},
 	{
-		deployed: null,
+		deployed: "[24/08/26]",
 		date: "[24/08/26]",
 		note: "New Steam client for macOS.",
 	},
 	{
-		deployed: null,
+		deployed: "[24/08/26]",
 		date: "[23/08/26]",
 		note: "All update notes going back to 2016 are now available in-game, with the latest notes always shown.",
 	},
