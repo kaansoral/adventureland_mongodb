@@ -1427,6 +1427,7 @@ var drops = {
 		[1, "cx", "headwiggle"],
 		[1, "cx", "joy"],
 		[1, "cx", "jump"],
+		[0.1, "cx", "superjump"],
 	],
 };
 

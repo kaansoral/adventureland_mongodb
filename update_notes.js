@@ -8,7 +8,7 @@ module.exports = [
 	{
 		deployed: null,
 		date: "[24/08/26]",
-		note: "Added the New Misc. cosmetic box and five unlockable emote skills.",
+		note: "Added the New Misc. cosmetic box with gravestones and six unlockable emote skills.",
 	},
 	{
 		deployed: null,

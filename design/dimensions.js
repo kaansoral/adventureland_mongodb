@@ -1077,6 +1077,7 @@ var positions={
 	"emote_headwiggle":["rawitems",11,0],
 	"emote_joy":["rawitems",12,0],
 	"emote_jump":["rawitems",13,0],
+	"emote_superjump":["rawitems",14,0],
 
 	//trial
 	//"dragondagger":["",15,42],

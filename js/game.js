@@ -3566,7 +3566,39 @@ function old_move(x, y) {
 
 function map_click_release() {}
 
-var cosmetic_emote_durations = { fart: 900, wiggle: 950, headwiggle: 950, joy: 1500, jump: 520 };
+var cosmetic_emote_durations = { fart: 900, wiggle: 950, headwiggle: 950, joy: 1500, jump: 360, superjump: 680 };
+var cosmetic_emote_fart_variants = [
+	{ duration: 720, sound_duration: 0.34, colors: [0x4f793f, 0x8eaa58, 0xc2cc78], text: "PFFT", text_color: "#D7E49A", filter: 310, buzz: [104, 48], puffs: 6 },
+	{ duration: 960, sound_duration: 0.48, colors: [0x526b4f, 0x83a064, 0xd1b96f], text: "PRRT", text_color: "#E5CE86", filter: 245, buzz: [88, 38], puffs: 8 },
+	{ duration: 1200, sound_duration: 0.62, colors: [0x5f496d, 0x8b6688, 0xb4946a], text: "TOOT", text_color: "#DAB9D8", filter: 190, buzz: [72, 31], puffs: 10 },
+];
+var cosmetic_emote_texts = {
+	wiggle: [
+		{ text: "WIGGLE!", color: "#5BD5E8", size: 27 },
+		{ text: "SHAKE!", color: "#E486C8", size: 27 },
+		{ text: "~WIGGLE~", color: "#EFC66C", size: 25 },
+	],
+	headwiggle: [
+		{ text: "YES?", color: "#9A7CF0", size: 26 },
+		{ text: "NO!", color: "#5BD5E8", size: 28 },
+		{ text: "MAYBE?", color: "#EFC66C", size: 24 },
+	],
+	joy: [
+		{ text: "JOY!", color: "#E486C8", size: 48 },
+		{ text: "YAY!", color: "#EFC66C", size: 50 },
+		{ text: "HOORAY!", color: "#5BD5E8", size: 40 },
+	],
+	jump: [
+		{ text: "HOP!", color: "#5BD5E8", size: 26 },
+		{ text: "UP!", color: "#EFC66C", size: 27 },
+		{ text: "BOING!", color: "#9A7CF0", size: 24 },
+	],
+	superjump: [
+		{ text: "SUPER!", color: "#EFC66C", size: 34 },
+		{ text: "WAY UP!", color: "#5BD5E8", size: 32 },
+		{ text: "BOING!", color: "#E486C8", size: 34 },
+	],
+};
 var cosmetic_emote_audio_context = null;
 
 function refresh_cosmetic_skills(acx) {
@@ -3601,8 +3633,8 @@ function cosmetic_emote_tone(context, output, start, duration, frequency, end_fr
 	oscillator.stop(start + duration + 0.02);
 }
 
-function cosmetic_emote_fart_sound(context, output, start) {
-	var duration = 0.46;
+function cosmetic_emote_fart_sound(context, output, start, variant) {
+	var duration = variant.sound_duration;
 	var buffer = context.createBuffer(1, ceil(context.sampleRate * duration), context.sampleRate);
 	var samples = buffer.getChannelData(0);
 	var previous = 0;
@@ -3616,7 +3648,7 @@ function cosmetic_emote_fart_sound(context, output, start) {
 	var gain = context.createGain();
 	source.buffer = buffer;
 	filter.type = "lowpass";
-	filter.frequency.setValueAtTime(260, start);
+	filter.frequency.setValueAtTime(variant.filter, start);
 	filter.frequency.exponentialRampToValueAtTime(85, start + duration);
 	gain.gain.setValueAtTime(0.0001, start);
 	gain.gain.exponentialRampToValueAtTime(0.14, start + 0.025);
@@ -3627,7 +3659,7 @@ function cosmetic_emote_fart_sound(context, output, start) {
 	source.start(start);
 }
 
-function play_cosmetic_emote_sound(name) {
+function play_cosmetic_emote_sound(name, variation) {
 	if (!sound_sfx || no_html) return;
 	try {
 		var context = cosmetic_emote_audio();
@@ -3637,22 +3669,27 @@ function play_cosmetic_emote_sound(name) {
 		output.gain.value = 0.55 * (sfx_volume || 100) / 100;
 		output.connect((window.Howler && Howler.masterGain) || context.destination);
 		var start = context.currentTime + 0.012;
+		var pitch = [0.94, 1, 1.08][variation % 3];
 		if (name == "fart") {
-			cosmetic_emote_fart_sound(context, output, start);
-			cosmetic_emote_tone(context, output, start, 0.42, 92, 41, "sawtooth", 0.13);
+			var fart = cosmetic_emote_fart_variants[variation];
+			cosmetic_emote_fart_sound(context, output, start, fart);
+			cosmetic_emote_tone(context, output, start, fart.sound_duration, fart.buzz[0], fart.buzz[1], "sawtooth", 0.13);
 		} else if (name == "wiggle") {
-			cosmetic_emote_tone(context, output, start, 0.11, 260, 410, "triangle", 0.07);
-			cosmetic_emote_tone(context, output, start + 0.13, 0.11, 410, 260, "triangle", 0.06);
+			cosmetic_emote_tone(context, output, start, 0.11, 260 * pitch, 410 * pitch, "triangle", 0.07);
+			cosmetic_emote_tone(context, output, start + 0.13, 0.11, 410 * pitch, 260 * pitch, "triangle", 0.06);
 		} else if (name == "headwiggle") {
 			[540, 680, 570].forEach(function (frequency, i) {
-				cosmetic_emote_tone(context, output, start + i * 0.085, 0.07, frequency, frequency * 0.92, "sine", 0.055);
+				cosmetic_emote_tone(context, output, start + i * 0.085, 0.07, frequency * pitch, frequency * 0.92 * pitch, "sine", 0.055);
 			});
 		} else if (name == "joy") {
 			[523.25, 659.25, 783.99, 1046.5].forEach(function (frequency, i) {
-				cosmetic_emote_tone(context, output, start + i * 0.09, 0.24, frequency, frequency, "sine", 0.05);
+				cosmetic_emote_tone(context, output, start + i * 0.09, 0.24, frequency * pitch, frequency * pitch, "sine", 0.05);
 			});
 		} else if (name == "jump") {
-			cosmetic_emote_tone(context, output, start, 0.22, 230, 660, "square", 0.055);
+			cosmetic_emote_tone(context, output, start, 0.14, 270 * pitch, 700 * pitch, "square", 0.055);
+		} else if (name == "superjump") {
+			cosmetic_emote_tone(context, output, start, 0.3, 190 * pitch, 780 * pitch, "square", 0.06);
+			cosmetic_emote_tone(context, output, start + 0.1, 0.28, 420 * pitch, 980 * pitch, "triangle", 0.045);
 		}
 		setTimeout(function () {
 			output.disconnect();
@@ -3674,40 +3711,45 @@ function clear_cosmetic_emote(player) {
 	delete player.cosmetic_emote;
 }
 
-function cosmetic_emote_fart_cloud(player) {
+function cosmetic_emote_fart_cloud(player, variation) {
 	if (no_graphics) return;
 	var cloud = new PIXI.Container();
 	var direction = player.direction || 0;
-	var dx = direction == 1 ? 8 : direction == 2 ? -8 : -7;
-	var dy = direction == 0 ? -5 : direction == 3 ? 3 : -10;
+	var fart = cosmetic_emote_fart_variants[variation];
+	var dx = direction == 1 ? 8 : direction == 2 ? -8 : -2;
+	var dy = direction == 0 ? -6 : -10;
 	cloud.x = player.real_x + dx;
 	cloud.y = player.real_y + dy;
-	cloud.real_y = player.real_y;
-	cloud.parentGroup = cloud.displayGroup = animation_layer;
-	for (var i = 0; i < 7; i++) {
+	cloud.real_y = player.real_y + (direction == 3 ? 2 : -1);
+	var layer = direction == 3 ? (use_layers && typeof above_layer != "undefined" ? above_layer : text_layer) : use_layers ? animation_layer : map_layer;
+	if (use_layers) cloud.parentGroup = layer;
+	else cloud.displayGroup = layer;
+	for (var i = 0; i < fart.puffs; i++) {
 		var puff = new PIXI.Graphics();
-		puff.beginFill(i % 2 ? 0x8aa457 : 0x716346, 0.82);
+		puff.beginFill(fart.colors[i % fart.colors.length], 0.82);
 		puff.drawCircle(0, 0, 1 + (i % 3) * 0.45);
 		puff.endFill();
-		puff.x = (i % 3) * 2;
+		puff.x = direction == 1 ? (i % 3) * 2 : direction == 2 ? -(i % 3) * 2 : ((i % 3) - 1) * 2;
 		puff.y = -floor(i / 3) * 2;
 		cloud.addChild(puff);
 	}
-	var label = new PIXI.Text("PFFT", { fontFamily: SZ.font, fontSize: 5 * text_quality, fill: "#C7D68C", stroke: "#17121D", strokeThickness: text_quality });
+	var label = new PIXI.Text(fart.text, { fontFamily: SZ.font, fontSize: 5 * text_quality, fill: fart.text_color, stroke: "#17121D", strokeThickness: text_quality });
 	if (text_quality > 1) label.scale.set(1 / text_quality);
 	label.anchor.set(0.5, 1);
 	label.y = -7;
 	cloud.addChild(label);
 	map.addChild(cloud);
 	var a_map = current_map;
+	var steps = ceil(fart.duration / 75);
+	var drift = direction == 2 ? -0.7 : direction == 1 ? 0.7 : variation % 2 ? -0.35 : 0.35;
 	function fade(step) {
-		if (step >= 12 || a_map != current_map) {
+		if (step >= steps || a_map != current_map) {
 			destroy_sprite(cloud, "children");
 			return;
 		}
-		cloud.x += direction == 2 ? -0.7 : 0.7;
-		cloud.y -= 0.2;
-		cloud.alpha = 1 - step / 12;
+		cloud.x += drift;
+		cloud.y -= 0.18 + variation * 0.04;
+		cloud.alpha = 1 - step / steps;
 		draw_timeout(function () {
 			fade(step + 1);
 		}, 75);
@@ -3720,18 +3762,23 @@ function cosmetic_emote_fart_cloud(player) {
 function play_cosmetic_emote(player, name) {
 	if (!cosmetic_emote_durations[name]) return;
 	clear_cosmetic_emote(player);
-	player.cosmetic_emote = { name: name, start: new Date(), duration: cosmetic_emote_durations[name] };
+	var variation = name == "fart" ? floor(Math.random() * cosmetic_emote_fart_variants.length) : floor(Math.random() * 3);
+	var duration = name == "fart" ? cosmetic_emote_fart_variants[variation].duration : cosmetic_emote_durations[name];
+	player.cosmetic_emote = { name: name, start: new Date(), duration: duration, variation: variation };
 	if (name == "fart") {
-		cosmetic_emote_fart_cloud(player);
-	} else if (name == "joy") {
-		d_text("JOY!", player, { size: 48, color: "#E486C8" });
-		for (var i = 0; i < 6; i++)
+		cosmetic_emote_fart_cloud(player, variation);
+	} else {
+		var text = cosmetic_emote_texts[name][variation];
+		d_text(text.text, player, { size: text.size, color: text.color });
+	}
+	if (name == "joy") {
+		for (var i = 0; i < 5 + variation * 2; i++)
 			draw_timeout(function () {
 				var current = get_player(player.name);
 				if (current) assassin_smoke(current.real_x + Math.random() * 28 - 14, current.real_y - Math.random() * 30, "confetti");
-			}, i * 120);
+			}, i * (90 + variation * 25));
 	}
-	play_cosmetic_emote_sound(name);
+	play_cosmetic_emote_sound(name, variation);
 }
 
 function cosmetic_emote_logic(player) {
@@ -3757,6 +3804,8 @@ function cosmetic_emote_logic(player) {
 		if (!found) player.x += Math.sin(progress * Math.PI * 12) * 1.6;
 	} else if (emote.name == "jump") {
 		player.y -= Math.sin(progress * Math.PI) * 11;
+	} else if (emote.name == "superjump") {
+		player.y -= Math.sin(progress * Math.PI) * 24;
 	} else if (emote.name == "joy") {
 		player.y -= Math.abs(Math.sin(progress * Math.PI * 4)) * 4.5;
 		player.rotation = Math.sin(progress * Math.PI * 6) * 0.04;

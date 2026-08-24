@@ -6163,6 +6163,7 @@ function render_cgallery(skin, cx, slot) {
 	object_sort(T).forEach(function (x) {
 		s = x;
 		if (in_arr(s[1], types)) {
+			if (slot == "gravestone" && s[0] == "gravestone") return; // the reset tile already renders the default gravestone
 			if (T[skin] == "full" && slot == "head") return;
 			if (slot == "upper" && (T[skin] == "full" || SSU[s[0]] != SSU[skin] || skin == s[0] || T[s[0]] != "armor")) return;
 			if (cxtype_to_slot[s[1]] == "skin") skin = s[0];
