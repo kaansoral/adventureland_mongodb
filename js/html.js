@@ -5681,7 +5681,7 @@ function render_com() {
 	html += " <div class='gamebutton fmail' onclick='load_mail();'>Mail [<span class='mcount'>" + ((window.X && X.unread) || 0) + "</span>]</div>";
 	// html+=" <div class='gamebutton fguild' onclick='load_coming_soon(2)'>Guild</div> <div class='gamebutton fmail' onclick='load_coming_soon(4)'>Mail</div> <div class='gamebutton fleaders' onclick='load_coming_soon(3)'>Leaderboards</div>";
 	html += "<div class='friendslist mt5' style='height: 400px; border: 5px solid gray; font-size: 24px; overflow: scroll; padding: 6px'></div>";
-	html += "<div style='font-size: 16px; margin-top: 5px; color: gray; text-align: center'>NOTE: The Communicator is an evolving protoype</div>";
+	html += "<div style='font-size: 16px; margin-top: 5px; color: gray; text-align: center'>หมายเหตุ: ผู้สื่อสารเป็นต้นแบบที่อยู่ระหว่างพัฒนา</div>";
 	// html+="<div class='gamebutton mt5' style='display: block'>Refresh</div>";
 	html += "</div>";
 	show_modal(html, {}); //styles:"background: #CACACA; border-color: #4C4C4C"

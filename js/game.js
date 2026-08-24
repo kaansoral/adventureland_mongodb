@@ -400,7 +400,7 @@ function disconnect() {
 	}
 
 	if (no_html) {
-		set_status("Disconnected");
+		set_status("ตัดการเชื่อมต่อ");
 		$("#name").css("color", "red");
 	} else {
 		if (0) {
@@ -504,7 +504,7 @@ function handle_entities(data, args) {
 		if (!first_entities) {
 			first_entities = true;
 			if (character_to_load) {
-				set_status("LOADING " + character_to_load);
+				set_status("กำลังโหลด " + character_to_load);
 				try {
 					log_in(user_id, character_to_load, user_auth);
 				} catch (e) {
@@ -1160,7 +1160,7 @@ function the_game(demo) {
 
 	if (mode.bitmapfonts) loader.add("/css/fonts/m5x7.xml"); //,{xhrType:PIXI.loaders.Resource.XHR_RESPONSE_TYPE.DOCUMENT}
 
-	set_status("75% ->Server");
+	set_status("75% ->เซิร์ฟเวอร์");
 
 	if (!demo) {
 		load_game();
@@ -1526,7 +1526,7 @@ function init_socket(args) {
 		map_keys_and_skills();
 		render_skillbar();
 		if (!character.rip) $("#name").css("color", "#1AC506");
-		set_status("Connected");
+		set_status("เชื่อมต่อแล้ว");
 		render_server();
 		// show_json(d_entities);
 		handle_entities(d_entities, { new_map: true });
@@ -5700,7 +5700,7 @@ function load_game(c) {
 
 		for (name in G.animations) generate_textures(name, "animation");
 
-		set_status("Resources Loaded");
+		set_status("โหลดทรัพยากรแล้ว");
 
 		resources_loaded = true;
 

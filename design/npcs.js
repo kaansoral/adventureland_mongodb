@@ -41,7 +41,7 @@ var npcs={
 		"stand":"wstand_texture",
 		"aspeed":"slow",
 		"name":"ยศ. สเปนซ์",
-		"side_interaction":{"auto":true,"skin":"pknight","message":"These tokens of honor represent victory. Make sure to join all the PVP events and spend some time in PVP realms. Glorious!"},
+		"side_interaction":{"auto":true,"skin":"pknight","message":"โทเคนเกียรติยศเหล่านี้แสดงถึงชัยชนะ อย่าลืมเข้าร่วมอีเวนต์ PVP ทั้งหมดและใช้เวลาในดินแดน PVP สักหน่อย สง่างามมาก!"},
 	},
 	"funtokens":{
 		"role":"funtokens",
@@ -53,7 +53,7 @@ var npcs={
 		"stand":"standg_texture",
 		"aspeed":"slow",
 		"name":"ทริกซี่",
-		"side_interaction":{"auto":true,"skin":"ftokener","message":"Bring your fun tokens to me and I'll give you some exciting items!"},
+		"side_interaction":{"auto":true,"skin":"ftokener","message":"นำโทเคนความสนุกมาหาฉัน แล้วฉันจะให้ไอเทมน่าตื่นเต้นแก่คุณ!"},
 	},
 	"friendtokens":{
 		"role":"friendtokens",
@@ -65,7 +65,7 @@ var npcs={
 		"stand":"fstand_texture",
 		"aspeed":"slow",
 		"name":"ฟโวน่า",
-		"side_interaction":{"auto":true,"skin":"xxschar2h","message":"Invite your friends to Adventure Land to win some of these goodie goodies!"},
+		"side_interaction":{"auto":true,"skin":"xxschar2h","message":"ชวนเพื่อนของคุณมาเล่นจตุรธาตุเพื่อรับของรางวัลสุดเจ๋งเหล่านี้!"},
 	},
 	"shellsguy":{
 		"role":"shells",
@@ -129,7 +129,7 @@ var npcs={
 		"says":"วู้. ฮึก.",
 		"color":"#E57636",
 		"name":"เออนิส",
-		"side_interaction":{"auto":true,"skin":"potiongirl","message":"Hello there. Are you injured or in need of some potions? My family and I pride ourselves with having the best quality potions and elixirs around. Take as much as you need. *hic*"},
+		"side_interaction":{"auto":true,"skin":"potiongirl","message":"สวัสดีจ้า แผลเจ็บหรืออยากได้ยาใช่ไหม? ครอบครัวของฉันภูมิใจที่มีน้ำยาและยาวิเศษคุณภาพดีที่สุดแถวนี้ รับไปได้เท่าที่ต้องการเลย *ฮึก*"},
 	},
 	"tbartender":{
 		"role":"merchant",
@@ -144,7 +144,7 @@ var npcs={
 		"says":"สวัสดีจ้า",
 		"color":"#EBECEE",
 		"name":"แจ๊ค",
-		"side_interaction":{"auto":true,"skin":"showoffi","message":"Hello there, partner! Care for a drink? Good luck on the games! Don't lose all your gold at once, heh."},
+		"side_interaction":{"auto":true,"skin":"showoffi","message":"สวัสดีครับเพื่อนร่วมงาน! อยากดื่มอะไรหน่อยไหม? โชคดีในเกมนะ! อย่าเสียทองหมดในครั้งเดียวล่ะ ฮ่ะ"},
 	},
 	"wbartender":{
 		"role":"merchant",
@@ -179,7 +179,7 @@ var npcs={
 		"says":"มีของดี ๆ อยู่ในนี้",
 		"color":"#7E65D3",
 		"name":"ปอนตี้",
-		"side_interaction":{"auto":true,"skin":"blingbling","message":"They sell them. I buy them. You buy them from me for higher prices. Win win. I win. Bling!"},
+		"side_interaction":{"auto":true,"skin":"blingbling","message":"เขาขาย ฉันรับซื้อ คุณซื้อจากฉันในราคาสูงขึ้น ชนะทั้งคู่ ฉันชนะ แวววับ!"},
 	},
 	"rewards":{
 		"role":"rewards",
@@ -453,7 +453,7 @@ var npcs={
 		"delay":1200,
 		"steps":12,
 		"level":90,
-		"interaction":["ข้างนอกค่อนข้างหนาว ฉันควรซื้อหมวกสักใบ","I came here to pursue a beast called \"Stompy\" ฉันเคยได้ยินว่าสัตว์ร้ายนี้อยู่ในเทือกเขาน้ำแข็งแถวนี้","ฉันมาที่นี่เพื่อการผจญภัย แต่ตอนนี้ติดอยู่ในบาร์เพราะอากาศหนาว"],
+		"interaction":["ข้างนอกค่อนข้างหนาว ฉันควรซื้อหมวกสักใบ","ฉันมาที่นี่เพื่อตามล่าสัตว์ร้ายที่ชื่อว่า \"Stompy\" ฉันเคยได้ยินว่าสัตว์ร้ายนี้อยู่ในเทือกเขาน้ำแข็งแถวนี้","ฉันมาที่นี่เพื่อการผจญภัย แต่ตอนนี้ติดอยู่ในบาร์เพราะอากาศหนาว"],
 	},
 	"citizen6":{
 		"name":"เฟรดริก",
@@ -846,7 +846,7 @@ var npcs={
 		"type":"fullstatic",
 		"name":"คุณดวอร์ฟ",
 		"old_side_interaction":{"auto":true,"skin":"fancyd","message":"I'm the Anti-P2W Authority around here. Making sure all critical items can be bought with gold. Prices can fluctuate based on inflation."},
-		"side_interaction":{"auto":true,"skin":"fancyd","message":"Hey there, good looking fellow. Would you be interested in looking better?"},
+		"side_interaction":{"auto":true,"skin":"fancyd","message":"นี่ ไอ้หนุ่มหล่อ คิดจะแต่งตัวให้หล่อขึ้นไปอีกไหมล่ะ?"},
 	},
 	"armors":{
 		"role":"merchant",
