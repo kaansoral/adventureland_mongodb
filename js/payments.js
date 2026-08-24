@@ -9,6 +9,13 @@ function p_log(message, color, support) {
 	target.html("<span style='color: white'>&gt;</span> <span style='color: " + color + "'>" + message + "</span>");
 }
 
+function active_payment_ui(selector) {
+	var target = $(".modal:visible:last").find(selector);
+	if (!target.length) target = $(".modal:last").find(selector);
+	if (!target.length) target = $(selector).last();
+	return target;
+}
+
 function set_pamount(amount) {
 	pamount = parseInt(amount);
 	if (typeof is_tauri != "undefined" && is_tauri) {
@@ -35,11 +42,12 @@ function set_pamount(amount) {
 }
 
 function update_shells_calc() {
-	if (pamount < 25 && !extra_shells_pct) {
-		$("#shells-calc").hide();
+	var calc = active_payment_ui("#shells-calc");
+	if (pamount < 25 && pamount != 1 && !extra_shells_pct) {
+		calc.hide();
 		return;
 	}
-	var base = pamount * 80;
+	var base = pamount == 1 ? 75 : pamount * 80;
 	var bonus_mult = 0;
 	if (pamount >= 500) bonus_mult = 0.24;
 	else if (pamount >= 100) bonus_mult = 0.16;
@@ -53,8 +61,8 @@ function update_shells_calc() {
 		subtotal += event_bonus;
 	}
 	html += " = <span style='color:white'>" + to_pretty_num(subtotal) + "</span></span>";
-	$("#shells-calc-line").html(html);
-	$("#shells-calc").show();
+	calc.find("#shells-calc-line").html(html);
+	calc.show();
 }
 
 function steam_payment_message(reason) {

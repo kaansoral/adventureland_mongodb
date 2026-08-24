@@ -1211,11 +1211,11 @@ async function reset_tutorial_api(args) {
 
 // ==================== BILLING ====================
 
-var STEAM_SHELL_USD_AMOUNTS = [10, 25, 100, 500];
+var STEAM_SHELL_USD_AMOUNTS = [1, 10, 25, 100, 500];
 var STEAM_PURCHASE_COLLECTION = "steam_purchase";
 
 function purchased_shells_for_usd(usd, event_bonus) {
-	var shells = usd * 80;
+	var shells = usd === 1 ? 75 : usd * 80;
 	if (usd >= 500) shells = Math.floor(shells * 1.24);
 	else if (usd >= 100) shells = Math.floor(shells * 1.16);
 	else if (usd >= 25) shells = Math.floor(shells * 1.08);
