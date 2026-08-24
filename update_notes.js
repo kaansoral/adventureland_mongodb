@@ -3,6 +3,11 @@ module.exports = [
 	{
 		deployed: null,
 		date: "[24/08/26]",
+		note: "Fixed repeated start_character calls for characters already running in the same client.",
+	},
+	{
+		deployed: null,
+		date: "[24/08/26]",
 		note: "Added the New Misc. cosmetic box and five unlockable emote skills.",
 	},
 	{

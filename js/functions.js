@@ -1833,9 +1833,18 @@ function start_character_runner(name, code_slot_or_name) {
 	if (!owned) return rejecting_promise({ reason: "character_not_found" });
 	name = owned.name;
 	if (character && name == character.name) return rejecting_promise({ reason: "already_running", name: name });
+	var rid = "ichar" + name.toLowerCase();
+	var local_runner = gameplay != "test" && document.getElementById(rid);
+	if (local_runner && local_runner.contentWindow) {
+		var local_character = local_runner.contentWindow.character;
+		if (local_character && is_string(local_character.name) && local_character.name.toLowerCase() == name.toLowerCase()) {
+			if (deferreds[name] && deferreds[name].length) resolve_deferreds(name, { name: local_character.name });
+			return resolving_promise({ name: local_character.name });
+		}
+		if (deferreds[name] && deferreds[name].length) return push_deferred(name);
+	}
 	if (owned.online) return rejecting_promise({ reason: "already_running", name: name, server: owned.server });
 	if (deferreds[name] && deferreds[name].length) reject_deferreds(name, { reason: "interrupted", name: name });
-	var rid = "ichar" + name.toLowerCase();
 	if (gameplay == "test") rid += randomStr(10);
 	$("#" + rid).remove();
 	var url = (window.page && page.url) || window.location + "";
@@ -1866,7 +1875,7 @@ function start_character_runner(name, code_slot_or_name) {
 
 function character_started_runner(requested_name, actual_name) {
 	if (!deferreds[requested_name] || !deferreds[requested_name].length) return;
-	resolve_deferred(requested_name, { name: actual_name || requested_name });
+	resolve_deferreds(requested_name, { name: actual_name || requested_name });
 }
 
 function character_start_failed_runner(requested_name, error) {
@@ -1874,7 +1883,7 @@ function character_start_failed_runner(requested_name, error) {
 	var message = (error && error.message) || error || "Character start failed";
 	var reason = (error && error.reason) || "start_failed";
 	if (is_string(message) && message.indexOf("Failed: ") == 0) reason = message.substr(8);
-	reject_deferred(requested_name, { reason: reason, message: message, name: requested_name });
+	reject_deferreds(requested_name, { reason: reason, message: message, name: requested_name });
 	setTimeout(function () {
 		$("#ichar" + requested_name.toLowerCase()).remove();
 	}, 0);
