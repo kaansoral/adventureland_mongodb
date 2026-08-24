@@ -3,6 +3,11 @@ module.exports = [
 	{
 		deployed: null,
 		date: "[24/08/26]",
+		note: "Fixed the CONF panel appearing while a character connects.",
+	},
+	{
+		deployed: null,
+		date: "[24/08/26]",
 		note: "You can now buy Shells through Steam in the new client, with all active Shells bonuses included.",
 	},
 	{
