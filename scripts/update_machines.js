@@ -5,6 +5,10 @@ var mode = process.argv[2] || "",
 if (mode) suffix = "_" + mode;
 var options = require(process.env.HOME + "/adventureland/secretsandconfig/options" + suffix + ".js");
 
+// Never report a production update as complete after a failed package, SSH
+// check, or upload.
+f.execso = f.execso_required;
+
 console.log("Update machines started | mode: " + (mode || "default"));
 
 f.execso("node ~/adventureland/scripts/deploy.js" + ((mode && " " + mode) || ""));
@@ -15,11 +19,22 @@ for (var id in options.machines) {
 	var machine = machines[id];
 	console.log("\nUploading to " + id + " (" + machine.ip + ")...");
 	if (!first) {
-		var command = "ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o BatchMode=yes -p " + (machine.ssh_port || 22) + " -i " + machine.key + " " + machine.user + "@" + machine.ip + ' "' + "uptime" + '"';
+		var command =
+			"ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o BatchMode=yes -p " + (machine.ssh_port || 22) + " -i " + machine.key + " " + machine.user + "@" + machine.ip + ' "' + "uptime" + '"';
 		f.execso(command);
 	}
 	var command =
-		"rsync -ruv -e 'ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o BatchMode=yes -p " + (machine.ssh_port || 22) + " -i " + machine.key + "' ~/deploy/adventureland/ " + machine.user + "@" + machine.ip + ":./" + machine.deploy_to_folder + "/";
+		"rsync -ru -e 'ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o BatchMode=yes -p " +
+		(machine.ssh_port || 22) +
+		" -i " +
+		machine.key +
+		"' ~/deploy/adventureland/ " +
+		machine.user +
+		"@" +
+		machine.ip +
+		":./" +
+		machine.deploy_to_folder +
+		"/";
 	console.log("Running: " + command);
 	f.execso(command);
 	console.log("Done: " + id);

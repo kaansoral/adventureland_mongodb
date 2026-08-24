@@ -5,6 +5,9 @@ var path = require("path"),
 var mode = process.argv[2] || "";
 var folder = "adventureland";
 
+// A release must stop on the first failed packaging command.
+f.execs = f.execs_required;
+
 console.log("Deploy started | mode: " + (mode || "default") + " | folder: " + folder);
 
 if (mode != "staging") {
@@ -16,7 +19,7 @@ f.execs("node ~/adventureland/scripts/precompute_images.js");
 
 f.execs("rm -rf ~/deploy/" + folder + "");
 f.execs("mkdir ~/deploy/" + folder + "");
-f.execs("rsync -rv --whole-file --exclude=.electron --exclude=node_modules ~/adventureland/* ~/deploy/" + folder + "");
+f.execs("rsync -r --whole-file --exclude=.electron --exclude=node_modules ~/adventureland/* ~/deploy/" + folder + "");
 
 f.execs("rm -rf ~/deploy/" + folder + "/node/node_modules");
 f.execs("rm -rf ~/deploy/" + folder + "/node_modules");

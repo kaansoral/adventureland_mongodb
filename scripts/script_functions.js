@@ -143,6 +143,22 @@ function execso(code) {
 	}
 }
 
+// Release scripts must fail closed. The legacy helpers above intentionally log
+// and continue, which can turn a partial package or failed upload into a false
+// "finished" deployment. A larger buffer also prevents verbose tools such as
+// rsync from being killed by Node's small execSync default.
+function execs_required(code) {
+	var output = child_process.execSync(code, { maxBuffer: 64 * 1024 * 1024 });
+	if (output.toString) output = output.toString();
+	return output;
+}
+
+function execso_required(code) {
+	var output = execs_required(code);
+	if (output) console.log(output);
+	return output;
+}
+
 function minify_all(path, files) {
 	path = path.replace("~", process.env.HOME);
 	for (var sub_path in files) {
@@ -231,6 +247,8 @@ module.exports = {
 	format: util.format,
 	execs: execs,
 	execso: execso,
+	execs_required: execs_required,
+	execso_required: execso_required,
 	minify_all: minify_all,
 	is_production: is_production,
 	is_local: is_local,
