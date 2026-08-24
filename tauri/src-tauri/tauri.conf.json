@@ -19,6 +19,7 @@
       "icons/icon.ico"
     ],
     "macOS": {
+      "entitlements": "Entitlements.plist",
       "files": {
         "MacOS/libsteam_api.dylib": "binaries/libsteam_api.dylib"
       }

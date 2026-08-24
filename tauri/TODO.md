@@ -7,8 +7,8 @@ It does not expose local files, code-sync folders, screenshots, HTTP mode, Keych
 ## Steam macOS build
 
 1. Install dependencies with `npm install`.
-2. Run `npm run tauri -- build --target universal-apple-darwin --bundles app`.
-3. Sign and notarize the `.app` before uploading the Steam depot.
+2. Run `npm run build:mac`.
+3. Sign and notarize the `.app` with `src-tauri/Entitlements.plist` before uploading the Steam depot.
 
 The first account link must run through Steam. Later Tauri and Web logins use the Steam ID already linked to the Adventure Land account and do not depend on another Steam ticket.
 
