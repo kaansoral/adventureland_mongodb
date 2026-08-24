@@ -32,6 +32,7 @@ f.execs("rm -rf ~/deploy/" + folder + "/*.py");
 f.execs("rm -rf ~/deploy/" + folder + "/*.pyc");
 f.execs("rm -rf ~/deploy/" + folder + "/scripts");
 f.execs("rm -rf ~/deploy/" + folder + "/agentic");
+f.execs("rm -rf ~/deploy/" + folder + "/proposals");
 f.execs("rm -rf ~/deploy/" + folder + "/lib");
 f.execs("rm -rf ~/deploy/" + folder + "/python3");
 f.execs("rm -rf ~/deploy/" + folder + "/stack");

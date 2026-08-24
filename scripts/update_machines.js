@@ -24,7 +24,7 @@ for (var id in options.machines) {
 		f.execso(command);
 	}
 	var command =
-		"rsync -rc -e 'ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o BatchMode=yes -p " +
+		"rsync -rc --exclude='/agentic/' --exclude='/proposals/' -e 'ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o BatchMode=yes -p " +
 		(machine.ssh_port || 22) +
 		" -i " +
 		machine.key +
@@ -37,6 +37,21 @@ for (var id in options.machines) {
 		"/";
 	console.log("Running: " + command);
 	f.execso(command);
+	var dependency_command =
+		"ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o BatchMode=yes -p " +
+		(machine.ssh_port || 22) +
+		" -i " +
+		machine.key +
+		" " +
+		machine.user +
+		"@" +
+		machine.ip +
+		' "cd ./' +
+		machine.deploy_to_folder +
+		" && npm install --omit=dev --no-audit --no-fund && npm --prefix node install --omit=dev --no-audit --no-fund && npm ls --omit=dev --depth=0 && npm --prefix node ls --omit=dev --depth=0" +
+		'"';
+	console.log("Installing and verifying production dependencies on " + id + "...");
+	f.execso(dependency_command);
 	console.log("Done: " + id);
 }
 
