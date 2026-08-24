@@ -3853,11 +3853,7 @@ function init_player_exit(player) {
 		player.slots = {};
 	}
 	for (var id in G.skills) {
-		if (
-			G.skills[id]["class"] &&
-			G.skills[id]["class"].includes(player.type) &&
-			player.last[id]
-		) {
+		if (G.skills[id]["class"] && G.skills[id]["class"].includes(player.type) && player.last[id]) {
 			player.p.dt[id] = player.last[id];
 		}
 	}

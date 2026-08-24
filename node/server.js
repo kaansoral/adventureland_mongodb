@@ -6398,14 +6398,12 @@ function init_socket_io(socket_server) {
 						failed: true,
 					});
 				}
-				if (
-					!(
-						item0.name == item1.name &&
-						item1.name == item2.name &&
-						(item0.level || 0) == (item1.level || 0) &&
-						(item1.level || 0) == (item2.level || 0)
-					)
-				) {
+				if (!(
+					item0.name == item1.name &&
+					item1.name == item2.name &&
+					(item0.level || 0) == (item1.level || 0) &&
+					(item1.level || 0) == (item2.level || 0)
+				)) {
 					return socket.emit("game_response", "compound_mismatch");
 				}
 				if ((item0.level || 0) != data.clevel) {
