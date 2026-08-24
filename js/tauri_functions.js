@@ -2,6 +2,7 @@
 
 var tauri_data = { ready: false, ticket: "", error: "" };
 var tauri_auth_promise = null;
+var tauri_reload_pending = false;
 var tauri_invoke = window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke;
 
 function tauri_prepare_auth() {
@@ -79,6 +80,72 @@ function tauri_wait_for_steam_purchase(order_id, timeout_ms) {
 		}
 		check();
 	});
+}
+
+function tauri_character_is_online(name) {
+	var characters = (window.X && X.characters) || [];
+	name = ("" + name).toLowerCase();
+	for (var i = 0; i < characters.length; i++) {
+		if (("" + characters[i].name).toLowerCase() == name) return !!characters[i].online;
+	}
+	return false;
+}
+
+function tauri_wait_for_character_disconnect(name, timeout_ms) {
+	var started = Date.now();
+	return new Promise(function (resolve, reject) {
+		function check() {
+			api_call("servers_and_characters")
+				.then(function () {
+					setTimeout(function () {
+						if (!tauri_character_is_online(name)) resolve();
+						else if (Date.now() - started >= timeout_ms) reject(new Error("character_disconnect_timeout"));
+						else setTimeout(check, 500);
+					}, 100);
+				})
+				.catch(function () {
+					if (Date.now() - started >= timeout_ms) reject(new Error("character_disconnect_timeout"));
+					else setTimeout(check, 500);
+				});
+		}
+		check();
+	});
+}
+
+function tauri_native_reload(selection) {
+	return tauri_invoke("reload_game", { selection: !!selection }).catch(function (error) {
+		tauri_reload_pending = false;
+		console.error("[Tauri] Reload failed: " + error);
+		show_alert("Reload failed: " + error);
+	});
+}
+
+function tauri_graceful_reload() {
+	if (tauri_reload_pending) return;
+	tauri_reload_pending = true;
+	if (!window.character || !character.name || !window.socket) return tauri_native_reload(false);
+
+	var name = character.name;
+	// Suppress only this intentional disconnect. The established automatic
+	// reconnect path remains unchanged for network and server disconnects.
+	auto_reload = "off";
+	reload_state = false;
+	character_to_load = false;
+	try {
+		socket.disconnect();
+	} catch (error) {
+		console.error("[Tauri] Character disconnect failed: " + error);
+		return tauri_native_reload(true);
+	}
+
+	return tauri_wait_for_character_disconnect(name, 12000)
+		.then(function () {
+			return tauri_native_reload(false);
+		})
+		.catch(function (error) {
+			console.error("[Tauri] Character disconnect confirmation failed: " + error);
+			return tauri_native_reload(true);
+		});
 }
 
 function tauri_dev_tools() {

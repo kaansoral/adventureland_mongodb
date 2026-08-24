@@ -1,7 +1,7 @@
 use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Manager, State, WebviewWindow, WebviewWindowBuilder};
 use tauri_plugin_opener::OpenerExt;
 
@@ -40,6 +40,23 @@ struct SteamPurchaseAuthorization {
 
 fn game_url() -> String {
     format!("{BASE_URL}?buildid={BUILD}-{PLATFORM}-tauri")
+}
+
+fn reload_game_window(window: &WebviewWindow, selection: bool) -> Result<(), String> {
+    let mut url = if selection {
+        game_url()
+            .parse::<tauri::Url>()
+            .map_err(|error| error.to_string())?
+    } else {
+        window.url().map_err(|error| error.to_string())?
+    };
+    let nonce = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis()
+        .to_string();
+    url.query_pairs_mut().append_pair("tauri_reload", &nonce);
+    window.navigate(url).map_err(|error| error.to_string())
 }
 
 fn is_game_url(url: &tauri::Url) -> bool {
@@ -237,6 +254,18 @@ fn get_steam_purchase_authorization(
 }
 
 #[tauri::command]
+fn reload_game(window: WebviewWindow, selection: bool) -> Result<(), String> {
+    window
+        .set_title("Adventure Land - Reloading")
+        .map_err(|error| error.to_string())?;
+    if let Err(error) = reload_game_window(&window, selection) {
+        let _ = window.set_title("Adventure Land");
+        return Err(error);
+    }
+    Ok(())
+}
+
+#[tauri::command]
 async fn create_subwindow(app: AppHandle, state: State<'_, AppState>) -> Result<(), String> {
     let open_subwindows = app
         .webview_windows()
@@ -384,8 +413,9 @@ pub fn run() {
             .visible(false)
             .user_agent(USER_AGENT)
             .on_navigation(is_game_url)
-            .on_page_load(move |_, payload| {
+            .on_page_load(move |window, payload| {
                 if payload.event() == tauri::webview::PageLoadEvent::Finished {
+                    let _ = window.set_title("Adventure Land");
                     if let Some(loader) = page_load_handle.get_webview_window("loader") {
                         let _ = loader.close();
                     }
@@ -422,7 +452,13 @@ pub fn run() {
                         match event.id().as_ref() {
                             "inspector" => window.open_devtools(),
                             "reload" => {
-                                let _ = window.eval("window.location.reload()");
+                                let _ = window.set_title("Adventure Land - Reloading");
+                                if let Err(error) = window.eval(
+                                    "if(typeof tauri_graceful_reload==='function'){tauri_graceful_reload();}else{window.__TAURI__.core.invoke('reload_game',{selection:true});}",
+                                ) {
+                                    eprintln!("[Tauri] Reload failed: {error}");
+                                    let _ = window.set_title("Adventure Land");
+                                }
                             }
                             "fullscreen" => {
                                 let fullscreen = window.is_fullscreen().unwrap_or(false);
@@ -438,6 +474,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_steam_auth,
             get_steam_purchase_authorization,
+            reload_game,
             create_subwindow,
             open_external,
             open_devtools,

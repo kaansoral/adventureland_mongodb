@@ -8,7 +8,7 @@ module.exports = [
 	{
 		deployed: null,
 		date: "[24/08/26]",
-		note: "You can now buy Shells through Steam in the new client, with all active Shells bonuses included.",
+		note: "You can now buy Shells through Steam in the new client, with all active Shells bonuses included and smoother client reloads.",
 	},
 	{
 		deployed: null,

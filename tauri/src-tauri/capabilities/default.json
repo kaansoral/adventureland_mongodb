@@ -9,6 +9,7 @@
   "permissions": [
     "allow-get-steam-auth",
     "allow-get-steam-purchase-authorization",
+    "allow-reload-game",
     "allow-create-subwindow",
     "allow-open-external",
     "allow-open-devtools",
