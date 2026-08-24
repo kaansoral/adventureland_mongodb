@@ -3793,15 +3793,18 @@ function cosmetic_emote_logic(player) {
 		player.x += Math.sin(progress * Math.PI * 10) * 1.4;
 		player.rotation = Math.sin(progress * Math.PI * 8) * 0.055;
 	} else if (emote.name == "headwiggle") {
-		var found = false;
+		var has_head = false;
+		for (var id in player.cxc || {}) if (player.cxc[id].stype == "head") has_head = true;
 		for (var id in player.cxc || {}) {
 			var layer = player.cxc[id];
-			if (!cosmetic_emote_head_layer(layer)) continue;
-			found = true;
+			if (!has_head || !cosmetic_emote_head_layer(layer)) continue;
 			layer.x += Math.sin(progress * Math.PI * 12) * 1.6;
 			layer.rotation = Math.sin(progress * Math.PI * 8) * 0.08;
 		}
-		if (!found) player.x += Math.sin(progress * Math.PI * 12) * 1.6;
+		if (!has_head) {
+			player.x += Math.sin(progress * Math.PI * 12) * 1.25;
+			player.rotation = Math.sin(progress * Math.PI * 8) * 0.055;
+		}
 	} else if (emote.name == "jump") {
 		player.y -= Math.sin(progress * Math.PI) * 11;
 	} else if (emote.name == "superjump") {
