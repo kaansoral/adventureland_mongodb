@@ -1428,6 +1428,11 @@ var drops = {
 		[1, "cx", "joy"],
 		[1, "cx", "jump"],
 		[0.1, "cx", "superjump"],
+		[1, "cx", "highfive"],
+		[1, "cx", "boop"],
+		[0.35, "cx", "spotlight"],
+		[0.5, "cx", "pocketstorm"],
+		[0.1, "cx", "mirrordance"],
 	],
 };
 

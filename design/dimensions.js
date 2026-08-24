@@ -1078,6 +1078,11 @@ var positions={
 	"emote_joy":["rawitems",12,0],
 	"emote_jump":["rawitems",13,0],
 	"emote_superjump":["rawitems",14,0],
+	"emote_highfive":["rawitems",15,0],
+	"emote_boop":["rawitems",16,0],
+	"emote_spotlight":["rawitems",17,0],
+	"emote_pocketstorm":["rawitems",18,0],
+	"emote_mirrordance":["rawitems",19,0],
 
 	//trial
 	//"dragondagger":["",15,42],

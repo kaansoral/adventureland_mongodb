@@ -9081,6 +9081,9 @@ function init_socket_io(socket_server) {
 
 			var target;
 			if (gSkill.target) {
+				if (data.id === undefined || data.id === null) {
+					return fail_response("no_target", data.name);
+				}
 				const isMonster = "" + parseInt(data.id) === "" + data.id;
 				const isPlayer = !isMonster;
 				const canTargetMonster = gSkill.target == "monster" || gSkill.target === true;
@@ -9106,6 +9109,9 @@ function init_socket_io(socket_server) {
 				}
 			}
 			if (gSkill.emote && target) {
+				if (gSkill.no_self && target.name == player.name) {
+					return fail_response("no_target", data.name);
+				}
 				const sameParty = player.party && target.party == player.party;
 				const sameAccount = target.owner == player.owner;
 				const isFriend = in_arr(target.owner, player.friends || []);
@@ -9228,7 +9234,12 @@ function init_socket_io(socket_server) {
 					consume_mp(player, gSkill.mp);
 					player.to_resend = "u+cid";
 				}
-				xy_emit(player, "emotion", { name: gSkill.emote, player: player.name, target: target && target.name });
+				xy_emit(player, "emotion", {
+					name: gSkill.emote,
+					player: player.name,
+					target: target && target.name,
+					variation: random_one([0, 1, 2]),
+				});
 			} else if (
 				[
 					"attack",
