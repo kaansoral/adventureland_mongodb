@@ -3,7 +3,8 @@
   "version": "1.3.1",
   "private": true,
   "scripts": {
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "build:mac": "MAC_APP=\"src-tauri/target/universal-apple-darwin/release/bundle/macos/Adventure Land.app\"; PATH=\"$(dirname \"$(rustup which cargo)\"):$PATH\" RUSTFLAGS=\"--remap-path-prefix=$HOME=.\" tauri build --target universal-apple-darwin && codesign --force --deep --sign - \"$MAC_APP\" && codesign --verify --deep --strict \"$MAC_APP\" && ! strings -a \"$MAC_APP/Contents/MacOS/adventure-land\" | grep -Fq \"$HOME\""
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2"
