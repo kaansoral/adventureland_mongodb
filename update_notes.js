@@ -8,7 +8,7 @@ module.exports = [
 	{
 		deployed: "[24/08/26]",
 		date: "[24/08/26]",
-		note: "Added the New Misc. cosmetic box with gravestones and six unlockable emotes.",
+		note: "Added the New Misc. cosmetic box with gravestones and six unlockable emotes. Head Wiggle now works on full character looks, and Joy bursts into a bright pixel rainbow.",
 	},
 	{
 		deployed: "[24/08/26]",

@@ -9107,6 +9107,14 @@ function init_socket_io(socket_server) {
 					return socket.emit("disappear", { id: data.id, place: data.name, reason: "not_there" });
 				}
 			}
+			if (gSkill.emote && target) {
+				const sameParty = player.party && target.party == player.party;
+				const sameAccount = target.owner == player.owner;
+				const isFriend = in_arr(target.owner, player.friends || []);
+				if (target.in != player.in || (!sameParty && !sameAccount && !isFriend)) {
+					return fail_response("non_friendly_target", data.name);
+				}
+			}
 
 			if (gSkill.requirements) {
 				for (const requirement in gSkill.requirements) {
@@ -9222,7 +9230,7 @@ function init_socket_io(socket_server) {
 					consume_mp(player, gSkill.mp);
 					player.to_resend = "u+cid";
 				}
-				xy_emit(player, "emotion", { name: gSkill.emote, player: player.name });
+				xy_emit(player, "emotion", { name: gSkill.emote, player: player.name, target: target && target.name });
 			} else if (
 				[
 					"attack",

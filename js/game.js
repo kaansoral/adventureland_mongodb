@@ -3583,11 +3583,6 @@ var cosmetic_emote_texts = {
 		{ text: "NO!", color: "#5BD5E8", size: 28 },
 		{ text: "MAYBE?", color: "#EFC66C", size: 24 },
 	],
-	joy: [
-		{ text: "JOY!", color: "#E486C8", size: 48 },
-		{ text: "YAY!", color: "#EFC66C", size: 50 },
-		{ text: "HOORAY!", color: "#5BD5E8", size: 40 },
-	],
 	jump: [
 		{ text: "HOP!", color: "#5BD5E8", size: 26 },
 		{ text: "UP!", color: "#EFC66C", size: 27 },
@@ -3708,6 +3703,8 @@ function clear_cosmetic_emote(player) {
 	for (var id in player.cxc || {}) {
 		if (cosmetic_emote_head_layer(player.cxc[id])) player.cxc[id].rotation = 0;
 	}
+	if (player.cosmetic_emote_visual) destroy_sprite(player.cosmetic_emote_visual, "children");
+	delete player.cosmetic_emote_visual;
 	delete player.cosmetic_emote;
 }
 
@@ -3759,6 +3756,95 @@ function cosmetic_emote_fart_cloud(player, variation) {
 	}, 75);
 }
 
+function cosmetic_emote_joy_rainbow(player, variation) {
+	if (no_graphics) return;
+	var rainbow = new PIXI.Container();
+	var colors = [0xf05a67, 0xf3984f, 0xf4d35e, 0x6bc46d, 0x55c7dc, 0x668ee8, 0xb06bd3];
+	var arch = [
+		[-16, -2],
+		[-16, -4],
+		[-14, -6],
+		[-12, -8],
+		[-10, -10],
+		[-8, -11],
+		[-6, -12],
+		[-4, -13],
+		[-2, -14],
+		[0, -14],
+		[2, -14],
+		[4, -13],
+		[6, -12],
+		[8, -11],
+		[10, -10],
+		[12, -8],
+		[14, -6],
+		[16, -4],
+		[16, -2],
+	];
+	var rainbow_stages = [];
+	var stage_widths = [2, 5, 9];
+	for (var stage = 0; stage < stage_widths.length; stage++) {
+		var stage_graphic = new PIXI.Graphics();
+		for (var band = 0; band < colors.length; band++) {
+			stage_graphic.beginFill(colors[band], 1);
+			for (var point = 9 - stage_widths[stage]; point <= 9 + stage_widths[stage]; point++)
+				stage_graphic.drawRect(arch[point][0], arch[point][1] + band * 2, 2, 2);
+			stage_graphic.endFill();
+		}
+		stage_graphic.visible = false;
+		rainbow.addChild(stage_graphic);
+		rainbow_stages.push(stage_graphic);
+	}
+	var graphic = new PIXI.Graphics();
+	var letters = {
+		J: ["111", "001", "001", "101", "111"],
+		O: ["111", "101", "101", "101", "111"],
+		Y: ["101", "101", "010", "010", "010"],
+		"!": ["1", "1", "1", "0", "1"],
+	};
+	var word = "JOY!";
+	for (var letter = 0; letter < word.length; letter++) {
+		var rows = letters[word[letter]];
+		graphic.beginFill(colors[(letter * 2 + variation) % colors.length], 1);
+		for (var row = 0; row < rows.length; row++)
+			for (var column = 0; column < rows[row].length; column++)
+				if (rows[row][column] == "1") graphic.drawRect(-15 + letter * 9 + column * 2, 3 + row * 2, 2, 2);
+		graphic.endFill();
+	}
+	rainbow.addChild(graphic);
+	var sparkles = new PIXI.Graphics();
+	for (var sparkle = 0; sparkle < 8; sparkle++) {
+		sparkles.beginFill(colors[(sparkle + variation) % colors.length], 1);
+		sparkles.drawRect(-20 + sparkle * 6, sparkle % 2 ? -8 : 8, 2, 2);
+		sparkles.endFill();
+	}
+	sparkles.visible = false;
+	rainbow.addChild(sparkles);
+	rainbow.y = -get_height(player) - 9;
+	rainbow.parentGroup = rainbow.displayGroup = text_layer;
+	player.addChild(rainbow);
+	player.cosmetic_emote_visual = rainbow;
+	var steps = ceil(cosmetic_emote_durations.joy / 60);
+	function animate(step) {
+		if (!rainbow.parent || step >= steps) {
+			if (rainbow.parent) destroy_sprite(rainbow, "children");
+			if (player.cosmetic_emote_visual == rainbow) delete player.cosmetic_emote_visual;
+			return;
+		}
+		var active_stage = step < 3 || step >= 23 ? -1 : step < 6 || step >= 20 ? 0 : step < 9 || step >= 17 ? 1 : 2;
+		for (var stage = 0; stage < rainbow_stages.length; stage++) rainbow_stages[stage].visible = stage == active_stage;
+		graphic.visible = step >= 3 && step < 23;
+		sparkles.visible = active_stage == 2;
+		rainbow.y = -get_height(player) - 9 - floor(step / 6);
+		draw_timeout(function () {
+			animate(step + 1);
+		}, 60);
+	}
+	draw_timeout(function () {
+		animate(1);
+	}, 60);
+}
+
 function play_cosmetic_emote(player, name) {
 	if (!cosmetic_emote_durations[name]) return;
 	clear_cosmetic_emote(player);
@@ -3767,16 +3853,11 @@ function play_cosmetic_emote(player, name) {
 	player.cosmetic_emote = { name: name, start: new Date(), duration: duration, variation: variation };
 	if (name == "fart") {
 		cosmetic_emote_fart_cloud(player, variation);
+	} else if (name == "joy") {
+		cosmetic_emote_joy_rainbow(player, variation);
 	} else {
 		var text = cosmetic_emote_texts[name][variation];
 		d_text(text.text, player, { size: text.size, color: text.color });
-	}
-	if (name == "joy") {
-		for (var i = 0; i < 5 + variation * 2; i++)
-			draw_timeout(function () {
-				var current = get_player(player.name);
-				if (current) assassin_smoke(current.real_x + Math.random() * 28 - 14, current.real_y - Math.random() * 30, "confetti");
-			}, i * (90 + variation * 25));
 	}
 	play_cosmetic_emote_sound(name, variation);
 }
