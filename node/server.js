@@ -13193,10 +13193,10 @@ function update_instance(instance) {
 			}
 		}
 		if (monster.moving) {
-			var ms = mssince(monster.last.move);
-			ms = min(ms, 2000); // to prevent monsters from jumping off the map when the machine sleeps
-			monster.x += (monster.vx * ms) / 1000.0;
-			monster.y += (monster.vy * ms) / 1000.0;
+			let ms_moving = mssince(monster.last.move);
+			ms_moving = min(ms_moving, 2000); // to prevent monsters from jumping off the map when the machine sleeps
+			monster.x += (monster.vx * ms_moving) / 1000.0;
+			monster.y += (monster.vy * ms_moving) / 1000.0;
 			stop_logic(monster);
 			monster.last.move = new Date();
 			xy_u_logic(monster);
@@ -13832,9 +13832,9 @@ function update_instance(instance) {
 			resend(player, "reopen+u+cid");
 		}
 		if (player.moving) {
-			var ms = mssince(player.last.move);
-			player.x += (player.vx * ms) / 1000.0;
-			player.y += (player.vy * ms) / 1000.0;
+			let ms_moving = mssince(player.last.move);
+			player.x += (player.vx * ms_moving) / 1000.0;
+			player.y += (player.vy * ms_moving) / 1000.0;
 			player.red_zone *= 0.99;
 			if (smap_data[player.map] != -1 && !player.npc && mode.red_zone && !player.s.dash) {
 				var current = smap_data[player.map][phash(player)];
