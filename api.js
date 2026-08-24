@@ -347,6 +347,21 @@ async function logout_everywhere_api(args) {
 	return { success: true };
 }
 
+async function generate_token_api(args) {
+	var result = await create_mcp_api_token(args.user);
+	if (result.failed) return result;
+
+	// The regular API logs responses in development. Keep the token out of logs
+	// while still returning it normally as JSON.
+	Object.defineProperty(result, Symbol.for("nodejs.util.inspect.custom"), {
+		enumerable: false,
+		value: function () {
+			return { success: true, token: "[redacted]", rotated: result.rotated };
+		},
+	});
+	return result;
+}
+
 // ==================== CHARACTER MANAGEMENT ====================
 
 async function servers_and_characters_api(args) {
@@ -1461,6 +1476,7 @@ var REF = {
 	},
 	logout: { F: logout_api, P: true },
 	logout_everywhere: { F: logout_everywhere_api, P: true, U: true },
+	generate_token: { F: generate_token_api, P: true, U: true },
 
 	servers_and_characters: { F: servers_and_characters_api, P: true, U: true },
 	create_character: {
