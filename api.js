@@ -1223,6 +1223,20 @@ function purchased_shells_for_usd(usd, event_bonus) {
 	return shells;
 }
 
+function steam_web_checkout_url(steam_url, order_id) {
+	try {
+		var checkout_url = new URL(steam_url);
+		if (checkout_url.protocol !== "https:") return "";
+		if (["checkout.steampowered.com", "store.steampowered.com"].indexOf(checkout_url.hostname) === -1) return "";
+		var return_url = new URL("https://adventure.land/shells");
+		return_url.searchParams.set("steam_purchase", order_id);
+		checkout_url.searchParams.set("returnurl", return_url.toString());
+		return checkout_url.toString();
+	} catch (e) {
+		return "";
+	}
+}
+
 async function steam_microtxn_request(method, endpoint, data, sandbox) {
 	if (!keys.steam_publisher_web_apikey) return { success: false, config_error: true };
 	var controller = new AbortController();
@@ -1277,6 +1291,7 @@ async function insert_steam_purchase(user, steam_id, usd, shells, event_bonus, s
 			item_id: 777150000 + usd,
 			shells: shells,
 			extra_shells: event_bonus,
+			user_session: "web",
 			sandbox: sandbox,
 			state: "creating",
 			created: new Date(),
@@ -1415,7 +1430,8 @@ async function steam_payment_start_api(args) {
 		"InitTxn/v3",
 		{
 			steamid: saved_steam_id,
-			usersession: "client",
+			usersession: "web",
+			ipaddress: get_ip(args.req),
 			orderid: purchase._id,
 			itemcount: 1,
 			language: "en",
@@ -1436,9 +1452,14 @@ async function steam_payment_start_api(args) {
 	}
 
 	purchase.trans_id = "" + (initialized.params.transid || "");
+	var steam_url = steam_web_checkout_url(initialized.params.steamurl, purchase._id);
+	if (!steam_url) {
+		await db.collection(STEAM_PURCHASE_COLLECTION).updateOne({ _id: purchase._id }, { $set: { state: "checkout_unavailable", trans_id: purchase.trans_id, updated: new Date() } });
+		return { failed: true, reason: "steam_checkout_unavailable" };
+	}
 	await db.collection(STEAM_PURCHASE_COLLECTION).updateOne({ _id: purchase._id }, { $set: { state: "initialized", trans_id: purchase.trans_id, updated: new Date() } });
 	console.log("#A Tauri Steam purchase initialized: " + purchase._id);
-	return { success: true, order_id: purchase._id, shells: purchase.shells, sandbox: purchase.sandbox };
+	return { success: true, order_id: purchase._id, shells: purchase.shells, sandbox: purchase.sandbox, steam_url: steam_url };
 }
 
 async function steam_payment_finish_api(args) {
@@ -1451,11 +1472,26 @@ async function steam_payment_finish_api(args) {
 	if (!purchase || purchase.owner !== get_id(args.user)) return { failed: true, reason: "invalid_order" };
 	if (purchase.steam_id !== "" + (args.user.pid || "")) return { failed: true, reason: "steam_account_mismatch" };
 	if (purchase.state === "delivered") return grant_steam_shell_purchase(purchase, args);
-	if (!args.authorized) {
+	if (purchase.user_session === "web") {
+		var web_query = await steam_microtxn_request("GET", "QueryTxn/v3", { orderid: order_id }, purchase.sandbox);
+		var web_status = web_query.success && web_query.params && web_query.params.status;
+		var web_steam_id = web_query.success && "" + (web_query.params.steamid || "");
+		if (web_status === "Succeeded" && web_steam_id === purchase.steam_id) {
+			purchase.trans_id = "" + (web_query.params.transid || purchase.trans_id || "");
+			return grant_steam_shell_purchase(purchase, args);
+		}
+		if (web_status === "Init" || web_query.uncertain) return { failed: true, reason: "steam_payment_pending" };
+		if (web_status !== "Approved" || web_steam_id !== purchase.steam_id) {
+			await db
+				.collection(STEAM_PURCHASE_COLLECTION)
+				.updateOne({ _id: order_id, state: { $ne: "delivered" } }, { $set: { state: "failed", error_code: web_query.error_code || null, updated: new Date() } });
+			return { failed: true, reason: "steam_purchase_failed" };
+		}
+	} else if (!args.authorized) {
 		await db.collection(STEAM_PURCHASE_COLLECTION).updateOne({ _id: order_id, state: { $ne: "delivered" } }, { $set: { state: "declined", updated: new Date() } });
 		return { failed: true, reason: "steam_purchase_cancelled" };
 	}
-	if (["declined", "init_failed", "failed"].indexOf(purchase.state) !== -1) return { failed: true, reason: "steam_purchase_failed" };
+	if (["declined", "init_failed", "checkout_unavailable", "failed"].indexOf(purchase.state) !== -1) return { failed: true, reason: "steam_purchase_failed" };
 
 	await db.collection(STEAM_PURCHASE_COLLECTION).updateOne({ _id: order_id, state: { $ne: "delivered" } }, { $set: { state: "finalizing", authorized: new Date(), updated: new Date() } });
 	var finalized = await steam_microtxn_request("POST", "FinalizeTxn/v2", { orderid: order_id }, purchase.sandbox);

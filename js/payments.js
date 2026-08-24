@@ -28,8 +28,8 @@ function set_pamount(amount) {
 		}, 20);
 		return;
 	}
-	if (stripe_state == "failed") (stripe_state = "pay"), $(".pbutton").removeClass("pfail");
-	if (stripe_state == "declined") (stripe_state = "pay"), $(".pbutton").removeClass("pfail");
+	if (stripe_state == "failed") ((stripe_state = "pay"), $(".pbutton").removeClass("pfail"));
+	if (stripe_state == "declined") ((stripe_state = "pay"), $(".pbutton").removeClass("pfail"));
 	if (stripe_state == "pay") $(".pbutton").html("Pay $" + pamount);
 	update_shells_calc();
 }
@@ -63,6 +63,7 @@ function steam_payment_message(reason) {
 	if (reason == "steam_account_required") return "Log in through Steam before purchasing Shells.";
 	if (reason == "steam_client_update_required") return "Please update the Steam client and restart Adventure Land.";
 	if (reason == "steam_not_configured") return "Steam purchases aren't available yet.";
+	if (reason == "steam_checkout_unavailable") return "Steam didn't provide a checkout page.";
 	if (reason == "steam_payment_pending" || reason == "steam_purchase_timeout") return "Steam is still processing this purchase.";
 	return "Steam couldn't complete the purchase.";
 }
@@ -97,10 +98,31 @@ function steam_finish_payment(authorized) {
 	api_call("steam_payment_finish", { order_id: steam_order_id, authorized: !!authorized }).then(steam_payment_success).catch(steam_payment_failed);
 }
 
+function steam_poll_payment(order_id, started) {
+	if (steam_order_id != order_id) return;
+	api_call("steam_payment_finish", { order_id: order_id, authorized: true })
+		.then(steam_payment_success)
+		.catch(function (error) {
+			if (steam_order_id != order_id) return;
+			var reason = (error && (error.reason || error.message)) || "steam_purchase_failed";
+			if (reason == "steam_payment_pending" && Date.now() - started < 10 * 60 * 1000) {
+				steam_state = "authorize";
+				$(".pbutton").html("Waiting for Steam ...");
+				setTimeout(function () {
+					steam_poll_payment(order_id, started);
+				}, 1500);
+				return;
+			}
+			if (reason == "steam_payment_pending") error = new Error("steam_purchase_timeout");
+			steam_payment_failed(error);
+		});
+}
+
 function steam_pay() {
 	if (!is_tauri) return;
 	if (steam_state == "pending" && steam_order_id) {
-		steam_finish_payment(true);
+		steam_state = "authorize";
+		steam_poll_payment(steam_order_id, Date.now());
 		return;
 	}
 	if (in_arr(steam_state, ["process", "authorize", "finalizing"])) {
@@ -124,12 +146,11 @@ function steam_pay() {
 		.then(function (data) {
 			steam_order_id = data.order_id;
 			steam_state = "authorize";
-			$(".pbutton").html("Approve in Steam ...");
-			p_log((data.sandbox ? "Sandbox: " : "") + "Approve or cancel the purchase in Steam.", "gray");
-			return tauri_wait_for_steam_purchase(steam_order_id);
-		})
-		.then(function (authorization) {
-			steam_finish_payment(authorization.authorized);
+			$(".pbutton").html("Opening Steam ...");
+			p_log((data.sandbox ? "Sandbox: " : "") + "Complete the purchase in the Steam checkout window.", "gray");
+			return tauri_open_external(data.steam_url).then(function () {
+				steam_poll_payment(steam_order_id, Date.now());
+			});
 		})
 		.catch(steam_payment_failed);
 }
@@ -174,7 +195,7 @@ function stripe_response(status, response) {
 		$("#plog").html("");
 		stripe_state = "failed";
 		$(".pbutton").html("Failed.");
-		if (response.error && response.error.message) add_log(response.error.message, "gray"), p_log(response.error.message, "gray");
+		if (response.error && response.error.message) (add_log(response.error.message, "gray"), p_log(response.error.message, "gray"));
 	}
 	// if(Dev) show_json(response);
 }
