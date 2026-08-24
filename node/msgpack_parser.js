@@ -319,13 +319,5 @@ function createParser(overrides) {
 	return Object.freeze({ protocol, PacketType, Encoder, Decoder });
 }
 
-function msgpackPath(socketPath) {
-	if (typeof socketPath !== "string" || socketPath.length === 0 || socketPath[0] !== "/") {
-		throw new TypeError("Socket.IO path must be an absolute path");
-	}
-	const base = socketPath.replace(/\/+$/, "");
-	return base ? base + "-msgpack/" : "/msgpack/";
-}
-
 const parser = createParser();
-module.exports = Object.assign({}, parser, { createParser, msgpackPath });
+module.exports = Object.assign({}, parser, { createParser });

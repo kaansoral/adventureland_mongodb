@@ -40,7 +40,8 @@ var io = new SocketIOServer(http_server, {
 	pingTimeout: 12000,
 	cors: socket_cors,
 }); // default is 25000 to 60000
-var msgpack_path = msgpack_parser.msgpackPath(server_def.path);
+var msgpack_path = server_def.msgpack_path;
+if (!msgpack_path) throw new Error("Missing msgpack_path for server " + server_key);
 var msgpack_io = new SocketIOServer(http_server, {
 	path: msgpack_path,
 	transports: ["websocket"],

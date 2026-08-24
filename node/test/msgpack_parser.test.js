@@ -90,9 +90,3 @@ test("rejects malformed, oversized, binary, extension, and polluted frames", () 
 		/__proto__/,
 	);
 });
-
-test("derives an unversioned sibling path", () => {
-	assert.equal(parserModule.msgpackPath("/ws1/"), "/ws1-msgpack/");
-	assert.equal(parserModule.msgpackPath("/socket"), "/socket-msgpack/");
-	assert.equal(parserModule.msgpackPath("/"), "/msgpack/");
-});
