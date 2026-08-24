@@ -1190,7 +1190,7 @@ var imagesets = {
 		size: 20,
 		rows: 40,
 		columns: 20,
-		file: "/images/tiles/items/raw_items.png?v=1",
+		file: "/images/tiles/items/raw_items.png?v=2",
 		load: true,
 	},
 };

@@ -2076,10 +2076,10 @@ function init_socket(args) {
 				}
 			} else if (response == "cx_sent") {
 				ui_log("Cosmetics sent: " + data.cx, "#DB7AA9");
-				character.acx = data.acx;
+				refresh_cosmetic_skills(data.acx);
 			} else if (response == "cx_received") {
 				ui_log("Cosmetics received: " + data.cx, "#A888DD");
-				character.acx = data.acx;
+				refresh_cosmetic_skills(data.acx);
 			} else if (response == "cx_new") {
 				if ($("#topleftcornerdialog").length) {
 					var html = "";
@@ -2089,7 +2089,7 @@ function init_socket(args) {
 					html += "</div>";
 					$("#topleftcornerdialog").html(html);
 				} else ui_log("Cosmetics: " + data.name, "#DB7AA9");
-				character.acx = data.acx;
+				refresh_cosmetic_skills(data.acx);
 			} else if (response == "emotion_new") {
 				ui_log("Emotion: " + data.name, "#DB7AA9");
 				character.emx = data.emx;
@@ -2334,6 +2334,8 @@ function init_socket(args) {
 				setTimeout(function () {
 					sfx("drop_egg");
 				}, 30);
+			} else if (player && G.skills[emotion] && G.skills[emotion].emote) {
+				play_cosmetic_emote(player, emotion);
 			} else if (player) {
 				start_animation(player, emotion);
 			}
@@ -3564,6 +3566,203 @@ function old_move(x, y) {
 
 function map_click_release() {}
 
+var cosmetic_emote_durations = { fart: 900, wiggle: 950, headwiggle: 950, joy: 1500, jump: 520 };
+var cosmetic_emote_audio_context = null;
+
+function refresh_cosmetic_skills(acx) {
+	character.acx = acx;
+	if (skillsui) {
+		render_skills();
+		render_skills();
+	} else render_skillbar();
+}
+
+function cosmetic_emote_audio() {
+	if (window.Howler && Howler.ctx) return Howler.ctx;
+	if (cosmetic_emote_audio_context) return cosmetic_emote_audio_context;
+	var AudioContext = window.AudioContext || window.webkitAudioContext;
+	if (!AudioContext) return null;
+	cosmetic_emote_audio_context = new AudioContext();
+	return cosmetic_emote_audio_context;
+}
+
+function cosmetic_emote_tone(context, output, start, duration, frequency, end_frequency, type, volume) {
+	var oscillator = context.createOscillator();
+	var gain = context.createGain();
+	oscillator.type = type || "sine";
+	oscillator.frequency.setValueAtTime(frequency, start);
+	if (end_frequency) oscillator.frequency.exponentialRampToValueAtTime(end_frequency, start + duration);
+	gain.gain.setValueAtTime(0.0001, start);
+	gain.gain.exponentialRampToValueAtTime(volume, start + min(0.018, duration / 3));
+	gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+	oscillator.connect(gain);
+	gain.connect(output);
+	oscillator.start(start);
+	oscillator.stop(start + duration + 0.02);
+}
+
+function cosmetic_emote_fart_sound(context, output, start) {
+	var duration = 0.46;
+	var buffer = context.createBuffer(1, ceil(context.sampleRate * duration), context.sampleRate);
+	var samples = buffer.getChannelData(0);
+	var previous = 0;
+	for (var i = 0; i < samples.length; i++) {
+		var white = Math.random() * 2 - 1;
+		previous = previous * 0.86 + white * 0.14;
+		samples[i] = previous * (1 - i / samples.length);
+	}
+	var source = context.createBufferSource();
+	var filter = context.createBiquadFilter();
+	var gain = context.createGain();
+	source.buffer = buffer;
+	filter.type = "lowpass";
+	filter.frequency.setValueAtTime(260, start);
+	filter.frequency.exponentialRampToValueAtTime(85, start + duration);
+	gain.gain.setValueAtTime(0.0001, start);
+	gain.gain.exponentialRampToValueAtTime(0.14, start + 0.025);
+	gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+	source.connect(filter);
+	filter.connect(gain);
+	gain.connect(output);
+	source.start(start);
+}
+
+function play_cosmetic_emote_sound(name) {
+	if (!sound_sfx || no_html) return;
+	try {
+		var context = cosmetic_emote_audio();
+		if (!context) return;
+		if (context.state == "suspended") context.resume();
+		var output = context.createGain();
+		output.gain.value = 0.55 * (sfx_volume || 100) / 100;
+		output.connect((window.Howler && Howler.masterGain) || context.destination);
+		var start = context.currentTime + 0.012;
+		if (name == "fart") {
+			cosmetic_emote_fart_sound(context, output, start);
+			cosmetic_emote_tone(context, output, start, 0.42, 92, 41, "sawtooth", 0.13);
+		} else if (name == "wiggle") {
+			cosmetic_emote_tone(context, output, start, 0.11, 260, 410, "triangle", 0.07);
+			cosmetic_emote_tone(context, output, start + 0.13, 0.11, 410, 260, "triangle", 0.06);
+		} else if (name == "headwiggle") {
+			[540, 680, 570].forEach(function (frequency, i) {
+				cosmetic_emote_tone(context, output, start + i * 0.085, 0.07, frequency, frequency * 0.92, "sine", 0.055);
+			});
+		} else if (name == "joy") {
+			[523.25, 659.25, 783.99, 1046.5].forEach(function (frequency, i) {
+				cosmetic_emote_tone(context, output, start + i * 0.09, 0.24, frequency, frequency, "sine", 0.05);
+			});
+		} else if (name == "jump") {
+			cosmetic_emote_tone(context, output, start, 0.22, 230, 660, "square", 0.055);
+		}
+		setTimeout(function () {
+			output.disconnect();
+		}, 2000);
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+function cosmetic_emote_head_layer(sprite) {
+	return in_arr(sprite.stype, ["head", "hair", "hat", "a_hat", "face", "beard", "makeup", "a_makeup"]);
+}
+
+function clear_cosmetic_emote(player) {
+	player.rotation = 0;
+	for (var id in player.cxc || {}) {
+		if (cosmetic_emote_head_layer(player.cxc[id])) player.cxc[id].rotation = 0;
+	}
+	delete player.cosmetic_emote;
+}
+
+function cosmetic_emote_fart_cloud(player) {
+	if (no_graphics) return;
+	var cloud = new PIXI.Container();
+	var direction = player.direction || 0;
+	var dx = direction == 1 ? 8 : direction == 2 ? -8 : -7;
+	var dy = direction == 0 ? -5 : direction == 3 ? 3 : -10;
+	cloud.x = player.real_x + dx;
+	cloud.y = player.real_y + dy;
+	cloud.real_y = player.real_y;
+	cloud.parentGroup = cloud.displayGroup = animation_layer;
+	for (var i = 0; i < 7; i++) {
+		var puff = new PIXI.Graphics();
+		puff.beginFill(i % 2 ? 0x8aa457 : 0x716346, 0.82);
+		puff.drawCircle(0, 0, 1 + (i % 3) * 0.45);
+		puff.endFill();
+		puff.x = (i % 3) * 2;
+		puff.y = -floor(i / 3) * 2;
+		cloud.addChild(puff);
+	}
+	var label = new PIXI.Text("PFFT", { fontFamily: SZ.font, fontSize: 5 * text_quality, fill: "#C7D68C", stroke: "#17121D", strokeThickness: text_quality });
+	if (text_quality > 1) label.scale.set(1 / text_quality);
+	label.anchor.set(0.5, 1);
+	label.y = -7;
+	cloud.addChild(label);
+	map.addChild(cloud);
+	var a_map = current_map;
+	function fade(step) {
+		if (step >= 12 || a_map != current_map) {
+			destroy_sprite(cloud, "children");
+			return;
+		}
+		cloud.x += direction == 2 ? -0.7 : 0.7;
+		cloud.y -= 0.2;
+		cloud.alpha = 1 - step / 12;
+		draw_timeout(function () {
+			fade(step + 1);
+		}, 75);
+	}
+	draw_timeout(function () {
+		fade(1);
+	}, 75);
+}
+
+function play_cosmetic_emote(player, name) {
+	if (!cosmetic_emote_durations[name]) return;
+	clear_cosmetic_emote(player);
+	player.cosmetic_emote = { name: name, start: new Date(), duration: cosmetic_emote_durations[name] };
+	if (name == "fart") {
+		cosmetic_emote_fart_cloud(player);
+	} else if (name == "joy") {
+		d_text("JOY!", player, { size: 48, color: "#E486C8" });
+		for (var i = 0; i < 6; i++)
+			draw_timeout(function () {
+				var current = get_player(player.name);
+				if (current) assassin_smoke(current.real_x + Math.random() * 28 - 14, current.real_y - Math.random() * 30, "confetti");
+			}, i * 120);
+	}
+	play_cosmetic_emote_sound(name);
+}
+
+function cosmetic_emote_logic(player) {
+	var emote = player.cosmetic_emote;
+	if (!emote) return;
+	var progress = mssince(emote.start) / emote.duration;
+	if (progress >= 1) {
+		clear_cosmetic_emote(player);
+		return;
+	}
+	if (emote.name == "wiggle") {
+		player.x += Math.sin(progress * Math.PI * 10) * 1.4;
+		player.rotation = Math.sin(progress * Math.PI * 8) * 0.055;
+	} else if (emote.name == "headwiggle") {
+		var found = false;
+		for (var id in player.cxc || {}) {
+			var layer = player.cxc[id];
+			if (!cosmetic_emote_head_layer(layer)) continue;
+			found = true;
+			layer.x += Math.sin(progress * Math.PI * 12) * 1.6;
+			layer.rotation = Math.sin(progress * Math.PI * 8) * 0.08;
+		}
+		if (!found) player.x += Math.sin(progress * Math.PI * 12) * 1.6;
+	} else if (emote.name == "jump") {
+		player.y -= Math.sin(progress * Math.PI) * 11;
+	} else if (emote.name == "joy") {
+		player.y -= Math.abs(Math.sin(progress * Math.PI * 4)) * 4.5;
+		player.rotation = Math.sin(progress * Math.PI * 6) * 0.04;
+	}
+}
+
 function update_sprite(sprite) {
 	if (!sprite || !sprite.stype) return;
 	for (name in sprite.animations || {}) update_sprite(sprite.animations[name]);
@@ -3888,6 +4087,7 @@ function update_sprite(sprite) {
 		if (!sprite.cx) sprite.cx = {};
 		if (sprite.stype == "full") cosmetics_logic(sprite);
 	}
+	if (sprite.type == "character") cosmetic_emote_logic(sprite);
 
 	if (sprite.last_ms && sprite.s) {
 		var ms = mssince(sprite.last_ms);

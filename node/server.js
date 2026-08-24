@@ -9024,6 +9024,9 @@ function init_socket_io(socket_server) {
 			if (!gSkill) {
 				return fail_response("no_skill", data.name);
 			}
+			if (gSkill.emote && (!player.p.acx || !player.p.acx[gSkill.emote])) {
+				return fail_response("skill_cant_use", data.name);
+			}
 
 			if (
 				gSkill.mp &&
@@ -9214,7 +9217,13 @@ function init_socket_io(socket_server) {
 				player.to_resend = "u+cid+reopen";
 			}
 
-			if (
+			if (gSkill.emote) {
+				if (gSkill.mp) {
+					consume_mp(player, gSkill.mp);
+					player.to_resend = "u+cid";
+				}
+				xy_emit(player, "emotion", { name: gSkill.emote, player: player.name });
+			} else if (
 				[
 					"attack",
 					"burst",

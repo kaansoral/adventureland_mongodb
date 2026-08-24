@@ -1415,6 +1415,18 @@ var drops = {
 	cosmo1: [[1, "cx", "mmakeup0"]],
 	cosmo2: [],
 	cosmo3: [],
+	cosmo5: [
+		[1, "cx", "gravestonea"],
+		[1, "cx", "xgravestone0"],
+		[1, "cx", "xgravestone1"],
+		[1, "cx", "xgravestone3"],
+		[1, "cx", "xgravestone4"],
+		[1, "cx", "fart"],
+		[1, "cx", "wiggle"],
+		[1, "cx", "headwiggle"],
+		[1, "cx", "joy"],
+		[1, "cx", "jump"],
+	],
 };
 
 // The elemental mage chain previously had no item drops. Void Thread gives

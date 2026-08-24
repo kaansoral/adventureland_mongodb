@@ -1071,6 +1071,12 @@ var positions={
 	"fanofknives":["rawitems",5,0],
 	"worldrootcrook":["rawitems",6,0],
 	"cinderwand_r":["rawitems",7,0],
+	"cosmo5":["rawitems",8,0],
+	"emote_fart":["rawitems",9,0],
+	"emote_wiggle":["rawitems",10,0],
+	"emote_headwiggle":["rawitems",11,0],
+	"emote_joy":["rawitems",12,0],
+	"emote_jump":["rawitems",13,0],
 
 	//trial
 	//"dragondagger":["",15,42],

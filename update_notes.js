@@ -3,6 +3,11 @@ module.exports = [
 	{
 		deployed: null,
 		date: "[24/08/26]",
+		note: "Added the New Misc. cosmetic box and five unlockable emote skills.",
+	},
+	{
+		deployed: null,
+		date: "[24/08/26]",
 		note: "Strengthened Worldroot Crook's Intelligence, Strength, and resistance piercing, and refined its appearance.",
 	},
 	{

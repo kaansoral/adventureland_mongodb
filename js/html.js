@@ -4660,6 +4660,12 @@ function item_container(item, actual) {
 	return html;
 }
 
+function unlocked_skill_mapping(current) {
+	var skill = current && G.skills[current.name || current];
+	if (skill && skill.emote && !(character.acx && character.acx[skill.emote])) return null;
+	return current;
+}
+
 function render_skillbar(empty) {
 	if (empty) {
 		$("#skillbar").html("").hide();
@@ -4669,7 +4675,7 @@ function render_skillbar(empty) {
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 2px; display: inline-block' class='enableclicks'>",
 		i = 0;
 	skillbar.forEach(function (id) {
-		var current = keymap[id],
+		var current = unlocked_skill_mapping(keymap[id]),
 			skin = current;
 		if (current) {
 			if (current && current.skin) skin = current.skin;
@@ -4718,7 +4724,7 @@ function render_skills() {
 	if (skills_page == "U") (km1 = ["ESC", "A", "C", "F", "I", "TAB", "ENTER"]), (km2 = ["UP", "LEFT", "DOWN", "RIGHT", ",", "S", "U"]);
 	html += "<div>";
 	km1.forEach(function (N) {
-		var current = keymap[N],
+		var current = unlocked_skill_mapping(keymap[N]),
 			skin = current;
 		if (current && current.skin) skin = current.skin;
 		else if (current && current.type == "item" && G.items[current.name]) skin = G.items[current.name].skin;
@@ -4728,7 +4734,7 @@ function render_skills() {
 	html += "</div>";
 	html += "<div>";
 	km2.forEach(function (N) {
-		var current = keymap[N],
+		var current = unlocked_skill_mapping(keymap[N]),
 			skin = current;
 		if (current && current.skin) skin = current.skin;
 		else if (current && current.type == "item" && G.items[current.name]) skin = G.items[current.name].skin;
@@ -4740,6 +4746,8 @@ function render_skills() {
 		"<div class='textbutton' style='margin-left: 5px'><span class='clickable' onclick='btc(event); show_json(G.skills)'>SKILLS</span><!-- <span style='float:right; color: #7C7C7C; margin-right: 5px' class='clickable' onclick='btc(event); show_modal($(\"#keymapguide\").html())'><span style='color:#60B8C7'>&gt;</span> CONFIG <span style='color:#60B8C7'>&lt;</span></span>--></div>";
 	var s = [],
 		slast = 0,
+		e = [],
+		elast = 0,
 		a = [],
 		alast = 0;
 	object_sort(G.skills).forEach(function (io) {
@@ -4761,6 +4769,10 @@ function render_skills() {
 			});
 			if (!found) return;
 		}
+		if (skill.emote) {
+			if (character.acx && character.acx[skill.emote]) e.push({ name: name });
+			return;
+		}
 		if (skill.type == "skill" && (!skill["class"] || in_arr(character.ctype, skill["class"]) || character.role == "gm")) s.push({ name: name });
 		if (skill.type == "passive" && (!skill["class"] || in_arr(character.ctype, skill["class"]) || character.role == "gm")) s.push({ name: name });
 		if (skill.type == "ability" && (!skill["class"] || in_arr(character.ctype, skill["class"]) || character.role == "gm")) a.push({ name: name });
@@ -4777,6 +4789,20 @@ function render_skills() {
 		}
 		html += "</div>";
 		if (slast >= s.length) break; // i &&
+	}
+	if (e.length) {
+		html += "<div class='textbutton' style='margin-left: 5px'>EMOTES</div>";
+		for (var i = 0; i < 10; i++) {
+			html += "<div>";
+			for (var j = 0; j < 7; j++) {
+				if (elast < e.length)
+					html += item_container({ skin: G.skills[e[elast].name].skin, onclick: "skill_click('" + e[elast].name + "')", skname: e[elast].name, loader: e[elast].name }, e[elast]);
+				else html += item_container({});
+				elast++;
+			}
+			html += "</div>";
+			if (elast >= e.length) break;
+		}
 	}
 	html += "<div class='textbutton' style='margin-left: 5px' onclick='btc(event); show_json(G.skills)'>ABILITIES</div>";
 	// html+="<div style='border-bottom: 5px solid gray; margin-bottom: 2px; margin-left: -5px; margin-right: -5px'></div>";
@@ -5915,6 +5941,7 @@ function sprite(name, args) {
 
 function cx_sprite(name, args) {
 	if (!args) args = {};
+	if (G.skills[name] && G.skills[name].emote) return item_container({ skin: G.skills[name].skin, size: 40, draggable: false });
 	function render_cosmetic(slot, rargs) {
 		if (!rargs) rargs = {};
 		if (!rargs.color && (cx[slot] || slot == "skin")) rargs.color = "#17B8E3";
@@ -6217,6 +6244,22 @@ function render_cosmetics(player, args) {
 		html += "</div>";
 		html += "</div>";
 	}
+	function render_emotes() {
+		var emotes = [];
+		object_sort(G.skills).forEach(function (io) {
+			if (io[1].emote && player.acx && player.acx[io[1].emote]) emotes.push(io[0]);
+		});
+		if (!emotes.length) return;
+		html += "<div style='display: inline-block; margin-left: 8px; vertical-align: top'>";
+		html += "<div style='font-size: 16px; text-align: center'>EMOTES</div>";
+		html += "<div style='background-color: #504254; border: 2px solid gray; font-size: 0px; padding: 2px'>";
+		emotes.forEach(function (name) {
+			var item = { skin: G.skills[name].skin, size: 40, draggable: !!player.me, skname: name, loader: name };
+			if (player.me) item.onclick = "use_skill('" + name + "')";
+			html += item_container(item);
+		});
+		html += "</div></div>";
+	}
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top;' class='cccx'>";
 	var color = "";
 	html += "<div style='display: inline-block; vertical-align: top'>";
@@ -6255,7 +6298,7 @@ function render_cosmetics(player, args) {
 	html += "</div>";
 	html += "<div>";
 	render_cosmetic("gravestone", { text: "RIP", top: -16, scale: 1.75, mleft: 8, cx: cx, rip: true, bg: "#8cb0bb" });
-	render_cosmetic("EMOTES", { top: 10, j: 3, scale: 1, mleft: 8, cx: cx, bg: "#8756ff" });
+	render_emotes();
 	html += "</div>";
 	html += "</div>";
 	html += "</div>";

@@ -840,7 +840,7 @@ var npcs={
 			"qubics",null,null,null,
 		],
 		//"items":["cosmo0","cosmo1","cosmo2",null,null,"cosmo3","cosmo4"],
-		"items":["cosmo0","cosmo2","cosmo3"],
+		"items":["cosmo0","cosmo2","cosmo3","cosmo5"],
 		"skin":"fancyd",
 		"says":"Sup",
 		"type":"fullstatic",

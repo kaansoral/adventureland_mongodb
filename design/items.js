@@ -5323,6 +5323,17 @@ var premiums={
 		//"e":1,
 		"quest":"cx",
 	},
+	"cosmo5":{
+		"type":"cosmetics",
+		"skin":"cosmo5",
+		"cash":1299,
+		"g":10000000,
+		"name":"New Misc.",
+		"explanation":"Give this to Haila for a curious new flourish. It may be an emote or a gravestone.",
+		"s":true,
+		"e":1,
+		"quest":"cx",
+	},
 	"stoneofxp":{
 		"type":"stone",
 		"skin":"stoneofxp",

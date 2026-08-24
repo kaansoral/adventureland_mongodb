@@ -4555,6 +4555,7 @@ function skill_timeout_singular(name, ms) {
 		skids.forEach(function (skid) {
 			add_tint(".skidloader" + skid, { ms: -mssince(next_skill[name]) - DMS, type: "skill", skid: skid });
 		});
+		add_tint(".loader" + name, { ms: -mssince(next_skill[name]) - DMS, type: "progress" });
 	});
 }
 
