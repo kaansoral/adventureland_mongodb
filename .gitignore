@@ -4,6 +4,10 @@
 /common
 /secretsandconfig
 
+# Local proposal workspace
+/proposals
+/proposals/
+
 # Node
 /node_modules/
 /node/node_modules/
