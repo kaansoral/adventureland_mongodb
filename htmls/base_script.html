@@ -106,12 +106,12 @@
 				if(!character)
 				{
 					add_log("If the character doesn't connect","gray");
-					add_log("Reloading the page to retry in 7 seconds","gray");
+					add_log("Reloading the page to retry in 40 seconds","gray");
 					setTimeout(function(){
 						if(character) return;
 						if(is_cli) CLI_OUT.push({"type":"kill"});
 						else location.reload();
-					},7000);
+					},40000);
 				}
 			},8000);
 		}
