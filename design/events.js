@@ -1,6 +1,6 @@
 var events={
 	"abtesting":{
-		"name":"A/B Testing",
+		"name":"การทดสอบ A/B",
 		"modal":"event-abtesting",
 		"sprite":"thehelmet",
 		"duration":8*60,
@@ -8,7 +8,7 @@ var events={
 		"type":"daily",
 	},
 	"goobrawl":{
-		"name":"Goo Brawl",
+		"name":"ศึกวุ้นธาตุ",
 		"modal":"event-goobrawl",
 		"sprite":"rgoo",
 		"duration":9*60,
@@ -16,7 +16,7 @@ var events={
 		"type":"daily",
 	},
 	"crabxx":{
-		"name":"Giga Crab",
+		"name":"ปูยักษ์",
 		"modal":"event-crabxx",
 		"sprite":"crabxx",
 		"duration":60*40,
@@ -24,7 +24,7 @@ var events={
 		"type":"daily",
 	},
 	"franky":{
-		"name":"Franky",
+		"name":"แฟรงกี้",
 		"modal":"event-franky",
 		"sprite":"franky",
 		"duration":60*40,
@@ -32,7 +32,7 @@ var events={
 		"type":"nightly",
 	},
 	"icegolem":{
-		"name":"Ice Golem",
+		"name":"โกเลมน้ำแข็ง",
 		"modal":"event-icegolem",
 		"sprite":"icegolem",
 		"duration":60*40,
@@ -40,7 +40,7 @@ var events={
 		"type":"nightly",
 	},
 	"holidayseason":{
-		"name":"Holiday Season",
+		"name":"เทศกาลวันหยุด",
 		"modal":"event-holidayseason",
 		"sprite":"grinch",
 		"duration":60*60*24*30,
@@ -48,7 +48,7 @@ var events={
 		"type":"seasonal",
 	},
 	"lunarnewyear":{
-		"name":"Lunar New Year",
+		"name":"ตรุษจีน",
 		"modal":"event-lunarnewyear",
 		"sprite":"redenvelopev4",
 		"duration":60*60*24*15,
@@ -56,7 +56,7 @@ var events={
 		"type":"seasonal",
 	},
 	"valentines":{
-		"name":"Valentines",
+		"name":"วันวาเลนไทน์",
 		"modal":"event-valentines",
 		"sprite":"cupid",
 		"duration":60*60*24*10,
@@ -64,7 +64,7 @@ var events={
 		"type":"seasonal",
 	},
 	"egghunt":{
-		"name":"Egg Hunt",
+		"name":"ล่าไข่",
 		"modal":"event-egghunt",
 		"sprite":"basketofeggs",
 		"duration":60*60*24*15,
@@ -72,7 +72,7 @@ var events={
 		"type":"seasonal",
 	},
 	"halloween":{
-		"name":"Halloween",
+		"name":"ฮาโลวีน",
 		"modal":"event-halloween",
 		"sprite":"candy0",
 		"duration":60*60*24*30,
