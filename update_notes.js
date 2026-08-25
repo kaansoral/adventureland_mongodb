@@ -1,6 +1,11 @@
 // Newest notes first. Add player-visible changes at the top with deployed: null.
 module.exports = [
 	{
+		deployed: null,
+		date: "[25/08/26]",
+		note: "Added new Steam clients for Windows and Linux alongside the macOS client.",
+	},
+	{
 		deployed: "[24/08/26]",
 		date: "[24/08/26]",
 		note: "Released the new Steam client for macOS with in-client Shells purchases, all active Shells bonuses, smoother reloads, and separate music and sound-effect volume controls.",
