@@ -8,7 +8,7 @@ module.exports = [
 	{
 		deployed: "[24/08/26]",
 		date: "[24/08/26]",
-		note: "Added the New Misc. cosmetic box with gravestones and eleven unlockable emotes, including paired flourishes for party members, friends, and your own characters. Head Wiggle now works on full character looks, and Joy bursts into a bright pixel rainbow.",
+		note: "Added the New Misc. cosmetic box with gravestones and eleven unlockable emotes, including friendly flourishes, a self-cast Pocket Storm, and the solo Mirror Disco. Jumps are wordless, Head Wiggle is subtler and works on full character looks, Joy bursts into a bright pixel rainbow, and the emotes have matching sounds.",
 	},
 	{
 		deployed: "[24/08/26]",

@@ -6260,7 +6260,9 @@ function render_cosmetics(player, args) {
 		html += "<div style='background-color: #504254; border: 2px solid gray; font-size: 0px; padding: 2px'>";
 		emotes.forEach(function (name) {
 			var item = { skin: G.skills[name].skin, size: 40, draggable: !!player.me, skname: name, loader: name };
-			if (player.me) item.onclick = "use_skill('" + name + "',xtarget||ctarget||(!G.skills['" + name + "'].no_self&&character))";
+			if (player.me && G.skills[name].target)
+				item.onclick = "use_skill('" + name + "',xtarget||ctarget||(!G.skills['" + name + "'].no_self&&character))";
+			else if (player.me) item.onclick = "use_skill('" + name + "')";
 			html += item_container(item);
 		});
 		html += "</div></div>";

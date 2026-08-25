@@ -1271,8 +1271,9 @@ function on_skill(key, event) {
 			placeholder: "Name",
 			title: "Magiport",
 		});
-	} else if (G.skills[name] && G.skills[name].emote && G.skills[name].target) {
-		use_skill(name, xtarget || ctarget || (!G.skills[name].no_self && character));
+	} else if (G.skills[name] && G.skills[name].emote) {
+		if (G.skills[name].target) use_skill(name, xtarget || ctarget || (!G.skills[name].no_self && character));
+		else use_skill(name);
 	} else if (name == "throw") {
 		use_skill(name, xtarget || ctarget, skill.num || 0);
 	} else use_skill(name, xtarget || ctarget);

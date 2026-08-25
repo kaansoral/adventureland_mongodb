@@ -3569,15 +3569,15 @@ function map_click_release() {}
 var cosmetic_emote_durations = {
 	fart: 900,
 	wiggle: 950,
-	headwiggle: 950,
+	headwiggle: 1100,
 	joy: 1500,
 	jump: 360,
 	superjump: 680,
 	highfive: 1900,
-	boop: 2100,
+	boop: 1200,
 	spotlight: 2800,
 	pocketstorm: 3300,
-	mirrordance: 4000,
+	mirrordance: 2400,
 };
 var cosmetic_targeted_emotes = { highfive: 1, boop: 1, spotlight: 1, pocketstorm: 1, mirrordance: 1 };
 var cosmetic_emote_fart_variants = [
@@ -3585,28 +3585,6 @@ var cosmetic_emote_fart_variants = [
 	{ duration: 960, sound_duration: 0.48, colors: [0x526b4f, 0x83a064, 0xd1b96f], text: "PRRT", text_color: "#E5CE86", filter: 245, buzz: [88, 38], puffs: 8 },
 	{ duration: 1200, sound_duration: 0.62, colors: [0x5f496d, 0x8b6688, 0xb4946a], text: "TOOT", text_color: "#DAB9D8", filter: 190, buzz: [72, 31], puffs: 10 },
 ];
-var cosmetic_emote_texts = {
-	wiggle: [
-		{ text: "WIGGLE!", color: "#5BD5E8", size: 27 },
-		{ text: "SHAKE!", color: "#E486C8", size: 27 },
-		{ text: "~WIGGLE~", color: "#EFC66C", size: 25 },
-	],
-	headwiggle: [
-		{ text: "YES?", color: "#9A7CF0", size: 26 },
-		{ text: "NO!", color: "#5BD5E8", size: 28 },
-		{ text: "MAYBE?", color: "#EFC66C", size: 24 },
-	],
-	jump: [
-		{ text: "HOP!", color: "#5BD5E8", size: 26 },
-		{ text: "UP!", color: "#EFC66C", size: 27 },
-		{ text: "BOING!", color: "#9A7CF0", size: 24 },
-	],
-	superjump: [
-		{ text: "SUPER!", color: "#EFC66C", size: 34 },
-		{ text: "WAY UP!", color: "#5BD5E8", size: 32 },
-		{ text: "BOING!", color: "#E486C8", size: 34 },
-	],
-};
 var cosmetic_emote_audio_context = null;
 
 function refresh_cosmetic_skills(acx) {
@@ -3704,8 +3682,8 @@ function play_cosmetic_emote_sound(name, variation) {
 			cosmetic_emote_tone(context, output, start, 0.11, 260 * pitch, 410 * pitch, "triangle", 0.07);
 			cosmetic_emote_tone(context, output, start + 0.13, 0.11, 410 * pitch, 260 * pitch, "triangle", 0.06);
 		} else if (name == "headwiggle") {
-			[540, 680, 570].forEach(function (frequency, i) {
-				cosmetic_emote_tone(context, output, start + i * 0.085, 0.07, frequency * pitch, frequency * 0.92 * pitch, "sine", 0.055);
+			[440, 520].forEach(function (frequency, i) {
+				cosmetic_emote_tone(context, output, start + i * 0.16, 0.08, frequency * pitch, frequency * 0.94 * pitch, "sine", 0.032);
 			});
 		} else if (name == "joy") {
 			[523.25, 659.25, 783.99, 1046.5].forEach(function (frequency, i) {
@@ -3722,10 +3700,10 @@ function play_cosmetic_emote_sound(name, variation) {
 			cosmetic_emote_tone(context, output, start + 0.62, 0.18, 520 * pitch, 880 * pitch, "square", 0.065);
 			cosmetic_emote_tone(context, output, start + 1.1, 0.2, 660 * pitch, 990 * pitch, "triangle", 0.05);
 		} else if (name == "boop") {
-			cosmetic_emote_tone(context, output, start, 0.3, 340 * pitch, 920 * pitch, "sine", 0.045);
-			cosmetic_emote_tone(context, output, start + 0.42, 0.36, 220 * pitch, 640 * pitch, "square", 0.04);
-			cosmetic_emote_tone(context, output, start + 0.9, 0.18, 1050 * pitch, 720 * pitch, "sine", 0.08);
-			cosmetic_emote_tone(context, output, start + 1.2, 0.24, 660 * pitch, 990 * pitch, "triangle", 0.04);
+			cosmetic_emote_tone(context, output, start, 0.12, 440 * pitch, 760 * pitch, "triangle", 0.045);
+			cosmetic_emote_tone(context, output, start + 0.22, 0.12, 290 * pitch, 920 * pitch, "square", 0.055);
+			cosmetic_emote_tone(context, output, start + 0.36, 0.16, 1180 * pitch, 760 * pitch, "sine", 0.08);
+			cosmetic_emote_tone(context, output, start + 0.62, 0.18, 660 * pitch, 990 * pitch, "triangle", 0.04);
 		} else if (name == "spotlight") {
 			cosmetic_emote_noise(context, output, start, 0.24, 520, 0.03);
 			[392, 523, 659].forEach(function (frequency, i) {
@@ -3745,9 +3723,18 @@ function play_cosmetic_emote_sound(name, variation) {
 				cosmetic_emote_tone(context, output, start + 2.2 + i * 0.12, 0.28, frequency * pitch, frequency * pitch, "sine", 0.045);
 			});
 		} else if (name == "mirrordance") {
-			[131, 165, 196, 262, 196, 330, 262, 392].forEach(function (frequency, i) {
-				cosmetic_emote_tone(context, output, start + i * 0.5, 0.16, frequency * pitch, frequency * 1.02 * pitch, i % 2 ? "triangle" : "square", 0.05);
-				if (i == 3 || i == 7) cosmetic_emote_noise(context, output, start + i * 0.5, 0.07, 1700, 0.055);
+			[110, 110, 147, 165].forEach(function (frequency, i) {
+				cosmetic_emote_tone(context, output, start + i * 0.5, 0.2, frequency * pitch, frequency * 0.98 * pitch, "sawtooth", 0.052);
+				cosmetic_emote_noise(context, output, start + i * 0.5, 0.07, 220, 0.085);
+			});
+			[523, 659, 784, 659, 587, 784, 880, 1047].forEach(function (frequency, i) {
+				cosmetic_emote_tone(context, output, start + 0.12 + i * 0.25, 0.13, frequency * pitch, frequency * pitch, i % 2 ? "triangle" : "square", 0.034);
+				cosmetic_emote_noise(context, output, start + 0.24 + i * 0.25, 0.025, 2800, 0.025);
+			});
+			cosmetic_emote_noise(context, output, start + 0.5, 0.07, 1500, 0.06);
+			cosmetic_emote_noise(context, output, start + 1.5, 0.07, 1500, 0.06);
+			[523, 659, 784].forEach(function (frequency) {
+				cosmetic_emote_tone(context, output, start + 2.02, 0.28, frequency * pitch, frequency * pitch, "triangle", 0.04);
 			});
 		}
 		setTimeout(function () {
@@ -3977,6 +3964,51 @@ function cosmetic_emote_star(graphic, x, y, radius, first, second) {
 	cosmetic_emote_rect(graphic, first, x + radius - 2, y + radius - 2, 2, 2);
 }
 
+function cosmetic_emote_heart(graphic, x, y, color) {
+	cosmetic_emote_rect(graphic, color, x - 3, y, 3, 2);
+	cosmetic_emote_rect(graphic, color, x + 1, y, 3, 2);
+	cosmetic_emote_rect(graphic, color, x - 4, y + 2, 8, 2);
+	cosmetic_emote_rect(graphic, color, x - 3, y + 4, 6, 2);
+	cosmetic_emote_rect(graphic, color, x - 1, y + 6, 2, 2);
+}
+
+function cosmetic_emote_palm(graphic, x, y, side, sleeve) {
+	var skin_shadow = 0x9b684a;
+	var skin = 0xeec389;
+	cosmetic_emote_line(graphic, sleeve, x - side * 7, y + 5, x - side * 3, y + 4, 3);
+	cosmetic_emote_rect(graphic, skin_shadow, x - 3, y - 1, 7, 8);
+	cosmetic_emote_rect(graphic, skin, x - 2, y, 5, 6);
+	for (var finger = -2; finger <= 2; finger += 2) {
+		cosmetic_emote_rect(graphic, skin_shadow, x + finger, y - 5 - abs(finger) / 2, 2, 5 + abs(finger) / 2);
+		cosmetic_emote_rect(graphic, skin, x + finger, y - 4 - abs(finger) / 2, 1, 4 + abs(finger) / 2);
+	}
+	cosmetic_emote_rect(graphic, skin_shadow, x + side * 3 - (side < 0 ? 2 : 0), y + 2, 3, 4);
+	cosmetic_emote_rect(graphic, skin, x + side * 3 - (side < 0 ? 1 : 0), y + 2, 1, 3);
+	cosmetic_emote_rect(graphic, 0xffe0a3, x - side, y, 1, 3);
+}
+
+function cosmetic_emote_pointing_hand(graphic, tip_x, y, side, sleeve) {
+	var palm_x = tip_x - side * 5;
+	var skin_shadow = 0x9b684a;
+	var skin = 0xeec389;
+	cosmetic_emote_line(graphic, sleeve, side * 4, y + 5, palm_x - side * 3, y + 3, 3);
+	cosmetic_emote_rect(graphic, skin_shadow, palm_x - 2, y, 5, 6);
+	cosmetic_emote_rect(graphic, skin, palm_x - 1, y + 1, 3, 4);
+	cosmetic_emote_line(graphic, skin_shadow, palm_x + side * 2, y + 1, tip_x, y + 1, 3);
+	cosmetic_emote_line(graphic, skin, palm_x + side * 2, y, tip_x, y, 1);
+	cosmetic_emote_rect(graphic, 0xffe0a3, tip_x - (side < 0 ? 2 : 0), y, 2, 2);
+	cosmetic_emote_rect(graphic, skin_shadow, palm_x - side * 3 - (side < 0 ? 1 : 0), y + 4, 2, 3);
+}
+
+function cosmetic_emote_disco_arm(graphic, top, side, raised, color) {
+	var hand_x = side * (raised ? 15 : 13);
+	var hand_y = top + (raised ? 2 : 18);
+	cosmetic_emote_line(graphic, 0x31263e, side * 4, top + 14, hand_x, hand_y, 3);
+	cosmetic_emote_line(graphic, color, side * 5, top + 13, hand_x - side, hand_y + (raised ? 1 : -1), 1);
+	cosmetic_emote_rect(graphic, 0xeec389, hand_x - 1, hand_y - 1, 3, 3);
+	cosmetic_emote_rect(graphic, 0xffe0a3, hand_x + side - (side < 0 ? 2 : 0), hand_y - (raised ? 3 : 0), 2, raised ? 3 : 1);
+}
+
 function cosmetic_emote_pixel_text(graphic, text, x, y, color, scale) {
 	scale = scale || 1;
 	var width = -scale;
@@ -4035,7 +4067,8 @@ function cosmetic_emote_targeted_logic(player, progress, elapsed) {
 	var role_color = emote.role == "target" ? palette[1] : palette[0];
 	var other_color = emote.role == "target" ? palette[0] : palette[1];
 	var beat = emote.beat;
-	var phase = (elapsed % 500) / 500;
+	var beat_duration = emote.name == "mirrordance" ? 300 : 500;
+	var phase = (elapsed % beat_duration) / beat_duration;
 	if (emote.name == "highfive") {
 		var highfive_palettes = [
 			[0xd86838, 0x4b73b0],
@@ -4044,41 +4077,51 @@ function cosmetic_emote_targeted_logic(player, progress, elapsed) {
 		];
 		palette = highfive_palettes[emote.variation % highfive_palettes.length];
 		role_color = emote.role == "target" ? palette[1] : palette[0];
-		if (emote.traveling) {
-			for (var i = 0; i < 4; i++) cosmetic_emote_rect(graphic, i % 2 ? 0xfff4c7 : role_color, -side * (7 + i * 3), top + 13 + i * 3, 3, 1);
-			if (progress > 0.28 && progress < 0.58) cosmetic_emote_star(graphic, side * 9, top + 8, 5, 0xfff4c7, 0xefb83d);
-			if (progress > 0.62) cosmetic_emote_pixel_text(graphic, "HI!", 0, top - 8, role_color, 1);
-		} else {
-			if (progress < 0.2) player.y += 2;
-			else if (progress < 0.46) {
-				player.x += side * min(3, floor((progress - 0.2) * 14));
-				player.rotation = side * 0.045;
-			}
-			if (progress > 0.3 && progress < 0.52) cosmetic_emote_star(graphic, side * 9, top + 13, progress < 0.38 ? 5 : 8, 0xfff4c7, 0xefb83d);
-			if (progress > 0.58) {
-				player.y -= floor((elapsed / 120) % 2) * 2;
-				cosmetic_emote_pixel_text(graphic, "NICE!", 0, top - 8, 0xefb83d, 1);
-				cosmetic_emote_star(graphic, -side * 8, top + 2, 4, 0xfff4c7, role_color);
-			}
+		var meeting_x = peer && peer != player ? round((peer.real_x - player.real_x) / 2) : side * 12;
+		var hand_level = top + 8;
+		if (peer && peer != player) {
+			var own_hand_y = player.real_y + top + 8;
+			var peer_hand_y = peer.real_y - get_height(peer) + 8;
+			hand_level = round((own_hand_y + peer_hand_y) / 2 - player.real_y);
+		}
+		var hand_start = side * 7;
+		var hand_end = meeting_x - side * 3;
+		var hand_amount = progress < 0.12 ? 0 : progress < 0.31 ? (progress - 0.12) / 0.19 : progress < 0.46 ? 1 : progress < 0.62 ? 1 - (progress - 0.46) / 0.16 : 0;
+		if (progress > 0.06 && progress < 0.64) {
+			var hand_x = round(hand_start + (hand_end - hand_start) * hand_amount);
+			cosmetic_emote_line(graphic, role_color, side * 4, top + 17, hand_x - side * 5, hand_level + 5, 3);
+			cosmetic_emote_palm(graphic, hand_x, hand_level, side, role_color);
+		}
+		if (!emote.traveling) {
+			if (progress < 0.12) player.y += 2;
+			else if (progress < 0.48) player.rotation = side * 0.035;
+			else if (progress > 0.58) player.y -= floor((elapsed / 110) % 2) * 2;
+		}
+		if (progress > 0.3 && progress < 0.47) {
+			cosmetic_emote_star(graphic, meeting_x, hand_level - 1, progress < 0.34 ? 5 : 9, 0xfff4c7, 0xefb83d);
+			cosmetic_emote_line(graphic, role_color, meeting_x - 8, hand_level - 10, meeting_x - 4, hand_level - 6, 1);
+			cosmetic_emote_line(graphic, role_color, meeting_x + 8, hand_level - 10, meeting_x + 4, hand_level - 6, 1);
+		}
+		if (progress > 0.62 && progress < 0.86) {
+			cosmetic_emote_star(graphic, -side * 9, top + 3, 4, 0xfff4c7, role_color);
 		}
 	} else if (emote.name == "boop") {
+		var boop_amount = progress < 0.1 ? 0 : progress < 0.3 ? (progress - 0.1) / 0.2 : progress < 0.43 ? 1 : progress < 0.6 ? 1 - (progress - 0.43) / 0.17 : 0;
 		if (emote.role != "target") {
-			var reach = progress < 0.18 ? 4 : progress < 0.48 ? 4 + floor((progress - 0.18) * 32) : progress < 0.65 ? 14 : 5;
-			cosmetic_emote_line(graphic, role_color, side * 3, top + 13, side * reach, top + 10, 1);
-			cosmetic_emote_rect(graphic, 0xeec389, side * reach - (side < 0 ? 2 : 0), top + 8, 3, 3);
+			var boop_side = emote.role == "self" ? -1 : side;
+			var tip_x = emote.role == "self" ? 14 - floor(boop_amount * 12) : boop_side * (5 + floor(boop_amount * 10));
+			cosmetic_emote_pointing_hand(graphic, tip_x, top + 10, boop_side, role_color);
+			if (progress < 0.18) cosmetic_emote_star(graphic, boop_side * 9, top + 7, 3 + floor(progress * 18), 0xa6d7ee, role_color);
 		}
 		if (emote.role != "caster") {
-			if (progress > 0.4 && progress < 0.78) {
-				player.rotation = (floor(elapsed / 70) % 2 ? -1 : 1) * 0.035;
-				cosmetic_emote_rect(graphic, 0xee5d62, 0, top + 11, 3, 3);
-				cosmetic_emote_star(graphic, 0, top + 11, 5, 0xfff4c7, other_color);
-				cosmetic_emote_pixel_text(graphic, "BOOP!", 0, top - 8, other_color, 1);
+			if (progress > 0.28 && progress < 0.48) {
+				player.rotation = (floor(elapsed / 45) % 2 ? -1 : 1) * 0.025;
+				cosmetic_emote_rect(graphic, 0xee5d62, -1, top + 10, 3, 3);
+				cosmetic_emote_star(graphic, 0, top + 11, progress < 0.36 ? 7 : 4, 0xfff4c7, other_color);
+				cosmetic_emote_rect(graphic, role_color, -7, top + 5, 2, 2);
+				cosmetic_emote_rect(graphic, other_color, 6, top + 3, 2, 2);
 			}
-			if (progress > 0.62) {
-				cosmetic_emote_rect(graphic, 0xf38cbf, -2, top - 2, 2, 2);
-				cosmetic_emote_rect(graphic, 0xf38cbf, 1, top - 2, 2, 2);
-				cosmetic_emote_rect(graphic, 0xf38cbf, -1, top, 3, 2);
-			}
+			if (progress > 0.5 && progress < 0.9) cosmetic_emote_heart(graphic, 0, top - 5 - floor((progress - 0.5) * 10), 0xf38cbf);
 		}
 	} else if (emote.name == "spotlight") {
 		if (emote.role == "target" || emote.role == "self") {
@@ -4121,45 +4164,61 @@ function cosmetic_emote_targeted_logic(player, progress, elapsed) {
 			}
 		} else if (progress < 0.5) cosmetic_emote_star(graphic, side * 8, top + 6, 4, 0xa6d7ee, 0x4acae1);
 	} else if (emote.name == "mirrordance") {
-		var ball_y = top - 18 - min(8, beat * 3);
-		var peer_x = peer ? round((peer.real_x - player.real_x) / 2) : 0;
-		if (emote.role != "target") {
-			cosmetic_emote_line(graphic, role_color, peer_x - 2, ball_y + 4, 0, -2, 1);
-			if (peer) cosmetic_emote_line(graphic, other_color, peer_x + 2, ball_y + 4, peer.real_x - player.real_x, -2, 1);
-			cosmetic_emote_rect(graphic, 0x31263e, peer_x - 4, ball_y - 4, 8, 8);
-			cosmetic_emote_rect(graphic, 0x8250aa, peer_x - 3, ball_y - 3, 3, 3);
-			cosmetic_emote_rect(graphic, 0x4acae1, peer_x, ball_y - 3, 3, 3);
-			cosmetic_emote_rect(graphic, 0xda54a6, peer_x - 3, ball_y, 3, 3);
-			cosmetic_emote_rect(graphic, 0xfff4c7, peer_x, ball_y, 3, 3);
+		var disco_beat = beat % 8;
+		var ball_y = top - 18 - min(7, beat * 2);
+		cosmetic_emote_line(graphic, 0x554861, 0, top - 38, 0, ball_y - 5, 1);
+		cosmetic_emote_rect(graphic, 0x31263e, -5, ball_y - 5, 10, 10);
+		cosmetic_emote_rect(graphic, 0x8250aa, -4, ball_y - 4, 4, 4);
+		cosmetic_emote_rect(graphic, 0x4acae1, 0, ball_y - 4, 4, 4);
+		cosmetic_emote_rect(graphic, 0xda54a6, -4, ball_y, 4, 4);
+		cosmetic_emote_rect(graphic, 0xfff4c7, 0, ball_y, 4, 4);
+		cosmetic_emote_rect(graphic, role_color, disco_beat % 2 ? -5 : 4, ball_y - 1, 2, 2);
+		for (var i = -15; i <= 15; i += 10) {
+			var floor_color = (i / 5 + disco_beat) % 3 == 0 ? 0xda54a6 : (i / 5 + disco_beat) % 2 ? 0x4acae1 : 0xefb83d;
+			cosmetic_emote_rect(graphic, floor_color, i, -3, 7, 3);
 		}
-		for (var i = -12; i <= 12; i += 4) cosmetic_emote_rect(graphic, (i / 4 + beat) % 2 ? role_color : 0xfff4c7, i, -2, 3, 2);
-		if (emote.traveling) {
-			player.rotation = (beat + (emote.role == "target" ? 1 : 0)) % 2 ? -0.025 : 0.025;
-			for (var i = 0; i < 4; i++) cosmetic_emote_rect(graphic, i % 2 ? other_color : role_color, -side * (8 + i * 3), top + 13 + i * 3, 3, 1);
-			if (beat == 5) player.y -= 1;
+		cosmetic_emote_line(graphic, disco_beat % 2 ? role_color : other_color, -3, ball_y + 5, -22, -2, 1);
+		cosmetic_emote_line(graphic, disco_beat % 2 ? other_color : role_color, 3, ball_y + 5, 22, -2, 1);
+		if (disco_beat == 0) {
+			if (!emote.traveling) player.y += phase < 0.7 ? 2 : 0;
+			cosmetic_emote_disco_arm(graphic, top, -1, false, role_color);
+			cosmetic_emote_disco_arm(graphic, top, 1, false, other_color);
+		} else if (disco_beat == 1) {
+			if (!emote.traveling) player.x -= 2;
+			player.rotation = -0.055;
+			cosmetic_emote_disco_arm(graphic, top, -1, true, role_color);
+			cosmetic_emote_disco_arm(graphic, top, 1, false, other_color);
+		} else if (disco_beat == 2) {
+			if (!emote.traveling) player.x += 2;
+			player.rotation = 0.055;
+			cosmetic_emote_disco_arm(graphic, top, -1, false, role_color);
+			cosmetic_emote_disco_arm(graphic, top, 1, true, other_color);
+		} else if (disco_beat == 3) {
+			if (!emote.traveling) player.y -= 2;
+			cosmetic_emote_disco_arm(graphic, top, -1, true, role_color);
+			cosmetic_emote_disco_arm(graphic, top, 1, true, other_color);
+			cosmetic_emote_star(graphic, 0, ball_y, 7, 0xfff4c7, 0xefb83d);
+		} else if (disco_beat == 4) {
+			player.rotation = phase < 0.5 ? -0.12 : 0.12;
+			for (var trail = 0; trail < 4; trail++) cosmetic_emote_rect(graphic, trail % 2 ? role_color : other_color, -18 + trail * 10, top + 4 + trail * 4, 7, 2);
+		} else if (disco_beat == 5) {
+			if (!emote.traveling) player.y += 3;
+			player.rotation = phase < 0.5 ? -0.035 : 0.035;
+			cosmetic_emote_disco_arm(graphic, top, -1, false, role_color);
+			cosmetic_emote_disco_arm(graphic, top, 1, false, other_color);
+		} else if (disco_beat == 6) {
+			if (!emote.traveling) player.x -= 1;
+			player.rotation = -0.045;
+			cosmetic_emote_disco_arm(graphic, top, -1, false, role_color);
+			cosmetic_emote_disco_arm(graphic, top, 1, true, other_color);
+			cosmetic_emote_star(graphic, 15, top, 4, 0xffffff, role_color);
 		} else {
-			if (beat < 2) {
-				player.y += phase < 0.5 ? 2 : 0;
-				player.rotation = side * (phase < 0.5 ? -0.035 : 0.035);
-			} else if (beat < 4) {
-				player.x += side * (beat == 2 ? 2 : -2);
-				player.rotation = side * (beat == 2 ? 0.055 : -0.055);
-				cosmetic_emote_line(graphic, role_color, side * 5, top + 12, side * 14, top + (beat == 2 ? 5 : 17), 2);
-			} else if (beat == 4) {
-				player.y += 2;
-				cosmetic_emote_star(graphic, side * 8, top + 5, 4, other_color, role_color);
-			} else if (beat == 5) {
-				player.y -= 3;
-				player.rotation = side * 0.035;
-				if (emote.role != "target") cosmetic_emote_star(graphic, peer_x, ball_y, 7, 0xefb83d, role_color);
-			} else if (beat == 6) {
-				player.x -= side * 2;
-				player.rotation = -side * 0.06;
-			} else {
-				player.y -= phase < 0.55 ? 3 : 0;
-				cosmetic_emote_star(graphic, side * 9, top + 3, 7, 0xffffff, role_color);
-				if (emote.role == "caster") cosmetic_emote_pixel_text(graphic, "DISCO!", 0, ball_y - 12, 0xefb83d, 1);
-			}
+			if (!emote.traveling) player.y -= 2;
+			player.rotation = 0.035;
+			cosmetic_emote_disco_arm(graphic, top, -1, true, role_color);
+			cosmetic_emote_disco_arm(graphic, top, 1, false, other_color);
+			cosmetic_emote_star(graphic, -15, top + 3, 5, 0xffffff, role_color);
+			cosmetic_emote_pixel_text(graphic, "DISCO!", 0, ball_y - 13, 0xefb83d, 1);
 		}
 	}
 }
@@ -4169,7 +4228,7 @@ function play_cosmetic_emote(player, name, target, data) {
 	var variation = data && is_number(data.variation) ? data.variation : name == "fart" ? floor(Math.random() * cosmetic_emote_fart_variants.length) : floor(Math.random() * 3);
 	if (cosmetic_targeted_emotes[name]) {
 		var started = new Date();
-		if (target == player) cosmetic_emote_targeted_start(player, name, "self", player.name, started, variation);
+		if (!target || target == player) cosmetic_emote_targeted_start(player, name, "self", player.name, started, variation);
 		else {
 			cosmetic_emote_targeted_start(player, name, "caster", target && target.name, started, variation);
 			if (target) cosmetic_emote_targeted_start(target, name, "target", player.name, started, variation);
@@ -4184,9 +4243,6 @@ function play_cosmetic_emote(player, name, target, data) {
 		cosmetic_emote_fart_cloud(player, variation);
 	} else if (name == "joy") {
 		cosmetic_emote_joy_rainbow(player, variation);
-	} else {
-		var text = cosmetic_emote_texts[name][variation];
-		d_text(text.text, player, { size: text.size, color: text.color });
 	}
 	play_cosmetic_emote_sound(name, variation);
 }
@@ -4201,7 +4257,7 @@ function cosmetic_emote_logic(player) {
 		return;
 	}
 	if (cosmetic_targeted_emotes[emote.name]) {
-		var beat = floor(elapsed / 500);
+		var beat = floor(elapsed / (emote.name == "mirrordance" ? 300 : 500));
 		if (emote.beat != beat) {
 			emote.beat = beat;
 			emote.traveling = !!player.moving;
@@ -4215,15 +4271,16 @@ function cosmetic_emote_logic(player) {
 	} else if (emote.name == "headwiggle") {
 		var has_head = false;
 		for (var id in player.cxc || {}) if (player.cxc[id].stype == "head") has_head = true;
+		var head_sway = Math.sin(progress * Math.PI * 4) * 0.7 + Math.sin(progress * Math.PI * 8) * 0.18;
 		for (var id in player.cxc || {}) {
 			var layer = player.cxc[id];
 			if (!has_head || !cosmetic_emote_head_layer(layer)) continue;
-			layer.x += Math.sin(progress * Math.PI * 12) * 1.6;
-			layer.rotation = Math.sin(progress * Math.PI * 8) * 0.08;
+			layer.x += head_sway;
+			layer.rotation = -Math.sin(progress * Math.PI * 4) * 0.018;
 		}
 		if (!has_head) {
-			player.x += Math.sin(progress * Math.PI * 12) * 1.25;
-			player.rotation = Math.sin(progress * Math.PI * 8) * 0.055;
+			player.x += head_sway * 0.7;
+			player.rotation = -Math.sin(progress * Math.PI * 4) * 0.012;
 		}
 	} else if (emote.name == "jump") {
 		player.y -= Math.sin(progress * Math.PI) * 11;
