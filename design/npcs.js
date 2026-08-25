@@ -29,7 +29,7 @@ var npcs={
 		"cx":{"hat":"hat221"},
 		"says":"ฮู ฮู",
 		"color":"#3FEEA2",
-		"name":"ดิเวียน",
+		"name":"นายขายของ",
 	},
 	"pvptokens":{
 		"role":"pvptokens",
@@ -40,7 +40,7 @@ var npcs={
 		//"atype":"flow",
 		"stand":"wstand_texture",
 		"aspeed":"slow",
-		"name":"ยศ. สเปนซ์",
+		"name":"ทหารยาม",
 		"side_interaction":{"auto":true,"skin":"pknight","message":"โทเคนเกียรติยศเหล่านี้แสดงถึงชัยชนะ อย่าลืมเข้าร่วมอีเวนต์ PVP ทั้งหมดและใช้เวลาในดินแดน PVP สักหน่อย สง่างามมาก!"},
 	},
 	"funtokens":{
@@ -52,7 +52,7 @@ var npcs={
 		"atype":"flow",
 		"stand":"standg_texture",
 		"aspeed":"slow",
-		"name":"ทริกซี่",
+		"name":"นายสนุก",
 		"side_interaction":{"auto":true,"skin":"ftokener","message":"นำโทเคนความสนุกมาหาฉัน แล้วฉันจะให้ไอเทมน่าตื่นเต้นแก่คุณ!"},
 	},
 	"friendtokens":{
@@ -64,12 +64,12 @@ var npcs={
 		"atype":"flow",
 		"stand":"fstand_texture",
 		"aspeed":"slow",
-		"name":"ฟโวน่า",
+		"name":"นายเพื่อน",
 		"side_interaction":{"auto":true,"skin":"xxschar2h","message":"ชวนเพื่อนของคุณมาเล่นจตุรธาตุเพื่อรับของรางวัลสุดเจ๋งเหล่านี้!"},
 	},
 	"shellsguy":{
 		"role":"shells",
-		"name":"คุณดวอร์ฟ",
+		"name":"นายทอง",
 		"skin":"fancyd",
 		"type":"fullstatic",
 		"says":"ว่าไง",
@@ -77,7 +77,7 @@ var npcs={
 	"monsterhunter":{
 		"role":"monstertokens",
 		"token":"monstertoken",
-		"name":"เดซี่",
+		"name":"นายล่าสัตว์",
 		"skin":"daisy",
 		"type":"fullstatic",
 		"says":"หวัดดี!",
@@ -85,7 +85,7 @@ var npcs={
 	},
 	"favors":{
 		"role":"favors",
-		"name":"Favor\u00e9",
+		"name":"นายคุณ",
 		"skin":"favore",
 		"type":"fullstatic",
 		"says":"หวัดดี!",
@@ -94,7 +94,7 @@ var npcs={
 	"mcollector":{
 		"role":"mcollector",
 		"quest":"mcollector",
-		"name":"โคล",
+		"name":"นายเก็บ",
 		"skin":"proft",
 		"type":"fullstatic",
 		"says":"หืม",
@@ -113,7 +113,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"ระวังตัว",
 		"color":"#E7E2E7",
-		"name":"ครัน",
+		"name":"นายครัน",
 	},
 	"fancypots":{
 		"role":"merchant",
@@ -128,7 +128,7 @@ var npcs={
 		"atype":"flow",
 		"says":"วู้. ฮึก.",
 		"color":"#E57636",
-		"name":"เออนิส",
+		"name":"นางเออนิส",
 		"side_interaction":{"auto":true,"skin":"potiongirl","message":"สวัสดีจ้า แผลเจ็บหรืออยากได้ยาใช่ไหม? ครอบครัวของฉันภูมิใจที่มีน้ำยาและยาวิเศษคุณภาพดีที่สุดแถวนี้ รับไปได้เท่าที่ต้องการเลย *ฮึก*"},
 	},
 	"tbartender":{
@@ -143,7 +143,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"สวัสดีจ้า",
 		"color":"#EBECEE",
-		"name":"แจ๊ค",
+		"name":"นายแจ๊ค",
 		"side_interaction":{"auto":true,"skin":"showoffi","message":"สวัสดีครับเพื่อนร่วมงาน! อยากดื่มอะไรหน่อยไหม? โชคดีในเกมนะ! อย่าเสียทองหมดในครั้งเดียวล่ะ ฮ่ะ"},
 	},
 	"wbartender":{
@@ -158,7 +158,7 @@ var npcs={
 		"says":"ยินดีต้อนรับ!",
 		"color":"#67CCB2",
 		"type":"fullstatic",
-		"name":"วาริน",
+		"name":"นายวาริน",
 	},
 	"scrolls":{
 		"role":"merchant",
@@ -170,7 +170,7 @@ var npcs={
 		],
 		"skin":"scrolls",
 		"says":"โชคดี",
-		"name":"ลูกัส",
+		"name":"ลุงลูกัส",
 	},
 	"secondhands":{
 		"role":"secondhands",
@@ -178,7 +178,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"มีของดี ๆ อยู่ในนี้",
 		"color":"#7E65D3",
-		"name":"ปอนตี้",
+		"name":"นายมือสอง",
 		"side_interaction":{"auto":true,"skin":"blingbling","message":"เขาขาย ฉันรับซื้อ คุณซื้อจากฉันในราคาสูงขึ้น ชนะทั้งคู่ ฉันชนะ แวววับ!"},
 	},
 	"rewards":{
@@ -193,7 +193,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"รางวัล!",
 		"color":"#7E65D3",
-		"name":"เวอร์ดาร์ส",
+		"name":"นายรางวัล",
 	},
 	"lostandfound":{
 		"role":"lostandfound",
@@ -201,7 +201,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"ใครเจอใครได้",
 		"color":"#7E65D3",
-		"name":"รอน",
+		"name":"นายเก็บของหาย",
 	},
 	"holo":{
 		"role":"resort",
@@ -209,7 +209,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"\u25b3 \u25bd \u25b2 \u25bc",
 		"color":"#EBECEE",
-		"name":"ซี",
+		"name":"นายซี",
 	},
 	"tavern":{
 		"role":"tavern",
@@ -217,10 +217,10 @@ var npcs={
 		"type":"fullstatic",
 		"says":"หวัดดี",
 		"color":"#EBECEE",
-		"name":"แจ๊ค",
+		"name":"นายแจ๊ค",
 	},
 	"pete":{
-		"name":"พีท",
+		"name":"นายพีท",
 		"role":"petkeeper",
 		"skin":"lionsuit",
 		"type":"fullstatic",
@@ -256,7 +256,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"หวัดดีจ๊ะ",
 		"color":"#DF5AC5",
-		"name":"โรส",
+		"name":"นางโรส",
 	},
 	"mistletoe":{
 		"role":"quest",
@@ -265,7 +265,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"เอ่ออ",
 		"color":"#E376E5",
-		"name":"เฟธ",
+		"name":"ท้าวมหาพรหม",
 	},
 	"ornaments":{
 		"role":"quest",
@@ -274,7 +274,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"หืม. หืม. หืม.",
 		"color":"#E56D39",
-		"name":"เจสัน",
+		"name":"ท้าวพระยาดำ",
 	},
 	"santa":{
 		"role":"santa",
@@ -282,7 +282,7 @@ var npcs={
 		"skin":"santa",
 		"says":"โฮ โฮ โฮ",
 		"color":"#DF2A2F",
-		"name":"ซานต้า",
+		"name":"ลุงซานตา",
 	},
 	"witch":{
 		"role":"witch",
@@ -291,7 +291,7 @@ var npcs={
 		"says":"ชง ชง ชง",
 		"color":"#AF6AE2",
 		"aspeed":"slow",
-		"name":"แม่มด",
+		"name":"แม่หมอ",
 	},
 	"jailer":{
 		"role":"jailer",
@@ -299,7 +299,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"ตู๊ด ๆ ๆ",
 		"color":"#62C3DF",
-		"name":"เจลอร์ด",
+		"name":"นายเจลอร์ด",
 	},
 	"leathermerchant":{
 		"role":"quest",
@@ -308,7 +308,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"มีหนังไหม?",
 		"color":"#6E4430",
-		"name":"แลนดอน",
+		"name":"พระประโยชน์ผล",
 	},
 	"gemmerchant":{
 		"role":"quest",
@@ -317,7 +317,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"แวววับ",
 		"color":"#A058DF",
-		"name":"มายน์ ฮีธคลิฟฟ์",
+		"name":"นายทองเหมาะ",
 	},
 	"fisherman":{
 		"role":"quest",
@@ -326,7 +326,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"งดงาม",
 		"color":"#429DDF",
-		"name":"ทริสเทียน",
+		"name":"นายบุญมา",
 	},
 	"pwincess":{
 		"role":"quest",
@@ -335,7 +335,7 @@ var npcs={
 		"type":"fullstatic",
 		"says":"เอี๊ยก",
 		"color":"#FECDF7",
-		"name":"วินิฟรีด",
+		"name":"นางลิเลีย",
 	},
 	"firstc":{
 		"role":"companion",
@@ -351,7 +351,7 @@ var npcs={
 	},
 	"pvp":{
 		"role":"pvp_announcer",
-		"name":"เอซ",
+		"name":"ทหารเอซ",
 		"allow":false,
 		"speed":40,
 		"hp":5000,
@@ -360,7 +360,7 @@ var npcs={
 	},
 	"bean":{
 		"role":"events",
-		"name":"บีน",
+		"name":"นายบีน",
 		"allow":false,
 		"speed":30,
 		"hp":3200,
@@ -369,7 +369,7 @@ var npcs={
 		"moving":true,
 	},
 	"citizen0":{
-		"name":"เคน", //can't change this name, hardcoded to server_loot
+		"name":"เสือ", //can't change this name, hardcoded to server_loot
 		"role":"citizen",
 		"skin":"greencap",
 		"type":"fullstatic",
@@ -388,7 +388,7 @@ var npcs={
 		},
 	},
 	"citizen1":{
-		"name":"คิลกอร์",
+		"name":"สิงห์",
 		"role":"citizen",
 		"skin":"fxrogue",
 		"type":"fullstatic",
@@ -402,7 +402,7 @@ var npcs={
 		"interaction":["ถ้ามือคุณไม่มีเบียร์แล้วมาทำอะไรในนี้!?","นั่งลงแล้วเล่าเรื่องให้ฟังหน่อยสิ!","ถ้าทนหนาวไม่ไหวก็อยู่ในบ้าน.. ไม่ได้บอกว่าฉันทนหนาวไม่ไหว.."],
 	},
 	"citizen2":{
-		"name":"สจ๊วต",
+		"name":"เพชร",
 		"role":"citizen",
 		"skin":"oldcitizen",
 		"type":"fullstatic",
@@ -414,7 +414,7 @@ var npcs={
 		"interaction":["เอ่อ สมัยฉันเรายังไม่มีของตกแต่งหรูหราแบบนี้ในเมือง เรามีแค่ของจำเป็นเท่านั้น"],
 	},
 	"citizen3":{
-		"name":"เรนี่",
+		"name":"ทอง",
 		"role":"citizen",
 		"skin":"renaldo",
 		"type":"fullstatic",
@@ -426,7 +426,7 @@ var npcs={
 		"interaction":["ฉันฟาร์ม 24 ชั่วโมง! 7 วันต่อสัปดาห์! ไม่เคยหยุด! ไม่ยอมแพ้! ซ้อมตลอด!!","เปอร์เซ็นต์ไขมันในร่างกายฉันแค่ 18% เชื่อไหม? จริง ๆ นะ!","ยกเวทบ้างไหมพี่","สวัสดี ฉันวิ่งรอบเมืองตลอดเวลา ต้องรักษารูปร่าง"],
 	},
 	"citizen4":{
-		"name":"เทวดา",
+		"name":"เงิน",
 		"role":"citizen",
 		"skin":"angel",
 		"type":"fullstatic",
@@ -443,7 +443,7 @@ var npcs={
 		"modal":"npc-angel",
 	},
 	"citizen5":{
-		"name":"กรันดูร์",
+		"name":"แก้ว",
 		"role":"citizen",
 		"skin":"generalg",
 		"type":"fullstatic",
@@ -456,7 +456,7 @@ var npcs={
 		"interaction":["ข้างนอกค่อนข้างหนาว ฉันควรซื้อหมวกสักใบ","ฉันมาที่นี่เพื่อตามล่าสัตว์ร้ายที่ชื่อว่า \"Stompy\" ฉันเคยได้ยินว่าสัตว์ร้ายนี้อยู่ในเทือกเขาน้ำแข็งแถวนี้","ฉันมาที่นี่เพื่อการผจญภัย แต่ตอนนี้ติดอยู่ในบาร์เพราะอากาศหนาว"],
 	},
 	"citizen6":{
-		"name":"เฟรดริก",
+		"name":"หมาก",
 		"role":"citizen",
 		"skin":"mailman",
 		"type":"fullstatic",
@@ -469,7 +469,7 @@ var npcs={
 		"interaction":["สวัสดี ฉันเป็นบุรุษไปรษณีย์! แต่แทบไม่มีใครส่งจดหมายแถวนี้ งานเลยง่ายมาก","ข้างนอกหนาวนะ แต่ข้างในอุ่นสบาย"],
 	},
 	"citizen7":{
-		"name":"ลูซี่",
+		"name":"ข้าว",
 		"role":"citizen",
 		"skin":"lucy",
 		"type":"fullstatic",
@@ -481,7 +481,7 @@ var npcs={
 		"interaction":["สวัสดี! อยากรู้ความลับไหม? ฉันชอบหิมะ","ขยับตัวตลอดนะ ไม่อยากให้เป็นหวัดแถวนี้","ฉันได้ยินว่าซานต้าบางครั้งมาที่นี่ช่วงคริสต์มาส!"],
 	},
 	"citizen8":{
-		"name":"ไวเออร์",
+		"name":"นา",
 		"role":"citizen",
 		"skin":"frozenrogue",
 		"type":"fullstatic",
@@ -493,7 +493,7 @@ var npcs={
 		"interaction":["มาล่าสตอมปี้ด้วยเหรอ? เอาเป็นว่าให้นักผจญภัยที่เก่งที่สุดไปก่อนละกัน!","จริง ๆ แล้วผมฉันเป็นสีดำ ก่อนที่มันจะเกิดเรื่อง"],
 	},
 	"citizen9":{
-		"name":"ลิลิธ",
+		"name":"น้ำ",
 		"role":"citizen",
 		"skin":"lilith",
 		"type":"fullstatic",
@@ -505,7 +505,7 @@ var npcs={
 		"interaction":["สวัสดีนักผจญภัย มาฆ่ามอนสเตอร์เหรอ? เยี่ยม! ต้องการความช่วยเหลือดูแลแผ่นดินนี้ให้ปลอดภัยเสมอ","เชื่อหรือไม่ ฉันคือนายทหารยศสูงสุดในแถบนี้ ฉันทำงานหนักเพื่อให้เมืองนี้ดำเนินต่อไปและปลอดภัย"],
 	},
 	"citizen10":{
-		"name":"แคโรไลน์",
+		"name":"ไฟ",
 		"role":"citizen",
 		"skin":"pink",
 		"type":"fullstatic",
@@ -520,7 +520,7 @@ var npcs={
 		"interaction":["เฮ้ เฮ้ รู้ไหม! ฉันชอบสีชมพู! พนันเลยว่าคุณเดาไม่ถูก","ถ้าซานต้ากลับมา ฉันหวังว่าจะได้เป็นผู้ช่วยตัวน้อยของเขา","ใส่เสื้อผ้าหนา ๆ นะ ข้างนอกหนาวเล็กน้อย"],
 	},
 	"citizen11":{
-		"name":"บารอน",
+		"name":"ลม",
 		"role":"citizen",
 		"skin":"baron",
 		"class":"priest",
@@ -536,7 +536,7 @@ var npcs={
 		"interaction":["ยาม.    ทหาร.    หมู่บ้าน.    ปกป้อง.    ผู้บริสุทธิ์.","เหล่าพี่น้อง.     พัก.     ที่นี่.    ปกป้อง.    เหนือ.    หลุม.    ศพ.    ของ.    พวกเขา.","จดจำ.    ผู้.    ล้มลง.    ไม่มีวัน.    ลืม.    การ.    เสียสละ.    ของ.    พวกเขา.","เยียวยา.    ผู้.    ล้มลง."],
 	},
 	"citizen12":{
-		"name":"มาร์เวน",
+		"name":"ดิน",
 		"role":"citizen",
 		"skin":"marven",
 		"type":"fullstatic",
@@ -548,7 +548,7 @@ var npcs={
 		"interaction":["ฉันดูแลหลุมศพ บางครั้งคนทิ้ง 'ของขวัญ' ไว้บนหลุมศพ เอ่อ บางครั้งฉันเก็บของพวกนั้นออกจากหลุมศพ"],
 	},
 	"citizen13":{
-		"name":"ดิเวียน",
+		"name":"ฟ้า",
 		"role":"citizen",
 		"skin":"grogue",
 		"type":"fullstatic",
@@ -560,7 +560,7 @@ var npcs={
 		"interaction":["ฉันเชื่อมั่นว่าวิชามืดจะแก้ปัญหาได้มากมายถ้าได้รับการยอมรับให้ฝึกฝน","รู้ไหมว่าคุณนายดรากุลเคยเป็นสมาชิกของหมู่บ้านนี้... ก่อนที่เธอจะก้าวข้ามขีดจำกัดของมนุษย์ ฉันอยากมีความกล้าทำพิธีกรรมที่ต้องใช้สักครั้ง","ดรากุลเป็นชื่อที่โด่งดังมากในแถบนี้ ฉันอยากเป็นแบบพวกเขาจัง..","ฉันได้ยินว่ามีวิธีที่จะได้ไอเทม +13 อะไรก็ได้แปลงเป็นมันได้ แต่คุณมองไม่เห็นมันด้วยซ้ำ ..."],
 	},
 	"citizen14":{
-		"name":"ไวโอเล็ต",
+		"name":"จันทร์",
 		"role":"citizen",
 		"skin":"spkw",
 		"type":"fullstatic",
@@ -572,7 +572,7 @@ var npcs={
 		"interaction":["เห็นลูกชายฉันไหม? เขาน่าจะอยู่แถวนี้สักที่","แถวนี้ไม่ค่อยดีเท่าไร แต่ค่าเช่าถูก!","ฉันได้ยินว่ามีคนหัวฟักทองเดินไปเดินมา? ฟังดูไร้สาระสำหรับฉัน"],
 	},
 	"citizen15":{
-		"name":"ทิมมี่",
+		"name":"อาทิตย์",
 		"role":"citizen",
 		"skin":"spkc",
 		"type":"fullstatic",
@@ -584,7 +584,7 @@ var npcs={
 		"interaction":["ระวังแถวนี้ด้วยนะ ข้างบนทางเหนืออันตรายมาก","ฉันชอบเล่นกับฟักทอง แต่บางครั้งมันไม่อยากเล่นแล้วก็เดินจากไป..","เพื่อนในจินตนาการของฉันมีจริง! และเป็นฟักทองด้วย!!"],
 	},
 	"citizen16":{
-		"name":"คันน์",
+		"name":"ดาว",
 		"role":"citizen",
 		"skin":"cunn",
 		"class":"ranger",
@@ -604,7 +604,7 @@ var npcs={
 		"interaction":["อะไรนะ? อะไรนะ? อะไรนะ?!","ฉันไม่ค่อยมีความอดทนกับใครสักเท่าไร","ฉันตามแต่คนที่เจ๋งที่สุดเท่านั้น!"],
 	},
 	"holo0":{
-		"name":"กรีน",
+		"name":"เดือน",
 		"role":"citizen",
 		"skin":"greengreen",
 		"type":"fullstatic",
@@ -616,7 +616,7 @@ var npcs={
 		"interaction":["rbin"],
 	},
 	"holo1":{
-		"name":"พิงก์",
+		"name":"ทะเล",
 		"role":"citizen",
 		"skin":"pinkie",
 		"type":"fullstatic",
@@ -628,7 +628,7 @@ var npcs={
 		"interaction":["rbin"],
 	},
 	"holo2":{
-		"name":"เพอร์เพิล",
+		"name":"ภูเขา",
 		"role":"citizen",
 		"skin":"purpo",
 		"type":"fullstatic",
@@ -640,7 +640,7 @@ var npcs={
 		"interaction":["rbin"],
 	},
 	"holo3":{
-		"name":"สคาร์ฟ",
+		"name":"ป่า",
 		"role":"citizen",
 		"skin":"scarf",
 		"type":"fullstatic",
@@ -652,7 +652,7 @@ var npcs={
 		"interaction":["rbin"],
 	},
 	"holo4":{
-		"name":"ทวิก",
+		"name":"ทุ่ง",
 		"role":"citizen",
 		"skin":"twig",
 		"type":"fullstatic",
@@ -664,7 +664,7 @@ var npcs={
 		"interaction":["rbin"],
 	},
 	"holo5":{
-		"name":"โบโบ้",
+		"name":"บึง",
 		"role":"citizen",
 		"skin":"bobo",
 		"type":"fullstatic",
@@ -676,7 +676,7 @@ var npcs={
 		"interaction":["rbin"],
 	},
 	"princess":{
-		"name":"เจ้าหญิง",
+		"name":"หนอง",
 		"role":"citizen",
 		"skin":"princess",
 		"type":"fullstatic",
@@ -688,7 +688,7 @@ var npcs={
 		"interaction":["อยากชิมมีดสั้นของฉันไหม?"],
 	},
 	"bouncer":{
-		"name":"โวจ",
+		"name":"ขุนยาม",
 		"role":"bouncer",
 		"skin":"bouncer",
 		"type":"fullstatic",
@@ -697,7 +697,7 @@ var npcs={
 		"interaction":["อยากชิมมีดสั้นของฉันไหม? ขยับผิดท่าเมื่อไหร่ล่ะก็ ได้ชิมแน่!","มาเลย! พูดคำเหยียดเพศออกมาสักคำ แค่คำเดียว มาดูกันว่าหน้าอนุสาวรีย์ของคุณจะเป็นยังไง"],
 	},
 	"goldnpc":{
-		"name":"คุณรวย",
+		"name":"นายรวย",
 		"role":"gold",
 		"skin":"goblin_a",
 		"says":"ทอง!",
@@ -705,7 +705,7 @@ var npcs={
 		"aspeed":"slow",
 	},
 	"wizardrepeater":{
-		"name":"พ่อมด",
+		"name":"พระอาจารย์",
 		"role":"repeater",
 		"skin":"wizard",
 		"color":"#66BB52",
@@ -714,7 +714,7 @@ var npcs={
 		"interval":3000,
 	},
 	"wnpc":{
-		"name":"พ่อมด",
+		"name":"พระอาจารย์",
 		"role":"thesearch",
 		"quest":"glitch",
 		"skin":"wizard",
@@ -731,10 +731,10 @@ var npcs={
 		"color":"#9EACAE",
 		"says":"ส่งมาให้ฉัน",
 		"type":"fullstatic",
-		"name":"ลีโอ",
+		"name":"นายช่าง",
 	},
 	"items0":{
-		"name":"กาเบรียลล์",
+		"name":"นายขายของ",
 		"role":"items",
 		"pack":"items0",
 		"skin":"gabrielle",
@@ -743,7 +743,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items1":{
-		"name":"กาเบรียลล่า",
+		"name":"นางขายของ",
 		"role":"items",
 		"pack":"items1",
 		"skin":"gabrielle",
@@ -752,7 +752,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items2":{
-		"name":"เลเดีย",
+		"name":"นายขายของ",
 		"role":"items",
 		"pack":"items2",
 		"skin":"lady3",
@@ -761,7 +761,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items3":{
-		"name":"ลิเดีย",
+		"name":"นางขายของ",
 		"role":"items",
 		"pack":"items3",
 		"skin":"lady3",
@@ -770,7 +770,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items4":{
-		"name":"คริสตี้",
+		"name":"นายขายของ",
 		"role":"items",
 		"pack":"items4",
 		"skin":"lady4",
@@ -779,7 +779,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items5":{
-		"name":"คริสติน่า",
+		"name":"นางขายของ",
 		"role":"items",
 		"pack":"items5",
 		"skin":"lady4",
@@ -788,7 +788,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items6":{
-		"name":"เจน",
+		"name":"นายขายของ",
 		"role":"items",
 		"pack":"items6",
 		"skin":"lady2",
@@ -797,7 +797,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items7":{
-		"name":"เจเน็ต",
+		"name":"นางขายของ",
 		"role":"items",
 		"pack":"items7",
 		"skin":"lady2",
@@ -815,7 +815,7 @@ var npcs={
 		"skin":"daggers",
 		"says":"ดาบ ๆ ๆ",
 		"atype":"flow",
-		"name":"กาเบรียล",
+		"name":"กาบริล",
 	},
 	"premium":{
 		"old_role":"premium",
@@ -829,7 +829,7 @@ var npcs={
 		"skin":"pflow",
 		"says":"อื้มมม",
 		"atype":"flow",
-		"name":"การ์วิน",
+		"name":"การวิน",
 	},
 	"antip2w":{
 		"old_role":"merchant",
@@ -844,7 +844,7 @@ var npcs={
 		"skin":"fancyd",
 		"says":"ว่าไง",
 		"type":"fullstatic",
-		"name":"คุณดวอร์ฟ",
+		"name":"นายดวอร์ฟ",
 		"old_side_interaction":{"auto":true,"skin":"fancyd","message":"I'm the Anti-P2W Authority around here. Making sure all critical items can be bought with gold. Prices can fluctuate based on inflation."},
 		"side_interaction":{"auto":true,"skin":"fancyd","message":"นี่ ไอ้หนุ่มหล่อ คิดจะแต่งตัวให้หล่อขึ้นไปอีกไหมล่ะ?"},
 	},
@@ -871,7 +871,7 @@ var npcs={
 		"role":"exchange",
 		"skin":"magic",
 		"says":"โชคดี!",
-		"name":"ซีน",
+		"name":"พระครูของขลัง",
 	},
 	"shrine":{
 		"role":"shrine",
@@ -888,21 +888,21 @@ var npcs={
 		"skin":"newupgrade",
 		"says":"+1",
 		"atype":"flow",
-		"name":"คิว",
+		"name":"นายช่างปรับปรุง",
 	},
 	"locksmith":{
 		"role":"locksmith",
 		"skin":"asoldier",
 		"says":"X",
 		"type":"fullstatic",
-		"name":"สมิธ",
+		"name":"นายช่างกุญแจ",
 	},
 	"scrollsmith":{
 		"role":"scrollsmith",
 		"skin":"bsoldier",
 		"says":"X",
 		"type":"fullstatic",
-		"name":"เซอร์บ็อบ",
+		"name":"นายช่างม้วนคัมภีร์",
 	},
 	"transporter":{
 		"role":"transport",
@@ -918,14 +918,14 @@ var npcs={
 			"test":0,
 			"d_e":0,
 		},
-		"name":"อาเลีย",
+		"name":"นายอาเลีย",
 	},
 	"appearance":{
 		"role":"cx",
 		"quest":"cx",
 		"skin":"zengirl",
 		"says":"เดี๋ยวนี้!",
-		"name":"ไฮลา",
+		"name":"นายไฮลา",
 		"color":"#D95CB4",
 		"aspeed":"slow",
 	},
