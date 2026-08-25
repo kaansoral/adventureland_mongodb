@@ -1461,7 +1461,73 @@ var monsters={
 			"zap":{"amount":1200,"pure":true,"cooldown":1000,"radius":300},
 			"degen":{"amount":20,"cooldown":200},
 		},
-	}
+	},
+
+	// M5.3 — บอสหลัก 8 ตัว (ธีมบางระจัน)
+	"boss_daanken":{
+		"name":"นายทหารนายด่าน",
+		"hp":8000,"xp":2000,"attack":80,"damage_type":"physical",
+		"speed":4,"charge":8,"range":50,"frequency":0.3,"aggro":1,"aa":1,
+		"respawn":300,"gold":500,
+		"skin":"dknight2",
+	},
+	"boss_japeki":{
+		"name":"จะเภกี (เมืองสุรินทร์)",
+		"hp":15000,"xp":4000,"attack":150,"damage_type":"physical",
+		"speed":5,"charge":10,"range":60,"frequency":0.4,"aggro":1,"aa":1,
+		"respawn":300,"gold":1000,
+		"skin":"dknight2",
+	},
+	"boss_phayamon":{
+		"name":"พญามอญ (เมืองตะนาวศรี)",
+		"hp":18000,"xp":5000,"attack":180,"damage_type":"physical",
+		"speed":6,"charge":12,"range":60,"frequency":0.4,"aggro":1,"aa":1,
+		"respawn":300,"gold":1500,
+		"skin":"dknight2",
+	},
+	"boss_phiphi":{
+		"name":"ผีพรายจอมโจร",
+		"hp":20000,"xp":6000,"attack":100,"damage_type":"pure",
+		"speed":8,"charge":15,"range":80,"frequency":0.5,"aggro":1,"aa":1,
+		"respawn":300,"gold":2000,
+		"skin":"ghost",
+		"abilities":{"heal":{"amount":500,"cooldown":3000}},
+	},
+	"boss_thongsuk":{
+		"name":"นายทองสุก (หัวหน้าพม่า)",
+		"hp":35000,"xp":10000,"attack":300,"damage_type":"physical",
+		"speed":7,"charge":15,"range":80,"frequency":0.5,"aggro":1,"aa":1,
+		"respawn":600,"gold":5000,
+		"skin":"ligerx",
+		"abilities":{"cleave":{"amount":500,"cooldown":5000}},
+	},
+	"boss_hongsawadi":{
+		"name":"พญาหงษาวดี",
+		"hp":40000,"xp":12000,"attack":350,"damage_type":"physical",
+		"speed":8,"charge":15,"range":80,"frequency":0.5,"aggro":1,"aa":1,
+		"respawn":600,"gold":6000,
+		"skin":"ligerx",
+		"abilities":{"zap":{"amount":800,"cooldown":3000}},
+	},
+	"boss_krutphama":{
+		"name":"พญาครุฑพม่า",
+		"hp":30000,"xp":8000,"attack":250,"damage_type":"physical",
+		"speed":10,"charge":20,"range":120,"frequency":0.4,"aggro":1,"aa":1,
+		"respawn":600,"gold":4000,
+		"skin":"bigbird",
+	},
+	"boss_ornchaunda":{
+		"name":"อรชุนเดชา (พม่าใหญ่ — ตัวร้ายสุด)",
+		"hp":80000,"xp":25000,"attack":600,"damage_type":"physical",
+		"speed":9,"charge":20,"range":100,"frequency":0.5,"aggro":1,"aa":1,
+		"respawn":900,"gold":15000,
+		"skin":"ligerx",
+		"abilities":{
+			"cleave":{"amount":1500,"cooldown":3000},
+			"zap":{"amount":1500,"pure":true,"cooldown":5000,"radius":300},
+			"degen":{"amount":50,"cooldown":200},
+		},
+	},
 
 };
 
