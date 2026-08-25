@@ -369,7 +369,7 @@ function render_server() {
 
 function render_character_sheet() {
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top; text-align: left' class='disableclicks'>";
-	html += "<div><span style='color:gray'>Class:</span> " + to_title(character.ctype) + "</div>";
+	html += "<div><span style='color:gray'>อาชีพ:</span> " + (G.classes[character.ctype] && G.classes[character.ctype].name || to_title(character.ctype)) + "</div>";
 	html += "<div><span style='color:gray'>เลเวล:</span> " + character.level + "</div>";
 	html += "<div><span style='color:gray'>ค่าประสบการณ์:</span> " + to_pretty_num(character.xp) + " / " + to_pretty_num(character.max_xp) + "</div>";
 	var divider = 1,
@@ -1989,7 +1989,7 @@ function render_equip_info(name) {
 		else if (window.character) color = "#666870";
 		if (G.classes[ctype].mainhand[def.wtype || def.type]) {
 			html += "<div style='border: 2px dotted gray; padding: 14px; margin: 4px'>";
-			html += "<div style='color:" + color + "'>[" + ctype.toTitleCase() + "] Mainhand</div>";
+			html += "<div style='color:" + color + "'>[" + (G.classes[ctype] && G.classes[ctype].name || ctype.toTitleCase()) + "] อาวุธหลัก</div>";
 			var s = render_item("html", { item: {}, prop: G.classes[ctype].mainhand[def.wtype || def.type], pure: true });
 			if (!s) html += "<div style='color: #788783'>No Modifier</div>";
 			else html += s;

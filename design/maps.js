@@ -141,7 +141,7 @@ var maps = {
 	},
 	goobrawl: {
 		key: "jayson_GooIsland",
-		name: "Goo Brawl!",
+		name: "สนามรบหลัก (ไทย-พม่า)",
 		npcs: [{ id: "transporter", position: [-347, -483] }],
 		monsters: [
 			{
@@ -431,7 +431,7 @@ var maps = {
 	},
 	cave: {
 		key: "jayson_cave02",
-		name: "Cave of Darkness",
+		name: "ทุ่งราชพิลาส",
 		npcs: [
 			//{"name":"Transporter","id":"transporter","position":[100,100]},
 		],
@@ -753,7 +753,7 @@ var maps = {
 	},
 	mansion: {
 		key: "jayson_Mansion",
-		name: "The Mansion",
+		name: "วัด/อาราม",
 		npcs: [{ id: "pwincess", position: [0, -303] }],
 		monsters: [
 			{ type: "rat", boundary: [-217, -272, 200, -24], count: 5, grow: true }, //added grow 31/1/2024
@@ -862,7 +862,7 @@ var maps = {
 	},
 	woffice: {
 		key: "jayson_smallNPCcave",
-		name: "Wizard's Crib",
+		name: "กรุงศรีอยุธยา",
 		npcs: [
 			{ id: "lostandfound", position: [-24, -178] },
 			{ id: "wnpc", position: [32, -178, 3] },
@@ -889,7 +889,7 @@ var maps = {
 	tavern: {
 		//"ignore":true,
 		key: "jayson_tavern02",
-		name: "The Tavern",
+		name: "เมืองสิงห์บุรี",
 		npcs: [
 			{ id: "tbartender", position: [150, -202] },
 			{ id: "bouncer", position: [208, -156] },
@@ -1215,7 +1215,7 @@ var maps = {
 	halloween: {
 		key: "jayson_holloweenmap",
 		key: "jayson_SpookyForestV2.2",
-		name: "Spooky Forest",
+		name: "หมู่บ้านบางระจัน",
 		npcs: [
 			{ name: "Fancy Pots", id: "fancypots", position: [201, -180] },
 			//{"name":"Transporter","id":"transporter","position":[582,-117]},
@@ -1274,7 +1274,7 @@ var maps = {
 	},
 	spookytown: {
 		key: "jayson_holloweenmap2",
-		name: "Spooky Town",
+		name: "วัดโพธิ์เก้าตัน",
 		npcs: [
 			{ id: "citizen15", position: [300, -700], boundary: [281, -836, 508, -570] },
 			//{"id":"citizen15","position":[200,-1400],"boundary":[31,-1571,480,-1293]},
@@ -1404,7 +1404,7 @@ var maps = {
 	},
 	arena: {
 		key: "arena3",
-		name: "Arena",
+		name: "ค่ายฝึก",
 		npcs: [
 			//{"name":"Transporter","id":"transporter","position":[-50,-50]},
 		],
