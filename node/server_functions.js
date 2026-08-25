@@ -887,7 +887,11 @@ async function prepare_tauri_steam_auth(owner, entity, data, socket) {
 	var steam_id = persisted_tauri_steam_id(owner, entity);
 	if (steam_id) {
 		if (!(await persist_tauri_steam_install(owner, entity, data.auth, steam_id))) {
-			socket.emit("tauri_auth_error", { reason: "steam_link_failed" });
+			socket.emit("tauri_auth_error", {
+				reason: "steam_link_failed",
+				stage: "persist_saved_id",
+				ticket_received: !!data.ticket,
+			});
 			return null;
 		}
 		console.log("#A Tauri Steam persisted PID: " + (entity.info.name || entity.name) + " " + steam_id);
@@ -897,11 +901,19 @@ async function prepare_tauri_steam_auth(owner, entity, data, socket) {
 	steam_id = await verify_tauri_steam_ticket(data.ticket);
 	if (!steam_id) {
 		console.error("#A Tauri Steam authentication failed: " + (entity.info.name || entity.name));
-		socket.emit("tauri_auth_error", { reason: "steam_auth_failed" });
+		socket.emit("tauri_auth_error", {
+			reason: "steam_auth_failed",
+			stage: "verify_ticket",
+			ticket_received: !!data.ticket,
+		});
 		return null;
 	}
 	if (!(await persist_tauri_steam_install(owner, entity, data.auth, steam_id))) {
-		socket.emit("tauri_auth_error", { reason: "steam_link_failed" });
+		socket.emit("tauri_auth_error", {
+			reason: "steam_link_failed",
+			stage: "persist_verified_ticket",
+			ticket_received: !!data.ticket,
+		});
 		return null;
 	}
 	console.log("#A Tauri Steam ticket verified: " + (entity.info.name || entity.name) + " " + steam_id);

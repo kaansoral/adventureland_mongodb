@@ -10649,7 +10649,11 @@ function init_socket_io(socket_server) {
 			if (!player.p.dt) player.p.dt = {};
 			if (tauri_steam_auth) {
 				apply_tauri_steam_auth(player, tauri_steam_auth.steam_id);
-				socket.emit("tauri_auth", { status: tauri_steam_auth.status, pid: tauri_steam_auth.steam_id });
+				socket.emit("tauri_auth", {
+					status: tauri_steam_auth.status,
+					pid: tauri_steam_auth.steam_id,
+					ticket_received: !!data.ticket,
+				});
 			}
 			if (guild) player.guild = guild_to_info(guild);
 			if (ip_info && ip_info.exception) player.ipx = ip_info.info.limit;

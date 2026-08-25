@@ -5,7 +5,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Manager, State, WebviewWindow, WebviewWindowBuilder};
 use tauri_plugin_opener::OpenerExt;
 
-const BUILD: &str = "b260825";
+const BUILD: &str = "b260825a";
 const STEAM_APP_ID: u32 = 777150;
 const STEAM_IDENTITY: &str = "adventure-land-tauri-v1";
 const STEAM_TICKET_WAIT_ATTEMPTS: usize = 150;
@@ -38,6 +38,9 @@ struct SteamAuthData {
     ticket: String,
     error: String,
     purchases: bool,
+    steam_available: bool,
+    build: &'static str,
+    platform: &'static str,
 }
 
 #[derive(Serialize)]
@@ -275,6 +278,13 @@ async fn get_steam_auth(state: State<'_, AppState>) -> Result<SteamAuthData, Str
         ticket: lock_string(&state.steam_ticket),
         error: lock_string(&state.steam_error),
         purchases: true,
+        steam_available: state
+            .steam_client
+            .lock()
+            .map(|client| client.is_some())
+            .unwrap_or(false),
+        build: BUILD,
+        platform: PLATFORM,
     })
 }
 
@@ -310,6 +320,13 @@ async fn refresh_steam_auth(state: State<'_, AppState>) -> Result<SteamAuthData,
         ticket: lock_string(&state.steam_ticket),
         error: lock_string(&state.steam_error),
         purchases: true,
+        steam_available: state
+            .steam_client
+            .lock()
+            .map(|client| client.is_some())
+            .unwrap_or(false),
+        build: BUILD,
+        platform: PLATFORM,
     })
 }
 

@@ -4,6 +4,27 @@ var tauri_data = { ready: false, ticket: "", error: "" };
 var tauri_auth_promise = null;
 var tauri_reload_pending = false;
 var tauri_invoke = window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke;
+var tauri_debug_started = Date.now();
+var tauri_debug_sequence = 0;
+
+function tauri_debug(stage, details, level) {
+	details = details || {};
+	details.sequence = ++tauri_debug_sequence;
+	details.elapsed_ms = Date.now() - tauri_debug_started;
+	var method = level == "error" ? "error" : level == "warn" ? "warn" : "log";
+	console[method]("[Tauri Debug] " + stage, details);
+}
+
+function tauri_auth_snapshot() {
+	return {
+		ticket_available: !!tauri_data.ticket,
+		native_error: tauri_data.error || "",
+		steam_available: tauri_data.steam_available === true,
+		purchases_supported: tauri_data.purchases === true,
+		native_build: tauri_data.native_build || "unknown",
+		native_platform: tauri_data.native_platform || "unknown",
+	};
+}
 
 function tauri_store_auth(data) {
 	data = data || {};
@@ -12,27 +33,49 @@ function tauri_store_auth(data) {
 		ticket: data.ticket || "",
 		error: data.error || "",
 		purchases: data.purchases === true,
+		steam_available: data.steam_available === true,
+		native_build: data.build || "unknown",
+		native_platform: data.platform || "unknown",
 	};
-	if (tauri_data.ticket) console.log("[Tauri Steam] Steam ticket ready.");
-	else console.log("[Tauri Steam] No Steam ticket available.");
 	return tauri_data;
 }
 
 function tauri_prepare_auth() {
-	if (!tauri_invoke) return Promise.reject(new Error("Tauri API unavailable"));
-	if (tauri_data.ready) return Promise.resolve(tauri_data);
-	if (tauri_auth_promise) return tauri_auth_promise;
+	if (!tauri_invoke) {
+		tauri_debug("auth.prepare.unavailable", { reason: "tauri_api_unavailable" }, "error");
+		return Promise.reject(new Error("Tauri API unavailable"));
+	}
+	if (tauri_data.ready) {
+		tauri_debug("auth.prepare.cached", tauri_auth_snapshot());
+		return Promise.resolve(tauri_data);
+	}
+	if (tauri_auth_promise) {
+		tauri_debug("auth.prepare.join_pending");
+		return tauri_auth_promise;
+	}
+	var initial_started = Date.now();
+	tauri_debug("auth.prepare.start", { attempt: "initial" });
 	var request = tauri_invoke("get_steam_auth")
 		.then(tauri_store_auth)
 		.then(function (auth) {
+			tauri_debug("auth.prepare.result", Object.assign({ attempt: "initial", duration_ms: Date.now() - initial_started }, tauri_auth_snapshot()));
 			if (auth.ticket) return auth;
-			console.warn("[Tauri Steam] Initial ticket was unavailable; retrying once.");
+			var retry_started = Date.now();
+			tauri_debug("auth.prepare.retry", { attempt: "refresh", previous_error: auth.error || "" }, "warn");
 			return tauri_invoke("refresh_steam_auth")
 				.then(tauri_store_auth)
+				.then(function (retry_auth) {
+					tauri_debug("auth.prepare.result", Object.assign({ attempt: "refresh", duration_ms: Date.now() - retry_started }, tauri_auth_snapshot()));
+					return retry_auth;
+				})
 				.catch(function (error) {
-					console.error("[Tauri Steam] Ticket retry failed: " + error);
+					tauri_debug("auth.prepare.retry_failed", { reason: "" + ((error && error.message) || error || "unknown") }, "error");
 					return auth;
 				});
+		})
+		.catch(function (error) {
+			tauri_debug("auth.prepare.failed", { reason: "" + ((error && error.message) || error || "unknown") }, "error");
+			throw error;
 		})
 		.finally(function () {
 			if (tauri_auth_promise == request) tauri_auth_promise = null;
@@ -42,14 +85,32 @@ function tauri_prepare_auth() {
 }
 
 function tauri_refresh_auth() {
-	if (!tauri_invoke) return Promise.reject(new Error("Tauri API unavailable"));
+	if (!tauri_invoke) {
+		tauri_debug("auth.refresh.unavailable", { reason: "tauri_api_unavailable" }, "error");
+		return Promise.reject(new Error("Tauri API unavailable"));
+	}
+	var started = Date.now();
+	var command = "refresh_steam_auth";
+	tauri_debug("auth.refresh.start");
 	return tauri_invoke("refresh_steam_auth")
 		.catch(function (error) {
 			var message = "" + ((error && error.message) || error || "");
-			if (message.indexOf("refresh_steam_auth") !== -1) return tauri_invoke("get_steam_auth");
+			if (message.indexOf("refresh_steam_auth") !== -1) {
+				command = "get_steam_auth";
+				tauri_debug("auth.refresh.compatibility_fallback", { reason: message }, "warn");
+				return tauri_invoke("get_steam_auth");
+			}
 			throw error;
 		})
-		.then(tauri_store_auth);
+		.then(tauri_store_auth)
+		.then(function (auth) {
+			tauri_debug("auth.refresh.result", Object.assign({ command: command, duration_ms: Date.now() - started }, tauri_auth_snapshot()));
+			return auth;
+		})
+		.catch(function (error) {
+			tauri_debug("auth.refresh.failed", { command: command, duration_ms: Date.now() - started, reason: "" + ((error && error.message) || error || "unknown") }, "error");
+			throw error;
+		});
 }
 
 function tauri_auth_ready() {
@@ -57,6 +118,7 @@ function tauri_auth_ready() {
 }
 
 function tauri_auth_payload() {
+	tauri_debug("auth.socket.send", { ticket_available: !!tauri_data.ticket, native_error: tauri_data.error || "" });
 	return {
 		epl: "tauri_steam",
 		ticket: tauri_data.ticket || "",
@@ -65,7 +127,15 @@ function tauri_auth_payload() {
 
 function tauri_auth_error(response) {
 	var reason = (response && (response.reason || response.message)) || tauri_data.error || "Steam authentication failed.";
-	console.error("[Tauri Steam] Authentication failed: " + reason);
+	tauri_debug(
+		"auth.socket.rejected",
+		{
+			reason: reason,
+			server_stage: (response && response.stage) || "unknown",
+			ticket_received_by_server: !!(response && response.ticket_received),
+		},
+		"error",
+	);
 	if (reason == "steam_auth_failed") reason = "Steam authentication failed. Please restart Adventure Land through Steam.";
 	else if (reason == "steam_link_failed") reason = "Steam authentication worked, but the account could not be linked. Please try again.";
 	show_alert(reason);
@@ -73,11 +143,10 @@ function tauri_auth_error(response) {
 
 function tauri_auth_result(response) {
 	if (!response) return;
-	if (response.status == "steam_ticket_verified") {
-		console.log("[Tauri Steam] Steam ticket verified; account linked to PID " + response.pid + ".");
-	} else if (response.status == "persisted_steam_id") {
-		console.log("[Tauri Steam] Using saved Steam PID " + response.pid + ".");
-	}
+	tauri_debug("auth.socket.accepted", {
+		server_status: response.status || "unknown",
+		ticket_received_by_server: !!response.ticket_received,
+	});
 }
 
 function tauri_get_data() {
@@ -202,7 +271,7 @@ function tauri_open_steam_checkout(url) {
 			});
 		})
 		.then(function (method) {
-			console.log("[Tauri Steam] Checkout opened using: " + method + ".");
+			tauri_debug("purchase.checkout.opened", { method: method });
 			return method;
 		});
 }
@@ -234,8 +303,17 @@ function tauri_setup_external_links() {
 }
 
 function tauri_init() {
+	var build_id = "";
+	try {
+		build_id = new URLSearchParams(window.location.search).get("buildid") || "";
+	} catch (e) {}
+	tauri_debug("client.init", {
+		build_id: build_id,
+		invoke_available: !!tauri_invoke,
+		user_agent: navigator.userAgent,
+	});
 	tauri_setup_external_links();
 	tauri_prepare_auth().catch(function (error) {
-		console.error("[Tauri Steam] Steam initialization failed: " + error);
+		tauri_debug("client.init_failed", { reason: "" + ((error && error.message) || error || "unknown") }, "error");
 	});
 }

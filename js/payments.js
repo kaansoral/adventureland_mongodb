@@ -1,7 +1,13 @@
 var stripe_state = "pay",
 	pamount = 25,
 	steam_state = "pay",
-	steam_order_id = "";
+	steam_order_id = "",
+	steam_poll_count = 0;
+
+function steam_debug(stage, details, level) {
+	if (typeof tauri_debug == "function") tauri_debug("purchase." + stage, details, level);
+	else console.log("[Tauri Debug] purchase." + stage, details || {});
+}
 
 function p_log(message, color, support) {
 	var target = $(".modal:last #plog");
@@ -21,6 +27,8 @@ function set_pamount(amount) {
 	if (typeof is_tauri != "undefined" && is_tauri) {
 		steam_state = "pay";
 		steam_order_id = "";
+		steam_poll_count = 0;
+		steam_debug("amount.selected", { usd: pamount });
 		$(".pbutton").removeClass("pfail psuccess");
 		$(".pbutton").html("Buy $" + pamount + " with Steam");
 		update_shells_calc();
@@ -78,7 +86,7 @@ function steam_payment_message(reason) {
 
 function steam_payment_failed(error) {
 	var reason = (error && (error.reason || error.message)) || "steam_purchase_failed";
-	console.error("[Tauri Steam] Payment failed: " + reason);
+	steam_debug("failed", { reason: reason, state: steam_state }, "error");
 	if (reason == "steam_payment_pending" || reason == "steam_purchase_timeout") {
 		steam_state = "pending";
 		$(".pbutton").removeClass("pfail");
@@ -92,6 +100,7 @@ function steam_payment_failed(error) {
 }
 
 function steam_payment_success(data) {
+	steam_debug("completed", { shells_received: data.shells });
 	steam_state = "success";
 	$(".pbutton").removeClass("pfail").addClass("psuccess");
 	$(".pbutton").html("Success!");
@@ -101,6 +110,7 @@ function steam_payment_success(data) {
 }
 
 function steam_finish_payment(authorized) {
+	steam_debug("finalize.start", { authorized: !!authorized });
 	steam_state = "finalizing";
 	$(".pbutton").html("Finalizing ...");
 	api_call("steam_payment_finish", { order_id: steam_order_id, authorized: !!authorized }).then(steam_payment_success).catch(steam_payment_failed);
@@ -108,12 +118,19 @@ function steam_finish_payment(authorized) {
 
 function steam_poll_payment(order_id, started) {
 	if (steam_order_id != order_id) return;
+	steam_poll_count++;
+	if (steam_poll_count == 1 || steam_poll_count % 10 == 0) {
+		steam_debug("status.check", { attempt: steam_poll_count, elapsed_ms: Date.now() - started });
+	}
 	api_call("steam_payment_finish", { order_id: order_id, authorized: true })
 		.then(steam_payment_success)
 		.catch(function (error) {
 			if (steam_order_id != order_id) return;
 			var reason = (error && (error.reason || error.message)) || "steam_purchase_failed";
 			if (reason == "steam_payment_pending" && Date.now() - started < 10 * 60 * 1000) {
+				if (steam_poll_count == 1 || steam_poll_count % 10 == 0) {
+					steam_debug("status.pending", { attempt: steam_poll_count, elapsed_ms: Date.now() - started });
+				}
 				steam_state = "authorize";
 				$(".pbutton").html("Waiting for Steam ...");
 				setTimeout(function () {
@@ -128,6 +145,12 @@ function steam_poll_payment(order_id, started) {
 
 function steam_pay(event) {
 	if (event) btc(event);
+	steam_debug("button.clicked", {
+		usd: pamount,
+		state: steam_state,
+		tauri: typeof is_tauri != "undefined" && !!is_tauri,
+		logged_in: !!user_id,
+	});
 	if (typeof is_tauri == "undefined" || !is_tauri) {
 		p_log("Steam purchases are available in the Steam client.", "#88E5BC");
 		return;
@@ -151,15 +174,24 @@ function steam_pay(event) {
 	}
 
 	steam_state = "process";
+	steam_poll_count = 0;
 	$("#plog").html("");
 	$(".pbutton").html("Contacting Steam ...");
 	tauri_refresh_auth()
 		.then(function (auth) {
+			steam_debug("auth.result", {
+				ticket_available: !!(auth && auth.ticket),
+				purchases_supported: !!(auth && auth.purchases),
+				steam_available: !!(auth && auth.steam_available),
+				native_error: (auth && auth.error) || "",
+			});
 			if (!auth || !auth.purchases) throw new Error("steam_client_update_required");
 			if (!auth || !auth.ticket) throw new Error("steam_auth_failed");
+			steam_debug("order.start", { usd: pamount, sandbox: !!window.steam_payment_sandbox });
 			return api_call("steam_payment_start", { usd: pamount, ticket: auth.ticket, sandbox: !!window.steam_payment_sandbox });
 		})
 		.then(function (data) {
+			steam_debug("order.created", { sandbox: !!data.sandbox, checkout_available: !!data.steam_url });
 			steam_order_id = data.order_id;
 			steam_state = "authorize";
 			$(".pbutton").html("Opening Steam ...");
