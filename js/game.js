@@ -1566,7 +1566,9 @@ function init_socket(args) {
 		});
 	});
 	socket.on("game_log", function (data) {
-		if ((data.message || data) == "You killed a Goo") tut("killagoo");
+		// M2: kill message uses the Thai monster name ("You killed a วุ้นธาตุ") — match by name → tutorial task
+		var msg = data.message || data;
+		if (is_string(msg) && msg.indexOf("วุ้นธาตุ") !== -1) tut("killagoo");
 		draw_trigger(function () {
 			if (is_string(data)) ui_log(data, "gray");
 			else {

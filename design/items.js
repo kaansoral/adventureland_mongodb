@@ -6184,6 +6184,43 @@ var quest={
 		"action":"SHAKE",
 		"onclick":"socket.emit('activate',{num:locate_item('frozenstone')})",
 	},
+	// 🎮 M3.2 — ไอเทมภารกิจธาตุ (Jatura-That main story quest items)
+	"fireessence":{
+		"type":"quest",
+		"skin":"essenceoffire",
+		"name":"เพลิงธาตุ",
+		"explanation":"หยดไฟบริสุทธิ์จากเขตเขาไฟ (ภูหลวง) — เทวะเพลิงต้องการให้เจ้าพิสูจน์พลังไฟ",
+		"g":1200,
+		"e":1,
+		"s":true,
+	},
+	"watershard":{
+		"type":"quest",
+		"skin":"essenceoffrost",
+		"name":"เกล็ดธารา",
+		"explanation":"เกล็ดน้ำแข็งแห่งนทีเพชร — เทวะธาราต้องการให้เจ้านำสายน้ำกลับสมดุล",
+		"g":1200,
+		"e":1,
+		"s":true,
+	},
+	"earthstone":{
+		"type":"quest",
+		"skin":"essenceofnature",
+		"name":"ก้อนปฐพี",
+		"explanation":"ก้อนหินศักดิ์สิทธิ์จากปฐพีหลวง — เทวะปฐพีต้องการให้เจ้าหยุดการสั่นสะเทือน",
+		"g":1200,
+		"e":1,
+		"s":true,
+	},
+	"skyfeather":{
+		"type":"quest",
+		"skin":"essenceofether",
+		"name":"ขนนกเวหา",
+		"explanation":"ขนนกแห่งเวหามหาเวหา — เทวะเวหาต้องการให้เจ้าคว้าพลังสายฟ้า",
+		"g":1200,
+		"e":1,
+		"s":true,
+	},
 }
 
 var pets={

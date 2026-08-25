@@ -137,6 +137,8 @@ var drops = {
 		stoneworm: [
 			[1.0 / 12000, "swifty"],
 			[1.0 / 300, "dstones"],
+			// M3.2 — ภารกิจธาตุ: ก้อนปฐพี (เทวะปฐพี)
+			[1.0 / 12, "earthstone"],
 		],
 		minimush: [
 			[1.0 / 60, "spores"],
@@ -340,6 +342,8 @@ var drops = {
 		iceroamer: [
 			[0.0001, "essenceoffrost"],
 			[0.00001, "frozenkey"],
+			// M3.2 — ภารกิจธาตุ: เกล็ดธารา (เทวะธารา)
+			[1.0 / 12, "watershard"],
 		],
 		icegolem: [
 			[5, "frozenkey"],
@@ -349,6 +353,8 @@ var drops = {
 			[1.0 / 1442, "orbofstr"],
 			[1.0 / 1442, "orbofdex"],
 			[1.0 / 64, "essenceoffire"],
+			// M3.2 — ภารกิจธาตุ: เพลิงธาตุ (เทวะเพลิง)
+			[1.0 / 12, "fireessence"],
 		],
 		pppompom: [
 			[1.0 / 1000, "orbofint"],
@@ -479,7 +485,11 @@ var drops = {
 			[10, "iceskates"],
 			[1, "sweaterhs"],
 		],
-		bigbird: [[0.05, "feather0"]],
+		bigbird: [
+			[0.05, "feather0"],
+			// M3.2 — ภารกิจธาตุ: ขนนกเวหา (เทวะเวหา)
+			[1.0 / 12, "skyfeather"],
+		],
 		harpy: [
 			[0.01, "feather1"],
 			[0.01, "feather1"],
@@ -730,6 +740,23 @@ var drops = {
 		[0.000001, "vitscroll", 10],
 		[1, "open", "basicelixir"],
 		[0.00002, "fury"],
+	],
+	// M3.2 — รางวัลแลกไอเทมภารกิจธาตุ (จตุรธาตุ)
+	fireessence: [
+		[1, "cscroll0", 1],
+		[0.1, "fireblade"],
+	],
+	watershard: [
+		[1, "cscroll1", 1],
+		[0.1, "frostbow"],
+	],
+	earthstone: [
+		[1, "cscroll2", 1],
+		[0.1, "t2stramulet"],
+	],
+	skyfeather: [
+		[1, "cscroll3", 1],
+		[0.1, "t2intamulet"],
 	],
 	leather: [
 		[20, "cape"],
