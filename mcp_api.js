@@ -76,7 +76,6 @@ function get_mcp_api_game_data() {
 		dismantle: dismantle,
 		docs: docs,
 		drops: drops,
-		emotions: emotions,
 		events: events,
 		games: games,
 		images: precomputed.images,

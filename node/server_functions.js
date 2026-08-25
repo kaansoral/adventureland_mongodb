@@ -2711,7 +2711,7 @@ function init_server_data() {
 			if (
 				!S[store][i].name ||
 				!G.items[S[store][i].name] ||
-				in_arr(S[store][i].name, ["cxjar", "emotionjar"]) ||
+				S[store][i].name == "cxjar" ||
 				G.items[S[store][i].name].cash
 			) {
 				S[store].splice(i, 1);
@@ -3518,7 +3518,7 @@ function exchange(player, name, args) {
 				if (args.v) {
 					item.v = args.v;
 				}
-				if (drop[1] == "cxjar" || drop[1] == "emotionjar") {
+				if (drop[1] == "cxjar") {
 					item.data = drop[3];
 				}
 				add_item(player, item, { r: 1, phrase: args.phrase });
@@ -3801,9 +3801,6 @@ function init_player(player) {
 	if (!player.p.acx) {
 		player.p.acx = {};
 		player.p.xcx = [];
-	}
-	if (!player.p.emx) {
-		player.p.emx = {};
 	}
 	if (!player.p.ap) {
 		player.p.ap = {};

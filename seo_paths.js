@@ -35,7 +35,6 @@ const DOCS_DATA_KEYS = [
 	"dismantle",
 	"docs",
 	"drops",
-	"emotions",
 	"events",
 	"games",
 	"geometry",

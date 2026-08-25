@@ -397,7 +397,6 @@ async function init_game() {
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/titles.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/tokens.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/cosmetics.js")));
-		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/emotions.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/precomputed_images.js")));
 
 		// Load geometry from MongoDB (parallel fetch, following qwazy pattern)
@@ -434,7 +433,6 @@ async function init_game() {
 			dismantle: dismantle,
 			conditions: conditions,
 			cosmetics: cosmetics,
-			emotions: emotions,
 			projectiles: projectiles,
 			classes: classes,
 			dimensions: dimensions,
@@ -580,7 +578,6 @@ async function reload_server(to_broadcast, change) {
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/titles.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/tokens.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/cosmetics.js")));
-		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/emotions.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/precomputed_images.js")));
 
 		// Reload geometry from MongoDB
@@ -615,7 +612,6 @@ async function reload_server(to_broadcast, change) {
 			dismantle: dismantle,
 			conditions: conditions,
 			cosmetics: cosmetics,
-			emotions: emotions,
 			projectiles: projectiles,
 			classes: classes,
 			dimensions: dimensions,
@@ -2041,7 +2037,7 @@ function drop_item_logic(drop, def, pvp) {
 	var added = false;
 	if (def[1] == "shells") {
 		drop.cash += def[2];
-	} else if (def[1] == "cxjar" || def[1] == "emotionjar") {
+	} else if (def[1] == "cxjar") {
 		var item = { name: def[1], q: def[2], data: def[3] };
 		if (pvp) {
 			item.v = new Date();
@@ -7246,18 +7242,6 @@ function init_socket_io(socket_server) {
 				player.p.acx[item.data] = (player.p.acx[item.data] || 0) + 1;
 				socket.emit("game_response", { response: "cx_new", acx: player.p.acx, name: item.data, from: "cxjar" });
 				consume_one(player, data.num);
-			} else if (item.name == "emotionjar") {
-				if (!item.data || item.l) {
-					return fail_response("item_locked");
-				}
-				player.p.emx[item.data] = (player.p.emx[item.data] || 0) + 1;
-				socket.emit("game_response", {
-					response: "emotion_new",
-					emx: player.p.emx,
-					name: item.data,
-					from: "emotionjar",
-				});
-				consume_one(player, data.num);
 			} else if (def.type == "licence") {
 				if (item.l) {
 					return fail_response("item_locked");
@@ -8980,23 +8964,6 @@ function init_socket_io(socket_server) {
 			player.citems[data.num] = cache_item(player.items[data.num]);
 			resend(player, "reopen+cid");
 		});
-		socket.on("emotion", function (data) {
-			var player = players[socket.id];
-			if (!player) {
-				return;
-			}
-			if (!data.name) {
-				data.name = random_one(Object.keys(player.p.emx));
-			}
-			if (player.last.emotion && mssince(player.last.emotion) < 2000) {
-				return socket.emit("game_response", "emotion_cooldown");
-			}
-			player.last.emotion = new Date();
-			if (!G.emotions[data.name] || !player.p.emx[data.name]) {
-				return socket.emit("game_response", "emotion_cant");
-			}
-			xy_emit(player, "emotion", { name: data.name, player: player.name });
-		});
 		socket.on("skill", function (data) {
 			const player = players[socket.id];
 			if (!player) {
@@ -9234,7 +9201,7 @@ function init_socket_io(socket_server) {
 					consume_mp(player, gSkill.mp);
 					player.to_resend = "u+cid";
 				}
-				xy_emit(player, "emotion", {
+				xy_emit(player, "emote", {
 					name: gSkill.emote,
 					player: player.name,
 					target: target && target.name,
@@ -10788,7 +10755,6 @@ function init_socket_io(socket_server) {
 				cdata.friends = player.friends;
 				cdata.acx = player.p.acx;
 				cdata.xcx = player.p.xcx;
-				cdata.emx = player.p.emx;
 				cdata.info = instances[player.in].info;
 				cdata.base_gold = D.base_gold;
 				broadcast_e(true);

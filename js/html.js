@@ -3755,19 +3755,6 @@ function render_item(selector, args) {
 				html += "<div class='clickable' onclick='render_cx_info(\"" + actual.data + "\")'>" + cx_sprite(actual.data) + "</div>";
 			}
 		}
-		if (actual && actual.name == "emotionjar") {
-			if (!G.emotions[actual.data]) {
-				html += "<div style='color: #C3C3C3'>Invalid / " + actual.data + "</div>";
-			} else
-				html +=
-					"<div><span class='clickable' onclick='stpr(event); show_json(G.emotions." +
-					actual.data +
-					',{prefix:"G.emotions.",name:"' +
-					actual.data +
-					"\"})'>" +
-					bold_prop_line("Includes", "G.emotions.<span style='color:" + colors.property + ";'>" + actual.data + "</span>", colors.inspect) +
-					"</span></div>";
-		}
 		if (in_arr(args.slot, trade_slots) && actual && actual.price && args.from_player && !actual.b && !actual.giveaway) {
 			trade_item = true;
 			if ((actual.q || 1) > 1) {

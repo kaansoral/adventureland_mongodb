@@ -62,7 +62,6 @@ eval("" + fs.readFileSync(path.resolve(__dirname, "design/recipes.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/titles.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/tokens.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/cosmetics.js")));
-eval("" + fs.readFileSync(path.resolve(__dirname, "design/emotions.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/precomputed_images.js")));
 
 // docs
@@ -326,7 +325,6 @@ app.all("/data.js", async (req, res, next) => {
 		dismantle: dismantle,
 		conditions: conditions,
 		cosmetics: cosmetics,
-		emotions: emotions,
 		projectiles: projectiles,
 		classes: classes,
 		dimensions: dimensions,

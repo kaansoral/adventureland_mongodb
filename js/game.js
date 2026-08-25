@@ -1455,7 +1455,6 @@ function init_socket(args) {
 		if (!data.vision) character.vision = [700, 500];
 		friends = data.friends;
 		character.home = data.home;
-		character.emx = data.emx;
 		character.acx = data.acx;
 		character.xcx = data.xcx;
 		G.classes[character.ctype].xcx.forEach(function (c) {
@@ -2092,9 +2091,6 @@ function init_socket(args) {
 					$("#topleftcornerdialog").html(html);
 				} else ui_log("Cosmetics: " + data.name, "#DB7AA9");
 				refresh_cosmetic_skills(data.acx);
-			} else if (response == "emotion_new") {
-				ui_log("Emotion: " + data.name, "#DB7AA9");
-				character.emx = data.emx;
 			} else if (response == "cx_not_found") {
 				ui_log("Cosmetics not found", "gray");
 			} else if (response == "ex_condition") {
@@ -2110,10 +2106,6 @@ function init_socket(args) {
 			} else if (response == "buy_cost") {
 				d_text("INSUFFICIENT", character);
 				ui_log("Not enough gold", "gray");
-			} else if (response == "emotion_cant") {
-				d_text("NO", character);
-			} else if (response == "emotion_cooldown") {
-				d_text("WAIT", character);
 			} else if (response == "cant_reach") ui_log("Can't reach", "gray");
 			else if (response == "no_item") ui_log("No item provided", "gray");
 			else if (response == "not_enough") ui_log("Not enough", "gray");
@@ -2315,32 +2307,11 @@ function init_socket(args) {
 			call_code_function("trigger_event", "chat", { from: data.owner, message: data.message });
 		});
 	});
-	socket.on("emotion", function (data) {
+	socket.on("emote", function (data) {
 		draw_trigger(function () {
 			var player = get_player(data.player);
-			var emotion = data.name;
-			if (emotion == "drop_egg") {
-				if (player)
-					map_animation(random_one(["egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8", "goldenegg"]), {
-						x: get_x(player),
-						y: get_y(player) + 1,
-						target: { x: get_x(player), y: get_y(player) + 5, height: 0 },
-						item: true,
-						fade: 0.005,
-						speed: 0.01,
-						limit: 1,
-						scale: 0.5,
-						filter: new PIXI.filters.OutlineFilter(0.5, hx("#ABA3BC")),
-					});
-				if (player) v_shake_i(player);
-				setTimeout(function () {
-					sfx("drop_egg");
-				}, 30);
-			} else if (player && G.skills[emotion] && G.skills[emotion].emote) {
-				play_cosmetic_emote(player, emotion, data.target && get_player(data.target), data);
-			} else if (player) {
-				start_animation(player, emotion);
-			}
+			var emote = data.name;
+			if (player && G.skills[emote] && G.skills[emote].emote) play_cosmetic_emote(player, emote, data.target && get_player(data.target), data);
 		});
 	});
 	socket.on("ui", function (data) {
@@ -4226,6 +4197,28 @@ function cosmetic_emote_targeted_logic(player, progress, elapsed) {
 }
 
 function play_cosmetic_emote(player, name, target, data) {
+	if (name == "drop_egg") {
+		map_animation(random_one(["egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8", "goldenegg"]), {
+			x: get_x(player),
+			y: get_y(player) + 1,
+			target: { x: get_x(player), y: get_y(player) + 5, height: 0 },
+			item: true,
+			fade: 0.005,
+			speed: 0.01,
+			limit: 1,
+			scale: 0.5,
+			filter: new PIXI.filters.OutlineFilter(0.5, hx("#ABA3BC")),
+		});
+		v_shake_i(player);
+		setTimeout(function () {
+			sfx("drop_egg");
+		}, 30);
+		return;
+	}
+	if (name == "hearts_single") {
+		start_animation(player, name);
+		return;
+	}
 	if (!cosmetic_emote_durations[name]) return;
 	var variation = data && is_number(data.variation) ? data.variation : name == "fart" ? floor(Math.random() * cosmetic_emote_fart_variants.length) : floor(Math.random() * 3);
 	if (cosmetic_targeted_emotes[name]) {

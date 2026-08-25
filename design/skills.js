@@ -140,6 +140,22 @@ var skills={
 		"hostile":true,
 	},
 	//Players
+	"drop_egg":{
+		"type":"skill",
+		"skin":"whiteegg",
+		"name":"Drop Egg",
+		"explanation":"An egg appears. Best not to ask.",
+		"cooldown":2000,
+		"emote":"drop_egg",
+	},
+	"hearts_single":{
+		"type":"skill",
+		"skin":"emptyheart",
+		"name":"Rising Hearts",
+		"explanation":"A little love goes a long way.",
+		"cooldown":2000,
+		"emote":"hearts_single",
+	},
 	"fart":{
 		"type":"skill",
 		"skin":"emote_fart",
@@ -1241,8 +1257,8 @@ var skills={
 	"emotion":{
 		"type":"utility",
 		"skin":"run_emotion",
-		"name":"Emotion",
-		"explanation":"Show a random emotion you've unlocked!",
+		"name":"Random Emote",
+		"explanation":"Show a random Emote you've unlocked!",
 	},
 	"pure_eval":{
 		"type":"utility",

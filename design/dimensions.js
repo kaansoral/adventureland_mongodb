@@ -520,7 +520,6 @@ var positions={
 	"essenceoflife":["",14,34],
 	"emptyjar":["",14,35],
 	"cxjar":["custom",2,1],
-	"emotionjar":["custom",5,1],
 	"bottleofxp":["",15,35],
 	"feather0":["",1,33],
 	"feather1":["community",5,0],
@@ -539,7 +538,6 @@ var positions={
 
 	//cosmetics
 	"cxjar":["",8,62],
-	"emotionjar":["",9,62],
 
 	//easter
 	"egg0":["",0,30],

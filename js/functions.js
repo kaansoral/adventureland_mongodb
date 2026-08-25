@@ -1256,7 +1256,14 @@ function on_skill(key, event) {
 	} else if (name == "snippet") {
 		code_eval(skill.code);
 	} else if (name == "emotion") {
-		socket.emit("emotion", { name: skill.emotion });
+		var emotes = [];
+		for (var emote_name in G.skills) {
+			var emote = G.skills[emote_name];
+			if (emote.emote && !emote.target && character.acx && character.acx[emote.emote]) emotes.push(emote_name);
+		}
+		if (skill.emotion && in_arr(skill.emotion, emotes)) use_skill(skill.emotion);
+		else if (emotes.length) use_skill(random_one(emotes));
+		else d_text("NO", character);
 	} else if (name == "eval" || name == "pure_eval") {
 		smart_eval(skill.code);
 	} else if (name == "magiport") {

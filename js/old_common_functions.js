@@ -394,7 +394,6 @@ function can_stack(a,b,d,args)
 	{
 		if((a.p || b.p) && a.p!=b.p) return false; // property
 		if(a.name=="cxjar" && a.data!=b.data) return false;
-		if(a.name=="emotionjar" && a.data!=b.data) return false;
 		if(!args || !args.ignore_pvp) if(a.v && !b.v || !a.v && b.v) return false; // pvp
 		if(a.l || b.l || a.b || b.b) return false; // blocked and locked
 		return true;

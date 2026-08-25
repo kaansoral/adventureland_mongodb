@@ -115,8 +115,6 @@ var drops = {
 			[0.1 / 800000, "shells", 50],
 			[1.0 / 5000, "slimestaff"],
 			[1.0 / 1000, "gslime"], //1 .0/1000
-			//[100,"emotionjar",1,"hearts_single"],
-			//[1.0,"emotionjar",1,"drop_egg"],
 			//[1.0/10,"cxjar",1,"wings102"],
 			//[1.0,"cxjar",1,"hat100"],
 		], //,[0.5,"open","lightmage"]
@@ -534,7 +532,7 @@ var drops = {
 			[0.2, "open", "eastereggs"],
 			[0.01, "goldenegg"], //originally 0.02 [11/04/19]
 			[0.01, "open", "basketofeggs"],
-			[0.001, "emotionjar", 1, "drop_egg"],
+			[0.001, "cxjar", 1, "drop_egg"],
 		],
 		goldenbat: [
 			[0.8, "handofmidas"],
@@ -1200,7 +1198,7 @@ var drops = {
 		[0.5, "goldnugget"],
 		[0.1, "platinumnugget"],
 		//[0.5,"open","glitch"],
-		[0.1, "emotionjar", 1, "hearts_single"],
+		[0.1, "cxjar", 1, "hearts_single"],
 	],
 	m2: [
 		[100, "empty"],

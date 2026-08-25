@@ -58,7 +58,6 @@ async function run() {
 	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/titles.js")));
 	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/tokens.js")));
 	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/cosmetics.js")));
-	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/emotions.js")));
 	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/precomputed_images.js")));
 	eval("" + fs.readFileSync(path.resolve(__dirname, "../version.js")));
 
@@ -96,7 +95,6 @@ async function run() {
 		dismantle: dismantle,
 		conditions: conditions,
 		cosmetics: cosmetics,
-		emotions: emotions,
 		projectiles: projectiles,
 		classes: classes,
 		dimensions: dimensions,
