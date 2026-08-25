@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "tauri": "tauri",
-    "build:mac": "MAC_APP=\"src-tauri/target/universal-apple-darwin/release/bundle/macos/Adventure Land.app\"; ENTITLEMENTS=\"src-tauri/Entitlements.plist\"; PATH=\"$(dirname \"$(rustup which cargo)\"):$PATH\" RUSTFLAGS=\"--remap-path-prefix=$HOME=.\" tauri build --target universal-apple-darwin && codesign --force --deep --sign - --entitlements \"$ENTITLEMENTS\" \"$MAC_APP\" && codesign --verify --deep --strict \"$MAC_APP\" && ! strings -a \"$MAC_APP/Contents/MacOS/adventure-land\" | grep -Fq \"$HOME\""
+    "build:mac": "MAC_APP=\"src-tauri/target/universal-apple-darwin/release/bundle/macos/Adventure Land.app\"; MAC_BINARY=\"$MAC_APP/Contents/MacOS/adventure-land\"; ENTITLEMENTS=\"src-tauri/Entitlements.plist\"; PATH=\"$(dirname \"$(rustup which cargo)\"):$PATH\" RUSTFLAGS=\"--remap-path-prefix=$HOME=.\" tauri build --target universal-apple-darwin && /usr/bin/strip -x \"$MAC_BINARY\" && codesign --force --deep --sign - --entitlements \"$ENTITLEMENTS\" \"$MAC_APP\" && codesign --verify --deep --strict \"$MAC_APP\" && ! rg -a -q -F \"$HOME\" \"$MAC_APP\""
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2"

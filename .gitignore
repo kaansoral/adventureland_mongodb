@@ -15,6 +15,7 @@
 /scripts/node_modules/
 /electron/node_modules/
 /tauri/node_modules/
+/tauri/STEAM_UPLOAD.md
 package-lock.json
 
 # Agentic scripts (override *.py ignore)
