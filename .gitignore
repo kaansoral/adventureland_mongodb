@@ -8,6 +8,9 @@
 /proposals
 /proposals/
 
+# Local marketing workspace
+/marketing/
+
 # Node
 /node_modules/
 /node/node_modules/
