@@ -240,27 +240,27 @@ docs = {
 		{
 			key: "story-fire",
 			tasks: [],
-			title: "บทที่ 1: เทวะเพลิง",
+			title: "บทที่ 1: ลากระฆัง",
 		},
 		{
 			key: "story-water",
 			tasks: [],
-			title: "บทที่ 2: เทวะธารา",
+			title: "บทที่ 2: รวมพลัง",
 		},
 		{
 			key: "story-earth",
 			tasks: [],
-			title: "บทที่ 3: เทวะปฐพี",
+			title: "บทที่ 3: ศึกหนแรก",
 		},
 		{
 			key: "story-sky",
 			tasks: [],
-			title: "บทที่ 4: เทวะเวหา",
+			title: "บทที่ 4: ล้อมค่าย",
 		},
 		{
-			key: "theend",
+			key: "story-final",
 			tasks: [],
-			title: "The End",
+			title: "บทที่ 5: ยุทธหัตถี — บทที่ 6: ยืนหยัด",
 		},
 	],
 	tasks: {
