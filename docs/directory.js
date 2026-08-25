@@ -233,6 +233,31 @@ docs = {
 		// 	"title":"Learn to Attack"
 		// }
 		{
+			key: "story-elements",
+			tasks: [],
+			title: "เรื่องราว: จตุรธาตุ",
+		},
+		{
+			key: "story-fire",
+			tasks: [],
+			title: "บทที่ 1: เทวะเพลิง",
+		},
+		{
+			key: "story-water",
+			tasks: [],
+			title: "บทที่ 2: เทวะธารา",
+		},
+		{
+			key: "story-earth",
+			tasks: [],
+			title: "บทที่ 3: เทวะปฐพี",
+		},
+		{
+			key: "story-sky",
+			tasks: [],
+			title: "บทที่ 4: เทวะเวหา",
+		},
+		{
 			key: "theend",
 			tasks: [],
 			title: "The End",
