@@ -1,9 +1,19 @@
 // Newest notes first. Add player-visible changes at the top with deployed: null.
 module.exports = [
 	{
-		deployed: null,
+		deployed: "[25/08/26]",
 		date: "[25/08/26]",
 		note: "Added new Steam clients for Windows and Linux alongside the macOS client, with more reliable Steam login, clearer diagnostics, and in-client Shells purchases.",
+	},
+	{
+		deployed: "[25/08/26]",
+		date: "[25/08/26]",
+		note: "Corrected armor tier progression across the new equipment collection.",
+	},
+	{
+		deployed: "[25/08/26]",
+		date: "[25/08/26]",
+		note: "Drop Egg and Rising Hearts now unlock and work like other Emotes.",
 	},
 	{
 		deployed: "[24/08/26]",
