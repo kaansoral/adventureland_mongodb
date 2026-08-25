@@ -841,7 +841,7 @@ function show_mail_modal() {
 		{ input: "msubject", placeholder: "Subject", style: "width: 320px; text-align: left !important;" },
 		{ textarea: "mmsg", placeholder: "Message", style: "width: 324px; height: 74px; text-align: left !important;" },
 		{
-			button: "Send",
+			button: "ส่ง",
 			onclick: function () {
 				pcs();
 				socket.emit("mail", { to: $(".mrecipient").val(), subject: $(".msubject").val(), message: $(".mmsg").val() });
@@ -1103,7 +1103,7 @@ function on_skill(key, event) {
 					},
 					input: "mglocx",
 					placeholder: "Name",
-					title: "Character",
+					title: "นักรบ",
 				});
 			},
 		});
@@ -1119,7 +1119,7 @@ function on_skill(key, event) {
 					},
 					input: "mglocx",
 					placeholder: "Name",
-					title: "Character",
+					title: "นักรบ",
 				});
 			},
 		});
@@ -1135,7 +1135,7 @@ function on_skill(key, event) {
 					},
 					input: "mglocx",
 					placeholder: "Name",
-					title: "Character",
+					title: "นักรบ",
 				});
 			},
 		});
@@ -5708,7 +5708,7 @@ function handle_information(infs) {
 				}
 
 				if (parseInt(code_slot) <= 100) $(".codeslottype").html("" + code_slot);
-				else $(".codeslottype").html("Character");
+				else $(".codeslottype").html("นักรบ");
 
 				$(".codeslotname").html("" + ((X.codes[code_slot] && X.codes[code_slot][0]) || "Default Code"));
 			}

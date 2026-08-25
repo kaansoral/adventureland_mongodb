@@ -13,9 +13,9 @@
 
 	<!--
 	<div class="mt4 blockbutton fastoff {%if domain.fast_mode %}hidden{% endif %}"
-		onclick="btc(event); $('.fastoff').hide(); $('.faston').show(); $('.restartneeded').show(); Cookies.set('no_fast_mode','',{ expires:12*365});">Cached/Fast Maps: <span style='color: #F54423'>OFF</span></div>
+		onclick="btc(event); $('.fastoff').hide(); $('.faston').show(); $('.restartneeded').show(); Cookies.set('no_fast_mode','',{ expires:12*365});">Cached/Fast แผนที่s: <span style='color: #F54423'>OFF</span></div>
 	<div class="mt4 blockbutton faston {%if not domain.fast_mode %}hidden{% endif %}"
-		onclick="btc(event); $('.faston').hide(); $('.fastoff').show(); $('.restartneeded').show(); Cookies.set('no_fast_mode','1',{ expires:12*365});">Cached/Fast Maps: <span style='color: green'>ON</span></div>
+		onclick="btc(event); $('.faston').hide(); $('.fastoff').show(); $('.restartneeded').show(); Cookies.set('no_fast_mode','1',{ expires:12*365});">Cached/Fast แผนที่s: <span style='color: green'>ON</span></div>
 
 	<div class="mt4 blockbutton autoon {% if domain.auto_reload=="off" %}hidden{% endif %}"
 		onclick="btc(event); Cookies.set('manual_reload','1',{ expires:12*365}); $('.autoon').hide(); $('.autooff').show(); auto_reload='off';">Auto Reload on DC: <span style='color: green'>ON</span></div>
@@ -44,8 +44,8 @@
 	<div class="mt4 blockbutton sdlinesoff {% if domain.sd_lines %}hidden{% endif %}"
 		onclick="btc(event); Cookies.set('sd_lines_off','',{ expires:12*365}); $('.sdlinesoff').hide(); $('.sdlineson').show(); sd_lines=1;">Green Lines: OFF</div>
 	-->
-	<div class="mt4 blockbutton" onclick="btc(event); show_modal($('.performancesettings').html(),{wrap:false,styles:'width:600px',hideinbackground:true});">Performance Settings</div>
-	<div class="mt4 blockbutton" onclick="btc(event); show_modal($('.advancedsettings').html(),{wrap:false,styles:'width:600px',hideinbackground:true});">Advanced Settings</div>
+	<div class="mt4 blockbutton" onclick="btc(event); show_modal($('.performancesettings').html(),{wrap:false,styles:'width:600px',hideinbackground:true});">Performance ตั้งค่า</div>
+	<div class="mt4 blockbutton" onclick="btc(event); show_modal($('.advancedsettings').html(),{wrap:false,styles:'width:600px',hideinbackground:true});">Advanced ตั้งค่า</div>
 	{% if domain.electron %}
 		<div class="mt4 blockbutton promode {% if domain.newcomer_ui %}hidden{% endif %}"
 			onclick="btc(event); electron_dev_tools()">
@@ -54,7 +54,7 @@
 	{% endif %}
 
 	<div class="mt4 blockbutton" style="text-align: left">
-		Note: Feel free to email <span style="color: #36B2F8">hello@adventure.land</span> for anything, the game is in development, I love to receive emails and feedback
+		ไม่te: Feel free to email <span style="color: #36B2F8">hello@adventure.land</span> for anything, the game is in development, I love to receive emails and feedback
 	</div>
 	<div class="mt4 blockbutton restartneeded hidden" style="text-align: left">
 		You need to refresh the game for changes to be effective.
@@ -73,9 +73,9 @@
 		onclick="btc(event); $('.naon').hide(); $('.naoff').show(); new_attacks=false; Cookies.set('no_weapons','1',{ expires:12*365});">Weapon / Attack Animations: <span style='color: green'>ON</span></div>
 
 	<div class="mt4 blockbutton fastoff {%if domain.fast_mode %}hidden{% endif %}"
-		onclick="btc(event); $('.fastoff').hide(); $('.faston').show(); $('.restartneeded').show(); Cookies.set('no_fast_mode','',{ expires:12*365});">Pre-Cached Maps: <span style='color: #F67D4C'>OFF</span></div>
+		onclick="btc(event); $('.fastoff').hide(); $('.faston').show(); $('.restartneeded').show(); Cookies.set('no_fast_mode','',{ expires:12*365});">Pre-Cached แผนที่s: <span style='color: #F67D4C'>OFF</span></div>
 	<div class="mt4 blockbutton faston {%if not domain.fast_mode %}hidden{% endif %}"
-		onclick="btc(event); $('.faston').hide(); $('.fastoff').show(); $('.restartneeded').show(); Cookies.set('no_fast_mode','1',{ expires:12*365});">Pre-Cached Maps: <span style='color: green'>ON</span></div>
+		onclick="btc(event); $('.faston').hide(); $('.fastoff').show(); $('.restartneeded').show(); Cookies.set('no_fast_mode','1',{ expires:12*365});">Pre-Cached แผนที่s: <span style='color: green'>ON</span></div>
 	<div class="mt4 blockbutton" style="text-align: left">
 		Processes and caches the entire map into memory. Afterwards movement and animations are as smooth as possible. Turn off if your machine has low GPU memory or low processing power.
 	</div>
@@ -107,7 +107,7 @@
 		onclick="btc(event); $('.tuton').hide(); $('.tutoff').show(); tutorial_ui=false; update_tutorial_ui(); Cookies.set('no_tutorial','1',{ expires:12*365});">Tutorial: <span style='color: green'>ON</span></div>
 
 	<div class="mt4 blockbutton"
-		onclick="btc(event); show_confirm('Reset the tutorial?','Yes!','Oh No!',function(){api_call('reset_tutorial')});">Reset Tutorial <span style='color: #F7B32F'>[!]</span></div>
+		onclick="btc(event); show_confirm('Reset the tutorial?','ใช่!','Oh ไม่!',function(){api_call('reset_tutorial')});">Reset Tutorial <span style='color: #F7B32F'>[!]</span></div>
 
 	<div class='windowsonly hidden'>
 		<div class="mt4 blockbutton win7on hidden"

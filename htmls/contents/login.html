@@ -2,16 +2,16 @@
 	<div id="pagewrapped" class="loginorselection hidewithmodals">
 		{% if domain.purchase_mode and not domain.electron %}
 			<div id="loginbuttons">
-				<div class="whiteheader mb4"><a class='cancela' href="https://store.steampowered.com/app/777150/Adventure_Land__The_Code_MMORPG/" target="_blank">&gt; Purchase on Steam <span style='color: #85C76B'>[Live!]</span></a></div>
-				<div class="whiteheader mb4"><a class='cancela' href="https://itunes.apple.com/app/adventure-land-code-mmorpg/id1442098247?mt=12" target="_blank">&gt; Purchase on Mac App Store <span style='color: #85C76B'>[Live!]</span></a></div>
+				<div class="whiteheader mb4"><a class='cancela' href="https://store.steampowered.com/app/777150/Adventure_Land__The_Code_MMORPG/" target="_blank">&gt; ซื้อ on Steam <span style='color: #85C76B'>[Live!]</span></a></div>
+				<div class="whiteheader mb4"><a class='cancela' href="https://itunes.apple.com/app/adventure-land-code-mmorpg/id1442098247?mt=12" target="_blank">&gt; ซื้อ on Mac App Store <span style='color: #85C76B'>[Live!]</span></a></div>
 				{% if domain.Dev %}
-					<div class="whiteheader mb4 clickable" onclick="$('#loginbuttons').hide(); $('#edusignup').show(); on_resize()">&gt; Signup <span style='color: #2FA6C8'>[Development Use]</span></div>
+					<div class="whiteheader mb4 clickable" onclick="$('#loginbuttons').hide(); $('#edusignup').show(); on_resize()">&gt; สมัครนักรบใหม่ <span style='color: #2FA6C8'>[Development ใช้]</span></div>
 				{% endif %}
 				<!--
-					<div class="whiteheader mb4 clickable" onclick="$('#loginbuttons').hide(); $('#edusignup').show(); on_resize()">&gt; Free Signup <span style='color: #2FA6C8'>[Educational Use]</span></div>
+					<div class="whiteheader mb4 clickable" onclick="$('#loginbuttons').hide(); $('#edusignup').show(); on_resize()">&gt; Free สมัครนักรบใหม่ <span style='color: #2FA6C8'>[Educational ใช้]</span></div>
 				-->
-				<div class="whiteheader mb4 clickable" onclick="$('#loginbuttons').hide(); $('#loginlogin').show(); on_resize()">&gt; Login to the Game</div>
-				<div class="whiteheader mb4">Note: <span class='gray'>Signup requires a purchased copy</span></div>
+				<div class="whiteheader mb4 clickable" onclick="$('#loginbuttons').hide(); $('#loginlogin').show(); on_resize()">&gt; เข้าสู่รบ to the Game</div>
+				<div class="whiteheader mb4">ไม่te: <span class='gray'>สมัครนักรบใหม่ requires a purchased copy</span></div>
 			</div>
 			<div id="edusignup" style="display:none">
 				<div style='border-bottom: 5px solid gray; margin-left: -10px; margin-right: -10px; font-size: 24px; padding: 16px; text-align: left; margin-bottom: 5px; background-color: #E5E5E5; color: #010805; margin-top: -10px; text-shadow:none'>
@@ -22,33 +22,33 @@
 						I really wanted to let anyone play freely, but the realities proved it impossible, even if the condition is to learn coding, it makes the game free to play in the eyes of a regular player, a high percentage of early players expected something extra after they purchased the game, I predicted a larger backlash once the game is fully released, and had to disable this feature [02/01/19]
 					-->
 				</div>
-				<div class="whiteheader mb4">&gt; Email</div>
+				<div class="whiteheader mb4">&gt; ชื่อผู้ใช้</div>
 				<input class="selectioninput" id="email1" type="text"></input>
-				<div class="whiteheader mt5 mb4">&gt; Password</div>
+				<div class="whiteheader mt5 mb4">&gt; รหัสผ่าน</div>
 				<input class="selectioninput" id="password1" type="password" onkeydown="if(event.keyCode==13) $('.subutton')[0].onclick()"></input>
-				<div class="textbutton mt5 subutton" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email1').val(),password:$('#password1').val(),only_signup:true},{disable:$(this)})">&gt; Signup</div>
+				<div class="textbutton mt5 subutton" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email1').val(),password:$('#password1').val(),only_signup:true},{disable:$(this)})">&gt; สมัครนักรบใหม่</div>
 				<div class="textbutton mt5" onclick="$('#edusignup').hide(); $('#loginbuttons').show(); on_resize()">&lt; Back</div>
 			</div>
 			<div id="loginlogin" style="display:none">
-				<div class="whiteheader mb4">&gt; Email</div>
+				<div class="whiteheader mb4">&gt; ชื่อผู้ใช้</div>
 				<input class="selectioninput" id="email2" type="text"></input>
-				<div class="whiteheader mt5 mb4">&gt; Password</div>
+				<div class="whiteheader mt5 mb4">&gt; รหัสผ่าน</div>
 				<input class="selectioninput" id="password2" type="password" onkeydown="if(event.keyCode==13) $('.lbutton')[0].onclick()"></input>
-				<div class="textbutton mt5 lbutton" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email2').val(),password:$('#password2').val(),only_login:true},{disable:$(this)})">&gt; Login</div>
-				<div class="textbutton mt5 passwordui hiddenx" onclick="if(bc(this)) return; api_call_l('password_reminder',{email:$('#email2').val()},{disable:$(this)})">&gt; Forgot My Password</div>
+				<div class="textbutton mt5 lbutton" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email2').val(),password:$('#password2').val(),only_login:true},{disable:$(this)})">&gt; เข้าสู่รบ</div>
+				<div class="textbutton mt5 passwordui hiddenx" onclick="if(bc(this)) return; api_call_l('password_reminder',{email:$('#email2').val()},{disable:$(this)})">&gt; Forgot My รหัสผ่าน</div>
 				<div class="textbutton mt5" onclick="$('#loginlogin').hide(); $('#loginbuttons').show(); on_resize()">&lt; Back</div>
 			</div>
 		{% elif 0 %}
-			<input type="text" class="input block" id="email" placeholder="Email" />
-			<input type="text" class="input block" id="password" placeholder="Password" />
-			<button class="button block" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email').val(),password:$('#password').val()},{disable:$(this)})">Start Playing!</button>
+			<input type="text" class="input block" id="email" placeholder="ชื่อผู้ใช้" />
+			<input type="text" class="input block" id="password" placeholder="รหัสผ่าน" />
+			<button class="button block" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email').val(),password:$('#password').val()},{disable:$(this)})">เริ่ม เล่นing!</button>
 		{% else %}
-			<div class="whiteheader mb4">&gt; Email</div>
+			<div class="whiteheader mb4">&gt; ชื่อผู้ใช้</div>
 			<input class="selectioninput" id="email" type="text"></input>
-			<div class="whiteheader mt5 mb4">&gt; Password</div>
+			<div class="whiteheader mt5 mb4">&gt; รหัสผ่าน</div>
 			<input class="selectioninput" id="password" type="password" onkeydown="if(event.keyCode==13) $('.slbutton')[0].onclick()"></input>
-			<div class="textbutton mt5 slbutton" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email').val(),password:$('#password').val()},{disable:$(this)})">&gt; Signup or Login</div>
-			<div class="textbutton mt5 passwordui hidden" onclick="if(bc(this)) return; api_call_l('password_reminder',{email:$('#email').val()},{disable:$(this)})">&gt; Forgot My Password</div>
+			<div class="textbutton mt5 slbutton" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email').val(),password:$('#password').val()},{disable:$(this)})">&gt; สมัครนักรบใหม่ or เข้าสู่รบ</div>
+			<div class="textbutton mt5 passwordui hidden" onclick="if(bc(this)) return; api_call_l('password_reminder',{email:$('#email').val()},{disable:$(this)})">&gt; Forgot My รหัสผ่าน</div>
 		{% endif %}
 	</div>
 </div>
@@ -96,12 +96,12 @@
 			The game launched in ~August, 2016, and we barely even scratched the surface of possibilities. Please join us and email me at hello<span>@</span>adventure.land if you have any issues/suggestions or just to say hello :]
 			The game launched in August and we barely even scratched the surface of possibilities. Please join our small community and help shape the game
 		</div>
-		<div class="infot">Email, for anything: hello@adventure.land</div>
-		<div class="infot">No Level Cap</div>
+		<div class="infot">ชื่อผู้ใช้, for anything: hello@adventure.land</div>
+		<div class="infot">ไม่ ยศ Cap</div>
 		<div class="infop">
 			Exponential levelling
 		</div>
-		<div class="infot">Random Drops, Bosses</div>
+		<div class="infot">Random ทิ้งs, Bosses</div>
 		<div class="infop">
 			Full of opportunities
 		</div>
@@ -113,15 +113,15 @@
 		<div class="infop">
 			Planned, a vibrant marketplace for people to trade
 		</div>
-		<div class="infot">Codeable Characters</div>
+		<div class="infot">Codeable นักรบs</div>
 		<div class="infop">
 			Code your character to do stuff while you are sleeping or doing something else :)
 		</div>
 		<div class="infot">PVP For Bounties</div>
 		<div class="infop">
-			Planned, a chaotic PVP Map with lots of opportunities for those who can survive it
+			Planned, a chaotic PVP แผนที่ with lots of opportunities for those who can survive it
 		</div>
-		<div class="infot">Always Free to Play</div>
+		<div class="infot">Always Free to เล่น</div>
 		<div class="infop">
 			The game will be full of opportunities, those who don't have the resources to support the game will always be able to enjoy the game to the fullest with equal opportunuties
 		</div>
@@ -130,19 +130,19 @@
 			Literally just deployed the game to test how the network fares
 		</div>
 		<ul>
-			<li>No Level Cap</li>
-			<li>Random Drops</li>
+			<li>ไม่ ยศ Cap</li>
+			<li>Random ทิ้งs</li>
 			<li>Random Bosses</li>
 			<li>Upgradeable Items</li>
 			<li>P2P Economy</li>
-			<li>Codeable Characters</li>
+			<li>Codeable นักรบs</li>
 			<li>Endless Possibilities</li>
 			<li>PVP For Bounties</li>
 			<li>But Mostly PVE</li>
-			<!--<li>No Quests'n Shit Tho</li>-->
+			<!--<li>ไม่ ภารกิจs'n Shit Tho</li>-->
 			<li>SUPER Early Access</li>
 			<li>Still In Development</li>
-			<li>Always Free to Play</li>
+			<li>Always Free to เล่น</li>
 		</ul>#}
 	</div>
 {% endif %}

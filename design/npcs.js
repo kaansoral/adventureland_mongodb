@@ -734,7 +734,7 @@ var npcs={
 		"name":"นายช่าง",
 	},
 	"items0":{
-		"name":"นายขายของ",
+		"name":"นายขายของ คนที่ 1",
 		"role":"items",
 		"pack":"items0",
 		"skin":"gabrielle",
@@ -743,7 +743,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items1":{
-		"name":"นางขายของ",
+		"name":"นางขายของ คนที่ 1",
 		"role":"items",
 		"pack":"items1",
 		"skin":"gabrielle",
@@ -752,7 +752,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items2":{
-		"name":"นายขายของ",
+		"name":"นายขายของ คนที่ 2",
 		"role":"items",
 		"pack":"items2",
 		"skin":"lady3",
@@ -761,7 +761,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items3":{
-		"name":"นางขายของ",
+		"name":"นางขายของ คนที่ 2",
 		"role":"items",
 		"pack":"items3",
 		"skin":"lady3",
@@ -770,7 +770,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items4":{
-		"name":"นายขายของ",
+		"name":"นายขายของ คนที่ 3",
 		"role":"items",
 		"pack":"items4",
 		"skin":"lady4",
@@ -779,7 +779,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items5":{
-		"name":"นางขายของ",
+		"name":"นางขายของ คนที่ 3",
 		"role":"items",
 		"pack":"items5",
 		"skin":"lady4",
@@ -788,7 +788,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items6":{
-		"name":"นายขายของ",
+		"name":"นายขายของ คนที่ 4",
 		"role":"items",
 		"pack":"items6",
 		"skin":"lady2",
@@ -797,7 +797,7 @@ var npcs={
 		"type":"fullstatic",
 	},
 	"items7":{
-		"name":"นางขายของ",
+		"name":"นางขายของ คนที่ 4",
 		"role":"items",
 		"pack":"items7",
 		"skin":"lady2",

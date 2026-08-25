@@ -12,8 +12,8 @@
 		<meta property="og:url" content="{{domain.url or 'http://adventure.land'}}"/>
 		<meta property="og:image" content="http://adventure.land/images/first_logo.png"/>
 		<meta property="og:title" content="จตุรธาตุ"/>
-		<meta property="og:description" content="MMORPG 2D แนวไทย+แฟนตาซี ธาตุเทพทั้งสี่ — เล่นได้บนเบราว์เซอร์"/>
-		<meta name="description" content="A Casual Browser Based MMORPG Where You Can Even Code Your Character! Very Early Access."/>
+		<meta property="og:description" content="MMORPG 2D แห่งบ้านบางระจัน แนวไทย+แฟนตาซี ธาตุเทพทั้งสี่ — เล่นได้บนเบราว์เซอร์"/>
+		<meta name="description" content="A Casual Browser Based MMORPG Where You Can Even Code Your นักรบ! Very Early Access."/>
 		<meta name="keywords" content="browser,mmorpg,pixel,2d,retro,code"/>
 		<script src="/js/pixi/{{domain.pixi_version}}/pixi.min.js{{domain.pixi_fversion}}"></script>
 		{% if not domain.no_graphics and 0 %} <script src="/js/pixi-display/{{domain.pixi_display_version}}/pixi-display.js"></script> {% endif %}
@@ -149,8 +149,8 @@
 					<div style='display: inline-block; color:white; padding: 4px; margin-top: 0px; margin-left: 2px; margin-right: -6px; vertical-align: top;'>?</div>
 					<div style='display: inline-block; border-left: 4px solid gray; width: 0px; height: 40px; margin: -4px 0 -4px 0;'></div>
 					
-					<!--<div style='display: inline-block; padding: 4px; margin-top: 2px; margin-left: -2px; margin-right: -4px; vertical-align: top;'>Search</div>-->
-					<input placeholder="Search" class='codesearch' style='padding: 0px; background: transparent; border: none; font-size: 32px; color: white; font-family: Pixel; width: 200px; vertical-align: top; padding-top: 2px' />
+					<!--<div style='display: inline-block; padding: 4px; margin-top: 2px; margin-left: -2px; margin-right: -4px; vertical-align: top;'>ค้นหา</div>-->
+					<input placeholder="ค้นหา" class='codesearch' style='padding: 0px; background: transparent; border: none; font-size: 32px; color: white; font-family: Pixel; width: 200px; vertical-align: top; padding-top: 2px' />
 
 					<div style='display: inline-block; float: right; color:gray; padding: 4px; margin-left: 5px; color: #e8e44d' onclick="btc(event); render_code_docs();"class='clickable'>DOCS</div>
 					<div style='display: inline-block; border-left: 4px solid gray; width: 0px; height: 36px; float: right; margin-top: -2px'></div>
@@ -177,7 +177,7 @@
 					<div style='display: inline-block; border-left: 4px solid gray; width: 0px; height: 42px; margin-bottom: -12px'></div>
 					<div style='display: inline-block; color: #3A84B7; padding: 4px; margin: -4px -4px -4px -4px;' class='clickable' onclick="btc(event); api_call_l('list_codes',{purpose:'load'},{disable:$(this)})">Load</div>
 					<div style='display: inline-block; border-left: 4px solid gray; width: 0px; height: 42px; margin-bottom: -12px'></div>
-					<div style='display: inline-block; color: #B1B1B7; padding: 4px; margin: -4px -4px -4px -4px;' class='xclickable codeslottype' xonclick="btc(event); api_call_l('list_codes',{purpose:'load'},{disable:$(this)})">Character</div>
+					<div style='display: inline-block; color: #B1B1B7; padding: 4px; margin: -4px -4px -4px -4px;' class='xclickable codeslottype' xonclick="btc(event); api_call_l('list_codes',{purpose:'load'},{disable:$(this)})">นักรบ</div>
 					<div style='display: inline-block; border-left: 4px solid gray; width: 0px; height: 42px; margin-bottom: -12px'></div>
 					<div style='display: inline-block; padding: 4px; margin: -4px -4px -4px -4px;' class="codeslotname xclickable" xonclick="btc(event); api_call_l('list_codes',{purpose:'load'},{disable:$(this)})">Default Code</div>
 					<div style='display: inline-block; float: right; margin: 0px -4px -4px 6px; color:#E48B3A; padding: 4px' class='clickable iengagebutton' onclick="btc(event); start_runner()">Engage!</div>
@@ -307,7 +307,7 @@
 					if(character && next_skill.use_town>new Date())
 					{
 						add_log("Since you engaged another player in the last 3.6 seconds, If you leave now, You will be automatically defeated.","#E58859")
-						var response="Are you sure?";
+						var response="ท่านแน่ใจหรือไม่?";
 						e.returnValue=response;
 						return response;
 					}
@@ -334,9 +334,9 @@
 				if(!block_right_clicks) return;
 				var custom=false,current=e.target||{};
 				if((current.className||"").substr(0,6)=="rclick") custom=true;
-				while(current.parentNode && !custom)
+				while(current.parentไม่de && !custom)
 				{
-					current=current.parentNode;
+					current=current.parentไม่de;
 					if((current.className||"").substr(0,6)=="rclick") custom=true;
 				}
 				if(inside!="login" && inside!="selection")

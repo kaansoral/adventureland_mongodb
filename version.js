@@ -1,4 +1,4 @@
-Version = 2541;
+Version = 2551;
 
 update_notes=[
 	"อัปเดตล่าสุด [25 ส.ค. 2569]",

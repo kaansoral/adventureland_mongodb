@@ -70,7 +70,7 @@ function open_chat_window(type, id, open) {
 		cid = type + id,
 		zindex = 70 + cwindows.length - docked.length,
 		onkeypress = 'last_say=\"' + cid + '\"; if(event.keyCode==13) private_say(\"' + id + '\",$(this).rfval())';
-	if (type == "party") (name = "Party"), (onkeypress = 'last_say=\"' + cid + '\"; if(event.keyCode==13) party_say($(this).rfval())');
+	if (type == "party") (name = "กองทหาร"), (onkeypress = 'last_say=\"' + cid + '\"; if(event.keyCode==13) party_say($(this).rfval())');
 	var html = "<div style='position:fixed; bottom: 0px; left: 0px; background: black; border: 5px solid gray; z-index: " + zindex + "' id='chatw" + cid + "' onclick='last_say=\"" + cid + "\"'>";
 	html +=
 		"<div style='border-bottom: 5px solid gray; text-align: center; font-size: 24px; line-height: 24px; padding: 2px 6px 2px 6px;'><span style='float:left' class='clickable chatb" +
@@ -1959,19 +1959,19 @@ function render_drop(def, mult, color) {
 function smart_smart_move(type, id) {
 	if (type == "npc") {
 		var npc = G.npcs[id];
-		show_confirm("Smart move to " + npc.name + "?", "Yes", "Cancel", function () {
+		show_confirm("Smart move to " + npc.name + "?", "Yes", "ยกเลิก", function () {
 			hide_modals();
 			call_code_function_f("smart_move", id);
 		});
 	} else if (type == "monster") {
 		var m = G.monsters[id];
-		show_confirm("Smart move to " + m.name + "'s?", "Yes", "Cancel", function () {
+		show_confirm("Smart move to " + m.name + "'s?", "Yes", "ยกเลิก", function () {
 			hide_modals();
 			call_code_function_f("smart_move", id);
 		});
 	} else if (type == "map") {
 		var m = G.maps[id];
-		show_confirm("Smart move to " + m.name + "?", "Yes", "Cancel", function () {
+		show_confirm("Smart move to " + m.name + "?", "Yes", "ยกเลิก", function () {
 			hide_modals();
 			call_code_function_f("smart_move", id);
 		});
@@ -5512,7 +5512,7 @@ function load_character_list() {
 }
 
 function show_delete_mail(id) {
-	show_confirm("Delete the mail?", "Yes", "Cancel", function () {
+	show_confirm("Delete the mail?", "Yes", "ยกเลิก", function () {
 		api_call("delete_mail", { mid: id });
 		hide_modal();
 		setTimeout(function () {
