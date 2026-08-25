@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex, nofollow" />
+		<title>{{ domain.title }}</title>
+		<link rel="icon" href="/images/favicon.png" />
+		<link href="/css/common.css?v={{ domain.v }}" rel="stylesheet" type="text/css" />
+		<style>
+			:root {
+				color-scheme: dark;
+				--background: #080a0c;
+				--panel: #101519;
+				--panel-light: #172027;
+				--border: #52606a;
+				--text: #edf2f2;
+				--muted: #9aa8ad;
+				--green: #67c85c;
+				--blue: #55bdf0;
+				--gold: #f0c84b;
+				--red: #e65b67;
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			html,
+			body {
+				margin: 0;
+				min-height: 100%;
+				background: var(--background);
+				color: var(--text);
+				font-family: pixel, monospace;
+				font-size: 20px;
+				line-height: 1.25;
+			}
+
+			body {
+				padding: 24px;
+			}
+
+			a {
+				color: var(--blue);
+			}
+
+			button,
+			.range-link,
+			.nav-link {
+				border: 3px solid var(--border);
+				background: #050607;
+				color: var(--text);
+				font: inherit;
+				text-decoration: none;
+				padding: 10px 14px;
+				cursor: pointer;
+			}
+
+			button:hover,
+			.range-link:hover,
+			.nav-link:hover,
+			.range-link.active {
+				border-color: var(--green);
+				color: var(--green);
+			}
+
+			button {
+				border-color: var(--blue);
+				color: var(--blue);
+			}
+
+			.admin-shell {
+				width: min(1500px, 100%);
+				margin: 0 auto;
+			}
+
+			.topbar,
+			.controls,
+			.source-grid,
+			.metric-grid,
+			.split-grid,
+			.range-links,
+			.nav-links {
+				display: flex;
+				gap: 12px;
+			}
+
+			.topbar,
+			.controls {
+				align-items: center;
+				justify-content: space-between;
+				flex-wrap: wrap;
+			}
+
+			h1,
+			h2,
+			h3,
+			p {
+				margin-top: 0;
+			}
+
+			h1 {
+				margin-bottom: 4px;
+				font-size: 38px;
+				color: var(--green);
+			}
+
+			h2 {
+				font-size: 28px;
+				margin-bottom: 16px;
+			}
+
+			h3 {
+				font-size: 20px;
+				color: var(--muted);
+				margin-bottom: 8px;
+			}
+
+			.subtitle,
+			.muted,
+			.meta {
+				color: var(--muted);
+			}
+
+			.controls,
+			.panel,
+			.source,
+			.metric,
+			.notice {
+				border: 3px solid var(--border);
+				background: var(--panel);
+			}
+
+			.controls,
+			.panel,
+			.notice {
+				padding: 18px;
+				margin-top: 18px;
+			}
+
+			.source-grid,
+			.metric-grid,
+			.split-grid {
+				align-items: stretch;
+				flex-wrap: wrap;
+			}
+
+			.source,
+			.metric {
+				padding: 16px;
+				flex: 1 1 250px;
+			}
+
+			.source.ok {
+				border-color: #376f43;
+			}
+
+			.source.missing,
+			.notice.warning {
+				border-color: #8e7735;
+			}
+
+			.source.error,
+			.notice.error {
+				border-color: var(--red);
+			}
+
+			.metric-value {
+				font-size: 34px;
+				color: var(--text);
+				margin: 4px 0 8px;
+			}
+
+			.metric.green .metric-value {
+				color: var(--green);
+			}
+
+			.metric.blue .metric-value {
+				color: var(--blue);
+			}
+
+			.metric.gold .metric-value {
+				color: var(--gold);
+			}
+
+			.metric-details {
+				color: var(--muted);
+				font-size: 17px;
+			}
+
+			.split-grid > .panel {
+				flex: 1 1 400px;
+			}
+
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				font-size: 17px;
+			}
+
+			th,
+			td {
+				border-bottom: 2px solid #303b42;
+				padding: 10px 8px;
+				text-align: left;
+				vertical-align: top;
+			}
+
+			th {
+				color: var(--muted);
+				font-weight: normal;
+			}
+
+			tr:last-child td {
+				border-bottom: 0;
+			}
+
+			.table-wrap {
+				overflow-x: auto;
+			}
+
+			.status-success,
+			.status-delivered,
+			.status-succeeded {
+				color: var(--green);
+			}
+
+			.status-failed,
+			.status-declined,
+			.status-init_failed,
+			.status-checkout_unavailable {
+				color: var(--red);
+			}
+
+			.breakdown-row,
+			.branch-row {
+				display: flex;
+				justify-content: space-between;
+				gap: 20px;
+				padding: 8px 0;
+				border-bottom: 2px solid #303b42;
+			}
+
+			.breakdown-row:last-child,
+			.branch-row:last-child {
+				border-bottom: 0;
+			}
+
+			.branch-name {
+				color: var(--green);
+			}
+
+			footer {
+				padding: 24px 0 4px;
+				color: var(--muted);
+				font-size: 16px;
+			}
+
+			@media (max-width: 700px) {
+				body {
+					padding: 12px;
+				}
+
+				h1 {
+					font-size: 30px;
+				}
+
+				.range-links,
+				.nav-links {
+					flex-wrap: wrap;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<main class="admin-shell">
+			<header class="topbar">
+				<div>
+					<h1>Adventure Land Admin</h1>
+					<div class="subtitle">Steam builds, game sales, and Shells sales in one place.</div>
+				</div>
+				<nav class="nav-links" aria-label="Admin navigation">
+					<a class="nav-link" href="/">Game</a>
+					<a class="nav-link" href="/admin/executor">Executor</a>
+					<a class="nav-link" href="/admin/renderer">Renderer</a>
+				</nav>
+			</header>
+
+			<section class="controls" aria-label="Dashboard controls">
+				<div>
+					<div class="muted">Showing</div>
+					<div>{{ dashboard.range_label }}</div>
+				</div>
+				<div class="range-links">
+					<a class="range-link{% if dashboard.range == '1' %} active{% endif %}" href="/admin?days=1">24h</a>
+					<a class="range-link{% if dashboard.range == '7' %} active{% endif %}" href="/admin?days=7">7d</a>
+					<a class="range-link{% if dashboard.range == '30' %} active{% endif %}" href="/admin?days=30">30d</a>
+					<a class="range-link{% if dashboard.range == 'all' %} active{% endif %}" href="/admin?days=all">All</a>
+				</div>
+				<form method="post" action="/admin/refresh?days={{ dashboard.range }}">
+					<button type="submit">Refresh Steam Data</button>
+				</form>
+			</section>
+
+			<section class="panel">
+				<h2>Data Sources</h2>
+				<div class="source-grid">
+					<div class="source {% if dashboard.publisher_configured %}ok{% else %}missing{% endif %}">
+						<h3>Steam Publisher API</h3>
+						<div>{{ dashboard.publisher_status }}</div>
+						<div class="meta">Builds: {{ dashboard.build_sync }}</div>
+						<div class="meta">Transactions: {{ dashboard.microtxn_sync }}</div>
+						{% if dashboard.build_error %}
+						<div class="status-failed">Builds: {{ dashboard.build_error }}</div>
+						{% endif %} {% if dashboard.microtxn_error %}
+						<div class="status-failed">Transactions: {{ dashboard.microtxn_error }}</div>
+						{% endif %}
+					</div>
+					<div class="source {% if dashboard.financial_configured %}ok{% else %}missing{% endif %}">
+						<h3>Steam Financial API</h3>
+						<div>{{ dashboard.financial_status }}</div>
+						<div class="meta">Sales: {{ dashboard.financial_sync }}</div>
+						{% if dashboard.financial_backfill %}
+						<div class="meta">{{ dashboard.financial_backfill }} changed days waiting</div>
+						{% endif %} {% if dashboard.financial_error %}
+						<div class="status-failed">{{ dashboard.financial_error }}</div>
+						{% endif %}
+					</div>
+				</div>
+			</section>
+
+			<section class="panel">
+				<h2>Shells Sales</h2>
+				<div class="metric-grid">
+					<div class="metric green">
+						<h3>Total Collected</h3>
+						<div class="metric-value">{{ dashboard.all_shells_usd }}</div>
+						<div class="metric-details">Steam deliveries + Stripe charge records</div>
+					</div>
+					<div class="metric blue">
+						<h3>Steam Shells</h3>
+						<div class="metric-value">{{ dashboard.steam_shells.usd }}</div>
+						<div class="metric-details">{{ dashboard.steam_shells.orders }} orders / {{ dashboard.steam_shells.shells }} Shells</div>
+						<div class="metric-details">{{ dashboard.steam_shells.pending }} pending / {{ dashboard.steam_shells.failed }} failed</div>
+					</div>
+					<div class="metric gold">
+						<h3>Stripe Shells</h3>
+						<div class="metric-value">{{ dashboard.stripe_shells.usd }}</div>
+						<div class="metric-details">{{ dashboard.stripe_shells.orders }} completed orders</div>
+					</div>
+					<div class="metric">
+						<h3>Steam Financial Report</h3>
+						<div class="metric-value">{{ dashboard.steam_reported_shells.net_usd }}</div>
+						<div class="metric-details">{{ dashboard.steam_reported_shells.gross_usd }} gross / {{ dashboard.steam_reported_shells.units }} net units</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="panel">
+				<h2>Steam Game Sales</h2>
+				{% if not dashboard.financial_configured %}
+				<div class="notice warning">Game revenue and unit data need <code>steam_financial_web_apikey</code> in the production secrets. The publisher key cannot access financial reports.</div>
+				{% endif %}
+				<div class="metric-grid">
+					<div class="metric green">
+						<h3>Net Sales</h3>
+						<div class="metric-value">{{ dashboard.game_sales.net_usd }}</div>
+						<div class="metric-details">After returns, discounts, and taxes reported by Steam</div>
+					</div>
+					<div class="metric">
+						<h3>Gross Sales</h3>
+						<div class="metric-value">{{ dashboard.game_sales.gross_usd }}</div>
+						<div class="metric-details">Before returns and taxes</div>
+					</div>
+					<div class="metric blue">
+						<h3>Net Copies</h3>
+						<div class="metric-value">{{ dashboard.game_sales.net_units }}</div>
+						<div class="metric-details">{{ dashboard.game_sales.gross_units }} gross / {{ dashboard.game_sales.returned_units }} returned</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="split-grid">
+				<div class="panel">
+					<h2>Countries by Net Sales</h2>
+					{% for entry in dashboard.countries %}
+					<div class="breakdown-row"><span>{{ entry.name }}</span><span>{{ entry.value }}</span></div>
+					{% else %}
+					<div class="muted">No financial data recorded yet.</div>
+					{% endfor %}
+				</div>
+				<div class="panel">
+					<h2>Platforms by Net Copies</h2>
+					{% for entry in dashboard.platforms %}
+					<div class="breakdown-row"><span>{{ entry.name }}</span><span>{{ entry.value }}</span></div>
+					{% else %}
+					<div class="muted">No financial data recorded yet.</div>
+					{% endfor %}
+				</div>
+				<div class="panel">
+					<h2>Discounts by Net Sales</h2>
+					{% for entry in dashboard.discounts %}
+					<div class="breakdown-row"><span>{{ entry.name }}</span><span>{{ entry.value }}</span></div>
+					{% else %}
+					<div class="muted">No discounted sales recorded yet.</div>
+					{% endfor %}
+				</div>
+			</section>
+
+			<section class="split-grid">
+				<div class="panel">
+					<h2>Live Steam Branches</h2>
+					{% for branch in dashboard.branches %}
+					<div class="branch-row">
+						<span><span class="branch-name">{{ branch.name }}</span><br /><span class="meta">{{ branch.description }}</span></span>
+						<span>Build {{ branch.build_id }}</span>
+					</div>
+					{% else %}
+					<div class="muted">Refresh Steam data to load branches.</div>
+					{% endfor %}
+				</div>
+				<div class="panel">
+					<h2>Recent Steam Builds</h2>
+					<div class="table-wrap">
+						<table>
+							<thead>
+								<tr>
+									<th>Build</th>
+									<th>Description</th>
+									<th>Branch</th>
+									<th>Depots</th>
+									<th>Created</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for build in dashboard.builds %}
+								<tr>
+									<td>{{ build.id }}</td>
+									<td>{{ build.description }}</td>
+									<td>{{ build.branches }}</td>
+									<td>{{ build.depots }}</td>
+									<td>{{ build.updated }}</td>
+								</tr>
+								{% else %}
+								<tr>
+									<td colspan="5" class="muted">Refresh Steam data to load builds.</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</section>
+
+			<section class="panel">
+				<h2>Recent Steam Shells Orders</h2>
+				<div class="table-wrap">
+					<table>
+						<thead>
+							<tr>
+								<th>Created</th>
+								<th>Account</th>
+								<th>Order</th>
+								<th>USD</th>
+								<th>Shells</th>
+								<th>Bonus</th>
+								<th>Delivery</th>
+								<th>Steam</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for purchase in dashboard.purchases %}
+							<tr>
+								<td>{{ purchase.created }}</td>
+								<td>{{ purchase.owner }}</td>
+								<td>{{ purchase.order_id }}</td>
+								<td>{{ purchase.usd }}</td>
+								<td>{{ purchase.shells }}</td>
+								<td>{{ purchase.bonus }}</td>
+								<td class="status-{{ purchase.state | lower }}">{{ purchase.state }}</td>
+								<td class="status-{{ purchase.steam_state | lower }}">{{ purchase.steam_state }}</td>
+							</tr>
+							{% else %}
+							<tr>
+								<td colspan="8" class="muted">No Steam Shells orders recorded yet.</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<footer>Private admin page. API keys and full Steam identifiers are never rendered.</footer>
+		</main>
+	</body>
+</html>

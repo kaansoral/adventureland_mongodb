@@ -74,6 +74,7 @@ eval("" + fs.readFileSync(path.resolve(__dirname, "api.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "mcp_api.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "crons.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "common/admin.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "admin_dashboard.js")));
 
 // Stripe
 try {
