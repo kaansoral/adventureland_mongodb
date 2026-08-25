@@ -1,5 +1,5 @@
 var server_password="adventureland";
-var account_email="hello@adventure.land";
+var account_email="support@jatura-that.local";
 var account_password="gg123456";
 var server_port=9012;
 

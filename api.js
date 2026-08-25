@@ -1,4 +1,4 @@
-// api.js - Adventure Land API endpoints
+// api.js - จตุรธาตุ API endpoints
 // Ported from Python api.py to Node.js/MongoDB REF pattern
 
 // ==================== HELPER FUNCTIONS ====================

@@ -1,4 +1,4 @@
-// #NOTE: If you want to see a new function/feature, just request it at: https://github.com/kaansoral/adventureland_mongodb/issues
+// #NOTE: หากต้องการเห็น feature ใหม่ สามารถแจ้งได้ที่: https://github.com/Xupiter01/jatura-that/issues
 // Or at #feedback in Discord: https://discord.gg/4SXJGU
 
 var character = {

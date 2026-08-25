@@ -608,11 +608,9 @@ function add_greenlight_log() {
 	$("#gamelog").append(
 		"<div class='gameentry' style='color: " +
 			"white" +
-			"'>Adventure Land is on Steam Greenlight! Would really appreciate your help: <a href='http://steamcommunity.com/sharedfiles/filedetails/?id=821265543' target='_blank' class='cancela' style='color: " +
+			"'>แผ่นดินจตุรธาตุ — การสนับสนุนจากนักเดินทางทุกท่านคือสิ่งที่มีค่าที่สุด! <a href='https://github.com/Xupiter01/jatura-that' target='_blank' class='cancela' style='color: " +
 			colors.xmas +
-			"'>Browser</a> <a href='steam://url/CommunityFilePage/821265543' target='_blank' class='cancela' style='color: " +
-			colors.xmasgreen +
-			"'>Open: Steam</a></div>",
+			"'>GitHub</a></div>",
 	);
 	var entity = $("#gamelog")[0];
 	$("#gamelog").scrollTop(entity && entity.scrollHeight);
@@ -2758,7 +2756,7 @@ function say(message, code) {
 			if (document.getElementById("maincode").contentWindow.handle_command(command, rest) != -1);
 			else add_chat("", "Command not found. You can add a `handle_command` function to your CODE to capture commands.");
 		} else if (screenshot_mode && command == "p1") {
-			add_chat("Wizard", "Adventure Land is a 2D Pixel MMORPG", "#D3C7A2");
+			add_chat("ผู้อาวุโส", "จตุรธาตุคือ MMORPG 2D ภาคภาษาไทย ที่ผู้เล่นสร้างตัวละครและสำรวจโลกธาตุทั้งสี่!", "#D3C7A2");
 		} else if (screenshot_mode && command == "p2") {
 			add_chat("Amazon", "20% off on all Elixirs", "gray");
 			add_chat("Healer", "Economy is completely Merchant-to-Merchant, players leave their merchants in the town square to sell or buy items", "#58BCA5");

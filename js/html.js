@@ -1179,15 +1179,15 @@ function render_inventory(reset) {
 		} else {
 			html += "<div style='padding: 4px; display: inline-block' class='clickable'>"; // onclick='shells_click()'
 			html +=
-				"<a href='https://adventure.land/shells' class='cancela' target='_blank'><span class='cbold' style='color: " +
-				colors.cash +
-				"'>SHELLS</span>: <span class='cashnum'>" +
-				to_pretty_num(character.cash || 0) +
-				"</span></a></div>";
-			right_style = " display: inline-block; float: right";
-		}
-	}
-	html += "<div style='padding: 4px;" + right_style + "'><span class='cbold' style='color: gold'>GOLD</span>: <span class='goldnum'>" + to_pretty_num(character.gold) + "</span></div>";
+				html += "<a href='https://github.com/Xupiter01/jatura-that' class='cancela' target='_blank'><span class='cbold' style='color: " +
+					colors.cash +
+					"'>SHELLS</span>: <span class='cashnum'>" +
+					to_pretty_num(character.cash || 0) +
+					"</span></a></div>";
+				right_style = " display: inline-block; float: right";
+				}
+				}
+				html += "<div style='padding: 4px;" + right_style + "'><span class='cbold' style='color: gold'>ทอง</span>: <span class='goldnum'>" + to_pretty_num(character.gold) + "</span></div>";
 	html += "<div style='border-bottom: 5px solid gray; margin-bottom: 2px; margin-left: -5px; margin-right: -5px'></div>";
 	for (var i = 0; i < Math.ceil(max(character.isize, character.items.length) / columns); i++) {
 		html += "<div>";
@@ -1566,7 +1566,7 @@ function render_shells_buyer() {
 	html +=
 		"<div><span style='color: #5DAC40'>1,000</span> Shells = <span style='color: gold'>150,000,000</span> <span style='color: #71AF83' class='clickable' onclick='buy_shells(1000)'>BUY</span></div>";
 	if (!is_electron)
-		prefix = "<a href='https://adventure.land/shells' class='cancela' target='_blank'><span class='clickable' onclick='rendered_target=null;' style='color: #359ECF'>Buy With $</span></a> | ";
+		html += "<a href='https://github.com/Xupiter01/jatura-that' class='cancela' target='_blank'><span class='clickable' onclick='rendered_target=null;' style='color: #359ECF'>ซื้อเพิ่มเติม</span></a> | "; // hide shells external link
 	html += "<div>" + prefix + "<span class='clickable' onclick='topleft_npc=false;' style='color: #555556'>Nope</span></div>";
 	html += "</div>";
 	$("#topleftcornerui").html(html);
@@ -3124,9 +3124,9 @@ function render_useful_links() {
 	html +=
 		'<div class="mt4 blockbutton" style="text-align: left; margin-bottom: 4px">Code Academy\'s Javascript course - If you want to learn Javascript properly first, Code Academy\'s refined course will hopefully be more helpful :]</div>';
 	html +=
-		"<a class='gamebutton eexternal' style='display: block; margin-bottom: 4px; border-color: #4B95B2' target='_blank' href='https://github.com/kaansoral/adventureland_mongodb'>Adventure Land's Github</a>";
-	html += '<div class="mt4 blockbutton" style="text-align: left; margin-bottom: 4px">#TODO: Create a gallery of player\'s Github repos</div>';
-	html += "<a class='gamebutton eexternal' style='display: block; margin-bottom: 4px; border-color: #4B95B2' target='_blank' href='https://discord.gg/X3QyCJd'>#code_beginner on Discord</a>";
+		html += "<a class='gamebutton eexternal' style='display: block; margin-bottom: 4px; border-color: #4B95B2' target='_blank' href='https://github.com/Xupiter01/jatura-that'>จตุรธาตุ — GitHub</a>";
+		html += '<div class="mt4 blockbutton" style="text-align: left; margin-bottom: 4px">หากต้องการเรียนรู้ Javascript อย่างถูกต้อง ลองดูหลักสูตร JavaScript ครับ</div>';
+		html += "<a class='gamebutton eexternal' style='display: block; margin-bottom: 4px; border-color: #4B95B2' target='_blank' href='https://github.com/Xupiter01/jatura-that/issues'>แจ้งปัญหาบน GitHub</a>";
 
 	html += "</div>";
 	show_modal(html, { wrap: false, url: "/docs/code/links" });
@@ -3812,8 +3812,8 @@ function render_item(selector, args) {
 					html += "<div style='color: #C3C3C3'>You can find SHELLS from gems, monsters. In future, from achievements.</div>";
 				} else {
 					html += "<div style='border-top: solid 2px gray; margin-bottom: 2px; margin-top: 3px; margin-left: -1px; margin-right: -1px'></div>";
-					html += "<div style='color: #C3C3C3'>You can find SHELLS from gems, monsters. In future, from achievements. For the time being, to receive SHELLS and support our game:</div>";
-					html += "<a href='https://adventure.land/shells' class='cancela' target='_blank'><span class='clickable' style='color: #EB8D3F'>BUY or EARN SHELLS</span></a> "; // onclick='shells_click(); $(this).parent().remove()'
+					html += "<div style='color: #C3C3C3'>SHELLS หาได้จากการเก็บ gemstone, ฆ่ามอนสเตอร์. หากต้องการ SHELLS เพิ่มเติม สามารถสนับสนุนได้ที่ GitHub ของโปรเจกต์</div>";
+					html += "<a href='https://github.com/Xupiter01/jatura-that' class='cancela' target='_blank'><span class='clickable' style='color: #EB8D3F'>ซื้อเพิ่มเติม / สนับสนุนโปรเจกต์</span></a>"; // onclick='shells_click(); $(this).parent().remove()'
 					// #EB8D3F  nice orange - #33BBD6 meh blue - #54C8C1 ok teal
 				}
 			} else {
@@ -5153,11 +5153,11 @@ function render_interaction(type, sub_type, args) {
 		html += "It's that time of the day! Are you in?!";
 		html += "<span style='float: right; margin-top: 5px'><div class='slimbutton' onclick='socket.emit(\"signup\")'>SIGN ME UP!</div></span>";
 	} else if (type == "tavern") {
-		html += "Tavern. A place for adventurers to relax, drink, unwind, play games, wager, challenge each other in friendly games. Currently under construction.";
+		html += "โรงเตี๊ยม. สถานที่พักผ่อนสำหรับนักเดินทาง ให้อาหาร พักผ่อน และเล่นเกม โปรดติดต่อผู้ดูแลระบบหากต้องการความช่วยเหลือ";
 	} else if (type == "test") {
 		html += "Greetings! Looking for a good deal on weapons and armor? Then you came to the right place! No one sells better gear than me!";
 	} else if (type == "newupgrade") {
-		html += "Adventurer! I can upgrade your weapons or armors. Combine 3 accessories to make a stronger one! Tho, beware, the process isn't perfect. Sometimes the items are ... lost.";
+		html += "นักเดินทาง! ข้าสามารถเสริมอาวุธหรือเกราะให้แข็งแกร่งขึ้นได้! รวมอุปกรณ์ 3 ชิ้นเพื่อสร้างชิ้นที่แข็งแกร่งกว่า! แต่จงระวัง บางครั้งอุปกรณ์อาจ...สูญหาย";
 		html +=
 			"<span style='float: right; margin-top: 5px'><div class='slimbutton' onclick='render_upgrade_shrine(1)'>UPGRADE</div> <div class='slimbutton' onclick='render_compound_shrine(1)'>COMBINE</div></span>";
 	} else if (type == "locksmith") {
@@ -5174,7 +5174,7 @@ function render_interaction(type, sub_type, args) {
 		html +=
 			"<span style='float: right; margin-top: 5px'><div class='slimbutton' onclick='render_recipes()'>RECIPES</div> <div class='slimbutton' onclick='render_recipes(\"dismantle\")'>RECYCLING</div> <div class='slimbutton' onclick='render_craftsman()'>CRAFT</div> <div class='slimbutton' onclick='render_dismantler()'>DISMANTLE</div></span>";
 	} else if (type == "wizard") {
-		html += "Well, Hello there! I'm Wizard, I made this game. Hope you enjoy it. If you have any issues, suggestions, feel free to email me at hello@adventure.land!";
+		html += "สวัสดีนักเดินทาง! ข้าคือ ผู้อาวุโส ผู้สร้างแผ่นดินจตุรธาตุนี้ หากมีปัญหาหรือข้อเสนอแนะ โปรดติดต่อผู้ดูแลระบบ!";
 	} else if (type == "santa") {
 		html += "Happy holidays! Please excuse my companion, he is a bit grumpy. If you happen to find any candy canes, that might cheer him up!";
 		html += "<span style='float: right; margin-top: 5px'><div class='slimbutton' onclick='render_exchange_shrine(\"candycane\")'>I HAVE ONE!</div></span>";

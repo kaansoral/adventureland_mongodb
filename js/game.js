@@ -371,7 +371,7 @@ function disconnect() {
 		try {
 			socket.disconnect(), (socket = null);
 		} catch (e) {}
-	var message = "DISCONNECTED",
+	var message = "ตัดการเชื่อมต่อแล้ว",
 		title_m = "Disconnected";
 	game_loaded = false;
 	if (window.disconnect_reason == "limits") {
@@ -631,7 +631,7 @@ function process_entities() {
 				current.drawn = false;
 				current.resync = true;
 			} catch (e) {
-				console.log("EMAIL HELLO@ADVENTURE.LAND WITH THIS: " + JSON.stringify(monster));
+				console.log("CONTACT ADMIN WITH THIS MONSTER DATA: " + JSON.stringify(monster));
 				if (Dev) alert(e + " " + JSON.stringify(monster));
 			}
 		}
@@ -966,8 +966,8 @@ function loader_click() {
 			"<div style='font-size: 48px'>No servers found, 3 possible scenarios: <br /><br />(1) The game is being updated <br />(2) All existing servers overloaded <br />(3) Someone found a bug that brought down all the servers<br /><br />Best to spend this time in our Discord to figure out what happened</div>",
 		);
 	else if ($("#progressui").html() != "100%")
-		show_modal("<div style='font-size: 48px'>Game resources are loading<br /><br />This may take some time<br /><br />If the game got stuck at this stage, please email hello@adventure.land</div>");
-	else show_modal("<div style='font-size: 48px'>All game resources have been loaded<br /><br />If you can't sign in, please email hello@adventure.land</div>");
+		show_modal("<div style='font-size: 48px'>กำลังโหลดทรัพยากรเกม<br /><br />โปรดรอสักครู่<br /><br />ถ้าเกมค้างที่ขั้นตอนนี้ โปรดติดต่อผู้ดูแลระบบ</div>");
+	else show_modal("<div style='font-size: 48px'>โหลดทรัพยากรเกมเสร็จแล้ว<br /><br />ถ้าเข้าสู่ระบบไม่ได้ โปรดติดต่อผู้ดูแลระบบ</div>");
 }
 
 function init_interface() {
@@ -1300,7 +1300,7 @@ function init_socket(args) {
 		server_identifier = data.name;
 		server_name = server_names[data.region] + " " + data.name;
 		clear_game_logs();
-		add_log("Welcome to " + server_names[data.region] + " " + data.name);
+		add_log("ยินดีต้อนรับสู่ " + server_names[data.region] + " " + data.name + " — แผ่นดินจตุรธาตุ");
 		add_update_notes();
 		if (!first_welcome) {
 			first_welcome = true;
@@ -2782,7 +2782,7 @@ function init_socket(args) {
 		data.calls["!"] =
 			"You've made " +
 			data.climit +
-			" callcosts in 4 seconds. That's tooooo much. This is most probably because you are calling a function like 'move' consecutively. Some calls are also more expensive than others. If you are experiencing issues please email hello@adventure.land or ask for help in Discord/#code_beginner. Ps. You made " +
+			" ทำให้คุณถูกเรียกใช้งานบ่อยเกินไป หากมีปัญหาโปรดติดต่อผู้ดูแลระบบ นี่คือจำนวนครั้งที่คุณทำไป: " +
 			to_pretty_num(data.total) +
 			" calls in total.";
 		show_json(data.calls);
@@ -4847,7 +4847,7 @@ function add_character(data, me) {
 	}
 	if (me) {
 		sprite.explanation =
-			"Hey Adventurer! This is your very own character that is a PIXI.Sprite Object. Adventure Land uses PIXI to draw things. You can learn more about it: https://www.pixijs.com/ and draw your own stuff via CODE! (Technical) Since your character is a special object, it doesn't get drawn like other entities, therefore your real character object has static x and y values. The character object in Code is an Object that mimics and extends your actual character Object. It's kinda complicated, but the only difference is that your real character object has different x and y values.";
+			" สวัสดีนักเดินทาง! ตัวละครของคุณคือ PIXI.Sprite Object. จตุรธาตุใช้ PIXI ในการวาดภาพ คุณสามารถเรียนรู้เพิ่มเติมได้ที่: https://www.pixijs.com/ และเขียนโค้ดสร้างสิ่งของตัวเองได้! (เทคนิค) ตัวละครของคุณเป็น special object จึงไม่ถูกวาดเหมือน entity อื่น ดังนั้น object ตัวละครจริงมี x และ y แบบคงที่ (ไม่เปลี่ยน)";
 		if (mode.ltbl && 0) {
 			var lightbulb = new PIXI.Graphics();
 			var rr = 100;

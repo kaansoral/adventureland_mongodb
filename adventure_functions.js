@@ -217,7 +217,7 @@ async function send_email(domain, email, args) {
 		});
 		await client.send(
 			new SendEmailCommand({
-				Source: "hello@adventure.land",
+				Source: "noreply@jatura-that.local",
 				Destination: { ToAddresses: [email] },
 				Message: {
 					Subject: { Data: title },
@@ -236,13 +236,13 @@ async function send_email(domain, email, args) {
 function send_verification_email(domain, user) {
 	var url = domain.base_url + "/ev/" + get_id(user) + "/" + user.info.everification;
 	var html = nunjucks.render("htmls/email.html", { purpose: "verification", url: url, domain: domain, user: user });
-	send_email(domain, user.info.email, { html: html, title: "Welcome to Adventure Land! Verification Link + Early Game Suggestions Inside", text: "To Verify Your Email: " + url });
+	send_email(domain, user.info.email, { html: html, title: "ยินดีต้อนรับสู่ จตุรธาตุ! ลิงก์ยืนยันตัวตนและคำแนะนำเริ่มเล่นเกม", text: "To Verify Your Email: " + url });
 }
 
 function send_password_reminder_email(domain, user) {
 	var url = domain.base_url + "/reset/" + get_id(user) + "/" + user.info.password_key;
 	var html = nunjucks.render("htmls/email.html", { purpose: "password", domain: domain, url: url });
-	send_email(domain, user.info.email, { html: html, title: "Password Reminder from Adventure Land", text: "To reset your password, please visit: " + url });
+	send_email(domain, user.info.email, { html: html, title: "ขอเตือนรหัสผ่านจาก จตุรธาตุ", text: "To reset your password, please visit: " + url });
 }
 
 // ==================== PASSWORD ====================
@@ -997,7 +997,7 @@ async function reward_referrer_logic(user) {
 			owner: [get_id(referrer)],
 			info: {
 				subject: "A Friend Token!",
-				message: "For inviting " + referred_name + " to Adventure Land!",
+				message: "สำหรับเชิญ " + referred_name + " มาร่วม จตุรธาตุ!",
 				sender: "!",
 				receiver: get_id(referrer),
 				item: JSON.stringify({ name: "friendtoken", q: 1 }),

@@ -49,7 +49,7 @@ function update_shells_calc() {
 function stripe_pay() {
 	$("#plog").html("");
 	if (!window.Stripe) {
-		alert("Stripe hasn't loaded. Please refresh the page and email hello@adventure.land if this is persistent. Thank you.");
+		alert("Stripe โหลดไม่สำเร็จ กรุณารีเฟรชหน้าแล้วลองอีกครั้ง หากยังมีปัญหาโปรดติดต่อผู้ดูแลระบบ");
 		return;
 	}
 	if (stripe_state == "process") {
@@ -104,13 +104,13 @@ function stripe_result(result, cash) {
 		stripe_state = "declined";
 		$(".pbutton").addClass("pfail");
 		$(".pbutton").html("Declined.");
-		p_log("If you need help, feel free to email hello@adventure.land", "#88E5BC");
+		p_log("หากต้องการความช่วยเหลือ โปรดติดต่อผู้ดูแลระบบ", "#88E5BC");
 	} else {
 		$("#plog").html("");
 		stripe_state = "failed";
 		$(".pbutton").addClass("pfail");
 		$(".pbutton").html("Failed.");
-		p_log("If you need help, feel free to email hello@adventure.land", "#88E5BC");
+		p_log("หากต้องการความช่วยเหลือ โปรดติดต่อผู้ดูแลระบบ", "#88E5BC");
 	}
 }
 

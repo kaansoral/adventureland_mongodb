@@ -101,7 +101,7 @@ models = {
 		realm: "main",
 		name: "I",
 		region: "EU",
-		address: "de.adventure.land",
+		address: "jatura-that.local",
 		path: "/socket.io/",
 		version: "100",
 		last_update: new Date(),

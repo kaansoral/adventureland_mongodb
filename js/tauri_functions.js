@@ -257,9 +257,7 @@ function tauri_setup_external_links() {
         if (!a) return;
         var href = a.getAttribute('href') || '';
         // Let in-game hrefs pass; open everything else in system browser
-        var isSafe = href.indexOf('adventure.land') !== -1
-            || href.indexOf('thegame.com') !== -1
-            || href.startsWith('/') || href.startsWith('#') || href === '';
+        var isSafe = href.indexOf('jatura-that') !== -1 || href.indexOf('adventure.land') !== -1 || href.indexOf('localhost') !== -1 || href.startsWith('/') || href.startsWith('#') || href === '';
         if (!isSafe && (href.startsWith('http') || href.startsWith('//'))) {
             e.preventDefault();
             tauri_open_external(href);
