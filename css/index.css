@@ -507,6 +507,23 @@ canvas { display:block; } /*replaces the overflow: hidden solution [07/07/16] */
 	background: black;
 	text-align: center;
 }
+.audio-setting-row{
+	display: flex;
+	gap: 4px;
+	margin-top: 4px;
+}
+.audio-setting-toggle,
+.audio-setting-volume{
+	box-sizing: border-box;
+	min-width: 0;
+}
+.audio-setting-toggle{
+	flex: 4 1 0;
+}
+.audio-setting-volume{
+	flex: 1 1 0;
+	white-space: nowrap;
+}
 a.textbutton{
 	color: inherit;
 	text-decoration:none;
@@ -538,6 +555,39 @@ a.gamebutton{
 	padding: 4px 8px 4px 8px;
 	border: 2px solid gray;
 	margin-bottom: 4px;
+}
+.update-notes{
+	color: #E4E4E4;
+	font-size: 24px;
+	line-height: 30px;
+	padding: 10px 14px 14px;
+}
+.update-notes-title{
+	color: #F1EFE9;
+	font-size: 36px;
+	line-height: 40px;
+	text-align: center;
+}
+.update-notes-subtitle{
+	color: #929292;
+	font-size: 20px;
+	line-height: 24px;
+	margin: 2px 0 24px;
+	text-align: center;
+}
+.update-notes-entry{
+	display: grid;
+	grid-template-columns: 108px minmax(0, 1fr);
+	column-gap: 10px;
+	margin-bottom: 10px;
+}
+.update-notes-date{
+	color: #929292;
+	white-space: nowrap;
+}
+.update-notes-footer{
+	margin-top: 22px;
+	text-align: center;
 }
 .gamebutton-active.gamebutton-small{
 	border: 2px solid #EAF1EC;

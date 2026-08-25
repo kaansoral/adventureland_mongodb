@@ -1548,6 +1548,8 @@ function init_socket(args) {
 		var settings = get_settings(real_id);
 		if (settings.skillbar) skillbar = settings.skillbar;
 		if (settings.keymap) keymap = settings.keymap;
+		set_audio_volume("music", settings.music_volume, true);
+		set_audio_volume("sfx", settings.sfx_volume, true);
 		if (!is_electron && !is_tauri) {
 			if (settings.music == "on" || sound_music) sound_on();
 			if (settings.sfx == "on" || sound_sfx) sfx_on();

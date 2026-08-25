@@ -27,15 +27,21 @@
 	-->
 	
 
-	<div class="mt4 blockbutton musicoff {%if domain.music_on %}hidden{% endif %}"
-		onclick="btc(event); sound_on()">Music: <span style='color: gray'>OFF</span></div>
-	<div class="mt4 blockbutton musicon {%if not domain.music_on %}hidden{% endif %}"
-		onclick="btc(event); sound_off()">Music: <span style='color: gray'>ON</span> [Work in Progress]</div>
+	<div class="audio-setting-row">
+		<div class="blockbutton audio-setting-toggle musicoff {%if domain.music_on %}hidden{% endif %}"
+			onclick="btc(event); sound_on()">Music: <span style='color: gray'>OFF</span></div>
+		<div class="blockbutton audio-setting-toggle musicon {%if not domain.music_on %}hidden{% endif %}"
+			onclick="btc(event); sound_off()">Music: <span style='color: gray'>ON</span> [Work in Progress]</div>
+		<div class="blockbutton audio-setting-volume musicvolume" onclick="btc(event); cycle_audio_volume('music')">100%</div>
+	</div>
 
-	<div class="mt4 blockbutton sfxoff {% if domain.sfx_on %}hidden{% endif %}"
-		onclick="btc(event); sfx_on()">SFX: <span style='color: gray'>OFF</span></div>
-	<div class="mt4 blockbutton sfxon {% if not domain.sfx_on %}hidden{% endif %}"
-		onclick="btc(event); sfx_off()">SFX: <span style='color: gray'>ON</span> [Work in Progress]</div>
+	<div class="audio-setting-row">
+		<div class="blockbutton audio-setting-toggle sfxoff {% if domain.sfx_on %}hidden{% endif %}"
+			onclick="btc(event); sfx_on()">SFX: <span style='color: gray'>OFF</span></div>
+		<div class="blockbutton audio-setting-toggle sfxon {% if not domain.sfx_on %}hidden{% endif %}"
+			onclick="btc(event); sfx_off()">SFX: <span style='color: gray'>ON</span> [Work in Progress]</div>
+		<div class="blockbutton audio-setting-volume sfxvolume" onclick="stpr(event); cycle_audio_volume('sfx'); pcs()">100%</div>
+	</div>
 	<!--
 	<div class="mt4 blockbutton dlineson {% if not domain.d_lines %}hidden{% endif %}"
 		onclick="btc(event); Cookies.set('d_lines_off','1',{ expires:12*365}); $('.dlineson').hide(); $('.dlinesoff').show(); d_lines=0;">Lines: ON</div>

@@ -607,27 +607,27 @@ function add_update_notes() {
 		if (note.note.indexOf("Egg Hunt Event") != -1) color = "#DE5CB8";
 		add_log(note.note, color);
 	});
-	if (!no_html) add_log("<span class='clickable' onclick='show_update_notes()'>All Update Notes</span>", "#63ABE4");
+	if (!no_html) add_log("<span class='clickable' onclick='show_update_notes()'>All Update Notes</span>", "#E4E4E4");
 }
 
 function render_update_notes() {
 	var html = "";
 	update_notes.forEach(function (entry) {
-		html += "<div style='margin-bottom: 8px'><span style='color: gray'>" + html_escape(entry.date) + "</span> " + html_escape(entry.note) + "</div>";
+		html += "<div class='update-notes-entry'><span class='update-notes-date'>" + html_escape(entry.date) + "</span><span>" + html_escape(entry.note) + "</span></div>";
 	});
-	if (update_notes_more) html += "<div class='gamebutton' style='margin-top: 16px; text-align: center' onclick='load_more_update_notes()'>Load More</div>";
-	else html += "<div style='color: gray; margin-top: 16px; text-align: center'>The Beginning</div>";
+	if (update_notes_more) html += "<div class='update-notes-footer'><div class='gamebutton' onclick='load_more_update_notes()'>Load More</div></div>";
+	else html += "<div class='update-notes-footer update-notes-date'>The Beginning</div>";
 	$(".update-notes-list").html(html);
 	position_modals();
 }
 
 function show_update_notes() {
 	var html =
-		"<div style='font-size: 32px; text-align: center; margin-bottom: 4px'>Update Notes</div>" +
-		"<div style='color: gray; text-align: center; margin-bottom: 20px'>Last Update " +
+		"<div class='update-notes'><div class='update-notes-title'>Update Notes</div>" +
+		"<div class='update-notes-subtitle'>Last Update " +
 		html_escape(last_deploy) +
-		"</div><div class='update-notes-list'></div>";
-	show_modal(html, { wwidth: 720, hideinbackground: true, url: "/allnotes" });
+		"</div><div class='update-notes-list'></div></div>";
+	show_modal(html, { wwidth: min(760, $(window).width() - 52), hideinbackground: true, url: "/allnotes" });
 	render_update_notes();
 }
 
@@ -6042,6 +6042,44 @@ function pcs(type) {
 	if (type == "success" && sounds.success) sounds.success.play();
 }
 
+var audio_sound_names = {
+	music: ["christmas", "horror01", "horror02", "casual05", "casual02", "rpg07", "rpg08", "rpg10", "rpg14", "rpg16"],
+	sfx: ["click", "fx_explosion", "coin_collect", "drop_egg", "hit_8bit", "magic_8bit", "use_8bit", "chat", "walk", "drop", "open", "whoosh", "reflect", "crackle01", "crackle0", "level_up"],
+};
+
+function normalize_audio_volume(value) {
+	value = parseInt(value);
+	if (!in_arr(value, [20, 40, 60, 80, 100])) return 100;
+	return value;
+}
+
+function apply_audio_volume(type) {
+	var volume = type == "music" ? music_volume : sfx_volume;
+	(audio_sound_names[type] || []).forEach(function (name) {
+		var sound = sounds[name];
+		if (!sound) return;
+		if (sound.base_volume === undefined) sound.base_volume = sound.volume();
+		var adjusted_volume = sound.base_volume * volume / 100;
+		sound.volume(adjusted_volume);
+		if (type == "sfx") sound.original_volume = adjusted_volume;
+	});
+}
+
+function set_audio_volume(type, value, just_ui) {
+	value = normalize_audio_volume(value);
+	if (type == "music") music_volume = value;
+	else if (type == "sfx") sfx_volume = value;
+	else return;
+	if (!just_ui && character) set_setting(real_id, type + "_volume", value);
+	apply_audio_volume(type);
+	$("." + type + "volume").html(value + "%");
+}
+
+function cycle_audio_volume(type) {
+	var volume = type == "music" ? music_volume : sfx_volume;
+	set_audio_volume(type, volume == 100 ? 20 : volume + 20);
+}
+
 function init_sounds() {
 	if (!window.Howl) {
 		sound_music = false;
@@ -6135,6 +6173,7 @@ function init_fx() {
 		src: [url_factory("/sounds/fx/MUSIC_EFFECT_Bell_Voice_Positive_09_stereo.wav")],
 		volume: 0.2,
 	});
+	apply_audio_volume("sfx");
 }
 
 function performance_trick() {
@@ -6164,7 +6203,10 @@ function init_music() {
 		autoplay: false,
 		loop: true,
 	});
-	if (xmas_tunes) return;
+	if (xmas_tunes) {
+		apply_audio_volume("music");
+		return;
+	}
 	sounds.horror01 = new Howl({
 		src: [url_factory("/sounds/loops/horror_01_loop.ogg")], // ,url_factory("/sounds/loops/horror_01_loop.xwav")
 		volume: 0.15 * music_level,
@@ -6219,6 +6261,7 @@ function init_music() {
 		autoplay: false,
 		loop: true,
 	});
+	apply_audio_volume("music");
 	// sounds.rpg20 = new Howl({
 	// 	src: [url_factory("/sounds/loops/rpg_20_loop.xogg")],
 	// 	volume:0.4*music_level,

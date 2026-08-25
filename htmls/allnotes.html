@@ -76,11 +76,11 @@
 		{% endif %}
 	</head>
 	<body>
-		<div id="devlogs">
-			<div style="font-size: 32px; color: white; margin-bottom: 4px">Update Notes</div>
-			<div id="devheader" style="margin-top: 0; margin-bottom: 20px">Last Update {{ domain.last_deploy|escape }}</div>
+		<div id="devlogs" class="update-notes">
+			<div class="update-notes-title">Update Notes</div>
+			<div class="update-notes-subtitle">Last Update {{ domain.last_deploy|escape }}</div>
 			{% for entry in update_notes %}
-				<p><span class="devtitle">{{ entry.date|escape }}</span> {{ entry.note|escape }}</p>
+				<div class="update-notes-entry"><span class="update-notes-date">{{ entry.date|escape }}</span><span>{{ entry.note|escape }}</span></div>
 			{% endfor %}
 		</div>
 	</body>

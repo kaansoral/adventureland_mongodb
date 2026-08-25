@@ -8,7 +8,7 @@
 	var base_url="{{domain.base_url}}";
 	var server_address="{{server and server.address or ''}}",server_path="{{server and server.path or ''}}";
 	var server_names={"US":"Americas","EU":"Europas","ASIA":"Eastlands"};
-	var sound_music='{%if domain.music_on %}1{%endif%}',sound_sfx='{% if domain.sfx_on %}1{%endif%}',xmas_tunes=false,music_level=0.3;
+	var sound_music='{%if domain.music_on %}1{%endif%}',sound_sfx='{% if domain.sfx_on %}1{%endif%}',xmas_tunes=false,music_level=0.3,music_volume=100,sfx_volume=100;
 	var perfect_pixels='{% if domain.perfect_pixels%}1{%endif%}';
 	var screenshot_mode='{% if domain.screenshot %}1{% endif %}';
 	var pro_mode='{% if not domain.newcomer_ui or 1 %}1{% endif %}';
