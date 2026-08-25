@@ -1,6 +1,6 @@
 var conditions = {
 	tangled: {
-		name: "Tangled",
+		name: "พันกัน",
 		skin: "condition_bad",
 		explanation: "Sets maximum speed to 24.",
 		ui: false,
@@ -10,7 +10,7 @@ var conditions = {
 	},
 	sugarrush: {
 		skin: "candycanesword",
-		name: "Sugar Rush",
+		name: "น้ำตาลพลุ่ง",
 		frequency: 240,
 		duration: 10 * 1000,
 		mp_cost: -200,
@@ -20,7 +20,7 @@ var conditions = {
 	},
 	power: {
 		skin: "powerglove",
-		name: "Power",
+		name: "พลังเพิ่ม",
 		frequency: 360,
 		duration: 4 * 1000,
 		mp_cost: -200,
@@ -30,7 +30,7 @@ var conditions = {
 	},
 	weakness: {
 		skin: "condition_bad",
-		name: "Weakness",
+		name: "อ่อนแอ",
 		debuff: true,
 		ui: true,
 		speed: -30,
@@ -41,7 +41,7 @@ var conditions = {
 	},
 	xpower: {
 		skin: "goldenpowerglove",
-		name: "Power",
+		name: "พลังเพิ่ม",
 		frequency: 480,
 		duration: 6 * 1000,
 		mp_cost: -300,
@@ -51,13 +51,13 @@ var conditions = {
 	},
 	stack: {
 		skin: "skill_stack",
-		name: "Pure Damage",
+		name: "ดาเมจแท้",
 		explanation: "Bonus damage for each rogue attack.",
 		debuff: true,
 	},
 	woven: {
 		skin: "spidersilk",
-		name: "Woven",
+		name: "ถักทอ",
 		explanation: "Reduces speed by 3 per stack. Stacks up to 20 on monsters, capped at 5 for players.",
 		ui: true,
 		debuff: true,
@@ -66,7 +66,7 @@ var conditions = {
 	},
 	energized: {
 		skin: "skill_energize",
-		name: "Energized",
+		name: "พลังงานเต็ม",
 		buff: true,
 		frequency: 80,
 		duration: 800,
@@ -76,7 +76,7 @@ var conditions = {
 	},
 	mcourage: {
 		skin: "skill_mcourage",
-		name: "Merchant's Courage",
+		name: "พ่อค้ากล้าหาญ",
 		speed: 25,
 		evasion: 40,
 		courage: 5,
@@ -89,7 +89,7 @@ var conditions = {
 	},
 	mfrenzy: {
 		skin: "skill_mfrenzy",
-		name: "Merchant's Frenzy",
+		name: "พ่อค้าคลั่ง",
 		frequency: 800,
 		duration: 5000,
 		mp_cost: -20,
@@ -100,14 +100,14 @@ var conditions = {
 	},
 	mshield: {
 		skin: "skill_mshield",
-		name: "Mana Shield",
+		name: "โล่พลังจิต",
 		ui: true,
 		buff: true,
 		explanation: "Mana absorbs damage before health.",
 	},
 	phasedout: {
 		skin: "skill_phaseout",
-		name: "Phased Out",
+		name: "เลือนหาย",
 		frequency: -40,
 		speed: -16,
 		evasion: 64,
@@ -118,7 +118,7 @@ var conditions = {
 	},
 	hardshell: {
 		skin: "skill_hardshell",
-		name: "Hard Shell",
+		name: "เปลือกแข็ง",
 		armor: 800,
 		set_speed: 10,
 		duration: 8000,
@@ -127,7 +127,7 @@ var conditions = {
 	},
 	reflection: {
 		skin: "buff_reflection",
-		name: "Reflective Shield",
+		name: "โล่สะท้อน",
 		reflection: 20,
 		cap_reflection: 50,
 		duration: 5000,
@@ -137,7 +137,7 @@ var conditions = {
 	},
 	eburn: {
 		skin: "essenceoffire",
-		name: "Burn",
+		name: "ไฟลวก",
 		intensity: "burnd",
 		interval: 200,
 		damage: 50,
@@ -149,7 +149,7 @@ var conditions = {
 	},
 	newcomersblessing: {
 		skin: "newcomersblessing",
-		name: "Newcomers' Blessing",
+		name: "พรของผู้มาใหม่",
 		duration: 30 * 60 * 1000,
 		luck: 10,
 		gold: 10,
@@ -161,7 +161,7 @@ var conditions = {
 	},
 	eheal: {
 		skin: "essenceoflife",
-		name: "Rejuvenate",
+		name: "ฟื้นฟู",
 		interval: 320,
 		heal: 200,
 		duration: 4 * 1000,
@@ -171,7 +171,7 @@ var conditions = {
 	},
 	rspeed: {
 		skin: "buff_speed",
-		name: "Rogue Swiftness",
+		name: "โจรฉับไว",
 		speed: 7,
 		frequency: 8,
 		duration: 45 * 60 * 1000,
@@ -181,7 +181,7 @@ var conditions = {
 	},
 	massproduction: {
 		skin: "skill_massproduction",
-		name: "Mass Production",
+		name: "ผลิตมวลรวม",
 		explanation: "Reduces the time of your next upgrade or compound by 50%.",
 		duration: 10 * 1000,
 		buff: true,
@@ -189,7 +189,7 @@ var conditions = {
 	},
 	massproductionpp: {
 		skin: "skill_massproductionpp",
-		name: "Mass Production++",
+		name: "ผลิตมวลรวม+",
 		explanation: "Reduces the time of your next upgrade or compound by 90%.",
 		duration: 10 * 1000,
 		buff: true,
@@ -197,7 +197,7 @@ var conditions = {
 	},
 	massexchange: {
 		skin: "skill_massexchange",
-		name: "Mass exchange",
+		name: "แลกมวลรวม",
 		explanation: "Reduces the time of your next exchange by 50%.",
 		duration: 10 * 1000,
 		buff: true,
@@ -205,7 +205,7 @@ var conditions = {
 	},
 	massexchangepp: {
 		skin: "skill_massexchangepp",
-		name: "Mass exchange++",
+		name: "แลกมวลรวม+",
 		explanation: "Reduces the time of your next exchange by 90%.",
 		duration: 10 * 1000,
 		buff: true,
@@ -213,7 +213,7 @@ var conditions = {
 	},
 	darkblessing: {
 		skin: "skill_dbuff",
-		name: "Dark Blessing",
+		name: "พระแสงมืด",
 		output: 25,
 		duration: 8 * 1000,
 		buff: true,
@@ -222,7 +222,7 @@ var conditions = {
 	},
 	warcry: {
 		skin: "skill_warcry",
-		name: "War Cry",
+		name: "เสียงคำราม",
 		frequency: 10,
 		speed: 20,
 		armor: 160,
@@ -234,7 +234,7 @@ var conditions = {
 	},
 	purifier: {
 		skin: "skill_purify",
-		name: "Purifier",
+		name: "ชำระล้าง",
 		frequency: 20,
 		output: 20,
 		str: 30,
@@ -245,7 +245,7 @@ var conditions = {
 	},
 	mluck: {
 		skin: "buff_luck",
-		name: "Good Luck",
+		name: "โชคดี",
 		luck: 12,
 		duration: 60 * 60 * 1000,
 		buff: true,
@@ -255,7 +255,7 @@ var conditions = {
 	},
 	withdrawal: {
 		skin: "withdrawal",
-		name: "Withdrawal",
+		name: "ถอนตัว",
 		speed: -20,
 		frequency: -30,
 		dex: -20,
@@ -269,13 +269,13 @@ var conditions = {
 	},
 	penalty_cd: {
 		skin: "condition_bad",
-		name: "Penalty Cooldown",
+		name: "คูลดาวน์โทษ",
 		explanation: "The remaining duration of this condition is added any skill you use. Teleporting adds 3s, magiporting adds around 800ms, some item operations add 100-200ms.",
 		debuff: true,
 	},
 	xshotted: {
 		skin: "xshotted",
-		name: "X-Shot",
+		name: "ยิงซ้อน",
 		explanation: "Good luck trying to find a tavern to play in.",
 		duration: 12 * 60 * 60 * 1000,
 		debuff: true,
@@ -284,7 +284,7 @@ var conditions = {
 	},
 	patronsgrace: {
 		skin: "patronsgrace",
-		name: "Patron's Grace",
+		name: "พระคุณ",
 		explanation: "This server has been graced by a patron's support!",
 		luck: 5,
 		gold: 20,
@@ -296,7 +296,7 @@ var conditions = {
 	},
 	notverified: {
 		skin: "notverified",
-		name: "Not Verified",
+		name: "ยังไม่ยืนยัน",
 		explanation: "Reduced luck and gold until the associated email address is verified.",
 		luck: -25,
 		gold: -25,
@@ -307,7 +307,7 @@ var conditions = {
 	},
 	authfail: {
 		skin: "notverified",
-		name: "Authorization Failure",
+		name: "อนุญาตล้มเหลว",
 		explanation:
 			"Your account has failed an internal authorization routine. This might've happened if you haven't logged on from Steam or Mac App Store since this new system was implemented. Just visit the bank with a game client and the issue should resolve. If it persists unexpectedly email hello@adventure.land.",
 		luck: -85,
@@ -320,7 +320,7 @@ var conditions = {
 	},
 	hopsickness: {
 		skin: "condition_bad",
-		name: "Hop Sickness",
+		name: "ป่วยกระโดด",
 		explanation: "You are not in your home server! Go see Bean in Mainland square for a change.",
 		luck: -80,
 		gold: -80,
@@ -334,7 +334,7 @@ var conditions = {
 	},
 	fullguard: {
 		skin: "fullguard",
-		name: "Full Guard",
+		name: "ยามเต็มที่",
 		ui: true,
 		resistance: 10000,
 		armor: 10000,
@@ -344,7 +344,7 @@ var conditions = {
 	},
 	fullguardx: {
 		skin: "fullguard",
-		name: "Full Guard",
+		name: "ยามเต็มที่",
 		ui: true,
 		avoidance: 99,
 		buff: true,
@@ -352,7 +352,7 @@ var conditions = {
 		explanation: "Increasing avoidance to near perfect.",
 	},
 	stunned: {
-		name: "Stunned",
+		name: "มึนงง",
 		skin: "condition_bad",
 		ui: true,
 		blocked: true,
@@ -362,7 +362,7 @@ var conditions = {
 		explanation: "Cannot move, attack, heal, or use skills.",
 	},
 	deepfreezed: {
-		name: "Deepfreezed",
+		name: "แข็งลึก",
 		skin: "condition_bad",
 		duration: 12000,
 		ui: true,
@@ -372,14 +372,14 @@ var conditions = {
 		explanation: "Cannot move, attack, heal, or use skills.",
 	},
 	invincible: {
-		name: "Invincible",
+		name: "อยู่ยงคงกระพัน",
 		skin: "condition_positive",
 		explanation: "When you spawn in a PVP area. This prevents you from receiving damage or marked as engaged in PVP. If you get attacked, disconnect before this runs out - or fight!",
 		duration: 6000,
 		persistent: true,
 	},
 	frozen: {
-		name: "Frozen",
+		name: "น้ำแข็งกัด",
 		skin: "frostbow",
 		ui: true,
 		debuff: true,
@@ -390,7 +390,7 @@ var conditions = {
 		explanation: "Reduces speed by 40 and frequency by 70%.",
 	},
 	burned: {
-		name: "Burned",
+		name: "ไฟไหม้",
 		skin: "fireblade",
 		interval: 210,
 		ui: true,
@@ -399,7 +399,7 @@ var conditions = {
 		explanation: "Burns the target for damage equal to its intensity per second.",
 	},
 	shocked: {
-		name: "Shocked",
+		name: "ช็อก",
 		skin: "essenceofthunder",
 		explanation: "Imminent magical damage.",
 		duration: 1600,
@@ -407,7 +407,7 @@ var conditions = {
 		debuff: true,
 	},
 	fingered: {
-		name: "Deep Meditation",
+		name: "เข้าฌาน",
 		skin: "condition_neutral",
 		resistance: 1600,
 		evasion: 96,
@@ -416,7 +416,7 @@ var conditions = {
 		explanation: "Stunned for the duration.",
 	},
 	stoned: {
-		name: "Stoned",
+		name: "หินเข้า",
 		skin: "condition_neutral",
 		duration: 4000,
 		blocked: true,
@@ -426,7 +426,7 @@ var conditions = {
 	},
 	easterluck: {
 		skin: "easterluck",
-		name: "Easter Luck",
+		name: "โชคอีสเตอร์",
 		luck: 100,
 		duration: 24 * 60 * 60 * 1000,
 		buff: true,
@@ -436,7 +436,7 @@ var conditions = {
 	},
 	sanguine: {
 		skin: "sanguine",
-		name: "Vampiric Aura",
+		name: "ออร่าดูดเลือด",
 		attr0: "lifesteal",
 		buff: true,
 		ui: true,
@@ -446,7 +446,7 @@ var conditions = {
 	},
 	mlifesteal: {
 		skin: "lifestealscroll",
-		name: "Lifesteal",
+		name: "ขโมยชีวิต",
 		lifesteal: 2.5,
 		duration: 60 * 60 * 1000,
 		buff: true,
@@ -456,7 +456,7 @@ var conditions = {
 	holidayspirit: {
 		skin: "holidayspirit",
 		//"name":"Xmas Spirit",
-		name: "Holiday Spirit",
+		name: "จิตวิญญาณวันหยุด",
 		luck: 20,
 		gold: 20,
 		xp: 20,
@@ -468,7 +468,7 @@ var conditions = {
 	},
 	halloween0: {
 		skin: "halloween0",
-		name: "Halloween Spirit",
+		name: "จิตวิญญาณฮาโลวีน",
 		luck: 5,
 		gold: 5,
 		xp: 100,
@@ -480,7 +480,7 @@ var conditions = {
 	},
 	halloween1: {
 		skin: "halloween1",
-		name: "Halloween Spirit",
+		name: "จิตวิญญาณฮาโลวีน",
 		luck: 5,
 		gold: 5,
 		xp: 50,
@@ -493,7 +493,7 @@ var conditions = {
 	},
 	halloween2: {
 		skin: "halloween2",
-		name: "Halloween Spirit",
+		name: "จิตวิญญาณฮาโลวีน",
 		output: 3,
 		luck: 5,
 		gold: 5,
@@ -532,7 +532,7 @@ var conditions = {
 	// },
 	slowness: {
 		skin: "slowness",
-		name: "Slowness",
+		name: "เชื่องช้า",
 		skin: "condition_neutral",
 		explanation: "Things like spiderwebs cause you to slow down.",
 		speed: -40,
@@ -540,7 +540,7 @@ var conditions = {
 		debuff: true,
 	},
 	poisoned: {
-		name: "Poison",
+		name: "พิษ",
 		skin: "poison",
 		duration: 5000,
 		frequencym: 0.9,
@@ -551,7 +551,7 @@ var conditions = {
 		explanation: "Reduces attack speed by 10%. All potions are 50% less effective. Healing effects are 75% less effective.",
 	},
 	cursed: {
-		name: "Cursed",
+		name: "คำสาป",
 		skin: "condition_bad",
 		output: -20,
 		incdmgamp: 20,
@@ -562,7 +562,7 @@ var conditions = {
 		explanation: "Reduces damage output and speed by 20%. Increases damage taken by 20%.",
 	},
 	dampened: {
-		name: "Dampened",
+		name: "ชื้น",
 		skin: "dampened",
 		explanation: "Can't blink or teleport.",
 		duration: 300,
@@ -570,7 +570,7 @@ var conditions = {
 	},
 	poisonous: {
 		skin: "skill_pcoat",
-		name: "Poisonous",
+		name: "มีพิษ",
 		ui: true,
 		buff: true,
 		duration: 5000,
@@ -578,20 +578,20 @@ var conditions = {
 	},
 	invis: {
 		skin: "skill_invis",
-		name: "Invisible",
+		name: "ล่องหน",
 		explanation: "Hidden from everyone else until you attack.",
 		buff: true,
 	},
 	licenced: {
 		skin: "licence",
-		name: "Licenced to Kill",
+		name: "ใบอนุญาตฆ่า",
 		explanation: "A special, temporary immunity.",
 		ui: true,
 		buff: true,
 	},
 	charmed: {
 		skin: "charmer",
-		name: "Charmed",
+		name: "เสน่ห์",
 		explanation: "Mellow like a warm kitty.",
 		ui: true,
 		duration: 30000,
@@ -599,7 +599,7 @@ var conditions = {
 	},
 	monsterhunt: {
 		skin: "quest_monsterhunt",
-		name: "On The Hunt",
+		name: "ออกล่า",
 		ui: true,
 		duration: 1800000,
 		persistent: true,
@@ -607,7 +607,7 @@ var conditions = {
 	},
 	marked: {
 		skin: "skill_huntersmark",
-		name: "Marked",
+		name: "ถูกตีตรา",
 		explanation: "Marked by a ranger for death. Receive 10% more damage and can't stealth.",
 		ui: true,
 		incdmgamp: 10,
@@ -615,32 +615,32 @@ var conditions = {
 		debuff: true,
 	},
 	charging: {
-		name: "Charging",
+		name: "กำลังชาร์จ",
 		skin: "condition_positive",
 		speed: 30,
 		duration: 3200,
 		explanation: "A short burst of speed.",
 	},
 	dash: {
-		name: "Dashing",
+		name: "พุ่งตัว",
 		skin: "condition_positive",
 		set_speed: 500,
 		persistent: true,
 	},
 	blink: {
-		name: "Blinking",
+		name: "เคลื่อนย้าย",
 		skin: "condition_positive",
 		explanation: "Blink in progress",
 	},
 	block: {
-		name: "PVP Block",
+		name: "ห้าม PVP",
 		skin: "condition_neutral",
 		explanation: "After engaging in PVP, blocked from safely leaving!",
 		debuff: true,
 		persistent: true,
 	},
 	town: {
-		name: "Town",
+		name: "ในเมือง",
 		skin: "condition_positive",
 		explanation: "Town in progress.",
 		channel: true,
@@ -648,7 +648,7 @@ var conditions = {
 		duration: 3000,
 	},
 	fishing: {
-		name: "Fishing",
+		name: "ตกปลา",
 		skin: "skill_fishing",
 		explanation: "Fishing in progress.",
 		channel: true,
@@ -656,7 +656,7 @@ var conditions = {
 		duration: 15000,
 	},
 	mining: {
-		name: "Mining",
+		name: "ขุดแร่",
 		skin: "skill_mining",
 		explanation: "Mining in progress.",
 		channel: true,
@@ -664,7 +664,7 @@ var conditions = {
 		duration: 15000,
 	},
 	pickpocket: {
-		name: "Pickpocket",
+		name: "งัดกระเป๋า",
 		skin: "skill_pickpocket",
 		explanation: "Pickpocket in progress.",
 		channel: true,
@@ -673,7 +673,7 @@ var conditions = {
 	},
 	sleeping: {
 		debuff: true,
-		name: "Sleeping",
+		name: "หลับ",
 		duration_min: 3000,
 		duration: 8000,
 	},
