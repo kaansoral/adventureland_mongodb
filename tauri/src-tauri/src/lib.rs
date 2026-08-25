@@ -5,11 +5,16 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Manager, State, WebviewWindow, WebviewWindowBuilder};
 use tauri_plugin_opener::OpenerExt;
 
-const BUILD: &str = "b260823";
+const BUILD: &str = "b260825";
 const STEAM_APP_ID: u32 = 777150;
 const STEAM_IDENTITY: &str = "adventure-land-tauri-v1";
 const BASE_URL: &str = "https://adventure.land/";
+#[cfg(target_os = "macos")]
 const USER_AGENT: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15 AdventureLandTauri/1.3.1";
+#[cfg(target_os = "windows")]
+const USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0 AdventureLandTauri/1.3.1";
+#[cfg(target_os = "linux")]
+const USER_AGENT: &str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15 AdventureLandTauri/1.3.1";
 #[cfg(target_os = "macos")]
 const PLATFORM: &str = "darwin";
 #[cfg(target_os = "windows")]

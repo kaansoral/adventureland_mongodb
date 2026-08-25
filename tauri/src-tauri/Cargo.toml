@@ -16,7 +16,7 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = ["devtools"] }
 tauri-plugin-opener = "2"
 tauri-plugin-single-instance = "2"
-rfd = { version = "0.16", default-features = false }
+rfd = { version = "0.16", default-features = false, features = ["gtk3"] }
 
 steamworks = "0.13.1"
 
