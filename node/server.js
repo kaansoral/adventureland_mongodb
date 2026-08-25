@@ -10521,29 +10521,8 @@ function init_socket_io(socket_server) {
 				socket.emit("game_error", "Can't accept more than " + max_players + " players at this time");
 				return;
 			}
-			observers[socket.id].auth_engaged = true;
-			var tauri_steam_auth = null;
-			if (data.epl == "tauri_steam") {
-				var tauri_owner = await get(data.user);
-				var tauri_entity = await get(data.character);
-				var tauri_failure = "";
-				if (!tauri_entity) tauri_failure = "no_character";
-				else if (!tauri_owner || !tauri_owner.info || !(tauri_owner.info.auths || []).includes(data.auth))
-					tauri_failure = "password_issue";
-				else if (tauri_entity.owner !== get_id(tauri_owner)) tauri_failure = "no_character";
-				else if (tauri_entity.server && msince(tauri_entity.last_sync) < 120) tauri_failure = "ingame";
-				if (tauri_failure) {
-					if (observers[socket.id]) observers[socket.id].auth_engaged = false;
-					socket.emit("game_error", "Failed: " + tauri_failure);
-					return;
-				}
-				tauri_steam_auth = await prepare_tauri_steam_auth(tauri_owner, tauri_entity, data, socket);
-				if (!tauri_steam_auth) {
-					if (observers[socket.id]) observers[socket.id].auth_engaged = false;
-					return;
-				}
-			}
 			socket.observer_secret = randomStr(24);
+			observers[socket.id].auth_engaged = true;
 
 			// tx() to validate auth and mark character online (following qwazy pattern)
 			var R = await tx(async () => {
@@ -10647,14 +10626,6 @@ function init_socket_io(socket_server) {
 			if (!player.q) player.q = {};
 			if (!player.p) player.p = { dt: {} };
 			if (!player.p.dt) player.p.dt = {};
-			if (tauri_steam_auth) {
-				apply_tauri_steam_auth(player, tauri_steam_auth.steam_id);
-				socket.emit("tauri_auth", {
-					status: tauri_steam_auth.status,
-					pid: tauri_steam_auth.steam_id,
-					ticket_received: !!data.ticket,
-				});
-			}
 			if (guild) player.guild = guild_to_info(guild);
 			if (ip_info && ip_info.exception) player.ipx = ip_info.info.limit;
 			player.cash = owner.cash;
@@ -10778,7 +10749,17 @@ function init_socket_io(socket_server) {
 				player.platform = "steam";
 				verify_steam_ticket(player, data.ticket);
 			} else if (data.epl == "tauri_steam") {
-				// Verified before the character was marked online or joined the instance.
+				try {
+					await verify_tauri_steam_auth(player, owner, entity, data, socket);
+				} catch (e) {
+					player.platform = "web";
+					console.error("#A Tauri Steam authentication unavailable: " + player.name);
+					socket.emit("tauri_auth_error", {
+						reason: "steam_auth_failed",
+						stage: "verify_ticket",
+						ticket_received: !!data.ticket,
+					});
+				}
 			} else {
 				player.platform = "web";
 				if (player.pid) {

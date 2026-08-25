@@ -883,7 +883,7 @@ async function persist_tauri_steam_install(owner, entity, auth, steam_id) {
 	return !R.failed;
 }
 
-async function prepare_tauri_steam_auth(owner, entity, data, socket) {
+async function verify_tauri_steam_auth(player, owner, entity, data, socket) {
 	var steam_id = persisted_tauri_steam_id(owner, entity);
 	if (steam_id) {
 		if (!(await persist_tauri_steam_install(owner, entity, data.auth, steam_id))) {
@@ -892,10 +892,17 @@ async function prepare_tauri_steam_auth(owner, entity, data, socket) {
 				stage: "persist_saved_id",
 				ticket_received: !!data.ticket,
 			});
-			return null;
+			player.platform = "web";
+			return false;
 		}
+		apply_tauri_steam_auth(player, steam_id);
 		console.log("#A Tauri Steam persisted PID: " + (entity.info.name || entity.name) + " " + steam_id);
-		return { steam_id: steam_id, status: "persisted_steam_id" };
+		socket.emit("tauri_auth", {
+			status: "persisted_steam_id",
+			pid: steam_id,
+			ticket_received: !!data.ticket,
+		});
+		return true;
 	}
 
 	steam_id = await verify_tauri_steam_ticket(data.ticket);
@@ -906,7 +913,8 @@ async function prepare_tauri_steam_auth(owner, entity, data, socket) {
 			stage: "verify_ticket",
 			ticket_received: !!data.ticket,
 		});
-		return null;
+		player.platform = "web";
+		return false;
 	}
 	if (!(await persist_tauri_steam_install(owner, entity, data.auth, steam_id))) {
 		socket.emit("tauri_auth_error", {
@@ -914,10 +922,17 @@ async function prepare_tauri_steam_auth(owner, entity, data, socket) {
 			stage: "persist_verified_ticket",
 			ticket_received: !!data.ticket,
 		});
-		return null;
+		player.platform = "web";
+		return false;
 	}
+	apply_tauri_steam_auth(player, steam_id);
 	console.log("#A Tauri Steam ticket verified: " + (entity.info.name || entity.name) + " " + steam_id);
-	return { steam_id: steam_id, status: "steam_ticket_verified" };
+	socket.emit("tauri_auth", {
+		status: "steam_ticket_verified",
+		pid: steam_id,
+		ticket_received: !!data.ticket,
+	});
+	return true;
 }
 
 function verify_mas_receipt(player, receipt) {
