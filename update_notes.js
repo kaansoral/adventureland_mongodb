@@ -3,7 +3,7 @@ module.exports = [
 	{
 		deployed: null,
 		date: "[25/08/26]",
-		note: "Added new Steam clients for Windows and Linux alongside the macOS client.",
+		note: "Added new Steam clients for Windows and Linux alongside the macOS client, with more reliable Steam login and in-client Shells purchases.",
 	},
 	{
 		deployed: "[24/08/26]",

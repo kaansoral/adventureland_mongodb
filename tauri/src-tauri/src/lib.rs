@@ -8,6 +8,7 @@ use tauri_plugin_opener::OpenerExt;
 const BUILD: &str = "b260825";
 const STEAM_APP_ID: u32 = 777150;
 const STEAM_IDENTITY: &str = "adventure-land-tauri-v1";
+const STEAM_TICKET_WAIT_ATTEMPTS: usize = 150;
 const BASE_URL: &str = "https://adventure.land/";
 #[cfg(target_os = "macos")]
 const USER_AGENT: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15 AdventureLandTauri/1.3.1";
@@ -212,16 +213,22 @@ mod tests {
     #[test]
     fn accepts_only_steam_checkout_https_urls() {
         assert!(is_steam_checkout_url(
-            &"https://checkout.steampowered.com/checkout/".parse().unwrap()
+            &"https://checkout.steampowered.com/checkout/"
+                .parse()
+                .unwrap()
         ));
         assert!(is_steam_checkout_url(
             &"https://store.steampowered.com/checkout/".parse().unwrap()
         ));
         assert!(!is_steam_checkout_url(
-            &"http://checkout.steampowered.com/checkout/".parse().unwrap()
+            &"http://checkout.steampowered.com/checkout/"
+                .parse()
+                .unwrap()
         ));
         assert!(!is_steam_checkout_url(
-            &"https://checkout.steampowered.com.example.com/".parse().unwrap()
+            &"https://checkout.steampowered.com.example.com/"
+                .parse()
+                .unwrap()
         ));
     }
 
@@ -256,7 +263,7 @@ mod tests {
 
 #[tauri::command]
 async fn get_steam_auth(state: State<'_, AppState>) -> Result<SteamAuthData, String> {
-    for _ in 0..50 {
+    for _ in 0..STEAM_TICKET_WAIT_ATTEMPTS {
         if !lock_string(&state.steam_ticket).is_empty()
             || !lock_string(&state.steam_error).is_empty()
         {
@@ -289,8 +296,9 @@ async fn refresh_steam_auth(state: State<'_, AppState>) -> Result<SteamAuthData,
     client
         .user()
         .authentication_session_ticket_for_webapi(STEAM_IDENTITY);
+    println!("[Tauri Steam] Requested a fresh Web API ticket.");
 
-    for _ in 0..50 {
+    for _ in 0..STEAM_TICKET_WAIT_ATTEMPTS {
         if !lock_string(&state.steam_ticket).is_empty()
             || !lock_string(&state.steam_error).is_empty()
         {

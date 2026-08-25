@@ -106,11 +106,7 @@
 			<div style="padding: 20px; background: black; font-size: 32px; border: 4px solid #47867d; width: 388px" class="pui mainpui">
 				<div style="color: #66c0f4">Steam</div>
 				<div style="font-size: 24px; color: #b5c7c5; margin-top: 8px">The purchase opens in a Steam checkout window.</div>
-				{% if not user %}
-				<div style="border: 4px solid gray; text-align: center; padding: 6px 0px 6px 0px; margin-top: 12px" class="pbutton">Please Login First!</div>
-				{% else %}
-				<div style="border: 4px solid gray; text-align: center; padding: 10px 0px; margin-top: 12px" class="clickable pbutton steam-pbutton" onclick="steam_pay()">Buy $25 with Steam</div>
-				{% endif %}
+				<div style="border: 4px solid gray; text-align: center; padding: 10px 0px; margin-top: 12px" class="clickable pbutton steam-pbutton" onclick="steam_pay(event)">Buy $25 with Steam</div>
 			</div>
 			<div class="pui mainpui" style="border: 4px solid #47867d; padding: 12px; background: #071513; font-size: 24px; color: #b5c7c5; text-align: left; margin-top: 5px; width: 404px">
 				Steam handles the payment. Adventure Land never sees your payment details.

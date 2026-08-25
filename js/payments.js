@@ -126,8 +126,16 @@ function steam_poll_payment(order_id, started) {
 		});
 }
 
-function steam_pay() {
-	if (!is_tauri) return;
+function steam_pay(event) {
+	if (event) btc(event);
+	if (typeof is_tauri == "undefined" || !is_tauri) {
+		p_log("Steam purchases are available in the Steam client.", "#88E5BC");
+		return;
+	}
+	if (!user_id) {
+		p_log("Please log in before purchasing Shells.", "#88E5BC");
+		return;
+	}
 	if (steam_state == "pending" && steam_order_id) {
 		steam_state = "authorize";
 		steam_poll_payment(steam_order_id, Date.now());

@@ -24,6 +24,16 @@ function tauri_prepare_auth() {
 	if (tauri_auth_promise) return tauri_auth_promise;
 	var request = tauri_invoke("get_steam_auth")
 		.then(tauri_store_auth)
+		.then(function (auth) {
+			if (auth.ticket) return auth;
+			console.warn("[Tauri Steam] Initial ticket was unavailable; retrying once.");
+			return tauri_invoke("refresh_steam_auth")
+				.then(tauri_store_auth)
+				.catch(function (error) {
+					console.error("[Tauri Steam] Ticket retry failed: " + error);
+					return auth;
+				});
+		})
 		.finally(function () {
 			if (tauri_auth_promise == request) tauri_auth_promise = null;
 		});
@@ -56,6 +66,8 @@ function tauri_auth_payload() {
 function tauri_auth_error(response) {
 	var reason = (response && (response.reason || response.message)) || tauri_data.error || "Steam authentication failed.";
 	console.error("[Tauri Steam] Authentication failed: " + reason);
+	if (reason == "steam_auth_failed") reason = "Steam authentication failed. Please restart Adventure Land through Steam.";
+	else if (reason == "steam_link_failed") reason = "Steam authentication worked, but the account could not be linked. Please try again.";
 	show_alert(reason);
 }
 
