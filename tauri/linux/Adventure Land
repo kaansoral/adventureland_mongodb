@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+
+launcher_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+native_binary="$launcher_dir/adventure-land-native"
+
+if [ "${ADVENTURELAND_FORCE_BUNDLED:-0}" != "1" ] && native_dependencies=$(ldd "$native_binary" 2>&1) && ! printf '%s\n' "$native_dependencies" | grep -q "not found"; then
+	printf '%s\n' "Adventure Land: using system Linux libraries" >&2
+	exec "$native_binary" "$@"
+fi
+
+printf '%s\n' "Adventure Land: using bundled Linux libraries" >&2
+exec "$launcher_dir/runtime/AppRun" "$@"

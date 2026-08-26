@@ -1,40 +1,35 @@
 {
-  "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Adventure Land",
-  "version": "1.3.1",
-  "identifier": "land.adventure.rpg",
-  "build": {
-    "beforeBuildCommand": "",
-    "beforeDevCommand": "",
-    "frontendDist": "../resources"
-  },
-  "bundle": {
-    "active": true,
-    "targets": ["app"],
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ],
-    "macOS": {
-      "entitlements": "Entitlements.plist",
-      "files": {
-        "MacOS/libsteam_api.dylib": "binaries/libsteam_api.dylib"
-      }
-    },
-    "linux": {
-      "appimage": {
-        "files": {
-          "usr/lib/libsteam_api.so": "binaries/libsteam_api.so"
-        }
-      }
-    }
-  },
-  "app": {
-    "withGlobalTauri": true,
-    "windows": [],
-    "security": {}
-  }
+	"$schema": "https://schema.tauri.app/config/2",
+	"productName": "Adventure Land",
+	"version": "1.3.1",
+	"identifier": "land.adventure.rpg",
+	"build": {
+		"beforeBuildCommand": "",
+		"beforeDevCommand": "",
+		"frontendDist": "../resources"
+	},
+	"bundle": {
+		"active": true,
+		"targets": ["app"],
+		"icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+		"macOS": {
+			"entitlements": "Entitlements.plist",
+			"files": {
+				"MacOS/libsteam_api.dylib": "binaries/libsteam_api.dylib"
+			}
+		},
+		"linux": {
+			"appimage": {
+				"bundleMediaFramework": true,
+				"files": {
+					"usr/lib/libsteam_api.so": "binaries/libsteam_api.so"
+				}
+			}
+		}
+	},
+	"app": {
+		"withGlobalTauri": true,
+		"windows": [],
+		"security": {}
+	}
 }

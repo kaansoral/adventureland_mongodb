@@ -54,21 +54,33 @@ jobs:
           Copy-Item "tauri/src-tauri/binaries/steam_api64.dll" "tauri/dist/windows/steam_api64.dll"
           tar -czf tauri/dist/adventure-land-windows-x86_64.tar.gz -C tauri/dist/windows .
 
-      - name: Build Linux executable
+      - name: Build self-contained Linux bundle
         if: matrix.platform == 'linux'
         working-directory: tauri
-        run: npm run tauri -- build --no-bundle
+        run: LD_LIBRARY_PATH="$PWD/src-tauri/binaries${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" npm run tauri -- build --bundles appimage
 
       - name: Package Linux depot
         if: matrix.platform == 'linux'
         run: |
           mkdir -p tauri/dist/linux
-          cp "tauri/src-tauri/target/release/adventure-land" "tauri/dist/linux/Adventure Land"
-          cp tauri/src-tauri/binaries/libsteam_api.so tauri/dist/linux/libsteam_api.so
-          chmod 755 "tauri/dist/linux/Adventure Land"
-          strip --strip-unneeded "tauri/dist/linux/Adventure Land"
-          patchelf --set-rpath '$ORIGIN' "tauri/dist/linux/Adventure Land"
-          ldd "tauri/dist/linux/Adventure Land" | grep -F 'libsteam_api.so'
+          appimage="$(find tauri/src-tauri/target/release/bundle/appimage -maxdepth 1 -type f -name '*.AppImage' -print -quit)"
+          test -n "$appimage"
+          chmod 755 "$appimage"
+          cd tauri/dist/linux
+          "$OLDPWD/$appimage" --appimage-extract
+          mv squashfs-root runtime
+          cp "$OLDPWD/tauri/src-tauri/target/release/adventure-land" adventure-land-native
+          cp "$OLDPWD/tauri/src-tauri/binaries/libsteam_api.so" libsteam_api.so
+          cp "$OLDPWD/tauri/linux/Adventure Land" "Adventure Land"
+          chmod 755 "Adventure Land" adventure-land-native
+          strip --strip-unneeded adventure-land-native
+          patchelf --set-rpath '$ORIGIN' adventure-land-native
+          ldd adventure-land-native | grep -F 'libsteam_api.so'
+          test -x runtime/AppRun
+          find runtime -name 'libwebkit2gtk-4.1.so*' -print -quit | grep -q .
+          find runtime -name 'WebKitNetworkProcess' -print -quit | grep -q .
+          find runtime -name 'libsteam_api.so' -print -quit | grep -q .
+          cd ../../..
           tar -czf tauri/dist/adventure-land-linux-x86_64.tar.gz -C tauri/dist/linux .
 
       - uses: actions/upload-artifact@v4

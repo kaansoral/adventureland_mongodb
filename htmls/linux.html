@@ -1,110 +1,259 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 	<head>
-		<title>Linux: How to Make it Work</title>
-		<link rel="apple-touch-icon-precomposed" href="/images/favicon.png" /> <!-- 152 -->
-		<link rel="icon" href="/images/favicon.png" /> <!-- 32 -->
-		<!--[if IE]><link rel="shortcut icon" href="/images/favicon.png"><![endif]--> <!-- .ico -->
-		<meta name="msapplication-TileImage" content="/images/favicon.png"> <!-- 144 -->
-		<script src="/js/jquery/jquery-{{domain.jquery_version}}.min.js"{%if domain.electron%} onload="if(typeof require!=='undefined') window.$=window.jQuery=module.exports;"{%endif%}></script>
+		<title>Adventure Land on Linux: Native Steam, Proton and WebView2 Help</title>
+		<meta name="description" content="Run and troubleshoot Adventure Land's native Linux Steam client, or experiment with Proton, Protontricks and Microsoft Edge WebView2 Runtime." />
+		<meta
+			name="keywords"
+			content="Adventure Land Linux, Adventure Land Steam Linux, Tauri Linux crash, Steam Proton WebView2, Wine WebView2 Runtime, Could not find the WebView2 Runtime, protontricks webview2"
+		/>
+		<link rel="apple-touch-icon-precomposed" href="/images/favicon.png" />
+		<!-- 152 -->
+		<link rel="icon" href="/images/favicon.png" />
+		<!-- 32 -->
+		<!--[if IE]><link rel="shortcut icon" href="/images/favicon.png" /><![endif]-->
+		<!-- .ico -->
+		<meta name="msapplication-TileImage" content="/images/favicon.png" />
+		<!-- 144 -->
+		<script src="/js/jquery/jquery-{{domain.jquery_version}}.min.js" {%if domain.electron%} onload="if (typeof require !== 'undefined') window.$ = window.jQuery = module.exports;" {%endif%}></script>
 		<script src="/js/common_functions.js?v={{domain.v}}"></script>
 		<script src="/js/old_common_functions.js?v={{domain.v}}"></script>
 		<script src="/js/functions.js?v={{domain.v}}"></script>
-		<link href="/css/common.css?v={{domain.v}}" rel="stylesheet" type="text/css"/>
-		<link href="/css/index.css?v={{domain.v}}" rel="stylesheet" type="text/css"/>
+		<link href="/css/common.css?v={{domain.v}}" rel="stylesheet" type="text/css" />
+		<link href="/css/index.css?v={{domain.v}}" rel="stylesheet" type="text/css" />
 		<style>
-			html{
+			html {
 				background: black;
 			}
-			html,pre,body{
+			html,
+			pre,
+			body {
 				font-family: Pixel;
-				color: #CECECE;
+				color: #cecece;
 				font-size: 24px;
 				/*text-shadow: 0 0 1px rgba(0, 0, 0, 0.4);*/
 				margin: 0;
 				padding: 0;
 			}
-			pre{
+			pre {
 				white-space: pre-wrap;
 				white-space: -moz-pre-wrap;
 				white-space: -pre-wrap;
 				white-space: -o-pre-wrap;
 				word-wrap: break-word;
 			}
-			body{
-				overflow-y:scroll;
+			body {
+				overflow-y: scroll;
 			}
-			.big{
-				color:#E0676D;
+			.big {
+				color: #e0676d;
 			}
-			.feature{
-				color:#7BB18F;
+			.feature {
+				color: #7bb18f;
 			}
-			.warning{
-				color:#D6627F;
+			.warning {
+				color: #d6627f;
 			}
-			#devlogs{
+			#devlogs {
 				margin: 20px 20px 40px 20px;
 			}
-			#devlogs p{
+			#devlogs p {
 				margin-bottom: 4px;
 				margin-top: 4px;
 			}
-			#devheader{
+			#devheader {
 				margin-top: 15px;
 			}
-			#devheader,.devtitle{
+			#devheader,
+			.devtitle {
 				color: #939393;
 			}
-			.devlink{
-				color: #C64C4C;
-				color: #D85C61;
+			.devlink {
+				color: #c64c4c;
+				color: #d85c61;
 			}
-			.devbig{
-
+			.devbig {
+			}
+			.command {
+				background: #1e1e1e;
+				color: #cecece;
+				font-size: 18px;
+				padding: 10px;
+				margin: 8px 0;
+			}
+			.small {
+				font-size: 18px;
 			}
 		</style>
 		{% if not domain.Dev %}
-			<script>
-				(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-				(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-				})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-				ga('create', 'UA-81826565-1', 'auto');
-				ga('send', 'pageview');
-			</script>
+		<script>
+			(function (i, s, o, g, r, a, m) {
+				i["GoogleAnalyticsObject"] = r;
+				((i[r] =
+					i[r] ||
+					function () {
+						(i[r].q = i[r].q || []).push(arguments);
+					}),
+					(i[r].l = 1 * new Date()));
+				((a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]));
+				a.async = 1;
+				a.src = g;
+				m.parentNode.insertBefore(a, m);
+			})(window, document, "script", "https://www.google-analytics.com/analytics.js", "ga");
+			ga("create", "UA-81826565-1", "auto");
+			ga("send", "pageview");
+		</script>
 		{% endif %}
 	</head>
 	<body>
 		<div id="devlogs" style="margin-bottom: 32px">
-			<p><span class="feature">Linux:</span> Common and Distro-Specific Issues</p>
+			<p><span class="feature">Linux:</span> Native Steam, Proton and WebView2 Help</p>
 
-			<p>Adventure Land uses Electron. When you stumble onto an issue, you can google the issue by combining error phrases with "electron". Sadly each distro and setup has it's own various issues, but they are usually easy to solve.</p>
+			<p>Adventure Land's current Steam client uses Tauri. Steam includes a native Linux build, so Proton isn't normally needed.</p>
 
-			<div style="background: #EEF1F1; color: #3B3B3C; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px;">
-				<div style="color: #4DA9DF">Black or Blank Screen</div>
-				<p>First thing to try is to find the Steam games directory and simply run Adventure Land from the command line. For some reason it usually works. You can also try the --disable-gpu flag. If the game works when you disable the GPU, the issues are most likely related to GPU/driver issues. When you run the game from command line once, make sure to go back and test it from Steam again. Some players reported the game starting to work from Steam, only after they ran it from command line once. Mysterious.</p>
+			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
+				<div style="color: #4da9df">Use the Native Linux Client</div>
+				<p>
+					Open Adventure Land's Steam Properties, select Compatibility, and turn off "Force the use of a specific Steam Play compatibility tool". Then select Installed Files and Verify integrity of
+					game files. Steam should install the native Linux depot.
+				</p>
+				<p>
+					Under Installed Files, click Browse. The game folder should contain <b>Adventure Land</b> and <b>libsteam_api.so</b>. If it contains <b>Adventure Land.exe</b>, Steam is still using the
+					Windows build through Proton.
+				</p>
+				<p>
+					The current Linux package prefers your system libraries when they are complete and automatically falls back to its bundled Linux runtime when they aren't. To test the bundled path directly,
+					set this under Steam's General &gt; Launch Options:
+				</p>
+				<pre class="command">ADVENTURELAND_FORCE_BUNDLED=1 %command%</pre>
+				<p>
+					Common Steam locations include <b>~/.local/share/Steam/steamapps/common/Adventure Land/</b>, <b>~/.steam/steam/steamapps/common/Adventure Land/</b>, and
+					<b>~/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common/Adventure Land/</b> for Flatpak Steam. A custom Steam Library can be anywhere, so Installed Files &gt; Browse is the
+					reliable path.
+				</p>
 			</div>
 
-			<div style="background: #EEF1F1; color: #3B3B3C; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px;">
-				<div style="color: #4DA9DF">Disable Steam Overlay Modification</div>
-				<p>Find main.js - It's the Electron code/logic of Adventure Land - comment out the line with "app.commandLine.appendSwitch("in-process-gpu");" - this is needed to render the Steam overlay, but it can also cause issues. Currently it's disabled by default.</p>
+			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
+				<div style="color: #4da9df">Native Client Closes Instantly</div>
+				<p>
+					Open Steam's Properties &gt; Installed Files &gt; Browse. On Kubuntu, Dolphin opens the exact game folder. Press <b>F4</b> in that Dolphin window to open a terminal panel already inside it.
+					On another desktop, use your file manager's "Open in Terminal" action.
+				</p>
+				<p>Run these commands one at a time:</p>
+				<pre class="command">
+pwd
+ls -la
+file ./Adventure\ Land
+ldd ./Adventure\ Land | grep "not found"
+./Adventure\ Land 2&gt;&amp;1 | tee "$HOME/adventure-land-native.log"
+uname -m
+echo "$XDG_SESSION_TYPE"</pre>
+				<p>If the output says <b>libwebkit2gtk-4.1.so.0: cannot open shared object file</b>, install Tauri's Linux webview runtime on Debian, Ubuntu or Kubuntu:</p>
+				<pre class="command">
+sudo apt update
+sudo apt install libwebkit2gtk-4.1-0</pre>
+				<p>
+					If <b>ldd</b> prints another missing library, install that library from your distro's package manager too. Do not install Microsoft WebView2 for the native Linux build; native Tauri uses
+					WebKitGTK 4.1.
+				</p>
+				<p>Please send the complete terminal output and <b>~/adventure-land-native.log</b> to hello@adventure.land. Even an empty log is useful when paired with the other results.</p>
 			</div>
 
-			<div style="background: #EEF1F1; color: #3B3B3C; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px;">
-				<div style="color: #4DA9DF">[07/03/19]: version `ZLIB_1.2.9' not found (required by /nix/store/parrh56r6sr4ccp9ypl4sh7h5b19rijg-libpng-apng-1.6.36/lib/libpng16.so.16)</div>
-				<p>User "foldM_" on Discord stumbled onto this issue on NixOS - his solution was to set Steam to launch the game with: LD_LIBRARY_PATH=/lib:$LD_LIBRARY_PATH %command% (from Steam's Game Properties > Launch Options)</p>
+			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
+				<div style="color: #d6627f">Proton: "Could not find the WebView2 Runtime"</div>
+				<p>
+					This means Proton launched the Windows Tauri client. Windows normally supplies Microsoft Edge WebView2, but a new Proton/Wine prefix doesn't. The native Linux client above is the recommended
+					fix.
+				</p>
+				<p>
+					If you want to experiment with Proton anyway, install current <a href="https://github.com/Matoking/protontricks" target="_blank">Protontricks</a> and current
+					<a href="https://github.com/Winetricks/winetricks" target="_blank">Winetricks</a>. The WebView2 verb was added to Winetricks in 2026, so older distro packages may not include it.
+				</p>
+				<pre class="command">
+winetricks --self-update
+protontricks 777150 webview2</pre>
+				<p>Then launch Adventure Land again with Proton. If the command reports that <b>webview2</b> is unknown, your Winetricks copy is still too old.</p>
+				<p>
+					You can also download Microsoft's x64 <b>Evergreen Standalone Installer</b> from the official
+					<a href="https://developer.microsoft.com/en-us/microsoft-edge/webview2" target="_blank">WebView2 Runtime page</a>, then run that installer inside Adventure Land's Proton prefix:
+				</p>
+				<pre class="command">protontricks-launch --appid 777150 "$HOME/Downloads/MicrosoftEdgeWebView2RuntimeInstallerX64.exe"</pre>
+				<p>
+					Change the filename if your browser saved it under another name. Installing WebView2 may remove the missing-runtime message, but WebView2 under Wine/Proton is not officially supported and
+					can still hang or crash.
+				</p>
 			</div>
 
-			<div style="background: #EEF1F1; color: #3B3B3C; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px;">
-				<div style="color: #4DA9DF">[01/02/24]: [15629:1229/162230.657405:FATAL:gpu_data_manager_impl_private.cc(1034)] The display compositor is frequently crashing. Goodbye.
-(see it via launching from CLI)</div>
+			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
+				<div style="color: #4da9df">Advanced: Bundle a Fixed WebView2 Runtime</div>
+				<p>
+					Microsoft also offers an x64 <b>Fixed Version</b> download on the same WebView2 page. Extract the downloaded CAB with <b>cabextract</b> into a permanent folder. Find the extracted folder
+					that directly contains <b>msedgewebview2.exe</b>, then convert that folder to a Wine path:
+				</p>
+				<pre class="command">
+mkdir -p "$HOME/.local/share/adventure-land-webview2"
+cabextract -d "$HOME/.local/share/adventure-land-webview2" "$HOME/Downloads/Microsoft.WebView2.FixedVersionRuntime."*.x64.cab
+protontricks -c "winepath -w '$HOME/.local/share/adventure-land-webview2'" 777150</pre>
+				<p>Use the returned Windows-style path in Adventure Land's Steam Launch Options:</p>
+				<pre class="command">WEBVIEW2_BROWSER_EXECUTABLE_FOLDER='Z:\home\YOUR_NAME\.local\share\adventure-land-webview2' %command%</pre>
+				<p>
+					Replace the example with the exact path returned by <b>winepath</b>. If <b>msedgewebview2.exe</b> is inside another extracted subfolder, point to that subfolder. Merely downloading the Fixed
+					Version files isn't enough; WebView2 must be directed to the folder containing the executable.
+				</p>
+				<p class="small">
+					This is experimental. Microsoft currently tracks Proton/Wine compatibility as unsupported work, and a newer Fixed Version must be downloaded manually for security updates. For a dependable
+					setup, use Adventure Land's native Linux client.
+				</p>
+			</div>
+
+			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
+				<div style="color: #4da9df">Useful Error and Search Terms</div>
+				<p>
+					Adventure Land Linux native crash; Adventure Land Tauri Linux; Steam Linux instant crash; Could not find the WebView2 Runtime; Tauri WebView2 Proton; Wine WebView2 Runtime; protontricks
+					webview2; Microsoft Edge WebView2 Evergreen Runtime; WEBVIEW2_BROWSER_EXECUTABLE_FOLDER.
+				</p>
+			</div>
+
+			<p><span class="devtitle">Old Electron Notes:</span> Kept here for players using the old client and for history.</p>
+
+			<p>
+				The old Adventure Land client used Electron. When you stumble onto an old-client issue, you can google the issue by combining error phrases with "electron". Sadly each distro and setup has
+				it's own various issues, but they are usually easy to solve.
+			</p>
+
+			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
+				<div style="color: #4da9df">Black or Blank Screen</div>
+				<p>
+					First thing to try is to find the Steam games directory and simply run Adventure Land from the command line. For some reason it usually works. You can also try the --disable-gpu flag. If the
+					game works when you disable the GPU, the issues are most likely related to GPU/driver issues. When you run the game from command line once, make sure to go back and test it from Steam again.
+					Some players reported the game starting to work from Steam, only after they ran it from command line once. Mysterious.
+				</p>
+			</div>
+
+			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
+				<div style="color: #4da9df">Disable Steam Overlay Modification</div>
+				<p>
+					Find main.js - It's the Electron code/logic of Adventure Land - comment out the line with "app.commandLine.appendSwitch("in-process-gpu");" - this is needed to render the Steam overlay, but
+					it can also cause issues. Currently it's disabled by default.
+				</p>
+			</div>
+
+			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
+				<div style="color: #4da9df">[07/03/19]: version `ZLIB_1.2.9' not found (required by /nix/store/parrh56r6sr4ccp9ypl4sh7h5b19rijg-libpng-apng-1.6.36/lib/libpng16.so.16)</div>
+				<p>
+					User "foldM_" on Discord stumbled onto this issue on NixOS - his solution was to set Steam to launch the game with: LD_LIBRARY_PATH=/lib:$LD_LIBRARY_PATH %command% (from Steam's Game
+					Properties > Launch Options)
+				</p>
+			</div>
+
+			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
+				<div style="color: #4da9df">
+					[01/02/24]: [15629:1229/162230.657405:FATAL:gpu_data_manager_impl_private.cc(1034)] The display compositor is frequently crashing. Goodbye. (see it via launching from CLI)
+				</div>
 				<p>Richard found a fix for this issue, the fix is to use the <b>`--no-sandbox`</b> flag.</p>
 			</div>
 
 			<p>If you find and solve an issue, or just stumble onto an issue you can't solve, please email hello@adventure.land with details</p>
-			
 		</div>
 	</body>
 </html>
-	
