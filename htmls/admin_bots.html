@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex, nofollow" />
+		<title>{{ domain.title }}</title>
+		<link rel="icon" href="/images/favicon.png" />
+		<link href="/css/common.css?v={{ domain.v }}" rel="stylesheet" type="text/css" />
+		<style>
+			:root {
+				color-scheme: dark;
+				--bg: #080a0c;
+				--panel: #11171b;
+				--panel2: #182127;
+				--border: #50606a;
+				--text: #edf2f2;
+				--muted: #9aa8ad;
+				--green: #67c85c;
+				--blue: #55bdf0;
+				--gold: #f0c84b;
+				--red: #e65b67;
+			}
+			* {
+				box-sizing: border-box;
+			}
+			html,
+			body {
+				margin: 0;
+				min-height: 100%;
+				background: var(--bg);
+				color: var(--text);
+				font-family: pixel, monospace;
+				font-size: 18px;
+				line-height: 1.35;
+			}
+			body {
+				padding: 24px;
+			}
+			.shell {
+				width: min(1500px, 100%);
+				margin: 0 auto;
+			}
+			.topbar,
+			.runner,
+			.bot-head,
+			.actions {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 16px;
+			}
+			h1,
+			h2,
+			h3,
+			p {
+				margin: 0;
+			}
+			h1 {
+				font-size: 38px;
+			}
+			h2 {
+				font-size: 25px;
+			}
+			h3 {
+				font-size: 21px;
+			}
+			.subtitle,
+			.muted {
+				color: var(--muted);
+			}
+			.nav {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+			}
+			a,
+			button {
+				color: var(--text);
+				font: inherit;
+			}
+			.nav a,
+			button {
+				border: 1px solid var(--border);
+				background: var(--panel2);
+				padding: 9px 13px;
+				text-decoration: none;
+				cursor: pointer;
+			}
+			button:hover,
+			.nav a:hover {
+				border-color: var(--blue);
+			}
+			button:disabled {
+				cursor: wait;
+				opacity: 0.5;
+			}
+			button.stop {
+				border-color: #8c4248;
+			}
+			.runner {
+				margin: 24px 0 16px;
+				padding: 16px;
+				border: 1px solid var(--border);
+				background: var(--panel);
+			}
+			.runner.online {
+				border-color: var(--green);
+			}
+			.runner.offline {
+				border-color: var(--red);
+			}
+			.dot {
+				width: 12px;
+				height: 12px;
+				display: inline-block;
+				border-radius: 50%;
+				margin-right: 8px;
+				background: var(--muted);
+			}
+			.online .dot,
+			.phase-running .dot {
+				background: var(--green);
+				box-shadow: 0 0 10px rgba(103, 200, 92, 0.55);
+			}
+			.offline .dot,
+			.phase-failed .dot {
+				background: var(--red);
+			}
+			.grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+				gap: 16px;
+			}
+			.bot {
+				border: 1px solid var(--border);
+				background: var(--panel);
+				padding: 18px;
+				min-width: 0;
+			}
+			.bot.pending {
+				border-color: var(--gold);
+			}
+			.phase {
+				color: var(--muted);
+				white-space: nowrap;
+			}
+			.phase-running .phase {
+				color: var(--green);
+			}
+			.phase-starting .phase,
+			.phase-bootstrapped .phase,
+			.phase-loading_code .phase,
+			.pending .phase {
+				color: var(--gold);
+			}
+			.metrics {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 1px;
+				margin: 16px 0;
+				background: var(--border);
+				border: 1px solid var(--border);
+			}
+			.metric {
+				background: var(--panel2);
+				padding: 10px;
+				min-width: 0;
+			}
+			.metric span {
+				display: block;
+				color: var(--muted);
+				font-size: 15px;
+				margin-bottom: 3px;
+			}
+			.metric strong {
+				display: block;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			.logs {
+				margin-top: 14px;
+				padding: 10px;
+				min-height: 80px;
+				max-height: 180px;
+				overflow: auto;
+				background: #060809;
+				border: 1px solid #303a40;
+				color: #c9d3d6;
+				font: 14px/1.45 monospace;
+				white-space: pre-wrap;
+				overflow-wrap: anywhere;
+			}
+			.empty {
+				grid-column: 1/-1;
+				padding: 40px;
+				text-align: center;
+				border: 1px dashed var(--border);
+				color: var(--muted);
+			}
+			#error {
+				display: none;
+				margin-bottom: 16px;
+				padding: 12px;
+				border: 1px solid var(--red);
+				color: #ffb8be;
+			}
+			@media (max-width: 700px) {
+				body {
+					padding: 12px;
+				}
+				.topbar,
+				.runner,
+				.bot-head {
+					align-items: flex-start;
+					flex-direction: column;
+				}
+				h1 {
+					font-size: 30px;
+				}
+				.grid {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<main class="shell">
+			<header class="topbar">
+				<div>
+					<h1>Bots</h1>
+					<div class="subtitle">Contained character runners on USD2.</div>
+				</div>
+				<nav class="nav" aria-label="Admin navigation"><a href="/admin">Admin</a><a href="/">Game</a></nav>
+			</header>
+			<section id="runner" class="runner offline">
+				<div><span class="dot"></span><strong id="runner-state">Connecting</strong></div>
+				<div id="runner-detail" class="muted">Waiting for the controller.</div>
+			</section>
+			<div id="error"></div>
+			<section id="bots" class="grid" aria-live="polite"><div class="empty">Loading bots…</div></section>
+		</main>
+		<script>
+			(function () {
+				var busy = Object.create(null);
+				var botsNode = document.getElementById("bots");
+				var runnerNode = document.getElementById("runner");
+				var errorNode = document.getElementById("error");
+				function text(value) {
+					return value === undefined || value === null || value === "" ? "—" : String(value);
+				}
+				function duration(ms) {
+					if (!Number.isFinite(ms)) return "—";
+					var seconds = Math.floor(ms / 1000);
+					if (seconds < 60) return seconds + "s";
+					var minutes = Math.floor(seconds / 60);
+					if (minutes < 60) return minutes + "m " + (seconds % 60) + "s";
+					return Math.floor(minutes / 60) + "h " + (minutes % 60) + "m";
+				}
+				function bytes(value) {
+					if (!Number.isFinite(value)) return "—";
+					return (value / 1024 / 1024).toFixed(1) + " MB";
+				}
+				function number(value, digits) {
+					return Number.isFinite(value) ? value.toFixed(digits || 0) : "—";
+				}
+				function metric(label, value) {
+					var node = document.createElement("div");
+					node.className = "metric";
+					var small = document.createElement("span");
+					small.textContent = label;
+					var strong = document.createElement("strong");
+					strong.textContent = value;
+					node.append(small, strong);
+					return node;
+				}
+				function renderBot(bot) {
+					var card = document.createElement("article");
+					var phase = bot.phase || "stopped";
+					card.className = "bot phase-" + phase + (bot.pending_state ? " pending" : "");
+					var head = document.createElement("div");
+					head.className = "bot-head";
+					var title = document.createElement("div");
+					var name = document.createElement("h2");
+					name.textContent = bot.bot_id;
+					var sub = document.createElement("div");
+					sub.className = "muted";
+					sub.textContent = text(bot.server) + " / CODE " + text(bot.code_slot) + " / generation " + text(bot.generation);
+					title.append(name, sub);
+					var phaseNode = document.createElement("div");
+					phaseNode.className = "phase";
+					phaseNode.innerHTML = '<span class="dot"></span>';
+					phaseNode.append(document.createTextNode(bot.pending_state ? "queued " + bot.pending_state : phase));
+					head.append(title, phaseNode);
+					var metrics = document.createElement("div");
+					metrics.className = "metrics";
+					metrics.append(
+						metric("Game", bot.game_connected ? "Connected" : "Disconnected"),
+						metric("Map", text(bot.map)),
+						metric("Guest RSS", bytes(bot.metrics && bot.metrics.rss)),
+						metric("Guest CPU", number((bot.metrics && bot.metrics.cpu_ratio) * 100, 1) + "%"),
+						metric("Heartbeat", duration(bot.last_heartbeat_ms)),
+						metric("Uptime", duration(bot.uptime_ms)),
+						metric("Actions", text(bot.traffic && bot.traffic.actions_total)),
+						metric("Path avg", number(bot.pathfinding && bot.pathfinding.average_compute_ms, 3) + " ms"),
+					);
+					var actions = document.createElement("div");
+					actions.className = "actions";
+					var start = document.createElement("button");
+					start.textContent = "Start";
+					start.disabled = !!busy[bot.bot_id] || bot.desired_state === "running" || bot.pending_state === "running";
+					start.onclick = function () {
+						setState(bot.bot_id, "running");
+					};
+					var stop = document.createElement("button");
+					stop.className = "stop";
+					stop.textContent = "Stop";
+					stop.disabled = !!busy[bot.bot_id] || bot.desired_state === "stopped" || bot.pending_state === "stopped";
+					stop.onclick = function () {
+						setState(bot.bot_id, "stopped");
+					};
+					actions.append(start, stop);
+					var logs = document.createElement("div");
+					logs.className = "logs";
+					var lines = (bot.logs || []).map(function (entry) {
+						return [entry.at, entry.level, (entry.values || []).map(text).join(" ")].filter(Boolean).join("  ");
+					});
+					logs.textContent = lines.length ? lines.join("\n") : "No CODE logs.";
+					card.append(head, metrics, actions, logs);
+					return card;
+				}
+				function render(state) {
+					runnerNode.className = "runner " + (state.online ? "online" : "offline");
+					document.getElementById("runner-state").textContent = state.online ? "Controller online" : "Controller offline";
+					document.getElementById("runner-detail").textContent = state.updated_at ? "Last report " + new Date(state.updated_at).toLocaleString() : "No controller report yet.";
+					botsNode.replaceChildren();
+					if (!(state.bots || []).length) {
+						var empty = document.createElement("div");
+						empty.className = "empty";
+						empty.textContent = state.configured ? "No bots are registered." : "Bot control is not configured.";
+						botsNode.append(empty);
+						return;
+					}
+					state.bots.forEach(function (bot) {
+						botsNode.append(renderBot(bot));
+					});
+				}
+				async function refresh() {
+					try {
+						var response = await fetch("/admin/bots/state", { cache: "no-store" });
+						var state = await response.json();
+						if (!response.ok || state.failed) throw new Error(state.reason || "Status request failed");
+						errorNode.style.display = "none";
+						render(state);
+					} catch (error) {
+						errorNode.textContent = error.message;
+						errorNode.style.display = "block";
+					}
+				}
+				async function setState(character, desired_state) {
+					busy[character] = true;
+					await refresh();
+					try {
+						var response = await fetch("/admin/bots/state", {
+							method: "POST",
+							headers: { "content-type": "application/json" },
+							body: JSON.stringify({ character: character, desired_state: desired_state }),
+						});
+						var result = await response.json();
+						if (!response.ok || result.failed) throw new Error(result.reason || "Command failed");
+					} catch (error) {
+						errorNode.textContent = error.message;
+						errorNode.style.display = "block";
+					} finally {
+						delete busy[character];
+						await refresh();
+					}
+				}
+				refresh();
+				setInterval(refresh, 2000);
+			})();
+		</script>
+	</body>
+</html>

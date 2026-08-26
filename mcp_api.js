@@ -197,6 +197,36 @@ async function mcp_api_delete_code(args) {
 	return { success: true, slot: "" + info.num };
 }
 
+async function mcp_api_list_bots(args) {
+	var snapshot = await admin_bots_snapshot();
+	var characters = await get_characters(args.user);
+	var owned = {};
+	for (var i = 0; i < characters.length; i++) owned[characters[i].name] = true;
+	snapshot.bots = snapshot.bots.filter(function (bot) {
+		return owned[bot.bot_id];
+	});
+	return snapshot;
+}
+
+async function mcp_api_get_bot(args) {
+	if (!(await admin_bots_owned_character(args.user, args.character))) return { failed: true, reason: "character_not_found" };
+	var bot = await admin_bots_find(args.character);
+	return bot ? { success: true, bot: bot } : { failed: true, reason: "character_not_found" };
+}
+
+async function mcp_api_set_bot(args) {
+	if (!(await admin_bots_owned_character(args.user, args.character))) return { failed: true, reason: "character_not_found" };
+	return await admin_bots_queue_state(args.character, args.desired_state, get_id(args.user));
+}
+
+async function mcp_api_get_bot_logs(args) {
+	if (!(await admin_bots_owned_character(args.user, args.character))) return { failed: true, reason: "character_not_found" };
+	var bot = await admin_bots_find(args.character);
+	if (!bot) return { failed: true, reason: "character_not_found" };
+	var limit = Math.max(1, Math.min(Number(args.limit) || 100, 100));
+	return { success: true, logs: (bot.logs || []).slice(-limit) };
+}
+
 var MCP_API_REF = {
 	get_servers: { F: mcp_api_get_servers },
 	get_game_data: {
@@ -219,6 +249,21 @@ var MCP_API_REF = {
 		F: mcp_api_delete_code,
 		slot: { type: "identifier" },
 	},
+	list_bots: { F: mcp_api_list_bots },
+	get_bot: {
+		F: mcp_api_get_bot,
+		character: { type: "identifier" },
+	},
+	set_bot: {
+		F: mcp_api_set_bot,
+		character: { type: "identifier" },
+		desired_state: { type: "enum", values: ["running", "stopped"] },
+	},
+	get_bot_logs: {
+		F: mcp_api_get_bot_logs,
+		character: { type: "identifier" },
+		limit: { type: "number", optional: true },
+	},
 };
 
 function send_mcp_api_json(res, result) {
@@ -230,6 +275,8 @@ function validate_mcp_api_args(ref, args) {
 		if (name === "token") continue;
 		if (!ref[name]) return { failed: true, reason: "invalid_field", field: name };
 		if (ref[name].type === "string" && typeof args[name] !== "string") return { failed: true, reason: "invalid_field", field: name };
+		if (ref[name].type === "number" && (!Number.isFinite(args[name]) || !Number.isSafeInteger(args[name]))) return { failed: true, reason: "invalid_field", field: name };
+		if (ref[name].type === "enum" && !ref[name].values.includes(args[name])) return { failed: true, reason: "invalid_field", field: name };
 		if (ref[name].type === "identifier" && !["string", "number"].includes(typeof args[name])) return { failed: true, reason: "invalid_field", field: name };
 		if (ref[name].type === "identifier" && (!String(args[name]).length || String(args[name]).length > 100)) return { failed: true, reason: "invalid_field", field: name };
 	}

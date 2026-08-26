@@ -42,6 +42,9 @@ f.execs("find ~/deploy/" + folder + "/ -name '*.pxm' -delete");
 
 f.execs("cp -R ~/adventureland/common/ ~/deploy/" + folder + "/common/");
 f.execs("cp -R ~/adventureland/secretsandconfig/ ~/deploy/" + folder + "/secretsandconfig/");
+// The bot account record contains character credentials used only to build the
+// isolated controller release. It must never enter a web or game-server package.
+f.execs("rm -f ~/deploy/" + folder + "/secretsandconfig/bots_usd2_prod.json");
 if (mode == "staging") {
 	f.execs("cp ~/deploy/" + folder + "/secretsandconfig/options_staging.js ~/deploy/" + folder + "/secretsandconfig/options.js");
 	f.execs("cp ~/deploy/" + folder + "/secretsandconfig/keys_staging.js ~/deploy/" + folder + "/secretsandconfig/keys.js");
