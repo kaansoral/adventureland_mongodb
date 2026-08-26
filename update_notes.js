@@ -1,6 +1,11 @@
 // Newest notes first. Add player-visible changes at the top with deployed: null.
 module.exports = [
 	{
+		deployed: null,
+		date: "[26/08/26]",
+		note: "Improved Steam client compatibility on Linux and restored mouse item dragging on Windows.",
+	},
+	{
 		deployed: "[25/08/26]",
 		date: "[25/08/26]",
 		note: "Added new Steam clients for Windows and Linux alongside the macOS client, with more reliable Steam login, clearer diagnostics, and in-client Shells purchases.",

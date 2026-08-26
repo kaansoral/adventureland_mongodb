@@ -4,9 +4,28 @@ set -eu
 launcher_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 native_binary="$launcher_dir/adventure-land-native"
 
+if [ -n "${XDG_CACHE_HOME:-}" ]; then
+	runtime_cache_dir="$XDG_CACHE_HOME/adventure-land"
+elif [ -n "${HOME:-}" ]; then
+	runtime_cache_dir="$HOME/.cache/adventure-land"
+else
+	runtime_cache_dir="${TMPDIR:-/tmp}/adventure-land-cache"
+fi
+
+if ! mkdir -p "$runtime_cache_dir" 2>/dev/null; then
+	runtime_cache_dir=""
+fi
+
 if [ "${ADVENTURELAND_FORCE_BUNDLED:-0}" != "1" ] && native_dependencies=$(ldd "$native_binary" 2>&1) && ! printf '%s\n' "$native_dependencies" | grep -q "not found"; then
+	if [ -n "$runtime_cache_dir" ]; then
+		export GST_REGISTRY_1_0="$runtime_cache_dir/gstreamer-native.bin"
+	fi
 	printf '%s\n' "Adventure Land: using system Linux libraries" >&2
 	exec "$native_binary" "$@"
+fi
+
+if [ -n "$runtime_cache_dir" ]; then
+	export GST_REGISTRY_1_0="$runtime_cache_dir/gstreamer-bundled.bin"
 fi
 
 printf '%s\n' "Adventure Land: using bundled Linux libraries" >&2

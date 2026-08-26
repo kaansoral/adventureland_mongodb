@@ -385,6 +385,8 @@ async fn create_subwindow(app: AppHandle, state: State<'_, AppState>) -> Result<
     WebviewWindowBuilder::new(&app, &label, tauri::WebviewUrl::External(url))
         .title("Adventure Land")
         .inner_size(WIN_WIDTH, WIN_HEIGHT)
+        // Native file drops block the game's HTML5 item drops on Windows.
+        .disable_drag_drop_handler()
         .user_agent(USER_AGENT)
         .on_navigation(is_game_url)
         .build()
@@ -547,6 +549,8 @@ pub fn run() {
             .title("Adventure Land")
             .inner_size(WIN_WIDTH, WIN_HEIGHT)
             .visible(false)
+            // Native file drops block the game's HTML5 item drops on Windows.
+            .disable_drag_drop_handler()
             .user_agent(USER_AGENT)
             .on_navigation(is_game_url)
             .on_page_load(move |window, payload| {

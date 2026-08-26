@@ -69,6 +69,7 @@ jobs:
           cd tauri/dist/linux
           "$OLDPWD/$appimage" --appimage-extract
           mv squashfs-root runtime
+          rm -f runtime/usr/lib/libwayland-client.so* runtime/usr/lib/libwayland-cursor.so* runtime/usr/lib/libwayland-egl.so* runtime/usr/lib/libwayland-server.so*
           cp "$OLDPWD/tauri/src-tauri/target/release/adventure-land" adventure-land-native
           cp "$OLDPWD/tauri/src-tauri/binaries/libsteam_api.so" libsteam_api.so
           cp "$OLDPWD/tauri/linux/Adventure Land" "Adventure Land"
@@ -77,6 +78,7 @@ jobs:
           patchelf --set-rpath '$ORIGIN' adventure-land-native
           ldd adventure-land-native | grep -F 'libsteam_api.so'
           test -x runtime/AppRun
+          test -z "$(find runtime/usr/lib -maxdepth 1 \( -type f -o -type l \) -name 'libwayland-*.so*' -print -quit)"
           find runtime -name 'libwebkit2gtk-4.1.so*' -print -quit | grep -q .
           find runtime -name 'WebKitNetworkProcess' -print -quit | grep -q .
           find runtime -name 'libsteam_api.so' -print -quit | grep -q .
