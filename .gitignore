@@ -21,6 +21,10 @@
 /tauri/STEAM_UPLOAD.md
 package-lock.json
 
+# Private runtime sources and tests
+/node/bots/
+/node/test/bots_*.test.js
+
 # Agentic scripts (override *.py ignore)
 # !agentic/*.py
 
