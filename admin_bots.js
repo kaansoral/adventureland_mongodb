@@ -38,6 +38,10 @@ function admin_bots_text(value, maximum) {
 	return String(value === undefined || value === null ? "" : value).slice(0, maximum);
 }
 
+function admin_bots_boolean(value) {
+	return typeof value === "boolean" ? value : null;
+}
+
 function admin_bots_log_value(value) {
 	if (typeof value === "string") return value.slice(0, 4096);
 	if (typeof value === "number" || typeof value === "boolean" || value === null) return value;
@@ -57,6 +61,79 @@ function admin_bots_clean_logs(logs) {
 			values: Array.isArray(entry && entry.values) ? entry.values.slice(0, 20).map(admin_bots_log_value) : [],
 		};
 	});
+}
+
+function admin_bots_clean_rate_summary(summary) {
+	if (!summary || typeof summary !== "object" || Array.isArray(summary)) return null;
+	var result = {};
+	[
+		"window_ms",
+		"active_seconds",
+		"damage",
+		"dps",
+		"healing",
+		"hps",
+		"kills",
+		"deaths",
+		"gold_gained",
+		"gold_spent",
+		"gold_net",
+		"gps",
+		"xp_gained",
+		"xp_lost",
+		"xp_net",
+		"xps",
+	].forEach(function (name) {
+		result[name] = admin_bots_number(summary[name], -Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
+	});
+	if (Object.prototype.hasOwnProperty.call(summary, "started_at")) result.started_at = admin_bots_text(summary.started_at, 40) || null;
+	if (Object.prototype.hasOwnProperty.call(summary, "ended_at")) result.ended_at = admin_bots_text(summary.ended_at, 40) || null;
+	if (Object.prototype.hasOwnProperty.call(summary, "auth_debuff")) result.auth_debuff = admin_bots_boolean(summary.auth_debuff);
+	return result;
+}
+
+function admin_bots_clean_performance(performance) {
+	if (!performance || typeof performance !== "object" || Array.isArray(performance)) return null;
+	return {
+		session: admin_bots_clean_rate_summary(performance.session),
+		rolling_24h: admin_bots_clean_rate_summary(performance.rolling_24h),
+	};
+}
+
+function admin_bots_clean_observation(observation) {
+	if (!observation || typeof observation !== "object" || Array.isArray(observation) || observation.source !== "game_server") return null;
+	var movement = observation.movement && typeof observation.movement === "object" ? observation.movement : {};
+	return {
+		source: "game_server",
+		observed_at: admin_bots_text(observation.observed_at, 40) || null,
+		age_ms: admin_bots_number(observation.age_ms, 0, Number.MAX_SAFE_INTEGER),
+		activity: ["unknown", "dead", "stuck", "moving", "stationary"].includes(observation.activity) ? observation.activity : "unknown",
+		map: admin_bots_text(observation.map, 100),
+		x: admin_bots_number(observation.x, -10000000, 10000000),
+		y: admin_bots_number(observation.y, -10000000, 10000000),
+		hp: admin_bots_number(observation.hp, 0, Number.MAX_SAFE_INTEGER),
+		max_hp: admin_bots_number(observation.max_hp, 0, Number.MAX_SAFE_INTEGER),
+		mp: admin_bots_number(observation.mp, 0, Number.MAX_SAFE_INTEGER),
+		max_mp: admin_bots_number(observation.max_mp, 0, Number.MAX_SAFE_INTEGER),
+		rip: observation.rip === true,
+		level: admin_bots_number(observation.level, 0, 1000),
+		xp: admin_bots_number(observation.xp, 0, Number.MAX_SAFE_INTEGER),
+		gold: admin_bots_number(observation.gold, 0, Number.MAX_SAFE_INTEGER),
+		target: observation.target === null || observation.target === undefined ? null : admin_bots_text(observation.target, 128),
+		moving: observation.moving === true,
+		going_x: admin_bots_number(observation.going_x, -10000000, 10000000),
+		going_y: admin_bots_number(observation.going_y, -10000000, 10000000),
+		movement: {
+			stuck: movement.stuck === true,
+			stationary_ms: admin_bots_number(movement.stationary_ms, 0, Number.MAX_SAFE_INTEGER),
+			position_changed_at: admin_bots_text(movement.position_changed_at, 40) || null,
+			distance_observed: admin_bots_number(movement.distance_observed, 0, Number.MAX_SAFE_INTEGER),
+			map_changes_observed: admin_bots_number(movement.map_changes_observed, 0, Number.MAX_SAFE_INTEGER),
+			map_changed_at: admin_bots_text(movement.map_changed_at, 40) || null,
+			move_requests_since_position_change: admin_bots_number(movement.move_requests_since_position_change, 0, Number.MAX_SAFE_INTEGER),
+			transition_requests_since_map_change: admin_bots_number(movement.transition_requests_since_map_change, 0, Number.MAX_SAFE_INTEGER),
+		},
+	};
 }
 
 function admin_bots_clean_bot(bot) {
@@ -82,6 +159,7 @@ function admin_bots_clean_bot(bot) {
 		last_heartbeat_ms: admin_bots_number(bot.last_heartbeat_ms, 0, Number.MAX_SAFE_INTEGER),
 		game_connected: bot.game_connected === true,
 		map: admin_bots_text(bot.map, 100),
+		observation: admin_bots_clean_observation(bot.observation),
 		uptime_ms: admin_bots_number(bot.uptime_ms, 0, Number.MAX_SAFE_INTEGER),
 		metrics: {
 			heap_used: admin_bots_number(metrics.heap_used, 0, Number.MAX_SAFE_INTEGER),
@@ -90,6 +168,9 @@ function admin_bots_clean_bot(bot) {
 			cpu_ratio: admin_bots_number(metrics.cpu_ratio, 0, 100),
 			event_loop_lag_ms: admin_bots_number(metrics.event_loop_lag_ms, 0, 60000),
 			monotonic_ms: admin_bots_number(metrics.monotonic_ms, 0, Number.MAX_SAFE_INTEGER),
+			guest_memory_used: admin_bots_number(metrics.guest_memory_used, 0, Number.MAX_SAFE_INTEGER),
+			guest_cpu_ratio: admin_bots_number(metrics.guest_cpu_ratio, 0, 100),
+			guest_processes: admin_bots_number(metrics.guest_processes, 0, 1000),
 		},
 		startup: {
 			bootstrapped_ms: admin_bots_number(startup.bootstrapped_ms, 0, Number.MAX_SAFE_INTEGER),
@@ -105,6 +186,7 @@ function admin_bots_clean_bot(bot) {
 			average_compute_ms: admin_bots_number(pathfinding.average_compute_ms, 0, 60000),
 			max_compute_ms: admin_bots_number(pathfinding.max_compute_ms, 0, 60000),
 		},
+		performance: admin_bots_clean_performance(bot.performance),
 		logs: admin_bots_clean_logs(bot.logs),
 	};
 }
@@ -135,6 +217,7 @@ async function admin_bots_snapshot() {
 		success: true,
 		configured: admin_bots_configured(),
 		online: age_ms !== null && age_ms < 10000,
+		controller_version: admin_bots_text(report.controller_version, 40) || null,
 		updated_at: updated ? updated.toISOString() : null,
 		age_ms: age_ms,
 		bots: (report.bots || []).map(function (bot) {
@@ -173,7 +256,7 @@ async function admin_bots_queue_state(bot_id, desired_state, requested_by) {
 async function admin_bots_owned_character(user, name) {
 	var characters = await get_characters(user);
 	return characters.find(function (character) {
-		return character.name === name;
+		return (character && character.info && character.info.name) === name || character.name === name;
 	});
 }
 

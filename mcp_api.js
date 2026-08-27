@@ -197,21 +197,35 @@ async function mcp_api_delete_code(args) {
 	return { success: true, slot: "" + info.num };
 }
 
+function mcp_api_bot_contract() {
+	return {
+		version: 2,
+		traffic: "requested_actions_not_confirmation",
+		observation: "authenticated_game_server_events",
+		movement: "confirmed_position_and_map_changes_only",
+		stuck: "stationary_for_15s_with_10_recent_move_requests",
+	};
+}
+
 async function mcp_api_list_bots(args) {
 	var snapshot = await admin_bots_snapshot();
 	var characters = await get_characters(args.user);
 	var owned = {};
-	for (var i = 0; i < characters.length; i++) owned[characters[i].name] = true;
+	for (var i = 0; i < characters.length; i++) {
+		var character_name = (characters[i] && characters[i].info && characters[i].info.name) || characters[i].name;
+		if (character_name) owned[character_name] = true;
+	}
 	snapshot.bots = snapshot.bots.filter(function (bot) {
 		return owned[bot.bot_id];
 	});
+	snapshot.contract = mcp_api_bot_contract();
 	return snapshot;
 }
 
 async function mcp_api_get_bot(args) {
 	if (!(await admin_bots_owned_character(args.user, args.character))) return { failed: true, reason: "character_not_found" };
 	var bot = await admin_bots_find(args.character);
-	return bot ? { success: true, bot: bot } : { failed: true, reason: "character_not_found" };
+	return bot ? { success: true, contract: mcp_api_bot_contract(), bot: bot } : { failed: true, reason: "character_not_found" };
 }
 
 async function mcp_api_set_bot(args) {

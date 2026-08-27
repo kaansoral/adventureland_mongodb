@@ -141,6 +141,10 @@
 			.bot.pending {
 				border-color: var(--gold);
 			}
+			.bot.stuck {
+				border-color: var(--red);
+				box-shadow: inset 0 0 0 1px rgba(230, 91, 103, 0.25);
+			}
 			.phase {
 				color: var(--muted);
 				white-space: nowrap;
@@ -278,7 +282,12 @@
 				function renderBot(bot) {
 					var card = document.createElement("article");
 					var phase = bot.phase || "stopped";
-					card.className = "bot phase-" + phase + (bot.pending_state ? " pending" : "");
+					var observation = bot.observation || {};
+					var movement = observation.movement || {};
+					var performance = bot.performance || {};
+					var session = performance.session || performance.rolling_24h || {};
+					var rolling = performance.rolling_24h || {};
+					card.className = "bot phase-" + phase + (bot.pending_state ? " pending" : "") + (movement.stuck ? " stuck" : "");
 					var head = document.createElement("div");
 					head.className = "bot-head";
 					var title = document.createElement("div");
@@ -297,13 +306,24 @@
 					metrics.className = "metrics";
 					metrics.append(
 						metric("Game", bot.game_connected ? "Connected" : "Disconnected"),
-						metric("Map", text(bot.map)),
+						metric("Observed state", text(observation.activity)),
+						metric("Observed position", observation.map ? observation.map + " " + number(observation.x, 0) + ", " + number(observation.y, 0) : "—"),
+						metric("Observed age", duration(observation.age_ms)),
+						metric("Stationary", duration(movement.stationary_ms)),
+						metric("Move requests since progress", text(movement.move_requests_since_position_change)),
+						metric("Observed distance", number(movement.distance_observed, 0)),
+						metric("Observed map changes", text(movement.map_changes_observed)),
 						metric("Guest RSS", bytes(bot.metrics && bot.metrics.rss)),
 						metric("Guest CPU", number((bot.metrics && bot.metrics.cpu_ratio) * 100, 1) + "%"),
 						metric("Heartbeat", duration(bot.last_heartbeat_ms)),
 						metric("Uptime", duration(bot.uptime_ms)),
-						metric("Actions", text(bot.traffic && bot.traffic.actions_total)),
+						metric("Requests sent", text(bot.traffic && bot.traffic.actions_total)),
 						metric("Path avg", number(bot.pathfinding && bot.pathfinding.average_compute_ms, 3) + " ms"),
+						metric("DPS", number(session.dps, 2)),
+						metric("Gold/sec", number(session.gps, 2)),
+						metric("XP/sec", number(session.xps, 2)),
+						metric("Deaths / 24h", text(rolling.deaths)),
+						metric("Auth debuff", session.auth_debuff === false ? "No" : session.auth_debuff === true ? "Yes" : "—"),
 					);
 					var actions = document.createElement("div");
 					actions.className = "actions";
@@ -333,7 +353,9 @@
 				function render(state) {
 					runnerNode.className = "runner " + (state.online ? "online" : "offline");
 					document.getElementById("runner-state").textContent = state.online ? "Controller online" : "Controller offline";
-					document.getElementById("runner-detail").textContent = state.updated_at ? "Last report " + new Date(state.updated_at).toLocaleString() : "No controller report yet.";
+					document.getElementById("runner-detail").textContent = state.updated_at
+						? "Controller " + text(state.controller_version) + " / last report " + new Date(state.updated_at).toLocaleString()
+						: "No controller report yet.";
 					botsNode.replaceChildren();
 					if (!(state.bots || []).length) {
 						var empty = document.createElement("div");
