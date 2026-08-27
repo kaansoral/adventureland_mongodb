@@ -70,6 +70,7 @@ eval("" + fs.readFileSync(path.resolve(__dirname, "docs/directory.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "adventure_functions.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "filters.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "api.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "mainframe.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "admin_bots.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "mcp_api.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "crons.js")));

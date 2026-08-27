@@ -509,7 +509,6 @@ async function get_domain(req, user) {
 	domain.new_attacks = true;
 	domain.no_html = false;
 	domain.is_bot = false;
-	domain.is_cli = false;
 	domain.no_graphics = false;
 	domain.border_mode = false;
 	domain.purchase_mode = true;
@@ -555,7 +554,6 @@ async function get_domain(req, user) {
 		if (req.query.no_cache) domain.v = 100000 + Math.floor(Math.random() * 100000000);
 		if (req.query.no_html) domain.no_html = req.query.no_html === "bot" ? "bot" : true;
 		if (req.query.is_bot) domain.is_bot = true;
-		if (req.query.is_cli) domain.is_cli = true;
 		if (req.query.no_graphics || domain.no_html) {
 			domain.no_graphics = true;
 			domain.pixi_version = "fake";
@@ -1343,10 +1341,6 @@ async function render_selection(req, res, user, domain, level, server) {
 		data = await get_user_data(user);
 	}
 	domain.servers = servers_to_client(domain, servers);
-	if (domain.is_cli && (!user || !user.cli_time || user.cli_time < new Date()) && (level || 80) >= 70) {
-		domain.is_cli = false;
-		domain.harakiri = true;
-	}
 	res.status(200).send(
 		nunjucks.render("htmls/index.html", {
 			domain: domain,

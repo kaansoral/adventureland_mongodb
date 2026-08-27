@@ -141,7 +141,6 @@ async function signup_or_login_api(args) {
 				server: "",
 				friends: [],
 				last_online: new Date(),
-				cli_time: null,
 				to_backup: false,
 				popularity: 0.0,
 				info: {
@@ -1606,29 +1605,6 @@ async function stripe_payment_api(args) {
 	}
 }
 
-async function cli_time_api(args) {
-	var user = args.user;
-	var amount = 29;
-	if (user.cli_time && dsince(user.cli_time) < -30) return { failed: true, reason: "cant_purchase_more_than_30_days" };
-	if (user.server) return { failed: true, reason: "cant_purchase_in_bank" };
-
-	var R = await tx(
-		async () => {
-			R.element = await tx_get(A.user);
-			if (A.amount > 0 && R.element.cash < A.amount) ex("not_enough");
-			R.element.cash -= A.amount;
-			if (!R.element.cli_time || R.element.cli_time < new Date()) R.element.cli_time = new Date();
-			R.element.cli_time = new Date(R.element.cli_time.getTime() + 7 * 24 * 3600 * 1000);
-			await tx_save(R.element);
-		},
-		{ user: user, amount: amount },
-	);
-
-	if (R.failed) return { failed: true, reason: "purchase_failed" };
-	args.res.infs.push({ type: "message", message: "Purchased 7 more days of CLI time for " + amount + " shells!" });
-	return { success: true };
-}
-
 // ==================== OTHER ====================
 
 async function copy_map_api(args) {
@@ -1941,8 +1917,6 @@ var REF = {
 		order_id: { type: "string" },
 		authorized: { type: "boolean" },
 	},
-	cli_time: { F: cli_time_api, P: true, U: true },
-
 	copy_map: {
 		F: copy_map_api,
 		P: true,

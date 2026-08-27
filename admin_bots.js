@@ -1,5 +1,6 @@
 var ADMIN_BOTS_COLLECTION = "admin_bots_control";
 var ADMIN_BOTS_MAX_REPORT_BYTES = 512 * 1024;
+var ADMIN_MAINFRAME_CODE_MAX_BYTES = 1150 * 1024;
 var ADMIN_BOTS_COMMAND_TTL_MS = 60 * 1000;
 var ADMIN_BOTS_AGENT_ID = "usd2";
 var ADMIN_BOTS_CONTROL_SECRET = null;
@@ -142,6 +143,7 @@ function admin_bots_clean_bot(bot) {
 	var startup = bot.startup && typeof bot.startup === "object" ? bot.startup : {};
 	var traffic = bot.traffic && typeof bot.traffic === "object" ? bot.traffic : {};
 	var pathfinding = bot.pathfinding && typeof bot.pathfinding === "object" ? bot.pathfinding : {};
+	var failure = bot.failure && typeof bot.failure === "object" && !Array.isArray(bot.failure) ? bot.failure : null;
 	var actions = traffic.actions_by_event && typeof traffic.actions_by_event === "object" ? traffic.actions_by_event : {};
 	var clean_actions = {};
 	Object.keys(actions)
@@ -151,6 +153,9 @@ function admin_bots_clean_bot(bot) {
 		});
 	return {
 		bot_id: bot.bot_id,
+		character_id: /^CH_[A-Za-z0-9_-]{1,100}$/.test(bot.character_id || "") ? bot.character_id : null,
+		assignment_id: /^[0-9a-f]{32}$/.test(bot.assignment_id || "") ? bot.assignment_id : null,
+		assignment_revision: admin_bots_number(bot.assignment_revision, 0, Number.MAX_SAFE_INTEGER),
 		desired_state: ["running", "stopped"].includes(bot.desired_state) ? bot.desired_state : "stopped",
 		code_slot: admin_bots_text(bot.code_slot, 100),
 		server: admin_bots_text(bot.server, 50),
@@ -186,6 +191,14 @@ function admin_bots_clean_bot(bot) {
 			average_compute_ms: admin_bots_number(pathfinding.average_compute_ms, 0, 60000),
 			max_compute_ms: admin_bots_number(pathfinding.max_compute_ms, 0, 60000),
 		},
+		failure:
+			failure && /^[A-Z][A-Z0-9_]{2,63}$/.test(failure.code || "")
+				? {
+						assignment_id: /^[0-9a-f]{32}$/.test(failure.assignment_id || "") ? failure.assignment_id : null,
+						code: failure.code,
+						at: admin_bots_text(failure.at, 40) || null,
+					}
+				: null,
 		performance: admin_bots_clean_performance(bot.performance),
 		logs: admin_bots_clean_logs(bot.logs),
 	};
@@ -226,10 +239,55 @@ async function admin_bots_snapshot() {
 	};
 }
 
+async function admin_mainframe_snapshot() {
+	var snapshot = await admin_bots_snapshot();
+	var character_mark_ids = snapshot.bots
+		.filter(function (bot) {
+			return !bot.character_id;
+		})
+		.map(function (bot) {
+			return "MK_character-" + simplify_name(bot.bot_id);
+		});
+	var character_marks = character_mark_ids.length
+		? await db
+				.collection("mark")
+				.find({ _id: { $in: character_mark_ids } })
+				.limit(100)
+				.toArray()
+		: [];
+	var access_ids = snapshot.bots
+		.map(function (bot) {
+			return bot.character_id && mainframe_access_record_id(bot.character_id);
+		})
+		.filter(Boolean);
+	for (var i = 0; i < character_marks.length; i++) access_ids.push(mainframe_access_record_id(character_marks[i].owner));
+	access_ids = Array.from(new Set(access_ids));
+	var access_records = access_ids.length
+		? await db
+				.collection("mark")
+				.find({ _id: { $in: access_ids } })
+				.limit(100)
+				.toArray()
+		: [];
+	var access_by_id = {};
+	for (var i = 0; i < access_records.length; i++) access_by_id[access_records[i]._id] = access_records[i];
+	var character_id_by_name = {};
+	for (var i = 0; i < character_marks.length; i++) {
+		var character_name = character_marks[i].phrase || character_marks[i]._id.slice("MK_character-".length);
+		character_id_by_name[character_name] = character_marks[i].owner;
+	}
+	snapshot.bots = snapshot.bots.map(function (bot) {
+		var character_id = bot.character_id || character_id_by_name[simplify_name(bot.bot_id)];
+		var access = character_id && access_by_id[mainframe_access_record_id(character_id)];
+		return Object.assign({}, bot, { mainframe_access: mainframe_access_to_client(access) });
+	});
+	return snapshot;
+}
+
 async function admin_bots_find(bot_id) {
 	var snapshot = await admin_bots_snapshot();
 	return snapshot.bots.find(function (bot) {
-		return bot.bot_id === bot_id;
+		return bot.bot_id === bot_id || bot.character_id === bot_id;
 	});
 }
 
@@ -286,18 +344,57 @@ app.post("/internal/bots/control", async function (req, res) {
 			$pull: { commands: pull },
 		},
 	);
+	await mainframe_record_controller_failures(report);
 	var document = await admin_bots_document();
 	var commands = ((document && document.commands) || []).slice(0, 10).map(function (command) {
 		return { id: command.id, bot_id: command.bot_id, desired_state: command.desired_state };
 	});
-	return res.status(200).send({ success: true, commands: commands });
+	var assignments = await mainframe_controller_assignments(body.agent_id);
+	return res.status(200).send({ success: true, commands: commands, assignments: assignments });
 });
 
-app.get("/admin/bots", async function (req, res) {
+app.post("/internal/mainframe/code", async function (req, res) {
+	res.set("Cache-Control", "no-store");
+	if (!admin_bots_agent_authorized(req)) return res.status(401).send({ failed: true, reason: "unauthorized" });
+	var body = req.body;
+	if (!body || typeof body !== "object" || Array.isArray(body)) return res.status(400).send({ failed: true, reason: "invalid_body" });
+	if (Buffer.byteLength(JSON.stringify(body), "utf8") > ADMIN_MAINFRAME_CODE_MAX_BYTES)
+		return res.status(413).send({ failed: true, reason: "request_too_large" });
+	if (
+		Object.keys(body).sort().join(",") !== "agent_id,assignment_id,character_id,data,operation,request_id,version" ||
+		body.version !== 1 ||
+		body.agent_id !== admin_bots_agent_id() ||
+		!/^[0-9a-f]{32}$/.test(body.assignment_id || "") ||
+		!/^CH_[A-Za-z0-9_-]{1,100}$/.test(body.character_id || "") ||
+		!/^[A-Za-z0-9_-]{1,80}$/.test(body.request_id || "") ||
+		!["change_server", "command_character", "start_character", "stop_character", "upload_code"].includes(body.operation) ||
+		!body.data ||
+		typeof body.data !== "object" ||
+		Array.isArray(body.data)
+	)
+		return res.status(400).send({ failed: true, reason: "invalid_request" });
+	var fields = {
+		change_server: ["name", "region"],
+		command_character: ["character", "code"],
+		start_character: ["character", "code_slot"],
+		stop_character: ["character"],
+		upload_code: ["code", "name", "slot"],
+	}[body.operation];
+	if (
+		Object.keys(body.data).sort().join(",") !== fields.slice().sort().join(",") ||
+		!fields.every(function (name) {
+			return typeof body.data[name] === "string";
+		})
+	)
+		return res.status(400).send({ failed: true, reason: "invalid_data" });
+	return res.status(200).send({ success: true, result: await mainframe_code_action(body) });
+});
+
+app.get("/admin/mainframe", async function (req, res) {
 	var user = await get_user(req);
 	if (!is_admin(user)) return res.status(403).set("Cache-Control", "no-store").set("X-Robots-Tag", "noindex, nofollow").send("No Auth");
 	var domain = await get_domain(req, user);
-	domain.title = "Adventure Land Bots";
+	domain.title = "Adventure Land Mainframe";
 	return res
 		.status(200)
 		.set("Cache-Control", "no-store")
@@ -305,16 +402,16 @@ app.get("/admin/bots", async function (req, res) {
 		.send(nunjucks.render("htmls/admin_bots.html", { domain: domain, user: user }));
 });
 
-app.get("/admin/bots/state", async function (req, res) {
+app.get("/admin/mainframe/state", async function (req, res) {
 	var user = await get_user(req);
 	if (!is_admin(user)) return res.status(403).set("Cache-Control", "no-store").send({ failed: true, reason: "unauthorized" });
 	return res
 		.status(200)
 		.set("Cache-Control", "no-store")
-		.send(await admin_bots_snapshot());
+		.send(await admin_mainframe_snapshot());
 });
 
-app.post("/admin/bots/state", async function (req, res) {
+app.post("/admin/mainframe/state", async function (req, res) {
 	var user = await get_user(req);
 	if (!is_admin(user)) return res.status(403).set("Cache-Control", "no-store").send({ failed: true, reason: "unauthorized" });
 	var body = req.body;
@@ -325,6 +422,13 @@ app.post("/admin/bots/state", async function (req, res) {
 		})
 	)
 		return res.status(400).send({ failed: true, reason: "invalid_field" });
+	if (body.desired_state === "running") {
+		var bot = await admin_bots_find(body.character);
+		if (!bot) return res.status(400).set("Cache-Control", "no-store").send({ failed: true, reason: "character_not_found" });
+		var character = await get_character(body.character, true);
+		var grant = await mainframe_grant_operator_access(character, get_id(user));
+		if (grant.failed) return res.status(400).set("Cache-Control", "no-store").send(grant);
+	}
 	var result = await admin_bots_queue_state(body.character, body.desired_state, get_id(user));
 	return res
 		.status(result.failed ? 400 : 200)

@@ -1,6 +1,11 @@
 // Newest notes first. Add player-visible changes at the top with deployed: null.
 module.exports = [
 	{
+		deployed: null,
+		date: "[27/08/26]",
+		note: "Added Mainframe: run saved CODE in isolated, network-free machines for 1 Shell per hour, with game API and MCP controls.",
+	},
+	{
 		deployed: "[27/08/26]",
 		date: "[26/08/26]",
 		note: "Improved Steam client compatibility on Linux and restored mouse item dragging on Windows.",
@@ -1541,24 +1546,9 @@ module.exports = [
 		note: "New Items: Orb of Testing, Fiery Cape",
 	},
 	{
-		deployed: "[24/06/20]",
-		date: "[24/06/20]",
-		note: "CLI Improvements",
-	},
-	{
 		deployed: "[09/06/20]",
 		date: "[09/06/20]",
 		note: "New slot aware Code UI",
-	},
-	{
-		deployed: "[09/06/20]",
-		date: "[09/06/20]",
-		note: "CLI is live for preview/testing at Adventure Land's GitHub",
-	},
-	{
-		deployed: "[09/06/20]",
-		date: "[09/06/20]",
-		note: "No instructions yet, but the usage should be decipherable from the files",
 	},
 	{
 		deployed: "[05/06/20]",

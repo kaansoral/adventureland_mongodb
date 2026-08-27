@@ -348,9 +348,9 @@ docs = {
 					"",
 					"#8044C4",
 					[
-						["X.sub-cli", "CLI: An Introduction", "cli", "#79C6C1"],
 						["X.sub-cm", "Code Messages", "cm,messages", "#B3C77A"],
 						["X.sub-api", "API Call System", "api", "#69C6C1"],
+						["mainframe", "API, MCP, and Mainframe", "api,mcp,mainframe,automation", "#5ED6A8"],
 						["X.sub-msgpack", "MessagePack Socket Transport", "msgpack,socket,client,transport", "#D49A63"],
 					],
 				],

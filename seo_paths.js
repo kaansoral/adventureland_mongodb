@@ -18,6 +18,7 @@ const DOCS_PATHS = [
 	"/docs/guide/all/recipes",
 	"/docs/guide/all/skills_and_conditions",
 	"/docs/guide/code/X-advancedtopics/X.sub-msgpack",
+	"/docs/guide/mainframe",
 	"/docs/ref",
 	"/docs/ref/boosters",
 	"/docs/ref/keymapping",

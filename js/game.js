@@ -201,8 +201,6 @@ var page = { title: "Adventure Land", url: "/" };
 var I = {}; // instance data
 var S = {}; // server data
 var ST = new Date(); // server time
-var CLI_OUT = []; // CLI outgoing messages
-var CLI_IN = []; // CLI incoming messages
 var options = {
 	move_with_arrows: true,
 	code_fx: false,
@@ -252,8 +250,7 @@ setInterval(function () {
 		}
 		if (reload_state == "synced" && new Date() > reload_timer) {
 			reload_state = false;
-			if (is_cli) CLI_OUT.push({ type: "kill" });
-			else window.location.href = page.url; // location.reload();
+			window.location.href = page.url; // location.reload();
 		}
 	}
 	if (!game_loaded) return;
@@ -409,8 +406,7 @@ function disconnect() {
 	} else if (character_to_load) {
 		add_log("Retrying in 2500ms", "gray");
 		setTimeout(function () {
-			if (is_cli) CLI_OUT.push({ type: "kill" });
-			else window.location.href = page.url; //location.reload(true);
+			window.location.href = page.url; //location.reload(true);
 		}, 2500);
 	}
 
@@ -999,7 +995,6 @@ function init_interface() {
 
 function the_game(demo) {
 	// if(!window.requestAnimationFrame) window.requestAnimationFrame=function(a){ setTimeout(a,16); }; // jsdom patch [18/04/19]
-	if (is_cli && window.ls_emulation) window._localStorage = window.ls_emulation;
 	width = $(window).width();
 	height = $(window).height();
 	if (bowser.mac && bowser.firefox && !engine_mode)

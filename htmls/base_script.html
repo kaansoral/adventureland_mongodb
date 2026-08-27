@@ -33,7 +33,6 @@
 	var border_mode='{%if domain.border_mode %}1{% endif %}'; // use after adding a new monster
 	var no_html='{%if domain.no_html %}{{domain.no_html or 1}}{% endif %}';
 	var is_bot='{%if domain.is_bot %}1{% endif %}';
-	var is_cli='{%if domain.is_cli %}1{% endif %}',harakiri='{%if domain.harakiri %}1{% endif %}';
 	var explicit_slot='{% if domain.explicit_slot%}{{domain.explicit_slot}}{%endif%}';
 	var is_mobile=false;
 	var is_bold=false;
@@ -73,29 +72,7 @@
 	}
 	if(is_tauri) tauri_init();
 
-	if(is_cli)
-	{
-		setInterval(function(){
-			if(!character || !code_active) return;
-			CLI_IN.forEach(function(m){
-				if(m.type=="smart_move")
-					call_code_function("cli_smart_move_result",m);
-				else if(m.type=="cm")
-					call_code_function("trigger_character_event","cm",{name:m.data[0],message:m.data[1]});
-				else
-					call_code_function("trigger_character_event","clim",m);
-			});
-			CLI_IN=[];
-		},10);
-	}
-
-	if(harakiri)
-	{
-		CLI_OUT.push({"type":"time_kill"});
-		G={gg:true};
-	}
-
-	if(url_character && !harakiri)
+	if(url_character)
 	{
 		if(url_address)
 		{
@@ -109,8 +86,7 @@
 					add_log("Reloading the page to retry in 40 seconds","gray");
 					setTimeout(function(){
 						if(character) return;
-						if(is_cli) CLI_OUT.push({"type":"kill"});
-						else location.reload();
+						location.reload();
 					},40000);
 				}
 			},8000);
@@ -122,8 +98,7 @@
 				add_log("Reloading the page to retry in 10 seconds","gray");
 				setTimeout(function(){
 					if(character) return;
-					if(is_cli) CLI_OUT.push({"type":"kill"});
-					else location.reload();
+					location.reload();
 				},10000);
 			},5000);
 		}

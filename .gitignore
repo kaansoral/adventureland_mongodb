@@ -55,7 +55,6 @@ agentic/.venv/
 /Resources/
 /include/
 /scripts/test.js
-scripts/cli/storage/
 
 # Keys / certs
 *.pem

@@ -86,7 +86,6 @@ game = {
 	platform: (parent.is_tauri && "tauri") || (parent.is_electron && "electron") || "web",
 	graphics: !parent.no_graphics, // if game.graphics is false, don't draw stuff to the game in your Code
 	html: !parent.no_html, // if game.html is false, this character is loaded in [CODE] mode
-	cli: parent.is_cli,
 };
 character.bot = parent.is_bot;
 
@@ -1821,7 +1820,7 @@ for (var key in localStorage) {
 
 function local_cm_logic() {
 	// Warning: localStorage is very slow, with a localStorage that's filled with MB's of data, this routine might take 8-9ms each time
-	var activity = localStorage.getItem("activity" + ((game.cli && character.name) || "")),
+	var activity = localStorage.getItem("activity"),
 		messages = [],
 		start = new Date();
 	activity = (activity && JSON.parse(activity)) || {};
@@ -1829,10 +1828,9 @@ function local_cm_logic() {
 	if (activity.cm) delete activity.cm;
 	if (!activity.heartbeat[character.name] || mssince(new Date(activity.heartbeat[character.name])) > 320) {
 		activity.heartbeat[character.name] = new Date().toString();
-		localStorage.setItem("activity" + ((game.cli && character.name) || ""), JSON.stringify(activity));
+		localStorage.setItem("activity", JSON.stringify(activity));
 	}
 	var keys = Object.keys(localStorage);
-	if (game.cli) keys = localStorage._keys;
 	keys.forEach(function (key) {
 		// 2x faster than for(key in localStorage)
 		{
@@ -1866,12 +1864,11 @@ setTimeout(local_cm_logic, 10);
 
 var local_m_num = 0;
 function send_local_cm(name, data) {
-	if (game.cli) parent.CLI_OUT.push({ type: "cm", to: name, data: [character.name, data, new Date(), ++local_m_num] });
-	else localStorage.setItem("cm_" + name + "_" + randomStr(20), JSON.stringify([character.name, data, new Date(), ++local_m_num]));
+	localStorage.setItem("cm_" + name + "_" + randomStr(20), JSON.stringify([character.name, data, new Date(), ++local_m_num]));
 }
 
 function is_character_local(name) {
-	var activity = localStorage.getItem("activity" + ((game.cli && name) || ""));
+	var activity = localStorage.getItem("activity");
 	activity = (activity && JSON.parse(activity)) || {};
 	if (activity.heartbeat && activity.heartbeat[name] && mssince(new Date(activity.heartbeat[name])) < 2880) return true;
 	return false;
@@ -2365,24 +2362,9 @@ function start_pathfinding() {
 	smart.start_x = character.real_x;
 	smart.start_y = character.real_y;
 	((queue = []), (visited = {}), (start = 0), (best = null));
-	if (game.cli) {
-		parent.CLI_OUT.push({ type: "smart_move", G: G, start_x: smart.start_x, start_y: smart.start_y, start_map: character.map, x: smart.x, y: smart.y, map: smart.map });
-	} else {
-		qpush({ x: character.real_x, y: character.real_y, map: character.map, i: -1 });
-		game_log("Searching for a path...", "#89D4A2");
-		bfs();
-	}
-}
-
-function cli_smart_move_result(data) {
-	if (data.found) {
-		smart.found = true;
-		smart.plot = data.plot;
-	} else {
-		game_log("CLI: Path not found!", "#CF575F");
-		smart.moving = false;
-		smart.on_done(false, "failed");
-	}
+	qpush({ x: character.real_x, y: character.real_y, map: character.map, i: -1 });
+	game_log("Searching for a path...", "#89D4A2");
+	bfs();
 }
 
 function continue_pathfinding() {
@@ -2393,8 +2375,6 @@ function smart_move_logic() {
 	if (!smart.moving) return;
 	if (!smart.searching && !smart.found) {
 		start_pathfinding();
-	} else if (!smart.found && game.cli) {
-		/* Just wait */
 	} else if (!smart.found) {
 		if (Math.random() < 0.1) {
 			move(character.real_x + Math.random() * 0.0002 - 0.0001, character.real_y + Math.random() * 0.0002 - 0.0001);
@@ -2490,8 +2470,4 @@ function code_draw() {
 	else requestAnimationFrame(code_draw);
 }
 
-if (parent.is_cli) {
-	if (parent.ls_emulation) window._localStorage = parent.ls_emulation;
-	window.cli_require = parent.cli_require;
-}
 code_draw();

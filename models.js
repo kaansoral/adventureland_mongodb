@@ -21,7 +21,6 @@ models = {
 		server: "",
 		friends: [],
 		last_online: new Date(),
-		cli_time: null,
 		to_backup: false,
 		popularity: 0.0,
 		info: {},

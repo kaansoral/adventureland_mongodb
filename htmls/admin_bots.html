@@ -233,8 +233,8 @@
 		<main class="shell">
 			<header class="topbar">
 				<div>
-					<h1>Bots</h1>
-					<div class="subtitle">Contained character runners on USD2.</div>
+					<h1>Mainframe</h1>
+					<div class="subtitle">Contained character CODE.</div>
 				</div>
 				<nav class="nav" aria-label="Admin navigation"><a href="/admin">Admin</a><a href="/">Game</a></nav>
 			</header>
@@ -287,6 +287,7 @@
 					var performance = bot.performance || {};
 					var session = performance.session || performance.rolling_24h || {};
 					var rolling = performance.rolling_24h || {};
+					var access = bot.mainframe_access || {};
 					card.className = "bot phase-" + phase + (bot.pending_state ? " pending" : "") + (movement.stuck ? " stuck" : "");
 					var head = document.createElement("div");
 					head.className = "bot-head";
@@ -324,18 +325,20 @@
 						metric("XP/sec", number(session.xps, 2)),
 						metric("Deaths / 24h", text(rolling.deaths)),
 						metric("Auth debuff", session.auth_debuff === false ? "No" : session.auth_debuff === true ? "Yes" : "—"),
+						metric("Mainframe access", access.active ? "Active" : "Expired"),
+						metric("Access remaining", duration(Number(access.remaining_seconds) * 1000)),
 					);
 					var actions = document.createElement("div");
 					actions.className = "actions";
 					var start = document.createElement("button");
-					start.textContent = "Start";
+					start.textContent = "Run on Mainframe";
 					start.disabled = !!busy[bot.bot_id] || bot.desired_state === "running" || bot.pending_state === "running";
 					start.onclick = function () {
 						setState(bot.bot_id, "running");
 					};
 					var stop = document.createElement("button");
 					stop.className = "stop";
-					stop.textContent = "Stop";
+					stop.textContent = "Disconnect";
 					stop.disabled = !!busy[bot.bot_id] || bot.desired_state === "stopped" || bot.pending_state === "stopped";
 					stop.onclick = function () {
 						setState(bot.bot_id, "stopped");
@@ -352,15 +355,15 @@
 				}
 				function render(state) {
 					runnerNode.className = "runner " + (state.online ? "online" : "offline");
-					document.getElementById("runner-state").textContent = state.online ? "Controller online" : "Controller offline";
+					document.getElementById("runner-state").textContent = state.online ? "Mainframe online" : "Mainframe offline";
 					document.getElementById("runner-detail").textContent = state.updated_at
 						? "Controller " + text(state.controller_version) + " / last report " + new Date(state.updated_at).toLocaleString()
-						: "No controller report yet.";
+						: "No Mainframe report yet.";
 					botsNode.replaceChildren();
 					if (!(state.bots || []).length) {
 						var empty = document.createElement("div");
 						empty.className = "empty";
-						empty.textContent = state.configured ? "No bots are registered." : "Bot control is not configured.";
+						empty.textContent = state.configured ? "No characters are registered." : "Mainframe is not configured.";
 						botsNode.append(empty);
 						return;
 					}
@@ -370,7 +373,7 @@
 				}
 				async function refresh() {
 					try {
-						var response = await fetch("/admin/bots/state", { cache: "no-store" });
+						var response = await fetch("/admin/mainframe/state", { cache: "no-store" });
 						var state = await response.json();
 						if (!response.ok || state.failed) throw new Error(state.reason || "Status request failed");
 						errorNode.style.display = "none";
@@ -384,7 +387,7 @@
 					busy[character] = true;
 					await refresh();
 					try {
-						var response = await fetch("/admin/bots/state", {
+						var response = await fetch("/admin/mainframe/state", {
 							method: "POST",
 							headers: { "content-type": "application/json" },
 							body: JSON.stringify({ character: character, desired_state: desired_state }),

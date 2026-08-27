@@ -21,6 +21,21 @@ if (process.env.pm_id === "0" || !process.env.pm_id) {
 		},
 		1 * 60 * 1000,
 	);
+	var mainframe_expiry_check_running = false;
+	setInterval(
+		async function () {
+			if (mainframe_expiry_check_running) return;
+			mainframe_expiry_check_running = true;
+			try {
+				await mainframe_expire_access();
+			} catch (e) {
+				console.error("mainframe expiry check failed", e);
+			} finally {
+				mainframe_expiry_check_running = false;
+			}
+		},
+		15 * 1000,
+	);
 	if (Prod || Staging) {
 		setTimeout(occasional_backups, 60 * 60 * 1000);
 		setTimeout(backup_everything_every_week, 60 * 60 * 1000);

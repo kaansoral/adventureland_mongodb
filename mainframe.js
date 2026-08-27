@@ -1,0 +1,542 @@
+var MAINFRAME_PERIOD_MS = 60 * 60 * 1000;
+var MAINFRAME_PERIOD_SHELLS = 1;
+var MAINFRAME_REQUEST_PATTERN = /^[A-Za-z0-9_.:@-]{16,100}$/;
+var MAINFRAME_CODE_SLOT_PATTERN = /^[A-Za-z0-9_.+ -]{1,100}$/;
+var MAINFRAME_ASSIGNMENT_CONTROLLER = "usd2";
+
+function mainframe_access_record_id(character_id) {
+	return "MK_mainframe_access-" + character_id;
+}
+
+function mainframe_charge_record_id(user_id, request_id) {
+	var key = crypto.createHash("sha256").update(user_id + "\n" + request_id, "utf8").digest("hex");
+	return "MK_mainframe_charge-" + key;
+}
+
+function mainframe_assignment_record_id(character_id) {
+	return "MK_mainframe_assignment-" + character_id;
+}
+
+function mainframe_character_is_active(character, now) {
+	if (!character || !character.server || !character.last_sync) return false;
+	var last_sync = new Date(character.last_sync);
+	return Number.isFinite(last_sync.getTime()) && now.getTime() - last_sync.getTime() < 120 * 60 * 1000;
+}
+
+async function mainframe_resolve_server(requested) {
+	requested = String(requested || "").trim();
+	var servers = await get_servers();
+	var server = servers.find(function (candidate) {
+		var label = candidate.region + " " + candidate.name;
+		return !requested || requested === get_id(candidate) || requested.toLowerCase() === label.toLowerCase();
+	});
+	if (!server || !server.address || !server.path) return null;
+	if (!/^[A-Za-z0-9.-]+(?::[0-9]{1,5})?$/.test(server.address) || !/^\/[A-Za-z0-9_./-]*$/.test(server.path)) return null;
+	return {
+		key: get_id(server),
+		label: server.region + " " + server.name,
+		url: "https://" + server.address,
+		path: server.path,
+	};
+}
+
+async function mainframe_validate_code_slot(user, code_slot) {
+	code_slot = String(code_slot || "");
+	if (!MAINFRAME_CODE_SLOT_PATTERN.test(code_slot)) return null;
+	var user_data = await get_user_data(user);
+	var code_list = gf(user_data, "code_list", {});
+	if (Object.prototype.hasOwnProperty.call(code_list, code_slot)) return code_slot;
+	for (var slot in code_list) {
+		if (String((code_list[slot] || [])[0] || "").toLowerCase() === code_slot.toLowerCase()) return String(slot);
+	}
+	return null;
+}
+
+function mainframe_assignment_to_client(assignment) {
+	if (!assignment) return null;
+	return {
+		assignment_id: assignment.session_id || null,
+		character: assignment.character_name || null,
+		character_id: assignment.character || null,
+		code_slot: assignment.code_slot || null,
+		server: assignment.server_label || null,
+		desired_state: assignment.desired_state || "stopped",
+		revision: Number(assignment.revision) || 0,
+	};
+}
+
+async function mainframe_begin_assignment(user, character, request_id, options) {
+	options = options || {};
+	if (!user || !character || character.owner !== get_id(user)) return { failed: true, reason: "character_not_found" };
+	if (typeof request_id !== "string" || !MAINFRAME_REQUEST_PATTERN.test(request_id)) return { failed: true, reason: "invalid_request_id" };
+	var code_slot = await mainframe_validate_code_slot(user, options.code_slot);
+	if (!code_slot) return { failed: true, reason: "code_not_found" };
+	var server = await mainframe_resolve_server(options.server);
+	if (!server) return { failed: true, reason: "server_not_found" };
+	var now = new Date();
+	var user_id = get_id(user);
+	var character_id = get_id(character);
+	var access_id = mainframe_access_record_id(character_id);
+	var charge_id = mainframe_charge_record_id(user_id, request_id);
+	var assignment_id = mainframe_assignment_record_id(character_id);
+	var R = await tx(
+		async () => {
+			var owner = await tx_get(A.user_id);
+			var current_character = await tx_get(A.character_id);
+			if (!owner || !current_character || current_character.owner !== A.user_id) ex("character_not_found");
+			var existing = await tx_get(A.assignment_id);
+			if (existing && (existing.owner !== A.user_id || existing.character !== A.character_id)) ex("assignment_conflict");
+			var previous_charge = await tx_get(A.charge_id);
+			if (previous_charge) {
+				if (previous_charge.owner !== A.user_id || previous_charge.character !== A.character_id) ex("idempotency_conflict");
+				R.owner = owner;
+				R.access = await tx_get(A.access_id);
+				R.charge = previous_charge;
+				R.assignment =
+					existing &&
+					existing.session_id === previous_charge.session_id &&
+					existing.desired_state === "running" &&
+					existing.access_until &&
+					new Date(existing.access_until) > A.now
+						? existing
+						: null;
+				R.charged = false;
+				R.replayed = true;
+				return;
+			}
+			if (existing && existing.desired_state === "running") {
+				if (existing.server_key !== A.server.key || String(existing.code_slot) !== A.code_slot)
+					ex("character_already_linked");
+			} else if (mainframe_character_is_active(current_character, A.now)) ex("character_in_game");
+			if (owner.server) ex("account_in_bank");
+			var access = await tx_get(A.access_id);
+			if (access && (access.owner !== A.user_id || access.character !== A.character_id)) access = null;
+			var charged = !(access && access.access_until && new Date(access.access_until) > A.now);
+			if (charged && gf(owner, "cash", 0) < MAINFRAME_PERIOD_SHELLS) ex("not_enough_shells");
+			if (charged) owner.cash -= MAINFRAME_PERIOD_SHELLS;
+			var period_end = charged ? new Date(A.now.getTime() + MAINFRAME_PERIOD_MS) : new Date(access.access_until);
+			access = access || {
+				_id: A.access_id,
+				type: "mainframe_access",
+				owner: A.user_id,
+				character: A.character_id,
+				created: A.now,
+			};
+			access.access_until = period_end;
+			access.operator = null;
+			access.updated = A.now;
+			var session_id = existing && existing.desired_state === "running" ? existing.session_id : crypto.randomBytes(16).toString("hex");
+			if (!existing || existing.desired_state !== "running") {
+				var auth = get_new_auth(owner);
+				existing = existing || {
+					_id: A.assignment_id,
+					type: "mainframe_assignment",
+					owner: A.user_id,
+					character: A.character_id,
+					created: A.now,
+					revision: 0,
+				};
+				existing.session_id = session_id;
+				existing.revision = (Number(existing.revision) || 0) + 1;
+				existing.auth = auth;
+			}
+			existing.character_name = current_character.info.name;
+			existing.controller = MAINFRAME_ASSIGNMENT_CONTROLLER;
+			existing.server_key = A.server.key;
+			existing.server_label = A.server.label;
+			existing.connection_url = A.server.url;
+			existing.connection_path = A.server.path;
+			existing.code_slot = A.code_slot;
+			existing.desired_state = "running";
+			existing.access_until = period_end;
+			existing.start_after = null;
+			existing.updated = A.now;
+			var charge = {
+				_id: A.charge_id,
+				type: "mainframe_charge",
+				owner: A.user_id,
+				character: A.character_id,
+				request_id: A.request_id,
+				session_id: session_id,
+				shells: charged ? MAINFRAME_PERIOD_SHELLS : 0,
+				period_start: charged ? A.now : null,
+				period_end: period_end,
+				created: A.now,
+			};
+			await tx_save(owner);
+			await tx_save(access);
+			await tx_save(existing);
+			await tx_save(charge);
+			R.owner = owner;
+			R.access = access;
+			R.charge = charge;
+			R.assignment = existing;
+			R.charged = charged;
+			R.replayed = false;
+		},
+		{
+			user_id: user_id,
+			character_id: character_id,
+			request_id: request_id,
+			access_id: access_id,
+			charge_id: charge_id,
+			assignment_id: assignment_id,
+			server: server,
+			code_slot: code_slot,
+			now: now,
+		},
+		3,
+	);
+	if (R.failed) return { failed: true, reason: R.reason || "link_failed" };
+	if (R.replayed && !R.assignment)
+		return { failed: true, reason: "request_already_used", access: mainframe_access_to_client(R.access, now) };
+	return {
+		success: true,
+		charged: R.charged,
+		replayed: R.replayed,
+		shells_charged: R.charged ? MAINFRAME_PERIOD_SHELLS : 0,
+		shells: gf(R.owner, "cash", 0),
+		receipt: R.charge ? R.charge._id.slice("MK_mainframe_charge-".length) : null,
+		access: mainframe_access_to_client(R.access, now),
+		assignment: mainframe_assignment_to_client(R.assignment),
+	};
+}
+
+async function mainframe_stop_assignment(user, character) {
+	if (!user || !character || character.owner !== get_id(user)) return { failed: true, reason: "character_not_found" };
+	var now = new Date();
+	var R = await tx(
+		async () => {
+			var owner = await tx_get(A.user_id);
+			var current_character = await tx_get(A.character_id);
+			var assignment = await tx_get(A.assignment_id);
+			if (!owner || !current_character || current_character.owner !== A.user_id) ex("character_not_found");
+			if (!assignment || assignment.owner !== A.user_id || assignment.character !== A.character_id) ex("mainframe_unavailable");
+			if (assignment.auth && owner.info && Array.isArray(owner.info.auths)) {
+				owner.info.auths = owner.info.auths.filter(function (auth) {
+					return auth !== assignment.auth;
+				});
+			}
+			assignment.desired_state = "stopped";
+			assignment.auth = null;
+			assignment.updated = A.now;
+			await tx_save(owner);
+			await tx_save(assignment);
+			R.assignment = assignment;
+		},
+		{
+			user_id: get_id(user),
+			character_id: get_id(character),
+			assignment_id: mainframe_assignment_record_id(get_id(character)),
+			now: now,
+		},
+		3,
+	);
+	if (R.failed) return { failed: true, reason: R.reason || "disconnect_failed" };
+	return { success: true, assignment: mainframe_assignment_to_client(R.assignment) };
+}
+
+async function mainframe_controller_assignments(agent_id) {
+	if (agent_id !== MAINFRAME_ASSIGNMENT_CONTROLLER) return [];
+	var now = new Date();
+	var assignments = await db
+		.collection("mark")
+		.find({
+			type: "mainframe_assignment",
+			controller: agent_id,
+			desired_state: "running",
+			access_until: { $gt: now },
+			$or: [{ start_after: null }, { start_after: { $exists: false } }, { start_after: { $lte: now } }],
+		})
+		.limit(100)
+		.toArray();
+	return assignments
+		.map(function (assignment) {
+			var connection_url;
+			try {
+				connection_url = new URL(assignment.connection_url);
+			} catch (e) {
+				return null;
+			}
+			if (
+				assignment._id !== mainframe_assignment_record_id(assignment.character) ||
+				!/^US_[A-Za-z0-9_-]{1,100}$/.test(assignment.owner || "") ||
+				!/^CH_[A-Za-z0-9_-]{1,100}$/.test(assignment.character || "") ||
+				!/^[A-Za-z0-9_.:@-]{1,128}$/.test(assignment.character_name || "") ||
+				!/^[0-9a-f]{32}$/.test(assignment.session_id || "") ||
+				!/^[A-Za-z0-9_-]{1,256}$/.test(assignment.auth || "") ||
+				!Number.isSafeInteger(assignment.revision) ||
+				assignment.revision < 1 ||
+				!MAINFRAME_CODE_SLOT_PATTERN.test(assignment.code_slot || "") ||
+				typeof assignment.server_label !== "string" ||
+				assignment.server_label.length < 3 ||
+				assignment.server_label.length > 50 ||
+				connection_url.protocol !== "https:" ||
+				connection_url.username ||
+				connection_url.password ||
+				connection_url.pathname !== "/" ||
+				connection_url.search ||
+				connection_url.hash ||
+				(connection_url.hostname !== "adventure.land" && !connection_url.hostname.endsWith(".adventure.land")) ||
+				!/^\/[A-Za-z0-9_./-]*$/.test(assignment.connection_path || "")
+			)
+				return null;
+			return {
+				assignment_id: assignment.session_id,
+				character_id: assignment.character,
+				character_name: assignment.character_name,
+				owner_id: assignment.owner,
+				revision: Number(assignment.revision) || 0,
+				server: assignment.server_label,
+				connection: { url: assignment.connection_url, path: assignment.connection_path },
+				code_slot: String(assignment.code_slot),
+				credentials: { user: assignment.owner, character: assignment.character, auth: assignment.auth },
+			};
+		})
+		.filter(Boolean);
+}
+
+async function mainframe_record_controller_failures(report) {
+	var failures = (report && report.bots ? report.bots : []).filter(function (bot) {
+		return bot.character_id && bot.assignment_id && bot.failure && bot.failure.assignment_id === bot.assignment_id;
+	});
+	var stopped = 0;
+	for (var bot of failures) {
+		var now = new Date();
+		var R = await tx(
+			async () => {
+				var assignment = await tx_get(A.assignment_id);
+				if (
+					!assignment ||
+					assignment.session_id !== A.session_id ||
+					assignment.desired_state !== "running" ||
+					assignment.controller !== MAINFRAME_ASSIGNMENT_CONTROLLER
+				)
+					return;
+				var owner = await tx_get(assignment.owner);
+				if (owner && assignment.auth && owner.info && Array.isArray(owner.info.auths)) {
+					owner.info.auths = owner.info.auths.filter(function (auth) {
+						return auth !== assignment.auth;
+					});
+					await tx_save(owner);
+				}
+				assignment.desired_state = "stopped";
+				assignment.auth = null;
+				assignment.failure = A.failure;
+				assignment.updated = A.now;
+				await tx_save(assignment);
+				R.stopped = true;
+			},
+			{
+				assignment_id: mainframe_assignment_record_id(bot.character_id),
+				session_id: bot.assignment_id,
+				failure: { code: bot.failure.code, at: bot.failure.at || now },
+				now: now,
+			},
+			3,
+		);
+		if (R.stopped) stopped++;
+	}
+	return stopped;
+}
+
+async function mainframe_change_assignment_server(source, region, name) {
+	var server = await mainframe_resolve_server(String(region || "") + " " + String(name || ""));
+	if (!server) return { failed: true, reason: "server_not_found" };
+	var now = new Date();
+	var R = await tx(
+		async () => {
+			var assignment = await tx_get(A.assignment_id);
+			if (
+				!assignment ||
+				assignment.session_id !== A.session_id ||
+				assignment.desired_state !== "running" ||
+				new Date(assignment.access_until) <= A.now
+			)
+				ex("assignment_expired");
+			var owner = await tx_get(assignment.owner);
+			var character = await tx_get(assignment.character);
+			if (!owner || !character || character.owner !== assignment.owner) ex("character_not_found");
+			if (assignment.auth && owner.info && Array.isArray(owner.info.auths)) {
+				owner.info.auths = owner.info.auths.filter(function (auth) {
+					return auth !== assignment.auth;
+				});
+			}
+			assignment.auth = get_new_auth(owner);
+			assignment.session_id = crypto.randomBytes(16).toString("hex");
+			assignment.revision = (Number(assignment.revision) || 0) + 1;
+			assignment.server_key = A.server.key;
+			assignment.server_label = A.server.label;
+			assignment.connection_url = A.server.url;
+			assignment.connection_path = A.server.path;
+			assignment.start_after = new Date(A.now.getTime() + 15000);
+			assignment.updated = A.now;
+			await tx_save(owner);
+			await tx_save(assignment);
+			R.assignment = assignment;
+		},
+		{
+			assignment_id: mainframe_assignment_record_id(source.character),
+			session_id: source.session_id,
+			server: server,
+			now: now,
+		},
+		3,
+	);
+	if (R.failed) return { failed: true, reason: R.reason || "change_server_failed" };
+	return { success: true, assignment: mainframe_assignment_to_client(R.assignment), start_after: R.assignment.start_after.toISOString() };
+}
+
+async function mainframe_code_action(body) {
+	var assignment = await get(mainframe_assignment_record_id(body.character_id));
+	var now = new Date();
+	if (
+		!assignment ||
+		assignment.controller !== body.agent_id ||
+		assignment.session_id !== body.assignment_id ||
+		assignment.desired_state !== "running" ||
+		!assignment.access_until ||
+		new Date(assignment.access_until) <= now
+	)
+		return { failed: true, reason: "assignment_expired" };
+	var owner = await get(assignment.owner);
+	if (!owner) return { failed: true, reason: "account_not_found" };
+	var data = body.data || {};
+	if (body.operation === "start_character") {
+		var target = await admin_bots_owned_character(owner, data.character);
+		if (!target) return { failed: true, reason: "character_not_found" };
+		return await mainframe_begin_assignment(owner, target, "code:" + assignment.session_id + ":" + body.request_id, {
+			code_slot: data.code_slot,
+			server: assignment.server_key,
+		});
+	}
+	if (body.operation === "stop_character") {
+		var target = await admin_bots_owned_character(owner, data.character);
+		if (!target) return { failed: true, reason: "character_not_found" };
+		return await mainframe_stop_assignment(owner, target);
+	}
+	if (body.operation === "command_character") {
+		if (typeof data.code !== "string" || !data.code.length || Buffer.byteLength(data.code, "utf8") > 64 * 1024)
+			return { failed: true, reason: "invalid_code" };
+		var target = await admin_bots_owned_character(owner, data.character);
+		if (!target) return { failed: true, reason: "character_not_found" };
+		var target_assignment = await get(mainframe_assignment_record_id(get_id(target)));
+		if (
+			!target_assignment ||
+			target_assignment.owner !== get_id(owner) ||
+			target_assignment.desired_state !== "running" ||
+			new Date(target_assignment.access_until) <= now
+		)
+			return { failed: true, reason: "mainframe_unavailable" };
+		return {
+			success: true,
+			command: {
+				character_id: get_id(target),
+				assignment_id: target_assignment.session_id,
+				command_id: body.request_id,
+				code: data.code,
+			},
+		};
+	}
+	if (body.operation === "change_server")
+		return await mainframe_change_assignment_server(assignment, data.region, data.name);
+	if (body.operation === "upload_code") {
+		if (typeof data.code !== "string" || Buffer.byteLength(data.code, "utf8") > 1024 * 1024)
+			return { failed: true, reason: "invalid_code" };
+		return await mcp_api_save_code({ user: owner, slot: data.slot, name: data.name, code: data.code });
+	}
+	return { failed: true, reason: "invalid_operation" };
+}
+
+function mainframe_access_to_client(access, now) {
+	now = now || new Date();
+	var access_until = access && access.access_until ? new Date(access.access_until) : null;
+	var active = !!(access_until && Number.isFinite(access_until.getTime()) && access_until > now);
+	return {
+		active: active,
+		access_until: access_until && Number.isFinite(access_until.getTime()) ? access_until.toISOString() : null,
+		remaining_seconds: active ? Math.max(0, Math.ceil((access_until.getTime() - now.getTime()) / 1000)) : 0,
+		shells_per_period: MAINFRAME_PERIOD_SHELLS,
+		period_minutes: MAINFRAME_PERIOD_MS / 60000,
+	};
+}
+
+async function mainframe_get_access(character) {
+	if (!character || !get_id(character)) return mainframe_access_to_client(null);
+	return mainframe_access_to_client(await get(mainframe_access_record_id(get_id(character))));
+}
+
+async function mainframe_get_assignment(character) {
+	if (!character || !get_id(character)) return null;
+	return mainframe_assignment_to_client(await get(mainframe_assignment_record_id(get_id(character))));
+}
+
+async function mainframe_grant_operator_access(character, requested_by) {
+	if (!character || !get_id(character)) return { failed: true, reason: "character_not_found" };
+	var now = new Date();
+	var character_id = get_id(character);
+	var access_id = mainframe_access_record_id(character_id);
+	var R = await tx(
+		async () => {
+			var current_character = await tx_get(A.character_id);
+			if (!current_character) ex("character_not_found");
+			var access = await tx_get(A.access_id);
+			if (access && (access.owner !== current_character.owner || access.character !== A.character_id)) access = null;
+			if (!access || !access.access_until || new Date(access.access_until) <= A.now) {
+				access = access || {
+					_id: A.access_id,
+					type: "mainframe_access",
+					owner: current_character.owner,
+					character: A.character_id,
+					created: A.now,
+				};
+				access.access_until = new Date(A.now.getTime() + MAINFRAME_PERIOD_MS);
+				access.updated = A.now;
+				access.operator = String(A.requested_by || "").slice(0, 160);
+				await tx_save(access);
+			}
+			R.access = access;
+		},
+		{ character_id: character_id, access_id: access_id, now: now, requested_by: requested_by },
+		3,
+	);
+	if (R.failed) return { failed: true, reason: R.reason || "grant_failed" };
+	return { success: true, access: mainframe_access_to_client(R.access, now) };
+}
+
+async function mainframe_expire_access() {
+	if (!admin_bots_configured()) return { success: true, checked: 0, queued: 0 };
+	var now = new Date();
+	var expired_assignments = await db
+		.collection("mark")
+		.find({ type: "mainframe_assignment", desired_state: "running", access_until: { $lte: now } })
+		.limit(100)
+		.toArray();
+	var expired_stopped = 0;
+	for (var assignment of expired_assignments) {
+		var character = await get(assignment.character);
+		var owner = character && (await get(character.owner));
+		if (!owner || !character) continue;
+		var stopped = await mainframe_stop_assignment(owner, character);
+		if (stopped.success) expired_stopped++;
+	}
+	var snapshot = await admin_bots_snapshot();
+	var running = snapshot.bots.filter(function (bot) {
+		return bot.desired_state === "running" && bot.pending_state !== "stopped";
+	});
+	var checked = 0;
+	var queued = 0;
+	for (var i = 0; i < running.length; i++) {
+		var character = await get_character(running[i].bot_id, true);
+		if (!character) continue;
+		checked++;
+		var access = await get(mainframe_access_record_id(get_id(character)));
+		if (!access) continue;
+		var status = mainframe_access_to_client(access, now);
+		if (!status.active) {
+			var result = await admin_bots_queue_state(running[i].bot_id, "stopped", "mainframe_expiry");
+			if (result.success) queued++;
+		}
+	}
+	return { success: true, checked: checked + expired_assignments.length, queued: queued + expired_stopped };
+}
