@@ -1,105 +1,106 @@
 <p><span class="dlabel">Adventure Land MCP</span></p>
 
-<p>The Adventure Land MCP server is the AI interface for the whole game. It exposes tools for research and account actions, resources that explain the game and CODE runtime, resource templates for exact records, and guided prompts for writing and operating character CODE. The <a href="/docs/guide/adventure-api">JSON API</a> remains the simpler interface for ordinary programs.</p>
+<p>The Adventure Land MCP server connects AI clients to the whole game. It provides tools for research and account actions, resources that explain the game and CODE runtime, exact game records, and guided workflows for writing and operating character CODE. The <a href="/docs/guide/adventure-api">JSON API</a> is the simpler interface for ordinary programs.</p>
 
 <p><span class="dlabel">Get an account token</span></p>
 
-<div class="code">1. Sign in at https://adventure.land/.
-2. Open https://adventure.land/mainframe.
-3. Find “Connect an AI”.
-4. Press “Create token”. If a token already exists, the button says “Rotate token”.
-5. Confirm the warning. Rotation invalidates the previous token immediately.
-6. Copy the connection details while they are visible. The plaintext token cannot be shown again.
-7. Keep it out of character CODE, screenshots, public repositories, and chat messages.</div>
+<ol>
+<li>Sign in at <a href="https://adventure.land/">Adventure Land</a>.</li>
+<li>Open <a href="/mainframe">Mainframe</a>.</li>
+<li>Find <strong>Connect an AI</strong>.</li>
+<li>Press <strong>Create token</strong>. If a token already exists, the button says <strong>Rotate token</strong>.</li>
+<li>Confirm the warning. Rotation invalidates the previous token immediately.</li>
+<li>Copy the connection details while they are visible. The plaintext token cannot be shown again.</li>
+<li>Keep the token out of character CODE, screenshots, public repositories, and chat messages.</li>
+</ol>
 
-<p>Adventure Land stores only a hash of the token. One token can be active per account. Use the Revoke button on Mainframe if a token is exposed or no longer needed.</p>
+<p>Adventure Land stores only a hash of the token. One token can be active per account. Use <strong>Revoke token</strong> in <a href="/mainframe">Mainframe</a> if a token is exposed or no longer needed.</p>
 
 <p><span class="dlabel">Connect an AI client</span></p>
 
-<p>In the AI application's MCP or connector settings, add a remote server with these values:</p>
+<p>Add a remote MCP server in your AI application's MCP or connector settings:</p>
 
-<div class="code">Name: Adventure Land
-Transport: Streamable HTTP
-URL: https://adventure.land/mcp
-Header: Authorization: Bearer YOUR_TOKEN</div>
+<table style="width:100%; text-align:left; border-spacing:12px 7px">
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Name</td><td>Adventure Land</td></tr>
+<tr><td>Transport</td><td>Streamable HTTP</td></tr>
+<tr><td>Server URL</td><td><a href="https://adventure.land/mcp">https://adventure.land/mcp</a></td></tr>
+<tr><td>Header name</td><td><span class="dlabel">Authorization</span></td></tr>
+<tr><td>Header value</td><td><span class="dlabel">Bearer YOUR_TOKEN</span></td></tr>
+</table>
 
-<p>Client configuration formats differ. If the client accepts a JSON server record, the equivalent shape is:</p>
-
-<div class="code">{
-  "mcpServers": {
-    "adventure-land": {
-      "url": "https://adventure.land/mcp",
-      "headers": {
-        "Authorization": "Bearer YOUR_TOKEN"
-      }
-    }
-  }
-}</div>
-
-<p>After connecting, ask the AI to read <span class="dlabel">adventureland://guide/start-here</span>. A conforming client also receives that instruction during MCP initialization.</p>
+<p>Client configuration screens differ, but the server URL and Authorization header stay the same. After connecting, ask the AI to read <span class="dlabel">adventureland://guide/start-here</span>. A compatible client also receives that instruction when it connects.</p>
 
 <p><span class="dlabel">What the AI discovers</span></p>
 
 <table style="width:100%; text-align:left; border-spacing:12px 7px">
 <tr><th>Capability</th><th>Purpose</th></tr>
-<tr><td>Tools</td><td>Search game data, read docs and CODE contracts, manage saved slots, and control owned Mainframe characters.</td></tr>
-<tr><td>Resources</td><td>Load the game model, CODE architecture, globals, object/event references, Mainframe rules, live account state, and shipped runner source.</td></tr>
+<tr><td>Tools</td><td>Search game data, read documentation and CODE contracts, manage saved slots, and control owned Mainframe characters.</td></tr>
+<tr><td>Resources</td><td>Load the game model, CODE architecture, globals, object and event references, Mainframe rules, live account state, and shipped runner source.</td></tr>
 <tr><td>Resource templates</td><td>Read one exact guide, function, game definition, saved slot, or owned character by URI.</td></tr>
 <tr><td>Prompts</td><td>Teach the AI the game, write character CODE, review a slot, or operate one Mainframe character through a consistent workflow.</td></tr>
 </table>
 
 <p><span class="dlabel">Core resources</span></p>
 
-<div class="code">adventureland://guide/start-here
-adventureland://guide/code-runtime
-adventureland://guide/code-architecture
-adventureland://reference/code-globals
-adventureland://reference/character
-adventureland://reference/monster
-adventureland://reference/character-events
-adventureland://reference/game-events
-adventureland://guide/mainframe
-adventureland://source/runner-functions
-adventureland://account/dashboard
-adventureland://account/code-slots
-adventureland://game/servers</div>
+<table style="width:100%; text-align:left; border-spacing:12px 7px">
+<tr><th>Resource</th><th>Purpose</th></tr>
+<tr><td><span class="dlabel">adventureland://guide/start-here</span></td><td>Where an AI should begin and how the project fits together.</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/code-runtime</span></td><td>How character CODE runs and which browser features are absent.</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/code-architecture</span></td><td>How to structure reliable character CODE.</td></tr>
+<tr><td><span class="dlabel">adventureland://reference/code-globals</span></td><td>Globals available inside character CODE.</td></tr>
+<tr><td><span class="dlabel">adventureland://reference/character</span></td><td>The character object and important fields.</td></tr>
+<tr><td><span class="dlabel">adventureland://reference/monster</span></td><td>Monster objects and combat state.</td></tr>
+<tr><td><span class="dlabel">adventureland://reference/character-events</span></td><td>Character event hooks.</td></tr>
+<tr><td><span class="dlabel">adventureland://reference/game-events</span></td><td>Game event hooks.</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/mainframe</span></td><td>Mainframe access, billing, and operating rules.</td></tr>
+<tr><td><span class="dlabel">adventureland://source/runner-functions</span></td><td>The JavaScript runner functions shipped by the game.</td></tr>
+<tr><td><span class="dlabel">adventureland://account/dashboard</span></td><td>Owned characters, assignments, status, and account Mainframe state.</td></tr>
+<tr><td><span class="dlabel">adventureland://account/code-slots</span></td><td>Saved character CODE slots.</td></tr>
+<tr><td><span class="dlabel">adventureland://game/servers</span></td><td>Available game servers.</td></tr>
+</table>
 
-<p>The runner resource is the actual public <span class="dlabel">js/runner_functions.js</span> shipped by the game. The start guide maps the rest of the <a href="https://github.com/kaansoral/adventureland_mongodb">open-source repository</a>, including function docs, game definitions, browser integration, and server behavior.</p>
+<p>The runner resource is the same public <a href="https://github.com/kaansoral/adventureland_mongodb/blob/main/js/runner_functions.js">runner_functions.js</a> shipped by the game. The start guide maps the rest of the <a href="https://github.com/kaansoral/adventureland_mongodb">open-source repository</a>, including <a href="https://github.com/kaansoral/adventureland_mongodb/tree/main/docs/functions">function documentation</a>, <a href="https://github.com/kaansoral/adventureland_mongodb/tree/main/design">game definitions</a>, browser integration, and server behavior.</p>
 
 <p><span class="dlabel">Resource templates</span></p>
 
-<div class="code">adventureland://docs/{name}
-adventureland://code/functions/{name}
-adventureland://game-data/{section}/{name}
-adventureland://code/slots/{slot}
-adventureland://mainframe/characters/{character}</div>
+<table style="width:100%; text-align:left; border-spacing:12px 7px">
+<tr><th>Template</th><th>Purpose</th></tr>
+<tr><td><span class="dlabel">adventureland://docs/{name}</span></td><td>Read one documentation page.</td></tr>
+<tr><td><span class="dlabel">adventureland://code/functions/{name}</span></td><td>Read the exact contract for one CODE method.</td></tr>
+<tr><td><span class="dlabel">adventureland://game-data/{section}/{name}</span></td><td>Read one item, skill, monster, map, recipe, or other game definition.</td></tr>
+<tr><td><span class="dlabel">adventureland://code/slots/{slot}</span></td><td>Read one owned CODE slot.</td></tr>
+<tr><td><span class="dlabel">adventureland://mainframe/characters/{character}</span></td><td>Read one owned character's Mainframe state.</td></tr>
+</table>
 
-<p>Find exact names with <span class="dlabel">list_docs</span>, <span class="dlabel">list_code_methods</span>, <span class="dlabel">search_game_data</span>, <span class="dlabel">list_codes</span>, and <span class="dlabel">mainframe_get_dashboard</span>. Resource URIs are validated and remain inside those public or account-owned collections.</p>
+<p>Find exact names with <span class="dlabel">list_docs</span>, <span class="dlabel">list_code_methods</span>, <span class="dlabel">search_game_data</span>, <span class="dlabel">list_codes</span>, and <span class="dlabel">mainframe_get_dashboard</span>. Resource paths are validated and remain inside public or account-owned collections.</p>
 
 <p><span class="dlabel">Guided prompts</span></p>
 
 <table style="width:100%; text-align:left; border-spacing:12px 7px">
 <tr><th>Prompt</th><th>Use</th></tr>
-<tr><td>learn_adventure_land</td><td>Load the mental model without changing account state.</td></tr>
-<tr><td>write_character_code</td><td>Research a goal, character, and optional slot before producing bounded CODE.</td></tr>
-<tr><td>review_character_code</td><td>Check an owned slot against exact contracts, game state, safety, and Mainframe compatibility.</td></tr>
-<tr><td>operate_mainframe</td><td>Read, deploy, observe, and improve one owned character without confusing requested actions with confirmed behavior.</td></tr>
+<tr><td><span class="dlabel">learn_adventure_land</span></td><td>Load the game model without changing account state.</td></tr>
+<tr><td><span class="dlabel">write_character_code</span></td><td>Research a goal, character, and optional slot before producing bounded CODE.</td></tr>
+<tr><td><span class="dlabel">review_character_code</span></td><td>Check an owned slot against exact contracts, game state, safety, and Mainframe compatibility.</td></tr>
+<tr><td><span class="dlabel">operate_mainframe</span></td><td>Read, deploy, observe, and improve one owned character without confusing requested actions with confirmed behavior.</td></tr>
 </table>
 
 <p><span class="dlabel">How an AI should build a character</span></p>
 
-<div class="code">1. Read adventureland://guide/start-here.
-2. Read mainframe_get_dashboard.
-3. Inspect the character, live server choices, existing assignment, and available CODE slots.
-4. Read an existing target slot before replacing it.
-5. Find exact CODE methods with list_code_methods, then read each with get_code_method.
-6. Find exact items, skills, monsters, maps, and recipes with search_game_data, then get_game_data.
-7. Save the complete JavaScript slot with save_code.
-8. Explain the charge if the character has no active Mainframe window.
-9. Link with one stable request_id.
-10. Verify connection, position, activity, deaths, performance, and CODE logs.</div>
+<ol>
+<li>Read <span class="dlabel">adventureland://guide/start-here</span>.</li>
+<li>Call <span class="dlabel">mainframe_get_dashboard</span>.</li>
+<li>Inspect the character, live server choices, existing assignment, and available CODE slots.</li>
+<li>Read an existing target slot before replacing it.</li>
+<li>Find exact CODE methods with <span class="dlabel">list_code_methods</span>, then read each contract with <span class="dlabel">get_code_method</span>.</li>
+<li>Find exact items, skills, monsters, maps, and recipes with <span class="dlabel">search_game_data</span>, then read their definitions with <span class="dlabel">get_game_data</span>.</li>
+<li>Save the complete JavaScript slot with <span class="dlabel">save_code</span>.</li>
+<li>Explain the charge if the character has no active Mainframe window.</li>
+<li>Link the character with one stable <span class="dlabel">request_id</span>.</li>
+<li>Verify connection, position, activity, deaths, performance, and CODE logs.</li>
+</ol>
 
-<p>Combat loops belong inside contained character CODE. MCP is the control plane: it plans, deploys, observes, and corrects. It should not poll fast enough to become the combat loop.</p>
+<p>Combat loops belong inside contained character CODE. MCP is the control plane: it plans, deploys, observes, and corrects. It should not poll fast enough to become the combat loop. Read the <a href="/docs/guide/adventure-ai">AI integration guide</a> for the full game and CODE workflow.</p>
 
 <p><span class="dlabel">Billing safety</span></p>
 
@@ -115,4 +116,4 @@ adventureland://mainframe/characters/{character}</div>
 
 <p><span class="dlabel">Rotate or revoke</span></p>
 
-<p>Return to Mainframe's Connect an AI panel. <span class="dlabel">Rotate token</span> creates a new secret and invalidates the old one in the same transaction. Update the AI client's Authorization header. <span class="dlabel">Revoke token</span> disables MCP and JSON API access for that token without changing game login sessions or running characters.</p>
+<p>Return to <a href="/mainframe">Mainframe's Connect an AI panel</a>. <strong>Rotate token</strong> creates a new secret and invalidates the old one in the same transaction. Update the AI client's Authorization header. <strong>Revoke token</strong> disables MCP and JSON API access for that token without changing game login sessions or running characters.</p>
