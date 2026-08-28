@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{{ domain.title }}</title>
+		<link rel="icon" href="/images/favicon.png" />
+		<link href="/css/common.css?v={{ domain.v }}" rel="stylesheet" />
+		<style>
+			:root { color-scheme: dark; --bg:#080a0c; --panel:#11171b; --panel2:#182127; --line:#53616a; --text:#edf2f2; --muted:#9ba7ad; --green:#67c85c; --gold:#efc64c; --red:#e45d69; --blue:#55bdf0; }
+			* { box-sizing: border-box; }
+			html, body { min-height:100%; margin:0; background:var(--bg); color:var(--text); font-family:pixel, monospace; font-size:18px; line-height:1.4; }
+			body { padding:24px; }
+			main { width:min(1180px, 100%); margin:0 auto; }
+			h1, h2, p { margin:0; }
+			h1 { font-size:38px; }
+			h2 { font-size:24px; }
+			a, button, select { color:var(--text); font:inherit; }
+			.top, .status, .card-head, .controls, .footer { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+			.nav { display:flex; flex-wrap:wrap; gap:8px; }
+			.nav a, button, select { border:1px solid var(--line); background:var(--panel2); padding:9px 12px; text-decoration:none; }
+			.nav a:hover, button:hover { border-color:var(--blue); }
+			button { cursor:pointer; }
+			button:disabled { cursor:wait; opacity:.5; }
+			button.disconnect { border-color:#8c4248; }
+			.muted { color:var(--muted); }
+			.status { margin:24px 0 16px; border:1px solid var(--line); background:var(--panel); padding:15px; }
+			.status.online { border-color:var(--green); }
+			.status.offline, .error { border-color:var(--red); }
+			.dot { display:inline-block; width:12px; height:12px; border-radius:50%; background:var(--muted); margin-right:8px; }
+			.online .dot, .running .dot { background:var(--green); }
+			.offline .dot, .failed .dot { background:var(--red); }
+			.summary { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); border:1px solid var(--line); background:var(--line); gap:1px; margin-bottom:16px; }
+			.summary > div { background:var(--panel2); padding:12px; }
+			.summary span, .metric span { display:block; color:var(--muted); font-size:15px; }
+			.grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(350px, 1fr)); gap:16px; }
+			.card { border:1px solid var(--line); background:var(--panel); padding:17px; min-width:0; }
+			.card.running { border-color:var(--green); }
+			.card.failed, .card.stuck { border-color:var(--red); }
+			.phase { color:var(--muted); white-space:nowrap; }
+			.metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px; margin:14px 0; background:var(--line); border:1px solid var(--line); }
+			.metric { min-width:0; background:var(--panel2); padding:9px; }
+			.metric strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+			.controls { align-items:stretch; flex-wrap:wrap; }
+			.controls label { display:flex; flex-direction:column; gap:4px; color:var(--muted); font-size:15px; flex:1; min-width:130px; }
+			.controls select { width:100%; min-height:42px; }
+			.actions { display:flex; gap:8px; margin-top:12px; }
+			.actions button { flex:1; }
+			.logs { display:none; margin-top:12px; padding:10px; max-height:180px; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; border:1px solid #303a40; background:#060809; font:14px/1.45 monospace; }
+			.notice, .empty, .error { border:1px solid var(--line); background:var(--panel); padding:20px; }
+			.error { display:none; color:#ffb8be; margin-bottom:16px; }
+			.footer { margin-top:22px; color:var(--muted); font-size:15px; }
+			@media (max-width:700px) { body{padding:12px}.top,.status,.card-head,.footer{align-items:flex-start;flex-direction:column}.summary{grid-template-columns:1fr}.grid{grid-template-columns:1fr}h1{font-size:30px} }
+		</style>
+	</head>
+	<body>
+		<main>
+			<header class="top">
+				<div><h1>Mainframe</h1><p class="muted">Your characters keep running in Adventure Land.</p></div>
+				<nav class="nav" aria-label="Main navigation"><a href="/comm">COM</a><a href="/docs/guide/mainframe">Guide</a><a href="/">Game</a></nav>
+			</header>
+			{% if not user %}
+				<section class="notice" style="margin-top:24px"><h2>Sign in first</h2><p class="muted" style="margin-top:8px">Open Adventure Land, sign in, then return to Mainframe.</p><p style="margin-top:14px"><a href="/">Open Adventure Land</a></p></section>
+			{% else %}
+				<section id="mainframe-status" class="status offline"><div><span class="dot"></span><strong id="status-title">Connecting</strong></div><div id="status-detail" class="muted">Waiting for Mainframe.</div></section>
+				<div id="mainframe-error" class="error"></div>
+				<section class="summary"><div><span>Cost</span><strong id="cost">1 Shell / 60 minutes</strong></div><div><span>Your Shells</span><strong id="shells">—</strong></div><div><span>Running</span><strong id="running">—</strong></div></section>
+				<section id="mainframe-characters" class="grid" aria-live="polite"><div class="empty">Loading characters…</div></section>
+				<footer class="footer"><span>Payment starts before a new window. Disconnecting does not pause it.</span><span>One isolated machine per character.</span></footer>
+				<script src="/js/mainframe_ui.js?v={{ domain.v }}"></script>
+			{% endif %}
+		</main>
+	</body>
+</html>

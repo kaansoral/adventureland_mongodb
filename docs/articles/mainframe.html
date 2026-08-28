@@ -1,68 +1,39 @@
-<p><span class="dlabel">Adventure Land tools</span></p>
-
-<p>The same Adventure Land tools are available through a plain JSON API and through MCP. Use the JSON API for your own programs. Use MCP when an AI client needs a tool directory, input schemas, and structured results.</p>
-
-<p>Both interfaces use one account token and the same permission checks. A token can only read or control characters and CODE slots owned by its account.</p>
-
-<p>Create or rotate your token from an authenticated game session:</p>
-
-<div class="code">var result = await parent.api_call("generate_token");
-show_json(result);</div>
-
-<p>Copy the token when it is shown. Generating another token invalidates the previous one.</p>
-
-<p><span class="dlabel">JSON API</span></p>
-
-<p>Send a POST request to <span class="dlabel">https://adventure.land/mcp_api/METHOD</span>. Put the token and method arguments in the JSON body:</p>
-
-<div class="code">curl https://adventure.land/mcp_api/get_servers \
-  -H 'Content-Type: application/json' \
-  -d '{"token":"YOUR_TOKEN"}'</div>
-
-<p>Available methods:</p>
-
-<div class="code">get_servers
-get_game_data
-list_codes
-get_code
-save_code
-delete_code
-mainframe_list_characters
-mainframe_get_character
-mainframe_link_character
-mainframe_disconnect_character
-mainframe_get_logs</div>
-
-<p><span class="dlabel">MCP</span></p>
-
-<p>Connect an MCP client to <span class="dlabel">https://adventure.land/mcp</span> and send the token as an HTTP bearer token. The server supports the current stateless MCP protocol and the previous Streamable HTTP handshake protocol.</p>
-
-<div class="code">URL: https://adventure.land/mcp
-Authorization: Bearer YOUR_TOKEN</div>
-
-<p>The MCP tool names are the same as the JSON API method names. Tool results include both readable text and structured JSON.</p>
-
 <p><span class="dlabel">Mainframe</span></p>
 
-<p>Mainframe runs one character's saved CODE inside its own small machine. The character has no internet connection. Game actions pass through a narrow Adventure Land connection, and <span class="dlabel">smart_move</span> uses the Mainframe navigation service instead of running the exhaustive browser pathfinder.</p>
+<p>Mainframe keeps your characters running Adventure Land CODE when your browser is closed. Each character runs in its own small machine and uses one of your saved CODE slots.</p>
 
-<p>A new access window costs <span class="dlabel">1 Shell</span> and lasts <span class="dlabel">60 minutes</span>. The Shell is charged before the character starts. Disconnecting does not pause the window. Reconnecting the same character during an active window costs nothing.</p>
+<p>Open <a href="/mainframe">Mainframe</a> to choose a character, CODE slot, and live realm. Mainframe is also visible in COM and on <a href="/comm">/comm</a>.</p>
 
-<p>Link a character with a unique request ID, one owned CODE slot, and an optional live server:</p>
+<p><span class="dlabel">Cost</span></p>
 
-<div class="code">POST /mcp_api/mainframe_link_character
-{
-  "token": "YOUR_TOKEN",
+<p>A new access window costs <span class="dlabel">1 Shell</span> and lasts <span class="dlabel">60 minutes</span>. The Shell is charged before the character starts. Disconnecting does not pause the window. Reconnecting the same character while its window is active costs nothing.</p>
+
+<p>Mainframe refuses to load a character that is already active elsewhere. It never replaces a different running assignment. A character can have only one Mainframe assignment at a time.</p>
+
+<p><span class="dlabel">What CODE can do</span></p>
+
+<p>Mainframe supports the public CODE function directory without a browser DOM. Combat, movement, inventory, crafting, social, mail, trade, storage, and event methods use normal game actions. Buttons, drawings, focus, and other display-only calls become harmless headless operations.</p>
+
+<p><span class="dlabel">smart_move</span> uses Mainframe navigation instead of running the browser's exhaustive pathfinder. Your code keeps the same public call.</p>
+
+<div class="code">await smart_move("bank");
+await smart_move({ map: "main", x: -100, y: -20 });</div>
+
+<p><span class="dlabel">Containment</span></p>
+
+<p>Every character runs with its own machine identity, read-only system image, fixed memory and CPU limits, bounded disk activity, syscall filtering, and no internet interface. Character actions can reach Adventure Land only through the Mainframe bridge. Runtime observations come back from the authenticated game server, so requested actions and confirmed movement are reported separately.</p>
+
+<p>If CODE loops forever, allocates too much memory, or repeatedly writes, its machine remains bounded and can be stopped without taking another character with it.</p>
+
+<p><span class="dlabel">Automation interfaces</span></p>
+
+<p>Your own service can control Mainframe through the <a href="/docs/guide/adventure-api">JSON API</a>. AI clients can use the same operations through <a href="/docs/guide/adventure-mcp">MCP</a>. Both interfaces enforce the same account ownership, billing, assignment, and CODE-slot checks as the web page.</p>
+
+<p>Use a unique <span class="dlabel">request_id</span> when linking a character. Reuse that ID only when retrying the same request. This makes a lost response safe to retry without charging twice.</p>
+
+<div class="code">{
   "character": "YourCharacter",
-  "request_id": "your-unique-request-0001",
+  "request_id": "my-service:link:000001",
   "code_slot": "1",
   "server": "US I"
 }</div>
-
-<p>Repeating the same request ID is safe. Mainframe never uses the name alone as the character identity, never replaces a different assignment, and refuses to start a character that is already in the game.</p>
-
-<p><span class="dlabel">CODE compatibility</span></p>
-
-<p>Mainframe provides the public CODE function directory without a browser DOM. Combat, movement, inventory, crafting, social, mail, trade, storage, and event methods use the normal game actions. Drawing, buttons, focus, and other visual-only methods are harmless headless operations. Character control and CODE uploads pass through the trusted Mainframe service. Starting another character charges its own access window, and commands can only reach another active Mainframe character on the same account.</p>
-
-<p>Use <span class="dlabel">mainframe_get_character</span> for confirmed position, map, health, runtime limits, disk activity, and recent performance. Each active character reports its separate machine identity, memory use, CPU throttling, I/O counters, and containment checks. Requested action counters show what CODE attempted; observations show what the game server actually reported.</p>

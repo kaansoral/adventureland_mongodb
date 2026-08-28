@@ -1,0 +1,78 @@
+<p><span class="dlabel">Adventure Land JSON API</span></p>
+
+<p>The JSON API gives your programs structured access to Adventure Land game definitions, public CODE references, your saved CODE slots, and your Mainframe characters. It does not expose unrestricted character socket commands; run those through contained CODE on Mainframe.</p>
+
+<p><span class="dlabel">Create a token</span></p>
+
+<p>From a signed-in game session:</p>
+
+<div class="code">var result = await parent.api_call("generate_token");
+show_json(result);</div>
+
+<p>Copy the token when it appears. Creating another token invalidates the previous one. Treat it like a password: it controls the account's saved CODE and Mainframe characters.</p>
+
+<p><span class="dlabel">Call a method</span></p>
+
+<p>Send JSON with a POST request to <span class="dlabel">https://adventure.land/mcp_api/METHOD</span>. Put the token beside the method arguments:</p>
+
+<div class="code">curl https://adventure.land/mcp_api/get_servers \
+  -H 'Content-Type: application/json' \
+  -d '{"token":"YOUR_TOKEN"}'</div>
+
+<p>Open <span class="dlabel">GET https://adventure.land/mcp_api</span> for the live method directory, descriptions, and input schemas. Discovery does not require a token.</p>
+
+<p><span class="dlabel">Game and documentation</span></p>
+
+<table style="width:100%; text-align:left; border-spacing:12px 7px">
+<tr><th>Method</th><th>Arguments</th><th>Result</th></tr>
+<tr><td>get_api_info</td><td>None</td><td>Endpoints, versions, methods, and schemas.</td></tr>
+<tr><td>get_servers</td><td>None</td><td>Live realms, population, paths, and status.</td></tr>
+<tr><td>get_game_data</td><td>section?, name?</td><td>Sections, a complete section, or one exact definition.</td></tr>
+<tr><td>search_game_data</td><td>query, section?, limit?</td><td>Small matches across items, monsters, maps, skills, recipes, and other definitions.</td></tr>
+<tr><td>list_docs</td><td>query?</td><td>Guide article names, titles, sections, and keywords.</td></tr>
+<tr><td>get_doc</td><td>name</td><td>One exact guide article as plain text.</td></tr>
+<tr><td>list_code_methods</td><td>query?</td><td>The public CODE method directory and reference links.</td></tr>
+</table>
+
+<p>Use <span class="dlabel">search_game_data</span> to find a record, then <span class="dlabel">get_game_data</span> with its section and exact name to retrieve the complete definition.</p>
+
+<div class="code">POST /mcp_api/search_game_data
+{"token":"YOUR_TOKEN","query":"fire resistance","limit":10}
+
+POST /mcp_api/get_game_data
+{"token":"YOUR_TOKEN","section":"items","name":"fireblade"}</div>
+
+<p><span class="dlabel">Saved CODE</span></p>
+
+<table style="width:100%; text-align:left; border-spacing:12px 7px">
+<tr><th>Method</th><th>Arguments</th><th>Result</th></tr>
+<tr><td>list_codes</td><td>None</td><td>Slot, name, and version without source.</td></tr>
+<tr><td>get_code</td><td>slot</td><td>One owned CODE slot with source.</td></tr>
+<tr><td>save_code</td><td>slot, code, name?</td><td>Creates or replaces one owned slot.</td></tr>
+<tr><td>delete_code</td><td>slot</td><td>Deletes one owned slot.</td></tr>
+</table>
+
+<p><span class="dlabel">Mainframe</span></p>
+
+<table style="width:100%; text-align:left; border-spacing:12px 7px">
+<tr><th>Method</th><th>Arguments</th><th>Result</th></tr>
+<tr><td>mainframe_get_dashboard</td><td>None</td><td>Characters, access windows, runtime state, CODE slots, and live server choices.</td></tr>
+<tr><td>mainframe_list_characters</td><td>None</td><td>Owned characters, access, assignments, and runtime state.</td></tr>
+<tr><td>mainframe_get_character</td><td>character</td><td>One owned character's access, assignment, observations, limits, and performance.</td></tr>
+<tr><td>mainframe_link_character</td><td>character, request_id, code_slot, server?</td><td>Prepays when needed and queues the assignment.</td></tr>
+<tr><td>mainframe_disconnect_character</td><td>character</td><td>Stops the assignment without pausing paid time.</td></tr>
+<tr><td>mainframe_get_logs</td><td>character, limit?</td><td>Up to 100 recent CODE log records.</td></tr>
+</table>
+
+<p><span class="dlabel">Results and errors</span></p>
+
+<p>Successful results contain <span class="dlabel">success: true</span>. Method failures use a structured result with <span class="dlabel">failed: true</span> and a stable <span class="dlabel">reason</span>. The JSON method endpoint returns the structured result as JSON even for an application-level failure, so check the body rather than relying only on the HTTP status.</p>
+
+<div class="code">{
+  "failed": true,
+  "reason": "not_enough_shells"
+}</div>
+
+<p>Unknown and missing arguments fail closed. A token can only read or change CODE and characters owned by its account. Keep polling measured; the account API is not a combat loop.</p>
+
+<p>The live discovery response lists the current request limits. Standard reads, full game-data dumps, and writes have separate token buckets. A throttled request uses HTTP 429, returns <span class="dlabel">reason: "rate_limited"</span>, and includes both <span class="dlabel">Retry-After</span> and <span class="dlabel">retry_after_ms</span>.</p>

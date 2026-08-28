@@ -350,12 +350,14 @@ docs = {
 					[
 						["X.sub-cm", "Code Messages", "cm,messages", "#B3C77A"],
 						["X.sub-api", "API Call System", "api", "#69C6C1"],
-						["mainframe", "API, MCP, and Mainframe", "api,mcp,mainframe,automation", "#5ED6A8"],
 						["X.sub-msgpack", "MessagePack Socket Transport", "msgpack,socket,client,transport", "#D49A63"],
 					],
 				],
 			],
 		],
+		["adventure-api", "Adventure Land JSON API", "api,json,automation,code,data", "#55BDF0"],
+		["adventure-mcp", "Adventure Land MCP", "mcp,tools,ai,automation", "#A884E8"],
+		["mainframe", "Mainframe", "mainframe,hosting,automation,code", "#5ED6A8"],
 		["multi", "Multiple Ways to Run Multiple Characters", "multi,deploy", "#5997FF"],
 		[
 			"advanced",

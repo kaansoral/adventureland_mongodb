@@ -166,6 +166,17 @@
 				background: var(--border);
 				border: 1px solid var(--border);
 			}
+			.fleet {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+				gap: 1px;
+				margin-bottom: 16px;
+				background: var(--border);
+				border: 1px solid var(--border);
+			}
+			.fleet .metric.warning strong {
+				color: var(--red);
+			}
 			.metric {
 				background: var(--panel2);
 				padding: 10px;
@@ -242,6 +253,7 @@
 				<div><span class="dot"></span><strong id="runner-state">Connecting</strong></div>
 				<div id="runner-detail" class="muted">Waiting for the controller.</div>
 			</section>
+			<section id="fleet" class="fleet" aria-label="Fleet health"></section>
 			<div id="error"></div>
 			<section id="bots" class="grid" aria-live="polite"><div class="empty">Loading bots…</div></section>
 		</main>
@@ -364,12 +376,45 @@
 					card.append(head, metrics, actions, logs);
 					return card;
 				}
+				function renderFleet(state) {
+					var bots = state.bots || [];
+					var running = bots.filter(function (bot) { return bot.desired_state === "running"; });
+					var totals = running.reduce(function (result, bot) {
+						var containment = bot.containment || {};
+						result.memory += Number(containment.memory_current_bytes) || 0;
+						result.memory_peak += Number(containment.memory_peak_bytes) || 0;
+						result.memory_limit += Number(containment.limits && containment.limits.memory_max_bytes) || 0;
+						result.throttled += Number(containment.cpu_throttled_usec) || 0;
+						result.read += Number(containment.io_read_bytes) || 0;
+						result.write += Number(containment.io_write_bytes) || 0;
+						result.oom += Number(containment.memory_events_oom_kill) || 0;
+						result.failures += Number(containment.status_failures) || 0;
+						if (bot.failure) result.failed += 1;
+						if (bot.observation && bot.observation.movement && bot.observation.movement.stuck) result.stuck += 1;
+						if (containment.identity_slot !== null && containment.identity_slot !== undefined) result.identities.add(containment.identity_slot);
+						if (bot.metrics && bot.metrics.seccomp_mode === 2 && bot.metrics.no_new_privileges === 1 && bot.metrics.permission_model === true) result.hardened += 1;
+						return result;
+					}, { memory: 0, memory_peak: 0, memory_limit: 0, throttled: 0, read: 0, write: 0, oom: 0, failures: 0, failed: 0, stuck: 0, hardened: 0, identities: new Set() });
+					var fleet = document.getElementById("fleet");
+					fleet.replaceChildren(
+						metric("Running", running.length + " / 100"),
+						metric("VM memory", bytes(totals.memory) + " / " + bytes(totals.memory_limit)),
+						metric("Memory peak", bytes(totals.memory_peak)),
+						metric("CPU throttled", duration(totals.throttled / 1000)),
+						metric("Disk read / write", bytes(totals.read) + " / " + bytes(totals.write)),
+						metric("Isolated identities", totals.identities.size + " / " + running.length),
+						metric("Guest hardening", totals.hardened + " / " + running.length),
+						metric("Alerts", totals.oom + " OOM / " + totals.failures + " probes / " + totals.failed + " failed / " + totals.stuck + " stuck")
+					);
+					if (totals.oom || totals.failures || totals.failed || totals.stuck) fleet.lastElementChild.classList.add("warning");
+				}
 				function render(state) {
 					runnerNode.className = "runner " + (state.online ? "online" : "offline");
 					document.getElementById("runner-state").textContent = state.online ? "Mainframe online" : "Mainframe offline";
 					document.getElementById("runner-detail").textContent = state.updated_at
 						? "Controller " + text(state.controller_version) + " / last report " + new Date(state.updated_at).toLocaleString()
 						: "No Mainframe report yet.";
+					renderFleet(state);
 					botsNode.replaceChildren();
 					if (!(state.bots || []).length) {
 						var empty = document.createElement("div");

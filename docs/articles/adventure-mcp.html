@@ -1,0 +1,46 @@
+<p><span class="dlabel">Adventure Land MCP</span></p>
+
+<p>The Adventure Land MCP server exposes the same game-data, documentation, CODE, and Mainframe operations as typed tools. Use it when an AI client needs live tool discovery and structured results. Use the <a href="/docs/guide/adventure-api">JSON API</a> for ordinary programs.</p>
+
+<p><span class="dlabel">Connection</span></p>
+
+<div class="code">URL: https://adventure.land/mcp
+Transport: Streamable HTTP
+Authorization: Bearer YOUR_TOKEN</div>
+
+<p>Create or rotate the token from a signed-in session:</p>
+
+<div class="code">var result = await parent.api_call("generate_token");
+show_json(result);</div>
+
+<p>The server is stateless. Send the token on every request. A token can only reach CODE slots and characters owned by its account.</p>
+
+<p><span class="dlabel">Tool use</span></p>
+
+<p>Start with <span class="dlabel">get_api_info</span> when the client needs the interface map. Use <span class="dlabel">search_game_data</span> before requesting a complete game-data section. Use <span class="dlabel">list_docs</span> and <span class="dlabel">get_doc</span> for game rules and guides, and <span class="dlabel">list_code_methods</span> for the character CODE surface.</p>
+
+<p>Before starting a character, call <span class="dlabel">mainframe_get_dashboard</span>. It returns the account's characters, CODE slots, live server choices, Shell balance, paid access windows, and current assignments in one result.</p>
+
+<p><span class="dlabel">Billing safety</span></p>
+
+<p><span class="dlabel">mainframe_link_character</span> can charge 1 Shell before a new 60-minute access window begins. Its input schema requires a unique <span class="dlabel">request_id</span>. If a response is lost, retry the same character, CODE slot, server, and request ID. Do not invent a new request ID for a network retry.</p>
+
+<p>Reading state, logs, game data, documentation, and CODE does not charge Shells. Disconnecting does not refund or pause an active window.</p>
+
+<p><span class="dlabel">MCP result shape</span></p>
+
+<p>Tool calls return the same object twice: JSON text in <span class="dlabel">content</span> for broad client compatibility and the original object in <span class="dlabel">structuredContent</span>. Failed tool operations set <span class="dlabel">isError: true</span> and retain their structured <span class="dlabel">reason</span>.</p>
+
+<div class="code">{
+  "content": [{"type":"text","text":"{...}"}],
+  "structuredContent": {"success":true,"servers":[...]},
+  "isError": false
+}</div>
+
+<p>Request limits are returned by <span class="dlabel">get_api_info</span>. When the transport returns HTTP 429, wait for its <span class="dlabel">Retry-After</span> value before retrying. Full game-data sections have a smaller independent allowance; use search and exact-record reads for routine work.</p>
+
+<p><span class="dlabel">Operating rules for AI clients</span></p>
+
+<p>Read before mutating. Fetch the dashboard before linking or disconnecting. Fetch a CODE slot before replacing it. Explain a Shell charge before starting a new paid window. Never infer that an action succeeded from a request counter; use the authenticated runtime observation returned by Mainframe.</p>
+
+<p>Character combat and movement are not direct MCP tools. Save CODE, link the owned character to Mainframe, then inspect its observed state and logs. This keeps arbitrary character logic inside its contained machine.</p>

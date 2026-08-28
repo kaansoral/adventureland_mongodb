@@ -5530,6 +5530,44 @@ function load_character_list() {
 	$(".fcharacters").addClass("active2");
 }
 
+function load_mainframe_list(info) {
+	friends_inside = "mainframe";
+	if (!info) {
+		$(".friendslist").html("<div style='margin-top: 8px'>Connecting to Mainframe ...</div>");
+		$(".friendslist").parent().find(".active2").removeClass("active2");
+		$(".fmainframe").addClass("active2");
+		api_call("mainframe_get_dashboard")
+			.then(function (result) {
+				if (friends_inside == "mainframe") load_mainframe_list(result);
+			})
+			.catch(function (error) {
+				if (friends_inside != "mainframe") return;
+				$(".friendslist").html("<div style='margin-top: 8px; color: #E45D69'>Mainframe: " + html_escape((error && error.reason) || "unavailable") + "</div>");
+			});
+		return;
+	}
+	var html = "<div style='text-align:left; margin: 10px'>";
+	html += "<div style='margin-bottom: 12px'><span style='color:#5ED6A8'>" + (info.online ? "MAINFRAME ONLINE" : "MAINFRAME OFFLINE") + "</span> &nbsp; <span style='color:gray'>" + to_pretty_num(info.shells || 0) + " Shells</span></div>";
+	(info.characters || []).forEach(function (entry) {
+		var assignment = entry.assignment || {};
+		var runtime = entry.runtime || {};
+		var access = entry.access || {};
+		var status = runtime.phase || assignment.desired_state || "stopped";
+		var remaining = Math.max(0, Math.ceil(Number(access.remaining_seconds) || 0));
+		html += "<div style='padding: 8px; margin-bottom: 6px; border: 2px solid #4C4C4C'>";
+		html += "<span style='color:#F3A05D'>" + html_escape(entry.character) + "</span> <span style='color:gray'>Lv." + to_pretty_num(entry.level || 0) + " " + html_escape((entry.class || "").toUpperCase()) + "</span>";
+		html += "<span style='float:right; color:" + (status == "running" ? "#67C85C" : "gray") + "'>" + html_escape(status.toUpperCase()) + "</span>";
+		html += "<div style='font-size:18px; color:gray; margin-top:4px'>" + html_escape(assignment.server || runtime.server || "Not linked") + " / " + (access.active ? Math.ceil(remaining / 60) + " minutes left" : "No active window") + "</div>";
+		html += "</div>";
+	});
+	if (!(info.characters || []).length) html += "<div>You don't have any characters yet.</div>";
+	html += "<div style='text-align:center; margin-top: 12px'><a class='gamebutton cancela' href='/mainframe' target='_blank'>OPEN MAINFRAME</a></div>";
+	html += "</div>";
+	$(".friendslist").html(html);
+	$(".friendslist").parent().find(".active2").removeClass("active2");
+	$(".fmainframe").addClass("active2");
+}
+
 function show_delete_mail(id) {
 	show_confirm("Delete the mail?", "Yes", "Cancel", function () {
 		api_call("delete_mail", { mid: id });
@@ -5696,6 +5734,7 @@ function render_com() {
 	html += " <div class='gamebutton ffriends fserver fnearby' onclick='load_server_list();'>Comrades</div>";
 	html += " <div class='gamebutton fservers' onclick='load_servers_list();'>Realm</div>";
 	html += " <div class='gamebutton fcharacters' onclick='load_character_list();'>Characters [<span class='ccount'>" + c_count + "</span>/4]</div>";
+	html += " <div class='gamebutton fmainframe' onclick='load_mainframe_list();'>Mainframe</div>";
 	html += " <div class='gamebutton fchat' onclick='load_chat();'>Chat</div>";
 	html += " <div class='gamebutton fmail' onclick='load_mail();'>Mail [<span class='mcount'>" + ((window.X && X.unread) || 0) + "</span>]</div>";
 	// html+=" <div class='gamebutton fguild' onclick='load_coming_soon(2)'>Guild</div> <div class='gamebutton fmail' onclick='load_coming_soon(4)'>Mail</div> <div class='gamebutton fleaders' onclick='load_coming_soon(3)'>Leaderboards</div>";

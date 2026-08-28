@@ -122,6 +122,17 @@ app.get("/comm", async (req, res, next) => {
 	);
 });
 
+// Mainframe character control
+app.get("/mainframe", async (req, res) => {
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
+	domain.title = "Adventure Land Mainframe";
+	return res
+		.status(200)
+		.set("Cache-Control", "no-store")
+		.send(nunjucks.render("htmls/mainframe.html", { domain: domain, user: user }));
+});
+
 // Character profile page
 app.get("/character/:name", async (req, res, next) => {
 	var user = await get_user(req),

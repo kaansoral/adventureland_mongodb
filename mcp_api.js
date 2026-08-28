@@ -4,10 +4,44 @@ var MCP_API_TOKEN_PREFIX = "mcp_";
 var MCP_API_TOKEN_PATTERN = /^mcp_[A-Za-z0-9_-]{43}$/;
 var MCP_PROTOCOL_CURRENT = "2026-07-28";
 var MCP_PROTOCOL_LEGACY = "2025-11-25";
-var MCP_SERVER_INFO = { name: "adventure-land", version: "1.0.0", description: "Adventure Land game and Mainframe tools" };
+var MCP_SERVER_INFO = { name: "adventure-land", version: "1.1.0", description: "Adventure Land game data, CODE, and Mainframe tools" };
+var MCP_API_SEARCH_SECTIONS = ["achievements", "classes", "conditions", "cosmetics", "craft", "dismantle", "events", "items", "maps", "monsters", "npcs", "sets", "skills", "titles", "tokens"];
+var MCP_API_RATE_BUCKETS = new Map();
+var MCP_API_RATE_BUCKET_LIMIT = 5000;
 
 function mcp_api_hash_token(token) {
 	return crypto.createHash("sha256").update(token, "utf8").digest("hex");
+}
+
+function mcp_api_rate_profile(method, args) {
+	if (method === "get_game_data" && !(args && args.name)) return { name: "bulk", rate_per_minute: 12, burst: 4 };
+	if (["save_code", "delete_code", "mainframe_link_character", "mainframe_disconnect_character"].includes(method))
+		return { name: "write", rate_per_minute: 30, burst: 10 };
+	return { name: "standard", rate_per_minute: 120, burst: 30 };
+}
+
+function mcp_api_take_rate(token, method, args, now) {
+	now = Number(now) || Date.now();
+	var profile = mcp_api_rate_profile(method, args);
+	var key = mcp_api_hash_token(token) + ":" + profile.name;
+	var bucket = MCP_API_RATE_BUCKETS.get(key) || { tokens: profile.burst, updated_at: now, seen_at: now };
+	var elapsed = Math.max(0, now - bucket.updated_at);
+	bucket.tokens = Math.min(profile.burst, bucket.tokens + (elapsed * profile.rate_per_minute) / 60000);
+	bucket.updated_at = now;
+	bucket.seen_at = now;
+	if (bucket.tokens < 1) {
+		MCP_API_RATE_BUCKETS.set(key, bucket);
+		return { allowed: false, retry_after_ms: Math.max(1, Math.ceil(((1 - bucket.tokens) * 60000) / profile.rate_per_minute)) };
+	}
+	bucket.tokens -= 1;
+	MCP_API_RATE_BUCKETS.set(key, bucket);
+	if (MCP_API_RATE_BUCKETS.size > MCP_API_RATE_BUCKET_LIMIT) {
+		var oldest = Array.from(MCP_API_RATE_BUCKETS.entries())
+			.sort(function (left, right) { return left[1].seen_at - right[1].seen_at; })
+			.slice(0, MCP_API_RATE_BUCKETS.size - MCP_API_RATE_BUCKET_LIMIT);
+		for (var i = 0; i < oldest.length; i++) MCP_API_RATE_BUCKETS.delete(oldest[i][0]);
+	}
+	return { allowed: true };
 }
 
 function mcp_api_token_record_id(token_hash) {
@@ -136,6 +170,123 @@ async function mcp_api_get_game_data(args) {
 	return { success: true, version: Version, section: args.section, name: args.name, data: section[args.name] };
 }
 
+function mcp_api_public_field(value, maximum) {
+	if (typeof value === "string") return value.slice(0, maximum || 240);
+	if (typeof value === "number" || typeof value === "boolean") return value;
+	return undefined;
+}
+
+async function mcp_api_search_game_data(args) {
+	var query = args.query.trim().toLowerCase();
+	if (!query.length || query.length > 100) return { failed: true, reason: "invalid_query" };
+	var limit = Math.max(1, Math.min(Number(args.limit) || 25, 50));
+	var game_data = get_mcp_api_game_data();
+	var sections = args.section ? [args.section] : MCP_API_SEARCH_SECTIONS;
+	if (args.section && !MCP_API_SEARCH_SECTIONS.includes(args.section)) return { failed: true, reason: "invalid_section" };
+	var results = [];
+	for (var s = 0; s < sections.length && results.length < limit; s++) {
+		var section_name = sections[s];
+		var section = game_data[section_name];
+		if (!section || typeof section !== "object") continue;
+		var names = Object.keys(section).sort();
+		for (var i = 0; i < names.length && results.length < limit; i++) {
+			var name = names[i];
+			var value = section[name];
+			var label = value && typeof value === "object" ? value.name || value.title || value.id || "" : "";
+			var description = value && typeof value === "object" ? value.description || value.explanation || "" : "";
+			var search_text = (name + " " + label + " " + description).toLowerCase();
+			if (!search_text.includes(query)) continue;
+			var result = { section: section_name, name: name };
+			var public_name = mcp_api_public_field(label, 160);
+			var public_description = mcp_api_public_field(description, 320);
+			if (public_name !== undefined) result.label = public_name;
+			if (public_description !== undefined) result.description = public_description;
+			if (value && typeof value === "object") {
+				["type", "class", "level", "tier", "skin", "map"].forEach(function (field) {
+					var public_value = mcp_api_public_field(value[field], 100);
+					if (public_value !== undefined) result[field] = public_value;
+				});
+			}
+			results.push(result);
+		}
+	}
+	return { success: true, version: Version, query: args.query, count: results.length, limit: limit, results: results };
+}
+
+function mcp_api_doc_entries() {
+	var result = [];
+	function traverse(entries, trail) {
+		for (var i = 0; i < entries.length; i++) {
+			var entry = entries[i];
+			var next_trail = trail.concat(entry[1]);
+			if (entry[4]) traverse(entry[4], next_trail);
+			else result.push({ name: entry[0], title: entry[1], keywords: entry[2] || "", section: trail.join(" / ") || "Guide" });
+		}
+	}
+	traverse((docs && docs.guide) || [], []);
+	return result;
+}
+
+function mcp_api_html_to_text(html) {
+	return String(html || "")
+		.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
+		.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "")
+		.replace(/<br\s*\/?\s*>/gi, "\n")
+		.replace(/<\/(p|div|pre|li|h[1-6])>/gi, "\n")
+		.replace(/<[^>]+>/g, "")
+		.replace(/&nbsp;/g, " ")
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">")
+		.replace(/&quot;/g, '"')
+		.replace(/&#39;|&apos;/g, "'")
+		.replace(/&amp;/g, "&")
+		.replace(/[ \t]+\n/g, "\n")
+		.replace(/\n{3,}/g, "\n\n")
+		.trim();
+}
+
+async function mcp_api_list_docs(args) {
+	var entries = mcp_api_doc_entries();
+	if (args.query) {
+		var query = args.query.trim().toLowerCase();
+		if (!query.length || query.length > 100) return { failed: true, reason: "invalid_query" };
+		entries = entries.filter(function (entry) {
+			return (entry.name + " " + entry.title + " " + entry.keywords + " " + entry.section).toLowerCase().includes(query);
+		});
+	}
+	return { success: true, count: entries.length, articles: entries };
+}
+
+async function mcp_api_get_doc(args) {
+	var entry = mcp_api_doc_entries().find(function (candidate) {
+		return candidate.name === args.name;
+	});
+	if (!entry) return { failed: true, reason: "not_found" };
+	var html;
+	try {
+		html = shtml("docs/guide/" + entry.name + ".html");
+	} catch (e) {
+		try {
+			html = shtml("docs/articles/" + entry.name + ".html");
+		} catch (nested) {
+			return { failed: true, reason: "not_found" };
+		}
+	}
+	return { success: true, article: entry, format: "text", content: mcp_api_html_to_text(html) };
+}
+
+async function mcp_api_list_code_methods(args) {
+	var query = (args.query || "").trim().toLowerCase();
+	if (query.length > 100) return { failed: true, reason: "invalid_query" };
+	var methods = ((docs && docs.functions) || []).slice().sort();
+	if (query) methods = methods.filter(function (name) { return name.toLowerCase().includes(query); });
+	return {
+		success: true,
+		count: methods.length,
+		methods: methods.map(function (name) { return { name: name, docs_url: "https://adventure.land/docs/code/functions/" + encodeURIComponent(name) }; }),
+	};
+}
+
 function mcp_api_find_code(code_list, identifier) {
 	identifier = "" + identifier;
 	for (var slot in code_list) {
@@ -237,6 +388,8 @@ async function mcp_api_list_mainframe_characters(args) {
 		result.push({
 			character: character_name,
 			character_id: get_id(characters[i]),
+			level: Number(characters[i].level) || 0,
+			class: characters[i].type || null,
 			access: await mainframe_get_access(characters[i]),
 			assignment: await mainframe_get_assignment(characters[i]),
 			available: snapshot.online,
@@ -313,12 +466,79 @@ async function mcp_api_get_mainframe_logs(args) {
 	return { success: true, logs: (bot.logs || []).slice(-limit) };
 }
 
+async function mcp_api_get_mainframe_dashboard(args) {
+	var state = await mcp_api_list_mainframe_characters(args);
+	if (state.failed) return state;
+	var code_result = await mcp_api_list_codes(args);
+	var server_result = await mcp_api_get_servers(args);
+	state.codes = code_result.codes || [];
+	state.servers = (server_result.servers || []).map(function (server) {
+		return {
+			server: server.region + " " + server.name,
+			region: server.region,
+			name: server.name,
+			players: server.players,
+			online: server.online,
+			pvp: server.pvp,
+		};
+	});
+	return state;
+}
+
+async function mcp_api_get_api_info(args) {
+	return {
+		success: true,
+		name: MCP_SERVER_INFO.name,
+		version: MCP_SERVER_INFO.version,
+		game_version: Version,
+		interfaces: {
+			json: { url: "https://adventure.land/mcp_api/{method}", method: "POST", authentication: "token in the JSON body" },
+			mcp: { url: "https://adventure.land/mcp", method: "POST", authentication: "HTTP Bearer token" },
+			session: { url: "https://adventure.land/mainframe", authentication: "signed-in Adventure Land session" },
+		},
+		rate_limits: {
+			standard: { rate_per_minute: 120, burst: 30 },
+			bulk_game_data: { rate_per_minute: 12, burst: 4 },
+			writes: { rate_per_minute: 30, burst: 10 },
+		},
+		docs: {
+			overview: "https://adventure.land/docs/guide/mainframe",
+			json_api: "https://adventure.land/docs/guide/adventure-api",
+			mcp: "https://adventure.land/docs/guide/adventure-mcp",
+		},
+		methods: Object.keys(MCP_API_REF)
+			.sort()
+			.map(function (name) {
+				return { name: name, description: (MCP_TOOL_META[name] && MCP_TOOL_META[name].description) || name, input_schema: mcp_tool_schema(MCP_API_REF[name]) };
+			}),
+	};
+}
+
 var MCP_API_REF = {
+	get_api_info: { F: mcp_api_get_api_info },
 	get_servers: { F: mcp_api_get_servers },
 	get_game_data: {
 		F: mcp_api_get_game_data,
 		section: { type: "string", optional: true },
 		name: { type: "string", optional: true },
+	},
+	search_game_data: {
+		F: mcp_api_search_game_data,
+		query: { type: "string" },
+		section: { type: "enum", values: MCP_API_SEARCH_SECTIONS, optional: true },
+		limit: { type: "number", optional: true },
+	},
+	list_docs: {
+		F: mcp_api_list_docs,
+		query: { type: "string", optional: true },
+	},
+	get_doc: {
+		F: mcp_api_get_doc,
+		name: { type: "identifier" },
+	},
+	list_code_methods: {
+		F: mcp_api_list_code_methods,
+		query: { type: "string", optional: true },
 	},
 	list_codes: { F: mcp_api_list_codes },
 	get_code: {
@@ -336,6 +556,7 @@ var MCP_API_REF = {
 		slot: { type: "identifier" },
 	},
 	mainframe_list_characters: { F: mcp_api_list_mainframe_characters },
+	mainframe_get_dashboard: { F: mcp_api_get_mainframe_dashboard },
 	mainframe_get_character: {
 		F: mcp_api_get_mainframe_character,
 		character: { type: "identifier" },
@@ -359,13 +580,19 @@ var MCP_API_REF = {
 };
 
 var MCP_TOOL_META = {
+	get_api_info: { description: "Discover the shared JSON API and MCP methods, schemas, endpoints, and documentation links.", readOnlyHint: true },
 	get_servers: { description: "List the live Adventure Land game servers.", readOnlyHint: true },
-	get_game_data: { description: "Read Adventure Land game definitions, optionally by section and name.", readOnlyHint: true },
+	get_game_data: { description: "Read Adventure Land game definitions, optionally by section and exact record name.", readOnlyHint: true },
+	search_game_data: { description: "Search names and descriptions across game items, monsters, maps, skills, recipes, events, and other definitions. Use get_game_data for the complete matching record.", readOnlyHint: true },
+	list_docs: { description: "List or search Adventure Land guide articles.", readOnlyHint: true },
+	get_doc: { description: "Read one Adventure Land guide article as plain text using an exact name returned by list_docs.", readOnlyHint: true },
+	list_code_methods: { description: "List or filter the complete public character CODE method directory with reference URLs.", readOnlyHint: true },
 	list_codes: { description: "List the account's CODE slots without returning their source.", readOnlyHint: true },
 	get_code: { description: "Read one owned CODE slot.", readOnlyHint: true },
 	save_code: { description: "Create or replace one owned CODE slot.", destructiveHint: true },
 	delete_code: { description: "Delete one owned CODE slot.", destructiveHint: true },
 	mainframe_list_characters: { description: "List owned characters and their Mainframe access and runtime state.", readOnlyHint: true },
+	mainframe_get_dashboard: { description: "Get the complete Mainframe control view: owned characters, paid access, runtime state, CODE slots, and live server choices.", readOnlyHint: true },
 	mainframe_get_character: { description: "Read one owned character's Mainframe access, assignment, runtime, and observations.", readOnlyHint: true },
 	mainframe_link_character: {
 		description: "Run an owned character on Mainframe using a CODE slot. Charges one Shell before a new sixty-minute access window begins.",
@@ -440,6 +667,14 @@ async function handle_mcp_api_call(req, res) {
 	if (args.token === undefined) return send_mcp_api_json(res, { failed: true, reason: "missing_field", field: "token" });
 	var user = await get_mcp_api_user(args.token);
 	if (!user) return send_mcp_api_json(res, { failed: true, reason: "invalid_token" });
+	var rate = mcp_api_take_rate(args.token, req.params.method, args);
+	if (!rate.allowed)
+		return res
+			.status(429)
+			.set("Content-Type", "application/json")
+			.set("Retry-After", String(Math.max(1, Math.ceil(rate.retry_after_ms / 1000))))
+			.send({ failed: true, reason: "rate_limited", retry_after_ms: rate.retry_after_ms })
+			.end();
 	var invalid = validate_mcp_api_args(ref, args);
 	if (invalid) return send_mcp_api_json(res, invalid);
 	var method_args = Object.assign({}, args, { req: req, res: res, user: user });
@@ -452,6 +687,41 @@ async function handle_mcp_api_call(req, res) {
 	}
 }
 
+function mcp_api_session_handler(method, handler) {
+	return async function (args) {
+		var rate = mcp_api_take_rate("session:" + get_id(args.user), method, args);
+		if (!rate.allowed) return { failed: true, reason: "rate_limited", retry_after_ms: rate.retry_after_ms };
+		return await handler(args);
+	};
+}
+
+if (typeof REF !== "undefined") Object.assign(REF, {
+	mainframe_get_dashboard: { F: mcp_api_session_handler("mainframe_get_dashboard", mcp_api_get_mainframe_dashboard), P: true, U: true },
+	mainframe_list_characters: { F: mcp_api_session_handler("mainframe_list_characters", mcp_api_list_mainframe_characters), P: true, U: true },
+	mainframe_get_character: { F: mcp_api_session_handler("mainframe_get_character", mcp_api_get_mainframe_character), P: true, U: true, character: { type: "string", minimum: 1 } },
+	mainframe_link_character: {
+		F: mcp_api_session_handler("mainframe_link_character", mcp_api_link_mainframe_character),
+		P: true,
+		U: true,
+		character: { type: "string", minimum: 1 },
+		request_id: { type: "string", minimum: 8 },
+		code_slot: { type: "string", minimum: 1 },
+		server: { type: "string", optional: true },
+	},
+	mainframe_disconnect_character: { F: mcp_api_session_handler("mainframe_disconnect_character", mcp_api_disconnect_mainframe_character), P: true, U: true, character: { type: "string", minimum: 1 } },
+	mainframe_get_logs: {
+		F: mcp_api_session_handler("mainframe_get_logs", mcp_api_get_mainframe_logs),
+		P: true,
+		U: true,
+		character: { type: "string", minimum: 1 },
+		limit: { type: "number", optional: true },
+	},
+});
+
+app.get("/mcp_api", async function (req, res) {
+	res.set("Cache-Control", "public, max-age=300");
+	return res.status(200).send(await mcp_api_get_api_info({}));
+});
 app.post("/mcp_api/:method", handle_mcp_api_call);
 
 function mcp_jsonrpc(id, result) {
@@ -494,6 +764,14 @@ async function handle_mcp_transport(req, res) {
 	var message = req.body;
 	if (!message || typeof message !== "object" || Array.isArray(message) || message.jsonrpc !== "2.0" || typeof message.method !== "string")
 		return res.status(400).send(mcp_jsonrpc_error(message && message.id, -32600, "Invalid Request"));
+	var rate_name = message.method === "tools/call" && message.params ? message.params.name : message.method;
+	var rate_args = message.method === "tools/call" && message.params ? message.params.arguments : {};
+	var rate = mcp_api_take_rate(token, rate_name, rate_args);
+	if (!rate.allowed)
+		return res
+			.status(429)
+			.set("Retry-After", String(Math.max(1, Math.ceil(rate.retry_after_ms / 1000))))
+			.send(mcp_jsonrpc_error(message.id, -32002, "Rate limited", { retry_after_ms: rate.retry_after_ms }));
 	var version = String(req.get("mcp-protocol-version") || "");
 	var modern = version === MCP_PROTOCOL_CURRENT;
 	if (version && ![MCP_PROTOCOL_CURRENT, MCP_PROTOCOL_LEGACY, "2025-06-18", "2025-03-26"].includes(version))
@@ -511,7 +789,8 @@ async function handle_mcp_transport(req, res) {
 			mcp_jsonrpc(message.id, {
 				supportedVersions: [MCP_PROTOCOL_CURRENT, MCP_PROTOCOL_LEGACY],
 				capabilities: { tools: { listChanged: false } },
-				instructions: "Use Mainframe tools only for characters owned by this token's account. Linking a character can charge Shells.",
+				instructions:
+					"Start with get_api_info when you need interface help. Use search_game_data before fetching a complete definition. Mainframe can only control characters owned by this token's account. Read mainframe_get_dashboard before linking. mainframe_link_character prepays one Shell for a sixty-minute window; reuse a unique request_id when retrying the same request.",
 				ttlMs: 3600000,
 				cacheScope: "global",
 				_meta: mcp_result_meta(),
@@ -526,7 +805,8 @@ async function handle_mcp_transport(req, res) {
 				protocolVersion: negotiated,
 				capabilities: { tools: { listChanged: false } },
 				serverInfo: MCP_SERVER_INFO,
-				instructions: "Use Mainframe tools only for characters owned by this token's account. Linking a character can charge Shells.",
+				instructions:
+					"Start with get_api_info when you need interface help. Use search_game_data before fetching a complete definition. Mainframe can only control characters owned by this token's account. Read mainframe_get_dashboard before linking. mainframe_link_character prepays one Shell for a sixty-minute window; reuse a unique request_id when retrying the same request.",
 			}),
 		);
 	}
