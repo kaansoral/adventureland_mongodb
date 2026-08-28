@@ -13,6 +13,8 @@ if (typeof SAMARITAN_SETTINGS === "undefined") {
 		farm: {
 			monster: "auto",
 			candidates: ["goo", "bee", "crab", "squig", "snake", "croc", "armadillo", "scorpion", "spider", "boar", "tortoise", "porcupine", "poisio"],
+			fallbackMonster: "goo",
+			fallbackAfterDeathMs: 15 * 60 * 1000,
 			reevaluateMs: 5 * 60 * 1000,
 			maximumHitsToKill: 18,
 			maximumMonsterAttackRatio: 0.16,
@@ -71,10 +73,6 @@ var SAMARITAN_STATE = {
 	compoundAttempts: 0,
 	temporaryFarm: null,
 	temporaryFarmUntil: 0,
-	lastX: null,
-	lastY: null,
-	lastMap: null,
-	lastPositionAt: Date.now(),
 	lastMoveAt: 0,
 	moveAttempts: 0,
 	movingTarget: null,
@@ -151,6 +149,18 @@ function on_cm(name, message) {
 				rip: !!character.rip,
 			});
 		});
+	}
+}
+
+function handle_death() {
+	var fallback = SAMARITAN_SETTINGS.farm.fallbackMonster;
+	if (fallback && samaritanMonsterAvailable(fallback)) {
+		SAMARITAN_STATE.temporaryFarm = fallback;
+		SAMARITAN_STATE.temporaryFarmUntil = Date.now() + Math.max(60000, Number(SAMARITAN_SETTINGS.farm.fallbackAfterDeathMs) || 0);
+		SAMARITAN_STATE.blockedTargets = {};
+		SAMARITAN_STATE.movingTarget = null;
+		SAMARITAN_STATE.moveAttempts = 0;
+		samaritanLog("death fallback", "switching to " + fallback + " after a death", 1000);
 	}
 }
 
@@ -334,19 +344,6 @@ function samaritanWeaponType() {
 	return weapon && G.items[weapon.name] && G.items[weapon.name].wtype;
 }
 
-function samaritanTrackPosition() {
-	var map = character.map;
-	var x = Number(character.x);
-	var y = Number(character.y);
-	if (SAMARITAN_STATE.lastX === null || map !== SAMARITAN_STATE.lastMap || Math.hypot(x - SAMARITAN_STATE.lastX, y - SAMARITAN_STATE.lastY) >= 8) {
-		SAMARITAN_STATE.lastX = x;
-		SAMARITAN_STATE.lastY = y;
-		SAMARITAN_STATE.lastMap = map;
-		SAMARITAN_STATE.lastPositionAt = Date.now();
-		SAMARITAN_STATE.moveAttempts = 0;
-	}
-}
-
 async function samaritanCombatSkill(target, farm) {
 	var type = samaritanCharacterType();
 	if (type === "warrior") {
@@ -380,13 +377,12 @@ async function samaritanCombatSkill(target, farm) {
 }
 
 function samaritanMoveForCombat(target) {
-	samaritanTrackPosition();
 	var now = Date.now();
 	if (SAMARITAN_STATE.movingTarget !== target.id) {
 		SAMARITAN_STATE.movingTarget = target.id;
 		SAMARITAN_STATE.moveAttempts = 0;
 	}
-	if (now - SAMARITAN_STATE.lastPositionAt > 3500 && SAMARITAN_STATE.moveAttempts >= 3) {
+	if (SAMARITAN_STATE.moveAttempts >= 6) {
 		SAMARITAN_STATE.blockedTargets[target.id] = now + 15000;
 		SAMARITAN_STATE.movingTarget = null;
 		SAMARITAN_STATE.moveAttempts = 0;
@@ -404,12 +400,12 @@ function samaritanMoveForCombat(target) {
 			x: character.x + ((character.x - target.x) / length) * Math.min(80, preferred),
 			y: character.y + ((character.y - target.y) / length) * Math.min(80, preferred),
 		};
-		return xmove(retreat);
+		return move(retreat);
 	}
 	if (currentDistance > preferred) {
 		var ratio = Math.max(0, (currentDistance - preferred * 0.85) / currentDistance);
 		var approach = { x: character.x + (target.x - character.x) * ratio, y: character.y + (target.y - character.y) * ratio };
-		return xmove(approach);
+		return move(approach);
 	}
 	return null;
 }
@@ -540,8 +536,8 @@ async function samaritanCombatTick() {
 	if (!SAMARITAN_SETTINGS.enabled || SAMARITAN_STATE.combatBusy || SAMARITAN_STATE.maintenanceBusy) return;
 	SAMARITAN_STATE.combatBusy = true;
 	try {
-		samaritanTrackPosition();
 		if (character.rip) {
+			if (smart.moving) stop("smart");
 			if (Date.now() - SAMARITAN_STATE.lastRespawnAt > 5000) {
 				SAMARITAN_STATE.lastRespawnAt = Date.now();
 				await samaritanCall("respawn", function () { return respawn(); });
@@ -584,10 +580,16 @@ async function samaritanCombatTick() {
 		if (get_target() !== target) await samaritanCall("target", function () { return change_target(target); });
 		var skillResult = await samaritanCombatSkill(target, target.mtype || farm);
 		if (skillResult && !samaritanFailure(skillResult)) {
+			SAMARITAN_STATE.movingTarget = null;
+			SAMARITAN_STATE.moveAttempts = 0;
 			await samaritanCall("loot", function () { return loot(); });
 			return;
 		}
-		if (can_attack(target)) await samaritanCall("attack", function () { return attack(target); });
+		if (can_attack(target)) {
+			SAMARITAN_STATE.movingTarget = null;
+			SAMARITAN_STATE.moveAttempts = 0;
+			await samaritanCall("attack", function () { return attack(target); });
+		}
 		else await samaritanCall("combat move", function () { return samaritanMoveForCombat(target); });
 		await samaritanCall("loot", function () { return loot(); });
 	} finally {
