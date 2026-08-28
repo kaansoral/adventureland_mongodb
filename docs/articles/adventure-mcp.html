@@ -209,6 +209,8 @@
 <tr><td><span class="dlabel">adventureland://catalog/docs</span></td><td>Every guide name, topic, section, and public link.</td></tr>
 <tr><td><span class="dlabel">adventureland://catalog/code-methods</span></td><td>Every public CODE routine, signature, and reference link.</td></tr>
 <tr><td><span class="dlabel">adventureland://catalog/game-data</span></td><td>Every deployed data section, purpose, record count, and search coverage.</td></tr>
+<tr><td><span class="dlabel">adventureland://code/starters/samaritan</span></td><td>Class-aware adventurer baseline with support, trusted parties, farming, banking, and opt-in item improvement.</td></tr>
+<tr><td><span class="dlabel">adventureland://code/starters/samaritan-merchant</span></td><td>Conservative merchant baseline with helpful buffs, explicit public listings, banking, and bounded item processing.</td></tr>
 <tr><td><span class="dlabel">adventureland://source/runner-functions</span></td><td>The JavaScript runner functions shipped by the game.</td></tr>
 <tr><td><span class="dlabel">adventureland://account/dashboard</span></td><td>Owned characters, assignments, status, and account Mainframe state.</td></tr>
 <tr><td><span class="dlabel">adventureland://account/code-slots</span></td><td>Saved character CODE slots.</td></tr>
@@ -237,12 +239,31 @@
 <tr><th>Prompt</th><th>Use</th></tr>
 <tr><td><span class="dlabel">learn_adventure_land</span></td><td>Load the game model without changing account state.</td></tr>
 <tr><td><span class="dlabel">research_gameplay</span></td><td>Answer a game, build, progression, economy, or content question from exact sources.</td></tr>
+<tr><td><span class="dlabel">configure_samaritan_code</span></td><td>Adapt the Samaritan adventurer or merchant baseline to an owned character without silently enabling item mutations.</td></tr>
 <tr><td><span class="dlabel">write_character_code</span></td><td>Research a goal, character, and optional slot before producing bounded CODE.</td></tr>
 <tr><td><span class="dlabel">review_character_code</span></td><td>Check an owned slot against exact contracts, game state, safety, and Mainframe compatibility.</td></tr>
 <tr><td><span class="dlabel">coordinate_character_team</span></td><td>Plan several owned characters on one server with explicit roles and safe coordination.</td></tr>
 <tr><td><span class="dlabel">operate_mainframe</span></td><td>Read, deploy, observe, and improve one owned character without confusing requested actions with confirmed behavior.</td></tr>
 <tr><td><span class="dlabel">debug_mainframe_character</span></td><td>Investigate a stuck, dead, slow, or incorrect character from current state, CODE, and logs.</td></tr>
 </table>
+
+<p><span class="dlabel">CODE etiquette</span></p>
+
+<p>Character automation should not use public, private, or party Chat as a programmable output channel. Do not call Chat routines on timers, advertise automatically, imitate conversation, answer players with generated text, or turn nearby player messages into commands. Use local CODE logs for diagnostics. Use <span class="dlabel">send_cm</span> only for small structured messages between explicitly trusted characters, validate the sender and payload, and rate-limit retries.</p>
+
+<p>Respect other players' fights and space. Do not attack a monster already targeting an unrelated player, repeatedly invite strangers, follow someone without consent, block a spawn, or create avoidable visual and request spam. Helpful healing or buffs should be bounded and must never move another player's gold or items. PvP actions, trading, mail, giveaways, NPC sales, public listings, bank movement, upgrades, compounds, exchanges, and purchases require clear policy and conservative limits.</p>
+
+<p><span class="dlabel">Samaritan starter CODE</span></p>
+
+<p>The two Samaritan resources are advanced starting points, not account-wide defaults. They do not modify the normal editor starter or the game's default CODE. Read the source, inspect the owned character and target slot, then change the settings block before saving it as account CODE.</p>
+
+<table>
+<tr><th>Starter</th><th>Behavior</th></tr>
+<tr><td>Samaritan adventurer</td><td>Chooses a bounded monster from deployed definitions, avoids tagged monsters, moves and kites by class, uses conservative class skills, heals or buffs when appropriate, accepts only trusted parties, and supports explicit banking, upgrade, and compound rules.</td></tr>
+<tr><td>Samaritan Merchant</td><td>Buffs nearby players, joins only trusted parties, lists only explicitly allowed surplus items, preserves configured quantities, can retrieve listed stock from the bank, and keeps NPC sales, upgrades, compounds, scroll purchases, and bank deposits independently disabled until configured.</td></tr>
+</table>
+
+<p>Every item rule requires an exact item key and a positive <span class="dlabel">maxItemValue</span>. Upgrade and compound rules also require a maximum level and have per-session attempt caps. Listing rules require an exact level, keep quantity, trade slot, price, quantity, and value ceiling. Locked, special-property, and stat-modified items are excluded. The code locates inventory entries again immediately before a mutation because inventory indexes can change.</p>
 
 <p><span class="dlabel">How an AI should build a character</span></p>
 
