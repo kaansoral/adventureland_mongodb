@@ -361,6 +361,14 @@ async function generate_token_api(args) {
 	return result;
 }
 
+async function token_status_api(args) {
+	return await get_mcp_api_token_status(args.user);
+}
+
+async function revoke_token_api(args) {
+	return await revoke_mcp_api_token(args.user);
+}
+
 // ==================== CHARACTER MANAGEMENT ====================
 
 async function servers_and_characters_api(args) {
@@ -1760,6 +1768,8 @@ var REF = {
 	logout: { F: logout_api, P: true },
 	logout_everywhere: { F: logout_everywhere_api, P: true, U: true },
 	generate_token: { F: generate_token_api, P: true, U: true },
+	token_status: { F: token_status_api, P: true, U: true },
+	revoke_token: { F: revoke_token_api, P: true, U: true },
 
 	servers_and_characters: { F: servers_and_characters_api, P: true, U: true },
 	create_character: {

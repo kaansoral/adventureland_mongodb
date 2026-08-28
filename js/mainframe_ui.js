@@ -5,7 +5,13 @@
 	if (!charactersNode) return;
 	var statusNode = document.getElementById("mainframe-status");
 	var errorNode = document.getElementById("mainframe-error");
+	var tokenStatusNode = document.getElementById("token-status");
+	var createTokenNode = document.getElementById("create-token");
+	var copyTokenNode = document.getElementById("copy-token");
+	var revokeTokenNode = document.getElementById("revoke-token");
+	var tokenSecretNode = document.getElementById("token-secret");
 	var busy = Object.create(null);
+	var tokenConnection = "";
 
 	function text(value) {
 		return value === undefined || value === null || value === "" ? "—" : String(value);
@@ -54,6 +60,8 @@
 			character_in_game: "This character is already running outside Mainframe.",
 			character_already_linked: "Disconnect this character before changing its CODE or server.",
 			mainframe_unavailable: "Mainframe is unavailable right now.",
+			token_generation_failed: "The token could not be created. Try again.",
+			token_revoke_failed: "The token could not be revoked. Try again.",
 			server_not_found: "Choose a live server.",
 			code_not_found: "Choose one of your saved CODE slots.",
 			rate_limited: "Mainframe received too many requests. Wait a moment and try again.",
@@ -76,6 +84,74 @@
 		errorNode.textContent = friendly(error);
 		errorNode.style.display = "block";
 	}
+
+	function renderTokenStatus(state) {
+		var active = !!(state && state.active);
+		tokenStatusNode.textContent = active ? "Token active" : "No active token";
+		createTokenNode.textContent = active ? "Rotate token" : "Create token";
+		createTokenNode.disabled = false;
+		revokeTokenNode.disabled = !active;
+	}
+
+	async function refreshTokenStatus() {
+		try {
+			renderTokenStatus(await call("token_status"));
+		} catch (error) {
+			tokenStatusNode.textContent = "Token status unavailable";
+			showError(error);
+		}
+	}
+
+	createTokenNode.onclick = async function () {
+		var rotating = tokenStatusNode.textContent === "Token active";
+		if (rotating && !window.confirm("Rotate your MCP token? The current token will stop working immediately.")) return;
+		createTokenNode.disabled = true;
+		try {
+			var result = await call("generate_token");
+			tokenConnection =
+				"Adventure Land MCP\n" +
+				"Transport: Streamable HTTP\n" +
+				"Server URL: https://adventure.land/mcp\n" +
+				"Authorization: Bearer " + result.token + "\n" +
+				"First instruction: Read adventureland://guide/start-here, then inspect mainframe_get_dashboard.";
+			tokenSecretNode.textContent = tokenConnection;
+			tokenSecretNode.style.display = "block";
+			copyTokenNode.style.display = "inline-block";
+			renderTokenStatus({ active: true });
+			errorNode.style.display = "none";
+		} catch (error) {
+			showError(error);
+		} finally {
+			createTokenNode.disabled = false;
+		}
+	};
+
+	copyTokenNode.onclick = async function () {
+		if (!tokenConnection) return;
+		try {
+			await navigator.clipboard.writeText(tokenConnection);
+			copyTokenNode.textContent = "Copied";
+			setTimeout(function () { copyTokenNode.textContent = "Copy connection"; }, 1500);
+		} catch (error) {
+			showError({ reason: "Copy failed. Select the connection text manually." });
+		}
+	};
+
+	revokeTokenNode.onclick = async function () {
+		if (!window.confirm("Revoke your MCP token? Connected AI clients and JSON API programs will lose access immediately.")) return;
+		revokeTokenNode.disabled = true;
+		try {
+			await call("revoke_token");
+			tokenConnection = "";
+			tokenSecretNode.textContent = "";
+			tokenSecretNode.style.display = "none";
+			copyTokenNode.style.display = "none";
+			renderTokenStatus({ active: false });
+			errorNode.style.display = "none";
+		} catch (error) {
+			showError(error);
+		}
+	};
 
 	function renderCharacter(entry, state) {
 		var runtime = entry.runtime || {};
@@ -222,6 +298,7 @@
 		}
 	}
 
+	refreshTokenStatus();
 	refresh();
 	setInterval(refresh, 5000);
 })();

@@ -357,6 +357,7 @@ docs = {
 		],
 		["adventure-api", "Adventure Land JSON API", "api,json,automation,code,data", "#55BDF0"],
 		["adventure-mcp", "Adventure Land MCP", "mcp,tools,ai,automation", "#A884E8"],
+		["adventure-ai", "Adventure Land for AI", "ai,code,mainframe,architecture,source", "#62C8A7"],
 		["mainframe", "Mainframe", "mainframe,hosting,automation,code", "#5ED6A8"],
 		["multi", "Multiple Ways to Run Multiple Characters", "multi,deploy", "#5997FF"],
 		[

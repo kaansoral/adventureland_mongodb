@@ -20,6 +20,7 @@ const DOCS_PATHS = [
 	"/docs/guide/code/X-advancedtopics/X.sub-msgpack",
 	"/docs/guide/adventure-api",
 	"/docs/guide/adventure-mcp",
+	"/docs/guide/adventure-ai",
 	"/docs/guide/mainframe",
 	"/docs/ref",
 	"/docs/ref/boosters",

@@ -4,12 +4,13 @@
 
 <p><span class="dlabel">Create a token</span></p>
 
-<p>From a signed-in game session:</p>
+<div class="code">1. Sign in at https://adventure.land/.
+2. Open https://adventure.land/mainframe.
+3. Open “Connect an AI”.
+4. Press “Create token” and copy it while it is visible.
+5. Creating another token rotates it and invalidates the previous token immediately.</div>
 
-<div class="code">var result = await parent.api_call("generate_token");
-show_json(result);</div>
-
-<p>Copy the token when it appears. Creating another token invalidates the previous one. Treat it like a password: it controls the account's saved CODE and Mainframe characters.</p>
+<p>Treat the token like a password: it controls the account's saved CODE and Mainframe characters. Adventure Land stores only its hash, so the plaintext cannot be shown again. The same token works for the JSON API and MCP.</p>
 
 <p><span class="dlabel">Call a method</span></p>
 
@@ -32,6 +33,7 @@ show_json(result);</div>
 <tr><td>list_docs</td><td>query?</td><td>Guide article names, titles, sections, and keywords.</td></tr>
 <tr><td>get_doc</td><td>name</td><td>One exact guide article as plain text.</td></tr>
 <tr><td>list_code_methods</td><td>query?</td><td>The public CODE method directory and reference links.</td></tr>
+<tr><td>get_code_method</td><td>name</td><td>One exact CODE contract, examples, failures, and shipped source location.</td></tr>
 </table>
 
 <p>Use <span class="dlabel">search_game_data</span> to find a record, then <span class="dlabel">get_game_data</span> with its section and exact name to retrieve the complete definition.</p>

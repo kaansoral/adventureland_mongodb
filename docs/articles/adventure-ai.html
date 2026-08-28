@@ -1,0 +1,136 @@
+<p><span class="dlabel">Adventure Land for AI</span></p>
+
+<p>Adventure Land is an online role-playing game where each character can run player-written JavaScript called <span class="dlabel">CODE</span>. An AI does not send combat packets directly. It researches the game, writes or updates an account-owned CODE slot, and can run that slot for an owned character through <span class="dlabel">Mainframe</span>.</p>
+
+<p><span class="dlabel">The four layers</span></p>
+
+<div class="code">AI client
+  Connects to https://adventure.land/mcp
+  Reads game knowledge and account state
+  Reads or saves CODE slots
+  Starts, stops, and observes owned Mainframe characters
+
+Mainframe
+  Runs one isolated machine per character
+  Supplies the headless CODE runtime and Adventure Land bridge
+  Has no general internet access or browser DOM
+
+Character CODE
+  Runs normal JavaScript with Adventure Land globals and public functions
+  Decides how the character moves, fights, loots, trades, crafts, and reacts
+
+Game server
+  Owns the authoritative character, map, entities, combat, inventory, economy, and action results</div>
+
+<p>The MCP account token only reaches characters and CODE slots owned by that account. Mainframe refuses to load a character that is already active elsewhere. An AI cannot use MCP as a raw character socket or bypass ordinary game validation.</p>
+
+<p><span class="dlabel">What the AI should read first</span></p>
+
+<p>The MCP resource <span class="dlabel">adventureland://guide/start-here</span> contains this guide. The server also exposes resources for the CODE runtime, architecture, globals, character and monster objects, events, Mainframe, the complete shipped runner source, live servers, owned slots, and the account dashboard.</p>
+
+<p>For a specific task, the AI should use:</p>
+
+<div class="code">list_docs / get_doc
+  Game rules, CODE architecture, objects, events, movement, items, and skills
+
+list_code_methods / get_code_method
+  Exact function signatures, Promise behavior, examples, failures, and source locations
+
+search_game_data / get_game_data
+  Exact items, skills, monsters, maps, classes, recipes, conditions, events, and NPCs
+
+list_codes / get_code
+  Account-owned CODE slots and their current source
+
+mainframe_get_dashboard / mainframe_get_character / mainframe_get_logs
+  Owned characters, assignments, paid access, confirmed game observations, and CODE output</div>
+
+<p><span class="dlabel">How to write character CODE</span></p>
+
+<p>CODE is long-running JavaScript. It should schedule small pieces of work, wait for action Promises, and return control to the runtime. It must not use an infinite synchronous loop. Nearby entities are live only while visible, so find the target again before acting.</p>
+
+<div class="code">var working = false;
+
+setInterval(async function () {
+  if (working) return;
+  working = true;
+  try {
+    if (character.rip) {
+      await respawn();
+      return;
+    }
+
+    var target = get_nearest_monster({type: "goo"});
+    if (!target) {
+      await smart_move("goo");
+      return;
+    }
+
+    if (!is_in_range(target)) {
+      await xmove(target.x, target.y);
+    } else if (can_attack(target)) {
+      await attack(target);
+    }
+    loot();
+  } catch (error) {
+    game_log("loop: " + (error.reason || error));
+  } finally {
+    working = false;
+  }
+}, 250);</div>
+
+<p>This is a shape, not a universal farming strategy. The AI must inspect the character's class and skills, the monster's range and damage, the map geometry, equipment, potion supply, party role, and the exact function contracts before choosing movement or combat logic.</p>
+
+<p><span class="dlabel">Important CODE rules</span></p>
+
+<p>Use public functions such as <span class="dlabel">attack</span>, <span class="dlabel">use_skill</span>, <span class="dlabel">move</span>, <span class="dlabel">smart_move</span>, <span class="dlabel">equip</span>, and <span class="dlabel">send_cm</span>. They register Promise responses, preserve request ordering, and apply compatibility safeguards. Raw socket emits are for advanced event listening and do not provide those guarantees.</p>
+
+<p>Read from <span class="dlabel">character</span>, <span class="dlabel">G</span>, <span class="dlabel">server</span>, <span class="dlabel">game</span>, and <span class="dlabel">smart</span>. Treat game definitions as descriptive inputs; the server decides whether an action succeeds. Handle rejected Promises and cooldowns. Do not overlap the same async loop. Do not keep entity references after they disappear or the map changes.</p>
+
+<p>Browser display calls are not useful on Mainframe. Buttons, drawings, focus, and other display-only routines are harmless headless operations. General network calls, Node internals, process execution, and filesystem access are not part of character CODE. <span class="dlabel">smart_move</span> keeps its public interface but uses Mainframe's bounded navigation service.</p>
+
+<p><span class="dlabel">From plan to a running character</span></p>
+
+<div class="code">1. Read mainframe_get_dashboard.
+2. Choose an owned character, live server, and a free or explicitly selected CODE slot.
+3. If the slot exists, read it before proposing a replacement.
+4. Research every public function and game definition used by the plan.
+5. Save the complete CODE with save_code.
+6. Explain any new Mainframe charge before starting.
+7. Call mainframe_link_character with one stable request_id.
+8. Read mainframe_get_character and mainframe_get_logs after the character connects.
+9. Judge behavior from authenticated map, position, activity, deaths, performance, and logs.
+10. To revise a running assignment: disconnect, save the corrected slot, then reconnect. Active paid time continues.</div>
+
+<p>A new Mainframe window costs <span class="dlabel">1 Shell for 60 minutes</span>. Reconnecting the same character during its active window does not charge again. Disconnecting does not pause or refund the window. Reuse the same <span class="dlabel">request_id</span> only when retrying the same lost link request; a new ID represents a new request.</p>
+
+<p><span class="dlabel">How to verify behavior</span></p>
+
+<p>Requested action counts show what CODE attempted, not what the game accepted. Confirm work through the runtime's authenticated observation: connection state, map, coordinates, movement, target, activity, death state, experience, gold, DPS, Gold per second, and CODE logs. Poll at a human control-plane pace. Combat timing belongs inside CODE, not in repeated MCP calls.</p>
+
+<p><span class="dlabel">Open-source map</span></p>
+
+<p>The public repository is <a href="https://github.com/kaansoral/adventureland_mongodb">github.com/kaansoral/adventureland_mongodb</a>. Useful paths:</p>
+
+<div class="code">js/runner_functions.js
+  Public functions loaded into character CODE
+
+docs/functions/
+  Per-function contracts, examples, and failure shapes
+
+docs/articles/ and docs/directory.js
+  CODE concepts, object references, events, and the guide structure
+
+design/
+  Items, skills, classes, monsters, maps, NPCs, events, drops, and recipes
+
+js/game.js and js/functions.js
+  Browser game state, UI, socket handling, and CODE integration
+
+node/server.js and node/server_functions.js
+  Authoritative game-server behavior
+
+mainframe.js and mcp_api.js
+  Public Mainframe account lifecycle and MCP surface</div>
+
+<p>The repository helps explain behavior, but the live MCP game-data records and function documentation match the deployed game version. Prefer them when a local branch and production differ.</p>

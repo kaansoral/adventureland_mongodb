@@ -1,46 +1,118 @@
 <p><span class="dlabel">Adventure Land MCP</span></p>
 
-<p>The Adventure Land MCP server exposes the same game-data, documentation, CODE, and Mainframe operations as typed tools. Use it when an AI client needs live tool discovery and structured results. Use the <a href="/docs/guide/adventure-api">JSON API</a> for ordinary programs.</p>
+<p>The Adventure Land MCP server is the AI interface for the whole game. It exposes tools for research and account actions, resources that explain the game and CODE runtime, resource templates for exact records, and guided prompts for writing and operating character CODE. The <a href="/docs/guide/adventure-api">JSON API</a> remains the simpler interface for ordinary programs.</p>
 
-<p><span class="dlabel">Connection</span></p>
+<p><span class="dlabel">Get an account token</span></p>
 
-<div class="code">URL: https://adventure.land/mcp
+<div class="code">1. Sign in at https://adventure.land/.
+2. Open https://adventure.land/mainframe.
+3. Find “Connect an AI”.
+4. Press “Create token”. If a token already exists, the button says “Rotate token”.
+5. Confirm the warning. Rotation invalidates the previous token immediately.
+6. Copy the connection details while they are visible. The plaintext token cannot be shown again.
+7. Keep it out of character CODE, screenshots, public repositories, and chat messages.</div>
+
+<p>Adventure Land stores only a hash of the token. One token can be active per account. Use the Revoke button on Mainframe if a token is exposed or no longer needed.</p>
+
+<p><span class="dlabel">Connect an AI client</span></p>
+
+<p>In the AI application's MCP or connector settings, add a remote server with these values:</p>
+
+<div class="code">Name: Adventure Land
 Transport: Streamable HTTP
-Authorization: Bearer YOUR_TOKEN</div>
+URL: https://adventure.land/mcp
+Header: Authorization: Bearer YOUR_TOKEN</div>
 
-<p>Create or rotate the token from a signed-in session:</p>
+<p>Client configuration formats differ. If the client accepts a JSON server record, the equivalent shape is:</p>
 
-<div class="code">var result = await parent.api_call("generate_token");
-show_json(result);</div>
+<div class="code">{
+  "mcpServers": {
+    "adventure-land": {
+      "url": "https://adventure.land/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_TOKEN"
+      }
+    }
+  }
+}</div>
 
-<p>The server is stateless. Send the token on every request. A token can only reach CODE slots and characters owned by its account.</p>
+<p>After connecting, ask the AI to read <span class="dlabel">adventureland://guide/start-here</span>. A conforming client also receives that instruction during MCP initialization.</p>
 
-<p><span class="dlabel">Tool use</span></p>
+<p><span class="dlabel">What the AI discovers</span></p>
 
-<p>Start with <span class="dlabel">get_api_info</span> when the client needs the interface map. Use <span class="dlabel">search_game_data</span> before requesting a complete game-data section. Use <span class="dlabel">list_docs</span> and <span class="dlabel">get_doc</span> for game rules and guides, and <span class="dlabel">list_code_methods</span> for the character CODE surface.</p>
+<table style="width:100%; text-align:left; border-spacing:12px 7px">
+<tr><th>Capability</th><th>Purpose</th></tr>
+<tr><td>Tools</td><td>Search game data, read docs and CODE contracts, manage saved slots, and control owned Mainframe characters.</td></tr>
+<tr><td>Resources</td><td>Load the game model, CODE architecture, globals, object/event references, Mainframe rules, live account state, and shipped runner source.</td></tr>
+<tr><td>Resource templates</td><td>Read one exact guide, function, game definition, saved slot, or owned character by URI.</td></tr>
+<tr><td>Prompts</td><td>Teach the AI the game, write character CODE, review a slot, or operate one Mainframe character through a consistent workflow.</td></tr>
+</table>
 
-<p>Before starting a character, call <span class="dlabel">mainframe_get_dashboard</span>. It returns the account's characters, CODE slots, live server choices, Shell balance, paid access windows, and current assignments in one result.</p>
+<p><span class="dlabel">Core resources</span></p>
+
+<div class="code">adventureland://guide/start-here
+adventureland://guide/code-runtime
+adventureland://guide/code-architecture
+adventureland://reference/code-globals
+adventureland://reference/character
+adventureland://reference/monster
+adventureland://reference/character-events
+adventureland://reference/game-events
+adventureland://guide/mainframe
+adventureland://source/runner-functions
+adventureland://account/dashboard
+adventureland://account/code-slots
+adventureland://game/servers</div>
+
+<p>The runner resource is the actual public <span class="dlabel">js/runner_functions.js</span> shipped by the game. The start guide maps the rest of the <a href="https://github.com/kaansoral/adventureland_mongodb">open-source repository</a>, including function docs, game definitions, browser integration, and server behavior.</p>
+
+<p><span class="dlabel">Resource templates</span></p>
+
+<div class="code">adventureland://docs/{name}
+adventureland://code/functions/{name}
+adventureland://game-data/{section}/{name}
+adventureland://code/slots/{slot}
+adventureland://mainframe/characters/{character}</div>
+
+<p>Find exact names with <span class="dlabel">list_docs</span>, <span class="dlabel">list_code_methods</span>, <span class="dlabel">search_game_data</span>, <span class="dlabel">list_codes</span>, and <span class="dlabel">mainframe_get_dashboard</span>. Resource URIs are validated and remain inside those public or account-owned collections.</p>
+
+<p><span class="dlabel">Guided prompts</span></p>
+
+<table style="width:100%; text-align:left; border-spacing:12px 7px">
+<tr><th>Prompt</th><th>Use</th></tr>
+<tr><td>learn_adventure_land</td><td>Load the mental model without changing account state.</td></tr>
+<tr><td>write_character_code</td><td>Research a goal, character, and optional slot before producing bounded CODE.</td></tr>
+<tr><td>review_character_code</td><td>Check an owned slot against exact contracts, game state, safety, and Mainframe compatibility.</td></tr>
+<tr><td>operate_mainframe</td><td>Read, deploy, observe, and improve one owned character without confusing requested actions with confirmed behavior.</td></tr>
+</table>
+
+<p><span class="dlabel">How an AI should build a character</span></p>
+
+<div class="code">1. Read adventureland://guide/start-here.
+2. Read mainframe_get_dashboard.
+3. Inspect the character, live server choices, existing assignment, and available CODE slots.
+4. Read an existing target slot before replacing it.
+5. Find exact CODE methods with list_code_methods, then read each with get_code_method.
+6. Find exact items, skills, monsters, maps, and recipes with search_game_data, then get_game_data.
+7. Save the complete JavaScript slot with save_code.
+8. Explain the charge if the character has no active Mainframe window.
+9. Link with one stable request_id.
+10. Verify connection, position, activity, deaths, performance, and CODE logs.</div>
+
+<p>Combat loops belong inside contained character CODE. MCP is the control plane: it plans, deploys, observes, and corrects. It should not poll fast enough to become the combat loop.</p>
 
 <p><span class="dlabel">Billing safety</span></p>
 
-<p><span class="dlabel">mainframe_link_character</span> can charge 1 Shell before a new 60-minute access window begins. Its input schema requires a unique <span class="dlabel">request_id</span>. If a response is lost, retry the same character, CODE slot, server, and request ID. Do not invent a new request ID for a network retry.</p>
+<p><span class="dlabel">mainframe_link_character</span> can charge 1 Shell before a new 60-minute access window begins. If a response is lost, retry the same character, CODE slot, server, and <span class="dlabel">request_id</span>. Do not invent a new request ID for a network retry.</p>
 
-<p>Reading state, logs, game data, documentation, and CODE does not charge Shells. Disconnecting does not refund or pause an active window.</p>
+<p>Reading state, logs, game data, documentation, CODE, resources, and prompts does not charge Shells. Disconnecting does not refund or pause active time.</p>
 
-<p><span class="dlabel">MCP result shape</span></p>
+<p><span class="dlabel">Results and retries</span></p>
 
-<p>Tool calls return the same object twice: JSON text in <span class="dlabel">content</span> for broad client compatibility and the original object in <span class="dlabel">structuredContent</span>. Failed tool operations set <span class="dlabel">isError: true</span> and retain their structured <span class="dlabel">reason</span>.</p>
+<p>Tool calls return JSON text in <span class="dlabel">content</span> and the same object in <span class="dlabel">structuredContent</span>. An application failure sets <span class="dlabel">isError: true</span> and includes a stable <span class="dlabel">reason</span>. HTTP 429 includes <span class="dlabel">Retry-After</span>; wait before retrying.</p>
 
-<div class="code">{
-  "content": [{"type":"text","text":"{...}"}],
-  "structuredContent": {"success":true,"servers":[...]},
-  "isError": false
-}</div>
+<p>Read before mutating. Fetch a slot before replacing it, fetch the dashboard before linking or disconnecting, and use authenticated Mainframe observations as evidence. A request counter records an attempt, not a completed game action.</p>
 
-<p>Request limits are returned by <span class="dlabel">get_api_info</span>. When the transport returns HTTP 429, wait for its <span class="dlabel">Retry-After</span> value before retrying. Full game-data sections have a smaller independent allowance; use search and exact-record reads for routine work.</p>
+<p><span class="dlabel">Rotate or revoke</span></p>
 
-<p><span class="dlabel">Operating rules for AI clients</span></p>
-
-<p>Read before mutating. Fetch the dashboard before linking or disconnecting. Fetch a CODE slot before replacing it. Explain a Shell charge before starting a new paid window. Never infer that an action succeeded from a request counter; use the authenticated runtime observation returned by Mainframe.</p>
-
-<p>Character combat and movement are not direct MCP tools. Save CODE, link the owned character to Mainframe, then inspect its observed state and logs. This keeps arbitrary character logic inside its contained machine.</p>
+<p>Return to Mainframe's Connect an AI panel. <span class="dlabel">Rotate token</span> creates a new secret and invalidates the old one in the same transaction. Update the AI client's Authorization header. <span class="dlabel">Revoke token</span> disables MCP and JSON API access for that token without changing game login sessions or running characters.</p>
