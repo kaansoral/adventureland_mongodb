@@ -50,6 +50,7 @@ var SAMARITAN_MERCHANT_STATE = {
 	upgradeAttempts: 0,
 	compoundAttempts: 0,
 	lastPartyAt: 0,
+	lastRespawnAt: 0,
 	logs: {},
 };
 
@@ -259,8 +260,17 @@ async function samaritanMerchantEnsureScroll(name, settings) {
 	return locate_item(name);
 }
 
+function samaritanMerchantSkillReady(name, target) {
+	var skill = G.skills[name];
+	if (!skill || !can_use(name)) return false;
+	if (skill.level && Number(character.level) < skill.level) return false;
+	if (skill.mp && Number(character.mp) < skill.mp) return false;
+	if (target && skill.range && distance(character, target) > skill.range) return false;
+	return true;
+}
+
 async function samaritanMerchantSupport() {
-	if (!SAMARITAN_MERCHANT_SETTINGS.support.merchantLuck || !SAMARITAN_MERCHANT_SETTINGS.support.buffNearbyPlayers || !can_use("mluck")) return;
+	if (!SAMARITAN_MERCHANT_SETTINGS.support.merchantLuck || !SAMARITAN_MERCHANT_SETTINGS.support.buffNearbyPlayers || !samaritanMerchantSkillReady("mluck")) return;
 	var targets = [character].concat(Object.values(parent.entities || {}).filter(function (entity) {
 		return entity && entity.type === "character" && entity.visible !== false && !entity.rip && !entity.npc;
 	}));
@@ -291,7 +301,10 @@ async function samaritanMerchantWork() {
 	SAMARITAN_MERCHANT_STATE.busy = true;
 	try {
 		if (character.rip) {
-			await samaritanMerchantCall("respawn", function () { return respawn(); });
+			if (Date.now() - SAMARITAN_MERCHANT_STATE.lastRespawnAt > 5000) {
+				SAMARITAN_MERCHANT_STATE.lastRespawnAt = Date.now();
+				await samaritanMerchantCall("respawn", function () { return respawn(); });
+			}
 			return;
 		}
 		if (character.max_hp && character.hp / character.max_hp < 0.7) await samaritanMerchantCall("potion", function () { return use_hp_or_mp(); });

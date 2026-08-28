@@ -66,6 +66,7 @@ var SAMARITAN_STATE = {
 	lastBankAt: 0,
 	lastPartyAt: 0,
 	lastRetreatAt: 0,
+	lastRespawnAt: 0,
 	upgradeAttempts: 0,
 	compoundAttempts: 0,
 	temporaryFarm: null,
@@ -290,9 +291,10 @@ function samaritanFindTarget(farm) {
 
 function samaritanFindImmediateThreat() {
 	var protectedNames = samaritanPartyNames();
+	var protectionRange = Math.max(320, (Number(character.range) || 0) * 2);
 	return Object.values(parent.entities || {})
 		.filter(function (entity) {
-			return entity && entity.type === "monster" && entity.visible !== false && !entity.dead && !entity.rip && protectedNames.includes(entity.target);
+			return entity && entity.type === "monster" && entity.visible !== false && !entity.dead && !entity.rip && protectedNames.includes(entity.target) && distance(character, entity) <= protectionRange;
 		})
 		.sort(function (left, right) {
 			var leftPriority = left.target === character.name ? 0 : 1;
@@ -356,12 +358,12 @@ function samaritanMoveForCombat(target) {
 			x: character.x + ((character.x - target.x) / length) * Math.min(80, preferred),
 			y: character.y + ((character.y - target.y) / length) * Math.min(80, preferred),
 		};
-		if (can_move_to(retreat)) return move(retreat);
+		return xmove(retreat);
 	}
 	if (currentDistance > preferred) {
 		var ratio = Math.max(0, (currentDistance - preferred * 0.85) / currentDistance);
 		var approach = { x: character.x + (target.x - character.x) * ratio, y: character.y + (target.y - character.y) * ratio };
-		if (can_move_to(approach)) return move(approach);
+		return xmove(approach);
 	}
 	return null;
 }
@@ -493,9 +495,13 @@ async function samaritanCombatTick() {
 	SAMARITAN_STATE.combatBusy = true;
 	try {
 		if (character.rip) {
-			await samaritanCall("respawn", function () { return respawn(); });
+			if (Date.now() - SAMARITAN_STATE.lastRespawnAt > 5000) {
+				SAMARITAN_STATE.lastRespawnAt = Date.now();
+				await samaritanCall("respawn", function () { return respawn(); });
+			}
 			return;
 		}
+		if (is_transporting(character)) return;
 		samaritanPartyTick();
 		if (character.max_hp && character.hp / character.max_hp < SAMARITAN_SETTINGS.combat.potionHpRatio) await samaritanCall("potion", function () { return use_hp_or_mp(); });
 		else if (character.max_mp && character.mp / character.max_mp < SAMARITAN_SETTINGS.combat.potionMpRatio) await samaritanCall("potion", function () { return use_hp_or_mp(); });
@@ -505,7 +511,7 @@ async function samaritanCombatTick() {
 			return;
 		}
 		if (character.max_hp && character.hp / character.max_hp < SAMARITAN_SETTINGS.combat.retreatHpRatio) {
-			if (Date.now() - SAMARITAN_STATE.lastRetreatAt > 5000) {
+			if (Date.now() - SAMARITAN_STATE.lastRetreatAt > 12000) {
 				SAMARITAN_STATE.lastRetreatAt = Date.now();
 				await samaritanCall("retreat", function () { return town(); });
 			}
@@ -514,7 +520,7 @@ async function samaritanCombatTick() {
 		var farm = samaritanChooseFarm(false);
 		var immediateThreat = samaritanFindImmediateThreat();
 		if (immediateThreat && samaritanThreatTooDangerous(immediateThreat)) {
-			if (Date.now() - SAMARITAN_STATE.lastRetreatAt > 5000) {
+			if (Date.now() - SAMARITAN_STATE.lastRetreatAt > 12000) {
 				SAMARITAN_STATE.lastRetreatAt = Date.now();
 				await samaritanCall("danger retreat", function () { return town(); });
 			}
