@@ -142,10 +142,10 @@
 <tr><td>get_api_info</td><td>None</td><td>Endpoints, versions, methods, and schemas.</td></tr>
 <tr><td>get_servers</td><td>None</td><td>Live realms, population, paths, and status.</td></tr>
 <tr><td>get_game_data</td><td>section?, name?</td><td>Sections, a complete section, or one exact definition.</td></tr>
-<tr><td>search_game_data</td><td>query, section?, limit?</td><td>Small matches across items, monsters, maps, skills, recipes, and other definitions.</td></tr>
+<tr><td>search_game_data</td><td>query, section?, limit?</td><td>Ranked matches across keys, descriptions, stats, ingredients, drops, map fields, and other nested definitions, with the fields that matched.</td></tr>
 <tr><td>list_docs</td><td>query?</td><td>Guide article names, titles, sections, and keywords.</td></tr>
 <tr><td>get_doc</td><td>name</td><td>One exact guide article as plain text.</td></tr>
-<tr><td>list_code_methods</td><td>query?</td><td>The public CODE method directory and reference links.</td></tr>
+<tr><td>list_code_methods</td><td>query?, limit?</td><td>The public CODE method directory, or a semantic search across method documentation.</td></tr>
 <tr><td>get_code_method</td><td>name</td><td>One exact CODE contract, examples, failures, and shipped source location.</td></tr>
 </table>
 
@@ -173,7 +173,7 @@ POST /mcp_api/get_game_data
 <tr><th>Method</th><th>Arguments</th><th>Result</th></tr>
 <tr><td>mainframe_get_dashboard</td><td>None</td><td>Characters, access windows, runtime state, CODE slots, and live server choices.</td></tr>
 <tr><td>mainframe_list_characters</td><td>None</td><td>Owned characters, access, assignments, and runtime state.</td></tr>
-<tr><td>mainframe_get_character</td><td>character</td><td>One owned character's access, assignment, observations, limits, and performance.</td></tr>
+<tr><td>mainframe_get_character</td><td>character</td><td>One owned character's saved class, level, position, equipment, inventory, conditions, quests, access, assignment, observations, limits, and performance.</td></tr>
 <tr><td>mainframe_link_character</td><td>character, request_id, code_slot, server?</td><td>Prepays when needed and queues the assignment.</td></tr>
 <tr><td>mainframe_disconnect_character</td><td>character</td><td>Stops the assignment without pausing paid time.</td></tr>
 <tr><td>mainframe_get_logs</td><td>character, limit?</td><td>Up to 100 recent CODE log records.</td></tr>

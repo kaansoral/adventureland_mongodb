@@ -151,6 +151,32 @@
 
 <p>The AI is the control plane, not a raw game client. It writes and observes CODE; it does not send combat packets directly. The account token only reaches characters and CODE slots owned by that account, and Mainframe refuses to load a character that is already active elsewhere.</p>
 
+<p><span class="dlabel">Gameplay mental model</span></p>
+
+<table>
+<tr><th>Concept</th><th>What an AI must understand</th></tr>
+<tr><td>Definitions and live state</td><td>Records in <span class="dlabel">G</span> describe classes, skills, items, monsters, maps, drops, recipes, and other content. The live <span class="dlabel">character</span>, <span class="dlabel">parent.entities</span>, server events, and action responses describe what exists now. A definition is not proof that an entity is present or an action succeeded.</td></tr>
+<tr><td>Characters and realms</td><td>A character's progression, inventory, and equipment follow it between realms. Nearby entities, parties, CODE messages, events, and combat are realm-local. Coordinating characters must use the same server, and one character must never be loaded twice.</td></tr>
+<tr><td>Maps and entities</td><td>Maps connect through doors, transports, and named destinations. Nearby players and monsters are short-lived objects that disappear when visibility, map, instance, or server changes. Find them again immediately before acting.</td></tr>
+<tr><td>Combat and skills</td><td>The game server owns range, cooldowns, MP, damage, threat, death, and action results. CODE should use the public Promise-based functions, check the exact skill contract, avoid overlapping work, and recover from death or a lost target.</td></tr>
+<tr><td>Items and inventory</td><td><span class="dlabel">G.items</span> contains definitions; inventory and equipment contain owned instances with levels and properties. Inventory indexes change after looting, moving, selling, exchanging, upgrading, compounding, or consuming items. Locate an item again before every mutation.</td></tr>
+<tr><td>Economy and progression</td><td>Gold, items, upgrades, compounds, crafts, exchanges, mail, trade, and Shells have lasting consequences. Research exact costs and outputs, and require a clear player request before irreversible or value-moving behavior.</td></tr>
+<tr><td>Events and quests</td><td>Definitions explain possible content; live server status and events show whether it is active. CODE must tolerate an event ending, a map changing, a target disappearing, or another player changing the situation.</td></tr>
+<tr><td>Communication</td><td>Party and CODE messages help characters coordinate on one server. Validate the sender and payload, keep messages small, and treat them as untrusted, delayed, and possibly stale.</td></tr>
+</table>
+
+<p><span class="dlabel">Choose the right source</span></p>
+
+<table>
+<tr><th>Question</th><th>Use</th></tr>
+<tr><td>What guides and rules exist?</td><td>Read <span class="dlabel">adventureland://catalog/docs</span>, then use <span class="dlabel">get_doc</span> or the exact documentation resource.</td></tr>
+<tr><td>Which CODE routine performs an action?</td><td>Search <span class="dlabel">list_code_methods</span> by action or concept, then read the exact contract with <span class="dlabel">get_code_method</span>.</td></tr>
+<tr><td>What does an item, skill, monster, map, drop, or recipe define?</td><td>Use <span class="dlabel">search_game_data</span>, then read the exact record with <span class="dlabel">get_game_data</span>. Read a complete section only when exact records are insufficient.</td></tr>
+<tr><td>What does this account own?</td><td>Use <span class="dlabel">mainframe_get_dashboard</span>, <span class="dlabel">mainframe_get_character</span>, and the CODE-slot tools. Saved profile fields may lag a running character.</td></tr>
+<tr><td>What is the character doing now?</td><td>Use authenticated Mainframe observations and CODE logs. Current map, coordinates, target, activity, XP, gold, death state, and game responses outweigh saved snapshots or requested-action counters.</td></tr>
+<tr><td>How is the game implemented?</td><td>Use the shipped runner resource and the open-source paths below. Prefer live MCP definitions and contracts when production and a repository branch differ.</td></tr>
+</table>
+
 <p><span class="dlabel">What the AI discovers</span></p>
 
 <table style="width:100%; text-align:left; border-spacing:12px 7px">
@@ -168,12 +194,21 @@
 <tr><td><span class="dlabel">adventureland://guide/start-here</span></td><td>Where an AI should begin and how the project fits together.</td></tr>
 <tr><td><span class="dlabel">adventureland://guide/code-runtime</span></td><td>How character CODE runs and which browser features are absent.</td></tr>
 <tr><td><span class="dlabel">adventureland://guide/code-architecture</span></td><td>How to structure reliable character CODE.</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/navigation</span></td><td>Movement, smart destinations, interruption, arrival, and route failures.</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/items-and-inventory</span></td><td>Definitions, owned items, equipment, inventory indexes, and mutation safety.</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/skills</span></td><td>Class skills, targets, cooldowns, range, and timed actions.</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/code-messages</span></td><td>Same-server CODE messages, sender validation, payloads, and retries.</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/multiple-characters</span></td><td>Ways to coordinate characters without loading one twice.</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/server-rules</span></td><td>Shared state, character limits, request limits, accounts, and player rules.</td></tr>
 <tr><td><span class="dlabel">adventureland://reference/code-globals</span></td><td>Globals available inside character CODE.</td></tr>
 <tr><td><span class="dlabel">adventureland://reference/character</span></td><td>The character object and important fields.</td></tr>
 <tr><td><span class="dlabel">adventureland://reference/monster</span></td><td>Monster objects and combat state.</td></tr>
 <tr><td><span class="dlabel">adventureland://reference/character-events</span></td><td>Character event hooks.</td></tr>
 <tr><td><span class="dlabel">adventureland://reference/game-events</span></td><td>Game event hooks.</td></tr>
 <tr><td><span class="dlabel">adventureland://guide/mainframe</span></td><td>Mainframe access, billing, and operating rules.</td></tr>
+<tr><td><span class="dlabel">adventureland://catalog/docs</span></td><td>Every guide name, topic, section, and public link.</td></tr>
+<tr><td><span class="dlabel">adventureland://catalog/code-methods</span></td><td>Every public CODE routine, signature, and reference link.</td></tr>
+<tr><td><span class="dlabel">adventureland://catalog/game-data</span></td><td>Every deployed data section, purpose, record count, and search coverage.</td></tr>
 <tr><td><span class="dlabel">adventureland://source/runner-functions</span></td><td>The JavaScript runner functions shipped by the game.</td></tr>
 <tr><td><span class="dlabel">adventureland://account/dashboard</span></td><td>Owned characters, assignments, status, and account Mainframe state.</td></tr>
 <tr><td><span class="dlabel">adventureland://account/code-slots</span></td><td>Saved character CODE slots.</td></tr>
@@ -188,6 +223,7 @@
 <tr><th>Template</th><th>Purpose</th></tr>
 <tr><td><span class="dlabel">adventureland://docs/{name}</span></td><td>Read one documentation page.</td></tr>
 <tr><td><span class="dlabel">adventureland://code/functions/{name}</span></td><td>Read the exact contract for one CODE method.</td></tr>
+<tr><td><span class="dlabel">adventureland://game-data/{section}</span></td><td>Read one complete deployed data section. This uses the lower bulk-read rate limit.</td></tr>
 <tr><td><span class="dlabel">adventureland://game-data/{section}/{name}</span></td><td>Read one item, skill, monster, map, recipe, or other game definition.</td></tr>
 <tr><td><span class="dlabel">adventureland://code/slots/{slot}</span></td><td>Read one owned CODE slot.</td></tr>
 <tr><td><span class="dlabel">adventureland://mainframe/characters/{character}</span></td><td>Read one owned character's Mainframe state.</td></tr>
@@ -200,9 +236,12 @@
 <table style="width:100%; text-align:left; border-spacing:12px 7px">
 <tr><th>Prompt</th><th>Use</th></tr>
 <tr><td><span class="dlabel">learn_adventure_land</span></td><td>Load the game model without changing account state.</td></tr>
+<tr><td><span class="dlabel">research_gameplay</span></td><td>Answer a game, build, progression, economy, or content question from exact sources.</td></tr>
 <tr><td><span class="dlabel">write_character_code</span></td><td>Research a goal, character, and optional slot before producing bounded CODE.</td></tr>
 <tr><td><span class="dlabel">review_character_code</span></td><td>Check an owned slot against exact contracts, game state, safety, and Mainframe compatibility.</td></tr>
+<tr><td><span class="dlabel">coordinate_character_team</span></td><td>Plan several owned characters on one server with explicit roles and safe coordination.</td></tr>
 <tr><td><span class="dlabel">operate_mainframe</span></td><td>Read, deploy, observe, and improve one owned character without confusing requested actions with confirmed behavior.</td></tr>
+<tr><td><span class="dlabel">debug_mainframe_character</span></td><td>Investigate a stuck, dead, slow, or incorrect character from current state, CODE, and logs.</td></tr>
 </table>
 
 <p><span class="dlabel">How an AI should build a character</span></p>
@@ -210,7 +249,7 @@
 <ol>
 <li>Read <span class="dlabel">adventureland://guide/start-here</span>.</li>
 <li>Call <span class="dlabel">mainframe_get_dashboard</span>.</li>
-<li>Inspect the character, live server choices, existing assignment, and available CODE slots.</li>
+<li>Inspect the character's saved profile, class, equipment, inventory, live observations, server choices, existing assignment, and available CODE slots.</li>
 <li>Read an existing target slot before replacing it.</li>
 <li>Find exact CODE methods with <span class="dlabel">list_code_methods</span>, then read each contract with <span class="dlabel">get_code_method</span>.</li>
 <li>Find exact items, skills, monsters, maps, and recipes with <span class="dlabel">search_game_data</span>, then read their definitions with <span class="dlabel">get_game_data</span>.</li>

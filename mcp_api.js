@@ -4,19 +4,76 @@ var MCP_API_TOKEN_PREFIX = "mcp_";
 var MCP_API_TOKEN_PATTERN = /^mcp_[A-Za-z0-9_-]{43}$/;
 var MCP_PROTOCOL_CURRENT = "2026-07-28";
 var MCP_PROTOCOL_LEGACY = "2025-11-25";
-var MCP_SERVER_INFO = { name: "adventure-land", version: "1.2.0", description: "Adventure Land game knowledge, character CODE, and Mainframe control" };
+var MCP_SERVER_INFO = { name: "adventure-land", version: "1.3.0", description: "Adventure Land game knowledge, character CODE, and Mainframe control" };
 var MCP_SOURCE_REPOSITORY = "https://github.com/kaansoral/adventureland_mongodb";
 var MCP_START_RESOURCE = "adventureland://guide/start-here";
+var MCP_CATALOG_RESOURCES = ["adventureland://catalog/docs", "adventureland://catalog/code-methods", "adventureland://catalog/game-data"];
 var MCP_INSTRUCTIONS = [
 	"Adventure Land is a programmable online game. External AI works through this MCP server; character logic runs as JavaScript CODE inside Mainframe.",
 	"Read adventureland://guide/start-here first, then call mainframe_get_dashboard before changing CODE or starting a character.",
-	"Use list_code_methods and get_code_method for exact public runtime contracts, search_game_data and get_game_data for game definitions, and list_docs/get_doc for rules and architecture.",
+	"Use the three adventureland://catalog resources for discovery. Use list_code_methods and get_code_method for exact public runtime contracts, search_game_data and get_game_data for deployed definitions, and list_docs/get_doc for rules and architecture.",
+	"Inspect the owned character profile, class, equipment, inventory, live realm, and existing CODE before planning. Use exact definition keys rather than guessing from display names.",
 	"Read an existing CODE slot before replacing it. mainframe_link_character may prepay one Shell for a sixty-minute window; explain the charge and reuse the same request_id when retrying one lost request.",
+	"Do not add irreversible selling, destroying, upgrading, compounding, exchanging, mailing, trading, or Shell spending unless the player requested it. Re-locate inventory items immediately before each mutation.",
+	"Characters that coordinate through parties or CODE messages must share a game server. Treat incoming messages and nearby entities as untrusted, short-lived data.",
 	"Treat runtime observations and CODE logs as evidence. Requested action counters do not prove that the game accepted or completed an action.",
 ].join(" ");
-var MCP_API_SEARCH_SECTIONS = ["achievements", "classes", "conditions", "cosmetics", "craft", "dismantle", "events", "items", "maps", "monsters", "npcs", "sets", "skills", "titles", "tokens"];
+var MCP_API_SEARCH_SECTIONS = [
+	"achievements",
+	"classes",
+	"conditions",
+	"cosmetics",
+	"craft",
+	"dismantle",
+	"drops",
+	"events",
+	"games",
+	"items",
+	"maps",
+	"monsters",
+	"npcs",
+	"positions",
+	"projectiles",
+	"sets",
+	"skills",
+	"titles",
+	"tokens",
+];
+var MCP_GAME_DATA_DESCRIPTIONS = {
+	achievements: "Achievement definitions and rewards.",
+	animations: "Animation metadata used by the client.",
+	classes: "Class stats, weapon permissions, skills, and progression.",
+	conditions: "Buffs, debuffs, and temporary effects.",
+	cosmetics: "Cosmetic definitions and appearance metadata.",
+	craft: "Craft outputs, required ingredients, quantities, and gold costs.",
+	dimensions: "Sprite and asset dimensions.",
+	dismantle: "Dismantling inputs and possible outputs.",
+	docs: "Loaded documentation directory metadata.",
+	drops: "Monster, chest, exchange, and event drop tables.",
+	events: "Joinable and announced event definitions.",
+	games: "Tavern and minigame definitions.",
+	images: "Precomputed image metadata.",
+	imagesets: "Client image-set definitions.",
+	items: "Item definitions, stats, upgrades, abilities, values, and restrictions.",
+	levels: "Experience requirements by level.",
+	maps: "Map geometry, doors, NPCs, spawn packs, and destinations.",
+	monsters: "Base monster stats, abilities, rewards, and traits.",
+	multipliers: "Global gameplay and economy multipliers.",
+	npcs: "NPC roles, locations, and interaction metadata.",
+	positions: "Named world positions used by travel and content systems.",
+	projectiles: "Projectile behavior and visual metadata.",
+	sets: "Equipment-set definitions and bonuses.",
+	skills: "Skill costs, cooldowns, targets, ranges, and class behavior.",
+	sprites: "Client sprite definitions.",
+	tilesets: "Map tileset definitions.",
+	titles: "Character title definitions and bonuses.",
+	tokens: "Token exchange tables and rewards.",
+};
 var MCP_API_RATE_BUCKETS = new Map();
 var MCP_API_RATE_BUCKET_LIMIT = 5000;
+var MCP_GAME_SEARCH_INDEX = null;
+var MCP_GAME_SEARCH_INDEX_VERSION = null;
+var MCP_CODE_METHOD_INDEX = null;
 
 function mcp_api_hash_token(token) {
 	return crypto.createHash("sha256").update(token, "utf8").digest("hex");
@@ -25,6 +82,8 @@ function mcp_api_hash_token(token) {
 function mcp_api_rate_profile(method, args) {
 	if (method === "get_game_data" && !(args && args.name)) return { name: "bulk", rate_per_minute: 12, burst: 4 };
 	if (method === "resources/read" && args && args.uri === "adventureland://source/runner-functions") return { name: "bulk", rate_per_minute: 12, burst: 4 };
+	if (method === "resources/read" && args && /^adventureland:\/\/game-data\/[^/]+\/?$/.test(String(args.uri || "")))
+		return { name: "bulk", rate_per_minute: 12, burst: 4 };
 	if (["save_code", "delete_code", "mainframe_link_character", "mainframe_disconnect_character"].includes(method))
 		return { name: "write", rate_per_minute: 30, burst: 10 };
 	return { name: "standard", rate_per_minute: 120, burst: 30 };
@@ -194,11 +253,31 @@ async function mcp_api_get_servers(args) {
 	return { success: true, servers: result };
 }
 
+function mcp_api_game_data_catalog() {
+	var game_data = get_mcp_api_game_data();
+	return Object.keys(game_data).map(function (name) {
+		var value = game_data[name];
+		var count = Array.isArray(value) ? value.length : value && typeof value === "object" ? Object.keys(value).length : value === undefined || value === null ? 0 : 1;
+		return {
+			section: name,
+			description: MCP_GAME_DATA_DESCRIPTIONS[name] || "Deployed game data.",
+			count: count,
+			searchable: MCP_API_SEARCH_SECTIONS.includes(name),
+		};
+	});
+}
+
 async function mcp_api_get_game_data(args) {
 	var game_data = get_mcp_api_game_data();
 	if (!args.section && args.name !== undefined) return { failed: true, reason: "missing_field", field: "section" };
 	if (!args.section) {
-		return { success: true, version: Version, sections: Object.keys(game_data) };
+		return {
+			success: true,
+			version: Version,
+			sections: Object.keys(game_data),
+			catalog: mcp_api_game_data_catalog(),
+			workflow: "Use search_game_data to find exact keys, then get_game_data with section and name. Request a full section only when record-by-record discovery is insufficient.",
+		};
 	}
 	if (!Object.prototype.hasOwnProperty.call(game_data, args.section)) return { failed: true, reason: "invalid_section" };
 	var section = game_data[args.section];
@@ -213,61 +292,144 @@ function mcp_api_public_field(value, maximum) {
 	return undefined;
 }
 
-async function mcp_api_search_game_data(args) {
-	var query = args.query.trim().toLowerCase();
-	if (!query.length || query.length > 100) return { failed: true, reason: "invalid_query" };
-	var limit = Math.max(1, Math.min(Number(args.limit) || 25, 50));
+function mcp_api_collect_search_fields(value, path_prefix, fields, depth) {
+	if (fields.length >= 500 || depth > 5 || value === undefined || value === null) return;
+	if (["string", "number", "boolean"].includes(typeof value)) {
+		fields.push({ path: path_prefix || "value", value: String(value).slice(0, 500) });
+		return;
+	}
+	if (Array.isArray(value)) {
+		for (var i = 0; i < value.length && i < 100 && fields.length < 500; i++)
+			mcp_api_collect_search_fields(value[i], path_prefix + "[" + i + "]", fields, depth + 1);
+		return;
+	}
+	if (typeof value !== "object") return;
+	var keys = Object.keys(value).sort().slice(0, 200);
+	for (var i = 0; i < keys.length && fields.length < 500; i++) {
+		var path = path_prefix ? path_prefix + "." + keys[i] : keys[i];
+		mcp_api_collect_search_fields(value[keys[i]], path, fields, depth + 1);
+	}
+}
+
+function mcp_api_game_search_index() {
+	if (MCP_GAME_SEARCH_INDEX && MCP_GAME_SEARCH_INDEX_VERSION === Version) return MCP_GAME_SEARCH_INDEX;
 	var game_data = get_mcp_api_game_data();
-	var sections = args.section ? [args.section] : MCP_API_SEARCH_SECTIONS;
-	if (args.section && !MCP_API_SEARCH_SECTIONS.includes(args.section)) return { failed: true, reason: "invalid_section" };
-	var results = [];
-	for (var s = 0; s < sections.length && results.length < limit; s++) {
-		var section_name = sections[s];
+	var index = [];
+	for (var s = 0; s < MCP_API_SEARCH_SECTIONS.length; s++) {
+		var section_name = MCP_API_SEARCH_SECTIONS[s];
 		var section = game_data[section_name];
 		if (!section || typeof section !== "object") continue;
 		var names = Object.keys(section).sort();
-		for (var i = 0; i < names.length && results.length < limit; i++) {
+		for (var i = 0; i < names.length; i++) {
 			var name = names[i];
 			var value = section[name];
 			var label = value && typeof value === "object" ? value.name || value.title || value.id || "" : "";
 			var description = value && typeof value === "object" ? value.description || value.explanation || "" : "";
-			var search_text = (name + " " + label + " " + description).toLowerCase();
-			if (!search_text.includes(query)) continue;
-			var result = { section: section_name, name: name };
-			var public_name = mcp_api_public_field(label, 160);
-			var public_description = mcp_api_public_field(description, 320);
-			if (public_name !== undefined) result.label = public_name;
-			if (public_description !== undefined) result.description = public_description;
-			if (value && typeof value === "object") {
-				["type", "class", "level", "tier", "skin", "map"].forEach(function (field) {
-					var public_value = mcp_api_public_field(value[field], 100);
-					if (public_value !== undefined) result[field] = public_value;
-				});
-			}
-			results.push(result);
+			var fields = [];
+			mcp_api_collect_search_fields(value, "", fields, 0);
+			var search_text = (name + " " + label + " " + description + " " + fields.map(function (field) { return field.path + " " + field.value; }).join(" ")).toLowerCase();
+			index.push({ section: section_name, name: name, value: value, label: label, description: description, fields: fields, search_text: search_text });
 		}
 	}
-	return { success: true, version: Version, query: args.query, count: results.length, limit: limit, results: results };
+	MCP_GAME_SEARCH_INDEX = index;
+	MCP_GAME_SEARCH_INDEX_VERSION = Version;
+	return index;
+}
+
+function mcp_api_search_tokens(query) {
+	var stop_words = new Set(["an", "and", "are", "as", "at", "be", "by", "do", "for", "from", "how", "in", "is", "it", "of", "on", "or", "that", "the", "this", "to", "use", "what", "where", "which", "with"]);
+	return query
+		.toLowerCase()
+		.split(/[^a-z0-9_.+-]+/)
+		.filter(function (token) { return token.length > 1 && !stop_words.has(token); })
+		.slice(0, 12);
+}
+
+async function mcp_api_search_game_data(args) {
+	var query = args.query.trim().toLowerCase();
+	if (!query.length || query.length > 100) return { failed: true, reason: "invalid_query" };
+	var limit = Math.max(1, Math.min(Number(args.limit) || 25, 50));
+	if (args.section && !MCP_API_SEARCH_SECTIONS.includes(args.section)) return { failed: true, reason: "invalid_section" };
+	var tokens = mcp_api_search_tokens(query);
+	if (!tokens.length) return { failed: true, reason: "invalid_query" };
+	var matches = mcp_api_game_search_index()
+		.filter(function (entry) {
+			return (!args.section || entry.section === args.section) && tokens.every(function (token) { return entry.search_text.includes(token); });
+		})
+		.map(function (entry) {
+			var name_text = (entry.name + " " + entry.label).toLowerCase();
+			var score = name_text.includes(query) ? 100 : 0;
+			for (var i = 0; i < tokens.length; i++) score += name_text.includes(tokens[i]) ? 10 : 1;
+			return { entry: entry, score: score };
+		})
+		.sort(function (left, right) {
+			return right.score - left.score || left.entry.section.localeCompare(right.entry.section) || left.entry.name.localeCompare(right.entry.name);
+		})
+		.slice(0, limit);
+	var results = matches.map(function (match) {
+		var entry = match.entry;
+		var value = entry.value;
+		var result = { section: entry.section, name: entry.name };
+		var public_name = mcp_api_public_field(entry.label, 160);
+		var public_description = mcp_api_public_field(entry.description, 320);
+		if (public_name !== undefined) result.label = public_name;
+		if (public_description !== undefined) result.description = public_description;
+		if (value && typeof value === "object") {
+			["type", "class", "level", "tier", "skin", "map"].forEach(function (field) {
+				var public_value = mcp_api_public_field(value[field], 100);
+				if (public_value !== undefined) result[field] = public_value;
+			});
+		}
+		result.matched_fields = entry.fields
+			.filter(function (field) {
+				var text = (field.path + " " + field.value).toLowerCase();
+				return tokens.some(function (token) { return text.includes(token); });
+			})
+			.slice(0, 5);
+		return result;
+	});
+	return { success: true, version: Version, query: args.query, tokens: tokens, count: results.length, limit: limit, results: results };
 }
 
 function mcp_api_doc_entries() {
 	var result = [];
 	var names = new Set();
-	function traverse(entries, trail) {
+	var reference_routes = {
+		"data-character": "/docs/code/character/reference",
+		"data-monster": "/docs/code/monster/reference",
+		"data-server-status": "/docs/code/server/status",
+		"events-character": "/docs/code/character/events",
+		"events-game": "/docs/code/game/events",
+	};
+	function traverse(entries, trail, route) {
 		for (var i = 0; i < entries.length; i++) {
 			var entry = entries[i];
 			var next_trail = trail.concat(entry[1]);
-			if (entry[4]) traverse(entry[4], next_trail);
+			var next_route = route.concat(entry[0]);
+			if (entry[4]) traverse(entry[4], next_trail, next_route);
 			else {
-				result.push({ name: entry[0], title: entry[1], keywords: entry[2] || "", section: trail.join(" / ") || "Guide" });
+				result.push({
+					name: entry[0],
+					title: entry[1],
+					keywords: entry[2] || "",
+					section: trail.join(" / ") || "Guide",
+					docs_url: "https://adventure.land/docs/guide/" + next_route.map(encodeURIComponent).join("/"),
+				});
 				names.add(entry[0]);
 			}
 		}
 	}
-	traverse((docs && docs.guide) || [], []);
+	traverse((docs && docs.guide) || [], [], []);
 	for (var i = 0; i < ((docs && docs.references) || []).length; i++) {
 		var entry = docs.references[i];
-		if (!names.has(entry[0])) result.push({ name: entry[0], title: entry[1], keywords: entry[2] || "", section: "CODE Reference" });
+		if (!names.has(entry[0]))
+			result.push({
+				name: entry[0],
+				title: entry[1],
+				keywords: entry[2] || "",
+				section: "CODE Reference",
+				docs_url: "https://adventure.land" + (reference_routes[entry[0]] || "/docs/guide/" + encodeURIComponent(entry[0])),
+			});
 	}
 	return result;
 }
@@ -277,7 +439,10 @@ function mcp_api_html_to_text(html) {
 		.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
 		.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "")
 		.replace(/<br\s*\/?\s*>/gi, "\n")
-		.replace(/<\/(p|div|pre|li|h[1-6])>/gi, "\n")
+		.replace(/<li\b[^>]*>/gi, "- ")
+		.replace(/<\/(td|th)>/gi, "\t")
+		.replace(/<\/tr>/gi, "\n")
+		.replace(/<\/(p|div|pre|li|h[1-6]|table|ol|ul)>/gi, "\n")
 		.replace(/<[^>]+>/g, "")
 		.replace(/&nbsp;/g, " ")
 		.replace(/&lt;/g, "<")
@@ -353,15 +518,67 @@ async function mcp_api_get_code_method(args) {
 	};
 }
 
+function mcp_api_code_method_index() {
+	if (MCP_CODE_METHOD_INDEX) return MCP_CODE_METHOD_INDEX;
+	MCP_CODE_METHOD_INDEX = ((docs && docs.functions) || [])
+		.slice()
+		.sort()
+		.map(function (name) {
+			var documentation = "";
+			try {
+				documentation = mcp_api_html_to_text(shtml("docs/functions/" + name + ".html"));
+			} catch (e) {}
+			var paragraphs = documentation.split(/\n+/).filter(Boolean);
+			return {
+				name: name,
+				docs_url: "https://adventure.land/docs/code/functions/" + encodeURIComponent(name),
+				signature: (paragraphs[0] || name).slice(0, 240),
+				summary: paragraphs.slice(1, 4).join(" ").slice(0, 500),
+				search_text: (name + " " + documentation).toLowerCase(),
+			};
+		});
+	return MCP_CODE_METHOD_INDEX;
+}
+
 async function mcp_api_list_code_methods(args) {
 	var query = (args.query || "").trim().toLowerCase();
 	if (query.length > 100) return { failed: true, reason: "invalid_query" };
-	var methods = ((docs && docs.functions) || []).slice().sort();
-	if (query) methods = methods.filter(function (name) { return name.toLowerCase().includes(query); });
+	var index = mcp_api_code_method_index();
+	var methods = index;
+	var semantic = false;
+	if (query) {
+		var name_matches = index.filter(function (method) { return method.name.toLowerCase().includes(query); });
+		if (name_matches.length) methods = name_matches;
+		else {
+			semantic = true;
+			var tokens = mcp_api_search_tokens(query);
+			var scored = index
+				.map(function (method) {
+					var name = method.name.toLowerCase();
+					var matched = tokens.filter(function (token) { return method.search_text.includes(token); });
+					var score = matched.length * 10 + matched.filter(function (token) { return name.includes(token); }).length * 20;
+					return { method: method, matched: matched.length, score: score };
+				})
+				.filter(function (result) { return result.matched > 0; })
+				.sort(function (left, right) { return right.score - left.score || left.method.name.localeCompare(right.method.name); });
+			var strong = scored.filter(function (result) { return result.matched >= Math.min(2, tokens.length); });
+			methods = (strong.length ? strong : scored).map(function (result) { return result.method; });
+		}
+	}
+	var available = methods.length;
+	var limit = args.limit !== undefined ? Math.max(1, Math.min(Number(args.limit) || 25, 50)) : query ? 25 : methods.length;
+	methods = methods.slice(0, limit);
 	return {
 		success: true,
 		count: methods.length,
-		methods: methods.map(function (name) { return { name: name, docs_url: "https://adventure.land/docs/code/functions/" + encodeURIComponent(name) }; }),
+		available: available,
+		query: args.query || null,
+		semantic: semantic,
+		methods: methods.map(function (method) {
+			var result = { name: method.name, signature: method.signature, docs_url: method.docs_url };
+			if (query && method.summary) result.summary = method.summary;
+			return result;
+		}),
 	};
 }
 
@@ -450,6 +667,57 @@ function mcp_api_mainframe_runtime(bot) {
 	return runtime;
 }
 
+function mcp_api_safe_snapshot(value, depth) {
+	if (value === undefined || value === null || typeof value === "boolean" || typeof value === "number") return value;
+	if (typeof value === "string") return value.slice(0, 500);
+	if (value instanceof Date) return value.toISOString();
+	if (depth >= 5) return null;
+	if (Array.isArray(value))
+		return value.slice(0, 100).map(function (entry) { return mcp_api_safe_snapshot(entry, depth + 1); });
+	if (typeof value !== "object") return null;
+	var result = {};
+	Object.keys(value)
+		.sort()
+		.slice(0, 100)
+		.forEach(function (name) {
+			var clean = mcp_api_safe_snapshot(value[name], depth + 1);
+			if (clean !== undefined) result[name] = clean;
+		});
+	return result;
+}
+
+function mcp_api_character_profile(character, detailed) {
+	var info = (character && character.info) || {};
+	var inventory = Array.isArray(info.items) ? info.items : [];
+	var profile = {
+		source: "last_account_snapshot",
+		synchronized_at: character && character.last_sync ? character.last_sync : null,
+		name: info.name || (character && character.name) || null,
+		class: (character && character.type) || null,
+		level: Number(character && character.level) || 0,
+		xp: Number(info.xp) || 0,
+		server: (character && character.server) || null,
+		online: !!(character && character.online),
+		map: info.map || null,
+		x: Number.isFinite(Number(info.x)) ? Number(info.x) : null,
+		y: Number.isFinite(Number(info.y)) ? Number(info.y) : null,
+		rip: info.rip === true,
+		hp: Number(info.hp) || 0,
+		mp: Number(info.mp) || 0,
+		gold: Number(info.gold) || 0,
+		inventory_slots: inventory.length,
+		inventory_items: inventory.filter(Boolean).length,
+	};
+	if (detailed) {
+		profile.equipment = mcp_api_safe_snapshot(info.slots || {}, 0);
+		profile.inventory = mcp_api_safe_snapshot(inventory, 0);
+		profile.conditions = mcp_api_safe_snapshot(info.s || {}, 0);
+		profile.quests = mcp_api_safe_snapshot(info.q || {}, 0);
+		profile.progress = mcp_api_safe_snapshot(info.p || {}, 0);
+	}
+	return profile;
+}
+
 async function mcp_api_list_mainframe_characters(args) {
 	var snapshot = await admin_bots_snapshot();
 	var characters = await get_characters(args.user);
@@ -468,6 +736,7 @@ async function mcp_api_list_mainframe_characters(args) {
 			character_id: get_id(characters[i]),
 			level: Number(characters[i].level) || 0,
 			class: characters[i].type || null,
+			profile: mcp_api_character_profile(characters[i], false),
 			access: await mainframe_get_access(characters[i]),
 			assignment: await mainframe_get_assignment(characters[i]),
 			available: snapshot.online,
@@ -494,6 +763,7 @@ async function mcp_api_get_mainframe_character(args) {
 		shells: gf(args.user, "cash", 0),
 		character: (character.info && character.info.name) || character.name,
 		character_id: get_id(character),
+		profile: mcp_api_character_profile(character, true),
 		access: await mainframe_get_access(character),
 		assignment: await mainframe_get_assignment(character),
 		available: (await admin_bots_snapshot()).online,
@@ -576,6 +846,7 @@ async function mcp_api_get_api_info(args) {
 				transport: "Streamable HTTP",
 				authentication: "HTTP Authorization: Bearer TOKEN",
 				start_resource: MCP_START_RESOURCE,
+				catalog_resources: MCP_CATALOG_RESOURCES,
 				capabilities: ["tools", "resources", "resource_templates", "prompts"],
 			},
 			session: { url: "https://adventure.land/mainframe", authentication: "signed-in Adventure Land session" },
@@ -633,6 +904,7 @@ var MCP_API_REF = {
 	list_code_methods: {
 		F: mcp_api_list_code_methods,
 		query: { type: "string", optional: true },
+		limit: { type: "number", optional: true },
 	},
 	get_code_method: {
 		F: mcp_api_get_code_method,
@@ -681,10 +953,10 @@ var MCP_TOOL_META = {
 	get_api_info: { description: "Discover the shared JSON API and MCP methods, schemas, endpoints, and documentation links.", readOnlyHint: true },
 	get_servers: { description: "List the live Adventure Land game servers.", readOnlyHint: true },
 	get_game_data: { description: "Read deployed Adventure Land game definitions by section and optional exact record name. Use search_game_data first; full sections have a lower rate limit.", readOnlyHint: true },
-	search_game_data: { description: "Search names and descriptions across game items, monsters, maps, skills, recipes, events, and other definitions. Use get_game_data for the complete matching record.", readOnlyHint: true },
+	search_game_data: { description: "Search exact keys, names, descriptions, stats, recipe ingredients, drop tables, map fields, and other nested deployed game data. Use get_game_data for each complete matching record.", readOnlyHint: true },
 	list_docs: { description: "List or search Adventure Land guide articles.", readOnlyHint: true },
 	get_doc: { description: "Read one Adventure Land guide article as plain text using an exact name returned by list_docs.", readOnlyHint: true },
-	list_code_methods: { description: "List or filter the complete public character CODE method directory. Follow with get_code_method before using a routine.", readOnlyHint: true },
+	list_code_methods: { description: "List the public CODE directory or search method documentation semantically when no method name matches. Follow with get_code_method before using a routine.", readOnlyHint: true },
 	get_code_method: { description: "Read one public character CODE method's exact contract, examples, failure behavior, and shipped source location.", readOnlyHint: true },
 	list_codes: { description: "List the account's CODE slots without returning their source.", readOnlyHint: true },
 	get_code: { description: "Read one owned CODE slot.", readOnlyHint: true },
@@ -692,7 +964,7 @@ var MCP_TOOL_META = {
 	delete_code: { description: "Delete one owned CODE slot.", destructiveHint: true },
 	mainframe_list_characters: { description: "List owned characters and their Mainframe access and runtime state.", readOnlyHint: true },
 	mainframe_get_dashboard: { description: "Read this before Mainframe changes. Returns owned characters, Shell balance, paid access, assignments, authenticated runtime observations, CODE slots, and live servers.", readOnlyHint: true },
-	mainframe_get_character: { description: "Read one owned character's Mainframe access, assignment, runtime, and observations.", readOnlyHint: true },
+	mainframe_get_character: { description: "Read one owned character's saved class, level, position, equipment, inventory, conditions, quests, Mainframe access, assignment, runtime, and authenticated live observations. Saved profile fields can lag the running game; prefer current runtime observations for live state.", readOnlyHint: true },
 	mainframe_link_character: {
 		description: "Run an owned character on Mainframe using a saved CODE slot. May charge one Shell before a new sixty-minute window; keep one request_id stable when retrying the same lost request.",
 		destructiveHint: false,
@@ -763,6 +1035,54 @@ var MCP_RESOURCE_GUIDES = [
 		priority: 0.9,
 	},
 	{
+		uri: "adventureland://guide/navigation",
+		name: "navigation",
+		title: "Movement and navigation",
+		description: "Direct movement, smart_move destinations, interruption, arrival, and route failures.",
+		article: "5-goingplaces",
+		priority: 0.85,
+	},
+	{
+		uri: "adventureland://guide/items-and-inventory",
+		name: "items-and-inventory",
+		title: "Items and inventory",
+		description: "Definitions versus owned item instances, inventory indexes, equipment, and mutation safety.",
+		article: "6-items101",
+		priority: 0.85,
+	},
+	{
+		uri: "adventureland://guide/skills",
+		name: "skills",
+		title: "Using class skills",
+		description: "Skill keys, targets, cooldowns, range checks, multi-target calls, and timed actions.",
+		article: "7-using-skills",
+		priority: 0.85,
+	},
+	{
+		uri: "adventureland://guide/code-messages",
+		name: "code-messages",
+		title: "Trusted character coordination",
+		description: "CODE message delivery, same-server requirements, payloads, sender checks, and retry behavior.",
+		article: "X.sub-cm",
+		priority: 0.8,
+	},
+	{
+		uri: "adventureland://guide/multiple-characters",
+		name: "multiple-characters",
+		title: "Running multiple characters",
+		description: "Browser, COM, Mainframe, child-character, and coordination options without loading a character twice.",
+		article: "multi",
+		priority: 0.8,
+	},
+	{
+		uri: "adventureland://guide/server-rules",
+		name: "server-rules",
+		title: "Servers, limits, and player rules",
+		description: "Shared character state, simultaneous-character limits, request limits, accounts, and community rules.",
+		article: "limits",
+		priority: 0.75,
+	},
+	{
 		uri: "adventureland://reference/code-globals",
 		name: "code-globals",
 		title: "CODE globals",
@@ -829,6 +1149,30 @@ function mcp_resources() {
 	});
 	resources.push(
 		{
+			uri: "adventureland://catalog/docs",
+			name: "documentation-catalog",
+			title: "Documentation catalog",
+			description: "Searchable names, titles, sections, keywords, and public links for every Adventure Land guide article.",
+			mimeType: "application/json",
+			annotations: mcp_resource_annotations(0.95),
+		},
+		{
+			uri: "adventureland://catalog/code-methods",
+			name: "code-method-catalog",
+			title: "Character CODE method catalog",
+			description: "Every public character CODE method, signature, and exact documentation link.",
+			mimeType: "application/json",
+			annotations: mcp_resource_annotations(0.95),
+		},
+		{
+			uri: "adventureland://catalog/game-data",
+			name: "game-data-catalog",
+			title: "Game-data catalog",
+			description: "Every deployed game-data section, its purpose, record count, and whether semantic search covers it.",
+			mimeType: "application/json",
+			annotations: mcp_resource_annotations(0.95),
+		},
+		{
 			uri: "adventureland://source/runner-functions",
 			name: "runner-functions-source",
 			title: "Shipped character runner functions",
@@ -881,6 +1225,13 @@ function mcp_resource_templates() {
 			mimeType: "application/json",
 		},
 		{
+			uriTemplate: "adventureland://game-data/{section}",
+			name: "game-data-section",
+			title: "Complete game-data section",
+			description: "Read one complete section returned by the game-data catalog. Full sections use the lower bulk-read rate limit.",
+			mimeType: "application/json",
+		},
+		{
 			uriTemplate: "adventureland://game-data/{section}/{name}",
 			name: "game-definition",
 			title: "Exact game-data definition",
@@ -929,6 +1280,9 @@ async function mcp_read_resource(uri, user) {
 	if (uri === "adventureland://account/dashboard") return mcp_resource_content(uri, "application/json", await mcp_api_get_mainframe_dashboard({ user: user }));
 	if (uri === "adventureland://account/code-slots") return mcp_resource_content(uri, "application/json", await mcp_api_list_codes({ user: user }));
 	if (uri === "adventureland://game/servers") return mcp_resource_content(uri, "application/json", await mcp_api_get_servers({ user: user }));
+	if (uri === "adventureland://catalog/docs") return mcp_resource_content(uri, "application/json", await mcp_api_list_docs({}));
+	if (uri === "adventureland://catalog/code-methods") return mcp_resource_content(uri, "application/json", await mcp_api_list_code_methods({}));
+	if (uri === "adventureland://catalog/game-data") return mcp_resource_content(uri, "application/json", await mcp_api_get_game_data({}));
 
 	var url;
 	try {
@@ -936,7 +1290,7 @@ async function mcp_read_resource(uri, user) {
 	} catch (e) {
 		return null;
 	}
-	if (url.protocol !== "adventureland:") return null;
+	if (url.protocol !== "adventureland:" || url.username || url.password || url.port || url.search || url.hash) return null;
 	var parts;
 	try {
 		parts = mcp_resource_path_parts(url);
@@ -946,6 +1300,7 @@ async function mcp_read_resource(uri, user) {
 	var result;
 	if (url.hostname === "docs" && parts.length === 1) result = await mcp_api_get_doc({ name: parts[0] });
 	else if (url.hostname === "code" && parts[0] === "functions" && parts.length === 2) result = await mcp_api_get_code_method({ name: parts[1] });
+	else if (url.hostname === "game-data" && parts.length === 1) result = await mcp_api_get_game_data({ section: parts[0] });
 	else if (url.hostname === "game-data" && parts.length === 2) result = await mcp_api_get_game_data({ section: parts[0], name: parts[1] });
 	else if (url.hostname === "code" && parts[0] === "slots" && parts.length === 2) result = await mcp_api_get_code({ user: user, slot: parts[1] });
 	else if (url.hostname === "mainframe" && parts[0] === "characters" && parts.length === 2)
@@ -961,6 +1316,12 @@ var MCP_PROMPTS = [
 		title: "Learn Adventure Land",
 		description: "Load the game, CODE, source, and Mainframe mental model before helping a player.",
 		arguments: [],
+	},
+	{
+		name: "research_gameplay",
+		title: "Research Adventure Land gameplay",
+		description: "Answer a game, build, progression, economy, or content question from exact deployed definitions and documentation.",
+		arguments: [{ name: "question", description: "The gameplay question to investigate.", required: true }],
 	},
 	{
 		name: "write_character_code",
@@ -982,12 +1343,30 @@ var MCP_PROMPTS = [
 		],
 	},
 	{
+		name: "coordinate_character_team",
+		title: "Coordinate a character team",
+		description: "Plan and operate several owned characters on one server without loading a character twice.",
+		arguments: [
+			{ name: "goal", description: "What the team should accomplish.", required: true },
+			{ name: "characters", description: "Optional comma-separated owned character names.", required: false },
+		],
+	},
+	{
 		name: "operate_mainframe",
 		title: "Operate a Mainframe character",
 		description: "Safely deploy, observe, and improve CODE for one owned character.",
 		arguments: [
 			{ name: "character", description: "Owned character name.", required: true },
 			{ name: "goal", description: "The behavior or outcome to operate toward.", required: true },
+		],
+	},
+	{
+		name: "debug_mainframe_character",
+		title: "Debug a Mainframe character",
+		description: "Investigate a stopped, stuck, dead, slow, or otherwise incorrect character using live evidence and CODE logs.",
+		arguments: [
+			{ name: "character", description: "Owned character name.", required: true },
+			{ name: "symptom", description: "Optional observed problem.", required: false },
 		],
 	},
 ];
@@ -998,7 +1377,18 @@ function mcp_prompt_list() {
 	});
 }
 
-async function mcp_get_prompt(name, prompt_arguments) {
+async function mcp_prompt_add_resource(messages, uri, user, required) {
+	try {
+		var resource = await mcp_read_resource(uri, user);
+		if (resource) messages.push({ role: "user", content: { type: "resource", resource: resource, annotations: mcp_resource_annotations(1) } });
+		else if (required) return false;
+	} catch (e) {
+		if (required) return false;
+	}
+	return true;
+}
+
+async function mcp_get_prompt(name, prompt_arguments, user) {
 	var prompt = MCP_PROMPTS.find(function (candidate) { return candidate.name === name; });
 	if (!prompt) return { error: "Prompt not found" };
 	prompt_arguments = prompt_arguments || {};
@@ -1010,26 +1400,43 @@ async function mcp_get_prompt(name, prompt_arguments) {
 	if (!start) return { error: "Start resource unavailable" };
 	var task;
 	if (name === "learn_adventure_land") {
-		task = "Build a working mental model of Adventure Land. Inspect the resources and source map named in the embedded guide. Do not change account CODE or Mainframe state unless the user separately asks you to.";
+		task = "Build a working mental model of Adventure Land. Read the three discovery catalogs, then inspect only the relevant guides, exact CODE contracts, deployed definitions, and source paths named in the embedded guide. Distinguish static definitions, saved account snapshots, and live server observations. Do not change account CODE or Mainframe state unless the user separately asks you to.";
+	} else if (name === "research_gameplay") {
+		task =
+			"Question: " + prompt_arguments.question +
+			"\nUse the documentation, CODE-method, and game-data catalogs to locate exact sources. Read complete records after searching. Separate deployed facts from inference, account state, and live realm state. Do not change account or Mainframe state.";
 	} else if (name === "write_character_code") {
 		task =
 			"Goal: " + prompt_arguments.goal + "\nCharacter: " + (prompt_arguments.character || "choose after reading the dashboard") + "\nCODE slot: " + (prompt_arguments.code_slot || "choose a free slot; never overwrite an unread slot") +
-			"\nResearch exact methods and game definitions before writing. Read any existing target slot. Produce bounded, non-overlapping async loops; reacquire live entities; handle death, cooldowns, movement, and rejected Promises. Save only after explaining what will change.";
+			"\nInspect the saved profile and current runtime separately. Research exact methods and game definitions before writing. Read any existing target slot. Produce bounded, non-overlapping async loops; reacquire live entities; handle death, cooldowns, movement, inventory-index changes, and rejected Promises. Do not add irreversible item, gold, trade, mail, or Shell actions unless requested. Save only after explaining what will change.";
 	} else if (name === "review_character_code") {
 		task =
 			"Review owned CODE slot " + prompt_arguments.code_slot + (prompt_arguments.goal ? " for this goal: " + prompt_arguments.goal : "") +
-			". Read the slot, exact method references, globals, and relevant game definitions. Check overlapping async work, stale entity references, death recovery, cooldowns, movement, inventory safety, log quality, and Mainframe headless compatibility. Report concrete changes before saving anything.";
-	} else {
+			". Read the slot, exact method references, globals, and relevant game definitions. Check overlapping async work, stale entity references, death recovery, cooldowns, movement, changing inventory indexes, irreversible actions, trusted CODE messages, log quality, and Mainframe headless compatibility. Report concrete changes before saving anything.";
+	} else if (name === "coordinate_character_team") {
+		task =
+			"Team goal: " + prompt_arguments.goal + "\nCharacters: " + (prompt_arguments.characters || "choose owned characters after reading the dashboard") +
+			"\nInspect every selected character and CODE slot. Keep the team on one live server, assign explicit class roles, and use parties or validated CODE messages for coordination. Never load a character that is already active elsewhere. Handle partial team availability and disconnections without unsafe retries or duplicate assignments.";
+	} else if (name === "operate_mainframe") {
 		task =
 			"Operate owned character " + prompt_arguments.character + " toward this goal: " + prompt_arguments.goal +
-			". Read the dashboard, character state, current CODE, exact function references, and relevant game data first. Never overwrite an unread slot. Before a new paid window, tell the user that one Shell buys sixty minutes. Use one stable request_id for retries. After linking, verify authenticated observations and logs; do not treat requested-action counters as success.";
+			". Read the dashboard, saved character profile, current live state, CODE, exact function references, and relevant game data first. Never overwrite an unread slot or load a character already active elsewhere. Before a new paid window, tell the user that one Shell buys sixty minutes. Use one stable request_id for retries. After linking, verify authenticated observations and logs; do not treat requested-action counters as success.";
+	} else {
+		task =
+			"Debug owned character " + prompt_arguments.character + (prompt_arguments.symptom ? ". Reported symptom: " + prompt_arguments.symptom : "") +
+			". Compare the saved profile, assignment, authenticated live observations, recent CODE logs, and current slot. Identify whether the failure is in planning, CODE requests, game acceptance, movement, targeting, inventory state, death recovery, server choice, or containment. Do not rewrite or restart blindly. Make the smallest evidence-backed correction, then verify map, coordinates, activity, target, death state, XP, gold, and logs over time.";
 	}
+	var messages = [{ role: "user", content: { type: "resource", resource: start, annotations: mcp_resource_annotations(1) } }];
+	if (user && ["write_character_code", "review_character_code", "coordinate_character_team", "operate_mainframe", "debug_mainframe_character"].includes(name))
+		await mcp_prompt_add_resource(messages, "adventureland://account/dashboard", user, false);
+	if (user && name === "review_character_code")
+		await mcp_prompt_add_resource(messages, "adventureland://code/slots/" + encodeURIComponent(prompt_arguments.code_slot), user, false);
+	if (user && ["write_character_code", "operate_mainframe", "debug_mainframe_character"].includes(name) && prompt_arguments.character)
+		await mcp_prompt_add_resource(messages, "adventureland://mainframe/characters/" + encodeURIComponent(prompt_arguments.character), user, false);
+	messages.push({ role: "user", content: { type: "text", text: task } });
 	return {
 		description: prompt.description,
-		messages: [
-			{ role: "user", content: { type: "resource", resource: start, annotations: mcp_resource_annotations(1) } },
-			{ role: "user", content: { type: "text", text: task } },
-		],
+		messages: messages,
 	};
 }
 
@@ -1241,7 +1648,7 @@ async function handle_mcp_transport(req, res) {
 	if (message.method === "prompts/get") {
 		var prompt_name = message.params && message.params.name;
 		if (typeof prompt_name !== "string") return res.status(200).send(mcp_jsonrpc_error(message.id, -32602, "Invalid prompt name"));
-		var prompt = await mcp_get_prompt(prompt_name, message.params.arguments);
+		var prompt = await mcp_get_prompt(prompt_name, message.params.arguments, user);
 		if (prompt.error) return res.status(200).send(mcp_jsonrpc_error(message.id, -32602, prompt.error));
 		prompt._meta = mcp_result_meta();
 		return res.status(200).send(mcp_jsonrpc(message.id, prompt));
