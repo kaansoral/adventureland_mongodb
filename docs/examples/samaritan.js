@@ -69,10 +69,12 @@ var SAMARITAN_STATE = {
 	lastPartyAt: 0,
 	lastRetreatAt: 0,
 	lastRespawnAt: 0,
+	lastLeaveAt: 0,
 	upgradeAttempts: 0,
 	compoundAttempts: 0,
 	temporaryFarm: null,
 	temporaryFarmUntil: 0,
+	travelRetryAt: 0,
 	lastMoveAt: 0,
 	moveAttempts: 0,
 	movingTarget: null,
@@ -152,7 +154,9 @@ function on_cm(name, message) {
 	}
 }
 
-function handle_death() {
+function handle_death(data) {
+	var deadName = data && (data.id || data.name);
+	if (deadName && deadName !== character.id && deadName !== character.name) return;
 	var fallback = SAMARITAN_SETTINGS.farm.fallbackMonster;
 	if (fallback && samaritanMonsterAvailable(fallback)) {
 		SAMARITAN_STATE.temporaryFarm = fallback;
@@ -400,21 +404,38 @@ function samaritanMoveForCombat(target) {
 			x: character.x + ((character.x - target.x) / length) * Math.min(80, preferred),
 			y: character.y + ((character.y - target.y) / length) * Math.min(80, preferred),
 		};
+		if (!can_move_to(retreat)) {
+			SAMARITAN_STATE.blockedTargets[target.id] = now + 30000;
+			SAMARITAN_STATE.movingTarget = null;
+			SAMARITAN_STATE.moveAttempts = 0;
+			return change_target(null);
+		}
 		return move(retreat);
 	}
 	if (currentDistance > preferred) {
 		var ratio = Math.max(0, (currentDistance - preferred * 0.85) / currentDistance);
 		var approach = { x: character.x + (target.x - character.x) * ratio, y: character.y + (target.y - character.y) * ratio };
+		if (!can_move_to(approach)) {
+			SAMARITAN_STATE.blockedTargets[target.id] = now + 30000;
+			SAMARITAN_STATE.movingTarget = null;
+			SAMARITAN_STATE.moveAttempts = 0;
+			return change_target(null);
+		}
 		return move(approach);
 	}
 	return null;
 }
 
 function samaritanTravelToFarm(farm) {
-	if (!farm || SAMARITAN_STATE.traveling || smart.moving || is_moving(character)) return;
+	if (!farm || Date.now() < SAMARITAN_STATE.travelRetryAt || SAMARITAN_STATE.traveling || smart.moving || is_moving(character)) return;
 	SAMARITAN_STATE.traveling = true;
 	smart_move(farm)
-		.catch(function (error) { samaritanLog("travel", "travel failed: " + (error.reason || error.message || error), 60000); })
+		.then(function () { SAMARITAN_STATE.travelRetryAt = 0; })
+		.catch(function (error) {
+			var reason = error.reason || error.message || String(error);
+			SAMARITAN_STATE.travelRetryAt = Date.now() + (reason === "map_route_not_found" ? 2 * 60 * 1000 : 20000);
+			samaritanLog("travel", "travel failed: " + reason, 60000);
+		})
 		.finally(function () { SAMARITAN_STATE.traveling = false; });
 }
 
@@ -541,6 +562,14 @@ async function samaritanCombatTick() {
 			if (Date.now() - SAMARITAN_STATE.lastRespawnAt > 5000) {
 				SAMARITAN_STATE.lastRespawnAt = Date.now();
 				await samaritanCall("respawn", function () { return respawn(); });
+			}
+			return;
+		}
+		if (character.map === "jail" || character.map === "cyberland") {
+			if (smart.moving) stop("smart");
+			if (Date.now() - SAMARITAN_STATE.lastLeaveAt > 10000) {
+				SAMARITAN_STATE.lastLeaveAt = Date.now();
+				await samaritanCall("leave", function () { return leave(); });
 			}
 			return;
 		}
