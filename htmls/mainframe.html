@@ -40,8 +40,8 @@
 			.connect-steps li { margin:4px 0; }
 			.connection { display:grid; grid-template-columns:140px minmax(0,1fr); gap:1px; margin-top:14px; border:1px solid var(--line); background:var(--line); }
 			.connection > * { background:#060809; padding:9px; min-width:0; }
-			.connection code { color:var(--text); overflow-wrap:anywhere; user-select:all; }
-			#token-secret { display:none; margin-top:12px; padding:12px; white-space:pre-wrap; overflow-wrap:anywhere; border:1px solid var(--gold); background:#060809; color:var(--gold); font:14px/1.45 monospace; }
+			.connection code { color:var(--text); font-family:pixel; overflow-wrap:anywhere; user-select:all; }
+			#token-secret { display:none; margin-top:12px; padding:12px; white-space:pre-wrap; overflow-wrap:anywhere; border:1px solid var(--gold); background:#060809; color:var(--gold); font:14px/1.45 pixel; }
 			.grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(350px, 1fr)); gap:16px; }
 			.card { border:1px solid var(--line); background:var(--panel); padding:17px; min-width:0; }
 			.card.running { border-color:var(--green); }
@@ -55,7 +55,7 @@
 			.controls select { width:100%; min-height:42px; }
 			.actions { display:flex; gap:8px; margin-top:12px; }
 			.actions button { flex:1; }
-			.logs { display:none; margin-top:12px; padding:10px; max-height:180px; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; border:1px solid #303a40; background:#060809; font:14px/1.45 monospace; }
+			.logs { display:none; margin-top:12px; padding:10px; max-height:180px; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; border:1px solid #303a40; background:#060809; font:14px/1.45 pixel; }
 			.notice, .empty, .error { border:1px solid var(--line); background:var(--panel); padding:20px; }
 			.error { display:none; color:#ffb8be; margin-bottom:16px; }
 			.footer { margin-top:22px; color:var(--muted); font-size:15px; }
