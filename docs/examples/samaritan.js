@@ -70,6 +70,7 @@ var SAMARITAN_STATE = {
 	lastRetreatAt: 0,
 	lastRespawnAt: 0,
 	lastLeaveAt: 0,
+	deathHandled: false,
 	upgradeAttempts: 0,
 	compoundAttempts: 0,
 	temporaryFarm: null,
@@ -154,9 +155,7 @@ function on_cm(name, message) {
 	}
 }
 
-function handle_death(data) {
-	var deadName = data && (data.id || data.name);
-	if (deadName && deadName !== character.id && deadName !== character.name) return;
+function samaritanUseDeathFallback() {
 	var fallback = SAMARITAN_SETTINGS.farm.fallbackMonster;
 	if (fallback && samaritanMonsterAvailable(fallback)) {
 		SAMARITAN_STATE.temporaryFarm = fallback;
@@ -166,6 +165,13 @@ function handle_death(data) {
 		SAMARITAN_STATE.moveAttempts = 0;
 		samaritanLog("death fallback", "switching to " + fallback + " after a death", 1000);
 	}
+}
+
+function handle_death(data) {
+	var deadName = data && (data.id || data.name);
+	if (deadName && deadName !== character.id && deadName !== character.name) return;
+	SAMARITAN_STATE.deathHandled = true;
+	samaritanUseDeathFallback();
 }
 
 function samaritanPartyNames() {
@@ -558,6 +564,10 @@ async function samaritanCombatTick() {
 	SAMARITAN_STATE.combatBusy = true;
 	try {
 		if (character.rip) {
+			if (!SAMARITAN_STATE.deathHandled) {
+				SAMARITAN_STATE.deathHandled = true;
+				samaritanUseDeathFallback();
+			}
 			if (smart.moving) stop("smart");
 			if (Date.now() - SAMARITAN_STATE.lastRespawnAt > 5000) {
 				SAMARITAN_STATE.lastRespawnAt = Date.now();
@@ -565,6 +575,7 @@ async function samaritanCombatTick() {
 			}
 			return;
 		}
+		SAMARITAN_STATE.deathHandled = false;
 		if (character.map === "jail" || character.map === "cyberland") {
 			if (smart.moving) stop("smart");
 			if (Date.now() - SAMARITAN_STATE.lastLeaveAt > 10000) {
