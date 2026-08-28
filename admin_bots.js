@@ -101,6 +101,39 @@ function admin_bots_clean_performance(performance) {
 	};
 }
 
+function admin_bots_clean_containment(containment) {
+	if (!containment || typeof containment !== "object" || Array.isArray(containment)) return null;
+	var limits = containment.limits && typeof containment.limits === "object" ? containment.limits : {};
+	return {
+		sampled_at: admin_bots_text(containment.sampled_at, 40) || null,
+		identity_slot: admin_bots_number(containment.identity_slot, 0, 99),
+		kvm_pit_cgrouped: containment.kvm_pit_cgrouped === true,
+		uptime_seconds: admin_bots_number(containment.uptime_seconds, 0, Number.MAX_SAFE_INTEGER),
+		memory_current_bytes: admin_bots_number(containment.memory_current_bytes, 0, Number.MAX_SAFE_INTEGER),
+		memory_peak_bytes: admin_bots_number(containment.memory_peak_bytes, 0, Number.MAX_SAFE_INTEGER),
+		memory_events_oom: admin_bots_number(containment.memory_events_oom, 0, Number.MAX_SAFE_INTEGER),
+		memory_events_oom_kill: admin_bots_number(containment.memory_events_oom_kill, 0, Number.MAX_SAFE_INTEGER),
+		cpu_usage_usec: admin_bots_number(containment.cpu_usage_usec, 0, Number.MAX_SAFE_INTEGER),
+		cpu_throttled_usec: admin_bots_number(containment.cpu_throttled_usec, 0, Number.MAX_SAFE_INTEGER),
+		cpu_nr_throttled: admin_bots_number(containment.cpu_nr_throttled, 0, Number.MAX_SAFE_INTEGER),
+		pids_current: admin_bots_number(containment.pids_current, 0, 64),
+		io_read_bytes: admin_bots_number(containment.io_read_bytes, 0, Number.MAX_SAFE_INTEGER),
+		io_write_bytes: admin_bots_number(containment.io_write_bytes, 0, Number.MAX_SAFE_INTEGER),
+		io_read_operations: admin_bots_number(containment.io_read_operations, 0, Number.MAX_SAFE_INTEGER),
+		io_write_operations: admin_bots_number(containment.io_write_operations, 0, Number.MAX_SAFE_INTEGER),
+		status_failures: admin_bots_number(containment.status_failures, 0, 3),
+		memory_pressure_samples: admin_bots_number(containment.memory_pressure_samples, 0, 3),
+		limits: {
+			memory_max_bytes: admin_bots_number(limits.memory_max_bytes, 0, Number.MAX_SAFE_INTEGER),
+			cpu_quota_ratio: admin_bots_number(limits.cpu_quota_ratio, 0, 1),
+			io_read_bytes_per_second: admin_bots_number(limits.io_read_bytes_per_second, 0, Number.MAX_SAFE_INTEGER),
+			io_write_bytes_per_second: admin_bots_number(limits.io_write_bytes_per_second, 0, Number.MAX_SAFE_INTEGER),
+			io_read_operations_per_second: admin_bots_number(limits.io_read_operations_per_second, 0, Number.MAX_SAFE_INTEGER),
+			io_write_operations_per_second: admin_bots_number(limits.io_write_operations_per_second, 0, Number.MAX_SAFE_INTEGER),
+		},
+	};
+}
+
 function admin_bots_clean_observation(observation) {
 	if (!observation || typeof observation !== "object" || Array.isArray(observation) || observation.source !== "game_server") return null;
 	var movement = observation.movement && typeof observation.movement === "object" ? observation.movement : {};
@@ -176,6 +209,9 @@ function admin_bots_clean_bot(bot) {
 			guest_memory_used: admin_bots_number(metrics.guest_memory_used, 0, Number.MAX_SAFE_INTEGER),
 			guest_cpu_ratio: admin_bots_number(metrics.guest_cpu_ratio, 0, 100),
 			guest_processes: admin_bots_number(metrics.guest_processes, 0, 1000),
+			seccomp_mode: admin_bots_number(metrics.seccomp_mode, 0, 2),
+			no_new_privileges: admin_bots_number(metrics.no_new_privileges, 0, 1),
+			permission_model: admin_bots_boolean(metrics.permission_model),
 		},
 		startup: {
 			bootstrapped_ms: admin_bots_number(startup.bootstrapped_ms, 0, Number.MAX_SAFE_INTEGER),
@@ -200,6 +236,7 @@ function admin_bots_clean_bot(bot) {
 					}
 				: null,
 		performance: admin_bots_clean_performance(bot.performance),
+		containment: admin_bots_clean_containment(bot.containment),
 		logs: admin_bots_clean_logs(bot.logs),
 	};
 }

@@ -287,6 +287,8 @@
 					var performance = bot.performance || {};
 					var session = performance.session || performance.rolling_24h || {};
 					var rolling = performance.rolling_24h || {};
+					var containment = bot.containment || {};
+					var limits = containment.limits || {};
 					var access = bot.mainframe_access || {};
 					card.className = "bot phase-" + phase + (bot.pending_state ? " pending" : "") + (movement.stuck ? " stuck" : "");
 					var head = document.createElement("div");
@@ -316,6 +318,15 @@
 						metric("Observed map changes", text(movement.map_changes_observed)),
 						metric("Guest RSS", bytes(bot.metrics && bot.metrics.rss)),
 						metric("Guest CPU", number((bot.metrics && bot.metrics.cpu_ratio) * 100, 1) + "%"),
+						metric("Host VM memory", bytes(containment.memory_current_bytes) + " / " + bytes(limits.memory_max_bytes)),
+						metric("Host CPU cap", number(Number(limits.cpu_quota_ratio) * 100, 0) + "%"),
+						metric("Host CPU throttled", duration(Number(containment.cpu_throttled_usec) / 1000)),
+						metric("Disk read / write", bytes(containment.io_read_bytes) + " / " + bytes(containment.io_write_bytes)),
+						metric("Disk caps", bytes(limits.io_read_bytes_per_second) + "/s / " + bytes(limits.io_write_bytes_per_second) + "/s"),
+						metric("VMM identity", containment.identity_slot === null || containment.identity_slot === undefined ? "—" : "isolated #" + containment.identity_slot),
+						metric("KVM timer", containment.kvm_pit_cgrouped ? "Contained" : "—"),
+						metric("Guest syscall filter", bot.metrics && bot.metrics.seccomp_mode === 2 ? "Active" : "—"),
+						metric("Node permissions", bot.metrics && bot.metrics.permission_model === true ? "Active" : "—"),
 						metric("Heartbeat", duration(bot.last_heartbeat_ms)),
 						metric("Uptime", duration(bot.uptime_ms)),
 						metric("Requests sent", text(bot.traffic && bot.traffic.actions_total)),
