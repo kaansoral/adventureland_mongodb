@@ -71,6 +71,14 @@ var SAMARITAN_STATE = {
 	compoundAttempts: 0,
 	temporaryFarm: null,
 	temporaryFarmUntil: 0,
+	lastX: null,
+	lastY: null,
+	lastMap: null,
+	lastPositionAt: Date.now(),
+	lastMoveAt: 0,
+	moveAttempts: 0,
+	movingTarget: null,
+	blockedTargets: {},
 	logs: {},
 };
 
@@ -274,7 +282,7 @@ async function samaritanSupport() {
 }
 
 function samaritanEligibleMonster(entity, farm) {
-	if (!entity || entity.type !== "monster" || entity.visible === false || entity.dead || entity.rip || entity.mtype !== farm) return false;
+	if (!entity || entity.type !== "monster" || entity.visible === false || entity.dead || entity.rip || entity.mtype !== farm || samaritanTargetBlocked(entity)) return false;
 	if (SAMARITAN_SETTINGS.combat.attackTaggedMonsters) return true;
 	return !entity.target || samaritanIsTrusted(entity.target);
 }
@@ -289,12 +297,22 @@ function samaritanFindTarget(farm) {
 		})[0] || null;
 }
 
+function samaritanTargetBlocked(entity) {
+	if (!entity || !entity.id) return false;
+	var until = Number(SAMARITAN_STATE.blockedTargets[entity.id]) || 0;
+	if (until <= Date.now()) {
+		delete SAMARITAN_STATE.blockedTargets[entity.id];
+		return false;
+	}
+	return true;
+}
+
 function samaritanFindImmediateThreat() {
 	var protectedNames = samaritanPartyNames();
 	var protectionRange = Math.max(320, (Number(character.range) || 0) * 2);
 	return Object.values(parent.entities || {})
 		.filter(function (entity) {
-			return entity && entity.type === "monster" && entity.visible !== false && !entity.dead && !entity.rip && protectedNames.includes(entity.target) && distance(character, entity) <= protectionRange;
+			return entity && entity.type === "monster" && entity.visible !== false && !entity.dead && !entity.rip && !samaritanTargetBlocked(entity) && protectedNames.includes(entity.target) && distance(character, entity) <= protectionRange;
 		})
 		.sort(function (left, right) {
 			var leftPriority = left.target === character.name ? 0 : 1;
@@ -314,6 +332,19 @@ function samaritanThreatTooDangerous(entity) {
 function samaritanWeaponType() {
 	var weapon = character.slots && character.slots.mainhand;
 	return weapon && G.items[weapon.name] && G.items[weapon.name].wtype;
+}
+
+function samaritanTrackPosition() {
+	var map = character.map;
+	var x = Number(character.x);
+	var y = Number(character.y);
+	if (SAMARITAN_STATE.lastX === null || map !== SAMARITAN_STATE.lastMap || Math.hypot(x - SAMARITAN_STATE.lastX, y - SAMARITAN_STATE.lastY) >= 8) {
+		SAMARITAN_STATE.lastX = x;
+		SAMARITAN_STATE.lastY = y;
+		SAMARITAN_STATE.lastMap = map;
+		SAMARITAN_STATE.lastPositionAt = Date.now();
+		SAMARITAN_STATE.moveAttempts = 0;
+	}
 }
 
 async function samaritanCombatSkill(target, farm) {
@@ -349,6 +380,21 @@ async function samaritanCombatSkill(target, farm) {
 }
 
 function samaritanMoveForCombat(target) {
+	samaritanTrackPosition();
+	var now = Date.now();
+	if (SAMARITAN_STATE.movingTarget !== target.id) {
+		SAMARITAN_STATE.movingTarget = target.id;
+		SAMARITAN_STATE.moveAttempts = 0;
+	}
+	if (now - SAMARITAN_STATE.lastPositionAt > 3500 && SAMARITAN_STATE.moveAttempts >= 3) {
+		SAMARITAN_STATE.blockedTargets[target.id] = now + 15000;
+		SAMARITAN_STATE.movingTarget = null;
+		SAMARITAN_STATE.moveAttempts = 0;
+		return change_target(null);
+	}
+	if (now - SAMARITAN_STATE.lastMoveAt < 1000) return null;
+	SAMARITAN_STATE.lastMoveAt = now;
+	SAMARITAN_STATE.moveAttempts++;
 	var ranged = ["mage", "priest", "ranger"].includes(samaritanCharacterType()) || Number(character.range) > 100;
 	var currentDistance = distance(character, target);
 	var preferred = ranged && SAMARITAN_SETTINGS.combat.kite ? Math.max(80, Number(character.range) * 0.72) : Math.max(10, Number(character.range) * 0.65);
@@ -494,6 +540,7 @@ async function samaritanCombatTick() {
 	if (!SAMARITAN_SETTINGS.enabled || SAMARITAN_STATE.combatBusy || SAMARITAN_STATE.maintenanceBusy) return;
 	SAMARITAN_STATE.combatBusy = true;
 	try {
+		samaritanTrackPosition();
 		if (character.rip) {
 			if (Date.now() - SAMARITAN_STATE.lastRespawnAt > 5000) {
 				SAMARITAN_STATE.lastRespawnAt = Date.now();
