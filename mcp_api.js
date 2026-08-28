@@ -599,7 +599,6 @@ async function mcp_api_get_api_info(args) {
 			overview: "https://adventure.land/docs/guide/mainframe",
 			json_api: "https://adventure.land/docs/guide/adventure-api",
 			mcp: "https://adventure.land/docs/guide/adventure-mcp",
-			ai_guide: "https://adventure.land/docs/guide/adventure-ai",
 		},
 		methods: Object.keys(MCP_API_REF)
 			.sort()
@@ -742,9 +741,9 @@ var MCP_RESOURCE_GUIDES = [
 	{
 		uri: MCP_START_RESOURCE,
 		name: "start-here",
-		title: "Start here: Adventure Land for AI",
+		title: "Start here: Adventure Land MCP for AI",
 		description: "The required first read: game architecture, CODE workflow, Mainframe operation, source repository, and safety rules.",
-		article: "adventure-ai",
+		article: "adventure-mcp",
 		priority: 1,
 	},
 	{

@@ -1,40 +1,55 @@
-<div class="title mt10">Browser</div> <div class="mb10"></div>
-<div>Easiest way to run Adventure Land is on browsers, however, browsers throttle Javascript performance and timing, so if your code requires heavy processing and precise timing, you will not achieve peak performance with your characters.</div>
+<div class="multi-guide">
+<div class="title mt10">Run More Than One Character</div> <div class="mb10"></div>
+<div>Adventure Land supports browser windows, child character frames, COM, and Mainframe. Choose one method for each character. Do not load the same character twice.</div>
 <div class="divider"></div>
 
-<div class="title mt10">Multiple Game Client Windows</div> <div class="mb10"></div>
-<div>Second easiest way is to just open secondary game clients, either at character selection by pressing the "> New Game Window" at the top left column, or by typing /window as a chat command.</div>
+<div class="title mt10">Browser Windows</div> <div class="mb10"></div>
+<div>Open another game client from character selection with <b>&gt; New Game Window</b>, or type <span class="dlabel">/window</span> in chat. Each window renders the complete game and runs that character's CODE.</div>
 <div class="divider"></div>
 
 <div class="title mt10">Launch Through COM</div> <div class="mb10"></div>
-<div>You can run a specific character faster by opening COM, going to the Characters tab and pressing Deploy on the character you want to run in a new window.</div>
+<div>Open <a href="/comm">COM</a>, select <b>Characters</b>, and press <b>Deploy</b> to open an owned character in a new window. COM also shows where your characters are connected.</div>
 <div class="divider"></div>
 
-<div class="title mt10">Observe Your Characters!</div> <div class="mb10"></div>
-<div>Visit <a class="eexternal" href="https://adventure.land/comm/" target="_blank" style="border-color: #32A3B0">https://adventure.land/comm/</a> from anywhere to observe and command your characters.</div>
+<div class="title mt10">Mainframe</div> <div class="mb10"></div>
+<div><a href="/mainframe">Mainframe</a> runs each owned character in a contained, headless machine without keeping a browser open. Choose a CODE slot and live realm for each character. A new access window costs 1 Shell for 60 minutes; reconnecting during that window does not charge again. Mainframe refuses to start a character that is already active elsewhere.</div>
 <div class="divider"></div>
 
-<div class="title mt10">iFrame Characters</div> <div class="mb10"></div>
-<div>You can start a character as a bot by typing /start CHARACTERNAME in the chat window. From CODE:</div>
+<div class="title mt10">Child Characters</div> <div class="mb10"></div>
+<div>Type <span class="dlabel">/start CHARACTERNAME</span> in chat, or use CODE, to run another owned character inside the current browser. Coordinate characters with trusted CODE messages:</div>
 <div class='code'>
-start_character("CHARACTERNAME"); // to run the character from within your Code automatically
+start_character("CHARACTERNAME");
 
-send_cm("CHARACTERNAME",{a:1,b:2,c:"something"}); // to send messages, objects to your character
+send_cm("CHARACTERNAME", {command: "follow"});
 
-// On every character, implement a messaging logic like this:
-character.on("cm",function(m){
-	if(m.name=="CHARACTERNAME") // Make sure the message is from a trusted character
-		log(m.message);  // Do something with the message!
-})
+character.on("cm", function (message) {
+	if (message.name !== "CHARACTERNAME") return;
+	log(message.message);
+});
+</div>
+
+<div class="divider"></div>
+
+<div class="title mt10">Observe and Coordinate</div> <div class="mb10"></div>
+<div>Use <a href="/comm">COM</a> or <span class="dlabel">/comm</span> to observe connected characters. Use <span class="dlabel">send_cm</span> for character-to-character instructions, and always check the sender before acting on a message.</div>
 </div>
 
 <style>
-	.title{
-		color: #406944;
+	.multi-guide .title{
+		color: #238DB9;
 		font-size: 36px;
 		margin-top: 15px;
 	}
-	.divider{
+	.multi-guide a,
+	.multi-guide a:link,
+	.multi-guide a:visited,
+	.multi-guide a:hover,
+	.multi-guide a:focus,
+	.multi-guide a:active{
+		color: #116A91;
+		text-decoration-color: #238DB9;
+	}
+	.multi-guide .divider{
 		margin-top: 15px;
 		height: 5px;
 		background-color: gray;
