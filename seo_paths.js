@@ -19,7 +19,7 @@ const DOCS_PATHS = [
 	"/docs/guide/all/skills_and_conditions",
 	"/docs/guide/code/X-advancedtopics/X.sub-msgpack",
 	"/docs/guide/multi",
-	"/docs/guide/adventure-api",
+	"/docs/guide/advanced/adventure-api",
 	"/docs/guide/adventure-mcp",
 	"/docs/guide/mainframe",
 	"/docs/ref",

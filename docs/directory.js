@@ -356,7 +356,6 @@ docs = {
 			],
 		],
 		["multi", "Multiple Ways to Run Multiple Characters", "multi,deploy", "#5997FF"],
-		["adventure-api", "Adventure Land JSON API", "api,json,automation,code,data", "#55BDF0"],
 		["adventure-mcp", "Adventure Land MCP for AI", "mcp,ai,tools,code,mainframe,architecture,source", "#238DB9"],
 		["mainframe", "Mainframe", "mainframe,hosting,automation,code", "#5ED6A8"],
 		[
@@ -365,6 +364,7 @@ docs = {
 			"",
 			"#CA3C93",
 			[
+				["adventure-api", "Adventure Land JSON API", "api,json,automation,code,data", "#55BDF0"],
 				["tracktrix", "Scoring for Tracktrix Achievements", "", "#5461C3"],
 				//["faq-soon","Looting Dynamics (Soon)","","#C01941"],
 			],

@@ -597,7 +597,7 @@ async function mcp_api_get_api_info(args) {
 		},
 		docs: {
 			overview: "https://adventure.land/docs/guide/mainframe",
-			json_api: "https://adventure.land/docs/guide/adventure-api",
+			json_api: "https://adventure.land/docs/guide/advanced/adventure-api",
 			mcp: "https://adventure.land/docs/guide/adventure-mcp",
 		},
 		methods: Object.keys(MCP_API_REF)

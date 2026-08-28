@@ -1,26 +1,139 @@
+<style>
+.api-guide {
+	--api-blue: #238DB9;
+	--api-blue-dark: #116A91;
+	--api-blue-pale: #D8EDF5;
+	font-size: 30px;
+	line-height: 1.45;
+	text-align: left;
+}
+.api-guide p {
+	margin: 0 0 28px;
+}
+.api-guide > p > .dlabel:only-child {
+	background: var(--api-blue);
+	color: white;
+	font-size: 31px;
+	line-height: 1.15;
+	margin: 18px 0 0;
+	padding: 5px 10px 7px;
+}
+.api-guide > p:first-of-type > .dlabel:only-child {
+	font-size: 37px;
+	margin-top: 0;
+	padding: 7px 12px 9px;
+}
+.api-guide a,
+.api-guide a:link,
+.api-guide a:visited,
+.api-guide a:hover,
+.api-guide a:focus,
+.api-guide a:active {
+	color: var(--api-blue-dark);
+	text-decoration-color: var(--api-blue);
+}
+.api-guide .dlabel {
+	background: var(--api-blue-pale);
+	color: var(--api-blue-dark);
+	font-size: 0.86em;
+	line-height: 1.15;
+	margin: 0;
+	max-width: 100%;
+	overflow-wrap: anywhere;
+	padding: 3px 7px 5px;
+	vertical-align: baseline;
+}
+.api-guide ol {
+	margin: 0 0 32px;
+	padding-left: 52px;
+}
+.api-guide li {
+	font-size: 29px;
+	line-height: 1.45;
+	margin: 7px 0;
+	padding-left: 5px;
+}
+.api-guide table {
+	border-collapse: collapse;
+	font-size: 27px;
+	line-height: 1.4;
+	margin: 4px 0 32px;
+	table-layout: fixed;
+	text-align: left;
+	width: 100%;
+}
+.api-guide th {
+	border-bottom: 3px solid var(--api-blue);
+	color: var(--api-blue-dark);
+	font-size: 28px;
+	padding: 8px 12px 10px;
+}
+.api-guide td {
+	border-bottom: 1px solid #A9CFDE;
+	padding: 10px 12px;
+	vertical-align: top;
+}
+.api-guide td:first-child {
+	color: var(--api-blue-dark);
+	overflow-wrap: anywhere;
+	width: 31%;
+}
+.api-guide th:nth-child(2),
+.api-guide td:nth-child(2) {
+	width: 30%;
+}
+.api-guide .api-example {
+	background: var(--api-blue-pale);
+	border-left: 5px solid var(--api-blue);
+	box-sizing: border-box;
+	color: #073B50;
+	font-family: pixel;
+	font-size: 25px;
+	line-height: 1.45;
+	margin: 4px 0 32px;
+	overflow-x: auto;
+	padding: 18px 20px;
+	text-align: left;
+	white-space: pre;
+}
+@media (max-width: 760px) {
+	.api-guide,
+	.api-guide li {
+		font-size: 27px;
+	}
+	.api-guide table,
+	.api-guide th {
+		font-size: 24px;
+	}
+}
+</style>
+
+<div class="api-guide">
 <p><span class="dlabel">Adventure Land JSON API</span></p>
 
 <p>The JSON API gives your programs structured access to Adventure Land game definitions, public CODE references, your saved CODE slots, and your Mainframe characters. It does not expose unrestricted character socket commands; run those through contained CODE on Mainframe.</p>
 
 <p><span class="dlabel">Create a token</span></p>
 
-<div class="code">1. Sign in at https://adventure.land/.
-2. Open https://adventure.land/mainframe.
-3. Open “Connect an AI”.
-4. Press “Create token” and copy it while it is visible.
-5. Creating another token rotates it and invalidates the previous token immediately.</div>
+<ol>
+<li>Sign in at <a href="https://adventure.land/">Adventure Land</a>.</li>
+<li>Open <a href="/mainframe">Mainframe</a>.</li>
+<li>Find <strong>Connect an AI</strong>.</li>
+<li>Press <strong>Create token</strong> and copy it while it is visible.</li>
+<li>Creating another token rotates it and invalidates the previous token immediately.</li>
+</ol>
 
 <p>Treat the token like a password: it controls the account's saved CODE and Mainframe characters. Adventure Land stores only its hash, so the plaintext cannot be shown again. The same token works for the JSON API and MCP.</p>
 
 <p><span class="dlabel">Call a method</span></p>
 
-<p>Send JSON with a POST request to <span class="dlabel">https://adventure.land/mcp_api/METHOD</span>. Put the token beside the method arguments:</p>
+<p>Send JSON with a POST request to <a href="https://adventure.land/mcp_api">https://adventure.land/mcp_api/METHOD</a>. Put the token beside the method arguments:</p>
 
-<div class="code">curl https://adventure.land/mcp_api/get_servers \
+<pre class="api-example">curl https://adventure.land/mcp_api/get_servers \
   -H 'Content-Type: application/json' \
-  -d '{"token":"YOUR_TOKEN"}'</div>
+  -d '{"token":"YOUR_TOKEN"}'</pre>
 
-<p>Open <span class="dlabel">GET https://adventure.land/mcp_api</span> for the live method directory, descriptions, and input schemas. Discovery does not require a token.</p>
+<p>Open <a href="https://adventure.land/mcp_api">GET https://adventure.land/mcp_api</a> for the live method directory, descriptions, and input schemas. Discovery does not require a token.</p>
 
 <p><span class="dlabel">Game and documentation</span></p>
 
@@ -38,11 +151,11 @@
 
 <p>Use <span class="dlabel">search_game_data</span> to find a record, then <span class="dlabel">get_game_data</span> with its section and exact name to retrieve the complete definition.</p>
 
-<div class="code">POST /mcp_api/search_game_data
+<pre class="api-example">POST /mcp_api/search_game_data
 {"token":"YOUR_TOKEN","query":"fire resistance","limit":10}
 
 POST /mcp_api/get_game_data
-{"token":"YOUR_TOKEN","section":"items","name":"fireblade"}</div>
+{"token":"YOUR_TOKEN","section":"items","name":"fireblade"}</pre>
 
 <p><span class="dlabel">Saved CODE</span></p>
 
@@ -70,11 +183,12 @@ POST /mcp_api/get_game_data
 
 <p>Successful results contain <span class="dlabel">success: true</span>. Method failures use a structured result with <span class="dlabel">failed: true</span> and a stable <span class="dlabel">reason</span>. The JSON method endpoint returns the structured result as JSON even for an application-level failure, so check the body rather than relying only on the HTTP status.</p>
 
-<div class="code">{
+<pre class="api-example">{
   "failed": true,
   "reason": "not_enough_shells"
-}</div>
+}</pre>
 
 <p>Unknown and missing arguments fail closed. A token can only read or change CODE and characters owned by its account. Keep polling measured; the account API is not a combat loop.</p>
 
 <p>The live discovery response lists the current request limits. Standard reads, full game-data dumps, and writes have separate token buckets. A throttled request uses HTTP 429, returns <span class="dlabel">reason: "rate_limited"</span>, and includes both <span class="dlabel">Retry-After</span> and <span class="dlabel">retry_after_ms</span>.</p>
+</div>
