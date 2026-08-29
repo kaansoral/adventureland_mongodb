@@ -8,12 +8,16 @@
 	var tokenStatusNode = document.getElementById("token-status");
 	var tokenStatusDetailNode = document.getElementById("token-status-detail");
 	var createTokenNode = document.getElementById("create-token");
+	var revealTokenNode = document.getElementById("reveal-token");
 	var copyTokenNode = document.getElementById("copy-token");
 	var revokeTokenNode = document.getElementById("revoke-token");
 	var tokenSecretNode = document.getElementById("token-secret");
 	var busy = Object.create(null);
 	var characterCards = Object.create(null);
 	var tokenConnection = "";
+	var tokenRevealed = false;
+	var tokenRecoverable = false;
+	var maskedToken = "••••••••••••••••••••••••••••••••";
 
 	function text(value) {
 		return value === undefined || value === null || value === "" ? "—" : String(value);
@@ -119,15 +123,50 @@
 		errorNode.style.display = "block";
 	}
 
+	function tokenConnectionText(token) {
+		return (
+			"Adventure Land MCP\n" +
+			"Transport: Streamable HTTP\n" +
+			"Server URL: https://adventure.land/mcp\n" +
+			"Authorization: Bearer " + token + "\n" +
+			"First instruction: Read adventureland://guide/start-here and its CODE reading order, then inspect mainframe_get_dashboard and the exact methods and game definitions needed for the task."
+		);
+	}
+
+	function renderTokenSecret() {
+		if (!tokenConnection) {
+			tokenSecretNode.textContent = "Authorization: Bearer " + maskedToken;
+			return;
+		}
+		tokenSecretNode.textContent = tokenRevealed ? tokenConnection : tokenConnectionText(maskedToken);
+	}
+
 	function renderTokenStatus(state) {
 		var active = !!(state && state.active);
 		tokenStatusNode.textContent = active ? "Token active" : "No active token";
 		if (active) {
 			var created = state && state.created ? new Date(state.created) : null;
 			var createdText = created && Number.isFinite(created.getTime()) ? " Created " + created.toLocaleString() + "." : "";
-			tokenStatusDetailNode.textContent = "The existing value is hidden because Adventure Land stores only its hash." + createdText;
-		} else tokenStatusDetailNode.textContent = "Create a token to connect an AI client.";
-		createTokenNode.textContent = active ? "Rotate and reveal new token" : "Create token";
+			tokenConnection = "";
+			tokenRevealed = false;
+			tokenRecoverable = state.recoverable === true;
+			renderTokenSecret();
+			tokenSecretNode.style.display = "block";
+			revealTokenNode.textContent = "Reveal token";
+			revealTokenNode.style.display = "inline-block";
+			copyTokenNode.style.display = "none";
+			tokenStatusDetailNode.textContent = (tokenRecoverable ? "Reveal it when you need to connect a client." : "This legacy token cannot be recovered from its stored hash. Replace it once to enable reveal.") + createdText;
+		} else {
+			tokenConnection = "";
+			tokenRevealed = false;
+			tokenRecoverable = false;
+			tokenSecretNode.textContent = "";
+			tokenSecretNode.style.display = "none";
+			revealTokenNode.style.display = "none";
+			copyTokenNode.style.display = "none";
+			tokenStatusDetailNode.textContent = "Create a token to connect an AI client.";
+		}
+		createTokenNode.textContent = active ? "Replace token" : "Create token";
 		createTokenNode.disabled = false;
 		revokeTokenNode.disabled = !active;
 	}
@@ -144,25 +183,49 @@
 
 	createTokenNode.onclick = async function () {
 		var rotating = tokenStatusNode.textContent === "Token active";
-		if (rotating && !window.confirm("Rotate your MCP token? The current token will stop working immediately.")) return;
+		if (rotating && !window.confirm("Replace your MCP token? The current token will stop working immediately.")) return;
 		createTokenNode.disabled = true;
 		try {
 			var result = await call("generate_token");
-			tokenConnection =
-				"Adventure Land MCP\n" +
-				"Transport: Streamable HTTP\n" +
-				"Server URL: https://adventure.land/mcp\n" +
-				"Authorization: Bearer " + result.token + "\n" +
-				"First instruction: Read adventureland://guide/start-here and its CODE reading order, then inspect mainframe_get_dashboard and the exact methods and game definitions needed for the task.";
-			tokenSecretNode.textContent = tokenConnection;
-			tokenSecretNode.style.display = "block";
+			renderTokenStatus({ active: true, recoverable: true, created: new Date().toISOString() });
+			tokenConnection = tokenConnectionText(result.token);
+			tokenRevealed = true;
+			renderTokenSecret();
+			revealTokenNode.textContent = "Hide token";
 			copyTokenNode.style.display = "inline-block";
-			renderTokenStatus({ active: true, created: new Date().toISOString() });
 			errorNode.style.display = "none";
 		} catch (error) {
 			showError(error);
 		} finally {
 			createTokenNode.disabled = false;
+		}
+	};
+
+	revealTokenNode.onclick = async function () {
+		if (tokenRevealed) {
+			tokenRevealed = false;
+			renderTokenSecret();
+			revealTokenNode.textContent = "Reveal token";
+			copyTokenNode.style.display = "none";
+			return;
+		}
+		if (!tokenRecoverable) {
+			showError({ reason: "This token predates secure reveal. Replace it once to create a revealable token." });
+			return;
+		}
+		revealTokenNode.disabled = true;
+		try {
+			var result = await call("reveal_token");
+			tokenConnection = tokenConnectionText(result.token);
+			tokenRevealed = true;
+			renderTokenSecret();
+			revealTokenNode.textContent = "Hide token";
+			copyTokenNode.style.display = "inline-block";
+			errorNode.style.display = "none";
+		} catch (error) {
+			showError(error);
+		} finally {
+			revealTokenNode.disabled = false;
 		}
 	};
 
@@ -186,6 +249,7 @@
 			tokenSecretNode.textContent = "";
 			tokenSecretNode.style.display = "none";
 			copyTokenNode.style.display = "none";
+			revealTokenNode.style.display = "none";
 			renderTokenStatus({ active: false });
 			errorNode.style.display = "none";
 		} catch (error) {

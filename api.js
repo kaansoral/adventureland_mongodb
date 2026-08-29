@@ -350,6 +350,7 @@ async function generate_token_api(args) {
 	var result = await create_mcp_api_token(args.user);
 	if (result.failed) return result;
 
+	if (args.res && args.res.set) args.res.set("Cache-Control", "no-store");
 	// The regular API logs responses in development. Keep the token out of logs
 	// while still returning it normally as JSON.
 	Object.defineProperty(result, Symbol.for("nodejs.util.inspect.custom"), {
@@ -362,7 +363,21 @@ async function generate_token_api(args) {
 }
 
 async function token_status_api(args) {
-	return await get_mcp_api_token_status(args.user);
+	var result = await get_mcp_api_token_status(args.user);
+	if (args.res && args.res.set) args.res.set("Cache-Control", "no-store");
+	return result;
+}
+
+async function reveal_token_api(args) {
+	var result = await reveal_mcp_api_token(args.user);
+	if (args.res && args.res.set) args.res.set("Cache-Control", "no-store");
+	Object.defineProperty(result, Symbol.for("nodejs.util.inspect.custom"), {
+		enumerable: false,
+		value: function () {
+			return result.failed ? { failed: true, reason: result.reason } : { success: true, token: "[redacted]" };
+		},
+	});
+	return result;
 }
 
 async function revoke_token_api(args) {
@@ -1784,6 +1799,7 @@ var REF = {
 	logout_everywhere: { F: logout_everywhere_api, P: true, U: true },
 	generate_token: { F: generate_token_api, P: true, U: true },
 	token_status: { F: token_status_api, P: true, U: true },
+	reveal_token: { F: reveal_token_api, P: true, U: true },
 	revoke_token: { F: revoke_token_api, P: true, U: true },
 
 	servers_and_characters: { F: servers_and_characters_api, P: true, U: true },

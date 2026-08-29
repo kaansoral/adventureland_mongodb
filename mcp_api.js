@@ -80,6 +80,42 @@ function mcp_api_hash_token(token) {
 	return crypto.createHash("sha256").update(token, "utf8").digest("hex");
 }
 
+function mcp_api_token_encryption_key() {
+	if (!keys || typeof keys.SERVER_MASTER !== "string" || keys.SERVER_MASTER.length < 16) throw new Error("MCP token encryption is unavailable");
+	return crypto.createHmac("sha256", keys.SERVER_MASTER).update("adventure-land:mcp-token-storage:v1", "utf8").digest();
+}
+
+function mcp_api_encrypt_token(token, user_id) {
+	if (!MCP_API_TOKEN_PATTERN.test(token) || !/^US_[A-Za-z0-9_-]{1,100}$/.test(user_id || "")) throw new Error("Invalid MCP token encryption input");
+	var iv = crypto.randomBytes(12);
+	var cipher = crypto.createCipheriv("aes-256-gcm", mcp_api_token_encryption_key(), iv);
+	cipher.setAAD(Buffer.from("mcp-token:" + user_id, "utf8"));
+	var ciphertext = Buffer.concat([cipher.update(token, "utf8"), cipher.final()]);
+	return {
+		version: 1,
+		iv: iv.toString("base64url"),
+		tag: cipher.getAuthTag().toString("base64url"),
+		ciphertext: ciphertext.toString("base64url"),
+	};
+}
+
+function mcp_api_decrypt_token(secret, user_id) {
+	try {
+		if (!secret || secret.version !== 1 || typeof secret.iv !== "string" || typeof secret.tag !== "string" || typeof secret.ciphertext !== "string") return null;
+		var iv = Buffer.from(secret.iv, "base64url");
+		var tag = Buffer.from(secret.tag, "base64url");
+		var ciphertext = Buffer.from(secret.ciphertext, "base64url");
+		if (iv.length !== 12 || tag.length !== 16 || ciphertext.length < 40 || ciphertext.length > 100) return null;
+		var decipher = crypto.createDecipheriv("aes-256-gcm", mcp_api_token_encryption_key(), iv);
+		decipher.setAAD(Buffer.from("mcp-token:" + user_id, "utf8"));
+		decipher.setAuthTag(tag);
+		var token = Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString("utf8");
+		return MCP_API_TOKEN_PATTERN.test(token) ? token : null;
+	} catch (error) {
+		return null;
+	}
+}
+
 function mcp_api_rate_profile(method, args) {
 	if (method === "get_game_data" && !(args && args.name)) return { name: "bulk", rate_per_minute: 12, burst: 4 };
 	if (method === "resources/read" && args && args.uri === "adventureland://source/runner-functions") return { name: "bulk", rate_per_minute: 12, burst: 4 };
@@ -126,6 +162,12 @@ async function create_mcp_api_token(user) {
 	var token = MCP_API_TOKEN_PREFIX + crypto.randomBytes(32).toString("base64url");
 	var token_hash = mcp_api_hash_token(token);
 	var user_id = get_id(user);
+	var token_secret;
+	try {
+		token_secret = mcp_api_encrypt_token(token, user_id);
+	} catch (error) {
+		return { failed: true, reason: "token_generation_failed" };
+	}
 	var R = await tx(
 		async () => {
 			var token_owner = await tx_get(A.user_record_id);
@@ -144,12 +186,14 @@ async function create_mcp_api_token(user) {
 				type: "mcp_api_user",
 				owner: A.user_id,
 				token_hash: A.token_hash,
+				token_secret: A.token_secret,
 				created: new Date(),
 			});
 		},
 		{
 			user_id: user_id,
 			token_hash: token_hash,
+			token_secret: token_secret,
 			token_record_id: mcp_api_token_record_id(token_hash),
 			user_record_id: mcp_api_user_record_id(user_id),
 		},
@@ -160,11 +204,29 @@ async function create_mcp_api_token(user) {
 }
 
 async function get_mcp_api_token_status(user) {
-	var record = await get(mcp_api_user_record_id(get_id(user)));
+	var user_id = get_id(user);
+	var record = await get(mcp_api_user_record_id(user_id));
+	var token = record && record.token_hash ? mcp_api_decrypt_token(record.token_secret, user_id) : null;
+	if (token && mcp_api_hash_token(token) !== record.token_hash) token = null;
 	return {
 		success: true,
 		active: !!(record && record.token_hash),
+		recoverable: !!token,
 		created: record && record.created ? record.created : null,
+		server_url: "https://adventure.land/mcp",
+		start_resource: MCP_START_RESOURCE,
+	};
+}
+
+async function reveal_mcp_api_token(user) {
+	var user_id = get_id(user);
+	var record = await get(mcp_api_user_record_id(user_id));
+	if (!record || !record.token_hash) return { failed: true, reason: "token_not_found" };
+	var token = mcp_api_decrypt_token(record.token_secret, user_id);
+	if (!token || mcp_api_hash_token(token) !== record.token_hash) return { failed: true, reason: "token_unavailable" };
+	return {
+		success: true,
+		token: token,
 		server_url: "https://adventure.land/mcp",
 		start_resource: MCP_START_RESOURCE,
 	};
@@ -936,11 +998,11 @@ async function mcp_api_get_api_info(args) {
 		onboarding: {
 			steps: [
 				"Sign in to Adventure Land and open https://adventure.land/mainframe.",
-				"Open Connect an AI, create or rotate the account token, and copy the connection details. The token is shown once.",
+				"Open Connect an AI and create an account token. Mainframe keeps it masked until Reveal token is pressed.",
 				"Add a Streamable HTTP MCP server in the AI client with URL https://adventure.land/mcp and Authorization: Bearer TOKEN.",
 				"Ask the AI to read adventureland://guide/start-here, adventureland://guide/code-runtime, adventureland://guide/code-architecture, and adventureland://reference/code-globals, then inspect mainframe_get_dashboard and the exact CODE methods and game definitions needed for the task.",
 			],
-			token_security: "One active token per account. Rotation invalidates the previous token immediately. The server stores only its hash.",
+			token_security: "One active token per account. It is encrypted at rest and returned only to the signed-in account. Rotation invalidates the previous token immediately.",
 			source_repository: MCP_SOURCE_REPOSITORY,
 		},
 		rate_limits: {
