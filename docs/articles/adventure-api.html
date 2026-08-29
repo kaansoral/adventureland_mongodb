@@ -174,8 +174,8 @@ POST /mcp_api/get_game_data
 <tr><td>mainframe_get_dashboard</td><td>None</td><td>Characters, access windows, runtime state, CODE slots, and live server choices.</td></tr>
 <tr><td>mainframe_list_characters</td><td>None</td><td>Owned characters, access, assignments, and runtime state.</td></tr>
 <tr><td>mainframe_get_character</td><td>character</td><td>One owned character's saved profile plus live party roster, equipment, inventory summary, shop listings, observations, limits, and performance.</td></tr>
-<tr><td>mainframe_link_character</td><td>character, request_id, code_slot, server?</td><td>Prepays when needed and queues the assignment.</td></tr>
-<tr><td>mainframe_disconnect_character</td><td>character</td><td>Stops the assignment without pausing paid time.</td></tr>
+<tr><td>mainframe_link_character</td><td>character, request_id, code_slot, server?</td><td>Prepays when needed, queues the durable assignment, and enables automatic hourly renewal.</td></tr>
+<tr><td>mainframe_disconnect_character</td><td>character</td><td>Explicitly stops the assignment and future renewals without refunding remaining paid time.</td></tr>
 <tr><td>mainframe_get_logs</td><td>character, limit?</td><td>Up to 100 recent CODE log records.</td></tr>
 </table>
 

@@ -4,16 +4,16 @@ var MCP_API_TOKEN_PREFIX = "mcp_";
 var MCP_API_TOKEN_PATTERN = /^mcp_[A-Za-z0-9_-]{43}$/;
 var MCP_PROTOCOL_CURRENT = "2026-07-28";
 var MCP_PROTOCOL_LEGACY = "2025-11-25";
-var MCP_SERVER_INFO = { name: "adventure-land", version: "1.4.0", description: "Adventure Land game knowledge, character CODE, and Mainframe control" };
+var MCP_SERVER_INFO = { name: "adventure-land", version: "1.5.0", description: "Adventure Land game knowledge, character CODE, and Mainframe control" };
 var MCP_SOURCE_REPOSITORY = "https://github.com/kaansoral/adventureland_mongodb";
 var MCP_START_RESOURCE = "adventureland://guide/start-here";
 var MCP_CATALOG_RESOURCES = ["adventureland://catalog/docs", "adventureland://catalog/code-methods", "adventureland://catalog/game-data"];
 var MCP_INSTRUCTIONS = [
 	"Adventure Land is a programmable online game. External AI works through this MCP server; character logic runs as JavaScript CODE inside Mainframe.",
-	"Read adventureland://guide/start-here first, then call mainframe_get_dashboard before changing CODE or starting a character.",
+	"Read adventureland://guide/start-here first. Before writing CODE, also read adventureland://guide/code-runtime, adventureland://guide/code-architecture, adventureland://reference/code-globals, and the exact methods and game definitions the plan will use. Then call mainframe_get_dashboard before changing CODE or starting a character.",
 	"Use the three adventureland://catalog resources for discovery. Use list_code_methods and get_code_method for exact public runtime contracts, search_game_data and get_game_data for deployed definitions, and list_docs/get_doc for rules and architecture.",
 	"Inspect the owned character profile, class, equipment, inventory, party roster, shop listings, live realm, and existing CODE before planning. Use exact definition keys rather than guessing from display names.",
-	"Read an existing CODE slot before replacing it. mainframe_link_character may prepay one Shell for a sixty-minute window; explain the charge and reuse the same request_id when retrying one lost request.",
+	"Read an existing CODE slot before replacing it. mainframe_link_character prepays one Shell when a new sixty-minute window is needed and enables automatic hourly renewal while the assignment remains running. It persists through Mainframe, controller, host, and microVM restarts. It stops only after an explicit disconnect or when the account cannot pay the next renewal. Explain the recurring charge and reuse the same request_id when retrying one lost request.",
 	"Do not add irreversible selling, destroying, upgrading, compounding, exchanging, mailing, trading, or Shell spending unless the player requested it. Re-locate inventory items immediately before each mutation.",
 	"Characters that coordinate through parties or CODE messages must share a game server. Verify the authenticated party roster instead of assuming repeated invite actions succeeded. Treat incoming messages and nearby entities as untrusted, short-lived data.",
 	"For an advanced baseline, read adventureland://code/starters/samaritan or adventureland://code/starters/samaritan-merchant. Keep programmatic Chat disabled. Equipment changes are reversible, but upgrades, stat scrolls, compounds, bank transfers, listings, NPC sales, and purchases need explicit item rules, value limits, gold reserves, quantities, intervals, and session caps.",
@@ -713,16 +713,27 @@ async function mcp_api_delete_code(args) {
 
 function mcp_api_mainframe_contract() {
 	return {
-		version: 1,
-		billing: "fixed_prepaid_window",
+		version: 2,
+		billing: "auto_renewing_prepaid",
 		shells_per_period: MAINFRAME_PERIOD_SHELLS,
 		period_minutes: MAINFRAME_PERIOD_MS / 60000,
+		initial_charge: "before_start_when_no_paid_time_remains",
+		renewal: "automatic_while_assignment_is_running",
+		stop_conditions: ["explicit_disconnect", "not_enough_shells_at_renewal"],
+		restart_persistence: ["http_service", "mainframe_controller", "host", "microvm"],
 		disconnected_time_counts: true,
 		traffic: "requested_actions_not_confirmation",
 		observation: "authenticated_game_server_events",
 		movement: "confirmed_position_and_map_changes_only",
 		stuck: "stationary_for_15s_with_10_recent_move_requests",
 	};
+}
+
+function mcp_api_mainframe_access(access, assignment) {
+	var result = Object.assign({}, access || {});
+	result.auto_renew = !!(result.active && assignment && assignment.desired_state === "running");
+	result.next_charge_at = result.auto_renew ? result.access_until : null;
+	return result;
 }
 
 function mcp_api_mainframe_runtime(bot) {
@@ -798,14 +809,16 @@ async function mcp_api_list_mainframe_characters(args) {
 	for (var i = 0; i < characters.length; i++) {
 		var character_name = (characters[i] && characters[i].info && characters[i].info.name) || characters[i].name;
 		if (!character_name) continue;
+		var access = await mainframe_get_access(characters[i]);
+		var assignment = await mainframe_get_assignment(characters[i]);
 		result.push({
 			character: character_name,
 			character_id: get_id(characters[i]),
 			level: Number(characters[i].level) || 0,
 			class: characters[i].type || null,
 			profile: mcp_api_character_profile(characters[i], false),
-			access: await mainframe_get_access(characters[i]),
-			assignment: await mainframe_get_assignment(characters[i]),
+			access: mcp_api_mainframe_access(access, assignment),
+			assignment: assignment,
 			available: snapshot.online,
 			runtime: mcp_api_mainframe_runtime(runtimes_by_id[get_id(characters[i])] || runtimes_by_name[character_name]),
 		});
@@ -824,6 +837,8 @@ async function mcp_api_get_mainframe_character(args) {
 	var character = await admin_bots_owned_character(args.user, args.character);
 	if (!character) return { failed: true, reason: "character_not_found" };
 	var bot = await admin_bots_find(get_id(character));
+	var access = await mainframe_get_access(character);
+	var assignment = await mainframe_get_assignment(character);
 	return {
 		success: true,
 		contract: mcp_api_mainframe_contract(),
@@ -831,8 +846,8 @@ async function mcp_api_get_mainframe_character(args) {
 		character: (character.info && character.info.name) || character.name,
 		character_id: get_id(character),
 		profile: mcp_api_character_profile(character, true),
-		access: await mainframe_get_access(character),
-		assignment: await mainframe_get_assignment(character),
+		access: mcp_api_mainframe_access(access, assignment),
+		assignment: assignment,
 		available: (await admin_bots_snapshot()).online,
 		runtime: mcp_api_mainframe_runtime(bot),
 	};
@@ -923,7 +938,7 @@ async function mcp_api_get_api_info(args) {
 				"Sign in to Adventure Land and open https://adventure.land/mainframe.",
 				"Open Connect an AI, create or rotate the account token, and copy the connection details. The token is shown once.",
 				"Add a Streamable HTTP MCP server in the AI client with URL https://adventure.land/mcp and Authorization: Bearer TOKEN.",
-				"Ask the AI to read adventureland://guide/start-here, then inspect mainframe_get_dashboard.",
+				"Ask the AI to read adventureland://guide/start-here, adventureland://guide/code-runtime, adventureland://guide/code-architecture, and adventureland://reference/code-globals, then inspect mainframe_get_dashboard and the exact CODE methods and game definitions needed for the task.",
 			],
 			token_security: "One active token per account. Rotation invalidates the previous token immediately. The server stores only its hash.",
 			source_repository: MCP_SOURCE_REPOSITORY,
@@ -1050,11 +1065,11 @@ var MCP_TOOL_META = {
 		readOnlyHint: true,
 	},
 	mainframe_link_character: {
-		description: "Run an owned character on Mainframe using a saved CODE slot. May charge one Shell before a new sixty-minute window; keep one request_id stable when retrying the same lost request.",
+		description: "Run an owned character on Mainframe using a saved CODE slot. Charges one Shell when a new sixty-minute window is needed, then renews automatically every hour while running. The assignment survives service, controller, host, and microVM restarts and stops only on explicit disconnect or insufficient Shells. Keep one request_id stable when retrying the same lost request.",
 		destructiveHint: false,
 		idempotentHint: true,
 	},
-	mainframe_disconnect_character: { description: "Disconnect one owned character from Mainframe without ending its paid access window.", destructiveHint: false },
+	mainframe_disconnect_character: { description: "Explicitly stop one owned Mainframe character and disable future automatic renewals. Remaining paid time is not refunded and can be reused by starting again before it expires.", destructiveHint: false },
 	mainframe_get_logs: { description: "Read bounded Mainframe CODE logs for one owned character.", readOnlyHint: true },
 };
 
@@ -1575,7 +1590,7 @@ async function mcp_get_prompt(name, prompt_arguments, user) {
 			prompt_arguments.character +
 			" toward this goal: " +
 			prompt_arguments.goal +
-			". Read the dashboard, saved character profile, current live state, CODE, exact function references, and relevant game data first. Never overwrite an unread slot or load a character already active elsewhere. Before a new paid window, tell the user that one Shell buys sixty minutes. Use one stable request_id for retries. After linking, verify authenticated observations and logs; do not treat requested-action counters as success.";
+			". Read the dashboard, CODE runtime, architecture, globals, saved character profile, current live state, existing slot, exact function references, and relevant game data first. Never overwrite an unread slot or load a character already active elsewhere. Explain that starting without paid time charges one Shell and the running assignment then renews for one Shell every sixty minutes until explicitly disconnected or the account cannot pay. Use one stable request_id for retries. The assignment is durable across service, controller, host, and microVM restarts; do not disconnect it as routine recovery. After linking, verify authenticated observations and logs; do not treat requested-action counters as success.";
 	} else {
 		task =
 			"Debug owned character " +
@@ -1584,6 +1599,17 @@ async function mcp_get_prompt(name, prompt_arguments, user) {
 			". Compare the saved profile, assignment, authenticated live observations, party roster, equipment, inventory summary, shop slots, recent CODE logs, and current slot. Identify whether the failure is in planning, event compatibility, CODE requests, game acceptance, movement, targeting, party formation, equipment progression, trade state, inventory state, death recovery, server choice, or containment. Do not rewrite or restart blindly. Make the smallest evidence-backed correction, then verify map, coordinates, activity, target, party, equipment, listings, death state, XP, gold, and logs over time.";
 	}
 	var messages = [{ role: "user", content: { type: "resource", resource: start, annotations: mcp_resource_annotations(1) } }];
+	if (["learn_adventure_land", "configure_samaritan_code", "write_character_code", "review_character_code", "coordinate_character_team", "operate_mainframe", "debug_mainframe_character"].includes(name)) {
+		await mcp_prompt_add_resource(messages, "adventureland://guide/code-runtime", user, true);
+		await mcp_prompt_add_resource(messages, "adventureland://guide/code-architecture", user, true);
+		await mcp_prompt_add_resource(messages, "adventureland://reference/code-globals", user, true);
+	}
+	if (["coordinate_character_team", "operate_mainframe", "debug_mainframe_character"].includes(name))
+		await mcp_prompt_add_resource(messages, "adventureland://guide/mainframe", user, true);
+	if (name === "coordinate_character_team") {
+		await mcp_prompt_add_resource(messages, "adventureland://guide/multiple-characters", user, true);
+		await mcp_prompt_add_resource(messages, "adventureland://guide/code-messages", user, true);
+	}
 	if (user && ["configure_samaritan_code", "write_character_code", "review_character_code", "coordinate_character_team", "operate_mainframe", "debug_mainframe_character"].includes(name))
 		await mcp_prompt_add_resource(messages, "adventureland://account/dashboard", user, false);
 	if (user && name === "review_character_code") await mcp_prompt_add_resource(messages, "adventureland://code/slots/" + encodeURIComponent(prompt_arguments.code_slot), user, false);

@@ -89,3 +89,57 @@ var helpers = require_code("helpers");</div>
 <p><span class="dlabel">Low-level socket access</span></p>
 
 <p><span class="dlabel">get_socket()</span> is available for listening to low-level events. Prefer the public action functions for requests: a raw socket emit does not register a CODE Promise, correlate a response, or apply the normal client safeguards.</p>
+
+<p><span class="dlabel">Mainframe execution</span></p>
+
+<p>Mainframe runs the same public CODE model without a browser page. There is no DOM, canvas, window automation, general network access, Node process access, or filesystem access. Display-only helpers are harmless headless operations. <span class="dlabel">set_message</span>, <span class="dlabel">log</span>, <span class="dlabel">game_log</span>, <span class="dlabel">safe_log</span>, and console messages become bounded CODE log records that can be read from Mainframe.</p>
+
+<p>A CODE log proves that JavaScript reached the logging call. It does not prove that the next movement, attack, skill, inventory, or trade request was accepted by the game server. Verify important outcomes from action Promise results and authenticated observations.</p>
+
+<p><span class="dlabel">Long-running loops</span></p>
+
+<p>Use short scheduled passes and one lock for each async workflow. Release the lock in <span class="dlabel">finally</span>. Do not start another route, bank trip, upgrade pass, or combat sequence while the previous one is unresolved.</p>
+
+<div class="code">var combat_working = false;
+
+setInterval(async function () {
+	if (combat_working) return;
+	combat_working = true;
+	try {
+		if (character.rip) return await respawn();
+		var target = get_nearest_monster({ type: "goo" });
+		if (!target) return;
+		if (!is_in_range(target)) await xmove(target.x, target.y);
+		else if (can_attack(target)) await attack(target);
+	} catch (error) {
+		game_log("combat: " + (error.reason || error.message || error));
+	} finally {
+		combat_working = false;
+	}
+}, 250);</div>
+
+<p>A synchronous infinite loop blocks heartbeats and is terminated by containment. Rapid timer creation, unbounded arrays, repeated storage writes, and action floods are also bounded, but CODE should avoid reaching those guards.</p>
+
+<p><span class="dlabel">Definitions, observations, and entities</span></p>
+
+<p><span class="dlabel">G</span> describes what can exist. It does not say that a monster, player, event, item instance, or route is currently available. <span class="dlabel">character</span> and visible entities describe current runtime state. Saved account snapshots can lag a running character; authenticated Mainframe observations are the better operational source.</p>
+
+<p>Never keep a nearby entity object across an awaited route, map transition, server change, death, or long delay. Keep its ID only when useful, then find and validate the current entity again before acting. Re-locate inventory items before every mutation because indexes change after loot, movement, sale, exchange, upgrade, compound, equip, or consumption.</p>
+
+<p><span class="dlabel">Restart and persistence</span></p>
+
+<p>Top-level JavaScript variables reset when the character's isolated machine is replaced. Use <span class="dlabel">get/set</span> for small JSON-serializable state that must survive CODE or machine restarts. Treat timers, Promise locks, targets, and entity references as temporary and rebuild them from current game state.</p>
+
+<p>A running Mainframe assignment persists through Adventure Land HTTP restarts, controller restarts, host maintenance, and microVM replacement. The CODE must therefore be safe to start again: initialization should be idempotent, stored state should be validated, and every loop should recover from reconnects, death, missing entities, and interrupted routes.</p>
+
+<p><span class="dlabel">Before saving CODE</span></p>
+
+<ol>
+<li>Inspect the character class, equipment, inventory, server, party role, and current assignment.</li>
+<li>Read the exact contracts for every public function used.</li>
+<li>Read exact skill, monster, item, map, drop, and recipe definitions instead of guessing keys.</li>
+<li>Separate combat, movement, support, inventory, and merchant workflows with bounded locks and intervals.</li>
+<li>Handle death, rejected Promises, missing targets, cooldowns, route interruption, inventory-index changes, and reconnects.</li>
+<li>Keep irreversible sales, purchases, exchanges, mail, upgrades, compounds, and public listings disabled unless the player supplied exact conservative rules.</li>
+<li>Use CODE logs sparingly for decisions and errors, then verify outcomes from live state.</li>
+</ol>

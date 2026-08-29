@@ -276,7 +276,7 @@
 <li>Find exact CODE methods with <span class="dlabel">list_code_methods</span>, then read each contract with <span class="dlabel">get_code_method</span>.</li>
 <li>Find exact items, skills, monsters, maps, and recipes with <span class="dlabel">search_game_data</span>, then read their definitions with <span class="dlabel">get_game_data</span>.</li>
 <li>Save the complete JavaScript slot with <span class="dlabel">save_code</span>.</li>
-<li>Explain the charge if the character has no active Mainframe window.</li>
+<li>Explain that starting without paid time charges 1 Shell and that a running assignment automatically renews for 1 Shell every 60 minutes until explicitly disconnected or the account runs out of Shells.</li>
 <li>Link the character with one stable <span class="dlabel">request_id</span>.</li>
 <li>Verify connection, position, activity, deaths, performance, and CODE logs.</li>
 </ol>
@@ -315,7 +315,9 @@ setInterval(async function () {
 
 <p><span class="dlabel">Billing safety</span></p>
 
-<p><span class="dlabel">mainframe_link_character</span> can charge 1 Shell before a new 60-minute access window begins. If a response is lost, retry the same character, CODE slot, server, and <span class="dlabel">request_id</span>. Do not invent a new request ID for a network retry.</p>
+<p><span class="dlabel">mainframe_link_character</span> charges 1 Shell when no paid time remains. A running assignment then renews automatically for 1 Shell every 60 minutes. It survives Adventure Land HTTP restarts, Mainframe controller restarts, USD2 host maintenance, and microVM replacement. It stops only after <span class="dlabel">mainframe_disconnect_character</span> or when the account cannot pay the next renewal.</p>
+
+<p>If a link response is lost, retry the same character, CODE slot, server, and <span class="dlabel">request_id</span>. Do not invent a new request ID for a network retry. Disconnecting disables renewal but does not refund or pause remaining paid time.</p>
 
 <p>Reading state, logs, game data, documentation, CODE, resources, and prompts does not charge Shells. Disconnecting does not refund or pause active time.</p>
 

@@ -61,6 +61,11 @@ function mainframe_assignment_to_client(assignment) {
 		code_slot: assignment.code_slot || null,
 		server: assignment.server_label || null,
 		desired_state: assignment.desired_state || "stopped",
+		stop_reason: assignment.stop_reason || null,
+		last_failure:
+			assignment.failure && typeof assignment.failure === "object"
+				? { code: assignment.failure.code || null, at: assignment.failure.at || null }
+				: null,
 		revision: Number(assignment.revision) || 0,
 	};
 }
@@ -148,6 +153,8 @@ async function mainframe_begin_assignment(user, character, request_id, options) 
 			existing.connection_path = A.server.path;
 			existing.code_slot = A.code_slot;
 			existing.desired_state = "running";
+			existing.stop_reason = null;
+			existing.failure = null;
 			existing.access_until = period_end;
 			existing.start_after = null;
 			existing.updated = A.now;
@@ -194,10 +201,12 @@ async function mainframe_begin_assignment(user, character, request_id, options) 
 		success: true,
 		charged: R.charged,
 		replayed: R.replayed,
+		auto_renew: true,
 		shells_charged: R.charged ? MAINFRAME_PERIOD_SHELLS : 0,
 		shells: gf(R.owner, "cash", 0),
 		receipt: R.charge ? R.charge._id.slice("MK_mainframe_charge-".length) : null,
 		access: mainframe_access_to_client(R.access, now),
+		next_charge_at: R.access && R.access.access_until ? new Date(R.access.access_until).toISOString() : null,
 		assignment: mainframe_assignment_to_client(R.assignment),
 	};
 }
@@ -219,6 +228,7 @@ async function mainframe_stop_assignment(user, character) {
 			}
 			assignment.desired_state = "stopped";
 			assignment.auth = null;
+			assignment.stop_reason = "explicit_disconnect";
 			assignment.updated = A.now;
 			await tx_save(owner);
 			await tx_save(assignment);
@@ -236,9 +246,167 @@ async function mainframe_stop_assignment(user, character) {
 	return { success: true, assignment: mainframe_assignment_to_client(R.assignment) };
 }
 
+async function mainframe_renew_assignment(source, now) {
+	now = now || new Date();
+	if (
+		!source ||
+		!/^US_[A-Za-z0-9_-]{1,100}$/.test(source.owner || "") ||
+		!/^CH_[A-Za-z0-9_-]{1,100}$/.test(source.character || "") ||
+		!/^[0-9a-f]{32}$/.test(source.session_id || "")
+	)
+		return { failed: true, reason: "invalid_assignment" };
+	var previous_until = new Date(source.access_until);
+	var renewal_key =
+		"renewal:" +
+		source.character +
+		":" +
+		source.session_id +
+		":" +
+		(Number.isFinite(previous_until.getTime()) ? previous_until.toISOString() : "missing");
+	var R = await tx(
+		async () => {
+			var assignment = await tx_get(A.assignment_id);
+			if (
+				!assignment ||
+				assignment.owner !== A.user_id ||
+				assignment.character !== A.character_id ||
+				assignment.session_id !== A.session_id ||
+				assignment.controller !== MAINFRAME_ASSIGNMENT_CONTROLLER ||
+				assignment.desired_state !== "running"
+			) {
+				R.state = "inactive";
+				return;
+			}
+			var current_until = new Date(assignment.access_until);
+			if (Number.isFinite(current_until.getTime()) && current_until > A.now) {
+				R.state = "active";
+				R.assignment = assignment;
+				return;
+			}
+			var owner = await tx_get(A.user_id);
+			var character = await tx_get(A.character_id);
+			if (!owner || !character || character.owner !== A.user_id) ex("character_not_found");
+			var access = await tx_get(A.access_id);
+			if (access && (access.owner !== A.user_id || access.character !== A.character_id)) ex("access_conflict");
+			var access_until = access && access.access_until ? new Date(access.access_until) : null;
+			if (access_until && Number.isFinite(access_until.getTime()) && access_until > A.now) {
+				assignment.access_until = access_until;
+				assignment.updated = A.now;
+				await tx_save(assignment);
+				R.state = "active";
+				R.assignment = assignment;
+				return;
+			}
+			if (gf(owner, "cash", 0) < MAINFRAME_PERIOD_SHELLS) {
+				if (assignment.auth && owner.info && Array.isArray(owner.info.auths)) {
+					owner.info.auths = owner.info.auths.filter(function (auth) {
+						return auth !== assignment.auth;
+					});
+				}
+				assignment.desired_state = "stopped";
+				assignment.auth = null;
+				assignment.stop_reason = "not_enough_shells";
+				assignment.updated = A.now;
+				await tx_save(owner);
+				await tx_save(assignment);
+				R.state = "stopped";
+				R.reason = "not_enough_shells";
+				R.assignment = assignment;
+				R.owner = owner;
+				return;
+			}
+			var existing_charge = await tx_get(A.charge_id);
+			if (existing_charge) {
+				var existing_until = new Date(existing_charge.period_end);
+				if (!Number.isFinite(existing_until.getTime())) ex("renewal_conflict");
+				access = access || {
+					_id: A.access_id,
+					type: "mainframe_access",
+					owner: A.user_id,
+					character: A.character_id,
+					created: A.now,
+				};
+				access.access_until = existing_until;
+				access.operator = null;
+				access.updated = A.now;
+				assignment.access_until = existing_until;
+				assignment.updated = A.now;
+				await tx_save(access);
+				await tx_save(assignment);
+				R.state = "active";
+				R.assignment = assignment;
+				R.access = access;
+				R.charge = existing_charge;
+				return;
+			}
+			owner.cash -= MAINFRAME_PERIOD_SHELLS;
+			var period_end = new Date(A.now.getTime() + MAINFRAME_PERIOD_MS);
+			access = access || {
+				_id: A.access_id,
+				type: "mainframe_access",
+				owner: A.user_id,
+				character: A.character_id,
+				created: A.now,
+			};
+			access.access_until = period_end;
+			access.operator = null;
+			access.updated = A.now;
+			assignment.access_until = period_end;
+			assignment.stop_reason = null;
+			assignment.updated = A.now;
+			var charge = {
+				_id: A.charge_id,
+				type: "mainframe_charge",
+				kind: "automatic_renewal",
+				owner: A.user_id,
+				character: A.character_id,
+				request_id: A.renewal_key,
+				session_id: A.session_id,
+				shells: MAINFRAME_PERIOD_SHELLS,
+				period_start: A.now,
+				period_end: period_end,
+				created: A.now,
+			};
+			await tx_save(owner);
+			await tx_save(access);
+			await tx_save(assignment);
+			await tx_save(charge);
+			R.state = "renewed";
+			R.assignment = assignment;
+			R.access = access;
+			R.charge = charge;
+			R.owner = owner;
+		},
+		{
+			user_id: source.owner,
+			character_id: source.character,
+			session_id: source.session_id,
+			assignment_id: mainframe_assignment_record_id(source.character),
+			access_id: mainframe_access_record_id(source.character),
+			charge_id: mainframe_charge_record_id(source.owner, renewal_key),
+			renewal_key: renewal_key,
+			now: now,
+		},
+		3,
+	);
+	if (R.failed) return { failed: true, reason: R.reason || "renewal_failed" };
+	return {
+		success: true,
+		state: R.state,
+		reason: R.reason || null,
+		charged: R.state === "renewed",
+		shells_charged: R.state === "renewed" ? MAINFRAME_PERIOD_SHELLS : 0,
+		shells: R.owner ? gf(R.owner, "cash", 0) : null,
+		next_charge_at: R.access && R.access.access_until && R.state !== "stopped" ? new Date(R.access.access_until).toISOString() : null,
+		access: R.access ? mainframe_access_to_client(R.access, now) : null,
+		assignment: R.assignment ? mainframe_assignment_to_client(R.assignment) : null,
+	};
+}
+
 async function mainframe_controller_assignments(agent_id) {
 	if (agent_id !== MAINFRAME_ASSIGNMENT_CONTROLLER) return [];
 	var now = new Date();
+	await mainframe_renew_access(now);
 	var assignments = await db
 		.collection("mark")
 		.find({
@@ -300,7 +468,7 @@ async function mainframe_record_controller_failures(report) {
 	var failures = (report && report.bots ? report.bots : []).filter(function (bot) {
 		return bot.character_id && bot.assignment_id && bot.failure && bot.failure.assignment_id === bot.assignment_id;
 	});
-	var stopped = 0;
+	var recorded = 0;
 	for (var bot of failures) {
 		var now = new Date();
 		var R = await tx(
@@ -313,19 +481,10 @@ async function mainframe_record_controller_failures(report) {
 					assignment.controller !== MAINFRAME_ASSIGNMENT_CONTROLLER
 				)
 					return;
-				var owner = await tx_get(assignment.owner);
-				if (owner && assignment.auth && owner.info && Array.isArray(owner.info.auths)) {
-					owner.info.auths = owner.info.auths.filter(function (auth) {
-						return auth !== assignment.auth;
-					});
-					await tx_save(owner);
-				}
-				assignment.desired_state = "stopped";
-				assignment.auth = null;
 				assignment.failure = A.failure;
 				assignment.updated = A.now;
 				await tx_save(assignment);
-				R.stopped = true;
+				R.recorded = true;
 			},
 			{
 				assignment_id: mainframe_assignment_record_id(bot.character_id),
@@ -335,9 +494,9 @@ async function mainframe_record_controller_failures(report) {
 			},
 			3,
 		);
-		if (R.stopped) stopped++;
+		if (R.recorded) recorded++;
 	}
-	return stopped;
+	return recorded;
 }
 
 async function mainframe_change_assignment_server(source, region, name) {
@@ -504,39 +663,21 @@ async function mainframe_grant_operator_access(character, requested_by) {
 	return { success: true, access: mainframe_access_to_client(R.access, now) };
 }
 
-async function mainframe_expire_access() {
-	if (!admin_bots_configured()) return { success: true, checked: 0, queued: 0 };
-	var now = new Date();
+async function mainframe_renew_access(now) {
+	if (!admin_bots_configured()) return { success: true, checked: 0, renewed: 0, stopped: 0 };
+	now = now || new Date();
 	var expired_assignments = await db
 		.collection("mark")
 		.find({ type: "mainframe_assignment", desired_state: "running", access_until: { $lte: now } })
 		.limit(100)
 		.toArray();
-	var expired_stopped = 0;
+	var renewed = 0;
+	var stopped = 0;
 	for (var assignment of expired_assignments) {
-		var character = await get(assignment.character);
-		var owner = character && (await get(character.owner));
-		if (!owner || !character) continue;
-		var stopped = await mainframe_stop_assignment(owner, character);
-		if (stopped.success) expired_stopped++;
+		var result = await mainframe_renew_assignment(assignment, now);
+		if (result.failed) throw new Error("Mainframe automatic renewal failed");
+		if (result.state === "renewed") renewed++;
+		else if (result.state === "stopped") stopped++;
 	}
-	var snapshot = await admin_bots_snapshot();
-	var running = snapshot.bots.filter(function (bot) {
-		return bot.desired_state === "running" && bot.pending_state !== "stopped";
-	});
-	var checked = 0;
-	var queued = 0;
-	for (var i = 0; i < running.length; i++) {
-		var character = await get_character(running[i].bot_id, true);
-		if (!character) continue;
-		checked++;
-		var access = await get(mainframe_access_record_id(get_id(character)));
-		if (!access) continue;
-		var status = mainframe_access_to_client(access, now);
-		if (!status.active) {
-			var result = await admin_bots_queue_state(running[i].bot_id, "stopped", "mainframe_expiry");
-			if (result.success) queued++;
-		}
-	}
-	return { success: true, checked: checked + expired_assignments.length, queued: queued + expired_stopped };
+	return { success: true, checked: expired_assignments.length, renewed: renewed, stopped: stopped };
 }

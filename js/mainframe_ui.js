@@ -146,7 +146,7 @@
 				"Transport: Streamable HTTP\n" +
 				"Server URL: https://adventure.land/mcp\n" +
 				"Authorization: Bearer " + result.token + "\n" +
-				"First instruction: Read adventureland://guide/start-here, then inspect mainframe_get_dashboard.";
+				"First instruction: Read adventureland://guide/start-here and its CODE reading order, then inspect mainframe_get_dashboard and the exact methods and game definitions needed for the task.";
 			tokenSecretNode.textContent = tokenConnection;
 			tokenSecretNode.style.display = "block";
 			copyTokenNode.style.display = "inline-block";
@@ -233,7 +233,13 @@
 			var current = card.mainframeState;
 			var access = current.entry.access || {};
 			var character = current.entry.character;
-			if (!access.active && !window.confirm("Run " + character + " on Mainframe for 1 Shell? The 60-minute window starts immediately.")) return;
+			if (
+				!access.active &&
+				!window.confirm(
+					"Run " + character + " on Mainframe for 1 Shell? It renews for 1 Shell every 60 minutes until you disconnect or run out of Shells.",
+				)
+			)
+				return;
 			var request = requestId(character, codeSelect.value, serverSelect.value);
 			busy[character] = true;
 			try {
@@ -306,8 +312,14 @@
 		card.className = "card " + phase + (movement.stuck ? " stuck" : "");
 		nodes.name.textContent = entry.character;
 		nodes.detail.textContent = "Level " + text(entry.level) + " " + text(entry.class).toUpperCase();
-		nodes.phase.textContent = phase;
-		setMetric(nodes.metrics.access, access.active ? duration(access.remaining_seconds) + " left" : "Not active");
+		nodes.phase.textContent =
+			phase === "stopped" && assignment.stop_reason === "not_enough_shells"
+				? "stopped — out of Shells"
+				: phase;
+		setMetric(
+			nodes.metrics.access,
+			access.active ? (running ? "Renews in " : "Paid time ") + duration(access.remaining_seconds) : "Not active",
+		);
 		setMetric(nodes.metrics.server, text(assignment.server || runtime.server));
 		setMetric(nodes.metrics.game, runtime.game_connected ? "Connected" : "Disconnected");
 		setMetric(nodes.metrics.position, observation.map ? observation.map + " " + Math.round(observation.x || 0) + ", " + Math.round(observation.y || 0) : "—");

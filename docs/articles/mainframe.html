@@ -6,7 +6,11 @@
 
 <p><span class="dlabel">Cost</span></p>
 
-<p>A new access window costs <span class="dlabel">1 Shell</span> and lasts <span class="dlabel">60 minutes</span>. The Shell is charged before the character starts. Disconnecting does not pause the window. Reconnecting the same character while its window is active costs nothing.</p>
+<p>Starting without paid time charges <span class="dlabel">1 Shell</span> for <span class="dlabel">60 minutes</span>. While the assignment remains running, Mainframe automatically charges another Shell at the end of each window and continues for another 60 minutes. It keeps doing this until you explicitly disconnect the character or the account cannot pay the next renewal.</p>
+
+<p>Disconnecting disables future renewals but does not refund or pause the current paid window. Reconnecting the same character before that window ends costs nothing and enables renewal again.</p>
+
+<p>The running assignment is durable. Mainframe restores it after Adventure Land HTTP restarts, controller restarts, USD2 host maintenance, and microVM replacement. Infrastructure recovery can briefly reconnect the character, but it does not convert the assignment to stopped.</p>
 
 <p>Mainframe refuses to load a character that is already active elsewhere. It never replaces a different running assignment. A character can have only one Mainframe assignment at a time.</p>
 

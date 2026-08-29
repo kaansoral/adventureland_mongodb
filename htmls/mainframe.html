@@ -78,12 +78,12 @@
 					<div class="connection"><span class="muted">Transport</span><code>Streamable HTTP</code><span class="muted">Server URL</span><code>https://adventure.land/mcp</code><span class="muted">First resource</span><code>adventureland://guide/start-here</code></div>
 					<div class="connect-actions"><button id="create-token" type="button" disabled>Create token</button><button id="copy-token" type="button" style="display:none">Copy connection</button><button id="revoke-token" class="disconnect" type="button" disabled>Revoke token</button><a href="/docs/guide/adventure-mcp" style="padding:9px 12px">Setup guide</a></div>
 					<pre id="token-secret" aria-live="polite"></pre>
-					<ol class="connect-steps"><li>Create the token and copy it while it is visible.</li><li>Add the server URL and Bearer token to your AI client's MCP settings.</li><li>Tell the AI to read the first resource, then inspect your Mainframe dashboard.</li></ol>
+					<ol class="connect-steps"><li>Create the token and copy it while it is visible.</li><li>Add the server URL and Bearer token to your AI client's MCP settings.</li><li>Tell the AI to read the first resource and its CODE reading order, then inspect your Mainframe dashboard and exact game contracts.</li></ol>
 					<p class="muted" style="margin-top:10px">One token is active per account. Rotating invalidates the old token. Adventure Land stores only its hash, so it cannot show the plaintext again.</p>
 				</section>
 				<section class="summary"><div><span>Cost</span><strong id="cost">1 Shell / 60 minutes</strong></div><div><span>Your Shells</span><strong id="shells">—</strong></div><div><span>Running</span><strong id="running">—</strong></div></section>
 				<section id="mainframe-characters" class="grid" aria-live="polite"><div class="empty">Loading characters…</div></section>
-				<footer class="footer"><span>Payment starts before a new window. Disconnecting does not pause it.</span><span>One isolated machine per character.</span></footer>
+				<footer class="footer"><span>Running characters renew for 1 Shell every 60 minutes. Disconnect to stop renewal; remaining paid time is not refunded.</span><span>One isolated machine per character.</span></footer>
 				<script src="/js/mainframe_ui.js?v={{ domain.v }}"></script>
 			{% endif %}
 		</main>

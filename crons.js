@@ -21,17 +21,17 @@ if (process.env.pm_id === "0" || !process.env.pm_id) {
 		},
 		1 * 60 * 1000,
 	);
-	var mainframe_expiry_check_running = false;
+	var mainframe_renewal_check_running = false;
 	setInterval(
 		async function () {
-			if (mainframe_expiry_check_running) return;
-			mainframe_expiry_check_running = true;
+			if (mainframe_renewal_check_running) return;
+			mainframe_renewal_check_running = true;
 			try {
-				await mainframe_expire_access();
+				await mainframe_renew_access();
 			} catch (e) {
-				console.error("mainframe expiry check failed", e);
+				console.error("mainframe renewal check failed", e);
 			} finally {
-				mainframe_expiry_check_running = false;
+				mainframe_renewal_check_running = false;
 			}
 		},
 		15 * 1000,

@@ -132,6 +132,26 @@
 				grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
 				gap: 16px;
 			}
+			.section-head {
+				display: flex;
+				align-items: baseline;
+				justify-content: space-between;
+				gap: 16px;
+				margin: 24px 0 10px;
+			}
+			.inactive {
+				margin-top: 20px;
+				border: 1px solid var(--border);
+				background: var(--panel);
+			}
+			.inactive > summary {
+				padding: 13px 16px;
+				color: var(--muted);
+				cursor: pointer;
+			}
+			.inactive > .grid {
+				padding: 0 16px 16px;
+			}
 			.bot {
 				border: 1px solid var(--border);
 				background: var(--panel);
@@ -253,16 +273,24 @@
 				<div><span class="dot"></span><strong id="runner-state">Connecting</strong></div>
 				<div id="runner-detail" class="muted">Waiting for the controller.</div>
 			</section>
-			<section id="fleet" class="fleet" aria-label="Fleet health"></section>
+			<section id="fleet" class="fleet" aria-label="Mainframe summary"></section>
 			<div id="error"></div>
-			<section id="bots" class="grid" aria-live="polite"><div class="empty">Loading bots…</div></section>
+			<div class="section-head"><h2>Active sessions</h2><span id="active-detail" class="muted">Loading…</span></div>
+			<section id="bots" class="grid" aria-live="polite"><div class="empty">Loading Mainframe…</div></section>
+			<details id="inactive" class="inactive">
+				<summary id="inactive-title">Stopped configurations</summary>
+				<section id="inactive-bots" class="grid"></section>
+			</details>
 		</main>
 		<script>
 			(function () {
 				var busy = Object.create(null);
 				var botsNode = document.getElementById("bots");
+				var inactiveNode = document.getElementById("inactive");
+				var inactiveBotsNode = document.getElementById("inactive-bots");
 				var runnerNode = document.getElementById("runner");
 				var errorNode = document.getElementById("error");
+				var fleetCapacity = 100;
 				function text(value) {
 					return value === undefined || value === null || value === "" ? "—" : String(value);
 				}
@@ -290,6 +318,13 @@
 					strong.textContent = value;
 					node.append(small, strong);
 					return node;
+				}
+				function isActive(bot) {
+					return (
+						bot.desired_state === "running" ||
+						bot.pending_state === "running" ||
+						["loading_code", "starting", "bootstrapped", "running", "stopping"].includes(bot.phase)
+					);
 				}
 				function renderBot(bot) {
 					var card = document.createElement("article");
@@ -376,14 +411,14 @@
 					card.append(head, metrics, actions, logs);
 					return card;
 				}
-				function renderFleet(state) {
+				function renderFleet(state, active, inactive) {
 					var bots = state.bots || [];
-					var running = bots.filter(function (bot) { return bot.desired_state === "running"; });
-					var totals = running.reduce(function (result, bot) {
+					var totals = active.reduce(function (result, bot) {
 						var containment = bot.containment || {};
 						result.memory += Number(containment.memory_current_bytes) || 0;
 						result.memory_peak += Number(containment.memory_peak_bytes) || 0;
 						result.memory_limit += Number(containment.limits && containment.limits.memory_max_bytes) || 0;
+						result.cpu += Number(bot.metrics && bot.metrics.cpu_ratio) || 0;
 						result.throttled += Number(containment.cpu_throttled_usec) || 0;
 						result.read += Number(containment.io_read_bytes) || 0;
 						result.write += Number(containment.io_write_bytes) || 0;
@@ -393,17 +428,27 @@
 						if (bot.observation && bot.observation.movement && bot.observation.movement.stuck) result.stuck += 1;
 						if (containment.identity_slot !== null && containment.identity_slot !== undefined) result.identities.add(containment.identity_slot);
 						if (bot.metrics && bot.metrics.seccomp_mode === 2 && bot.metrics.no_new_privileges === 1 && bot.metrics.permission_model === true) result.hardened += 1;
+						if (bot.game_connected) result.connected += 1;
+						if (bot.phase !== "running" || bot.pending_state) result.transitioning += 1;
 						return result;
-					}, { memory: 0, memory_peak: 0, memory_limit: 0, throttled: 0, read: 0, write: 0, oom: 0, failures: 0, failed: 0, stuck: 0, hardened: 0, identities: new Set() });
+					}, { memory: 0, memory_peak: 0, memory_limit: 0, cpu: 0, throttled: 0, read: 0, write: 0, oom: 0, failures: 0, failed: 0, stuck: 0, hardened: 0, connected: 0, transitioning: 0, identities: new Set() });
+					bots.forEach(function (bot) {
+						if (bot.failure && !isActive(bot)) totals.failed += 1;
+					});
 					var fleet = document.getElementById("fleet");
 					fleet.replaceChildren(
-						metric("Running", running.length + " / 100"),
-						metric("VM memory", bytes(totals.memory) + " / " + bytes(totals.memory_limit)),
+						metric("Active sessions", active.length + " / " + fleetCapacity),
+						metric("Available slots", Math.max(0, fleetCapacity - active.length)),
+						metric("Game connected", totals.connected + " / " + active.length),
+						metric("Transitioning", totals.transitioning),
+						metric("Active VM memory", bytes(totals.memory) + " / " + bytes(totals.memory_limit)),
 						metric("Memory peak", bytes(totals.memory_peak)),
+						metric("Guest CPU", number(totals.cpu * 100, 1) + "%"),
 						metric("CPU throttled", duration(totals.throttled / 1000)),
 						metric("Disk read / write", bytes(totals.read) + " / " + bytes(totals.write)),
-						metric("Isolated identities", totals.identities.size + " / " + running.length),
-						metric("Guest hardening", totals.hardened + " / " + running.length),
+						metric("Isolated identities", totals.identities.size + " / " + active.length),
+						metric("Guest hardening", totals.hardened + " / " + active.length),
+						metric("Stopped configs", inactive.length),
 						metric("Alerts", totals.oom + " OOM / " + totals.failures + " probes / " + totals.failed + " failed / " + totals.stuck + " stuck")
 					);
 					if (totals.oom || totals.failures || totals.failed || totals.stuck) fleet.lastElementChild.classList.add("warning");
@@ -414,17 +459,28 @@
 					document.getElementById("runner-detail").textContent = state.updated_at
 						? "Controller " + text(state.controller_version) + " / last report " + new Date(state.updated_at).toLocaleString()
 						: "No Mainframe report yet.";
-					renderFleet(state);
+					var active = (state.bots || []).filter(isActive);
+					var inactive = (state.bots || []).filter(function (bot) { return !isActive(bot); });
+					renderFleet(state, active, inactive);
+					document.getElementById("active-detail").textContent = active.length
+						? active.length + " character" + (active.length === 1 ? "" : "s") + " using isolated machines"
+						: "No machines in use";
 					botsNode.replaceChildren();
-					if (!(state.bots || []).length) {
+					if (!active.length) {
 						var empty = document.createElement("div");
 						empty.className = "empty";
-						empty.textContent = state.configured ? "No characters are registered." : "Mainframe is not configured.";
+						empty.textContent = state.configured ? "No active Mainframe sessions." : "Mainframe is not configured.";
 						botsNode.append(empty);
-						return;
+					} else {
+						active.forEach(function (bot) {
+							botsNode.append(renderBot(bot));
+						});
 					}
-					state.bots.forEach(function (bot) {
-						botsNode.append(renderBot(bot));
+					inactiveBotsNode.replaceChildren();
+					document.getElementById("inactive-title").textContent = "Stopped configurations (" + inactive.length + ")";
+					inactiveNode.style.display = inactive.length ? "block" : "none";
+					inactive.forEach(function (bot) {
+						inactiveBotsNode.append(renderBot(bot));
 					});
 				}
 				async function refresh() {
