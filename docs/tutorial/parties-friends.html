@@ -39,7 +39,7 @@ send_party_invite(name).catch(function (error) {
 send_friend_request(name).catch(function (error) {
 	show_json(error);
 });</div>
-	<p>Replace the name before running. Incoming requests can be handled with their documented events and accept routines.</p>
+	<p>Replace the name before running. For incoming requests, listen for the matching CODE event and call the matching accept function.</p>
 	<p>
 		<span class="rlabel" onclick="render_function_reference($(this).html())">send_party_invite</span> ·
 		<span class="rlabel" onclick="render_function_reference($(this).html())">send_friend_request</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">party_say</span> ·

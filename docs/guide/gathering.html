@@ -9,7 +9,7 @@
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
-<p><span class="rlabel" onclick="render_function_reference($(this).html())">use_skill</span> waits for the final gathering result, not merely the start of the animation.</p>
+<p><span class="rlabel" onclick="render_function_reference($(this).html())">use_skill</span> waits until fishing or mining finishes.</p>
 <div class="code">async function gather(kind) {
 	if (character.moving) return;
 	if (is_on_cooldown(kind)) return;
@@ -21,7 +21,7 @@
 
 gather("fishing"); // or "mining"</div>
 <p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">use_skill</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">is_on_cooldown</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">equip</span>.</p>
-<div class="guide-note">A failed location, movement, equipment, class, level, or MP check rejects the Promise. A fulfilled result with <span class="dlabel">found: false</span> is a completed attempt that found nothing.</div>
+<div class="guide-note">If the spot, movement, tool, class, level, or MP check fails, no attempt starts. If <span class="dlabel">found</span> is false, the attempt finished and found nothing.</div>
 
 <div class="guide-related">Materials often continue into <span onclick="hide_modal(); open_guide('crafting',get_guide_url('crafting'))">Crafting and Dismantling</span>.</div>
 

@@ -1,13 +1,13 @@
 <p><span class="dlabel">The character object</span></p>
 
-<p><span class="clabel">character</span> is the public CODE proxy for your live character. It mirrors <span class="clabel">parent.character</span> while normalizing coordinates to <span class="dlabel">x</span> and <span class="dlabel">y</span>. Read fields from <span class="clabel">character</span>; use public routines such as <span class="dlabel">move</span>, <span class="dlabel">equip</span>, and <span class="dlabel">use_skill</span> to change server state.</p>
+<p><span class="clabel">character</span> is the public CODE object for your live character. It mirrors <span class="clabel">parent.character</span> while normalizing coordinates to <span class="dlabel">x</span> and <span class="dlabel">y</span>. Read fields from <span class="clabel">character</span>; use public functions such as <span class="dlabel">move</span>, <span class="dlabel">equip</span>, and <span class="dlabel">use_skill</span> to change server state.</p>
 
 <div class="code">show_json(character);
 show_json(character.slots);
 show_json(character.items);
 show_json(character.s);</div>
 
-<p>Character updates are live but asynchronous. A Promise settlement and the next character update can be separate moments; completion-aware routines document when they wait for both. Optional fields are absent when they do not apply.</p>
+<p>Character updates are live but asynchronous. A Promise result and the next character update can arrive separately; function docs say when a call waits for both. Optional fields are absent when they do not apply.</p>
 
 <p><span class="dlabel">Identity and location</span></p>
 
@@ -55,7 +55,7 @@ show_json(character.s);</div>
 	<span data-field="mp_cost">mp_cost</span>: 24,
 }</div>
 
-<p>Percentage-like fields are expressed in percentage points unless a specific definition says otherwise. The server is authoritative; local values can be one network update behind a just-completed action.</p>
+<p>Percentage-like fields are expressed in percentage points unless a specific definition says otherwise. The server has the final value; local values can be one network update behind a just-completed action.</p>
 
 <p><span class="dlabel">Attributes and combat pressure</span></p>
 
@@ -165,4 +165,4 @@ character.once(event, callback);
 character.all(callback);
 character.remove(listener_id);</div>
 
-<p>See <span class="rlabel" onclick="open_article('events-character','/docs/code/character-events')">Character Events</span> for payloads and listener semantics.</p>
+<p>See <span class="rlabel" onclick="open_article('events-character','/docs/code/character-events')">Character Events</span> for event data and listener behavior.</p>

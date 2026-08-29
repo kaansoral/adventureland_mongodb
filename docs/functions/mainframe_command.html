@@ -1,8 +1,8 @@
 <p><span class='dlabel'>mainframe_command(command, timeout_ms)</span></p>
 <p>Runs one command through the in-world Cyberland Mainframe terminal.</p>
-<p><b>Returns:</b> Promise resolving after the server executes the command, with command, reply, and authorized. It rejects when the character is not connected to Cyberland's terminal, the input is invalid, the server refuses the action, or the timeout expires.</p>
+<p><b>Returns:</b> Promise resolving with command, reply, and authorized after the Cyberland terminal answers. It rejects when the character is not beside the terminal, the input is invalid, the server refuses the action, or the timeout expires.</p>
 <p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
-<p><b>Notes:</b> This controls the old in-world terminal, not the account Mainframe hosting service. Unknown commands still execute the terminal's normal unauthorized response and resolve with authorized:false. timeout_ms defaults to 10,000ms.</p>
+<p><b>Notes:</b> This controls the in-world terminal, not the account Mainframe hosting service. Unknown commands resolve with the terminal's unauthorized reply and authorized:false. timeout_ms defaults to 10,000ms.</p>
 <p><b>Example:</b></p>
 <div class='code'>async function example() {
 	var response = await mainframe_command("hello");

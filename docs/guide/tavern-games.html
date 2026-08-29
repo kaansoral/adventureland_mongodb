@@ -22,7 +22,7 @@
 	game_log(slots.won ? "Slots paid " + slots.payout : "No luck");
 }</div>
 <p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">get_tavern_info</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bet_dice</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">play_slots</span>.</p>
-<div class="guide-note">These calls spend gold. Inspect the house response and the full function reference, then make your wager deliberate.</div>
+<div class="guide-note">Dice and slots spend gold immediately. Call <span class="dlabel">get_tavern_info()</span> first to read the current house edge and the largest win the tavern can cover.</div>
 
 <div class="guide-related">For ordinary trade, see <span onclick="hide_modal(); open_guide('markets-and-trading',get_guide_url('markets-and-trading'))">Markets and Trading</span>.</div>
 

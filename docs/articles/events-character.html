@@ -210,7 +210,7 @@ character.remove(listener);</div>
 
 <p><span class="dlabel">Action-result event index</span></p>
 
-<p>Many server responses also become character events. Their payload is the response object after internal routing fields such as <span class="dlabel">cevent</span> are removed. The following names are stable public events:</p>
+<p>Many server responses also become character events. Their data is the response object after internal routing fields such as <span class="dlabel">cevent</span> are removed. The following names are stable public events:</p>
 
 <div class="code"><span data-event="buy">buy</span>
 <span data-event="sell">sell</span>
@@ -249,17 +249,17 @@ character.remove(listener);</div>
 <span data-event="mining_success">mining_success</span>
 <span data-event="mining_none">mining_none</span></div>
 
-<p>Response payloads include a <span class="dlabel">response</span> name when they originate from <span class="dlabel">game_response</span>, plus action-specific fields such as <span class="dlabel">name</span>, <span class="dlabel">num</span>, <span class="dlabel">cost</span>, <span class="dlabel">gold</span>, <span class="dlabel">reason</span>, or <span class="dlabel">slot</span>. Code should read the fields it needs and tolerate additional fields.</p>
+<p>Response events include a <span class="dlabel">response</span> name when they originate from <span class="dlabel">game_response</span>, plus action-specific fields such as <span class="dlabel">name</span>, <span class="dlabel">num</span>, <span class="dlabel">cost</span>, <span class="dlabel">gold</span>, <span class="dlabel">reason</span>, or <span class="dlabel">slot</span>. Code should read the fields it needs and tolerate additional fields.</p>
 
-<p><span class="dlabel">mail_sent</span> and <span class="dlabel">mail_failed</span> include <span class="dlabel">to</span> and the unique <span class="dlabel">request_id</span> supplied by <span class="dlabel">send_mail</span>, allowing simultaneous mail operations to be correlated without guessing from recipient or timing.</p>
+<p><span class="dlabel">mail_sent</span> and <span class="dlabel">mail_failed</span> include <span class="dlabel">to</span> and the unique <span class="dlabel">request_id</span> supplied by <span class="dlabel">send_mail</span>, allowing simultaneous mail operations to be matched without guessing from recipient or timing.</p>
 
-<p><span class="dlabel">mail_item_taken</span> and <span class="dlabel">mail_take_item_failed</span> include the mail <span class="dlabel">id</span> and the <span class="dlabel">request_id</span> supplied by <span class="dlabel">take_mail_item</span>. Success includes the delivered <span class="dlabel">item</span>; failure includes a concrete <span class="dlabel">reason</span>. Inventory-space and already-claimed responses remain direct routine failures rather than character events.</p>
+<p><span class="dlabel">mail_item_taken</span> and <span class="dlabel">mail_take_item_failed</span> include the mail <span class="dlabel">id</span> and the <span class="dlabel">request_id</span> supplied by <span class="dlabel">take_mail_item</span>. Success includes the delivered <span class="dlabel">item</span>; failure includes a concrete <span class="dlabel">reason</span>. Inventory-space and already-claimed responses remain direct function failures rather than character events.</p>
 
-<p><span class="dlabel">shell_purchase_complete</span> and <span class="dlabel">shell_purchase_failed</span> include <span class="dlabel">name</span>, <span class="dlabel">quantity</span>, and a correlated <span class="dlabel">request_id</span>. Successful purchases also include <span class="dlabel">cost</span>; failures include <span class="dlabel">reason</span>.</p>
+<p><span class="dlabel">shell_purchase_complete</span> and <span class="dlabel">shell_purchase_failed</span> include <span class="dlabel">name</span>, <span class="dlabel">quantity</span>, and a matching <span class="dlabel">request_id</span>. Successful purchases also include <span class="dlabel">cost</span>; failures include <span class="dlabel">reason</span>.</p>
 
-<p><span class="dlabel">blessed</span> and <span class="dlabel">blessed_fail</span> include <span class="dlabel">cost</span>, <span class="dlabel">result</span>, and the <span class="dlabel">request_id</span> supplied by <span class="dlabel">bless_server</span>. Success also includes <span class="dlabel">blessed_by</span> and the initial remaining <span class="dlabel">minutes</span>; failure includes a concrete <span class="dlabel">reason</span>. The routine normalizes its returned <span class="dlabel">response</span> to the result name while the server also preserves the original raw string response.</p>
+<p><span class="dlabel">blessed</span> and <span class="dlabel">blessed_fail</span> include <span class="dlabel">cost</span>, <span class="dlabel">result</span>, and the <span class="dlabel">request_id</span> supplied by <span class="dlabel">bless_server</span>. Success also includes <span class="dlabel">blessed_by</span> and the initial remaining <span class="dlabel">minutes</span>; failure includes a concrete <span class="dlabel">reason</span>. The returned <span class="dlabel">response</span> uses the result name while the server also preserves the original raw string response.</p>
 
-<p><span class="dlabel">friend_complete</span> and <span class="dlabel">friend_failed</span> include <span class="dlabel">name</span> and the <span class="dlabel">request_id</span> supplied by <span class="dlabel">accept_friend_request</span>. Success includes the committed account <span class="dlabel">friends</span> array. The existing <span class="dlabel">friend</span> socket update and friend-request UI remain unchanged.</p>
+<p><span class="dlabel">friend_complete</span> and <span class="dlabel">friend_failed</span> include <span class="dlabel">name</span> and the <span class="dlabel">request_id</span> supplied by <span class="dlabel">accept_friend_request</span>. Success includes the updated account <span class="dlabel">friends</span> array. The existing <span class="dlabel">friend</span> socket update and friend-request UI remain unchanged.</p>
 
 <p><span class="dlabel">unfriend_complete</span> and <span class="dlabel">unfriend_failed</span> include <span class="dlabel">name</span> and <span class="dlabel">request_id</span>. Successful removal also includes the updated account <span class="dlabel">friends</span> array.</p>
 

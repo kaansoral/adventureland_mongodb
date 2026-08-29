@@ -29,7 +29,7 @@
 
 <div class="tutpath manual">
 	<div class="tutpath-title">MANUAL</div>
-	<p>Buy one Basic Upgrade Scroll. Take a cheap +0 weapon or armor piece to Cue, place both in the upgrade window, and inspect the chance before you commit.</p>
+	<p>Buy one Basic Upgrade Scroll. Take a cheap +0 weapon or armor piece to Cue, place both in the upgrade window, and read the chance before you commit.</p>
 	<p>
 		The item's current grade decides which scroll it needs. The item and scroll are consumed on failure. Offerings and grace can help with difficult attempts; locking prevents an item from being
 		upgraded at all.
@@ -38,7 +38,7 @@
 
 <div class="tutpath codepath">
 	<div class="tutpath-title">OPTIONAL CODE</div>
-	<p>This selects a normal-grade upgradeable item. It will only attempt the upgrade after you deliberately change the confirmation line:</p>
+	<p>This selects a normal-grade upgradeable item. It will only attempt the upgrade after you change the confirmation line from <span class="dlabel">false</span> to <span class="dlabel">true</span>:</p>
 	<!-- prettier-ignore -->
 	<div class="code">async function upgrade_once() {
 	await smart_move(find_npc("newupgrade"));

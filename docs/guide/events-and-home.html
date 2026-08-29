@@ -9,7 +9,7 @@
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
-<p><span class="dlabel">server.status</span> is the current replaceable snapshot of live server state. <span class="dlabel">G.events</span> contains static event definitions.</p>
+<p><span class="dlabel">server.status</span> shows live server state. <span class="dlabel">G.events</span> contains static event definitions.</p>
 <div class="code">async function event_example() {
 	show_json(server.status);
 	show_json(G.events);
@@ -19,7 +19,7 @@
 	}
 
 	await set_home();
-	// await bless_server(); // Spends shells: inspect the reference first.
+	// await bless_server(); // Spends shells: read the reference first.
 }</div>
 <p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">join</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">set_home</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bless_server</span>.</p>
 <div class="guide-note">Only call <span class="rlabel" onclick="render_function_reference($(this).html())">join</span> for a currently available, joinable event. Many world events are reached by travel instead.</div>

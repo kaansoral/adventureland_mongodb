@@ -19,7 +19,7 @@ inspect_account_data();</div>
 
 <p><span class="dlabel">Additional information events</span></p>
 
-<p>Some API responses carry additional information records. Those records are also emitted through <span class="dlabel">game.on("api_response", ...)</span> after the main request settles:</p>
+<p>Some API responses carry additional information records. Those records are also emitted through <span class="dlabel">game.on("api_response", ...)</span> after the main request finishes:</p>
 
 <div class="code">game.on("api_response", function (data) {
 	if (data.type == "merchants") show_json(data);
@@ -29,4 +29,4 @@ parent.api_call("pull_merchants").catch(function (error) {
 	game_log("Merchant lookup failed: " + error.reason);
 });</div>
 
-<p>Prefer a documented public CODE routine when one exists. For example, use <span class="dlabel">upload_code</span> instead of calling <span class="dlabel">save_code</span> directly. Low-level API method names and payloads are advanced, compatibility-sensitive interfaces and can evolve independently of the public CODE function directory.</p>
+<p>Prefer a documented public CODE function when one exists. For example, use <span class="dlabel">upload_code</span> instead of calling <span class="dlabel">save_code</span> directly. Low-level API method names and payloads are advanced, compatibility-sensitive interfaces and can evolve independently of the public CODE function directory.</p>

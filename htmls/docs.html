@@ -91,6 +91,7 @@
 						for(var i=2;i<path.length;i++)
 						{
 							var step=path[i],ref=[];
+							if(!step) continue;
 							cpath.push(step);
 							for(var j=0;j<docs.length;j++)
 								if(docs[j][0]==step)
@@ -102,6 +103,7 @@
 							if(!docs)
 							{
 								open_article(step,"/docs/code/learn"+suffix+"/"+step);
+								break;
 							}
 							else
 							{
@@ -150,6 +152,7 @@
 					for(var i=1;i<path.length;i++)
 					{
 						var step=path[i],ref=[];
+						if(!step) continue;
 						cpath.push(step);
 						for(var j=0;j<docs.length;j++)
 							if(docs[j][0]==step)
@@ -161,6 +164,7 @@
 						if(!docs)
 						{
 							open_guide(step,"/docs/guide"+suffix+"/"+step);
+							break;
 						}
 						else
 						{

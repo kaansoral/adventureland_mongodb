@@ -2,7 +2,7 @@
 <p>Adds the legacy .done(callback) interface to a Promise-returning or event-based function.</p>
 <p><b>Returns:</b> A wrapper whose calls return a native Promise with done(callback). The callback receives success as its first argument and the result or failure as its second.</p>
 <p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
-<p><b>Notes:</b> For modern functions, settlement follows the returned Promise. The optional event names preserve the old rxd-correlated fallback for legacy functions that do not return a Promise. Listeners are registered before invocation and removed after settlement.</p>
+<p><b>Notes:</b> For current functions, done() follows the returned Promise. The optional event names keep the old event-based fallback for legacy functions that do not return a Promise. Temporary listeners are added before the call and removed when the call finishes or fails.</p>
 <p><b>Example:</b></p>
 <div class='code'>var old_buy = doneify(buy, "buy_success", "buy_fail");
 old_buy("hpot0").done(function (success, data) {

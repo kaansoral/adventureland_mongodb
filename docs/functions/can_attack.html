@@ -1,7 +1,7 @@
 <p><span class='dlabel'>can_attack(target)</span></p>
 <p>Checks the basic local conditions for a normal attack: target, range, cooldown, death, and disable state.</p>
 <p><b>Returns:</b> Boolean.</p>
-<p><b>Notes:</b> The server remains authoritative and may reject an action that passed this local check.</p>
+<p><b>Notes:</b> The server makes the final decision and may reject an action that passed this local check.</p>
 <p><b>Example:</b></p>
 <div class='code'>if (can_attack(target)) attack(target);</div>
 

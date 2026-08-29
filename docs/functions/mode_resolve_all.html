@@ -1,5 +1,5 @@
 <p><span class='dlabel'>mode_resolve_all()</span></p>
-<p>Changes CODE Promise failures into fulfilled values for backward-compatible resolve-only control flow.</p>
+<p>Makes CODE action failures go to then() instead of catch(), for older resolve-only code.</p>
 <p><b>Returns:</b> Nothing.</p>
 <p><b>Notes:</b> Call once near startup. Successful results have success:true where applicable; failures fulfill with failed:true and reason instead of running catch.</p>
 <p><b>Example:</b></p>

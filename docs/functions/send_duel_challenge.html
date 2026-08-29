@@ -1,6 +1,6 @@
 <p><span class='dlabel'>send_duel_challenge(name, timeout_ms)</span></p>
 <p>Sends a duel challenge to an online character.</p>
-<p><b>Returns:</b> Promise resolving after the server records and delivers the challenge. Invalid target, self-challenge, existing-duel, and timeout failures reject.</p>
+<p><b>Returns:</b> Promise resolving after the server sends the challenge to the other player. Invalid target, self-challenge, existing duel, and timeout failures reject.</p>
 <p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
 <p><b>Notes:</b> Pass a character name or character object. timeout_ms defaults to 10,000ms.</p>
 <p><b>Example:</b></p>

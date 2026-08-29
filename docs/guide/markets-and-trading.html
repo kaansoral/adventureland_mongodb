@@ -22,7 +22,7 @@
 	await close_stand();
 }</div>
 <p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">open_stand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">close_stand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">wishlist</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_buy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_sell</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">giveaway</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">join_giveaway</span>.</p>
-<div class="guide-note">Use the visible player object, not a remembered listing. The trade routines include the listing's request ID so a changed offer is rejected.</div>
+<div class="guide-note">Read the nearby player's current trade slots before buying or selling. Trade calls include the listing ID, so a changed offer is refused.</div>
 
 <div class="code">async function recovered_items() {
 	var ponty = await get_secondhands();

@@ -10,14 +10,14 @@
 <div class="guide-grid">
 	<div><span class="guide-step">1</span><b>Read the grade</b><br />The item tooltip shows Normal, High, Rare, Legendary, or Exalted as it advances.</div>
 	<div><span class="guide-step">2</span><b>Match the scroll</b><br />A scroll must support the item's current grade. A stronger scroll can improve the displayed chance.</div>
-	<div><span class="guide-step">3</span><b>Preview again</b><br />Changing the item, scroll, or offering changes the calculation. The percentage on the shrine is authoritative.</div>
+	<div><span class="guide-step">3</span><b>Preview again</b><br />Changing the item, scroll, or offering changes the calculation. Use the percentage shown on the shrine.</div>
 	<div><span class="guide-step">4</span><b>Protect your plan</b><br />Keep a spare, lock the copy you will not risk, and wait for the result before moving another item.</div>
 </div>
 
 <div class="divider"></div>
 <div class="title mt15">Offerings, Grace &amp; Stats</div>
 <p>Primlings, Primordial Essences, stronger offerings, and certain metals can improve a chance. Their strength matters: do not spend one until you have compared the percentage with and without it.</p>
-<p>Upgrade and compound history can build grace. Grace is already included in the shrine's calculation; it is another reason to trust the current preview instead of a remembered chance.</p>
+<p>Upgrade and compound history can build grace. The shrine already includes grace in the shown chance, so check the preview each time.</p>
 <p>Stat scrolls are different. They replace the selected stat on armor carrying a <span class="dlabel">Stat</span> attribute. Higher-grade armor consumes more copies of the stat scroll, and the shrine shows the required quantity.</p>
 <div class="guide-note">Exalted means the item has reached the end of its defined upgrade path. Different item families reach grades at different levels.</div>
 
@@ -40,7 +40,7 @@
 
 upgrade_item("coat", "scroll0", 0.9).catch(show_json);</div>
 <p>Useful references: <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_grade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_properties</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">lock_item</span>.</p>
-<div class="guide-note">A rejected Promise means the attempt could not begin. A fulfilled result with <span class="dlabel">success: false</span> means the attempt happened and failed.</div>
+<div class="guide-note">If <span class="dlabel">upgrade()</span> rejects, no upgrade started. If it returns <span class="dlabel">success: false</span>, the roll happened and the item was lost.</div>
 
 <div class="guide-related">Next: <span onclick="hide_modal(); open_guide('compounding',get_guide_url('compounding'))">Compounding</span> · <span onclick="hide_modal(); open_guide('item-maintenance',get_guide_url('item-maintenance'))">Item Maintenance</span></div>
 

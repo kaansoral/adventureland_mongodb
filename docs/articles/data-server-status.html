@@ -1,6 +1,6 @@
 <p><span class="dlabel">Server Status</span></p>
 
-<p><span class="dlabel">server.status</span> is the live, read-only snapshot of server-wide events, special monsters, schedules, and temporary server effects.</p>
+<p><span class="dlabel">server.status</span> is the live, read-only view of server-wide events, special monsters, schedules, and temporary server effects.</p>
 
 <div class="code">show_json(server.status);</div>
 
@@ -11,7 +11,7 @@
 <div class="code">G.events.franky       // Static event definition
 server.status.franky  // Franky's current state on this server</div>
 
-<p><span class="dlabel">G.events</span> describes how an event is configured. <span class="dlabel">server.status</span> tells you what is happening now. Server validation remains authoritative.</p>
+<p><span class="dlabel">G.events</span> describes how an event is configured. <span class="dlabel">server.status</span> tells you what is happening now. The server makes the final validation decision.</p>
 
 <p><span class="dlabel">Reading an event</span></p>
 
@@ -21,10 +21,10 @@ if (franky && !get_nearest_monster({ type: "franky" })) {
 	join("franky");
 }</div>
 
-<p>Read <span class="dlabel">server.status</span> again after waiting or completing an asynchronous action. The game can replace the underlying snapshot whenever a server update arrives, while the <span class="dlabel">server.status</span> getter always returns the newest one.</p>
+<p>Read <span class="dlabel">server.status</span> again after waiting or completing an asynchronous action. The game can replace the underlying data whenever a server update arrives, while <span class="dlabel">server.status</span> always returns the newest version.</p>
 
 <div class="code">var franky = await wait_for(function () {
-	// This reads the newest snapshot on every poll.
+	// This reads the newest status on every poll.
 	return server.status.franky;
 }, 60000);</div>
 
@@ -55,7 +55,7 @@ server.status.abtesting.<span data-status-field="signup_end">signup_end</span>
 server.status.abtesting.<span data-status-field="A">A</span>
 server.status.abtesting.<span data-status-field="B">B</span></div>
 
-<p>Event objects can expose timers, signup windows, scores, routes, choices, or other mechanics particular to that event. Inspect the active entry and its event guide instead of assuming every event uses the boss shape.</p>
+<p>Event objects can expose timers, signup windows, scores, routes, choices, or other event-specific fields. Read the active entry and its event guide instead of assuming every event looks like a boss.</p>
 
 <p><span class="dlabel">Schedule</span></p>
 
@@ -83,7 +83,7 @@ server.status.<span data-status-field="blessed_minutes">blessed_minutes</span></
 
 <p><span class="dlabel">Compatibility</span></p>
 
-<p><span class="dlabel">parent.S</span> is the existing low-level form and remains supported. Prefer <span class="dlabel">server.status</span>: it is descriptive, follows replacement snapshots, and avoids capturing a stale object.</p>
+<p><span class="dlabel">parent.S</span> is the existing low-level form and remains supported. Prefer <span class="dlabel">server.status</span>: it has a clearer name and avoids holding an old status object by accident.</p>
 
 <div class="code">server.status.franky // Preferred
 parent.S.franky       // Compatible legacy access</div>

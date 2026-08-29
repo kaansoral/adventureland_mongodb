@@ -61,7 +61,7 @@ if (scroll_slot !== -1) {
 
 <p><span class="dlabel">Changing items</span></p>
 
-<p>Actions such as <span class="dlabel">buy</span>, <span class="dlabel">sell</span>, <span class="dlabel">equip</span>, <span class="dlabel">upgrade</span>, <span class="dlabel">compound</span>, <span class="dlabel">craft</span>, <span class="dlabel">exchange</span>, <span class="dlabel">send_item</span>, and bank routines return Promises. Await them and handle rejection; the server revalidates ownership, quantities, range, cost, compatibility, and action state.</p>
+<p>Actions such as <span class="dlabel">buy</span>, <span class="dlabel">sell</span>, <span class="dlabel">equip</span>, <span class="dlabel">upgrade</span>, <span class="dlabel">compound</span>, <span class="dlabel">craft</span>, <span class="dlabel">exchange</span>, <span class="dlabel">send_item</span>, and bank functions return Promises. Await them and handle rejection; the server revalidates ownership, quantities, range, cost, compatibility, and action state.</p>
 
 <div class="code">async function equip_first(name) {
 	var slot = locate_item(name);

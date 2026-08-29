@@ -13,19 +13,19 @@ CODE frame (/runner)
 <p><span class="dlabel">How an action travels</span></p>
 
 <div class="code">Your code
-  -> public routine such as attack(target)
+  -> public function such as attack(target)
   -> game frame registers the pending response
   -> socket request reaches the game server
   -> socket response reaches the game frame
   -> the matching Promise fulfills or rejects in your CODE frame</div>
 
-<p>The response is registered before the request is sent. Requests sharing a response channel are queued in request order. Use the public routines instead of raw socket emits so response correlation, safeguards, timeouts, and compatibility behavior remain intact.</p>
+<p>The response is registered before the request is sent. Requests sharing a response channel are queued in request order. Use the public functions instead of raw socket emits so matching replies, safeguards, timeouts, and compatibility behavior remain intact.</p>
 
 <p><span class="dlabel">Live data</span></p>
 
 <p><span class="dlabel">character</span>, nearby entities returned by functions such as <span class="dlabel">get_entity</span>, and the objects under <span class="dlabel">parent</span> are live runtime objects. Do not keep a nearby entity reference forever: an entity that leaves visibility stops updating. Fetch it again by ID or name when needed.</p>
 
-<p><span class="dlabel">G</span> contains game definitions such as items, skills, maps, monsters, and recipes. Definitions describe content; the server remains authoritative for whether an action is valid and what it finally costs or changes.</p>
+<p><span class="dlabel">G</span> contains game definitions such as items, skills, maps, monsters, and recipes. Definitions describe content; the server decides whether an action is valid and what it finally costs or changes.</p>
 
 <p><span class="dlabel">Events</span></p>
 
@@ -37,7 +37,7 @@ game.on("hit", function (data) {
 	// World event: may describe another entity.
 });</div>
 
-<p>Socket data is normalized by the game frame and forwarded to <span class="dlabel">character</span> or <span class="dlabel">game</span> listeners in the CODE frame. Character events concern your character; game events describe the visible world or server. See both event references for exact payloads.</p>
+<p>Socket data is normalized by the game frame and forwarded to <span class="dlabel">character</span> or <span class="dlabel">game</span> listeners in the CODE frame. Character events concern your character; game events describe the visible world or server. See both event references for exact event data.</p>
 
 <p><span class="dlabel">Account API</span></p>
 

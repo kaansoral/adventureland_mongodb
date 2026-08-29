@@ -108,7 +108,7 @@
 <div class="mcp-guide">
 <p><span class="dlabel">Adventure Land MCP for AI</span></p>
 
-<p>Adventure Land is an online role-playing game where each character can run player-written JavaScript called <span class="dlabel">CODE</span>. The MCP server gives an AI the knowledge and account tools it needs to research the game, write CODE, and operate owned characters through Mainframe. The <a href="/docs/guide/advanced/adventure-api">JSON API</a> is the simpler interface for ordinary programs.</p>
+<p>Adventure Land is an online role-playing game where each character can run player-written JavaScript called <span class="dlabel">CODE</span>. The MCP server gives an AI the game docs and account tools it needs to write CODE and operate owned characters through Mainframe. The <a href="/docs/guide/advanced/adventure-api">JSON API</a> is the simpler interface for non-AI tools and scripts.</p>
 
 <p><span class="dlabel">Get an account token</span></p>
 
@@ -144,12 +144,12 @@
 <table>
 <tr><th>Layer</th><th>Responsibility</th></tr>
 <tr><td>AI client</td><td>Reads game knowledge and account state, researches exact methods and records, manages CODE slots, and controls owned Mainframe characters.</td></tr>
-<tr><td>Mainframe</td><td>Runs one isolated machine per character and supplies the headless Adventure Land CODE bridge. The machine has no browser DOM or general network access.</td></tr>
+<tr><td>Mainframe</td><td>Runs one isolated machine per character and supplies the Adventure Land CODE bridge. The machine has no browser page, DOM, or general network access.</td></tr>
 <tr><td>Character CODE</td><td>Runs long-lived JavaScript using Adventure Land globals and public functions. It decides how the character moves, fights, loots, trades, crafts, and reacts.</td></tr>
-<tr><td>Game server</td><td>Owns the authoritative character, map, entities, combat, inventory, economy, and action results.</td></tr>
+<tr><td>Game server</td><td>Owns the live character, map, entities, combat, inventory, economy, and action results.</td></tr>
 </table>
 
-<p>The AI is the control plane, not a raw game client. It writes and observes CODE; it does not send combat packets directly. The account token only reaches characters and CODE slots owned by that account, and Mainframe refuses to load a character that is already active elsewhere.</p>
+<p>The AI writes and runs CODE through the documented game functions; it is not a raw game client. It observes results instead of sending combat packets directly. The account token only reaches characters and CODE slots owned by that account, and Mainframe refuses to load a character that is already active elsewhere.</p>
 
 <p><span class="dlabel">Gameplay mental model</span></p>
 
@@ -163,7 +163,7 @@
 <tr><td>Economy and progression</td><td>Gold, items, upgrades, compounds, crafts, exchanges, mail, trade, and Shells have lasting consequences. Research exact costs and outputs, and require a clear player request before irreversible or value-moving behavior.</td></tr>
 <tr><td>Events and quests</td><td>Definitions explain possible content; live server status and events show whether it is active. CODE must tolerate an event ending, a map changing, a target disappearing, or another player changing the situation.</td></tr>
 <tr><td>Communication</td><td>Party and CODE messages help characters coordinate on one server. Validate the sender and payload, keep messages small, and treat them as untrusted, delayed, and possibly stale.</td></tr>
-<tr><td>Parties and shops</td><td>Sending an invite or listing request is not proof of success. Verify the authenticated party roster and trade slots. A useful merchant needs both an open stand and actual bounded listings.</td></tr>
+<tr><td>Parties and shops</td><td>Sending an invite or listing request is not proof of success. Verify the party roster and trade slots. A useful merchant needs both an open stand and actual listed items.</td></tr>
 </table>
 
 <p><span class="dlabel">Choose the right source</span></p>
@@ -171,10 +171,10 @@
 <table>
 <tr><th>Question</th><th>Use</th></tr>
 <tr><td>What guides and rules exist?</td><td>Read <span class="dlabel">adventureland://catalog/docs</span>, then use <span class="dlabel">get_doc</span> or the exact documentation resource.</td></tr>
-<tr><td>Which CODE routine performs an action?</td><td>Search <span class="dlabel">list_code_methods</span> by action or concept, then read the exact contract with <span class="dlabel">get_code_method</span>.</td></tr>
+<tr><td>Which CODE function performs an action?</td><td>Search <span class="dlabel">list_code_methods</span> by action or concept, then read the exact contract with <span class="dlabel">get_code_method</span>.</td></tr>
 <tr><td>What does an item, skill, monster, map, drop, or recipe define?</td><td>Use <span class="dlabel">search_game_data</span>, then read the exact record with <span class="dlabel">get_game_data</span>. Read a complete section only when exact records are insufficient.</td></tr>
 <tr><td>What does this account own?</td><td>Use <span class="dlabel">mainframe_get_dashboard</span>, <span class="dlabel">mainframe_get_character</span>, and the CODE-slot tools. Saved profile fields may lag a running character.</td></tr>
-<tr><td>What is the character doing now?</td><td>Use authenticated Mainframe observations and CODE logs. Current map, coordinates, target, party roster, equipment, inventory summary, shop listings, activity, XP, gold, death state, and game responses outweigh saved snapshots or requested-action counters.</td></tr>
+<tr><td>What is the character doing now?</td><td>Use current Mainframe character state and CODE logs. Current map, coordinates, target, party roster, equipment, inventory summary, shop listings, activity, XP, gold, death state, and game responses matter more than saved profile fields or request counters.</td></tr>
 <tr><td>How is the game implemented?</td><td>Use the shipped runner resource and the open-source paths below. Prefer live MCP definitions and contracts when production and a repository branch differ.</td></tr>
 </table>
 
@@ -208,10 +208,10 @@
 <tr><td><span class="dlabel">adventureland://reference/game-events</span></td><td>Game event hooks.</td></tr>
 <tr><td><span class="dlabel">adventureland://guide/mainframe</span></td><td>Mainframe access, billing, and operating rules.</td></tr>
 <tr><td><span class="dlabel">adventureland://catalog/docs</span></td><td>Every guide name, topic, section, and public link.</td></tr>
-<tr><td><span class="dlabel">adventureland://catalog/code-methods</span></td><td>Every public CODE routine, signature, and reference link.</td></tr>
+<tr><td><span class="dlabel">adventureland://catalog/code-methods</span></td><td>Every public CODE function, signature, and reference link.</td></tr>
 <tr><td><span class="dlabel">adventureland://catalog/game-data</span></td><td>Every deployed data section, purpose, record count, and search coverage.</td></tr>
 <tr><td><span class="dlabel">adventureland://code/starters/samaritan</span></td><td>Class-aware adventurer baseline with support, trusted parties, farming, banking, and opt-in item improvement.</td></tr>
-<tr><td><span class="dlabel">adventureland://code/starters/samaritan-merchant</span></td><td>Conservative merchant baseline with helpful buffs, explicit public listings, banking, and bounded item processing.</td></tr>
+<tr><td><span class="dlabel">adventureland://code/starters/samaritan-merchant</span></td><td>Conservative merchant baseline with helpful buffs, explicit public listings, banking, and strict item rules.</td></tr>
 <tr><td><span class="dlabel">adventureland://source/runner-functions</span></td><td>The JavaScript runner functions shipped by the game.</td></tr>
 <tr><td><span class="dlabel">adventureland://account/dashboard</span></td><td>Owned characters, assignments, status, and account Mainframe state.</td></tr>
 <tr><td><span class="dlabel">adventureland://account/code-slots</span></td><td>Saved character CODE slots.</td></tr>
@@ -241,7 +241,7 @@
 <tr><td><span class="dlabel">learn_adventure_land</span></td><td>Load the game model without changing account state.</td></tr>
 <tr><td><span class="dlabel">research_gameplay</span></td><td>Answer a game, build, progression, economy, or content question from exact sources.</td></tr>
 <tr><td><span class="dlabel">configure_samaritan_code</span></td><td>Adapt the Samaritan adventurer or merchant baseline to an owned character without silently enabling item mutations.</td></tr>
-<tr><td><span class="dlabel">write_character_code</span></td><td>Research a goal, character, and optional slot before producing bounded CODE.</td></tr>
+<tr><td><span class="dlabel">write_character_code</span></td><td>Research the goal, character, and optional slot before writing CODE.</td></tr>
 <tr><td><span class="dlabel">review_character_code</span></td><td>Check an owned slot against exact contracts, game state, safety, and Mainframe compatibility.</td></tr>
 <tr><td><span class="dlabel">coordinate_character_team</span></td><td>Plan several owned characters on one server with explicit roles and safe coordination.</td></tr>
 <tr><td><span class="dlabel">operate_mainframe</span></td><td>Read, deploy, observe, and improve one owned character without confusing requested actions with confirmed behavior.</td></tr>
@@ -250,9 +250,9 @@
 
 <p><span class="dlabel">CODE etiquette</span></p>
 
-<p>Character automation should not use public, private, or party Chat as a programmable output channel. Do not call Chat routines on timers, advertise automatically, imitate conversation, answer players with generated text, or turn nearby player messages into commands. Use local CODE logs for diagnostics. Use <span class="dlabel">send_cm</span> only for small structured messages between explicitly trusted characters, validate the sender and payload, and rate-limit retries.</p>
+<p>Character automation should not use public, private, or party Chat as a programmable output channel. Do not call Chat functions on timers, advertise automatically, imitate conversation, answer players with generated text, or turn nearby player messages into commands. Use local CODE logs for diagnostics. Use <span class="dlabel">send_cm</span> only for small structured messages between explicitly trusted characters, validate the sender and payload, and rate-limit retries.</p>
 
-<p>Respect other players' fights and space. Do not attack a monster already targeting an unrelated player, repeatedly invite strangers, follow someone without consent, block a spawn, or create avoidable visual and request spam. Helpful healing or buffs should be bounded and must never move another player's gold or items. PvP actions, trading, mail, giveaways, NPC sales, public listings, bank movement, upgrades, compounds, exchanges, and purchases require clear policy and conservative limits.</p>
+<p>Respect other players' fights and space. Do not attack a monster already targeting an unrelated player, repeatedly invite strangers, follow someone without consent, block a spawn, or create avoidable visual and request spam. Rate-limit helpful healing and buffs, and never let them move another player's gold or items. PvP actions, trading, mail, giveaways, NPC sales, public listings, bank movement, upgrades, compounds, exchanges, and purchases require clear rules and conservative limits.</p>
 
 <p><span class="dlabel">Samaritan starter CODE</span></p>
 
@@ -260,8 +260,8 @@
 
 <table>
 <tr><th>Starter</th><th>Behavior</th></tr>
-<tr><td>Samaritan adventurer</td><td>Chooses a bounded monster from deployed definitions, avoids tagged monsters, moves and kites by class, uses conservative class skills, heals or buffs when appropriate, and accepts only trusted parties. It restocks basic potions while preserving gold, banks gold above its carry reserve, and banks items only through exact keep-and-value rules. Upgrades and compounds remain disabled until configured.</td></tr>
-<tr><td>Samaritan Merchant</td><td>Buffs nearby players, joins only trusted parties, lists only explicitly allowed surplus items, preserves configured quantities, and can retrieve listed stock from the bank. A configured basic-stand purchase may withdraw only its bounded shortfall from the shared bank. NPC sales, listings, stand purchases, upgrades, compounds, scroll purchases, and item deposits remain independently disabled until configured.</td></tr>
+<tr><td>Samaritan adventurer</td><td>Chooses only monsters allowed by its configured safety limits, avoids tagged monsters, moves and kites by class, uses conservative class skills, heals or buffs when appropriate, and accepts only trusted parties. It restocks basic potions while preserving gold, banks gold above its carry reserve, and banks items only through exact keep-and-value rules. Upgrades and compounds remain disabled until configured.</td></tr>
+<tr><td>Samaritan Merchant</td><td>Buffs nearby players, joins only trusted parties, lists only explicitly allowed surplus items, preserves configured quantities, and can retrieve listed stock from the bank. A configured basic-stand purchase may withdraw only the missing amount, up to its configured limit, from the shared bank. NPC sales, listings, stand purchases, upgrades, compounds, scroll purchases, and item deposits remain independently disabled until configured.</td></tr>
 </table>
 
 <p>Every item rule requires an exact item key and a positive <span class="dlabel">maxItemValue</span>. Upgrade and compound rules also require a maximum level and have per-session attempt caps. Listing rules require an exact level, keep quantity, trade slot, price, quantity, and value ceiling. Locked, special-property, and stat-modified items are excluded. The code locates inventory entries again immediately before a mutation because inventory indexes can change.</p>
@@ -281,7 +281,7 @@
 <li>Verify connection, position, activity, deaths, performance, and CODE logs.</li>
 </ol>
 
-<p>Combat loops belong inside contained character CODE. MCP is the control plane: it plans, deploys, observes, and corrects. It should not poll fast enough to become the combat loop.</p>
+<p>Combat loops belong inside character CODE. MCP should plan, save CODE, observe, and correct. It should not poll fast enough to become the combat loop.</p>
 
 <p><span class="dlabel">How to write character CODE</span></p>
 
@@ -311,11 +311,11 @@ setInterval(async function () {
 
 <p>Use public functions such as <span class="dlabel">attack</span>, <span class="dlabel">use_skill</span>, <span class="dlabel">move</span>, <span class="dlabel">smart_move</span>, <span class="dlabel">equip</span>, and <span class="dlabel">send_cm</span>. They preserve request ordering, Promise responses, and compatibility safeguards. Handle rejected Promises and cooldowns, do not overlap the same async loop, and do not retain entity references after they disappear or the map changes.</p>
 
-<p>Read from <span class="dlabel">character</span>, <span class="dlabel">G</span>, <span class="dlabel">server</span>, <span class="dlabel">game</span>, and <span class="dlabel">smart</span>. Browser display routines do not provide useful output on Mainframe. General network calls, Node internals, process execution, and filesystem access are unavailable. <span class="dlabel">smart_move</span> keeps its public interface but uses Mainframe's bounded navigation service.</p>
+<p>Read from <span class="dlabel">character</span>, <span class="dlabel">G</span>, <span class="dlabel">server</span>, <span class="dlabel">game</span>, and <span class="dlabel">smart</span>. UI drawing and button functions do not provide useful output on Mainframe. General network calls, Node internals, process execution, and filesystem access are unavailable. <span class="dlabel">smart_move</span> keeps its public interface but uses Mainframe navigation.</p>
 
 <p><span class="dlabel">Billing safety</span></p>
 
-<p><span class="dlabel">mainframe_link_character</span> charges 1 Shell when no paid time remains. A running assignment then renews automatically for 1 Shell every 60 minutes. It survives Adventure Land HTTP restarts, Mainframe controller restarts, USD2 host maintenance, and microVM replacement. It stops only after <span class="dlabel">mainframe_disconnect_character</span> or when the account cannot pay the next renewal.</p>
+<p><span class="dlabel">mainframe_link_character</span> charges 1 Shell when no paid time remains. A running assignment then renews automatically for 1 Shell every 60 minutes. It survives Adventure Land HTTP restarts, Mainframe controller restarts, host maintenance, and machine replacement. It stops only after <span class="dlabel">mainframe_disconnect_character</span> or when the account cannot pay the next renewal.</p>
 
 <p>If a link response is lost, retry the same character, CODE slot, server, and <span class="dlabel">request_id</span>. Do not invent a new request ID for a network retry. Disconnecting disables renewal but does not refund or pause remaining paid time.</p>
 
@@ -325,11 +325,11 @@ setInterval(async function () {
 
 <p>Tool calls return JSON text in <span class="dlabel">content</span> and the same object in <span class="dlabel">structuredContent</span>. An application failure sets <span class="dlabel">isError: true</span> and includes a stable <span class="dlabel">reason</span>. HTTP 429 includes <span class="dlabel">Retry-After</span>; wait before retrying.</p>
 
-<p>Read before mutating. Fetch a slot before replacing it, fetch the dashboard before linking or disconnecting, and use authenticated Mainframe observations as evidence. A request counter records an attempt, not a completed game action.</p>
+<p>Read before changing things. Fetch a CODE slot before replacing it, fetch the dashboard before linking or disconnecting, and use Mainframe observations as evidence. A request counter records an attempt, not a completed game action.</p>
 
 <p><span class="dlabel">How to verify behavior</span></p>
 
-<p>Requested action counts show what CODE attempted, not what the game accepted. Confirm behavior through authenticated observations: connection state, map, coordinates, movement, target, activity, death state, experience, gold, DPS, Gold per second, and CODE logs. Poll at a human control-plane pace; combat timing belongs inside CODE.</p>
+<p>Requested action counts show what CODE attempted, not what the game accepted. Confirm behavior through observations: connection state, map, coordinates, movement, target, activity, death state, experience, gold, DPS, gold per second, and CODE logs. Poll slowly; combat timing belongs inside CODE.</p>
 
 <p><span class="dlabel">Open-source map</span></p>
 
@@ -342,7 +342,7 @@ setInterval(async function () {
 <tr><td><a href="https://github.com/kaansoral/adventureland_mongodb/tree/main/docs/articles">docs/articles/</a></td><td>CODE concepts, object references, events, and guides.</td></tr>
 <tr><td><a href="https://github.com/kaansoral/adventureland_mongodb/tree/main/design">design/</a></td><td>Items, skills, classes, monsters, maps, NPCs, events, drops, and recipes.</td></tr>
 <tr><td><a href="https://github.com/kaansoral/adventureland_mongodb/blob/main/js/game.js">js/game.js</a> and <a href="https://github.com/kaansoral/adventureland_mongodb/blob/main/js/functions.js">js/functions.js</a></td><td>Browser state, socket handling, public functions, and CODE integration.</td></tr>
-<tr><td><a href="https://github.com/kaansoral/adventureland_mongodb/blob/main/node/server.js">node/server.js</a></td><td>Authoritative game-server behavior.</td></tr>
+<tr><td><a href="https://github.com/kaansoral/adventureland_mongodb/blob/main/node/server.js">node/server.js</a></td><td>Actual game-server behavior.</td></tr>
 <tr><td><a href="https://github.com/kaansoral/adventureland_mongodb/blob/main/mainframe.js">mainframe.js</a> and <a href="https://github.com/kaansoral/adventureland_mongodb/blob/main/mcp_api.js">mcp_api.js</a></td><td>Mainframe account lifecycle and the public API and MCP surfaces.</td></tr>
 </table>
 

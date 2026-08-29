@@ -17,19 +17,19 @@
 <div class="divider"></div>
 <div class="title mt15">Offerings &amp; Grace</div>
 <p>An offering can improve the chance. Its grade matters, so compare the shrine percentage before committing it. Higher levels represent many consumed copies; plan the whole chain, not only the next roll.</p>
-<p>Previous attempts can contribute grace. The current shrine preview includes it. Never substitute an old table or another character's result for the percentage shown now.</p>
+<p>Previous attempts can contribute grace. The shrine includes it in the shown chance, so check the preview before each roll.</p>
 <div class="guide-note">A compoundable item becomes Exalted at the end of its defined path. At that point the server refuses another compound.</div>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
 <p><span class="rlabel" onclick="render_function_reference($(this).html())">compound</span> accepts four inventory positions, an optional offering position, and calculation mode. Previewing resolves with the exact chance without consuming or moving anything.</p>
 <div class="code">async function compound_three(name, level, minimum_chance) {
-var copies = [];
-for (var i = 0; i &lt; character.items.length; i++) {
-	var item = character.items[i];
-	if (item && item.name === name && (item.level || 0) === level) copies.push(i);
-}
-var scroll = locate_item("cscroll0");
+	var copies = [];
+	for (var i = 0; i &lt; character.items.length; i++) {
+		var item = character.items[i];
+		if (item && item.name === name && (item.level || 0) === level) copies.push(i);
+	}
+	var scroll = locate_item("cscroll0");
 	if (copies.length &lt; 3 || scroll === -1) return;
 
 	var preview = await compound(copies[0], copies[1], copies[2], scroll, null, true);
@@ -42,7 +42,7 @@ var scroll = locate_item("cscroll0");
 
 compound_three("ringsj", 0, 0.9).catch(show_json);</div>
 <p>Useful references: <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_grade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_properties</span>.</p>
-<div class="guide-note">A rejected Promise means the attempt could not begin. A fulfilled result with <span class="dlabel">success: false</span> means all three items were committed and the compound failed.</div>
+<div class="guide-note">If <span class="dlabel">compound()</span> rejects, no compound started. If it returns <span class="dlabel">success: false</span>, the roll happened and all three accessories were lost.</div>
 
 <div class="guide-related">See also: <span onclick="hide_modal(); open_guide('upgrading',get_guide_url('upgrading'))">Upgrading</span> · <span onclick="hide_modal(); open_guide('crafting',get_guide_url('crafting'))">Crafting and Dismantling</span></div>
 

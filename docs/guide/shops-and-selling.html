@@ -9,7 +9,7 @@
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
-<p>Without a Computer, stand near a merchant who carries the item. Use the explicit currency routine when your intent matters.</p>
+<p>Without a Computer, stand near a merchant who sells the item. <span class="dlabel">buy()</span> chooses the payment automatically. Use <span class="dlabel">buy_with_gold()</span> or <span class="dlabel">buy_with_shells()</span> when you want to choose the currency yourself.</p>
 <div class="code">async function restock() {
 	await buy("hpot0", 100);
 	await buy_with_gold("mpot0", 100);

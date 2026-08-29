@@ -1,6 +1,6 @@
 <p><span class="dlabel">The CODE runtime</span></p>
 
-<p>Your code runs inside its character's CODE frame. The public function directory is the authoritative list of supported global routines. Every listed routine has its signature, return contract, notes, example, and shipped source.</p>
+<p>Your code runs inside its character's CODE frame. The function reference lists the supported global CODE functions. Every listed function has its signature, return contract, notes, example, and shipped source.</p>
 
 <p><b>Core globals:</b></p>
 
@@ -13,7 +13,7 @@ safeties  // Request-burst safeguards; true by default</div>
 
 <p><span class="dlabel">Promises</span></p>
 
-<p>Server actions return native Promises. Registering the response happens before the request is emitted, so even an immediate server response is correlated with the correct call.</p>
+<p>Server actions return native Promises. The response listener is registered before the request is sent, so even an immediate server reply is matched with the correct call.</p>
 
 <div class="code">async function attack_once(target) {
 	try {
@@ -32,11 +32,11 @@ attack(target).then(function (result) {
 	if (result.failed) game_log(result.reason);
 });</div>
 
-<p>Calls using the same response channel are queued in request order. The queue is bounded: if abusive or broken code overflows it, the oldest Promise settles with <span class="dlabel">queue_overflow</span> instead of hanging forever.</p>
+<p>Calls that wait for the same kind of server reply are queued in request order. The queue has a limit: if broken code sends too many requests, the oldest Promise finishes with <span class="dlabel">queue_overflow</span> instead of hanging forever.</p>
 
-<p><span class="dlabel">Completion-aware routines</span></p>
+<p><span class="dlabel">Functions that wait for completion</span></p>
 
-<p>Most actions settle when the server accepts or refuses the action. Routines with a longer lifecycle wait for the meaningful completion point:</p>
+<p>Most actions finish when the server accepts or refuses the action. Some functions need more than one server reply; those wait until the result is actually usable:</p>
 
 <div class="code">async function run_sequence() {
 	await start_character("Merchant", "merchant_code"); // CODE runner is active
@@ -48,14 +48,14 @@ attack(target).then(function (result) {
 	await send_mail("Merchant", "Route", "Meet at the bank"); // Mail stored
 	await take_mail_item("ML_your_mail_id");             // Attachment in inventory
 	await buy_with_shells("computer", 1);             // Account and inventory updated
-	await bless_server();                              // Server blessing committed
+	await bless_server();                              // Server blessing active
 	await unfriend("FormerFriend");                    // Both accounts updated
 	await wait_for(function () { return get_player("Wizard"); }, 5000);
 	await wait_for_event(character, "new_map", 5000);
 }
 run_sequence();</div>
 
-<p>These routines reject on interruption, disconnection, or their documented timeout instead of leaving a Promise pending forever. A repeated identical active transport or smart route shares the existing trip; a conflicting route fails or interrupts according to that function's reference.</p>
+<p>These functions reject on interruption, disconnection, or their documented timeout instead of leaving a Promise pending forever. A repeated identical active transport or smart route shares the existing trip; a conflicting route fails or interrupts according to that function's reference.</p>
 
 <p><span class="dlabel">Events and callbacks</span></p>
 
@@ -88,13 +88,13 @@ var helpers = require_code("helpers");</div>
 
 <p><span class="dlabel">Low-level socket access</span></p>
 
-<p><span class="dlabel">get_socket()</span> is available for listening to low-level events. Prefer the public action functions for requests: a raw socket emit does not register a CODE Promise, correlate a response, or apply the normal client safeguards.</p>
+<p><span class="dlabel">get_socket()</span> is available for listening to low-level events. Prefer public action functions for requests: a raw socket emit does not register a CODE Promise, match the response to your call, or apply the normal client checks.</p>
 
 <p><span class="dlabel">Mainframe execution</span></p>
 
-<p>Mainframe runs the same public CODE model without a browser page. There is no DOM, canvas, window automation, general network access, Node process access, or filesystem access. Display-only helpers are harmless headless operations. <span class="dlabel">set_message</span>, <span class="dlabel">log</span>, <span class="dlabel">game_log</span>, <span class="dlabel">safe_log</span>, and console messages become bounded CODE log records that can be read from Mainframe.</p>
+<p>Mainframe runs the same public CODE model without a visible game window. There is no DOM, canvas, window automation, general network access, Node process access, or filesystem access. UI-only helpers such as drawing, focus, and button calls have no gameplay effect. <span class="dlabel">set_message</span>, <span class="dlabel">log</span>, <span class="dlabel">game_log</span>, <span class="dlabel">safe_log</span>, and console messages become CODE log records that can be read from Mainframe.</p>
 
-<p>A CODE log proves that JavaScript reached the logging call. It does not prove that the next movement, attack, skill, inventory, or trade request was accepted by the game server. Verify important outcomes from action Promise results and authenticated observations.</p>
+<p>A CODE log proves that JavaScript reached the logging call. It does not prove that the next movement, attack, skill, inventory, or trade request was accepted by the game server. Verify important outcomes from action Promise results and current Mainframe character state.</p>
 
 <p><span class="dlabel">Long-running loops</span></p>
 
@@ -118,11 +118,11 @@ setInterval(async function () {
 	}
 }, 250);</div>
 
-<p>A synchronous infinite loop blocks heartbeats and is terminated by containment. Rapid timer creation, unbounded arrays, repeated storage writes, and action floods are also bounded, but CODE should avoid reaching those guards.</p>
+<p>A synchronous infinite loop blocks heartbeats and is stopped by Mainframe. Rapid timer creation, unbounded arrays, repeated storage writes, and action floods are also limited, but CODE should avoid reaching those guards.</p>
 
 <p><span class="dlabel">Definitions, observations, and entities</span></p>
 
-<p><span class="dlabel">G</span> describes what can exist. It does not say that a monster, player, event, item instance, or route is currently available. <span class="dlabel">character</span> and visible entities describe current runtime state. Saved account snapshots can lag a running character; authenticated Mainframe observations are the better operational source.</p>
+<p><span class="dlabel">G</span> describes what can exist. It does not say that a monster, player, event, item instance, or route is currently available. <span class="dlabel">character</span> and visible entities describe current runtime state. Saved account data can lag a running character; Mainframe observations are the better source.</p>
 
 <p>Never keep a nearby entity object across an awaited route, map transition, server change, death, or long delay. Keep its ID only when useful, then find and validate the current entity again before acting. Re-locate inventory items before every mutation because indexes change after loot, movement, sale, exchange, upgrade, compound, equip, or consumption.</p>
 
@@ -130,7 +130,7 @@ setInterval(async function () {
 
 <p>Top-level JavaScript variables reset when the character's isolated machine is replaced. Use <span class="dlabel">get/set</span> for small JSON-serializable state that must survive CODE or machine restarts. Treat timers, Promise locks, targets, and entity references as temporary and rebuild them from current game state.</p>
 
-<p>A running Mainframe assignment persists through Adventure Land HTTP restarts, controller restarts, host maintenance, and microVM replacement. The CODE must therefore be safe to start again: initialization should be idempotent, stored state should be validated, and every loop should recover from reconnects, death, missing entities, and interrupted routes.</p>
+<p>A running Mainframe assignment persists through Adventure Land HTTP restarts, controller restarts, host maintenance, and machine replacement. The CODE must therefore be safe to start again: initialization should be repeatable, stored state should be validated, and every loop should recover from reconnects, death, missing entities, and interrupted routes.</p>
 
 <p><span class="dlabel">Before saving CODE</span></p>
 
@@ -138,7 +138,7 @@ setInterval(async function () {
 <li>Inspect the character class, equipment, inventory, server, party role, and current assignment.</li>
 <li>Read the exact contracts for every public function used.</li>
 <li>Read exact skill, monster, item, map, drop, and recipe definitions instead of guessing keys.</li>
-<li>Separate combat, movement, support, inventory, and merchant workflows with bounded locks and intervals.</li>
+<li>Give combat, movement, support, inventory, and merchant work separate locks and sensible timer intervals.</li>
 <li>Handle death, rejected Promises, missing targets, cooldowns, route interruption, inventory-index changes, and reconnects.</li>
 <li>Keep irreversible sales, purchases, exchanges, mail, upgrades, compounds, and public listings disabled unless the player supplied exact conservative rules.</li>
 <li>Use CODE logs sparingly for decisions and errors, then verify outcomes from live state.</li>

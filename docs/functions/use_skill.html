@@ -1,8 +1,8 @@
 <p><span class='dlabel'>use_skill(name, target, extra_arg, timeout_ms)</span></p>
 <p>Uses a named skill with an optional target and skill-specific extra argument.</p>
-<p><b>Returns:</b> One Promise for the completed skill call. Pickpocket, fishing, and mining wait for their correlated terminal result; other skills resolve with the ordinary server response.</p>
+<p><b>Returns:</b> One Promise. Pickpocket, fishing, and mining wait for their final result. Other skills resolve when the server accepts the skill request; a projectile may still be in flight.</p>
 <p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
-<p><b>Notes:</b> Targets may be entity objects, character names, monster IDs, coordinate arrays for blink, or arrays for multi-target skills. If target is omitted, get_target() is used. Multi-target skills return one aggregate Promise, not an array. The optional timed-action timeout defaults to 20,000ms. Final timed-action results include response, place, request_id, and success; fishing/mining also include found.</p>
+<p><b>Notes:</b> Targets may be entity objects, character names, monster IDs, coordinate arrays for blink, or arrays for multi-target skills. If target is omitted, get_target() is used. Multi-target skills return one Promise, not an array. The optional timed-action timeout defaults to 20,000ms. Final timed-action results include response, place, request_id, and success; fishing/mining also include found.</p>
 <p><b>Example:</b></p>
 <div class='code'>async function example() {
 	var result = await use_skill("fishing", null, null, 20000);

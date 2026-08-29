@@ -1,7 +1,7 @@
 <p><span class='dlabel'>get_socket()</span></p>
 <p>Returns the low-level Socket.IO connection used by the character.</p>
 <p><b>Returns:</b> Socket object.</p>
-<p><b>Notes:</b> Use the public action functions for normal requests. Raw emits do not automatically register or correlate CODE Promises and can bypass client safeguards.</p>
+<p><b>Notes:</b> Use documented CODE functions for normal requests. A raw socket emit does not create a Promise, match the reply to your call, or apply the normal client checks.</p>
 <p><b>Example:</b></p>
 <div class='code'>get_socket().on("game_event", function (event) {
 	show_json(event);

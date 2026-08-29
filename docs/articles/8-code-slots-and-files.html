@@ -1,13 +1,39 @@
-<p>Your characters each have their own code slots, the game client auto saves your code to the game servers each time you run your code after a change.</p>
-<p>In addition to character code slots, you have 100 additional code slots, numbered from 1 to 100! Whereas your character code slots have larger numbers like 482008842 - which are actually the ID's of your characters.</p>
-<p>You can check out: <span class='jlabel' onclick="code_eval('show_json('+$(this).html()+')')">X.codes</span> - which includes the dictionary of your codes.</p>
-<p>For VS Code editing, type <span class='hlabel clickable' onclick='say("/codes")'>/codes</span> in chat or open <a class='cancela' href='/vscode' target='_blank'>adventure.land/vscode</a>. The VS Code extension creates the sync folder and uploads through your account token.</p>
-<p>Name local files like <span class='dlabel'>Wizard.482008842.js</span> or <span class='dlabel'>Farming.12.js</span>. The number before .js is the CODE slot the extension uploads to.</p>
-<p>Run <span class='dlabel'>Adventure Land: Activate Auto Sync Folder</span> once. It downloads all CODE slots, refreshes helper libraries, checks for remote changes, uploads safe offline edits, and uploads managed files when you save them.</p>
-<p>Useful Functions:</p>
+<p><span class='dlabel'>CODE slots and files</span></p>
+
+<p>Each character has a default CODE slot. When you run changed CODE in the in-game editor, the client saves that slot to the game server.</p>
+
+<p>Your account also has numbered CODE slots from <span class='dlabel'>1</span> to <span class='dlabel'>100</span>. Use them for shared helpers, combat loops, merchant logic, or experiments that more than one character can load.</p>
+
+<p>Character slots use the character's internal ID as their slot number. Numbered slots use the number you see in the editor.</p>
+
+<div class='code'>show_json(X.codes); // Slot names and IDs available to this account</div>
+
+<p><span class='dlabel'>Loading shared CODE</span></p>
+
+<p>Keep the character's default slot small when possible. Put reusable functions in numbered slots, then load them from the character slot.</p>
+
+<div class='code'>load_code("helpers");
+
+// or, if the slot exports values:
+var helpers = require_code("helpers");</div>
+
+<p><span class='dlabel'>load_code</span> runs the target slot in the current CODE scope, similar to pasting that slot into the caller. <span class='dlabel'>require_code</span> runs the target slot as a module and returns its exports.</p>
+
+<p><span class='dlabel'>VS Code sync</span></p>
+
+<p>Type <span class='hlabel clickable' onclick='say("/codes")'>/codes</span> in chat or open <a class='cancela' href='/vscode' target='_blank'>adventure.land/vscode</a>. The VS Code extension creates a local sync folder and uploads through your account token.</p>
+
+<p>Name local files with the slot number before <span class='dlabel'>.js</span>:</p>
+
+<div class='code'>Wizard.482008842.js // A character default slot
+Farming.12.js       // Account CODE slot 12</div>
+
+<p>Run <span class='dlabel'>Adventure Land: Activate Auto Sync Folder</span> once. It downloads your CODE slots, refreshes helper libraries, checks for remote changes, uploads safe offline edits, and uploads managed files when you save them.</p>
+
+<p><span class='dlabel'>Useful functions</span></p>
+
 <p><span class='rlabel' onclick="render_function_reference($(this).html())">load_code</span></p>
 <p><span class='rlabel' onclick="render_function_reference($(this).html())">require_code</span></p>
 <p><span class='rlabel' onclick="render_function_reference($(this).html())">upload_code</span></p>
 <p><span class='rlabel' onclick="render_function_reference($(this).html())">get_active_code_slot</span></p>
 <p><span class='rlabel' onclick="render_function_reference($(this).html())">get_edited_code_slot</span></p>
-<p>Your character loads its default code slot when you open the game in a new place, if you use the character default slot, it will be practical to open the game on Steam/Web etc. - However, you can also make a character use any other code slot locally. It's a good idea to use the character default slots for high level logic, and put your functions and routines to numbered code slots and in your character code slot, load those codes using <span class='rlabel' onclick="render_function_reference($(this).html())">load_code</span> which is pretty similar to just copy/pasting that entire code slot to the place where you load the code.</p>

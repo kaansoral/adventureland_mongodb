@@ -37,7 +37,7 @@ G.projectiles // Projectile definitions</div>
 
 <div class="code">server.status // Live server-wide events, schedules, and temporary effects</div>
 
-<p><span class="dlabel">server.status</span> always reads the newest server snapshot. Use it for active event and special-monster state, and see the <span class="clickable" onclick="open_article('data-server-status','/docs/code/server/status')">Server Status reference</span> for its lifecycle and common fields.</p>
+<p><span class="dlabel">server.status</span> always reads the newest server state. Use it for active event and special-monster state, and see the <span class="clickable" onclick="open_article('data-server-status','/docs/code/server/status')">Server Status reference</span> for common fields.</p>
 
 <p><span class="dlabel" data-global="game">game</span></p>
 
@@ -69,15 +69,15 @@ smart.prune.map         // Prune routes that leave the destination map</div>
 
 <p><span class="dlabel" data-global="parent">parent</span></p>
 
-<p>The containing game window. It exposes low-level runtime objects such as <span class="dlabel">parent.entities</span>, <span class="dlabel">parent.chests</span>, <span class="dlabel">parent.S</span>, and the original <span class="dlabel">parent.character</span>. Existing code that uses these remains compatible, but normal action code should prefer public routines and globals: they normalize data, register Promises before requests, and preserve safeguards.</p>
+<p>The containing game window. It exposes low-level runtime objects such as <span class="dlabel">parent.entities</span>, <span class="dlabel">parent.chests</span>, <span class="dlabel">parent.S</span>, and the original <span class="dlabel">parent.character</span>. Existing code that uses these remains compatible, but normal action code should prefer public functions and globals: they normalize data, register Promises before requests, and preserve safeguards.</p>
 
 <p><span class="dlabel">Nearby runtime collections</span></p>
 
 <div class="code">parent.entities // Visible characters, monsters, and citizen NPCs by ID
-server.status   // Live replacement-safe view of parent.S
+server.status   // Live server status, safer to keep reading than parent.S
 get_chests()    // Visible chests by ID
 get_party()     // Cached party data
 get_servers()   // Cached server directory
 get_characters()// Cached account character summaries</div>
 
-<p>Visible entity references become stale after leaving view. Resolve them again with <span class="dlabel">get_entity</span>, <span class="dlabel">get_player</span>, or <span class="dlabel">get_monster</span> before acting.</p>
+<p>Visible entity references stop updating after they leave view. Get them again with <span class="dlabel">get_entity</span>, <span class="dlabel">get_player</span>, or <span class="dlabel">get_monster</span> before acting.</p>

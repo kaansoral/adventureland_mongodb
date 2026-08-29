@@ -1,6 +1,6 @@
 <p><span class='dlabel'>take_mail_item(mail_id, timeout_ms)</span></p>
 <p>Takes an attachment from an in-game mail and waits until the item is in the live inventory.</p>
-<p><b>Returns:</b> Promise resolving with the correlated mail_item_taken response. It rejects when the mail is missing, already claimed, owned by another account, cannot fit in inventory, the server fails, the socket disconnects, or the timeout expires.</p>
+<p><b>Returns:</b> Promise resolving with the mail_item_taken response for that mail. It rejects when the mail is missing, already claimed, owned by another account, cannot fit in inventory, the server fails, the socket disconnects, or the timeout expires.</p>
 <p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
 <p><b>Notes:</b> The timeout defaults to 15,000ms. A full inventory can still accept a stackable attachment when an existing stack has room. Failed or disconnected claims are released so the attachment remains available.</p>
 <p><b>Example:</b></p>

@@ -1,8 +1,8 @@
 <p><span class='dlabel'>interact(name, timeout_ms)</span></p>
 <p>Starts a supported named server interaction.</p>
-<p><b>Returns:</b> Promise. monsterhunt resolves when the hunt starts or is turned in, newyear_tree resolves after the spirit and possible token are applied, and the_lever resolves after arrival in the resort. Invalid interactions and failed server checks reject.</p>
+<p><b>Returns:</b> Promise. "monsterhunt" resolves when the hunt starts or is turned in, "newyear_tree" resolves after the spirit and possible token are applied, and "the_lever" resolves after arrival in the resort. Invalid interactions and failed server checks reject.</p>
 <p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
-<p><b>Notes:</b> The tree and lever are request-correlated, use the server's existing location rules, and default to a 5,000ms timeout.</p>
+<p><b>Notes:</b> The tree and lever still use the server's normal location rules. Their timeout defaults to 5,000ms.</p>
 <p><b>Example:</b></p>
 <div class='code'>async function example() {
 	await interact("monsterhunt");

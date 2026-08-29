@@ -1,8 +1,8 @@
 <p><span class='dlabel'>play_slots(timeout_ms)</span></p>
 <p>Spends 1,000,000 gold at the tavern slots machine and waits for the spin result.</p>
-<p><b>Returns:</b> Promise resolving after the three-second spin with won, cost, payout, and net. A losing spin resolves with won:false. Validation and timeout failures reject.</p>
+<p><b>Returns:</b> Promise resolving after the spin with won, cost, payout, and net. A valid spin that loses still resolves with won:false. Invalid requests and timeouts reject.</p>
 <p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
-<p><b>Notes:</b> A second CODE-triggered spin is rejected while the first is active. timeout_ms defaults to 10,000ms.</p>
+<p><b>Notes:</b> A second CODE spin is rejected while the first is active. timeout_ms defaults to 10,000ms.</p>
 <p><b>Example:</b></p>
 <div class='code'>async function example() {
 	var spin = await play_slots();

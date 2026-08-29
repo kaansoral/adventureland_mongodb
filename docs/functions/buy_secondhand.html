@@ -1,8 +1,8 @@
 <p><span class='dlabel'>buy_secondhand(rid, timeout_ms)</span></p>
-<p>Buys one current Ponty listing by its revision ID.</p>
-<p><b>Returns:</b> Promise resolving after the item and gold changes are committed, with the purchased item and cost. It rejects when the listing, inventory, gold, distance, or timeout checks fail.</p>
+<p>Buys one current Ponty listing.</p>
+<p><b>Returns:</b> Promise resolving after the item reaches your inventory and the gold is spent. The result includes the purchased item and cost. It rejects when the listing is gone, you are too far away, you lack gold or inventory space, or the timeout expires.</p>
 <p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
-<p><b>Notes:</b> Pass either a rid string or a listing object returned by get_secondhands. timeout_ms defaults to 10,000ms.</p>
+<p><b>Notes:</b> Pass the listing object returned by get_secondhands(), or pass its rid field. timeout_ms defaults to 10,000ms.</p>
 <p><b>Example:</b></p>
 <div class='code'>async function example() {
 	var listings = await get_secondhands();

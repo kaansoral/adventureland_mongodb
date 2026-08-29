@@ -1,6 +1,6 @@
 <p><span class="dlabel">Mainframe</span></p>
 
-<p>Mainframe keeps your characters running Adventure Land CODE when your browser is closed. Each character runs in its own small machine and uses one of your saved CODE slots.</p>
+<p>Mainframe keeps your characters running Adventure Land CODE when your browser is closed. Each character runs separately and uses one of your saved CODE slots.</p>
 
 <p>Open <a href="/mainframe">Mainframe</a> to choose a character, CODE slot, and live realm. Mainframe is also visible in COM and on <a href="/comm">/comm</a>.</p>
 
@@ -10,13 +10,13 @@
 
 <p>Disconnecting disables future renewals but does not refund or pause the current paid window. Reconnecting the same character before that window ends costs nothing and enables renewal again.</p>
 
-<p>The running assignment is durable. Mainframe restores it after Adventure Land HTTP restarts, controller restarts, USD2 host maintenance, and microVM replacement. Infrastructure recovery can briefly reconnect the character, but it does not convert the assignment to stopped.</p>
+<p>A running assignment is meant to survive maintenance. Mainframe restores it after Adventure Land HTTP restarts, controller restarts, host maintenance, and machine replacement. Recovery can briefly reconnect the character, but it does not mark the assignment as stopped.</p>
 
 <p>Mainframe refuses to load a character that is already active elsewhere. It never replaces a different running assignment. A character can have only one Mainframe assignment at a time.</p>
 
 <p><span class="dlabel">What CODE can do</span></p>
 
-<p>Mainframe supports the public CODE function directory without a browser DOM. Combat, movement, inventory, crafting, social, mail, trade, storage, and event methods use normal game actions. Buttons, drawings, focus, and other display-only calls become harmless headless operations.</p>
+<p>Mainframe supports the public CODE function directory without a browser page or DOM. Combat, movement, inventory, crafting, social, mail, trade, storage, and event functions use normal game actions. UI-only calls such as buttons, drawing, and focus do not affect gameplay.</p>
 
 <p><span class="dlabel">smart_move</span> uses Mainframe navigation instead of running the browser's exhaustive pathfinder. Your code keeps the same public call.</p>
 
@@ -25,15 +25,15 @@ await smart_move({ map: "main", x: -100, y: -20 });</div>
 
 <p><span class="dlabel">Containment</span></p>
 
-<p>Every character runs with its own machine identity, read-only system image, fixed memory and CPU limits, bounded disk activity, syscall filtering, and no internet interface. Character actions can reach Adventure Land only through the Mainframe bridge. Runtime observations come back from the authenticated game server, so requested actions and confirmed movement are reported separately.</p>
+<p>Every character runs with its own machine identity, read-only system image, memory, CPU, and disk limits, syscall filtering, and no internet interface. Character actions can reach Adventure Land only through the Mainframe bridge. Mainframe reports requested actions separately from confirmed game state, so you can tell the difference between "CODE asked" and "the server accepted."</p>
 
-<p>If CODE loops forever, allocates too much memory, or repeatedly writes, its machine remains bounded and can be stopped without taking another character with it.</p>
+<p>If CODE loops forever, uses too much memory, or repeatedly writes, its machine stays isolated and can be stopped without taking another character with it.</p>
 
 <p><span class="dlabel">Automation interfaces</span></p>
 
 <p>Your own service can control Mainframe through the <a href="/docs/guide/advanced/adventure-api">JSON API</a>. AI clients can use the same operations through <a href="/docs/guide/adventure-mcp">MCP</a>. Both interfaces enforce the same account ownership, billing, assignment, and CODE-slot checks as the web page.</p>
 
-<p>The <span class="dlabel">Connect an AI</span> panel on <a href="/mainframe">Mainframe</a> creates, rotates, copies, and revokes the account token. The MCP teaches clients the game through native resources and prompts; see <a href="/docs/guide/adventure-mcp">Adventure Land MCP for AI</a> for setup, CODE guidance, and the source map it receives.</p>
+<p>The <span class="dlabel">Connect an AI</span> panel on <a href="/mainframe">Mainframe</a> creates, replaces, copies, and revokes the account token. The MCP gives compatible clients game docs, CODE guidance, and account tools; see <a href="/docs/guide/adventure-mcp">Adventure Land MCP for AI</a> for setup.</p>
 
 <p>Use a unique <span class="dlabel">request_id</span> when linking a character. Reuse that ID only when retrying the same request. This makes a lost response safe to retry without charging twice.</p>
 
@@ -46,7 +46,7 @@ await smart_move({ map: "main", x: -100, y: -20 });</div>
 
 <p><span class="dlabel">Cyberland terminal</span></p>
 
-<p>The old terminal inside Cyberland is a separate, in-world machine. Run its visible commands through CODE with <span class="rlabel" onclick="render_function_reference($(this).html())">mainframe_command</span>. The Promise settles after the game server executes the command and includes the terminal's reply.</p>
+<p>The terminal inside Cyberland is a separate in-world machine. Run its visible commands through CODE with <span class="rlabel" onclick="render_function_reference($(this).html())">mainframe_command</span>. The Promise resolves with the terminal's reply.</p>
 
 <div class="code">var response = await mainframe_command("hello");
 game_log(response.reply);</div>

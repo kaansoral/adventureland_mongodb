@@ -30,7 +30,7 @@
 <div class="tutpath manual">
 	<div class="tutpath-title">MANUAL</div>
 	<p>Use <span class="gamebutton gamebutton-small">TRAVEL</span> for a long journey. Nearby doors and NPCs can be activated with right-click or <span class="gamebutton gamebutton-small">F</span>.</p>
-	<p>When an <span class="gamebutton gamebutton-small">INFO</span> guide appears nearby, open it. The world often explains itself where the explanation matters.</p>
+	<p>When an <span class="gamebutton gamebutton-small">INFO</span> button appears nearby, open it. It explains the system you are standing next to.</p>
 </div>
 
 <div class="tutpath codepath">
@@ -46,7 +46,7 @@
 visit_potions().catch(function (error) {
 	show_json(error);
 });</div>
-	<p>Special services have their own routines. Prefer those over raw socket messages.</p>
+	<p>For banks, shops, doors, and special NPCs, use the documented CODE function instead of sending low-level socket events.</p>
 	<p>
 		<span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">find_npc</span> ·
 		<span class="rlabel" onclick="render_function_reference($(this).html())">use_nearest_door</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">transport</span>
