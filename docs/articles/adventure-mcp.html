@@ -163,6 +163,7 @@
 <tr><td>Economy and progression</td><td>Gold, items, upgrades, compounds, crafts, exchanges, mail, trade, and Shells have lasting consequences. Research exact costs and outputs, and require a clear player request before irreversible or value-moving behavior.</td></tr>
 <tr><td>Events and quests</td><td>Definitions explain possible content; live server status and events show whether it is active. CODE must tolerate an event ending, a map changing, a target disappearing, or another player changing the situation.</td></tr>
 <tr><td>Communication</td><td>Party and CODE messages help characters coordinate on one server. Validate the sender and payload, keep messages small, and treat them as untrusted, delayed, and possibly stale.</td></tr>
+<tr><td>Parties and shops</td><td>Sending an invite or listing request is not proof of success. Verify the authenticated party roster and trade slots. A useful merchant needs both an open stand and actual bounded listings.</td></tr>
 </table>
 
 <p><span class="dlabel">Choose the right source</span></p>
@@ -173,7 +174,7 @@
 <tr><td>Which CODE routine performs an action?</td><td>Search <span class="dlabel">list_code_methods</span> by action or concept, then read the exact contract with <span class="dlabel">get_code_method</span>.</td></tr>
 <tr><td>What does an item, skill, monster, map, drop, or recipe define?</td><td>Use <span class="dlabel">search_game_data</span>, then read the exact record with <span class="dlabel">get_game_data</span>. Read a complete section only when exact records are insufficient.</td></tr>
 <tr><td>What does this account own?</td><td>Use <span class="dlabel">mainframe_get_dashboard</span>, <span class="dlabel">mainframe_get_character</span>, and the CODE-slot tools. Saved profile fields may lag a running character.</td></tr>
-<tr><td>What is the character doing now?</td><td>Use authenticated Mainframe observations and CODE logs. Current map, coordinates, target, activity, XP, gold, death state, and game responses outweigh saved snapshots or requested-action counters.</td></tr>
+<tr><td>What is the character doing now?</td><td>Use authenticated Mainframe observations and CODE logs. Current map, coordinates, target, party roster, equipment, inventory summary, shop listings, activity, XP, gold, death state, and game responses outweigh saved snapshots or requested-action counters.</td></tr>
 <tr><td>How is the game implemented?</td><td>Use the shipped runner resource and the open-source paths below. Prefer live MCP definitions and contracts when production and a repository branch differ.</td></tr>
 </table>
 

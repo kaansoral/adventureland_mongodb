@@ -67,26 +67,11 @@ function admin_bots_clean_logs(logs) {
 function admin_bots_clean_rate_summary(summary) {
 	if (!summary || typeof summary !== "object" || Array.isArray(summary)) return null;
 	var result = {};
-	[
-		"window_ms",
-		"active_seconds",
-		"damage",
-		"dps",
-		"healing",
-		"hps",
-		"kills",
-		"deaths",
-		"gold_gained",
-		"gold_spent",
-		"gold_net",
-		"gps",
-		"xp_gained",
-		"xp_lost",
-		"xp_net",
-		"xps",
-	].forEach(function (name) {
-		result[name] = admin_bots_number(summary[name], -Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
-	});
+	["window_ms", "active_seconds", "damage", "dps", "healing", "hps", "kills", "deaths", "gold_gained", "gold_spent", "gold_net", "gps", "xp_gained", "xp_lost", "xp_net", "xps"].forEach(
+		function (name) {
+			result[name] = admin_bots_number(summary[name], -Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
+		},
+	);
 	if (Object.prototype.hasOwnProperty.call(summary, "started_at")) result.started_at = admin_bots_text(summary.started_at, 40) || null;
 	if (Object.prototype.hasOwnProperty.call(summary, "ended_at")) result.ended_at = admin_bots_text(summary.ended_at, 40) || null;
 	if (Object.prototype.hasOwnProperty.call(summary, "auth_debuff")) result.auth_debuff = admin_bots_boolean(summary.auth_debuff);
@@ -134,9 +119,55 @@ function admin_bots_clean_containment(containment) {
 	};
 }
 
+function admin_bots_clean_item(item, include_index) {
+	if (!item || typeof item !== "object" || Array.isArray(item) || !/^[A-Za-z0-9_]{1,100}$/.test(item.name || "")) return null;
+	var result = { name: item.name };
+	if (include_index) result.index = admin_bots_number(item.index, 0, 255);
+	["level", "q", "price"].forEach(function (name) {
+		if (Object.prototype.hasOwnProperty.call(item, name)) result[name] = admin_bots_number(item[name], 0, Number.MAX_SAFE_INTEGER);
+	});
+	["stat_type", "b"].forEach(function (name) {
+		if (Object.prototype.hasOwnProperty.call(item, name)) result[name] = admin_bots_text(item[name], 32);
+	});
+	if (Object.prototype.hasOwnProperty.call(item, "locked")) result.locked = item.locked === true;
+	if (Object.prototype.hasOwnProperty.call(item, "special")) result.special = item.special === true;
+	return result;
+}
+
+function admin_bots_clean_slots(slots, trade) {
+	if (!slots || typeof slots !== "object" || Array.isArray(slots)) return {};
+	var result = {};
+	Object.keys(slots)
+		.sort()
+		.slice(0, trade ? 16 : 20)
+		.forEach(function (name) {
+			var valid = trade ? /^trade(?:[1-9]|1[0-6])$/.test(name) : /^[A-Za-z0-9_]{1,32}$/.test(name) && !/^trade/.test(name);
+			var item = valid ? admin_bots_clean_item(slots[name], false) : null;
+			if (item) result[name] = item;
+		});
+	return result;
+}
+
+function admin_bots_clean_party(party) {
+	if (!party || typeof party !== "object" || Array.isArray(party)) return { name: null, leader: null, members: [] };
+	return {
+		name: party.name === null || party.name === undefined ? null : admin_bots_text(party.name, 128),
+		leader: party.leader === null || party.leader === undefined ? null : admin_bots_text(party.leader, 128),
+		members: Array.isArray(party.members)
+			? party.members
+					.slice(0, 12)
+					.map(function (name) {
+						return admin_bots_text(name, 128);
+					})
+					.filter(Boolean)
+			: [],
+	};
+}
+
 function admin_bots_clean_observation(observation) {
 	if (!observation || typeof observation !== "object" || Array.isArray(observation) || observation.source !== "game_server") return null;
 	var movement = observation.movement && typeof observation.movement === "object" ? observation.movement : {};
+	var shop = observation.shop && typeof observation.shop === "object" && !Array.isArray(observation.shop) ? observation.shop : {};
 	return {
 		source: "game_server",
 		observed_at: admin_bots_text(observation.observed_at, 40) || null,
@@ -153,6 +184,21 @@ function admin_bots_clean_observation(observation) {
 		level: admin_bots_number(observation.level, 0, 1000),
 		xp: admin_bots_number(observation.xp, 0, Number.MAX_SAFE_INTEGER),
 		gold: admin_bots_number(observation.gold, 0, Number.MAX_SAFE_INTEGER),
+		party: admin_bots_clean_party(observation.party),
+		equipment: admin_bots_clean_slots(observation.equipment, false),
+		inventory: Array.isArray(observation.inventory)
+			? observation.inventory
+					.slice(0, 24)
+					.map(function (item) {
+						return admin_bots_clean_item(item, true);
+					})
+					.filter(Boolean)
+			: [],
+		shop: {
+			stand: shop.stand === null || shop.stand === undefined ? null : admin_bots_text(shop.stand, 100),
+			open: shop.open === true,
+			trade_slots: admin_bots_clean_slots(shop.trade_slots, true),
+		},
 		target: observation.target === null || observation.target === undefined ? null : admin_bots_text(observation.target, 128),
 		moving: observation.moving === true,
 		going_x: admin_bots_number(observation.going_x, -10000000, 10000000),
@@ -395,8 +441,7 @@ app.post("/internal/mainframe/code", async function (req, res) {
 	if (!admin_bots_agent_authorized(req)) return res.status(401).send({ failed: true, reason: "unauthorized" });
 	var body = req.body;
 	if (!body || typeof body !== "object" || Array.isArray(body)) return res.status(400).send({ failed: true, reason: "invalid_body" });
-	if (Buffer.byteLength(JSON.stringify(body), "utf8") > ADMIN_MAINFRAME_CODE_MAX_BYTES)
-		return res.status(413).send({ failed: true, reason: "request_too_large" });
+	if (Buffer.byteLength(JSON.stringify(body), "utf8") > ADMIN_MAINFRAME_CODE_MAX_BYTES) return res.status(413).send({ failed: true, reason: "request_too_large" });
 	if (
 		Object.keys(body).sort().join(",") !== "agent_id,assignment_id,character_id,data,operation,request_id,version" ||
 		body.version !== 1 ||

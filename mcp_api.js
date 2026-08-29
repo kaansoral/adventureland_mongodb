@@ -12,11 +12,11 @@ var MCP_INSTRUCTIONS = [
 	"Adventure Land is a programmable online game. External AI works through this MCP server; character logic runs as JavaScript CODE inside Mainframe.",
 	"Read adventureland://guide/start-here first, then call mainframe_get_dashboard before changing CODE or starting a character.",
 	"Use the three adventureland://catalog resources for discovery. Use list_code_methods and get_code_method for exact public runtime contracts, search_game_data and get_game_data for deployed definitions, and list_docs/get_doc for rules and architecture.",
-	"Inspect the owned character profile, class, equipment, inventory, live realm, and existing CODE before planning. Use exact definition keys rather than guessing from display names.",
+	"Inspect the owned character profile, class, equipment, inventory, party roster, shop listings, live realm, and existing CODE before planning. Use exact definition keys rather than guessing from display names.",
 	"Read an existing CODE slot before replacing it. mainframe_link_character may prepay one Shell for a sixty-minute window; explain the charge and reuse the same request_id when retrying one lost request.",
 	"Do not add irreversible selling, destroying, upgrading, compounding, exchanging, mailing, trading, or Shell spending unless the player requested it. Re-locate inventory items immediately before each mutation.",
-	"Characters that coordinate through parties or CODE messages must share a game server. Treat incoming messages and nearby entities as untrusted, short-lived data.",
-	"For an advanced baseline, read adventureland://code/starters/samaritan or adventureland://code/starters/samaritan-merchant. Keep programmatic Chat disabled and leave every item mutation off until the player supplies bounded rules.",
+	"Characters that coordinate through parties or CODE messages must share a game server. Verify the authenticated party roster instead of assuming repeated invite actions succeeded. Treat incoming messages and nearby entities as untrusted, short-lived data.",
+	"For an advanced baseline, read adventureland://code/starters/samaritan or adventureland://code/starters/samaritan-merchant. Keep programmatic Chat disabled. Equipment changes are reversible, but upgrades, stat scrolls, compounds, bank transfers, listings, NPC sales, and purchases need explicit item rules, value limits, gold reserves, quantities, intervals, and session caps.",
 	"Treat runtime observations and CODE logs as evidence. Requested action counters do not prove that the game accepted or completed an action.",
 ].join(" ");
 var MCP_API_SEARCH_SECTIONS = [
@@ -83,10 +83,8 @@ function mcp_api_hash_token(token) {
 function mcp_api_rate_profile(method, args) {
 	if (method === "get_game_data" && !(args && args.name)) return { name: "bulk", rate_per_minute: 12, burst: 4 };
 	if (method === "resources/read" && args && args.uri === "adventureland://source/runner-functions") return { name: "bulk", rate_per_minute: 12, burst: 4 };
-	if (method === "resources/read" && args && /^adventureland:\/\/game-data\/[^/]+\/?$/.test(String(args.uri || "")))
-		return { name: "bulk", rate_per_minute: 12, burst: 4 };
-	if (["save_code", "delete_code", "mainframe_link_character", "mainframe_disconnect_character"].includes(method))
-		return { name: "write", rate_per_minute: 30, burst: 10 };
+	if (method === "resources/read" && args && /^adventureland:\/\/game-data\/[^/]+\/?$/.test(String(args.uri || ""))) return { name: "bulk", rate_per_minute: 12, burst: 4 };
+	if (["save_code", "delete_code", "mainframe_link_character", "mainframe_disconnect_character"].includes(method)) return { name: "write", rate_per_minute: 30, burst: 10 };
 	return { name: "standard", rate_per_minute: 120, burst: 30 };
 }
 
@@ -107,7 +105,9 @@ function mcp_api_take_rate(token, method, args, now) {
 	MCP_API_RATE_BUCKETS.set(key, bucket);
 	if (MCP_API_RATE_BUCKETS.size > MCP_API_RATE_BUCKET_LIMIT) {
 		var oldest = Array.from(MCP_API_RATE_BUCKETS.entries())
-			.sort(function (left, right) { return left[1].seen_at - right[1].seen_at; })
+			.sort(function (left, right) {
+				return left[1].seen_at - right[1].seen_at;
+			})
 			.slice(0, MCP_API_RATE_BUCKETS.size - MCP_API_RATE_BUCKET_LIMIT);
 		for (var i = 0; i < oldest.length; i++) MCP_API_RATE_BUCKETS.delete(oldest[i][0]);
 	}
@@ -300,8 +300,7 @@ function mcp_api_collect_search_fields(value, path_prefix, fields, depth) {
 		return;
 	}
 	if (Array.isArray(value)) {
-		for (var i = 0; i < value.length && i < 100 && fields.length < 500; i++)
-			mcp_api_collect_search_fields(value[i], path_prefix + "[" + i + "]", fields, depth + 1);
+		for (var i = 0; i < value.length && i < 100 && fields.length < 500; i++) mcp_api_collect_search_fields(value[i], path_prefix + "[" + i + "]", fields, depth + 1);
 		return;
 	}
 	if (typeof value !== "object") return;
@@ -328,7 +327,19 @@ function mcp_api_game_search_index() {
 			var description = value && typeof value === "object" ? value.description || value.explanation || "" : "";
 			var fields = [];
 			mcp_api_collect_search_fields(value, "", fields, 0);
-			var search_text = (name + " " + label + " " + description + " " + fields.map(function (field) { return field.path + " " + field.value; }).join(" ")).toLowerCase();
+			var search_text = (
+				name +
+				" " +
+				label +
+				" " +
+				description +
+				" " +
+				fields
+					.map(function (field) {
+						return field.path + " " + field.value;
+					})
+					.join(" ")
+			).toLowerCase();
 			index.push({ section: section_name, name: name, value: value, label: label, description: description, fields: fields, search_text: search_text });
 		}
 	}
@@ -338,11 +349,40 @@ function mcp_api_game_search_index() {
 }
 
 function mcp_api_search_tokens(query) {
-	var stop_words = new Set(["an", "and", "are", "as", "at", "be", "by", "do", "for", "from", "how", "in", "is", "it", "of", "on", "or", "that", "the", "this", "to", "use", "what", "where", "which", "with"]);
+	var stop_words = new Set([
+		"an",
+		"and",
+		"are",
+		"as",
+		"at",
+		"be",
+		"by",
+		"do",
+		"for",
+		"from",
+		"how",
+		"in",
+		"is",
+		"it",
+		"of",
+		"on",
+		"or",
+		"that",
+		"the",
+		"this",
+		"to",
+		"use",
+		"what",
+		"where",
+		"which",
+		"with",
+	]);
 	return query
 		.toLowerCase()
 		.split(/[^a-z0-9_.+-]+/)
-		.filter(function (token) { return token.length > 1 && !stop_words.has(token); })
+		.filter(function (token) {
+			return token.length > 1 && !stop_words.has(token);
+		})
 		.slice(0, 12);
 }
 
@@ -355,7 +395,12 @@ async function mcp_api_search_game_data(args) {
 	if (!tokens.length) return { failed: true, reason: "invalid_query" };
 	var matches = mcp_api_game_search_index()
 		.filter(function (entry) {
-			return (!args.section || entry.section === args.section) && tokens.every(function (token) { return entry.search_text.includes(token); });
+			return (
+				(!args.section || entry.section === args.section) &&
+				tokens.every(function (token) {
+					return entry.search_text.includes(token);
+				})
+			);
 		})
 		.map(function (entry) {
 			var name_text = (entry.name + " " + entry.label).toLowerCase();
@@ -384,7 +429,9 @@ async function mcp_api_search_game_data(args) {
 		result.matched_fields = entry.fields
 			.filter(function (field) {
 				var text = (field.path + " " + field.value).toLowerCase();
-				return tokens.some(function (token) { return text.includes(token); });
+				return tokens.some(function (token) {
+					return text.includes(token);
+				});
 			})
 			.slice(0, 5);
 		return result;
@@ -548,7 +595,9 @@ async function mcp_api_list_code_methods(args) {
 	var methods = index;
 	var semantic = false;
 	if (query) {
-		var name_matches = index.filter(function (method) { return method.name.toLowerCase().includes(query); });
+		var name_matches = index.filter(function (method) {
+			return method.name.toLowerCase().includes(query);
+		});
 		if (name_matches.length) methods = name_matches;
 		else {
 			semantic = true;
@@ -556,14 +605,29 @@ async function mcp_api_list_code_methods(args) {
 			var scored = index
 				.map(function (method) {
 					var name = method.name.toLowerCase();
-					var matched = tokens.filter(function (token) { return method.search_text.includes(token); });
-					var score = matched.length * 10 + matched.filter(function (token) { return name.includes(token); }).length * 20;
+					var matched = tokens.filter(function (token) {
+						return method.search_text.includes(token);
+					});
+					var score =
+						matched.length * 10 +
+						matched.filter(function (token) {
+							return name.includes(token);
+						}).length *
+							20;
 					return { method: method, matched: matched.length, score: score };
 				})
-				.filter(function (result) { return result.matched > 0; })
-				.sort(function (left, right) { return right.score - left.score || left.method.name.localeCompare(right.method.name); });
-			var strong = scored.filter(function (result) { return result.matched >= Math.min(2, tokens.length); });
-			methods = (strong.length ? strong : scored).map(function (result) { return result.method; });
+				.filter(function (result) {
+					return result.matched > 0;
+				})
+				.sort(function (left, right) {
+					return right.score - left.score || left.method.name.localeCompare(right.method.name);
+				});
+			var strong = scored.filter(function (result) {
+				return result.matched >= Math.min(2, tokens.length);
+			});
+			methods = (strong.length ? strong : scored).map(function (result) {
+				return result.method;
+			});
 		}
 	}
 	var available = methods.length;
@@ -674,7 +738,9 @@ function mcp_api_safe_snapshot(value, depth) {
 	if (value instanceof Date) return value.toISOString();
 	if (depth >= 5) return null;
 	if (Array.isArray(value))
-		return value.slice(0, 100).map(function (entry) { return mcp_api_safe_snapshot(entry, depth + 1); });
+		return value.slice(0, 100).map(function (entry) {
+			return mcp_api_safe_snapshot(entry, depth + 1);
+		});
 	if (typeof value !== "object") return null;
 	var result = {};
 	Object.keys(value)
@@ -953,19 +1019,36 @@ var MCP_API_REF = {
 var MCP_TOOL_META = {
 	get_api_info: { description: "Discover the shared JSON API and MCP methods, schemas, endpoints, and documentation links.", readOnlyHint: true },
 	get_servers: { description: "List the live Adventure Land game servers.", readOnlyHint: true },
-	get_game_data: { description: "Read deployed Adventure Land game definitions by section and optional exact record name. Use search_game_data first; full sections have a lower rate limit.", readOnlyHint: true },
-	search_game_data: { description: "Search exact keys, names, descriptions, stats, recipe ingredients, drop tables, map fields, and other nested deployed game data. Use get_game_data for each complete matching record.", readOnlyHint: true },
+	get_game_data: {
+		description: "Read deployed Adventure Land game definitions by section and optional exact record name. Use search_game_data first; full sections have a lower rate limit.",
+		readOnlyHint: true,
+	},
+	search_game_data: {
+		description:
+			"Search exact keys, names, descriptions, stats, recipe ingredients, drop tables, map fields, and other nested deployed game data. Use get_game_data for each complete matching record.",
+		readOnlyHint: true,
+	},
 	list_docs: { description: "List or search Adventure Land guide articles.", readOnlyHint: true },
 	get_doc: { description: "Read one Adventure Land guide article as plain text using an exact name returned by list_docs.", readOnlyHint: true },
-	list_code_methods: { description: "List the public CODE directory or search method documentation semantically when no method name matches. Follow with get_code_method before using a routine.", readOnlyHint: true },
+	list_code_methods: {
+		description: "List the public CODE directory or search method documentation semantically when no method name matches. Follow with get_code_method before using a routine.",
+		readOnlyHint: true,
+	},
 	get_code_method: { description: "Read one public character CODE method's exact contract, examples, failure behavior, and shipped source location.", readOnlyHint: true },
 	list_codes: { description: "List the account's CODE slots without returning their source.", readOnlyHint: true },
 	get_code: { description: "Read one owned CODE slot.", readOnlyHint: true },
 	save_code: { description: "Create or replace one account-owned JavaScript CODE slot. Read an existing slot before replacement; saving does not start a character.", destructiveHint: true },
 	delete_code: { description: "Delete one owned CODE slot.", destructiveHint: true },
 	mainframe_list_characters: { description: "List owned characters and their Mainframe access and runtime state.", readOnlyHint: true },
-	mainframe_get_dashboard: { description: "Read this before Mainframe changes. Returns owned characters, Shell balance, paid access, assignments, authenticated runtime observations, CODE slots, and live servers.", readOnlyHint: true },
-	mainframe_get_character: { description: "Read one owned character's saved class, level, position, equipment, inventory, conditions, quests, Mainframe access, assignment, runtime, and authenticated live observations. Saved profile fields can lag the running game; prefer current runtime observations for live state.", readOnlyHint: true },
+	mainframe_get_dashboard: {
+		description: "Read this before Mainframe changes. Returns owned characters, Shell balance, paid access, assignments, authenticated runtime observations, CODE slots, and live servers.",
+		readOnlyHint: true,
+	},
+	mainframe_get_character: {
+		description:
+			"Read one owned character's saved class, level, position, equipment, inventory, conditions, quests, Mainframe access, assignment, runtime, authenticated party roster, current equipment summary, inventory summary, and shop listings. Saved profile fields can lag the running game; prefer current runtime observations for live state.",
+		readOnlyHint: true,
+	},
 	mainframe_link_character: {
 		description: "Run an owned character on Mainframe using a saved CODE slot. May charge one Shell before a new sixty-minute window; keep one request_id stable when retrying the same lost request.",
 		destructiveHint: false,
@@ -1280,11 +1363,15 @@ function mcp_resource_path_parts(url) {
 	return url.pathname
 		.split("/")
 		.filter(Boolean)
-		.map(function (part) { return decodeURIComponent(part); });
+		.map(function (part) {
+			return decodeURIComponent(part);
+		});
 }
 
 async function mcp_read_resource(uri, user) {
-	var guide = MCP_RESOURCE_GUIDES.find(function (entry) { return entry.uri === uri; });
+	var guide = MCP_RESOURCE_GUIDES.find(function (entry) {
+		return entry.uri === uri;
+	});
 	if (guide) {
 		var article = await mcp_api_get_doc({ name: guide.article });
 		if (article.failed) return null;
@@ -1328,8 +1415,7 @@ async function mcp_read_resource(uri, user) {
 	else if (url.hostname === "game-data" && parts.length === 1) result = await mcp_api_get_game_data({ section: parts[0] });
 	else if (url.hostname === "game-data" && parts.length === 2) result = await mcp_api_get_game_data({ section: parts[0], name: parts[1] });
 	else if (url.hostname === "code" && parts[0] === "slots" && parts.length === 2) result = await mcp_api_get_code({ user: user, slot: parts[1] });
-	else if (url.hostname === "mainframe" && parts[0] === "characters" && parts.length === 2)
-		result = await mcp_api_get_mainframe_character({ user: user, character: parts[1] });
+	else if (url.hostname === "mainframe" && parts[0] === "characters" && parts.length === 2) result = await mcp_api_get_mainframe_character({ user: user, character: parts[1] });
 	else return null;
 	if (!result || result.failed) return null;
 	return mcp_resource_content(uri, url.hostname === "docs" ? "text/plain" : "application/json", url.hostname === "docs" ? result.content : result);
@@ -1425,62 +1511,88 @@ async function mcp_prompt_add_resource(messages, uri, user, required) {
 }
 
 async function mcp_get_prompt(name, prompt_arguments, user) {
-	var prompt = MCP_PROMPTS.find(function (candidate) { return candidate.name === name; });
+	var prompt = MCP_PROMPTS.find(function (candidate) {
+		return candidate.name === name;
+	});
 	if (!prompt) return { error: "Prompt not found" };
 	prompt_arguments = prompt_arguments || {};
 	if (typeof prompt_arguments !== "object" || Array.isArray(prompt_arguments)) return { error: "Invalid prompt arguments" };
-	var allowed = new Set(prompt.arguments.map(function (argument) { return argument.name; }));
+	var allowed = new Set(
+		prompt.arguments.map(function (argument) {
+			return argument.name;
+		}),
+	);
 	for (var key in prompt_arguments) if (!allowed.has(key) || typeof prompt_arguments[key] !== "string" || prompt_arguments[key].length > 1000) return { error: "Invalid prompt arguments" };
-	for (var i = 0; i < prompt.arguments.length; i++) if (prompt.arguments[i].required && !prompt_arguments[prompt.arguments[i].name]) return { error: "Missing prompt argument: " + prompt.arguments[i].name };
+	for (var i = 0; i < prompt.arguments.length; i++)
+		if (prompt.arguments[i].required && !prompt_arguments[prompt.arguments[i].name]) return { error: "Missing prompt argument: " + prompt.arguments[i].name };
 	if (name === "configure_samaritan_code" && !["adventurer", "merchant"].includes(prompt_arguments.variant.toLowerCase())) return { error: "Invalid prompt argument: variant" };
 	var start = await mcp_read_resource(MCP_START_RESOURCE, null);
 	if (!start) return { error: "Start resource unavailable" };
 	var task;
 	if (name === "learn_adventure_land") {
-		task = "Build a working mental model of Adventure Land. Read the three discovery catalogs, then inspect only the relevant guides, exact CODE contracts, deployed definitions, and source paths named in the embedded guide. Distinguish static definitions, saved account snapshots, and live server observations. Do not change account CODE or Mainframe state unless the user separately asks you to.";
+		task =
+			"Build a working mental model of Adventure Land. Read the three discovery catalogs, then inspect only the relevant guides, exact CODE contracts, deployed definitions, and source paths named in the embedded guide. Distinguish static definitions, saved account snapshots, and live server observations. Do not change account CODE or Mainframe state unless the user separately asks you to.";
 	} else if (name === "research_gameplay") {
 		task =
-			"Question: " + prompt_arguments.question +
+			"Question: " +
+			prompt_arguments.question +
 			"\nUse the documentation, CODE-method, and game-data catalogs to locate exact sources. Read complete records after searching. Separate deployed facts from inference, account state, and live realm state. Do not change account or Mainframe state.";
 	} else if (name === "configure_samaritan_code") {
 		task =
-			"Configure the " + prompt_arguments.variant + " Samaritan baseline for owned character " + prompt_arguments.character +
+			"Configure the " +
+			prompt_arguments.variant +
+			" Samaritan baseline for owned character " +
+			prompt_arguments.character +
 			(prompt_arguments.goal ? " toward this goal: " + prompt_arguments.goal : "") +
-			". CODE slot: " + (prompt_arguments.code_slot || "choose a free slot; never overwrite an unread slot") +
-			". Inspect the character profile, current runtime, existing CODE, class, equipment, inventory, and exact method contracts. Preserve the no-programmatic-Chat rule. Keep bank, shop, NPC sale, scroll purchase, upgrade, and compound mutations disabled unless the player explicitly requested exact items and you can set conservative keep, level, value, quantity, gold-reserve, and attempt limits. Explain every enabled mutation before saving or linking.";
+			". CODE slot: " +
+			(prompt_arguments.code_slot || "choose a free slot; never overwrite an unread slot") +
+			". Inspect the character profile, current runtime, existing CODE, class, equipment, inventory, authenticated party roster, shop slots, and exact method contracts. Preserve the no-programmatic-Chat rule. Configure one explicit party leader and trusted roster when coordinating characters. Keep bank, public listings, market purchases, NPC sales, scroll purchases, upgrades, stat scrolls, and compounds disabled unless the player explicitly requested exact items and you can set conservative keep, level, value, quantity, interval, gold-reserve, and session limits. Explain every enabled mutation before saving or linking, then verify the resulting party roster, equipment, item levels, stat types, and trade slots from authenticated observations.";
 	} else if (name === "write_character_code") {
 		task =
-			"Goal: " + prompt_arguments.goal + "\nCharacter: " + (prompt_arguments.character || "choose after reading the dashboard") + "\nCODE slot: " + (prompt_arguments.code_slot || "choose a free slot; never overwrite an unread slot") +
-			"\nInspect the saved profile and current runtime separately. Research exact methods and game definitions before writing. Read any existing target slot. Produce bounded, non-overlapping async loops; reacquire live entities; handle death, cooldowns, movement, inventory-index changes, and rejected Promises. Do not add irreversible item, gold, trade, mail, or Shell actions unless requested. Save only after explaining what will change.";
+			"Goal: " +
+			prompt_arguments.goal +
+			"\nCharacter: " +
+			(prompt_arguments.character || "choose after reading the dashboard") +
+			"\nCODE slot: " +
+			(prompt_arguments.code_slot || "choose a free slot; never overwrite an unread slot") +
+			"\nInspect the saved profile and current runtime separately, including party and shop state. Research exact methods and game definitions before writing. Read any existing target slot. Produce bounded, non-overlapping async loops; reacquire live entities; handle death, cooldowns, movement, inventory-index changes, and rejected Promises. Do not add irreversible item, gold, trade, mail, or Shell actions unless requested. Save only after explaining what will change, and verify outcomes rather than action counters.";
 	} else if (name === "review_character_code") {
 		task =
-			"Review owned CODE slot " + prompt_arguments.code_slot + (prompt_arguments.goal ? " for this goal: " + prompt_arguments.goal : "") +
+			"Review owned CODE slot " +
+			prompt_arguments.code_slot +
+			(prompt_arguments.goal ? " for this goal: " + prompt_arguments.goal : "") +
 			". Read the slot, exact method references, globals, and relevant game definitions. Check overlapping async work, stale entity references, death recovery, cooldowns, movement, changing inventory indexes, irreversible actions, trusted CODE messages, log quality, and Mainframe headless compatibility. Report concrete changes before saving anything.";
 	} else if (name === "coordinate_character_team") {
 		task =
-			"Team goal: " + prompt_arguments.goal + "\nCharacters: " + (prompt_arguments.characters || "choose owned characters after reading the dashboard") +
-			"\nInspect every selected character and CODE slot. Keep the team on one live server, assign explicit class roles, and use parties or validated CODE messages for coordination. Never load a character that is already active elsewhere. Handle partial team availability and disconnections without unsafe retries or duplicate assignments.";
+			"Team goal: " +
+			prompt_arguments.goal +
+			"\nCharacters: " +
+			(prompt_arguments.characters || "choose owned characters after reading the dashboard") +
+			"\nInspect every selected character and CODE slot. Keep the team on one live server, choose one explicit party leader, give every member the same trusted roster, and verify the authenticated party roster after invitations. Assign class roles and use validated CODE messages only when party state is insufficient. Never load a character that is already active elsewhere. Handle partial team availability and disconnections without unsafe retries or duplicate assignments.";
 	} else if (name === "operate_mainframe") {
 		task =
-			"Operate owned character " + prompt_arguments.character + " toward this goal: " + prompt_arguments.goal +
+			"Operate owned character " +
+			prompt_arguments.character +
+			" toward this goal: " +
+			prompt_arguments.goal +
 			". Read the dashboard, saved character profile, current live state, CODE, exact function references, and relevant game data first. Never overwrite an unread slot or load a character already active elsewhere. Before a new paid window, tell the user that one Shell buys sixty minutes. Use one stable request_id for retries. After linking, verify authenticated observations and logs; do not treat requested-action counters as success.";
 	} else {
 		task =
-			"Debug owned character " + prompt_arguments.character + (prompt_arguments.symptom ? ". Reported symptom: " + prompt_arguments.symptom : "") +
-			". Compare the saved profile, assignment, authenticated live observations, recent CODE logs, and current slot. Identify whether the failure is in planning, CODE requests, game acceptance, movement, targeting, inventory state, death recovery, server choice, or containment. Do not rewrite or restart blindly. Make the smallest evidence-backed correction, then verify map, coordinates, activity, target, death state, XP, gold, and logs over time.";
+			"Debug owned character " +
+			prompt_arguments.character +
+			(prompt_arguments.symptom ? ". Reported symptom: " + prompt_arguments.symptom : "") +
+			". Compare the saved profile, assignment, authenticated live observations, party roster, equipment, inventory summary, shop slots, recent CODE logs, and current slot. Identify whether the failure is in planning, event compatibility, CODE requests, game acceptance, movement, targeting, party formation, equipment progression, trade state, inventory state, death recovery, server choice, or containment. Do not rewrite or restart blindly. Make the smallest evidence-backed correction, then verify map, coordinates, activity, target, party, equipment, listings, death state, XP, gold, and logs over time.";
 	}
 	var messages = [{ role: "user", content: { type: "resource", resource: start, annotations: mcp_resource_annotations(1) } }];
 	if (user && ["configure_samaritan_code", "write_character_code", "review_character_code", "coordinate_character_team", "operate_mainframe", "debug_mainframe_character"].includes(name))
 		await mcp_prompt_add_resource(messages, "adventureland://account/dashboard", user, false);
-	if (user && name === "review_character_code")
-		await mcp_prompt_add_resource(messages, "adventureland://code/slots/" + encodeURIComponent(prompt_arguments.code_slot), user, false);
+	if (user && name === "review_character_code") await mcp_prompt_add_resource(messages, "adventureland://code/slots/" + encodeURIComponent(prompt_arguments.code_slot), user, false);
 	if (user && ["configure_samaritan_code", "write_character_code", "operate_mainframe", "debug_mainframe_character"].includes(name) && prompt_arguments.character)
 		await mcp_prompt_add_resource(messages, "adventureland://mainframe/characters/" + encodeURIComponent(prompt_arguments.character), user, false);
 	if (name === "configure_samaritan_code") {
 		var starterUri = prompt_arguments.variant.toLowerCase() === "merchant" ? "adventureland://code/starters/samaritan-merchant" : "adventureland://code/starters/samaritan";
 		await mcp_prompt_add_resource(messages, starterUri, user, true);
-		if (user && prompt_arguments.code_slot)
-			await mcp_prompt_add_resource(messages, "adventureland://code/slots/" + encodeURIComponent(prompt_arguments.code_slot), user, false);
+		if (user && prompt_arguments.code_slot) await mcp_prompt_add_resource(messages, "adventureland://code/slots/" + encodeURIComponent(prompt_arguments.code_slot), user, false);
 	}
 	messages.push({ role: "user", content: { type: "text", text: task } });
 	return {
@@ -1546,28 +1658,34 @@ function mcp_api_session_handler(method, handler) {
 	};
 }
 
-if (typeof REF !== "undefined") Object.assign(REF, {
-	mainframe_get_dashboard: { F: mcp_api_session_handler("mainframe_get_dashboard", mcp_api_get_mainframe_dashboard), P: true, U: true },
-	mainframe_list_characters: { F: mcp_api_session_handler("mainframe_list_characters", mcp_api_list_mainframe_characters), P: true, U: true },
-	mainframe_get_character: { F: mcp_api_session_handler("mainframe_get_character", mcp_api_get_mainframe_character), P: true, U: true, character: { type: "string", minimum: 1 } },
-	mainframe_link_character: {
-		F: mcp_api_session_handler("mainframe_link_character", mcp_api_link_mainframe_character),
-		P: true,
-		U: true,
-		character: { type: "string", minimum: 1 },
-		request_id: { type: "string", minimum: 8 },
-		code_slot: { type: "string", minimum: 1 },
-		server: { type: "string", optional: true },
-	},
-	mainframe_disconnect_character: { F: mcp_api_session_handler("mainframe_disconnect_character", mcp_api_disconnect_mainframe_character), P: true, U: true, character: { type: "string", minimum: 1 } },
-	mainframe_get_logs: {
-		F: mcp_api_session_handler("mainframe_get_logs", mcp_api_get_mainframe_logs),
-		P: true,
-		U: true,
-		character: { type: "string", minimum: 1 },
-		limit: { type: "number", optional: true },
-	},
-});
+if (typeof REF !== "undefined")
+	Object.assign(REF, {
+		mainframe_get_dashboard: { F: mcp_api_session_handler("mainframe_get_dashboard", mcp_api_get_mainframe_dashboard), P: true, U: true },
+		mainframe_list_characters: { F: mcp_api_session_handler("mainframe_list_characters", mcp_api_list_mainframe_characters), P: true, U: true },
+		mainframe_get_character: { F: mcp_api_session_handler("mainframe_get_character", mcp_api_get_mainframe_character), P: true, U: true, character: { type: "string", minimum: 1 } },
+		mainframe_link_character: {
+			F: mcp_api_session_handler("mainframe_link_character", mcp_api_link_mainframe_character),
+			P: true,
+			U: true,
+			character: { type: "string", minimum: 1 },
+			request_id: { type: "string", minimum: 8 },
+			code_slot: { type: "string", minimum: 1 },
+			server: { type: "string", optional: true },
+		},
+		mainframe_disconnect_character: {
+			F: mcp_api_session_handler("mainframe_disconnect_character", mcp_api_disconnect_mainframe_character),
+			P: true,
+			U: true,
+			character: { type: "string", minimum: 1 },
+		},
+		mainframe_get_logs: {
+			F: mcp_api_session_handler("mainframe_get_logs", mcp_api_get_mainframe_logs),
+			P: true,
+			U: true,
+			character: { type: "string", minimum: 1 },
+			limit: { type: "number", optional: true },
+		},
+	});
 
 app.get("/mcp_api", async function (req, res) {
 	res.set("Cache-Control", "public, max-age=300");
@@ -1611,16 +1729,19 @@ function mcp_capabilities() {
 
 async function handle_mcp_transport(req, res) {
 	res.set("Cache-Control", "no-store");
-	if (!mcp_request_origin_allowed(req))
-		return res.status(403).send(mcp_jsonrpc_error(null, -32000, "Origin is not allowed"));
+	if (!mcp_request_origin_allowed(req)) return res.status(403).send(mcp_jsonrpc_error(null, -32000, "Origin is not allowed"));
 	var token = mcp_bearer_token(req);
 	var user = await get_mcp_api_user(token);
-	if (!user) return res.status(401).set("WWW-Authenticate", 'Bearer realm="Adventure Land MCP"').send(mcp_jsonrpc_error(null, -32001, "Invalid access token"));
+	if (!user)
+		return res
+			.status(401)
+			.set("WWW-Authenticate", 'Bearer realm="Adventure Land MCP"')
+			.send(mcp_jsonrpc_error(null, -32001, "Invalid access token"));
 	var message = req.body;
 	if (!message || typeof message !== "object" || Array.isArray(message) || message.jsonrpc !== "2.0" || typeof message.method !== "string")
 		return res.status(400).send(mcp_jsonrpc_error(message && message.id, -32600, "Invalid Request"));
 	var rate_name = message.method === "tools/call" && message.params ? message.params.name : message.method;
-	var rate_args = message.method === "tools/call" && message.params ? message.params.arguments : (message.params || {});
+	var rate_args = message.method === "tools/call" && message.params ? message.params.arguments : message.params || {};
 	var rate = mcp_api_take_rate(token, rate_name, rate_args);
 	if (!rate.allowed)
 		return res
@@ -1632,8 +1753,7 @@ async function handle_mcp_transport(req, res) {
 	if (version && ![MCP_PROTOCOL_CURRENT, MCP_PROTOCOL_LEGACY, "2025-06-18", "2025-03-26"].includes(version))
 		return res.status(400).send(mcp_jsonrpc_error(message.id, -32600, "Unsupported MCP protocol version"));
 	if (modern) {
-		if (req.get("mcp-method") !== message.method)
-			return res.status(400).send(mcp_jsonrpc_error(message.id, -32600, "Mcp-Method header mismatch"));
+		if (req.get("mcp-method") !== message.method) return res.status(400).send(mcp_jsonrpc_error(message.id, -32600, "Mcp-Method header mismatch"));
 		if (message.method === "tools/call" && req.get("mcp-name") !== ((message.params && message.params.name) || ""))
 			return res.status(400).send(mcp_jsonrpc_error(message.id, -32600, "Mcp-Name header mismatch"));
 	}
@@ -1666,8 +1786,7 @@ async function handle_mcp_transport(req, res) {
 		);
 	}
 	if (message.method === "tools/list") {
-		if (message.params && message.params.cursor)
-			return res.status(200).send(mcp_jsonrpc_error(message.id, -32602, "Invalid cursor"));
+		if (message.params && message.params.cursor) return res.status(200).send(mcp_jsonrpc_error(message.id, -32602, "Invalid cursor"));
 		return res.status(200).send(mcp_jsonrpc(message.id, { tools: mcp_tools(), _meta: mcp_result_meta() }));
 	}
 	if (message.method === "resources/list") {
@@ -1707,8 +1826,7 @@ async function handle_mcp_transport(req, res) {
 		var ref = MCP_API_REF[name];
 		if (!ref) return res.status(200).send(mcp_jsonrpc_error(message.id, -32601, "Unknown tool"));
 		var args = (message.params && message.params.arguments) || {};
-		if (!args || typeof args !== "object" || Array.isArray(args))
-			return res.status(200).send(mcp_jsonrpc_error(message.id, -32602, "Invalid tool arguments"));
+		if (!args || typeof args !== "object" || Array.isArray(args)) return res.status(200).send(mcp_jsonrpc_error(message.id, -32602, "Invalid tool arguments"));
 		var invalid = validate_mcp_api_args(ref, args);
 		if (invalid) return res.status(200).send(mcp_jsonrpc_error(message.id, -32602, "Invalid tool arguments", invalid));
 		try {
