@@ -1,0 +1,114 @@
+<p class="tutlead">Crafting follows a recipe. Exchanges trade a known collection for an uncertain reward.</p>
+
+<div class="tutlinks">
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			open_guide('crafting', get_guide_url('crafting'));
+		"
+	>
+		CRAFTING &amp; DISMANTLING
+	</div>
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			open_guide('exchanges-and-quests', get_guide_url('exchanges-and-quests'));
+		"
+	>
+		EXCHANGES &amp; QUESTS
+	</div>
+</div>
+
+{% for task in tutorial_data("crafting-exchanges").tasks %} {% if loop.first %}
+<div class="tutdivider"></div>
+{% endif %}
+<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
+{% endfor %}
+
+<div class="tutpath manual">
+	<div class="tutpath-title">MANUAL</div>
+	<p>Open <span class="gamebutton gamebutton-small">GUIDE</span> → All Recipes. A recipe names every item, quantity, level, and gold cost. Bring the exact ingredients to the Craftsman.</p>
+	<p>Exchangeable items show their required quantity. Xyn handles many exchanges; quest and event collectors handle their own. Check the possible rewards before surrendering a rare stack.</p>
+</div>
+
+<div class="tutpath codepath">
+	<div class="tutpath-title">OPTIONAL CODE</div>
+	<!-- prettier-ignore -->
+	<div class="code">show_json(G.craft);
+
+var exchange_num = character.items.findIndex(function (item) {
+	return item &amp;&amp; G.items[item.name].e;
+});
+
+if (exchange_num !== -1) {
+	game_log("Exchangeable: " + character.items[exchange_num].name);
+}</div>
+	<p>
+		When the ingredients are ready, <span class="dlabel">auto_craft(name)</span> selects the recipe positions. <span class="dlabel">exchange(num)</span> waits for the timed exchange and returns its
+		reward.
+	</p>
+	<p>
+		<span class="rlabel" onclick="render_function_reference($(this).html())">auto_craft</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">craft</span> ·
+		<span class="rlabel" onclick="render_function_reference($(this).html())">dismantle</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">exchange</span>
+	</p>
+</div>
+
+<p class="tuttip"><span class="hlabel">Careful:</span> Crafting, dismantling, and exchanging consume their inputs. Inspect first; act second.</p>
+
+<style>
+	.tutlead {
+		color: #2b9ec9;
+		font-size: 34px;
+	}
+	.tutdivider {
+		border-top: 5px solid gray;
+		margin: 14px -24px 8px;
+	}
+	.tuttaskrow {
+		line-height: 44px;
+	}
+	.tuttask {
+		color: #4a4a4a;
+		font-size: 64px;
+		vertical-align: middle;
+	}
+	.tuttaskname {
+		color: #dc4c6e;
+		vertical-align: middle;
+	}
+	.tuttaskd {
+		color: #85c76b;
+		display: none;
+		vertical-align: middle;
+	}
+	.tutpath {
+		border: 4px solid #777;
+		margin: 12px 0;
+		padding: 10px 14px;
+		text-align: left;
+	}
+	.tutpath.manual {
+		border-color: #5e9f6e;
+	}
+	.tutpath.codepath {
+		border-color: #c58b3d;
+	}
+	.tutpath-title {
+		color: #555;
+		font-size: 24px;
+	}
+	.manual .tutpath-title {
+		color: #387649;
+	}
+	.codepath .tutpath-title {
+		color: #9a6328;
+	}
+	.tuttip {
+		color: #555;
+	}
+	.tutlinks {
+		text-align: center;
+	}
+</style>

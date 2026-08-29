@@ -1,9 +1,78 @@
-<div class='mb15'></div>
-Hello there!
-<div class='mb15'></div>
-You've discovered Adventure Land's Tutorial! This Tutorial will walk you through the basics of the game, step by step. You will complete the tasks both manually, and via the provided Code pieces.
-<div class='mb15'></div>
-This tutorial is completely optional, but along the way, you'll receive small rewards for completion!
-<div class='mb15'></div>
-<span class="hlabel">Ps.</span> If you don't like tutorials, you can hide the Tutorial from: <div class='gamebutton gamebutton-small'>CONF</div> &gt; <div class='gamebutton gamebutton-small'>Advanced Settings</div>
-<div class='mb15'></div>
+<p class="tutlead">Welcome to Adventure Land.</p>
+
+<p>You can play every part of the game by hand. CODE is an extra tool: use it when a repeated task stops being an adventure and starts becoming a chore.</p>
+
+<div class="tutpath manual">
+	<div class="tutpath-title">MANUAL</div>
+	<p>Move, fight, trade, explore, and meet other adventurers with the game controls. The next lessons begin here.</p>
+</div>
+
+<div class="tutpath codepath">
+	<div class="tutpath-title">OPTIONAL CODE</div>
+	<p>Each practical lesson includes a small CODE equivalent. Read it, change it, or ignore it. Both paths lead to the same place.</p>
+</div>
+
+<p class="tuttip">
+	<span class="hlabel">Tip:</span> You can reopen this lesson from the Tutorial bar. The tutorial can be hidden or reset from <span class="gamebutton gamebutton-small">CONF</span> → Advanced Settings.
+</p>
+
+<div class="tutlinks">
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			open_guide('basics', '/docs/guide/basics');
+		"
+	>
+		BASIC CONTROLS
+	</div>
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			render_code_docs();
+		"
+	>
+		CODE DOCS
+	</div>
+</div>
+
+<style>
+	.tutlead {
+		color: #2b9ec9;
+		font-size: 38px;
+		margin-bottom: 10px;
+	}
+	.tutpath {
+		border: 4px solid #777;
+		margin: 12px 0;
+		padding: 10px 14px;
+		text-align: left;
+	}
+	.tutpath p {
+		margin: 8px 0 2px;
+	}
+	.tutpath.manual {
+		border-color: #5e9f6e;
+	}
+	.tutpath.codepath {
+		border-color: #c58b3d;
+	}
+	.tutpath-title {
+		font-size: 24px;
+		color: #555;
+	}
+	.manual .tutpath-title {
+		color: #387649;
+	}
+	.codepath .tutpath-title {
+		color: #9a6328;
+	}
+	.tuttip {
+		color: #555;
+	}
+	.tutlinks {
+		margin-top: 12px;
+		text-align: center;
+	}
+</style>

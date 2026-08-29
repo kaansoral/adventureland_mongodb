@@ -1,0 +1,110 @@
+<p class="tutlead">A realm is never entirely quiet. Watch the signs.</p>
+
+<div class="tutlinks">
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			tut('events');
+			open_guide('events-and-home', get_guide_url('events-and-home'));
+		"
+	>
+		EVENTS, SCHEDULES &amp; HOME
+	</div>
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			open_article('data-server-status', '/docs/code/server/status');
+		"
+	>
+		SERVER STATUS REFERENCE
+	</div>
+</div>
+
+{% for task in tutorial_data("events-status").tasks %} {% if loop.first %}
+<div class="tutdivider"></div>
+{% endif %}
+<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
+{% endfor %}
+
+<div class="tutpath manual">
+	<div class="tutpath-title">MANUAL</div>
+	<p>
+		Event buttons appear when something is active or approaching. Open their <span class="gamebutton gamebutton-small">INFO</span> guide before joining. The Guide's event list keeps daily, nightly,
+		and seasonal knowledge together.
+	</p>
+	<p>Events differ by server. Your home server matters for some rewards and services, so read before changing it.</p>
+</div>
+
+<div class="tutpath codepath">
+	<div class="tutpath-title">OPTIONAL CODE</div>
+	<!-- prettier-ignore -->
+	<div class="code">show_json(server.status);
+
+var franky = server.status.franky;
+if (franky &amp;&amp; franky.live) {
+	game_log("Franky is live in " + franky.map);
+	// smart_move(franky); // Travel only when you are ready
+}</div>
+	<p>
+		<span class="dlabel">G.events</span> explains an event. <span class="dlabel">server.status</span> tells you what is happening on this server now. Read it again after waiting; the snapshot changes.
+	</p>
+	<p>
+		<span class="rlabel" onclick="render_function_reference($(this).html())">on_game_event</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span> ·
+		<span class="rlabel" onclick="render_function_reference($(this).html())">join</span>
+	</p>
+</div>
+
+<style>
+	.tutlead {
+		color: #2b9ec9;
+		font-size: 34px;
+	}
+	.tutdivider {
+		border-top: 5px solid gray;
+		margin: 14px -24px 8px;
+	}
+	.tuttaskrow {
+		line-height: 44px;
+	}
+	.tuttask {
+		color: #4a4a4a;
+		font-size: 64px;
+		vertical-align: middle;
+	}
+	.tuttaskname {
+		color: #dc4c6e;
+		vertical-align: middle;
+	}
+	.tuttaskd {
+		color: #85c76b;
+		display: none;
+		vertical-align: middle;
+	}
+	.tutpath {
+		border: 4px solid #777;
+		margin: 12px 0;
+		padding: 10px 14px;
+		text-align: left;
+	}
+	.tutpath.manual {
+		border-color: #5e9f6e;
+	}
+	.tutpath.codepath {
+		border-color: #c58b3d;
+	}
+	.tutpath-title {
+		color: #555;
+		font-size: 24px;
+	}
+	.manual .tutpath-title {
+		color: #387649;
+	}
+	.codepath .tutpath-title {
+		color: #9a6328;
+	}
+	.tutlinks {
+		text-align: center;
+	}
+</style>

@@ -43,3 +43,10 @@ await smart_move({ map: "main", x: -100, y: -20 });</div>
   "code_slot": "1",
   "server": "US I"
 }</div>
+
+<p><span class="dlabel">Cyberland terminal</span></p>
+
+<p>The old terminal inside Cyberland is a separate, in-world machine. Run its visible commands through CODE with <span class="rlabel" onclick="render_function_reference($(this).html())">mainframe_command</span>. The Promise settles after the game server executes the command and includes the terminal's reply.</p>
+
+<div class="code">var response = await mainframe_command("hello");
+game_log(response.reply);</div>

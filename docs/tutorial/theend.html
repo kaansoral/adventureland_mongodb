@@ -1,5 +1,75 @@
-<div class='mb15'></div>
-This is the end of our short tutorial for now, as you've no doubt noticed, it's a work in progress.
-<div class='mb15'></div>
-When new steps are added, they will be available for you even though you've completed what's available right now!
-<div class='mb15'></div>
+<p class="tutlead">The road is yours now.</p>
+
+<p>You can fight by hand, automate a routine, build a party, raise several characters, chase a live event, craft something rare, or simply wander until the map surprises you.</p>
+
+<div class="tutpath manual">
+	<div class="tutpath-title">KEEP EXPLORING</div>
+	<p>
+		Nearby <span class="gamebutton gamebutton-small">INFO</span> buttons explain local systems. The <span class="gamebutton gamebutton-small">GUIDE</span> keeps every discovered path in one place.
+	</p>
+</div>
+
+<div class="tutpath codepath">
+	<div class="tutpath-title">KEEP BUILDING</div>
+	<p>CODE Docs cover every supported routine. Start small, inspect failures, and let your code grow with your character.</p>
+</div>
+
+<div class="tutlinks">
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			render_guide();
+		"
+	>
+		OPEN THE GUIDE
+	</div>
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			render_code_docs();
+		"
+	>
+		OPEN CODE DOCS
+	</div>
+</div>
+
+<p class="tutfinal">Good luck, adventurer.</p>
+
+<style>
+	.tutlead {
+		color: #2b9ec9;
+		font-size: 38px;
+	}
+	.tutpath {
+		border: 4px solid #777;
+		margin: 12px 0;
+		padding: 10px 14px;
+		text-align: left;
+	}
+	.tutpath.manual {
+		border-color: #5e9f6e;
+	}
+	.tutpath.codepath {
+		border-color: #c58b3d;
+	}
+	.tutpath-title {
+		color: #555;
+		font-size: 24px;
+	}
+	.manual .tutpath-title {
+		color: #387649;
+	}
+	.codepath .tutpath-title {
+		color: #9a6328;
+	}
+	.tutlinks {
+		text-align: center;
+	}
+	.tutfinal {
+		color: #906cb4;
+		font-size: 36px;
+		text-align: center;
+	}
+</style>

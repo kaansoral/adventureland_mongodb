@@ -1,1 +1,107 @@
-<p>It's time to move</p>
+<p class="tutlead">Roads, doors, transporters, and a little curiosity connect the world.</p>
+
+<div class="tutlinks">
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			open_guide('travel-and-instances', get_guide_url('travel-and-instances'));
+		"
+	>
+		TRAVEL GUIDE
+	</div>
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			open_article('data-npc', '/docs/code/npc/reference');
+		"
+	>
+		NPC REFERENCE
+	</div>
+</div>
+
+{% for task in tutorial_data("move").tasks %} {% if loop.first %}
+<div class="tutdivider"></div>
+{% endif %}
+<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
+{% endfor %}
+
+<div class="tutpath manual">
+	<div class="tutpath-title">MANUAL</div>
+	<p>Use <span class="gamebutton gamebutton-small">TRAVEL</span> for a long journey. Nearby doors and NPCs can be activated with right-click or <span class="gamebutton gamebutton-small">F</span>.</p>
+	<p>When an <span class="gamebutton gamebutton-small">INFO</span> guide appears nearby, open it. The world often explains itself where the explanation matters.</p>
+</div>
+
+<div class="tutpath codepath">
+	<div class="tutpath-title">OPTIONAL CODE</div>
+	<!-- prettier-ignore -->
+	<div class="code">async function visit_potions() {
+	var destination = find_npc("fancypots");
+	if (!destination) throw {reason: "npc_not_found"};
+	await smart_move(destination);
+	game_log("The potion merchant is nearby.");
+}
+
+visit_potions().catch(function (error) {
+	show_json(error);
+});</div>
+	<p>Special services have their own routines. Prefer those over raw socket messages.</p>
+	<p>
+		<span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">find_npc</span> ·
+		<span class="rlabel" onclick="render_function_reference($(this).html())">use_nearest_door</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">transport</span>
+	</p>
+</div>
+
+<style>
+	.tutlead {
+		color: #2b9ec9;
+		font-size: 34px;
+	}
+	.tutdivider {
+		border-top: 5px solid gray;
+		margin: 14px -24px 8px;
+	}
+	.tuttaskrow {
+		line-height: 44px;
+	}
+	.tuttask {
+		color: #4a4a4a;
+		font-size: 64px;
+		vertical-align: middle;
+	}
+	.tuttaskname {
+		color: #dc4c6e;
+		vertical-align: middle;
+	}
+	.tuttaskd {
+		color: #85c76b;
+		display: none;
+		vertical-align: middle;
+	}
+	.tutpath {
+		border: 4px solid #777;
+		margin: 12px 0;
+		padding: 10px 14px;
+		text-align: left;
+	}
+	.tutpath.manual {
+		border-color: #5e9f6e;
+	}
+	.tutpath.codepath {
+		border-color: #c58b3d;
+	}
+	.tutpath-title {
+		color: #555;
+		font-size: 24px;
+	}
+	.manual .tutpath-title {
+		color: #387649;
+	}
+	.codepath .tutpath-title {
+		color: #9a6328;
+	}
+	.tutlinks {
+		text-align: center;
+	}
+</style>

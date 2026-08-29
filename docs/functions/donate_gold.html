@@ -1,0 +1,13 @@
+<p><span class='dlabel'>donate_gold(gold, timeout_ms)</span></p>
+<p>Donates gold to the Lost and Found reserve.</p>
+<p><b>Returns:</b> Promise resolving with the exact donated gold, current merchant xprate, and reserve response. Invalid gold, insufficient gold, distance, bank, and timeout failures reject.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Notes:</b> Donations of at least 1,000,000 gold unlock Lost and Found listings for that character. Merchants receive reserve-rate XP. timeout_ms defaults to 10,000ms.</p>
+<p><b>Example:</b></p>
+<div class='code'>async function example() {
+	await donate_gold(1000000);
+}
+example();</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

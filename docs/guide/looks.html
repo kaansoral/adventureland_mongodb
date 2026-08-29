@@ -1,6 +1,39 @@
-<div class="title mt15">Cosmetics</div> <div class="mb5"></div>
+<div class="title mt15">Cosmetics</div>
+<div class="mb15"></div>
 
-<div>This article is a work in progress, but basically, if you click your NAME: section, you can open your own cosmetics, change your looks. If you purchase new cosmetics, click the cosmetics UI of another one of your characters, you can freely send these new cosmetics items in-between your characters!</div>
+<p>Cosmetics change how your character looks. They do not take an equipment slot.</p>
+
+<div class="divider"></div>
+<div class="title">Open the Wardrobe</div>
+
+<p>Click your character, then <span class="hlabel">COSMETICS</span>. Pick a slot such as Hair, Hat, Face, Attire, Back, Special, or RIP. Owned choices appear first; gray choices show what is still out there.</p>
+
+<p>Click an owned look to equip it. Choose the red empty tile to clear that slot. The complete gallery is under <span class="hlabel">GUIDE</span> → <span class="hlabel">All Cosmetics</span>.</p>
+
+<div class="divider"></div>
+<div class="title">Finding Looks</div>
+
+<p>Looks can come from cosmetic shops, exchanges, monsters, achievements, classes, equipment, events, and Cosmetic Jars. The gallery marks exchange, monster, class, and item sources with small letters.</p>
+
+<p>Some looks have limited copies. Equipping one does not consume it. Sending one to another character does.</p>
+
+<div class="divider"></div>
+<div class="title">Sharing Between Characters</div>
+
+<p>Open the Cosmetics panel of another character on your account. Choose a look you own to send one copy to that character. Cosmetics cannot be sent to a different account.</p>
+
+<div class="divider"></div>
+<div class="title">With CODE</div>
+
+<p><span class="rlabel" onclick="render_function_reference($(this).html())">equip_cx</span> equips or clears a cosmetic slot. <span class="rlabel" onclick="render_function_reference($(this).html())">send_cx</span> moves one owned copy to another character on your account.</p>
+
+<div class="code">show_json(character.cx);  // currently equipped
+show_json(character.acx); // owned copies
+
+await equip_cx("hat", "bwhat");
+await equip_cx("hat"); // clear the hat slot
+
+await send_cx("YourOtherCharacter", "bwhat");</div>
 
 <style>
 	.title{

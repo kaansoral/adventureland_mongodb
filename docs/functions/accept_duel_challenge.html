@@ -1,0 +1,14 @@
+<p><span class='dlabel'>accept_duel_challenge(name, timeout_ms)</span></p>
+<p>Accepts a live duel challenge from the named character.</p>
+<p><b>Returns:</b> Promise resolving after the duel instance is created and both leaders are assigned. The result includes action:"accepted", id, challenger, and vs. It rejects if the challenge expired, either leader is already dueling, either leader is in PVP, or the timeout expires.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Notes:</b> Pass a character name or character object. Party members receive the normal duel invitation after the leaders enter. timeout_ms defaults to 10,000ms.</p>
+<p><b>Example:</b></p>
+<div class='code'>async function example() {
+	var duel = await accept_duel_challenge("ChallengerName");
+	game_log("Duel: " + duel.id);
+}
+example();</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

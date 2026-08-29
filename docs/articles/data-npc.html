@@ -1,1 +1,52 @@
-<p>Work in progress ...</p>
+<p><span class="dlabel">NPC Objects</span></p>
+
+<p>Adventure Land has two useful NPC data layers. <span class="dlabel">G.npcs</span> describes every NPC type, while a nearby NPC entity describes the copy currently visible on your map.</p>
+
+<div class="code">show_json(G.npcs.newupgrade);
+show_json(find_npc("newupgrade"));
+show_json(get_nearest_npc());</div>
+
+<p><span class="dlabel">G.npcs</span> is indexed by stable NPC IDs such as <span class="dlabel">newupgrade</span>, <span class="dlabel">craftsman</span>, and <span class="dlabel">transporter</span>. Display names can change; use the ID in CODE.</p>
+
+<div class="code">{
+    name: "Cue",
+    role: "newupgrade",
+    skin: "newupgrade",
+    says: "+1"
+}</div>
+
+<p>Common definition fields:</p>
+
+<div data-npc-field="name"><span class="dlabel">name</span> — player-facing name.</div>
+<div data-npc-field="role"><span class="dlabel">role</span> — the service or interaction family used by the game client.</div>
+<div data-npc-field="skin"><span class="dlabel">skin</span> — sprite or appearance key.</div>
+<div data-npc-field="says"><span class="dlabel">says</span> — short overhead line, sometimes selected from an array.</div>
+<div data-npc-field="interaction"><span class="dlabel">interaction</span> — longer dialogue shown when the NPC has no specialist panel.</div>
+<div data-npc-field="items"><span class="dlabel">items</span> — item IDs sold by a merchant.</div>
+<div data-npc-field="quest"><span class="dlabel">quest</span> — collection or quest interaction key.</div>
+<div data-npc-field="side_interaction"><span class="dlabel">side_interaction</span> — contextual dialogue displayed beside a specialist grid.</div>
+
+<p>Map placement lives in <span class="dlabel">G.maps[map].npcs</span>. A placement contains an NPC <span class="dlabel">id</span> and either one <span class="dlabel">position</span> or a movement path in <span class="dlabel">positions</span>.</p>
+
+<div class="code">var cue = find_npc("newupgrade");
+if (cue) await smart_move(cue);</div>
+
+<p><span class="dlabel">find_npc(id)</span> searches static map placements and returns smart-moveable coordinates. Seasonal or server-created NPCs may not be placed in the static map data.</p>
+
+<p>A visible NPC entity is a PIXI-backed world object. Useful live fields include:</p>
+
+<div data-npc-field="id"><span class="dlabel">id</span> — live entity ID.</div>
+<div data-npc-field="npc"><span class="dlabel">npc</span> — stable key into <span class="dlabel">G.npcs</span>.</div>
+<div data-npc-field="type"><span class="dlabel">type</span> — normally <span class="dlabel">"npc"</span>.</div>
+<div data-npc-field="map"><span class="dlabel">map</span> — current map.</div>
+<div data-npc-field="x"><span class="dlabel">x</span> and <span class="dlabel">y</span> — current coordinates.</div>
+
+<div class="code">var npc = get_nearest_npc();
+if (npc) {
+    game_log(npc.npc + " / " + npc.role);
+    game_log("Distance: " + distance(character, npc));
+}</div>
+
+<p><span class="dlabel">get_nearest_npc()</span> only searches NPCs currently rendered around the character. It returns the closest entity or <span class="dlabel">null</span>.</p>
+
+<p>NPC services still enforce distance, inventory, currency, and item rules on the server. Travel close to the NPC, then call the documented routine for the service—such as <span class="rlabel" onclick="render_function_reference($(this).html())">upgrade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">craft</span>, or <span class="rlabel" onclick="render_function_reference($(this).html())">exchange_buy</span>. Do not emit raw socket messages when a public routine exists.</p>

@@ -26,10 +26,10 @@
 		// await destroy(slot);
 	}
 }</div>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">interact</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">leave</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">destroy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span>.</p>
-<div class="guide-note">The Mainframe terminal still has no public runner command wrapper. Use its visible terminal; do not copy private socket messages into CODE.</div>
+<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">interact</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">mainframe_command</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">leave</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">destroy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span>.</p>
+<div class="guide-note">Inside Cyberland, <span class="dlabel">await mainframe_command("hello")</span> runs the same command as the visible terminal and settles with its reply.</div>
 
-<div class="guide-related">Ordinary services are covered by <span onclick="hide_modal(); open_guide('shops-and-selling','/docs/guide/shops-and-selling')">Shops and Selling</span> and <span onclick="hide_modal(); open_guide('travel-and-instances','/docs/guide/travel-and-instances')">Travel and Instances</span>.</div>
+<div class="guide-related">Ordinary services are covered by <span onclick="hide_modal(); open_guide('shops-and-selling',get_guide_url('shops-and-selling'))">Shops and Selling</span> and <span onclick="hide_modal(); open_guide('travel-and-instances',get_guide_url('travel-and-instances'))">Travel and Instances</span>.</div>
 
 <style>
 	.guide-kicker{color:#6D657B;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#4E465C;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#4E465C;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #786F87;background:#E8E5EC;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#5E536E;cursor:pointer;text-decoration:underline}

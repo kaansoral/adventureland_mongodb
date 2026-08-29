@@ -2694,8 +2694,6 @@ function buy(name, quantity) {
 }
 
 function buy_with_gold(name, quantity) {
-	if (name == "scroll0") tut("buyscrolls");
-	if (name == "cscroll0") tut("buycscroll0");
 	if (mssince(last_npc_right_click) < 100) return rejecting_promise({ reason: "npc_misclickp" });
 	var promise = push_deferred("buy");
 	socket.emit("buy", { name: name, quantity: quantity });
@@ -3129,7 +3127,6 @@ function deposit(amount) {
 		add_log("Not in the bank.", "gray");
 		return rejecting_promise({ reason: "not_in_bank" });
 	}
-	tut("deposit");
 	if (!amount) amount = $(".npcgold").html() || "";
 	amount = amount.replace_all(",", "").replace_all(".", "");
 	var promise = push_deferred("bank");
@@ -5947,6 +5944,7 @@ function handle_information(infs) {
 		} else if (info.type == "tutorial_data") {
 			delete info.type;
 			X.tutorial = info;
+			claim_tutorial_reward();
 			if (info.next) {
 				small_success(character, { color: "purple" });
 				delete info.next;
@@ -6031,10 +6029,32 @@ function sfx(type, x, y) {
 	}
 }
 
+var tutorial_tasks_in_flight = {};
+var tutorial_reward_in_flight = false,
+	tutorial_reward_settled = false;
+function claim_tutorial_reward() {
+	if (tutorial_reward_in_flight || tutorial_reward_settled || !character || !X || !X.tutorial || !X.tutorial.finished) return;
+	tutorial_reward_in_flight = true;
+	socket.emit("ureward", { name: "c0" });
+}
+
 function tut(name) {
 	try {
-		if (X && X.tutorial && X.tutorial.task == name) {
-			api_call("tutorial", { task: name });
+		if (
+			X &&
+			X.tutorial &&
+			!tutorial_tasks_in_flight[name] &&
+			(X.tutorial.task == name || (X.tutorial.pending && X.tutorial.pending.indexOf(name) !== -1))
+		) {
+			tutorial_tasks_in_flight[name] = true;
+			api_call("tutorial", { task: name }).then(
+				function () {
+					delete tutorial_tasks_in_flight[name];
+				},
+				function () {
+					delete tutorial_tasks_in_flight[name];
+				},
+			);
 		}
 	} catch (e) {
 		console.error("FATAL: tut() " + name);

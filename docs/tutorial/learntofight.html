@@ -1,18 +1,110 @@
-<p>For this step, you need to be at the starting/spawn area. <span class='elabel' onclick="code_eval('smart_move(&quot;goo&quot;)')">Move There</span></p>
+<p class="tutlead">A Goo is a fine first opponent. Soft, green, surprisingly determined.</p>
 
-{% for task in tutorial_data("learntofight").tasks %}
-	{% if loop.first %}<div style='margin-left:-24px; margin-right: -24px; border-bottom: 5px solid gray'></div>{% endif %}
-	<p style='margin-top: 16px; margin-bottom: 16px; line-height: 16px'><span style='font-size: 80px; color:#4A4A4A;' class='tuttask tuttask{{task}}'>o</span> <span style='vertical-align:text-top; color: #DC4C6E'>{{task_name(task)}}</span> <span style='vertical-align:text-top; color:#85C76B; display:none' class='tuttaskd tuttaskd{{task}}'>DONE</span></p>
-	{% if task == "killagoo" %}
-		<p><span class='spgoo'></span> Defeat your first Goo. Left click to target the Goo. Right click to attack.</p>
-	{% elif task == "firstloot" %}
-		<p><span class='spchest6'></span> Loot the chest by simply clicking on it!</p>
-	{% endif %}
-	<div style='margin-bottom: 16px'></div>
-	{% if not loop.last %}<div style='margin-left:-24px; margin-right: -24px; border-bottom: 5px solid gray'></div>{% endif %}
+<div class="tutlinks">
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			open_guide('basics', '/docs/guide/basics');
+		"
+	>
+		COMBAT &amp; CONTROLS
+	</div>
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			code_eval('smart_move(&quot;goo&quot;)');
+		"
+	>
+		GO TO THE GOOS
+	</div>
+</div>
+
+{% for task in tutorial_data("learntofight").tasks %} {% if loop.first %}
+<div class="tutdivider"></div>
+{% endif %}
+<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
 {% endfor %}
 
-<script>
-	$(".spgoo").html(sprite("goo",{height:28}));
-	$(".spchest6").html(sprite("chest6",{height:33}));
-</script>
+<div class="tutpath manual">
+	<div class="tutpath-title">MANUAL</div>
+	<p>Left-click a Goo to target it. Move close, then right-click it to attack. When it falls, click the chest before it fades.</p>
+	<p>Watch your HP. Potions are brave little bottles, but they cannot help from the shop shelf.</p>
+</div>
+
+<div class="tutpath codepath">
+	<div class="tutpath-title">OPTIONAL CODE</div>
+	<p>This finds one Goo, approaches it, attacks when ready, and checks for chests:</p>
+	<!-- prettier-ignore -->
+	<div class="code">var target = get_nearest_monster({type: "goo"});
+
+if (target) {
+	change_target(target);
+	if (!is_in_range(target)) move(
+		character.x + (target.x - character.x) / 2,
+		character.y + (target.y - character.y) / 2
+	);
+	else if (can_attack(target)) attack(target);
+}
+
+loot();</div>
+	<p>Run it again as the fight changes. Later, a loop can do that watching for you.</p>
+	<p>
+		<span class="rlabel" onclick="render_function_reference($(this).html())">get_nearest_monster</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">is_in_range</span> ·
+		<span class="rlabel" onclick="render_function_reference($(this).html())">attack</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">loot</span>
+	</p>
+</div>
+
+<style>
+	.tutlead {
+		color: #2b9ec9;
+		font-size: 34px;
+	}
+	.tutdivider {
+		border-top: 5px solid gray;
+		margin: 14px -24px 8px;
+	}
+	.tuttaskrow {
+		line-height: 44px;
+	}
+	.tuttask {
+		color: #4a4a4a;
+		font-size: 64px;
+		vertical-align: middle;
+	}
+	.tuttaskname {
+		color: #dc4c6e;
+		vertical-align: middle;
+	}
+	.tuttaskd {
+		color: #85c76b;
+		display: none;
+		vertical-align: middle;
+	}
+	.tutpath {
+		border: 4px solid #777;
+		margin: 12px 0;
+		padding: 10px 14px;
+		text-align: left;
+	}
+	.tutpath.manual {
+		border-color: #5e9f6e;
+	}
+	.tutpath.codepath {
+		border-color: #c58b3d;
+	}
+	.tutpath-title {
+		color: #555;
+		font-size: 24px;
+	}
+	.manual .tutpath-title {
+		color: #387649;
+	}
+	.codepath .tutpath-title {
+		color: #9a6328;
+	}
+	.tutlinks {
+		text-align: center;
+	}
+</style>

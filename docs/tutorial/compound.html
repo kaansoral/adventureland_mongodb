@@ -1,28 +1,124 @@
-<p>For accessories there's an entirely different system. You can compound 3 accessories of the same level to make a higher level, stronger version. Whenever you gather 3 accessories of the same kind that you don't equip, combine them to make a stronger accessory and free up inventory space!</p>
+<p class="tutlead">Compounding turns three matching accessories into one stronger accessory.</p>
 
-<p>You'll just need gold to buy the gear and scrolls, so leave your character with Code open so your character farms gold.</p>
+<div class="tutlinks">
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			open_guide('compounding', get_guide_url('compounding'));
+		"
+	>
+		COMPLETE COMPOUNDING GUIDE
+	</div>
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			code_eval('smart_move(&quot;scrolls&quot;)');
+		"
+	>
+		GO TO THE SCROLLS
+	</div>
+</div>
 
-{% for task in tutorial_data("compound").tasks %}
-	{% if loop.first %}<div style='margin-left:-24px; margin-right: -24px; border-bottom: 5px solid gray'></div>{% endif %}
-	<p style='margin-top: 16px; margin-bottom: 16px; line-height: 16px'><span style='font-size: 80px; color:#4A4A4A;' class='tuttask tuttask{{task}}'>o</span> <span style='vertical-align:text-top; color: #DC4C6E'>{{task_name(task)}}</span> <span style='vertical-align:text-top; color:#85C76B; display:none' class='tuttaskd tuttaskd{{task}}'>DONE</span></p>
-	{% if task == "buycscroll0" %}
-		<p>Compound Scroll's are 6,400 gold each. <span class='elabel' onclick="code_eval('smart_move(&quot;scrolls&quot;)')">Travel to the NPC</span></p>
-		<p style='line-height: 1px;'><span class='spscrolls'></span> => <span class="eitemcscroll0"></span></p>
-	{% elif task == "compound" %}
-		<p>Visit Cue in town with 3 accessories of the same kind and a Compound Scroll.</p>
-		<p style='line-height: 1px;'><span class='spupgrade'></span> => <span class="eitemringsj"></span> + <span class="eitemringsj"></span> + <span class="eitemringsj"></span> + <span class="eitemcscroll0"></span> => <span class="eitemringsj1"></span></p>
-	{% endif %}
-	<div style='margin-bottom: 16px'></div>
-	{% if not loop.last %}<div style='margin-left:-24px; margin-right: -24px; border-bottom: 5px solid gray'></div>{% endif %}
+{% for task in tutorial_data("compound").tasks %} {% if loop.first %}
+<div class="tutdivider"></div>
+{% endif %}
+<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
 {% endfor %}
 
-<script>
-	$(".spupgrade").html(sprite(G.npcs.newupgrade.skin,{height:52}));
-	$(".spscrolls").html(sprite(G.npcs.scrolls.skin,{height:52,width:58}));
-	["ringsj"].forEach(function(e){
-		$(".eitem"+e+"1").html(item_container({skin:G.items[e].skin},{name:e,level:1}));
+<div class="tutpath manual">
+	<div class="tutpath-title">MANUAL</div>
+	<p>Bring Cue three accessories with the same name and level, plus a compatible Compound Scroll. Place all four, inspect the chance, then decide.</p>
+	<p>A failure consumes all three accessories and the scroll. Every new level needs three of the previous level: a +2 already carries at least nine base copies inside it.</p>
+</div>
+
+<div class="tutpath codepath">
+	<div class="tutpath-title">OPTIONAL CODE</div>
+	<p>With three +0 Rings of Joy and a Basic Compound Scroll in your bag:</p>
+	<!-- prettier-ignore -->
+	<div class="code">async function compound_once() {
+	await smart_move(find_npc("newupgrade"));
+
+	var items = [];
+	character.items.forEach(function (item, num) {
+		if (item &amp;&amp; item.name === "ringsj" &amp;&amp; (item.level || 0) === 0) items.push(num);
 	});
-	["cscroll0","ringsj"].forEach(function(e){
-		$(".eitem"+e).html(item_container({skin:G.items[e].skin}));
-	});
-</script>
+	var scroll_num = locate_item("cscroll0");
+	if (items.length &lt; 3 || scroll_num === -1) throw {reason: "missing_items_or_scroll"};
+
+	var preview = await compound(items[0], items[1], items[2], scroll_num, null, true);
+	game_log("Compound chance: " + (preview.chance * 100).toFixed(2) + "%");
+
+	var CONFIRM_COMPOUND = false;
+	if (!CONFIRM_COMPOUND) throw {reason: "read_the_chance_then_confirm"};
+	await compound(items[0], items[1], items[2], scroll_num);
+}
+
+compound_once().catch(function (error) {
+	show_json(error);
+});</div>
+	<p>Calculation mode consumes nothing. Read its chance, then change <span class="dlabel">CONFIRM_COMPOUND</span> to <span class="dlabel">true</span> only if you accept the risk.</p>
+	<p>
+		<span class="rlabel" onclick="render_function_reference($(this).html())">compound</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">item_grade</span> ·
+		<span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>
+	</p>
+</div>
+
+<p class="tuttip"><span class="hlabel">Before risking rare pieces:</span> Read the full guide. Scroll grades, offerings, grace, and the value of all three inputs matter.</p>
+
+<style>
+	.tutlead {
+		color: #2b9ec9;
+		font-size: 34px;
+	}
+	.tutdivider {
+		border-top: 5px solid gray;
+		margin: 14px -24px 8px;
+	}
+	.tuttaskrow {
+		line-height: 44px;
+	}
+	.tuttask {
+		color: #4a4a4a;
+		font-size: 64px;
+		vertical-align: middle;
+	}
+	.tuttaskname {
+		color: #dc4c6e;
+		vertical-align: middle;
+	}
+	.tuttaskd {
+		color: #85c76b;
+		display: none;
+		vertical-align: middle;
+	}
+	.tutpath {
+		border: 4px solid #777;
+		margin: 12px 0;
+		padding: 10px 14px;
+		text-align: left;
+	}
+	.tutpath.manual {
+		border-color: #5e9f6e;
+	}
+	.tutpath.codepath {
+		border-color: #c58b3d;
+	}
+	.tutpath-title {
+		color: #555;
+		font-size: 24px;
+	}
+	.manual .tutpath-title {
+		color: #387649;
+	}
+	.codepath .tutpath-title {
+		color: #9a6328;
+	}
+	.tuttip {
+		color: #555;
+	}
+	.tutlinks {
+		text-align: center;
+	}
+</style>

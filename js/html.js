@@ -255,9 +255,78 @@ function render_rewards() {
 	show_json(S.rewards);
 }
 
+function open_interaction_guide(key) {
+	var definition = G.docs && G.docs.interactions && G.docs.interactions[key];
+	if (!definition || !definition.article) return add_log("No guide is available for this interaction yet.", "gray");
+	open_guide(definition.article, get_guide_url(definition.article));
+}
+
+function get_guide_url(name) {
+	var found = null;
+	function find(entries, path) {
+		for (var i = 0; i < entries.length && !found; i++) {
+			var entry = entries[i],
+				next = path + "/" + entry[0];
+			if (entry[4]) find(entry[4], next);
+			else if (entry[0] == name) found = next;
+		}
+	}
+	find(G.docs.guide || [], "/docs/guide");
+	return found || "/docs/ref/" + name;
+}
+
+function interaction_guide_button_html(context, compact) {
+	if (!context || !context.definition || !context.definition.article) return "";
+	var definition = context.definition,
+		label = (compact && "GUIDE") || "? GUIDE";
+	return (
+		"<div class='slimbutton interactionguidebutton' style='" +
+		((compact && "margin-top: 5px;") || "float: right; clear: both; margin-top: 8px;") +
+		" border-color: #69BE86; color: #69BE86' onclick='pcs(event); open_interaction_guide(\"" +
+		context.key +
+		"\")'>" +
+		label +
+		"</div>"
+	);
+}
+
+var interaction_guide_observer = null;
+function append_interaction_guide_button() {
+	if (no_html || !active_interaction_guide || !active_interaction_guide.definition.article) return;
+	var root = $("#topleftcornerui"),
+		target = root.children("div").first();
+	if (!target.length || root.find(".interactionguidebutton").length) return;
+	target.append(interaction_guide_button_html(active_interaction_guide));
+}
+
+function defer_interaction_guide_button() {
+	if (no_html) return;
+	append_interaction_guide_button();
+	var root = document.getElementById("topleftcornerui");
+	if (!root || interaction_guide_observer) return;
+	interaction_guide_observer = new MutationObserver(function () {
+		append_interaction_guide_button();
+	});
+	interaction_guide_observer.observe(root, { childList: true, subtree: true });
+}
+
 function render_server() {
 	var html = "",
 		content = false;
+	if (interaction_context) {
+		var definition = interaction_context.definition,
+			icon = definition.icon && G.items[definition.icon];
+		html +=
+			" <div class='gamebutton' title='" +
+			html_escape(definition.summary || definition.title) +
+			"' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_interaction_guide(\"" +
+			interaction_context.key +
+			"\")'>";
+		if (icon) html += "<div style='margin-top: -1px; margin-left: -3px; margin-right: -3px'>" + item_container({ skin: icon.skin, bcolor: "black" }) + "</div>";
+		else html += "<div style='font-size: 32px; line-height: 42px; color:#69BE86'>?</div>";
+		html += "<div style='color:#69BE86; margin-top: 1px'>INFO</div></div>";
+		content = true;
+	}
 	if (quirks.crypt) {
 		html += " <div class='gamebutton' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_guide(\"dungeon-crypt\",\"/docs/ref/dungeon-crypt\")'>";
 		html += "<div style='margin-top: -1px; margin-left: -3px; margin-right: -3px'>" + item_container({ skin: G.items.cryptkey.skin, bcolor: "black" }) + "</div>";
@@ -273,14 +342,14 @@ function render_server() {
 		content = true;
 	}
 	if (quirks.fishing) {
-		html += " <div class='gamebutton' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_guide(\"skill-fishing\",\"/docs/ref/skill-fishing\")'>";
+		html += " <div class='gamebutton' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_interaction_guide(\"gathering\")'>";
 		html += "<div style='margin-top: -1px; margin-left: -3px; margin-right: -3px'>" + item_container({ skin: G.items.rod.skin, bcolor: "black" }) + "</div>";
 		html += "<div style='color:#CFD1D1; margin-top: 1px'>INFO</div>";
 		html += "</div>";
 		content = true;
 	}
 	if (quirks.mining) {
-		html += " <div class='gamebutton' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_guide(\"skill-mining\",\"/docs/ref/skill-mining\")'>";
+		html += " <div class='gamebutton' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_interaction_guide(\"gathering\")'>";
 		html += "<div style='margin-top: -1px; margin-left: -3px; margin-right: -3px'>" + item_container({ skin: G.items.pickaxe.skin, bcolor: "black" }) + "</div>";
 		html += "<div style='color:#CFD1D1; margin-top: 1px'>INFO</div>";
 		html += "</div>";
@@ -2642,8 +2711,33 @@ function open_guide(name, url) {
 	api_call("load_article", { name: name, guide: true, url: url });
 }
 
-function open_tutorial() {
-	api_call("load_article", { name: G.docs.tutorial[X.tutorial.step].key, tutorial: "" + X.tutorial.step });
+function open_tutorial(step) {
+	if (step === undefined || step === null) step = Math.min(X.tutorial.step, G.docs.tutorial.length - 1);
+	step = Math.max(0, Math.min(parseInt(step) || 0, G.docs.tutorial.length - 1));
+	api_call("load_article", { name: G.docs.tutorial[step].key, tutorial: "" + step });
+}
+
+function render_tutorial_index() {
+	var current_step = (window.X && X.tutorial && X.tutorial.step) || 0,
+		html = "<div style='width: 520px; text-align: left'>";
+	html += "<div class='gamebutton block mb5' style='text-align:center'>Tutorial Lessons</div>";
+	G.docs.tutorial.forEach(function (lesson, step) {
+		var color = step < current_step ? "#73BD6D" : step == current_step ? "#D67D23" : "gray";
+		html +=
+			"<div class='gamebutton block mb5' style='border-color:" +
+			color +
+			"; text-align:left' onclick='open_tutorial(" +
+			step +
+			")'><span style='color:" +
+			color +
+			"'>[" +
+			(step + 1) +
+			"]</span> " +
+			lesson.title +
+			"</div>";
+	});
+	html += "</div>";
+	show_modal(html, { wrap: false, url: "/docs/tutorial" });
 }
 
 var last_rendered_step = 0;
@@ -2663,14 +2757,14 @@ function render_tutorial(article, step, url) {
 		(step + 1) +
 		"/" +
 		G.docs.tutorial.length +
-		"]</div></div>";
+		"] <span class='clickable' style='font-size:20px; color:#7A7A7A' onclick='render_tutorial_index()'>LESSONS</span></div></div>";
 	html += "<div style='margin-left:-24px; margin-right: -24px; border-bottom: 5px solid gray'></div>";
 	html += article;
 	html += "<div style='margin-left:-24px; margin-right: -24px; border-bottom: 5px solid gray'></div>";
 	html +=
 		"<div style='margin-top: 8px; margin-bottom: -16px'><span style='color: #D67D23'>Completion: <span class='tutprogress'>" +
 		0 +
-		"</span>%</span> <div style='float: right; color: gray' class='tutincomplete'>INCOMPLETE</div><div style='float: right; color: #73BD6D' class='clickable tutcontinue' onclick='btc(event); api_call(\"tutorial\",{step:" +
+		"</span>%</span> <div style='float: right; color: #906CB4; display:none' class='tutreview'></div><div style='float: right; color: gray' class='tutincomplete'>INCOMPLETE</div><div style='float: right; color: #73BD6D' class='clickable tutcontinue' onclick='btc(event); api_call(\"tutorial\",{step:" +
 		(step + 1) +
 		"}); hide_modal()'>" +
 		cphrase +
@@ -2737,6 +2831,7 @@ function render_functions_directory() {
 }
 
 function render_all_recipes() {
+	tut("recipes");
 	var html = "<div style='border: 5px solid gray; background-color: black; padding: 10px; width: 734px; font-size: 32px'>";
 	// html+="<div style='padding: 10px; color: #CC863B; text-align: center'>Work in Progress</div>";
 	var xprev = false;
@@ -2926,6 +3021,7 @@ function render_all_monsters() {
 }
 
 function render_all_events() {
+	tut("events");
 	function event_html(e, key) {
 		var ehtml = "";
 		ehtml += " <div class='gamebutton mb5' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_guide(\"event-" + key + '","/docs/ref/event-' + key + "\")'>";
@@ -2978,6 +3074,8 @@ function render_guide(path, title, color) {
 	var html = "<div style='/*background-color: black; border: 5px solid gray; padding: 4px; */ width: 360px; text-align: center'>";
 	var index = 0;
 	if (ref) {
+		html +=
+			"<div class='gamebutton block' style='margin-bottom: 4px; background-color: #E5E5E5; color: #010805' onclick='render_tutorial_index()'><span style='color:#906CB4'>[T]</span> Tutorial Lessons</div>";
 		html += "<div style='margin-bottom: 4px; height: 56px'>";
 		html += "<div class='gamebutton' style='background-color: #E5E5E5; color: #010805; float: left; width: 145px' onclick='render_all_items()'><span style='color: #328355'>[I]</span> All Items</div>";
 		html +=
@@ -4101,7 +4199,6 @@ function on_rclick(current) {
 		push_deferred("bank");
 	} else if (inum !== undefined) {
 		if (topleft_npc == "items") {
-			tut("store");
 			socket.emit("bank", { operation: "swap", inv: inum, str: -1, pack: last_rendered_items, reopen: false });
 			push_deferred("bank");
 		} else if (topleft_npc == "merchant") {
@@ -4340,7 +4437,6 @@ function on_drop(event) {
 		// inventory to storage
 		socket.emit("bank", { operation: "swap", inv: inum, str: strnum, pack: last_rendered_items });
 		move = true;
-		tut("store");
 		push_deferred("bank");
 	} else if (cnum != undefined && snum != undefined) {
 		// storage to inventory
@@ -5503,6 +5599,7 @@ function load_servers_list(info) {
 }
 
 function load_character_list() {
+	tut("characters");
 	friends_inside = "characters";
 	var html = "";
 	html += "<table style='margin: 5px; text-align: center' class='cclist'>";
@@ -5721,6 +5818,7 @@ function load_coming_soon(num) {
 
 var friends_inside = "nearby";
 function render_com() {
+	tut("com");
 	var html = "";
 	var c_count = 0;
 	api_call("servers_and_characters");

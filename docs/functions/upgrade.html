@@ -1,13 +1,10 @@
-<p>
-	Arguments:
+<p>Arguments:</p>
 	<div>&nbsp;<b>*</b> Integer - Inventory index of the item [0 to 41]</div>
 	<div>&nbsp;<b>*</b> Integer - Inventory index of the scroll [0 to 41]</div>
 	<div>&nbsp;<b>*</b> Integer - (Optional) Inventory index of the offering [0 to 41]</div>
-</p>
-<p>
-	Returns:
+	<div>&nbsp;<b>*</b> Boolean - (Optional) Calculate the chance without starting the upgrade</div>
+<p>Returns:</p>
 	<div>&nbsp; <b>*</b> Promise</div>
-</p>
 
 <!-- <p>Current inventory with indexes: <br/><span class="xlabel" onclick="code_eval($(this).html())">show_json([Array(42).keys()].reduce(function(map,i){ map[i]=character.items[i]; return map; },{}))</span></p> -->
 
@@ -17,6 +14,11 @@
 upgrade(0,1); // Item is in the first slot[0], scroll is in the second[1]
 
 upgrade(0,1,2); // A primordial essence in the 3rd slot[2]
+
+async function preview_upgrade() {
+	var preview = await upgrade(0,1,null,true); // Consumes nothing
+	game_log("Chance: "+(preview.chance*100).toFixed(2)+"%");
+}
 
 if(character.q.upgrade) log("Already upgrading something!");
 
@@ -38,6 +40,17 @@ upgrade(locate_item("shoes"),locate_item("scroll0")).then(
 <p>Promise Reference:</p>
 
 <span class='dlabel'>"resolve"</span>
+<div class='code'>
+{
+	success: true,
+	calculate: true,
+	chance: 0.95,
+	item: {name: "coat", level: 0},
+	scroll: "scroll0",
+	grace: 0,
+}
+</div>
+<div style='margin-bottom: 1px'></div>
 <div class='code'>
 {
 	success: true,

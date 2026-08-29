@@ -1,27 +1,27 @@
-<p class="tutlead">The bank keeps items and gold safe—and shares them with all your characters.</p>
+<p class="tutlead">Skills turn a class into a calling. Recovery keeps that calling alive.</p>
 
 <div class="tutlinks">
 	<div
 		class="gamebutton gamebutton-small"
 		onclick="
 			btc(event);
-			open_guide('banking', get_guide_url('banking'));
+			open_guide('stats', '/docs/guide/stats');
 		"
 	>
-		BANKING GUIDE
+		CLASSES &amp; SKILLS
 	</div>
 	<div
 		class="gamebutton gamebutton-small"
 		onclick="
 			btc(event);
-			code_eval('smart_move(&quot;bank&quot;)');
+			open_article('7-using-skills', '/docs/code/learn/7-using-skills');
 		"
 	>
-		GO TO THE BANK
+		SKILLS IN CODE
 	</div>
 </div>
 
-{% for task in tutorial_data("bank").tasks %} {% if loop.first %}
+{% for task in tutorial_data("skills-recovery").tasks %} {% if loop.first %}
 <div class="tutdivider"></div>
 {% endif %}
 <div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
@@ -29,28 +29,22 @@
 
 <div class="tutpath manual">
 	<div class="tutpath-title">MANUAL</div>
-	<p>Enter the bank to the right of the town square. Open an item clerk, move one item into storage, then visit Mr. Rich to deposit a little gold.</p>
-	<p>Only one of your characters can be inside the bank at a time. The first packs are open; deeper vaults must be unlocked.</p>
+	<p>Open <span class="gamebutton gamebutton-small">SKILLS</span>. Read your class skills, their MP costs, ranges, and cooldowns. Put the ones you use on the skillbar.</p>
+	<p>Regeneration costs time; potions cost gold and share a cooldown. If you fall, respawn when the way is safe. Death takes experience, not your whole adventure.</p>
 </div>
 
 <div class="tutpath codepath">
 	<div class="tutpath-title">OPTIONAL CODE</div>
 	<!-- prettier-ignore -->
-	<div class="code">async function visit_bank() {
-	await smart_move("bank");
-	await bank_deposit(1);
-
-	var potions = locate_item("hpot0");
-	if (potions !== -1) await bank_store(potions);
+	<div class="code">if (character.hp &lt; character.max_hp &amp;&amp; can_use("regen_hp")) {
+	use_skill("regen_hp");
 }
 
-visit_bank().catch(function (error) {
-	show_json(error);
-});</div>
-	<p>The item can be retrieved later from its bank pack.</p>
+if (character.rip) respawn();</div>
+	<p>For class skills, inspect <span class="dlabel">G.skills</span>, then pass the documented target when one is required.</p>
 	<p>
-		<span class="rlabel" onclick="render_function_reference($(this).html())">bank_deposit</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">bank_store</span> ·
-		<span class="rlabel" onclick="render_function_reference($(this).html())">bank_retrieve</span>
+		<span class="rlabel" onclick="render_function_reference($(this).html())">can_use</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">use_skill</span> ·
+		<span class="rlabel" onclick="render_function_reference($(this).html())">respawn</span>
 	</p>
 </div>
 

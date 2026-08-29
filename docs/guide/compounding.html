@@ -3,30 +3,49 @@
 <p>Accessories and other compoundable items grow by combining three matching copies. All three must have the same item name and level.</p>
 
 <div class="divider"></div>
-<div class="title mt15">Manual</div>
-<p>Visit a compound shrine and place the three matching items into its three item slots. Add a compatible compound scroll and, if desired, an offering. Check the displayed chance and the exact items before beginning.</p>
-<p>A failed compound can consume the items. Higher levels therefore require many copies, not merely one lucky accessory.</p>
+<div class="title mt15">One Attempt</div>
+<p>Visit a compound shrine. Place three matching items of the same level into its item slots, then add a compatible compound scroll. The shrine calculates the real chance for that exact set.</p>
+<p>A success consumes three items and returns one item a level higher. A normal failure consumes all three. Locked items are refused.</p>
+
+<div class="guide-grid">
+	<div><span class="guide-step">1</span><b>Match name and level</b><br />Three +1 rings can become one +2 ring. A +0 copy cannot join them.</div>
+	<div><span class="guide-step">2</span><b>Match the scroll</b><br />Use a compound scroll that supports the items' current grade. A stronger scroll can improve the displayed chance.</div>
+	<div><span class="guide-step">3</span><b>Count the copies</b><br />One guaranteed +N needs at least 3<sup>N</sup> base copies before failures: 3 for +1, 9 for +2, 27 for +3.</div>
+	<div><span class="guide-step">4</span><b>Check every slot</b><br />The first selected item is the survivor on success. Verify properties, locks, and level before combining.</div>
+</div>
+
+<div class="divider"></div>
+<div class="title mt15">Offerings &amp; Grace</div>
+<p>An offering can improve the chance. Its grade matters, so compare the shrine percentage before committing it. Higher levels represent many consumed copies; plan the whole chain, not only the next roll.</p>
+<p>Previous attempts can contribute grace. The current shrine preview includes it. Never substitute an old table or another character's result for the percentage shown now.</p>
+<div class="guide-note">A compoundable item becomes Exalted at the end of its defined path. At that point the server refuses another compound.</div>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
-<p><span class="rlabel" onclick="render_function_reference($(this).html())">compound</span> accepts four inventory positions, plus an optional offering position.</p>
-<div class="code">var copies = [];
+<p><span class="rlabel" onclick="render_function_reference($(this).html())">compound</span> accepts four inventory positions, an optional offering position, and calculation mode. Previewing resolves with the exact chance without consuming or moving anything.</p>
+<div class="code">async function compound_three(name, level, minimum_chance) {
+var copies = [];
 for (var i = 0; i &lt; character.items.length; i++) {
 	var item = character.items[i];
-	if (item && item.name === "ringsj" && (item.level || 0) === 0) copies.push(i);
+	if (item && item.name === name && (item.level || 0) === level) copies.push(i);
 }
 var scroll = locate_item("cscroll0");
+	if (copies.length &lt; 3 || scroll === -1) return;
 
-if (copies.length >= 3 && scroll !== -1) {
-	compound(copies[0], copies[1], copies[2], scroll).then(function (result) {
-		game_log(result.success ? "Compound complete" : "Compound failed");
-	});
-}</div>
+	var preview = await compound(copies[0], copies[1], copies[2], scroll, null, true);
+	game_log("Chance: " + (preview.chance * 100).toFixed(2) + "%");
+	if (preview.chance &lt; minimum_chance) return;
+
+	var result = await compound(copies[0], copies[1], copies[2], scroll);
+	game_log(result.success ? "Compound complete" : "Compound failed");
+}
+
+compound_three("ringsj", 0, 0.9).catch(show_json);</div>
 <p>Useful references: <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_grade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_properties</span>.</p>
-<div class="guide-note">The example deliberately selects +0 copies. The server rejects mismatched copies, but your CODE should choose the intended level before sending the request.</div>
+<div class="guide-note">A rejected Promise means the attempt could not begin. A fulfilled result with <span class="dlabel">success: false</span> means all three items were committed and the compound failed.</div>
 
-<div class="guide-related">See also: <span onclick="hide_modal(); open_guide('upgrading','/docs/guide/upgrading')">Upgrading</span> · <span onclick="hide_modal(); open_guide('crafting','/docs/guide/crafting')">Crafting and Dismantling</span></div>
+<div class="guide-related">See also: <span onclick="hide_modal(); open_guide('upgrading',get_guide_url('upgrading'))">Upgrading</span> · <span onclick="hide_modal(); open_guide('crafting',get_guide_url('crafting'))">Crafting and Dismantling</span></div>
 
 <style>
-	.guide-kicker{color:#79559A;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#5F3E83;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#5F3E83;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #79559A;background:#ECE4F3;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#66408A;cursor:pointer;text-decoration:underline}
+	.guide-kicker{color:#79559A;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#5F3E83;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#5F3E83;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #79559A;background:#ECE4F3;padding:10px 14px;margin:12px 0}.guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.guide-grid>div{border:3px solid #B4A5C2;padding:10px}.guide-step{background:#5F3E83;color:white;display:inline-block;margin-right:7px;min-width:25px;text-align:center}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#66408A;cursor:pointer;text-decoration:underline}@media(max-width:700px){.guide-grid{grid-template-columns:1fr}}
 </style>

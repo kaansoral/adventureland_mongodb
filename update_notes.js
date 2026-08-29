@@ -2,6 +2,11 @@
 module.exports = [
 	{
 		deployed: null,
+		date: "[29/08/26]",
+		note: "Expanded the Tutorial and Game Guide with clear manual and optional CODE paths, nearby INFO guides for world services, and complete CODE access for duels, recovered-item shops, tavern games, item de-statting, and strange interactions.",
+	},
+	{
+		deployed: null,
 		date: "[27/08/26]",
 		note: "Added Mainframe: run saved CODE in isolated, network-free machines for 1 Shell per hour, with game API and MCP controls.",
 	},

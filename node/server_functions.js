@@ -1346,6 +1346,22 @@ function tavern_loop() {
 							dir: bet.dir,
 							net: bet.win - bet.gold - bet.edge,
 						});
+						if (bet.request_id) {
+							player.socket.emit("game_response", {
+								response: "data",
+								place: "dice",
+								request_id: bet.request_id,
+								success: true,
+								won: true,
+								roll: parseFloat(tavern.dice.num),
+								num: bet.num,
+								direction: bet.dir,
+								wager: bet.gold,
+								payout: bet.win - bet.edge,
+								net: bet.win - bet.gold - bet.edge,
+								edge: bet.edge,
+							});
+						}
 					} else {
 						player.socket.emit("game_log", {
 							message: "Lost: " + to_pretty_num(bet.gold) + " gold [" + tavern.dice.num + "]",
@@ -1359,6 +1375,22 @@ function tavern_loop() {
 							gold: bet.gold,
 							dir: bet.dir,
 						});
+						if (bet.request_id) {
+							player.socket.emit("game_response", {
+								response: "data",
+								place: "dice",
+								request_id: bet.request_id,
+								success: true,
+								won: false,
+								roll: parseFloat(tavern.dice.num),
+								num: bet.num,
+								direction: bet.dir,
+								wager: bet.gold,
+								payout: 0,
+								net: -bet.gold,
+								edge: bet.edge,
+							});
+						}
 					}
 					if (player.xp >= player.max_xp) {
 						resend(player, "reopen");

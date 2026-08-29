@@ -1,27 +1,18 @@
-<p class="tutlead">The bank keeps items and gold safe—and shares them with all your characters.</p>
+<p class="tutlead">Town merchants sell dependable supplies. Monsters provide the stranger merchandise.</p>
 
 <div class="tutlinks">
 	<div
 		class="gamebutton gamebutton-small"
 		onclick="
 			btc(event);
-			open_guide('banking', get_guide_url('banking'));
+			open_guide('shops-and-selling', get_guide_url('shops-and-selling'));
 		"
 	>
-		BANKING GUIDE
-	</div>
-	<div
-		class="gamebutton gamebutton-small"
-		onclick="
-			btc(event);
-			code_eval('smart_move(&quot;bank&quot;)');
-		"
-	>
-		GO TO THE BANK
+		BUYING &amp; SELLING
 	</div>
 </div>
 
-{% for task in tutorial_data("bank").tasks %} {% if loop.first %}
+{% for task in tutorial_data("shops").tasks %} {% if loop.first %}
 <div class="tutdivider"></div>
 {% endif %}
 <div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
@@ -29,28 +20,25 @@
 
 <div class="tutpath manual">
 	<div class="tutpath-title">MANUAL</div>
-	<p>Enter the bank to the right of the town square. Open an item clerk, move one item into storage, then visit Mr. Rich to deposit a little gold.</p>
-	<p>Only one of your characters can be inside the bank at a time. The first packs are open; deeper vaults must be unlocked.</p>
+	<p>Walk near a merchant and right-click. Buy a small stack of potions. To sell, open your inventory while a merchant is active and choose an item you truly do not need.</p>
+	<p>Keep one empty inventory slot. Full bags have a talent for becoming full at the worst moment.</p>
 </div>
 
 <div class="tutpath codepath">
 	<div class="tutpath-title">OPTIONAL CODE</div>
 	<!-- prettier-ignore -->
-	<div class="code">async function visit_bank() {
-	await smart_move("bank");
-	await bank_deposit(1);
-
-	var potions = locate_item("hpot0");
-	if (potions !== -1) await bank_store(potions);
+	<div class="code">async function stock_up() {
+	await smart_move(find_npc("fancypots"));
+	await buy("hpot0", 20);
 }
 
-visit_bank().catch(function (error) {
+stock_up().catch(function (error) {
 	show_json(error);
 });</div>
-	<p>The item can be retrieved later from its bank pack.</p>
+	<p>Selling uses an inventory slot number. Check the item first; CODE is fast, regret is faster.</p>
 	<p>
-		<span class="rlabel" onclick="render_function_reference($(this).html())">bank_deposit</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">bank_store</span> ·
-		<span class="rlabel" onclick="render_function_reference($(this).html())">bank_retrieve</span>
+		<span class="rlabel" onclick="render_function_reference($(this).html())">find_npc</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">buy</span> ·
+		<span class="rlabel" onclick="render_function_reference($(this).html())">sell</span>
 	</p>
 </div>
 

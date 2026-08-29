@@ -1,52 +1,126 @@
-<p>You can upgrade weapons and armor with upgrade scrolls, after each level the items become stronger, yet the chances become lower and lower. If the upgrade fails, the item is lost!</p>
+<p class="tutlead">Upgrading makes weapons and armor stronger. A failed attempt can destroy the item.</p>
 
-<p>
-	When you are first starting, the most effective item is your weapon, so start by getting your weapon to +7. Then buy NPC gear and get each of them to +7 too.
-	<span class="elabel" onclick="code_eval('smart_move(&quot;scrolls&quot;)')">Travel to the NPCs</span>
-</p>
-<span class="spbasics"></span> <span class="eitembow"></span> <span class="eitemblade"></span> <span class="eitemstaff"></span> <span class="eitemhelmet"></span> <span class="eitemcoat"></span>
-<span class="eitemgloves"></span> <span class="eitempants"></span> <span class="eitemshoes"></span>
-
-<p>You'll just need gold to buy the gear and scrolls, so leave your character with Code open so your character farms gold.</p>
+<div class="tutlinks">
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			open_guide('upgrading', get_guide_url('upgrading'));
+		"
+	>
+		COMPLETE UPGRADING GUIDE
+	</div>
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			code_eval('smart_move(&quot;scrolls&quot;)');
+		"
+	>
+		GO TO THE SCROLLS
+	</div>
+</div>
 
 {% for task in tutorial_data("upgrade").tasks %} {% if loop.first %}
-<div style="margin-left: -24px; margin-right: -24px; border-bottom: 5px solid gray"></div>
+<div class="tutdivider"></div>
 {% endif %}
-<p style="margin-top: 16px; margin-bottom: 16px; line-height: 16px">
-	<span style="font-size: 80px; color: #4a4a4a" class="tuttask tuttask{{task}}">o</span> <span style="vertical-align: text-top; color: #dc4c6e">{{task_name(task)}}</span>
-	<span style="vertical-align: text-top; color: #85c76b; display: none" class="tuttaskd tuttaskd{{task}}">DONE</span>
-</p>
-{% if task == "buyscrolls" %}
-<p>First you need to buy scrolls from the NPC in Town. Basic scrolls are 1,000 gold each.</p>
-<span class="spscrolls"></span> <span class="eitemscroll0"></span>
-{% elif task == "upgrade" %}
-<p>Visit Cue in town to upgrade a weapon from +0 to +1. After +7, you'll need to use more expensive High Upgrade Scroll's.</p>
-<p style="line-height: 48px"><span class="eitembow0"></span> + <span class="eitemscroll0"></span> => <span class="eitembow1"></span></p>
-<div>
-	<div style="padding: 0px; border: 4px solid #2b5b89; display: inline-block; font-size: 0px"><img src="/images/static/cue.png" style="height: 198px" /></div>
-	<div style="padding: 0px; border: 4px solid #2b5b89; display: inline-block; font-size: 0px"><img src="/images/static/upgrade.png" style="height: 198px" /></div>
-</div>
-{% elif task == "addstats" %}
-<p>
-	<span class="eitemdexscroll"></span> <span class="eitemintscroll"></span> <span class="eitemstrscroll"></span> Use one of these scrolls to add stats to your upgraded armor. Your main stats increase
-	your damage and attributes.
-</p>
-<p style="line-height: 48px"><span class="eitempants"></span> + <span class="eitemdexscroll"></span> => <span class="eitempants"></span></p>
-{% endif %}
-<div style="margin-bottom: 16px"></div>
-{% if not loop.last %}
-<div style="margin-left: -24px; margin-right: -24px; border-bottom: 5px solid gray"></div>
-{% endif %} {% endfor %}
+<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
+{% endfor %}
 
-<script>
-	$(".spbasics").html(sprite(G.npcs.basics.skin));
-	$(".spscrolls").html(sprite(G.npcs.scrolls.skin, { width: 58 }));
-	["bow", "blade", "staff", "shoes", "pants", "helmet", "gloves", "coat"].forEach(function (e) {
-		$(".eitem" + e).html(item_container({ skin: G.items[e].skin }, { name: e, level: 7 }));
+<div class="tutpath manual">
+	<div class="tutpath-title">MANUAL</div>
+	<p>Buy one Basic Upgrade Scroll. Take a cheap +0 weapon or armor piece to Cue, place both in the upgrade window, and inspect the chance before you commit.</p>
+	<p>
+		The item's current grade decides which scroll it needs. The item and scroll are consumed on failure. Offerings and grace can help with difficult attempts; locking prevents an item from being
+		upgraded at all.
+	</p>
+</div>
+
+<div class="tutpath codepath">
+	<div class="tutpath-title">OPTIONAL CODE</div>
+	<p>This selects a normal-grade upgradeable item. It will only attempt the upgrade after you deliberately change the confirmation line:</p>
+	<!-- prettier-ignore -->
+	<div class="code">async function upgrade_once() {
+	await smart_move(find_npc("newupgrade"));
+
+	var item_num = character.items.findIndex(function (item) {
+		return item &amp;&amp; G.items[item.name].upgrade &amp;&amp; item_grade(item) === 0;
 	});
-	["scroll0", "dexscroll", "intscroll", "strscroll"].forEach(function (e) {
-		$(".eitem" + e).html(item_container({ skin: G.items[e].skin }));
-	});
-	$(".eitembow0").html(item_container({ skin: G.items["bow"].skin }, { name: "bow", level: 0 }));
-	$(".eitembow1").html(item_container({ skin: G.items["bow"].skin }, { name: "bow", level: 1 }));
-</script>
+	var scroll_num = locate_item("scroll0");
+	if (item_num === -1 || scroll_num === -1) throw {reason: "missing_item_or_scroll"};
+
+	var preview = await upgrade(item_num, scroll_num, null, true);
+	game_log("Upgrade chance: " + (preview.chance * 100).toFixed(2) + "%");
+
+	var CONFIRM_UPGRADE = false;
+	if (!CONFIRM_UPGRADE) throw {reason: "read_the_chance_then_confirm"};
+	await upgrade(item_num, scroll_num);
+}
+
+upgrade_once().catch(function (error) {
+	show_json(error);
+});</div>
+	<p>Calculation mode consumes nothing. Read its chance, then change <span class="dlabel">CONFIRM_UPGRADE</span> to <span class="dlabel">true</span> only if you accept the risk.</p>
+	<p>
+		<span class="rlabel" onclick="render_function_reference($(this).html())">upgrade</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">item_grade</span> ·
+		<span class="rlabel" onclick="render_function_reference($(this).html())">lock_item</span>
+	</p>
+</div>
+
+<p class="tuttip"><span class="hlabel">Stat scrolls:</span> Eligible armor can receive STR, INT, DEX, or another supported stat. The full guide explains which items accept them.</p>
+
+<style>
+	.tutlead {
+		color: #2b9ec9;
+		font-size: 34px;
+	}
+	.tutdivider {
+		border-top: 5px solid gray;
+		margin: 14px -24px 8px;
+	}
+	.tuttaskrow {
+		line-height: 44px;
+	}
+	.tuttask {
+		color: #4a4a4a;
+		font-size: 64px;
+		vertical-align: middle;
+	}
+	.tuttaskname {
+		color: #dc4c6e;
+		vertical-align: middle;
+	}
+	.tuttaskd {
+		color: #85c76b;
+		display: none;
+		vertical-align: middle;
+	}
+	.tutpath {
+		border: 4px solid #777;
+		margin: 12px 0;
+		padding: 10px 14px;
+		text-align: left;
+	}
+	.tutpath.manual {
+		border-color: #5e9f6e;
+	}
+	.tutpath.codepath {
+		border-color: #c58b3d;
+	}
+	.tutpath-title {
+		color: #555;
+		font-size: 24px;
+	}
+	.manual .tutpath-title {
+		color: #387649;
+	}
+	.codepath .tutpath-title {
+		color: #9a6328;
+	}
+	.tuttip {
+		color: #555;
+	}
+	.tutlinks {
+		text-align: center;
+	}
+</style>

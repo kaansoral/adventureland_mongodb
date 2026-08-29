@@ -148,13 +148,60 @@ function is_character(entity) {
 	if (entity && entity.type == "character" && !entity.npc) return true;
 }
 
-function interact(name) {
+function interact(name, timeout_ms) {
 	if (name == "monsterhunt") {
 		var promise = parent.push_deferred("monsterhunt");
 		parent.socket.emit("monsterhunt");
 		return promise; // {started:true} / {completed:true} / {failed:true}
 	}
+	if (name == "newyear_tree" || name == "the_lever") {
+		if (timeout_ms === undefined) timeout_ms = 5000;
+		timeout_ms = max(0, timeout_ms);
+		var token_quantity = quantity("funtoken"),
+			request_id = randomStr(30),
+			socket = parent.socket,
+			completion = wait_for_event(socket, "game_response", timeout_ms, function (data) {
+				return data && data.request_id == request_id && data.place == "interaction";
+			}).then(function (data) {
+				if (data.failed) return rejecting_promise(data);
+				if (name == "newyear_tree")
+					return wait_for(
+						function () {
+							return character.s.holidayspirit && (!data.received_token || quantity("funtoken") > token_quantity);
+						},
+						timeout_ms,
+					).then(function () {
+						return data;
+					});
+				return wait_for(
+					function () {
+						return character.map == "resort";
+					},
+					timeout_ms,
+				).then(function () {
+					return Object.assign({}, data, { map: character.map });
+				});
+			});
+		socket.emit("interaction", { type: name, request_id: request_id });
+		return completion;
+	}
 	return rejecting_promise({ reason: "invalid", interaction: name });
+}
+
+function mainframe_command(command, timeout_ms) {
+	if (!is_string(command) || !command.trim()) return rejecting_promise({ reason: "invalid", place: "mainframe" });
+	if (timeout_ms === undefined) timeout_ms = 10000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		socket = parent.socket,
+		completion = wait_for_event(socket, "game_response", timeout_ms, function (data) {
+			return data && data.request_id == request_id && data.place == "mainframe";
+		}).then(function (data) {
+			if (data.failed) return rejecting_promise(data);
+			return data;
+		});
+	socket.emit("eval", { command: command, request_id: request_id });
+	return completion;
 }
 
 function enter(place, name) {
@@ -167,6 +214,70 @@ function enter(place, name) {
 function join(event) {
 	// show_json(G.events);
 	return parent.join(event);
+}
+
+function get_pvp_history(timeout_ms) {
+	if (timeout_ms === undefined) timeout_ms = 10000;
+	timeout_ms = max(0, timeout_ms);
+	var code = randomStr(30),
+		socket = parent.socket,
+		completion = wait_for_event(socket, "pvp_list", timeout_ms, function (data) {
+			return data && data.code == code;
+		}).then(function (data) {
+			return { success: true, list: data.list || [] };
+		});
+	socket.emit("list_pvp", { code: code });
+	return completion;
+}
+
+function send_duel_challenge(name, timeout_ms) {
+	if (is_object(name)) name = name.name;
+	if (!is_string(name) || !name) return rejecting_promise({ reason: "invalid", place: "duel" });
+	if (timeout_ms === undefined) timeout_ms = 10000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		socket = parent.socket,
+		completion = wait_for_event(socket, "game_response", timeout_ms, function (data) {
+			return data && data.request_id == request_id && data.place == "duel";
+		}).then(function (data) {
+			if (data.failed) return rejecting_promise(data);
+			return data;
+		});
+	socket.emit("duel", { event: "challenge", name: name, request_id: request_id });
+	return completion;
+}
+
+function accept_duel_challenge(name, timeout_ms) {
+	if (is_object(name)) name = name.name;
+	if (!is_string(name) || !name) return rejecting_promise({ reason: "invalid", place: "duel" });
+	if (timeout_ms === undefined) timeout_ms = 10000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		socket = parent.socket,
+		completion = wait_for_event(socket, "game_response", timeout_ms, function (data) {
+			return data && data.request_id == request_id && data.place == "duel";
+		}).then(function (data) {
+			if (data.failed) return rejecting_promise(data);
+			return data;
+		});
+	socket.emit("duel", { event: "accept", name: name, request_id: request_id });
+	return completion;
+}
+
+function enter_duel(id, timeout_ms) {
+	if (!is_string(id) || !id) return rejecting_promise({ reason: "invalid", place: "duel" });
+	if (timeout_ms === undefined) timeout_ms = 10000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		socket = parent.socket,
+		completion = wait_for_event(socket, "game_response", timeout_ms, function (data) {
+			return data && data.request_id == request_id && data.place == "duel";
+		}).then(function (data) {
+			if (data.failed) return rejecting_promise(data);
+			return data;
+		});
+	socket.emit("duel", { event: "enter", id: id, request_id: request_id });
+	return completion;
 }
 
 function use_nearest_door() {
@@ -798,6 +909,135 @@ function bless_server(timeout_ms) {
 	);
 }
 
+function get_secondhands(timeout_ms) {
+	if (timeout_ms === undefined) timeout_ms = 10000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		socket = parent.socket,
+		completion = wait_for_event(socket, "game_response", timeout_ms, function (data) {
+			return data && data.request_id == request_id && data.place == "secondhands";
+		}).then(function (data) {
+			if (data.failed) return rejecting_promise(data);
+			return data;
+		});
+	socket.emit("secondhands", { request_id: request_id });
+	return completion;
+}
+
+function buy_secondhand(rid, timeout_ms) {
+	if (is_object(rid)) rid = rid.rid;
+	if (!is_string(rid) || !rid) return rejecting_promise({ reason: "invalid", place: "secondhands" });
+	if (timeout_ms === undefined) timeout_ms = 10000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		socket = parent.socket,
+		completion = wait_for_event(socket, "game_response", timeout_ms, function (data) {
+			return data && data.request_id == request_id && data.place == "secondhands";
+		}).then(function (data) {
+			if (data.failed) return rejecting_promise(data);
+			return data;
+		});
+	socket.emit("sbuy", { rid: rid, request_id: request_id });
+	return completion;
+}
+
+function get_lost_and_found(timeout_ms) {
+	if (timeout_ms === undefined) timeout_ms = 10000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		socket = parent.socket,
+		completion = wait_for_event(socket, "game_response", timeout_ms, function (data) {
+			return data && data.request_id == request_id && data.place == "lostandfound";
+		}).then(function (data) {
+			if (data.failed) return rejecting_promise(data);
+			return data;
+		});
+	socket.emit("lostandfound", { request_id: request_id });
+	return completion;
+}
+
+function buy_lost_and_found(rid, timeout_ms) {
+	if (is_object(rid)) rid = rid.rid;
+	if (!is_string(rid) || !rid) return rejecting_promise({ reason: "invalid", place: "lostandfound" });
+	if (timeout_ms === undefined) timeout_ms = 10000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		socket = parent.socket,
+		completion = wait_for_event(socket, "game_response", timeout_ms, function (data) {
+			return data && data.request_id == request_id && data.place == "lostandfound";
+		}).then(function (data) {
+			if (data.failed) return rejecting_promise(data);
+			return data;
+		});
+	socket.emit("sbuy", { rid: rid, f: true, request_id: request_id });
+	return completion;
+}
+
+function donate_gold(gold, timeout_ms) {
+	if (!is_number(gold) || gold <= 0) return rejecting_promise({ reason: "invalid", place: "donate" });
+	if (timeout_ms === undefined) timeout_ms = 10000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		socket = parent.socket,
+		completion = wait_for_event(socket, "game_response", timeout_ms, function (data) {
+			return data && data.request_id == request_id && data.place == "donate";
+		}).then(function (data) {
+			if (data.failed) return rejecting_promise(data);
+			return data;
+		});
+	socket.emit("donate", { gold: gold, request_id: request_id });
+	return completion;
+}
+
+function get_tavern_info(timeout_ms) {
+	if (timeout_ms === undefined) timeout_ms = 10000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		socket = parent.socket,
+		completion = wait_for_event(socket, "game_response", timeout_ms, function (data) {
+			return data && data.place == "tavern" && data.request_id == request_id;
+		}).then(function (data) {
+			if (data.failed) return rejecting_promise(data);
+			return data;
+		});
+	socket.emit("tavern", { event: "info", request_id: request_id });
+	return completion;
+}
+
+function bet_dice(direction, num, gold, timeout_ms) {
+	if (direction == 1) direction = "up";
+	if (direction == 2) direction = "down";
+	if (direction != "up" && direction != "down") return rejecting_promise({ reason: "invalid_direction", place: "dice" });
+	if (!is_number(num) || !is_number(gold) || gold <= 0) return rejecting_promise({ reason: "invalid", place: "dice" });
+	if (timeout_ms === undefined) timeout_ms = 60000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		socket = parent.socket,
+		completion = wait_for_event(socket, "game_response", timeout_ms, function (data) {
+			return data && data.request_id == request_id && data.place == "dice";
+		}).then(function (data) {
+			if (data.failed) return rejecting_promise(data);
+			return data;
+		});
+	socket.emit("bet", { type: "dice", dir: direction, num: num, gold: gold, request_id: request_id });
+	return completion;
+}
+
+function play_slots(timeout_ms) {
+	if (timeout_ms === undefined) timeout_ms = 10000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		socket = parent.socket,
+		completion = wait_for_event(socket, "game_response", timeout_ms, function (data) {
+			return data && data.request_id == request_id && data.place == "slots";
+		}).then(function (data) {
+			if (data.failed) return rejecting_promise(data);
+			return data;
+		});
+	socket.emit("bet", { type: "slots", request_id: request_id });
+	return completion;
+}
+
 function split(num, quantity) {
 	// splits the stack at from character.items[num] into a second stack of quantity
 	return parent.split(num, quantity);
@@ -868,6 +1108,22 @@ function seal_item(num) {
 function unlock_item(num) {
 	// Unlock an item, returns {hours:47,success:false,in_progress:true} if it was sealed
 	return parent.unlock_item(num);
+}
+
+function destat_item(num, timeout_ms) {
+	if (!is_number(num)) return rejecting_promise({ reason: "invalid", place: "destat" });
+	if (timeout_ms === undefined) timeout_ms = 10000;
+	timeout_ms = max(0, timeout_ms);
+	var request_id = randomStr(30),
+		socket = parent.socket,
+		completion = wait_for_event(socket, "game_response", timeout_ms, function (data) {
+			return data && data.request_id == request_id && data.place == "destat";
+		}).then(function (data) {
+			if (data.failed) return rejecting_promise(data);
+			return data;
+		});
+	socket.emit("destat", { num: num, request_id: request_id });
+	return completion;
 }
 
 function trade(num, trade_slot, price, quantity) {

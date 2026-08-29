@@ -9,6 +9,7 @@ const DOCS_PATHS = [
 	"/docs/code/game/events",
 	"/docs/code/links",
 	"/docs/code/monster/reference",
+	"/docs/code/npc/reference",
 	"/docs/code/server/status",
 	"/docs/guide",
 	"/docs/guide/all/cosmetics",
@@ -22,6 +23,7 @@ const DOCS_PATHS = [
 	"/docs/guide/advanced/adventure-api",
 	"/docs/guide/adventure-mcp",
 	"/docs/guide/mainframe",
+	"/docs/tutorial",
 	"/docs/ref",
 	"/docs/ref/boosters",
 	"/docs/ref/keymapping",
@@ -81,6 +83,7 @@ function get_seo_paths(args) {
 	var article_routes = {
 		"data-character": "/docs/code/character/reference",
 		"data-monster": "/docs/code/monster/reference",
+		"data-npc": "/docs/code/npc/reference",
 		"data-server-status": "/docs/code/server/status",
 		"events-character": "/docs/code/character/events",
 		"events-game": "/docs/code/game/events",
@@ -88,6 +91,7 @@ function get_seo_paths(args) {
 
 	for (var i = 0; i < args.docs.functions.length; i++) paths.add("/docs/code/functions/" + url_part(args.docs.functions[i]));
 	add_guide_paths(paths, args.docs.guide, "/docs/guide", article_names);
+	for (var i = 0; i < args.docs.tutorial.length; i++) paths.add("/docs/tutorial/" + url_part(args.docs.tutorial[i].key));
 
 	for (var i = 0; i < DOCS_DATA_KEYS.length; i++) paths.add("/docs/code/data/" + url_part(DOCS_DATA_KEYS[i]));
 	for (var i = 0; i < args.guide_articles.length; i++) {

@@ -1,0 +1,13 @@
+<p><span class='dlabel'>enter_duel(id, timeout_ms)</span></p>
+<p>Enters a pending party duel by its duel ID.</p>
+<p><b>Returns:</b> Promise resolving after transport and team assignment, with action:"entered", id, and team. It rejects if the duel expired or started, the character is already dueling or in PVP, the character is not on either team, or the timeout expires.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Notes:</b> timeout_ms defaults to 10,000ms.</p>
+<p><b>Example:</b></p>
+<div class='code'>async function example() {
+	await enter_duel(duel_id);
+}
+example();</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

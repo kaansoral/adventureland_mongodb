@@ -1,15 +1,12 @@
-<p>
-	Arguments:
+<p>Arguments:</p>
 	<div>&nbsp;<b>*</b> Integer - Inventory index of the first item [0 to 41]</div>
 	<div>&nbsp;<b>*</b> Integer - Inventory index of the second item [0 to 41]</div>
 	<div>&nbsp;<b>*</b> Integer - Inventory index of the third item [0 to 41]</div>
 	<div>&nbsp;<b>*</b> Integer - Inventory index of the scroll [0 to 41]</div>
 	<div>&nbsp;<b>*</b> Integer - (Optional) Inventory index of the offering [0 to 41]</div>
-</p>
-<p>
-	Returns:
+	<div>&nbsp;<b>*</b> Boolean - (Optional) Calculate the chance without starting the compound</div>
+<p>Returns:</p>
 	<div>&nbsp; <b>*</b> Promise</div>
-</p>
 
 <!-- <p>Current inventory with indexes: <br/><span class="xlabel" onclick="code_eval($(this).html())">show_json([Array(42).keys()].reduce(function(map,i){ map[i]=character.items[i]; return map; },{}))</span></p> -->
 
@@ -19,6 +16,11 @@
 compound(0,1,2,3); // Combines the first 3 items in your inventory [0,1,2] using the scroll in the 4th slot [3]
 
 compound(0,1,2,3,4); // A primordial essence in the 5th slot[4]
+
+async function preview_compound() {
+	var preview = await compound(0,1,2,3,null,true); // Consumes nothing
+	game_log("Chance: "+(preview.chance*100).toFixed(2)+"%");
+}
 
 if(character.q.compound) log("Already combining something!");
 
@@ -41,6 +43,17 @@ compound(0,1,2,locate_item("cscroll0")).then(
 <p>Promise Reference:</p>
 
 <span class='dlabel'>"resolve"</span>
+<div class='code'>
+{
+	success: true,
+	calculate: true,
+	chance: 0.95,
+	item: {name: "ringsj", level: 0},
+	scroll: "cscroll0",
+	grace: 0,
+}
+</div>
+<div style='margin-bottom: 1px'></div>
 <div class='code'>
 {
 	success: true,

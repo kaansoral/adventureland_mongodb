@@ -1,27 +1,18 @@
-<p class="tutlead">The bank keeps items and gold safe—and shares them with all your characters.</p>
+<p class="tutlead">Your characters share an account, a bank, and—if you choose—a plan.</p>
 
 <div class="tutlinks">
 	<div
 		class="gamebutton gamebutton-small"
 		onclick="
 			btc(event);
-			open_guide('banking', get_guide_url('banking'));
+			open_guide('multi', '/docs/guide/multi');
 		"
 	>
-		BANKING GUIDE
-	</div>
-	<div
-		class="gamebutton gamebutton-small"
-		onclick="
-			btc(event);
-			code_eval('smart_move(&quot;bank&quot;)');
-		"
-	>
-		GO TO THE BANK
+		CHARACTERS &amp; COORDINATION
 	</div>
 </div>
 
-{% for task in tutorial_data("bank").tasks %} {% if loop.first %}
+{% for task in tutorial_data("multiple-characters").tasks %} {% if loop.first %}
 <div class="tutdivider"></div>
 {% endif %}
 <div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
@@ -29,28 +20,22 @@
 
 <div class="tutpath manual">
 	<div class="tutpath-title">MANUAL</div>
-	<p>Enter the bank to the right of the town square. Open an item clerk, move one item into storage, then visit Mr. Rich to deposit a little gold.</p>
-	<p>Only one of your characters can be inside the bank at a time. The first packs are open; deeper vaults must be unlocked.</p>
+	<p>Open <span class="gamebutton gamebutton-small">COM</span> → Characters. You can deploy another character in a game window and move equipment or gold through the shared bank.</p>
+	<p>Each character keeps its own class, inventory, skills, and CODE. Only one character can occupy the bank at a time.</p>
 </div>
 
 <div class="tutpath codepath">
 	<div class="tutpath-title">OPTIONAL CODE</div>
 	<!-- prettier-ignore -->
-	<div class="code">async function visit_bank() {
-	await smart_move("bank");
-	await bank_deposit(1);
-
-	var potions = locate_item("hpot0");
-	if (potions !== -1) await bank_store(potions);
-}
-
-visit_bank().catch(function (error) {
+	<div class="code">start_character("YourCharacter").then(function () {
+	return send_cm("YourCharacter", {command: "hello"});
+}).catch(function (error) {
 	show_json(error);
 });</div>
-	<p>The item can be retrieved later from its bank pack.</p>
+	<p>Only trust commands from your own characters. Check the sender before acting on a CODE message.</p>
 	<p>
-		<span class="rlabel" onclick="render_function_reference($(this).html())">bank_deposit</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">bank_store</span> ·
-		<span class="rlabel" onclick="render_function_reference($(this).html())">bank_retrieve</span>
+		<span class="rlabel" onclick="render_function_reference($(this).html())">start_character</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">send_cm</span> ·
+		<span class="rlabel" onclick="render_function_reference($(this).html())">on_cm</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">command_character</span>
 	</p>
 </div>
 

@@ -1,34 +1,54 @@
-<div class="title mt15">PVP Servers</div> <div class="mb5"></div>
+<div class="guide-kicker">COMBAT</div>
+<div class="guide-title">PVP &amp; Duels</div>
+<p>There are three different fights between adventurers: open PVP, safe PVP maps, and private duels. Check which one you are entering before you attack.</p>
 
-<div>In PVP servers, any character can attack another. Only the bank and the office in the beach are safe zones. PVP servers do provide more XP/Gold/Luck for the adventurous.</div>
-
-<div class="divider"></div>
-<div class="title mt15">PVP Penalties</div> <div class="mb5"></div>
-
-<div>You lose a dynamic amount of XP when someone defeats you in PVP. It's 2% to 4%. You can also lose gold if you are carrying gold. At level 1 the maximum amount is 100 gold, at level 75, the maximum amount becomes 1,000,000 gold. ^ Marked items can also be dropped on defeat with a %.</div>
-
-<div class="divider"></div>
-<div class="title mt15">PVP Zones in PVE Servers</div> <div class="mb5"></div>
-
-<div>Currently the Arena with Irradiated Goo's is a PVP Map on all servers. Same PVE penalties apply in PVP zones.</div>
-
+<div class="guide-cards">
+	<div><b>Open PVP</b><br />On a PVP server—or an ordinary PVP map—other adventurers can attack you. Defeat can cost gold and experience. Items marked with <span class="guide-pvp">^</span> can also drop.</div>
+	<div><b>Safe PVP</b><br />Some PVE-server arenas allow fighting without the ordinary gold and experience loss. The map, not its appearance, decides the rule.</div>
+	<div><b>Duels</b><br />A private duel moves both leaders—and their parties—into Duelland. Duel defeat does not use ordinary PVP loss.</div>
+</div>
 
 <div class="divider"></div>
-<div class="title mt15">Dueling</div> <div class="mb5"></div>
+<div class="title mt15">Before Entering</div>
+<p><span class="dlabel">in_pvp()</span> reports whether your character is presently exposed. <span class="dlabel">server.pvp</span> tells you whether the whole server is PVP, while <span class="dlabel">G.maps[character.map].pvp</span> describes the current map.</p>
+<p>A safe room can still exist on a PVP server. Your party and team are protected from ordinary friendly fire, but strangers are not. Store spare gold and inspect every <span class="guide-pvp">^</span>-marked item before leaving safety.</p>
+<div class="guide-note">The PVP board records the realm's latest defeats. The Token of Honor collector beside the arena shows the current token exchanges.</div>
 
-<div>If you don't want to risk loss, you can safely try PVP with others. To initiate a duel, you need to use the "/challenge" chat command. "/challenge CharacterName" challenges a character, if they are in a party - their party, to duel.</div>
+<div class="divider"></div>
+<div class="title mt15">Starting a Duel</div>
+<ol>
+	<li>Both leaders must be online, outside PVP, and not already dueling.</li>
+	<li>Challenge the other leader. They accept while the challenge is still live.</li>
+	<li>The two leaders enter immediately. Online party members receive an invitation to the same duel.</li>
+	<li>Party members enter before the duel begins. Each side spawns as a separate team.</li>
+</ol>
+<p>Manually, use <span class="dlabel">/challenge CharacterName</span>, then accept the incoming challenge button. Party leaders challenge for their current parties.</p>
+
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<p>The duel functions settle only after the server has accepted each step. Challenge and duel invitations are also character events.</p>
+<div class="code">character.on("challenge", function (name) {
+	game_log(name + " challenged you");
+});
+
+character.on("duel", function (duel) {
+	// Invited party members can join before the fight starts.
+	enter_duel(duel.id).catch(show_json);
+});
+
+async function challenge(name) {
+	await send_duel_challenge(name);
+	game_log("Challenge delivered to " + name);
+}
+
+async function recent_pvp() {
+	var history = await get_pvp_history();
+	show_json(history.list); // [winner, defeated]
+}</div>
+<p>The receiving leader uses <span class="rlabel" onclick="render_function_reference($(this).html())">accept_duel_challenge</span>. See also <span class="rlabel" onclick="render_function_reference($(this).html())">send_duel_challenge</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">enter_duel</span>, and <span class="rlabel" onclick="render_function_reference($(this).html())">get_pvp_history</span>.</p>
+
+<div class="guide-related">Related: <span onclick="hide_modal(); open_guide('items',get_guide_url('items'))">Items</span> · <span onclick="hide_modal(); open_guide('travel-and-instances',get_guide_url('travel-and-instances'))">Travel &amp; Instances</span></div>
 
 <style>
-	.title{
-		color: #406944;
-		font-size: 36px;
-		margin-top: 15px;
-	}
-	.divider{
-		margin-top: 15px;
-		height: 5px;
-		background-color: gray;
-		margin-left: -26px;
-		margin-right: -26px;
-	}
+	.guide-kicker{color:#A33A35;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#C3443D;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#9E3E39;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}.guide-cards>div{border:3px solid #C18B87;padding:10px}.guide-pvp{color:#E66E5C;font-weight:bold}.guide-note{border-left:6px solid #C3443D;background:#F3E1DE;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#A33A35;cursor:pointer;text-decoration:underline}@media(max-width:760px){.guide-cards{grid-template-columns:1fr}}
 </style>

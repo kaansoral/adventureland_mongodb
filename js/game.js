@@ -125,7 +125,9 @@ var map_tiles = [],
 	wtile_width = 0,
 	wtile_height = 0;
 var map_animations = {};
-var quirks = {};
+var quirks = {},
+	interaction_context = null,
+	active_interaction_guide = null;
 var water_tiles = [],
 	last_water_frame = -1;
 var drawings = [],
@@ -842,7 +844,8 @@ function reposition_ui() {
 }
 
 function update_tutorial_ui() {
-	var completion = X.tutorial.progress;
+	var completion = X.tutorial.progress,
+		reviewing = last_rendered_step != X.tutorial.step;
 	if (last_rendered_step > X.tutorial.step) {
 		completion = 0;
 	} else {
@@ -863,12 +866,19 @@ function update_tutorial_ui() {
 		});
 	}
 
-	if (completion == 100) {
+	if (reviewing) {
+		$(".tutcontinue,.tutincomplete").hide();
+		$(".tutreview")
+			.show()
+			.html(last_rendered_step < X.tutorial.step ? "COMPLETED" : "UPCOMING");
+	} else if (completion == 100) {
 		$(".tutcontinue").show();
 		$(".tutincomplete").hide();
+		$(".tutreview").hide();
 	} else {
 		$(".tutcontinue").hide();
 		$(".tutincomplete").show();
+		$(".tutreview").hide();
 	}
 
 	$(".tutprogress").html(completion);
@@ -900,7 +910,7 @@ function update_overlays() {
 			$("#xpui").html("LV" + character.level + " " + xp + "%");
 			$("#xpslider").css("width", (character.xp * 100) / character.max_xp + "%");
 		}
-		if (!cached("tutorialtop", X.tutorial.step + "|" + X.tutorial.task)) {
+		if (!cached("tutorialtop", X.tutorial.step + "|" + X.tutorial.task + "|" + X.tutorial.progress)) {
 			update_tutorial_ui();
 		}
 		if (inventory && !cached("igold", character.gold)) $(".goldnum").html(to_pretty_num(character.gold + (new Date().getDate() == 101 && new Date().getMonth() == 3 ? 1014201800 : 0)));
@@ -935,13 +945,24 @@ function update_overlays() {
 
 function showhide_quirks_logic() {
 	if (!character) return;
-	var initial = quirks;
+	var initial = quirks,
+		initial_context = interaction_context && interaction_context.key + "|" + interaction_context.npc_id;
 	quirks = {};
+	interaction_context = null;
 	// $(".quirks").hide();
 	(G.maps[character.map].quirks || []).forEach(function (q) {
+		if (q[4] != "info")
+			consider_interaction_context(G.docs.interaction_map.quirks[q[4]], "quirk:" + q[4] + ":" + q[0] + ":" + q[1], point_distance(character.real_x, character.real_y, q[0], q[1]), 190, null, 2);
 		if (q[4] == "info" && point_distance(character.real_x, character.real_y, q[0], q[1]) < 200) {
 			quirks[q[5]] = true;
 		}
+	});
+	(G.maps[character.map].machines || []).forEach(function (machine) {
+		consider_interaction_context(G.docs.interaction_map.machines[machine.type], "machine:" + machine.type, point_distance(character.real_x, character.real_y, machine.x, machine.y), 190, null, 2);
+	});
+	(G.maps[character.map].doors || []).forEach(function (door, index) {
+		var door_type = door[7] || "ordinary";
+		consider_interaction_context(G.docs.interaction_map.doors[door_type], "door:" + index, point_distance(character.real_x, character.real_y, door[0], door[1]), 120, null, 1);
 	});
 	(G.maps[character.map].zones || []).forEach(function (zone) {
 		[
@@ -959,7 +980,41 @@ function showhide_quirks_logic() {
 			}
 		});
 	});
-	if (JSON.stringify(initial) !== JSON.stringify(quirks)) render_server();
+	for (var i = 0; i < map_npcs.length; i++) {
+		var map_npc = map_npcs[i],
+			context = get_npc_interaction_context(map_npc);
+		if (!context || !context.definition.proximity) continue;
+		var c_distance = distance(character, map_npc);
+		consider_interaction_context(context.key, "npc:" + context.npc_id, c_distance, 190, context, 3);
+	}
+	var current_context = interaction_context && interaction_context.key + "|" + interaction_context.npc_id;
+	if (interaction_context && interaction_context.priority == 3) {
+		tut("visitnpc");
+		if (interaction_context.key == "shops") tut("visitshop");
+		if (interaction_context.key == "crafting") tut("craftsman");
+		if (interaction_context.key == "exchanges") tut("exchanger");
+	}
+	if (JSON.stringify(initial) !== JSON.stringify(quirks) || initial_context !== current_context) render_server();
+}
+
+function consider_interaction_context(key, id, c_distance, range, context, priority) {
+	var definition = G.docs && G.docs.interactions && G.docs.interactions[key];
+	if (!definition || definition.status || !definition.proximity || c_distance >= (range || 190)) return;
+	priority = priority || 1;
+	if (interaction_context && (interaction_context.priority > priority || (interaction_context.priority == priority && interaction_context.distance <= c_distance))) return;
+	interaction_context = context || { key: key, definition: definition };
+	interaction_context.npc_id = id;
+	interaction_context.distance = c_distance;
+	interaction_context.priority = priority;
+}
+
+function get_npc_interaction_context(npc) {
+	if (!npc || !G.docs || !G.docs.interactions || !G.docs.interaction_map) return null;
+	var npc_id = npc.npc || npc.id,
+		key = G.docs.interaction_map.npc_ids[npc_id] || G.docs.interaction_map.npc_roles[npc.role],
+		definition = G.docs.interactions[key];
+	if (!definition || definition.status) return null;
+	return { key: key, definition: definition, npc_id: npc_id, npc: npc };
 }
 
 var last_loader = { progress: 0 };
@@ -1353,6 +1408,7 @@ function init_socket(args) {
 			topleft_npc = false;
 			data.redraw = true;
 		}
+		if (create && character) tut("travel");
 		current_map = data.name;
 		current_in = data["in"];
 		reflect_music();
@@ -1452,6 +1508,7 @@ function init_socket(args) {
 		character.home = data.home;
 		character.acx = data.acx;
 		character.xcx = data.xcx;
+		claim_tutorial_reward();
 		G.classes[character.ctype].xcx.forEach(function (c) {
 			if (!character.xcx.includes(c)) character.xcx.push(c);
 		});
@@ -1721,6 +1778,16 @@ function init_socket(args) {
 			} else if (data.place) {
 				resolve_deferred(data.place, data);
 			}
+			if (!data.failed && data.place == "equip" && data.slot && !in_arr(data.slot, trade_slots)) tut("equip");
+			if (!data.failed && data.place == "skill") tut("useskill");
+			if (
+				!data.failed &&
+				data.used &&
+				((data.place == "use" && in_arr(data.used, ["hp", "mp"])) ||
+					(data.place == "equip" && G.items[data.used] && G.items[data.used].gives))
+			)
+				tut("usepotion");
+			if (!data.failed && data.place == "bank" && data.bank_action == "store") tut("store");
 			var merge_transfer_cevent = cevent == response && in_arr(response, ["item_received", "item_sent", "gold_sent", "gold_received"]);
 			if (cevent && !merge_transfer_cevent) call_code_function("trigger_character_event", cevent, data);
 			if (event) call_code_function("trigger_event", event, data);
@@ -1987,7 +2054,10 @@ function init_socket(args) {
 				ui_log("Operation unavailable in bank", "gray");
 			} else if (response == "bank_unavailable") ui_log("Bank unavailable", "gray");
 			else if (response == "bank_withdraw") ui_log("Withdrew " + to_pretty_num(data.gold) + " gold", "gray");
-			else if (response == "bank_store") ui_log("Stored " + to_pretty_num(data.gold) + " gold", "gray");
+			else if (response == "bank_store") {
+				tut("deposit");
+				ui_log("Stored " + to_pretty_num(data.gold) + " gold", "gray");
+			}
 			else if (response == "bank_new_pack") {
 				if (data.gold) ui_log("Opened an account for " + to_pretty_num(data.gold) + " gold", "gray");
 				else ui_log("Opened an account for " + to_pretty_num(data.shells) + " shells", "gray");
@@ -2088,10 +2158,24 @@ function init_socket(args) {
 				refresh_cosmetic_skills(data.acx);
 			} else if (response == "cx_not_found") {
 				ui_log("Cosmetics not found", "gray");
+			} else if (response == "reward_received") {
+				tutorial_reward_in_flight = false;
+				tutorial_reward_settled = true;
+				ui_log("Tutorial reward received!", "#73BD6D");
+			} else if (response == "reward_already") {
+				tutorial_reward_in_flight = false;
+				tutorial_reward_settled = true;
+			} else if (response == "reward_notverified" || response == "reward_unavailable") {
+				tutorial_reward_in_flight = false;
+				tutorial_reward_settled = true;
+				ui_log("Tutorial reward unavailable", "gray");
 			} else if (response == "ex_condition") {
 				var def = G.conditions[data.name];
 				// ui_log(def.name+" faded away ...","gray");
 			} else if (response == "buy_success") {
+				tut("buyitem");
+				if (data.name == "scroll0") tut("buyscrolls");
+				if (data.name == "cscroll0") tut("buycscroll0");
 				ui_log("Spent " + to_pretty_num(data.cost) + " gold", "gray");
 			} else if (response == "buy_cant_npc") {
 				ui_log("Can't buy this from an NPC", "gray");
@@ -2697,7 +2781,7 @@ function init_socket(args) {
 		reload_data();
 	});
 	socket.on("chest_opened", function (data) {
-		tut("firstloot");
+		if (data.opener == character.name) tut("firstloot");
 		call_code_function("trigger_character_event", "loot", data);
 		if (data.opener == character.name || data.gone) resolve_deferred("open_chest", data);
 		draw_trigger(function () {
@@ -3127,6 +3211,7 @@ function init_socket(args) {
 
 function npc_right_click(event) {
 	var npc = G.npcs[this.npc];
+	active_interaction_guide = get_npc_interaction_context(this);
 	sfx("npc", this.x, this.y);
 	if (this.type == "character") npc = G.npcs[this.npc];
 	last_npc_right_click = new Date();
@@ -3347,6 +3432,7 @@ function npc_right_click(event) {
 			240,
 		);
 	}
+	defer_interaction_guide_button();
 	try {
 		if (event) event.stopPropagation();
 	} catch (e) {}
@@ -3357,6 +3443,7 @@ function player_click(event) {
 	if (is_npc(this) && this.npc == "pvp") player_right_click.apply(this, event);
 	else if (this.npc_onclick) npc_right_click.apply(this, event);
 	else {
+		active_interaction_guide = null;
 		if (topleft_npc && inventory) render_inventory();
 		topleft_npc = false;
 		xtarget = this;
@@ -3514,6 +3601,7 @@ function map_click(event) {
 		socket.emit("move", data);
 	}
 	if (!(topleft_npc == "dice" && current_map == "tavern")) {
+		active_interaction_guide = null;
 		if (topleft_npc && inventory) render_inventory();
 		topleft_npc = false;
 	}
@@ -5729,6 +5817,9 @@ function add_machine(machine) {
 	}
 
 	function machine_click(event) {
+		var interaction_key = G.docs.interaction_map.machines[machine.type],
+			interaction_definition = G.docs.interactions[interaction_key];
+		active_interaction_guide = interaction_definition && !interaction_definition.status ? { key: interaction_key, definition: interaction_definition } : null;
 		if (machine.type == "dice") render_dice(); // add_log("Curious device","gray");//
 		if (machine.type == "wheel") add_log("The hostess isn't around", "gray");
 		if (machine.type == "slots")
@@ -5741,6 +5832,7 @@ function add_machine(machine) {
 					socket.emit("bet", { type: "slots" });
 				},
 			});
+		defer_interaction_guide_button();
 		try {
 			if (event) event.stopPropagation();
 		} catch (e) {}
@@ -5815,6 +5907,9 @@ function add_quirk(quirk) {
 	sprite.hitArea = new PIXI.Rectangle(-round(quirk[2] * 0.5), -round(quirk[3] * 1), round(quirk[2]), round(quirk[3]));
 	sprite.type = "quirk";
 	function quirk_right_click(event) {
+		var interaction_key = G.docs.interaction_map.quirks[quirk[4]],
+			interaction_definition = G.docs.interactions[interaction_key];
+		active_interaction_guide = interaction_definition && !interaction_definition.status ? { key: interaction_key, definition: interaction_definition } : null;
 		if (quirk[4] == "sign") add_log('Sign reads: "' + quirk[5] + '"', "gray");
 		else if (quirk[4] == "note") add_log('Note reads: "' + quirk[5] + '"', "gray");
 		else if (quirk[4] == "tavern_info") socket.emit("tavern", { event: "info" });
@@ -5825,6 +5920,7 @@ function add_quirk(quirk) {
 		else if (quirk[4] == "compound") render_compound_shrine(1);
 		else if (quirk[4] == "list_pvp") socket.emit("list_pvp");
 		else if (quirk[4] == "invisible_statue") (render_none_shrine(), add_log("An invisible statue!", "gray"));
+		defer_interaction_guide_button();
 		try {
 			if (event) event.stopPropagation();
 		} catch (e) {}

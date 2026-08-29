@@ -192,9 +192,9 @@
 				{% endif %}
 				<div class="gamebutton promode {% if domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); tut('snippet'); show_snippet()">X</div>
 				<div class="gamebutton promode {% if domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); tut('code'); toggle_code()">CODE</div>
-				<div class="gamebutton" onclick="btc(event); tut('com'); render_com()">COM<span class='comcount' style='color: #9083BC'>{% if user_data and user_data.info.mail%} [{{user_data.info.mail}}]{% endif%}</spam></div>
+				<div class="gamebutton" onclick="btc(event); tut('com'); render_com()">COM<span class='comcount' style='color: #9083BC'>{% if user_data and user_data.info.mail%} [{{user_data.info.mail}}]{% endif%}</span></div>
 				<div class="gamebutton newcomermode {% if not domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); toggle_character()">CHAR</div>
-				<div class="gamebutton newcomermode {% if not domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); render_inventory()">INV</div>
+				<div class="gamebutton newcomermode {% if not domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); tut('inventory'); render_inventory()">INV</div>
 				<div class="gamebutton newcomermode {% if not domain.newcomer_ui%}hidden{% endif%}" onclick="btc(event); toggle_stats()">STATS</div>
 				<div class="gamebutton" onclick="btc(event); tut('skills'); render_skills()">SKILLS</div>
 				<div class="gamebutton" onclick="btc(event); tut('guide'); show_game_guide();">GUIDE</div> {# newcomermode {% if not domain.newcomer_ui%}hidden{% endif%} #}

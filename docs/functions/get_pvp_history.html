@@ -1,0 +1,14 @@
+<p><span class='dlabel'>get_pvp_history(timeout_ms)</span></p>
+<p>Retrieves the server's recent PVP defeats without opening the history board.</p>
+<p><b>Returns:</b> Promise resolving with {success:true, list:[...]}. It rejects on timeout.</p>
+<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
+<p><b>Notes:</b> The server returns up to 200 recent entries. Concurrent calls are correlated independently. timeout_ms defaults to 10,000ms.</p>
+<p><b>Example:</b></p>
+<div class='code'>async function example() {
+	var history = await get_pvp_history();
+	show_json(history.list);
+}
+example();</div>
+
+<p></p>
+<span class='redlabel'>"source"</span>

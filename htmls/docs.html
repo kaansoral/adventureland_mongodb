@@ -183,6 +183,15 @@
 				else if(path[1]=="egghunt") open_guide("event-egghunt","/docs/ref/egghunt");
 				else open_guide(path[1],"/docs/ref/"+path[1]);
 			}
+			else if(path[0]=="tutorial")
+			{
+				render_tutorial_index();
+				if(path[1])
+				{
+					for(var i=0;i<G.docs.tutorial.length;i++)
+						if(G.docs.tutorial[i].key==path[1]) open_tutorial(i);
+				}
+			}
 		}
 	</script>
 {%endblock%}

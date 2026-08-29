@@ -1,29 +1,49 @@
 <div class="guide-kicker">ITEM PROGRESSION</div>
 <div class="guide-title">Upgrading</div>
-<p>Weapons, armor, and other upgradeable items grow one level at a time. Every attempt needs the item and a compatible upgrade scroll. An offering is optional.</p>
+<p>Weapons, armor, and other upgradeable items grow one level at a time. Every normal attempt needs the item and a compatible upgrade scroll. An offering is optional.</p>
 
 <div class="divider"></div>
-<div class="title mt15">Manual</div>
-<p>Visit an upgrade shrine, place the item and scroll in their slots, then inspect the displayed chance before you begin. Add an offering when you want its protection. The item tooltip tells you its grade; use a scroll that supports that grade.</p>
-<p>An unsuccessful attempt can destroy the item. Lock treasured gear until you are ready, and never treat the preview as a promise.</p>
+<div class="title mt15">One Attempt</div>
+<p>Visit an upgrade shrine and place the item and scroll into their marked slots. The shrine calculates the real chance for that exact item, scroll, offering, and character. Read it before pressing <span class="gamebutton gamebutton-small">UPGRADE</span>.</p>
+<p>A successful attempt raises the item by one level. A failed normal upgrade destroys the item. A locked item is refused instead of risked.</p>
+
+<div class="guide-grid">
+	<div><span class="guide-step">1</span><b>Read the grade</b><br />The item tooltip shows Normal, High, Rare, Legendary, or Exalted as it advances.</div>
+	<div><span class="guide-step">2</span><b>Match the scroll</b><br />A scroll must support the item's current grade. A stronger scroll can improve the displayed chance.</div>
+	<div><span class="guide-step">3</span><b>Preview again</b><br />Changing the item, scroll, or offering changes the calculation. The percentage on the shrine is authoritative.</div>
+	<div><span class="guide-step">4</span><b>Protect your plan</b><br />Keep a spare, lock the copy you will not risk, and wait for the result before moving another item.</div>
+</div>
+
+<div class="divider"></div>
+<div class="title mt15">Offerings, Grace &amp; Stats</div>
+<p>Primlings, Primordial Essences, stronger offerings, and certain metals can improve a chance. Their strength matters: do not spend one until you have compared the percentage with and without it.</p>
+<p>Upgrade and compound history can build grace. Grace is already included in the shrine's calculation; it is another reason to trust the current preview instead of a remembered chance.</p>
+<p>Stat scrolls are different. They replace the selected stat on armor carrying a <span class="dlabel">Stat</span> attribute. Higher-grade armor consumes more copies of the stat scroll, and the shrine shows the required quantity.</p>
+<div class="guide-note">Exalted means the item has reached the end of its defined upgrade path. Different item families reach grades at different levels.</div>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
-<p>Pass inventory positions to <span class="rlabel" onclick="render_function_reference($(this).html())">upgrade</span>. Wait for the Promise before starting another item operation.</p>
-<div class="code">async function upgrade_item(item_name, scroll_name) {
+<p>Pass inventory positions to <span class="rlabel" onclick="render_function_reference($(this).html())">upgrade</span>. Use calculation mode first; it resolves immediately with the exact chance and does not consume or move anything.</p>
+<div class="code">async function upgrade_item(item_name, scroll_name, minimum_chance) {
 	var item = locate_item(item_name);
 	var scroll = locate_item(scroll_name);
 	if (item === -1 || scroll === -1) return;
 
+	var preview = await upgrade(item, scroll, null, true);
+	game_log("Chance: " + (preview.chance * 100).toFixed(2) + "%");
+	if (preview.chance &lt; minimum_chance) return;
+
 	var result = await upgrade(item, scroll);
 	if (result.success) game_log(item_name + " is now +" + result.level);
 	else game_log("The upgrade failed");
-}</div>
+}
+
+upgrade_item("coat", "scroll0", 0.9).catch(show_json);</div>
 <p>Useful references: <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_grade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_properties</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">lock_item</span>.</p>
 <div class="guide-note">A rejected Promise means the attempt could not begin. A fulfilled result with <span class="dlabel">success: false</span> means the attempt happened and failed.</div>
 
-<div class="guide-related">Next: <span onclick="hide_modal(); open_guide('compounding','/docs/guide/compounding')">Compounding</span> · <span onclick="hide_modal(); open_guide('item-maintenance','/docs/guide/item-maintenance')">Item Maintenance</span></div>
+<div class="guide-related">Next: <span onclick="hide_modal(); open_guide('compounding',get_guide_url('compounding'))">Compounding</span> · <span onclick="hide_modal(); open_guide('item-maintenance',get_guide_url('item-maintenance'))">Item Maintenance</span></div>
 
 <style>
-	.guide-kicker{color:#8A623B;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#2E6B43;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#406944;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #C78B37;background:#F3E8D4;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#2B7B50;cursor:pointer;text-decoration:underline}
+	.guide-kicker{color:#8A623B;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#2E6B43;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#406944;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #C78B37;background:#F3E8D4;padding:10px 14px;margin:12px 0}.guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.guide-grid>div{border:3px solid #A9B6A5;padding:10px}.guide-step{background:#406944;color:white;display:inline-block;margin-right:7px;min-width:25px;text-align:center}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#2B7B50;cursor:pointer;text-decoration:underline}@media(max-width:700px){.guide-grid{grid-template-columns:1fr}}
 </style>

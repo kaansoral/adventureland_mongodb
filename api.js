@@ -1164,19 +1164,34 @@ async function tutorial_api(args) {
 	var R = await tx(
 		async () => {
 			var data = await get_user_data(A.user);
+			var current = data.info.tutorial_step;
 			if (A.task) {
-				if (docs.tasks && docs.tasks[A.task] && data.info.completed_tasks.indexOf(A.task) === -1) {
+				var lesson = docs.tutorial[current];
+				var valid_task = docs.tasks && docs.tasks[A.task] && lesson && lesson.tasks.indexOf(A.task) !== -1;
+				if (valid_task && data.info.completed_tasks.indexOf(A.task) === -1) {
 					data.info.completed_tasks.push(A.task);
 					await tx_save(data);
 					R.result = ["Task '" + docs.tasks[A.task] + "' Complete!", "#85C76B", data, 1];
 				} else {
-					if (docs.tasks && docs.tasks[A.task]) R.result = ["Task '" + docs.tasks[A.task] + "' Complete!", "gray", data, 1];
+					if (valid_task) R.result = ["Task '" + docs.tasks[A.task] + "' Complete!", "gray", data, 0];
+					else if (docs.tasks && docs.tasks[A.task]) R.result = ["That task belongs to another lesson.", "gray", data, 0];
 					else R.result = ["Invalid task '" + A.task + "'", "gray", data, 0];
 				}
 			} else {
-				data.info.tutorial_step = parseInt(A.step);
-				await tx_save(data);
-				R.result = ["Lesson '" + docs.tutorial[parseInt(A.step) - 1].title + "' Complete!", "#85C76B", data, 2];
+				var next = parseInt(A.step);
+				var current_lesson = docs.tutorial[current];
+				var complete = !!current_lesson;
+				if (current_lesson)
+					for (var i = 0; i < current_lesson.tasks.length; i++) {
+						if (data.info.completed_tasks.indexOf(current_lesson.tasks[i]) === -1) complete = false;
+					}
+				if (next !== current + 1 || next > docs.tutorial.length || !complete) {
+					R.result = ["Complete the current lesson before continuing.", "gray", data, 0];
+				} else {
+					data.info.tutorial_step = next;
+					await tx_save(data);
+					R.result = ["Lesson '" + current_lesson.title + "' Complete!", "#85C76B", data, 2];
+				}
 			}
 		},
 		{ user: user, task: task, step: step },

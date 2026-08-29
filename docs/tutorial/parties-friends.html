@@ -1,27 +1,18 @@
-<p class="tutlead">The bank keeps items and gold safe—and shares them with all your characters.</p>
+<p class="tutlead">Some roads are easier with company. Some are simply louder.</p>
 
 <div class="tutlinks">
 	<div
 		class="gamebutton gamebutton-small"
 		onclick="
 			btc(event);
-			open_guide('banking', get_guide_url('banking'));
+			open_guide('multi', '/docs/guide/multi');
 		"
 	>
-		BANKING GUIDE
-	</div>
-	<div
-		class="gamebutton gamebutton-small"
-		onclick="
-			btc(event);
-			code_eval('smart_move(&quot;bank&quot;)');
-		"
-	>
-		GO TO THE BANK
+		PLAYING TOGETHER
 	</div>
 </div>
 
-{% for task in tutorial_data("bank").tasks %} {% if loop.first %}
+{% for task in tutorial_data("parties-friends").tasks %} {% if loop.first %}
 <div class="tutdivider"></div>
 {% endif %}
 <div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
@@ -29,28 +20,30 @@
 
 <div class="tutpath manual">
 	<div class="tutpath-title">MANUAL</div>
-	<p>Enter the bank to the right of the town square. Open an item clerk, move one item into storage, then visit Mr. Rich to deposit a little gold.</p>
-	<p>Only one of your characters can be inside the bank at a time. The first packs are open; deeper vaults must be unlocked.</p>
+	<p>
+		Open <span class="gamebutton gamebutton-small">COM</span> to see adventurers, friends, servers, merchants, mail, and your own characters. Select a nearby adventurer to invite them, request their
+		party, or send a friend request.
+	</p>
+	<p>Party chat reaches the group. Friends can find each other's server more easily. A polite hello still works wonders.</p>
 </div>
 
 <div class="tutpath codepath">
 	<div class="tutpath-title">OPTIONAL CODE</div>
 	<!-- prettier-ignore -->
-	<div class="code">async function visit_bank() {
-	await smart_move("bank");
-	await bank_deposit(1);
+	<div class="code">var name = "TrustedFriend";
 
-	var potions = locate_item("hpot0");
-	if (potions !== -1) await bank_store(potions);
-}
+send_party_invite(name).catch(function (error) {
+	show_json(error);
+});
 
-visit_bank().catch(function (error) {
+send_friend_request(name).catch(function (error) {
 	show_json(error);
 });</div>
-	<p>The item can be retrieved later from its bank pack.</p>
+	<p>Replace the name before running. Incoming requests can be handled with their documented events and accept routines.</p>
 	<p>
-		<span class="rlabel" onclick="render_function_reference($(this).html())">bank_deposit</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">bank_store</span> ·
-		<span class="rlabel" onclick="render_function_reference($(this).html())">bank_retrieve</span>
+		<span class="rlabel" onclick="render_function_reference($(this).html())">send_party_invite</span> ·
+		<span class="rlabel" onclick="render_function_reference($(this).html())">send_friend_request</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">party_say</span> ·
+		<span class="rlabel" onclick="render_function_reference($(this).html())">pm</span>
 	</p>
 </div>
 

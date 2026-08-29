@@ -1,0 +1,49 @@
+<div class="guide-kicker">ACCOUNT STORAGE</div>
+<div class="guide-title">The Bank</div>
+<p>The bank holds gold and items for your whole account. Every character sees the same vault, but only one of your characters can be inside it at a time.</p>
+
+<div class="guide-cards">
+	<div><span class="guide-mark">G</span><b>Mr. Rich</b><br />Deposit carried gold or withdraw shared gold. The server safely limits the amount to what is available.</div>
+	<div><span class="guide-mark">42</span><b>One Teller, One Pack</b><br />Every item teller controls a 42-slot pack. The first two packs are open on every account.</div>
+	<div><span class="guide-mark">3</span><b>Three Floors</b><br />The Bank, Basement, and Underground hold different packs. A pack can only be used from its own floor.</div>
+</div>
+
+<div class="divider"></div>
+<div class="title mt15">Storing Items</div>
+<p>Open an item teller, then drag an inventory item into a bank slot. Drag it back to retrieve it, or move items between slots to organise the pack. Stackable items join compatible stacks when possible.</p>
+<p>Items cannot be equipped, sold, upgraded, or sent while stored. PVP markings are removed when an item is banked. Blocked items and operations already in progress are refused.</p>
+<div class="guide-note">Leave at least one inventory space before retrieving an item. Automatic storage needs a compatible stack or an empty bank slot.</div>
+
+<div class="divider"></div>
+<div class="title mt15">Opening More Space</div>
+<p>Walk up to a closed teller to see its current price in gold or Shells. The quote shown there is the price for that exact pack. Once opened, the pack remains part of the account.</p>
+<p>The Bank Key opens the Basement. The Underground has its own key. A Diamond Key opens the next unopened teller; using any key consumes it. Deeper floors remain inaccessible until their door has been unlocked.</p>
+
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<p><span class="dlabel">character.bank</span> exists while you are inside the bank. It contains the shared gold and every open pack available to the character.</p>
+<div class="code">async function bank_trip() {
+	await smart_move("bank");
+
+	// Gold is shared by every character on the account.
+	await bank_deposit(100000);
+
+	// No pack: prefer an existing stack, then the first free slot.
+	var potions = locate_item("hpot0");
+	if (potions !== -1) await bank_store(potions);
+
+	// Explicit pack and positions:
+	// await bank_store(0, "items0", 5);
+	// await bank_retrieve("items0", 5);
+	// await bank_swap("items0", 5, 6);
+}
+
+bank_trip().catch(show_json);</div>
+<p>Open a closed teller through CODE with <span class="rlabel" onclick="render_function_reference($(this).html())">open_bank_pack</span>, for example <span class="dlabel">await open_bank_pack("items2", "gold")</span>. The character must be on the floor that owns that pack.</p>
+<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">bank_deposit</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_withdraw</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_store</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_retrieve</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_swap</span>.</p>
+
+<div class="guide-related">Related: <span onclick="hide_modal(); open_guide('items',get_guide_url('items'))">Items</span> · <span onclick="hide_modal(); open_guide('item-maintenance',get_guide_url('item-maintenance'))">Item Maintenance</span> · <span onclick="hide_modal(); open_guide('travel-and-instances',get_guide_url('travel-and-instances'))">Travel</span></div>
+
+<style>
+	.guide-kicker{color:#3F7196;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#356F9B;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#386D91;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}.guide-cards>div{border:3px solid #8EABC0;padding:10px}.guide-mark{background:#356F9B;color:white;display:inline-block;margin-right:7px;min-width:31px;text-align:center}.guide-note{border-left:6px solid #356F9B;background:#E3EDF4;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#356F9B;cursor:pointer;text-decoration:underline}@media(max-width:760px){.guide-cards{grid-template-columns:1fr}}
+</style>

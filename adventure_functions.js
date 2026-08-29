@@ -920,16 +920,35 @@ function process_user_data(user_id, data) {
 		data = {
 			_id: "IE_userdata-" + user_id,
 			created: new Date(),
-			info: { completed_tasks: [], tutorial_step: 0 },
+			info: { completed_tasks: [], tutorial_step: 0, tutorial_version: 2 },
 		};
 	}
 	if (!data.info.completed_tasks) data.info.completed_tasks = [];
 	if (data.info.tutorial_step === undefined) data.info.tutorial_step = 0;
+	migrate_tutorial_data(data);
 	calculate_tutorial_step(data);
 	return data;
 }
 
+function migrate_tutorial_data(user_data) {
+	if (user_data.info.tutorial_version) return;
+	var legacy_step = Math.max(0, Math.min(parseInt(user_data.info.tutorial_step) || 0, 8));
+	var step_map = [0, 1, 2, 5, 6, 7, 11, 14, 15];
+	function complete_new_tasks(tasks) {
+		for (var i = 0; i < tasks.length; i++) {
+			if (user_data.info.completed_tasks.indexOf(tasks[i]) === -1) user_data.info.completed_tasks.push(tasks[i]);
+		}
+	}
+	if (legacy_step >= 3) complete_new_tasks(["equip", "usepotion", "useskill", "visitshop", "buyitem"]);
+	if (legacy_step >= 6) complete_new_tasks(["visitnpc", "recipes", "craftsman", "exchanger"]);
+	if (legacy_step >= 7) complete_new_tasks(["characters", "events"]);
+	user_data.info.tutorial_step = step_map[legacy_step];
+	user_data.info.tutorial_version = 2;
+}
+
 function calculate_tutorial_step(user_data) {
+	user_data.info.tutorial_step = parseInt(user_data.info.tutorial_step) || 0;
+	user_data.info.tutorial_step = Math.max(0, Math.min(user_data.info.tutorial_step, docs.tutorial.length));
 	var marked = {};
 	for (var i = 0; i < user_data.info.completed_tasks.length; i++) {
 		marked[user_data.info.completed_tasks[i]] = true;
@@ -949,22 +968,25 @@ function calculate_tutorial_step(user_data) {
 function data_to_tutorial(user_data) {
 	try {
 		if (user_data) {
-			if (user_data.info.tutorial_step >= docs.tutorial.length) return { step: user_data.info.tutorial_step, completed: [], finished: true, task: false, progress: 100 };
+			if (user_data.info.tutorial_step >= docs.tutorial.length)
+				return { step: docs.tutorial.length, completed: [], pending: [], finished: true, task: false, progress: 100 };
 			var arr = [],
+				pending = [],
 				task = false,
 				percent = 100;
 			var tasks = docs.tutorial[user_data.info.tutorial_step].tasks;
 			for (var i = 0; i < tasks.length; i++) {
 				if (user_data.info.completed_tasks.indexOf(tasks[i]) !== -1) arr.push(tasks[i]);
-				else if (!task) task = tasks[i];
+				else pending.push(tasks[i]);
 			}
+			task = pending[0] || false; // Kept for older clients; new clients can complete pending tasks in any order.
 			if (task) percent = Math.round((100 * arr.length) / tasks.length);
-			return { step: user_data.info.tutorial_step, task: task, completed: arr, progress: percent };
+			return { step: user_data.info.tutorial_step, task: task, completed: arr, pending: pending, progress: percent };
 		}
 	} catch (e) {
 		console.error("data_to_tutorial error", e);
 	}
-	return { step: 0, completed: [] };
+	return { step: 0, completed: [], pending: [] };
 }
 
 // ==================== SIGNUPTH / CHARACTERTH ====================
