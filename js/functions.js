@@ -2824,9 +2824,8 @@ function say(message, code) {
 				code = args.shift();
 			if (name) start_character_runner(name, code);
 		} else if (command == "codes") {
-			if (is_tauri) show_alert("Local code folders aren't available in this client");
-			else if (!is_electron) show_alert("Only works in game clients");
-			else electron_open_codes();
+			var opened = window.open(base_url + "/vscode", "_blank");
+			if (!opened) show_alert("Open " + base_url + "/vscode");
 		} else if (command == "leave") {
 			push_deferred("party");
 			socket.emit("party", { event: "leave" });

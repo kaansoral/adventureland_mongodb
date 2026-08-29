@@ -1,4 +1,4 @@
-const PUBLIC_PATHS = ["/", "/docs", "/linux", "/mainframe"];
+const PUBLIC_PATHS = ["/", "/docs", "/linux", "/mainframe", "/vscode"];
 
 const DOCS_PATHS = [
 	"/docs/code",

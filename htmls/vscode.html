@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{{ domain.title }}</title>
+		<meta
+			name="description"
+			content="Use the Adventure Land VS Code extension to sync CODE slots through the Adventure Land API, including full download and upload on save."
+		/>
+		<link rel="icon" href="/images/favicon.png" />
+		<link href="/css/common.css?v={{ domain.v }}" rel="stylesheet" />
+		<style>
+			:root {
+				color-scheme: dark;
+				--bg: #070908;
+				--surface: #101613;
+				--surface2: #18211c;
+				--line: #526055;
+				--text: #eef4ef;
+				--muted: #a9b3aa;
+				--green: #73c66d;
+				--gold: #efc64c;
+				--red: #e46a72;
+				--blue: #58b6df;
+				--ink: #050605;
+			}
+			* {
+				box-sizing: border-box;
+			}
+			html,
+			body {
+				min-height: 100%;
+				margin: 0;
+				background: var(--bg);
+				color: var(--text);
+				font-family: pixel, monospace;
+				font-size: 18px;
+				line-height: 1.45;
+			}
+			body {
+				padding: 24px;
+			}
+			main {
+				width: min(1120px, 100%);
+				margin: 0 auto;
+			}
+			h1,
+			h2,
+			h3,
+			p {
+				margin: 0;
+			}
+			h1 {
+				font-size: 38px;
+			}
+			h2 {
+				font-size: 25px;
+			}
+			h3 {
+				font-size: 19px;
+				color: var(--gold);
+			}
+			a,
+			button {
+				color: var(--text);
+				font: inherit;
+			}
+			button {
+				cursor: pointer;
+			}
+			button:disabled {
+				cursor: wait;
+				opacity: 0.55;
+			}
+			code,
+			pre {
+				font-family: pixel, monospace;
+			}
+			.top,
+			.actions,
+			.token-actions,
+			.install-actions {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 12px;
+			}
+			.top {
+				margin-bottom: 18px;
+			}
+			.nav,
+			.actions,
+			.token-actions,
+			.install-actions {
+				flex-wrap: wrap;
+			}
+			.nav {
+				display: flex;
+				gap: 8px;
+			}
+			.nav a,
+			.button,
+			button {
+				display: inline-block;
+				border: 1px solid var(--line);
+				background: var(--surface2);
+				padding: 9px 12px;
+				text-decoration: none;
+			}
+			.nav a:hover,
+			.button:hover,
+			button:hover {
+				border-color: var(--blue);
+			}
+			.button.primary,
+			button.primary {
+				border-color: var(--green);
+				background: #1d3520;
+			}
+			.button.warning,
+			button.warning {
+				border-color: #8c4248;
+			}
+			.muted {
+				color: var(--muted);
+			}
+			.shell {
+				display: inline-block;
+				background: var(--ink);
+				border: 1px solid #344037;
+				color: var(--gold);
+				padding: 7px 9px;
+				overflow-wrap: anywhere;
+				user-select: all;
+			}
+			.code-shot {
+				display: block;
+				width: 100%;
+				max-height: 260px;
+				object-fit: contain;
+				margin-top: 14px;
+				border: 1px solid #344037;
+				background: var(--ink);
+				image-rendering: auto;
+			}
+			.grid {
+				display: grid;
+				grid-template-columns: minmax(0, 1fr) minmax(340px, 0.72fr);
+				gap: 16px;
+				align-items: start;
+			}
+			.panel,
+			.step,
+			.note {
+				border: 1px solid var(--line);
+				background: var(--surface);
+				padding: 17px;
+			}
+			.panel.highlight {
+				border-color: var(--green);
+			}
+			.panel.token {
+				border-color: var(--blue);
+			}
+			.panel + .panel,
+			.steps,
+			.note {
+				margin-top: 16px;
+			}
+			.steps {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 12px;
+			}
+			.step strong {
+				display: block;
+				margin-bottom: 6px;
+				color: var(--green);
+			}
+			.step p,
+			.panel p {
+				margin-top: 8px;
+			}
+			.token-secret {
+				display: none;
+				margin-top: 12px;
+				padding: 12px;
+				white-space: pre-wrap;
+				overflow-wrap: anywhere;
+				border: 1px solid var(--gold);
+				background: var(--ink);
+				color: var(--gold);
+				font-size: 15px;
+				user-select: all;
+			}
+			.token-help {
+				margin-top: 10px;
+				color: var(--gold);
+			}
+			.error {
+				display: none;
+				margin-top: 12px;
+				border: 1px solid var(--red);
+				background: #241114;
+				color: #ffb8be;
+				padding: 12px;
+			}
+			.copy-row {
+				display: grid;
+				grid-template-columns: 150px minmax(0, 1fr);
+				gap: 1px;
+				margin-top: 12px;
+				border: 1px solid var(--line);
+				background: var(--line);
+			}
+			.copy-row > * {
+				background: var(--ink);
+				padding: 9px;
+				min-width: 0;
+			}
+			.copy-row code {
+				overflow-wrap: anywhere;
+				user-select: all;
+			}
+			.status-line {
+				display: flex;
+				justify-content: space-between;
+				gap: 12px;
+				margin-top: 12px;
+				color: var(--muted);
+			}
+			.old-flow {
+				border-color: var(--gold);
+			}
+			@media (max-width: 820px) {
+				body {
+					padding: 12px;
+				}
+				.top,
+				.status-line {
+					align-items: flex-start;
+					flex-direction: column;
+				}
+				.grid,
+				.steps,
+				.copy-row {
+					grid-template-columns: 1fr;
+				}
+				h1 {
+					font-size: 31px;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<header class="top">
+				<div>
+					<h1>Adventure Land for VS Code</h1>
+					<p class="muted">Sync every CODE slot into a local folder, edit in VS Code, and upload when you save.</p>
+				</div>
+				<nav class="nav" aria-label="Main navigation"><a href="/">Game</a><a href="/mainframe">Mainframe</a><a href="/docs/guide/advanced/adventure-api">API</a></nav>
+			</header>
+
+			<section class="grid">
+				<div>
+					<section class="panel highlight">
+						<h2>Install the extension</h2>
+						<p>Use <span class="shell">{{ extension.id }}</span> in VS Code or Cursor. It replaces the old client folder sync with API-based autosync, so it works from Steam, browser, and normal desktop editors.</p>
+						<div class="install-actions" style="margin-top: 14px">
+							{% if extension.marketplace_available %}
+								<a class="button primary" href="{{ extension.vscode_url }}">Open in VS Code</a>
+								<a class="button" href="{{ extension.marketplace_url }}" target="_blank" rel="noopener">Marketplace page</a>
+							{% endif %}
+							{% if extension.download_available %}
+								<a class="button primary" href="{{ extension.download_url }}">Download VSIX {{ extension.version }}</a>
+							{% endif %}
+						</div>
+						{% if extension.download_available %}
+							<p class="muted">Manual install: download the VSIX, open Command Palette with Ctrl+Shift+P or Cmd+Shift+P, run <span class="shell">Extensions: Install from VSIX...</span>, then choose the downloaded file. Use this in Cursor too.</p>
+						{% elif extension.marketplace_available %}
+							<p class="muted">Install from the Marketplace, then return here to create your token.</p>
+						{% else %}
+							<p class="muted">The Marketplace page is not live yet. The direct VSIX download will appear here when the package is available on this server.</p>
+						{% endif %}
+						<img class="code-shot" src="/images/screenshots/code_characters.png" alt="Adventure Land CODE slots" />
+					</section>
+
+					<section class="steps" aria-label="VS Code setup steps">
+						<div class="step">
+							<strong>1. Create a token</strong>
+							<p>Sign in here, create a token below, and copy it while it is visible. The token starts with <span class="shell">mcp_</span>.</p>
+						</div>
+						<div class="step">
+							<strong>2. Paste it in VS Code</strong>
+							<p>Open Command Palette and run <span class="shell">Adventure Land: Set API Token</span>. Paste the token there. This works in Cursor too.</p>
+						</div>
+						<div class="step">
+							<strong>3. Activate a folder</strong>
+							<p>Run <span class="shell">Adventure Land: Activate Auto Sync Folder</span>. Choose any local folder you want VS Code to manage.</p>
+						</div>
+						<div class="step">
+							<strong>4. Edit and save</strong>
+							<p>The extension downloads every CODE slot. Saving a managed file uploads it back to Adventure Land.</p>
+						</div>
+					</section>
+
+					<section class="panel old-flow">
+						<h2>Same idea as /codes</h2>
+						<p>The extension creates an <span class="shell">adventureland</span> folder with <span class="shell">codes</span>, <span class="shell">characters</span>, <span class="shell">libraries</span>, and <span class="shell">clash</span> inside it. It also keeps <span class="shell">history</span> beside that folder.</p>
+						<p>On activation it downloads every CODE slot. After that it checks for remote changes, uploads offline edits when safe, and uploads managed files when you save them.</p>
+						<p>Saving from VS Code does not spend Shells and does not start Mainframe by itself.</p>
+					</section>
+				</div>
+
+				<aside>
+					<section class="panel token">
+						<h2>Your token</h2>
+						{% if not user %}
+							<p>Sign in to Adventure Land first. Then return here and create a token for VS Code.</p>
+							<div class="actions" style="margin-top: 14px"><a class="button primary" href="/">Sign in</a></div>
+						{% else %}
+							<p class="muted">One token is active per account. Creating a new one rotates the old token immediately.</p>
+							<div class="status-line"><strong id="vscode-token-status">Checking token</strong><span id="vscode-token-detail"></span></div>
+							<div class="token-actions" style="margin-top: 14px">
+								<button id="vscode-create-token" class="primary" type="button" disabled>Create and show token</button>
+								<button id="vscode-copy-token" type="button" style="display: none">Copy token</button>
+								<button id="vscode-show-token" type="button" style="display: none">Show token</button>
+								<button id="vscode-revoke-token" class="warning" type="button" disabled>Revoke token</button>
+							</div>
+							<p id="vscode-token-help" class="token-help"></p>
+							<pre id="vscode-token-secret" class="token-secret" aria-live="polite"></pre>
+							<div id="vscode-token-error" class="error"></div>
+							<p class="muted">Adventure Land keeps one active token for your account. Use Show token whenever you need to paste it into VS Code.</p>
+						{% endif %}
+					</section>
+
+					<section class="panel">
+						<h2>Commands in VS Code</h2>
+						<div class="copy-row"><span class="muted">Set token</span><code>Adventure Land: Set API Token</code></div>
+						<div class="copy-row"><span class="muted">Start sync</span><code>Adventure Land: Activate Auto Sync Folder</code></div>
+						<div class="copy-row"><span class="muted">Pull/push now</span><code>Adventure Land: Sync CODE Folder Now</code></div>
+						<div class="copy-row"><span class="muted">Open folder</span><code>Adventure Land: Open Auto Sync Folder</code></div>
+						<div class="copy-row"><span class="muted">Stop sync</span><code>Adventure Land: Stop Auto Sync Folder</code></div>
+					</section>
+
+					<section class="note">
+						<h3>File names</h3>
+						<p>Managed CODE files use <span class="shell">name.slot.js</span>. Examples: <span class="shell">farm.1.js</span>, <span class="shell">merchant.12.js</span>, <span class="shell">pvp.Warrior.js</span>. The slot before <span class="shell">.js</span> decides where the file uploads. Files in <span class="shell">libraries</span> are read-only helpers from the game.</p>
+					</section>
+				</aside>
+			</section>
+		</main>
+		{% if user %}
+			<script src="/js/vscode_sync.js?v={{ domain.v }}"></script>
+		{% endif %}
+	</body>
+</html>

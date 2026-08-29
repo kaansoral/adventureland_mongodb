@@ -739,6 +739,18 @@ async function mcp_api_get_code(args) {
 	return { success: true, code: code };
 }
 
+async function mcp_api_get_libraries(args) {
+	return {
+		success: true,
+		libraries: {
+			"default_code.js": shtml("htmls/contents/codes/default_code.js"),
+			"runner_functions.js": shtml("htmls/contents/codes/runner_functions.js"),
+			"runner_compat.js": shtml("htmls/contents/codes/runner_compat.js"),
+			"common_functions.js": shtml("htmls/contents/codes/common_functions.js"),
+		},
+	};
+}
+
 async function mcp_api_save_code(args) {
 	if (args.name === "DELETE") return { failed: true, reason: "invalid_name" };
 	var response = { infs: [] };
@@ -1059,6 +1071,7 @@ var MCP_API_REF = {
 		F: mcp_api_get_code,
 		slot: { type: "identifier" },
 	},
+	get_libraries: { F: mcp_api_get_libraries },
 	save_code: {
 		F: mcp_api_save_code,
 		slot: { type: "identifier" },
@@ -1114,6 +1127,7 @@ var MCP_TOOL_META = {
 	get_code_method: { description: "Read one public character CODE method's exact contract, examples, failure behavior, and shipped source location.", readOnlyHint: true },
 	list_codes: { description: "List the account's CODE slots without returning their source.", readOnlyHint: true },
 	get_code: { description: "Read one owned CODE slot.", readOnlyHint: true },
+	get_libraries: { description: "Read the standard local CODE helper files used by the old client sync folder.", readOnlyHint: true },
 	save_code: { description: "Create or replace one account-owned JavaScript CODE slot. Read an existing slot before replacement; saving does not start a character.", destructiveHint: true },
 	delete_code: { description: "Delete one owned CODE slot.", destructiveHint: true },
 	mainframe_list_characters: { description: "List owned characters and their Mainframe access and runtime state.", readOnlyHint: true },

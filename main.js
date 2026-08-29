@@ -133,6 +133,57 @@ app.get("/mainframe", async (req, res) => {
 		.send(nunjucks.render("htmls/mainframe.html", { domain: domain, user: user }));
 });
 
+function get_vscode_extension_info() {
+	var extension_dir = path.resolve(__dirname, "utility/vscode-adventureland");
+	var info = {
+		id: "adventureland.adventure-land-code-sync",
+		name: "Adventure Land CODE Sync",
+		version: "0.2.0",
+		file: "adventure-land-code-sync-0.2.0.vsix",
+		marketplace_url: "https://marketplace.visualstudio.com/items?itemName=adventureland.adventure-land-code-sync",
+		marketplace_available: false,
+		vscode_url: "vscode:extension/adventureland.adventure-land-code-sync",
+		download_url: "",
+		download_available: false,
+	};
+	try {
+		var pkg = JSON.parse(fs.readFileSync(path.join(extension_dir, "package.json"), "utf8"));
+		info.name = pkg.displayName || info.name;
+		info.version = pkg.version || info.version;
+		info.id = (pkg.publisher || "adventureland") + "." + (pkg.name || "adventure-land-code-sync");
+		info.file = (pkg.name || "adventure-land-code-sync") + "-" + info.version + ".vsix";
+		info.marketplace_url = "https://marketplace.visualstudio.com/items?itemName=" + info.id;
+		info.vscode_url = "vscode:extension/" + info.id;
+	} catch (e) {}
+	var vsix_path = path.join(extension_dir, info.file);
+	if (fs.existsSync(vsix_path)) {
+		info.download_url = "/vscode/" + info.file;
+		info.download_available = true;
+		info.vsix_path = vsix_path;
+	}
+	return info;
+}
+
+app.get("/codes", async (req, res) => {
+	return res.redirect(302, "/vscode");
+});
+
+app.get("/vscode", async (req, res) => {
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
+	domain.title = "Adventure Land for VS Code";
+	return res
+		.status(200)
+		.set("Cache-Control", "no-store")
+		.send(nunjucks.render("htmls/vscode.html", { domain: domain, user: user, extension: get_vscode_extension_info() }));
+});
+
+app.get("/vscode/:file", async (req, res, next) => {
+	var extension = get_vscode_extension_info();
+	if (!extension.download_available || req.params.file !== extension.file) return next();
+	return res.download(extension.vsix_path, extension.file);
+});
+
 // Character profile page
 app.get("/character/:name", async (req, res, next) => {
 	var user = await get_user(req),

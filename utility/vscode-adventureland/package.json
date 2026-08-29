@@ -1,0 +1,156 @@
+{
+	"name": "adventure-land-code-sync",
+	"displayName": "Adventure Land CODE Sync",
+	"description": "Auto sync Adventure Land CODE slots from VS Code through the Adventure Land JSON API.",
+	"version": "0.2.0",
+	"publisher": "adventureland",
+	"license": "SEE LICENSE IN LICENSE",
+	"homepage": "https://adventure.land/vscode",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/kaansoral/adventureland_mongodb"
+	},
+	"engines": {
+		"vscode": "^1.92.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"keywords": [
+		"Adventure Land",
+		"CODE",
+		"automation",
+		"game"
+	],
+	"activationEvents": [
+		"onStartupFinished",
+		"onCommand:adventureland.setToken",
+		"onCommand:adventureland.clearToken",
+		"onCommand:adventureland.activateSyncFolder",
+		"onCommand:adventureland.stopSyncFolder",
+		"onCommand:adventureland.openSyncFolder",
+		"onCommand:adventureland.syncNow",
+		"onCommand:adventureland.listCodeSlots",
+		"onCommand:adventureland.downloadCodeSlot",
+		"onCommand:adventureland.uploadCurrentFile",
+		"onCommand:adventureland.setTargetSlot",
+		"onCommand:adventureland.toggleAutoUpload",
+		"onCommand:adventureland.openMainframe",
+		"onCommand:adventureland.openSetupGuide"
+	],
+	"main": "./src/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "adventureland.setToken",
+				"title": "Adventure Land: Set API Token"
+			},
+			{
+				"command": "adventureland.clearToken",
+				"title": "Adventure Land: Clear API Token"
+			},
+			{
+				"command": "adventureland.activateSyncFolder",
+				"title": "Adventure Land: Activate Auto Sync Folder"
+			},
+			{
+				"command": "adventureland.stopSyncFolder",
+				"title": "Adventure Land: Stop Auto Sync Folder"
+			},
+			{
+				"command": "adventureland.openSyncFolder",
+				"title": "Adventure Land: Open Auto Sync Folder"
+			},
+			{
+				"command": "adventureland.syncNow",
+				"title": "Adventure Land: Sync CODE Folder Now"
+			},
+			{
+				"command": "adventureland.listCodeSlots",
+				"title": "Adventure Land: List CODE Slots"
+			},
+			{
+				"command": "adventureland.downloadCodeSlot",
+				"title": "Adventure Land: Download CODE Slot"
+			},
+			{
+				"command": "adventureland.uploadCurrentFile",
+				"title": "Adventure Land: Upload Current File"
+			},
+			{
+				"command": "adventureland.setTargetSlot",
+				"title": "Adventure Land: Set Default CODE Slot"
+			},
+			{
+				"command": "adventureland.toggleAutoUpload",
+				"title": "Adventure Land: Toggle Auto Upload on Save"
+			},
+			{
+				"command": "adventureland.openMainframe",
+				"title": "Adventure Land: Open Mainframe"
+			},
+			{
+				"command": "adventureland.openSetupGuide",
+				"title": "Adventure Land: Open VS Code Setup Guide"
+			}
+		],
+		"configuration": {
+			"title": "Adventure Land CODE Sync",
+			"properties": {
+				"adventureland.apiBaseUrl": {
+					"type": "string",
+					"default": "https://adventure.land/mcp_api",
+					"description": "Adventure Land JSON API base URL."
+				},
+				"adventureland.codeSlot": {
+					"type": "string",
+					"default": "",
+					"description": "Default CODE slot used when the file name does not contain a slot."
+				},
+				"adventureland.codeName": {
+					"type": "string",
+					"default": "",
+					"description": "Default CODE name used with the configured CODE slot."
+				},
+				"adventureland.autoUploadOnSave": {
+					"type": "boolean",
+					"default": true,
+					"description": "Upload Adventure Land CODE files whenever they are saved. Files inside the active auto sync folder always upload on save."
+				},
+				"adventureland.autoStartSync": {
+					"type": "boolean",
+					"default": true,
+					"description": "Start the selected Adventure Land auto sync folder when VS Code starts."
+				},
+				"adventureland.syncPollSeconds": {
+					"type": "number",
+					"default": 60,
+					"minimum": 15,
+					"description": "How often the auto sync folder checks Adventure Land for remote CODE changes."
+				},
+				"adventureland.maxCodeBytes": {
+					"type": "number",
+					"default": 1048576,
+					"minimum": 1,
+					"description": "Maximum CODE file size the extension will upload."
+				}
+			}
+		},
+		"menus": {
+			"editor/title": [
+				{
+					"command": "adventureland.uploadCurrentFile",
+					"group": "navigation@50",
+					"when": "resourceExtname == .js"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"lint": "node --check src/extension.js",
+		"package": "vsce package --no-yarn"
+	},
+	"devDependencies": {
+		"@vscode/vsce": "^3.9.2"
+	}
+}
