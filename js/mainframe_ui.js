@@ -6,6 +6,7 @@
 	var statusNode = document.getElementById("mainframe-status");
 	var errorNode = document.getElementById("mainframe-error");
 	var tokenStatusNode = document.getElementById("token-status");
+	var tokenStatusDetailNode = document.getElementById("token-status-detail");
 	var createTokenNode = document.getElementById("create-token");
 	var copyTokenNode = document.getElementById("copy-token");
 	var revokeTokenNode = document.getElementById("revoke-token");
@@ -121,7 +122,12 @@
 	function renderTokenStatus(state) {
 		var active = !!(state && state.active);
 		tokenStatusNode.textContent = active ? "Token active" : "No active token";
-		createTokenNode.textContent = active ? "Rotate token" : "Create token";
+		if (active) {
+			var created = state && state.created ? new Date(state.created) : null;
+			var createdText = created && Number.isFinite(created.getTime()) ? " Created " + created.toLocaleString() + "." : "";
+			tokenStatusDetailNode.textContent = "The existing value is hidden because Adventure Land stores only its hash." + createdText;
+		} else tokenStatusDetailNode.textContent = "Create a token to connect an AI client.";
+		createTokenNode.textContent = active ? "Rotate and reveal new token" : "Create token";
 		createTokenNode.disabled = false;
 		revokeTokenNode.disabled = !active;
 	}
@@ -131,6 +137,7 @@
 			renderTokenStatus(await call("token_status"));
 		} catch (error) {
 			tokenStatusNode.textContent = "Token status unavailable";
+			tokenStatusDetailNode.textContent = "Refresh the page or sign in again.";
 			showError(error);
 		}
 	}
@@ -150,7 +157,7 @@
 			tokenSecretNode.textContent = tokenConnection;
 			tokenSecretNode.style.display = "block";
 			copyTokenNode.style.display = "inline-block";
-			renderTokenStatus({ active: true });
+			renderTokenStatus({ active: true, created: new Date().toISOString() });
 			errorNode.style.display = "none";
 		} catch (error) {
 			showError(error);

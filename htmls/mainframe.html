@@ -35,6 +35,8 @@
 			.summary span, .metric span { display:block; color:var(--muted); font-size:15px; }
 			.connect { border:1px solid var(--blue); background:var(--panel); padding:17px; margin-bottom:16px; }
 			.connect-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+			.token-state { display:flex; flex-direction:column; gap:5px; text-align:right; }
+			.token-state span { max-width:390px; font-size:14px; line-height:1.5; }
 			.connect-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
 			.connect-steps { margin:14px 0 0; padding-left:24px; color:var(--muted); }
 			.connect-steps li { margin:4px 0; }
@@ -59,7 +61,7 @@
 			.notice, .empty, .error { border:1px solid var(--line); background:var(--panel); padding:20px; }
 			.error { display:none; color:#ffb8be; margin-bottom:16px; }
 			.footer { margin-top:22px; color:var(--muted); font-size:15px; }
-			@media (max-width:700px) { body{padding:12px}.top,.status,.card-head,.footer,.connect-head{align-items:flex-start;flex-direction:column}.summary{grid-template-columns:1fr}.connection{grid-template-columns:1fr}.grid{grid-template-columns:1fr}h1{font-size:30px} }
+			@media (max-width:700px) { body{padding:12px}.top,.status,.card-head,.footer,.connect-head{align-items:flex-start;flex-direction:column}.token-state{text-align:left}.summary{grid-template-columns:1fr}.connection{grid-template-columns:1fr}.grid{grid-template-columns:1fr}h1{font-size:30px} }
 		</style>
 	</head>
 	<body>
@@ -74,7 +76,7 @@
 				<section id="mainframe-status" class="status offline"><div><span class="dot"></span><strong id="status-title">Connecting</strong></div><div id="status-detail" class="muted">Waiting for Mainframe.</div></section>
 				<div id="mainframe-error" class="error"></div>
 				<section class="connect" aria-labelledby="connect-title">
-					<div class="connect-head"><div><h2 id="connect-title">Connect an AI</h2><p class="muted" style="margin-top:6px">Give an AI the game knowledge, CODE tools, and control of your owned Mainframe characters.</p></div><strong id="token-status" class="muted">Checking token…</strong></div>
+					<div class="connect-head"><div><h2 id="connect-title">Connect an AI</h2><p class="muted" style="margin-top:6px">Give an AI the game knowledge, CODE tools, and control of your owned Mainframe characters.</p></div><div class="token-state"><strong id="token-status" class="muted">Checking token…</strong><span id="token-status-detail" class="muted"></span></div></div>
 					<div class="connection"><span class="muted">Transport</span><code>Streamable HTTP</code><span class="muted">Server URL</span><code>https://adventure.land/mcp</code><span class="muted">First resource</span><code>adventureland://guide/start-here</code></div>
 					<div class="connect-actions"><button id="create-token" type="button" disabled>Create token</button><button id="copy-token" type="button" style="display:none">Copy connection</button><button id="revoke-token" class="disconnect" type="button" disabled>Revoke token</button><a href="/docs/guide/adventure-mcp" style="padding:9px 12px">Setup guide</a></div>
 					<pre id="token-secret" aria-live="polite"></pre>
