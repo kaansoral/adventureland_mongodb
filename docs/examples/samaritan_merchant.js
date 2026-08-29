@@ -54,6 +54,7 @@ var SAMARITAN_MERCHANT_STATE = {
 	lastRespawnAt: 0,
 	lastStandAt: 0,
 	lastStandFundingAt: 0,
+	lastStandPurchaseAt: 0,
 	standRetryAt: 0,
 	logs: {},
 };
@@ -306,6 +307,7 @@ function samaritanMerchantStandIndex() {
 
 async function samaritanMerchantEnsureStand() {
 	if (samaritanMerchantStandIndex() >= 0) return true;
+	if (Date.now() - SAMARITAN_MERCHANT_STATE.lastStandPurchaseAt < 30000) return false;
 	var settings = SAMARITAN_MERCHANT_SETTINGS.shop.standPurchase || {};
 	var item = G.items[settings.name];
 	if (!settings.enabled || !item || !item.stand || !Number.isFinite(Number(settings.goldReserve)) || Number(settings.goldReserve) < 0) return false;
@@ -331,7 +333,8 @@ async function samaritanMerchantEnsureStand() {
 	}
 	SAMARITAN_MERCHANT_STATE.standRetryAt = 0;
 	var purchase = await samaritanMerchantCall("buy stand", function () { return buy_with_gold(settings.name, 1); });
-	return !samaritanMerchantFailure(purchase);
+	if (!samaritanMerchantFailure(purchase)) SAMARITAN_MERCHANT_STATE.lastStandPurchaseAt = Date.now();
+	return false;
 }
 
 async function samaritanMerchantWork() {
