@@ -54,6 +54,7 @@ var SAMARITAN_MERCHANT_STATE = {
 	lastRespawnAt: 0,
 	lastStandAt: 0,
 	lastStandFundingAt: 0,
+	standRetryAt: 0,
 	logs: {},
 };
 
@@ -309,6 +310,7 @@ async function samaritanMerchantEnsureStand() {
 	var item = G.items[settings.name];
 	if (!settings.enabled || !item || !item.stand || !Number.isFinite(Number(settings.goldReserve)) || Number(settings.goldReserve) < 0) return false;
 	if (!Number.isFinite(Number(item.g)) || Number(item.g) <= 0) return false;
+	if (Date.now() < SAMARITAN_MERCHANT_STATE.standRetryAt) return false;
 	var needed = Math.max(0, Math.ceil(Number(item.g) + Number(settings.goldReserve) - Number(character.gold)));
 	if (needed > 0) {
 		if (!settings.withdrawFromBank || !Number.isSafeInteger(settings.maximumBankWithdrawal) || needed > settings.maximumBankWithdrawal) return false;
@@ -323,7 +325,11 @@ async function samaritanMerchantEnsureStand() {
 		return false;
 	}
 	var travel = await samaritanMerchantCall("stand travel", function () { return smart_move(settings.name); });
-	if (samaritanMerchantFailure(travel)) return false;
+	if (samaritanMerchantFailure(travel)) {
+		SAMARITAN_MERCHANT_STATE.standRetryAt = Date.now() + 60000;
+		return false;
+	}
+	SAMARITAN_MERCHANT_STATE.standRetryAt = 0;
 	var purchase = await samaritanMerchantCall("buy stand", function () { return buy_with_gold(settings.name, 1); });
 	return !samaritanMerchantFailure(purchase);
 }
