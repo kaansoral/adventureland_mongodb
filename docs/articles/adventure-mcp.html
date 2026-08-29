@@ -259,8 +259,8 @@
 
 <table>
 <tr><th>Starter</th><th>Behavior</th></tr>
-<tr><td>Samaritan adventurer</td><td>Chooses a bounded monster from deployed definitions, avoids tagged monsters, moves and kites by class, uses conservative class skills, heals or buffs when appropriate, accepts only trusted parties, and supports explicit banking, upgrade, and compound rules.</td></tr>
-<tr><td>Samaritan Merchant</td><td>Buffs nearby players, joins only trusted parties, lists only explicitly allowed surplus items, preserves configured quantities, can retrieve listed stock from the bank, and keeps NPC sales, upgrades, compounds, scroll purchases, and bank deposits independently disabled until configured.</td></tr>
+<tr><td>Samaritan adventurer</td><td>Chooses a bounded monster from deployed definitions, avoids tagged monsters, moves and kites by class, uses conservative class skills, heals or buffs when appropriate, and accepts only trusted parties. It restocks basic potions while preserving gold, banks gold above its carry reserve, and banks items only through exact keep-and-value rules. Upgrades and compounds remain disabled until configured.</td></tr>
+<tr><td>Samaritan Merchant</td><td>Buffs nearby players, joins only trusted parties, lists only explicitly allowed surplus items, preserves configured quantities, and can retrieve listed stock from the bank. A configured basic-stand purchase may withdraw only its bounded shortfall from the shared bank. NPC sales, listings, stand purchases, upgrades, compounds, scroll purchases, and item deposits remain independently disabled until configured.</td></tr>
 </table>
 
 <p>Every item rule requires an exact item key and a positive <span class="dlabel">maxItemValue</span>. Upgrade and compound rules also require a maximum level and have per-session attempt caps. Listing rules require an exact level, keep quantity, trade slot, price, quantity, and value ceiling. Locked, special-property, and stat-modified items are excluded. The code locates inventory entries again immediately before a mutation because inventory indexes can change.</p>

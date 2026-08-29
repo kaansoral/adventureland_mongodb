@@ -31,10 +31,20 @@ if (typeof SAMARITAN_SETTINGS === "undefined") {
 			healBelowRatio: 0.62,
 			buffNearbyPlayers: true,
 		},
+		supplies: {
+			enabled: true,
+			minimumIntervalMs: 60 * 1000,
+			goldReserve: 10000,
+			items: [
+				{ name: "hpot0", minimum: 100, target: 200, maximumPurchase: 200 },
+				{ name: "mpot0", minimum: 100, target: 200, maximumPurchase: 200 },
+			],
+		},
 		bank: {
-			enabled: false,
+			enabled: true,
 			pack: "items0",
 			minimumIntervalMs: 15 * 60 * 1000,
+			gold: { enabled: true, keep: 100000, depositAbove: 250000 },
 			deposit: [],
 			// Example: {name:"gem0", keep:2, maxLevel:0, maxItemValue:50000}
 		},
@@ -66,6 +76,9 @@ var SAMARITAN_STATE = {
 	maintenanceBusy: false,
 	traveling: false,
 	lastBankAt: 0,
+	lastSupplyAt: 0,
+	banking: false,
+	bankRetryAt: 0,
 	lastPartyAt: 0,
 	lastRetreatAt: 0,
 	lastRespawnAt: 0,
@@ -498,8 +511,35 @@ async function samaritanEnsureScroll(scrollName, settings) {
 	return locate_item(scrollName);
 }
 
+function samaritanFindSupplyPurchase() {
+	var settings = SAMARITAN_SETTINGS.supplies || {};
+	if (!settings.enabled || Date.now() - SAMARITAN_STATE.lastSupplyAt < Math.max(10000, Number(settings.minimumIntervalMs) || 0)) return null;
+	var reserve = Math.max(0, Number(settings.goldReserve) || 0);
+	for (var rule of settings.items || []) {
+		if (!rule || typeof rule.name !== "string" || !G.items[rule.name] || !Number.isSafeInteger(rule.minimum) || rule.minimum < 0 || !Number.isSafeInteger(rule.target) || rule.target < rule.minimum || !Number.isSafeInteger(rule.maximumPurchase) || rule.maximumPurchase < 1) continue;
+		var current = quantity(rule.name);
+		if (current >= rule.minimum) continue;
+		var price = Number(G.items[rule.name].g) || 0;
+		if (price <= 0) continue;
+		var affordable = Math.max(0, Math.floor((Number(character.gold) - reserve) / price));
+		var amount = Math.min(rule.target - current, rule.maximumPurchase, affordable);
+		if (amount > 0) return { name: rule.name, quantity: amount };
+	}
+	return null;
+}
+
+function samaritanGoldDepositAmount() {
+	var settings = SAMARITAN_SETTINGS.bank || {};
+	var gold = settings.gold || {};
+	if (!settings.enabled || !gold.enabled || Date.now() < SAMARITAN_STATE.bankRetryAt || (!SAMARITAN_STATE.banking && Date.now() - SAMARITAN_STATE.lastBankAt < settings.minimumIntervalMs)) return 0;
+	var keep = Math.max(0, Math.floor(Number(gold.keep) || 0));
+	var trigger = Math.max(keep, Math.floor(Number(gold.depositAbove) || 0));
+	if (Number(character.gold) <= trigger) return 0;
+	return Math.max(0, Math.floor(Number(character.gold) - keep));
+}
+
 function samaritanFindBankDeposit() {
-	if (!SAMARITAN_SETTINGS.bank.enabled || Date.now() - SAMARITAN_STATE.lastBankAt < SAMARITAN_SETTINGS.bank.minimumIntervalMs) return null;
+	if (!SAMARITAN_SETTINGS.bank.enabled || Date.now() < SAMARITAN_STATE.bankRetryAt || (!SAMARITAN_STATE.banking && Date.now() - SAMARITAN_STATE.lastBankAt < SAMARITAN_SETTINGS.bank.minimumIntervalMs)) return null;
 	for (var rule of SAMARITAN_SETTINGS.bank.deposit || []) {
 		var total = quantity(rule.name);
 		var keep = Math.max(0, Number(rule.keep) || 0);
@@ -515,13 +555,26 @@ function samaritanFindBankDeposit() {
 
 async function samaritanMaintenance() {
 	if (SAMARITAN_STATE.maintenanceBusy || SAMARITAN_STATE.combatBusy || character.rip) return;
+	var supplyWork = samaritanFindSupplyPurchase();
 	var upgradeWork = samaritanFindUpgrade();
 	var compoundWork = samaritanFindCompound();
+	var goldToDeposit = samaritanGoldDepositAmount();
 	var bankWork = samaritanFindBankDeposit();
-	if (!upgradeWork && !compoundWork && !bankWork) return;
+	if (SAMARITAN_STATE.banking && !goldToDeposit && !bankWork) {
+		SAMARITAN_STATE.banking = false;
+		SAMARITAN_STATE.lastBankAt = Date.now();
+	}
+	if (!supplyWork && !upgradeWork && !compoundWork && !goldToDeposit && !bankWork) return;
 	SAMARITAN_STATE.maintenanceBusy = true;
 	try {
 		if (smart.moving) stop("smart");
+		if (supplyWork) {
+			var supplyTravel = await samaritanCall("supply travel", function () { return smart_move(supplyWork.name); });
+			if (samaritanFailure(supplyTravel)) return;
+			var supplyPurchase = await samaritanCall("buy supplies", function () { return buy_with_gold(supplyWork.name, supplyWork.quantity); });
+			if (!samaritanFailure(supplyPurchase)) SAMARITAN_STATE.lastSupplyAt = Date.now();
+			return;
+		}
 		if (upgradeWork || compoundWork) {
 			if (character.map !== "main" || distance(character, { x: -204, y: -129 }) > 140) {
 				await samaritanCall("upgrade travel", function () { return smart_move("upgrade"); });
@@ -547,13 +600,23 @@ async function samaritanMaintenance() {
 			return;
 		}
 		if (!character.bank) {
-			await samaritanCall("bank travel", function () { return smart_move("bank"); });
+			SAMARITAN_STATE.banking = true;
+			var bankTravel = await samaritanCall("bank travel", function () { return smart_move("bank"); });
+			if (samaritanFailure(bankTravel)) {
+				SAMARITAN_STATE.banking = false;
+				SAMARITAN_STATE.bankRetryAt = Date.now() + (bankTravel.reason === "bank_busy" ? 60000 : 20000);
+			}
+			return;
+		}
+		SAMARITAN_STATE.banking = true;
+		goldToDeposit = samaritanGoldDepositAmount();
+		if (goldToDeposit > 0) {
+			await samaritanCall("bank gold", function () { return bank_deposit(goldToDeposit); });
 			return;
 		}
 		bankWork = samaritanFindBankDeposit();
 		if (!bankWork) return;
 		await samaritanCall("bank store", function () { return bank_store(bankWork.index, SAMARITAN_SETTINGS.bank.pack); });
-		SAMARITAN_STATE.lastBankAt = Date.now();
 	} finally {
 		SAMARITAN_STATE.maintenanceBusy = false;
 	}

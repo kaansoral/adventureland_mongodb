@@ -11,6 +11,7 @@ if (typeof SAMARITAN_MERCHANT_SETTINGS === "undefined") {
 			enabled: false,
 			location: "main",
 			listings: [],
+			standPurchase: { enabled: false, name: "stand0", goldReserve: 100000, withdrawFromBank: false, maximumBankWithdrawal: 150000 },
 			// Example: {name:"hpot0", level:0, keep:100, slot:1, price:45, quantity:50, maxItemValue:5000}
 		},
 		bank: {
@@ -52,6 +53,7 @@ var SAMARITAN_MERCHANT_STATE = {
 	lastPartyAt: 0,
 	lastRespawnAt: 0,
 	lastStandAt: 0,
+	lastStandFundingAt: 0,
 	logs: {},
 };
 
@@ -297,6 +299,35 @@ function samaritanMerchantAtShop() {
 	return true;
 }
 
+function samaritanMerchantStandIndex() {
+	return character.items.findIndex(function (item) { return item && G.items[item.name] && G.items[item.name].stand; });
+}
+
+async function samaritanMerchantEnsureStand() {
+	if (samaritanMerchantStandIndex() >= 0) return true;
+	var settings = SAMARITAN_MERCHANT_SETTINGS.shop.standPurchase || {};
+	var item = G.items[settings.name];
+	if (!settings.enabled || !item || !item.stand || !Number.isFinite(Number(settings.goldReserve)) || Number(settings.goldReserve) < 0) return false;
+	if (!Number.isFinite(Number(item.g)) || Number(item.g) <= 0) return false;
+	var needed = Math.max(0, Math.ceil(Number(item.g) + Number(settings.goldReserve) - Number(character.gold)));
+	if (needed > 0) {
+		if (!settings.withdrawFromBank || !Number.isSafeInteger(settings.maximumBankWithdrawal) || needed > settings.maximumBankWithdrawal) return false;
+		if (!character.bank) {
+			if (Date.now() - SAMARITAN_MERCHANT_STATE.lastStandFundingAt < 30000) return false;
+			SAMARITAN_MERCHANT_STATE.lastStandFundingAt = Date.now();
+			await samaritanMerchantCall("stand funding travel", function () { return smart_move("bank"); });
+			return false;
+		}
+		var withdrawal = await samaritanMerchantCall("stand funding", function () { return bank_withdraw(needed); });
+		if (!samaritanMerchantFailure(withdrawal)) SAMARITAN_MERCHANT_STATE.lastStandFundingAt = Date.now();
+		return false;
+	}
+	var travel = await samaritanMerchantCall("stand travel", function () { return smart_move(settings.name); });
+	if (samaritanMerchantFailure(travel)) return false;
+	var purchase = await samaritanMerchantCall("buy stand", function () { return buy_with_gold(settings.name, 1); });
+	return !samaritanMerchantFailure(purchase);
+}
+
 async function samaritanMerchantWork() {
 	if (!SAMARITAN_MERCHANT_SETTINGS.enabled || SAMARITAN_MERCHANT_STATE.busy) return;
 	SAMARITAN_MERCHANT_STATE.busy = true;
@@ -312,6 +343,10 @@ async function samaritanMerchantWork() {
 		samaritanMerchantPartyTick();
 		var supportResult = await samaritanMerchantSupport();
 		if (supportResult && !samaritanMerchantFailure(supportResult)) return;
+		if (SAMARITAN_MERCHANT_SETTINGS.shop.enabled && samaritanMerchantStandIndex() < 0 && SAMARITAN_MERCHANT_SETTINGS.shop.standPurchase && SAMARITAN_MERCHANT_SETTINGS.shop.standPurchase.enabled) {
+			await samaritanMerchantEnsureStand();
+			return;
+		}
 		var upgradeWork = samaritanMerchantFindUpgrade();
 		var compoundWork = samaritanMerchantFindCompound();
 		if (upgradeWork || compoundWork) {
