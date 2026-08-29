@@ -1,0 +1,33 @@
+<div class="guide-kicker">PROTECT YOUR GEAR</div>
+<div class="guide-title">Item Maintenance</div>
+<p>Smith the Locksmith protects valuable items. Sir Bob the Scrollsmith can remove an applied stat from eligible equipment.</p>
+
+<div class="divider"></div>
+<div class="title mt15">Manual</div>
+<p>Visit Smith in Desertland. A <b>lock</b> blocks ordinary destructive item actions until you pay to unlock it. A <b>seal</b> is stronger: beginning its unlock starts a two-day wait, and you must return after the wait to finish.</p>
+<p>Visit Sir Bob to remove an applied stat. The service shows the cost and returned stat scroll before you confirm. You need room for the returned scroll.</p>
+
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<p>Each service accepts an inventory position. Run it while standing near the matching specialist.</p>
+<div class="code">async function maintain_items() {
+	await lock_item(0);
+	await seal_item(1);
+
+	var result = await unlock_item(1);
+	if (result.in_progress) {
+		game_log(result.hours + " hours remain on the seal");
+	}
+
+	// Sir Bob removes the applied stat from slot 2.
+	var destat = await destat_item(2);
+	game_log("Returned " + destat.quantity + " " + destat.scroll);
+}</div>
+<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">lock_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">seal_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">unlock_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">destat_item</span>.</p>
+<div class="guide-note">De-statting removes only the applied stat. It does not remove the item's upgrade or compound level. Check the returned scroll and cost in the result.</div>
+
+<div class="guide-related">See also: <span onclick="hide_modal(); open_guide('upgrading','/docs/guide/upgrading')">Upgrading</span> · <span onclick="hide_modal(); open_guide('compounding','/docs/guide/compounding')">Compounding</span></div>
+
+<style>
+	.guide-kicker{color:#62727E;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#3E5968;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#3E5968;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #647985;background:#E2E9EC;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#3E687D;cursor:pointer;text-decoration:underline}
+</style>

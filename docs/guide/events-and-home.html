@@ -1,0 +1,31 @@
+<div class="guide-kicker">THE WORLD KEEPS MOVING</div>
+<div class="guide-title">Events &amp; Home Servers</div>
+<p>The clock, live server state, and event notices tell you what is happening now. A home server records where each character belongs and is used for that server's home rewards.</p>
+
+<div class="divider"></div>
+<div class="title mt15">Manual</div>
+<p>Open the clock at the bottom-left to inspect the schedule. Live events may appear as join buttons, portals, creatures, or NPC interactions; follow the event's own guide because not every event is entered the same way.</p>
+<p>Speak with Bean to make the current eligible server your home. Changing home has a long cooldown. Favoré can bless the current server with shells; her interface shows the exact cost and remaining blessing time before you confirm.</p>
+
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<p><span class="dlabel">server.status</span> is the current replaceable snapshot of live server state. <span class="dlabel">G.events</span> contains static event definitions.</p>
+<div class="code">async function event_example() {
+	show_json(server.status);
+	show_json(G.events);
+
+	if (server.status.goobrawl) {
+		await join("goobrawl");
+	}
+
+	await set_home();
+	// await bless_server(); // Spends shells: inspect the reference first.
+}</div>
+<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">join</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">set_home</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bless_server</span>.</p>
+<div class="guide-note">Only call <span class="rlabel" onclick="render_function_reference($(this).html())">join</span> for a currently available, joinable event. Many world events are reached by travel instead.</div>
+
+<div class="guide-related">See also: <span onclick="hide_modal(); open_guide('travel-and-instances','/docs/guide/travel-and-instances')">Travel and Instances</span>.</div>
+
+<style>
+	.guide-kicker{color:#7D5DA5;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#58417A;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#58417A;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #8061A8;background:#EAE3F1;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#674C8A;cursor:pointer;text-decoration:underline}
+</style>

@@ -1,0 +1,30 @@
+<div class="guide-kicker">TURN IN YOUR TREASURES</div>
+<div class="guide-title">Exchanges &amp; Quests</div>
+<p>Some items are not ordinary loot to equip or sell. Their tooltip marks them for an exchange, a token shop, or a particular NPC.</p>
+
+<div class="divider"></div>
+<div class="title mt15">Manual</div>
+<p>Read the item tooltip for the required quantity, then visit its exchange NPC. Xyn handles many boxes and bundles; other treasures belong to specialist collectors. Place the complete stack in the exchange slot and leave inventory room for the result.</p>
+<p>Token shops are more direct: inspect the offered reward, its token cost, and the quantity before confirming. Recipes, exchanges, and ordinary NPC errands are different systems even when they use the same materials.</p>
+
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<p>Stand near the correct NPC. <span class="rlabel" onclick="render_function_reference($(this).html())">exchange</span> waits for the timed exchange and returns the reward.</p>
+<div class="code">async function exchange_example() {
+	var box = locate_item("armorbox");
+	if (box !== -1) {
+		var result = await exchange(box);
+		game_log("Received " + result.reward);
+	}
+
+	// Buy a named reward with a named token.
+	await exchange_buy("funtoken", "confetti");
+}</div>
+<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">exchange</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">exchange_buy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>.</p>
+<div class="guide-note">The required stack size and reward pool belong to the item data. Check the live tooltip instead of hard-coding an old requirement.</div>
+
+<div class="guide-related">See also: <span onclick="hide_modal(); open_guide('crafting','/docs/guide/crafting')">Crafting and Dismantling</span> · <span onclick="hide_modal(); open_guide('monster-hunts','/docs/guide/monster-hunts')">Monster Hunts</span></div>
+
+<style>
+	.guide-kicker{color:#94752C;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#4D7040;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#4D7040;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #94752C;background:#F0E9D0;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#537541;cursor:pointer;text-decoration:underline}
+</style>

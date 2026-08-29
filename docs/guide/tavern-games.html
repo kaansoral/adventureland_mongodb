@@ -1,0 +1,31 @@
+<div class="guide-kicker">GOLD IN, FORTUNE OUT</div>
+<div class="guide-title">Tavern Games</div>
+<p>The Tavern's dice table and slot machine are gold games of chance. Read the wager twice. The house has already read it once.</p>
+
+<div class="divider"></div>
+<div class="title mt15">Manual</div>
+<p><b>Dice:</b> choose a number, choose Up or Down, enter the wager, then place the bet. Up wins on a roll at or above the chosen number; Down wins at or below it. The panel shows the payout, house edge, limits, and whether betting is open.</p>
+<p><b>Slots:</b> each play costs the amount shown by the machine and enters its short queue. Wait for the result before trying again. A machine that presents only dialogue or says its host is absent is not currently accepting a game.</p>
+
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<p>Read the current house information first. A completed losing wager fulfills its Promise with <span class="dlabel">won: false</span>; an invalid wager or unavailable machine rejects.</p>
+<div class="code">async function tavern_example() {
+	var house = await get_tavern_info();
+	game_log("House edge: " + house.edge + "%");
+	game_log("Maximum covered win: " + house.max);
+
+	var dice = await bet_dice("down", 55, 10000);
+	game_log(dice.won ? "Won " + dice.net : "Lost " + dice.wager);
+
+	var slots = await play_slots();
+	game_log(slots.won ? "Slots paid " + slots.payout : "No luck");
+}</div>
+<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">get_tavern_info</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bet_dice</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">play_slots</span>.</p>
+<div class="guide-note">These calls spend gold. Inspect the house response and the full function reference, then make your wager deliberate.</div>
+
+<div class="guide-related">For ordinary trade, see <span onclick="hide_modal(); open_guide('markets-and-trading','/docs/guide/markets-and-trading')">Markets and Trading</span>.</div>
+
+<style>
+	.guide-kicker{color:#AA7040;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#7D4C29;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#7D4C29;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #AA7040;background:#F2E4D8;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#85522D;cursor:pointer;text-decoration:underline}
+</style>

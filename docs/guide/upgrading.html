@@ -1,0 +1,29 @@
+<div class="guide-kicker">ITEM PROGRESSION</div>
+<div class="guide-title">Upgrading</div>
+<p>Weapons, armor, and other upgradeable items grow one level at a time. Every attempt needs the item and a compatible upgrade scroll. An offering is optional.</p>
+
+<div class="divider"></div>
+<div class="title mt15">Manual</div>
+<p>Visit an upgrade shrine, place the item and scroll in their slots, then inspect the displayed chance before you begin. Add an offering when you want its protection. The item tooltip tells you its grade; use a scroll that supports that grade.</p>
+<p>An unsuccessful attempt can destroy the item. Lock treasured gear until you are ready, and never treat the preview as a promise.</p>
+
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<p>Pass inventory positions to <span class="rlabel" onclick="render_function_reference($(this).html())">upgrade</span>. Wait for the Promise before starting another item operation.</p>
+<div class="code">async function upgrade_item(item_name, scroll_name) {
+	var item = locate_item(item_name);
+	var scroll = locate_item(scroll_name);
+	if (item === -1 || scroll === -1) return;
+
+	var result = await upgrade(item, scroll);
+	if (result.success) game_log(item_name + " is now +" + result.level);
+	else game_log("The upgrade failed");
+}</div>
+<p>Useful references: <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_grade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_properties</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">lock_item</span>.</p>
+<div class="guide-note">A rejected Promise means the attempt could not begin. A fulfilled result with <span class="dlabel">success: false</span> means the attempt happened and failed.</div>
+
+<div class="guide-related">Next: <span onclick="hide_modal(); open_guide('compounding','/docs/guide/compounding')">Compounding</span> · <span onclick="hide_modal(); open_guide('item-maintenance','/docs/guide/item-maintenance')">Item Maintenance</span></div>
+
+<style>
+	.guide-kicker{color:#8A623B;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#2E6B43;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#406944;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #C78B37;background:#F3E8D4;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#2B7B50;cursor:pointer;text-decoration:underline}
+</style>

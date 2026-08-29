@@ -1,0 +1,46 @@
+<div class="guide-kicker">THE PLAYER ECONOMY</div>
+<div class="guide-title">Markets &amp; Trading</div>
+<p>Merchant stands let players list items for sale, publish buy orders, and hold giveaways. Prices come from adventurers, not NPCs.</p>
+
+<div class="divider"></div>
+<div class="title mt15">Manual</div>
+<p>Merchants can buy a stand from Divian. Open it, place an item in a trade slot, set its quantity and price, then leave the stand open. A wishlist reverses the trade: you offer gold for a named item and level.</p>
+<p>To trade with another player, stand nearby and open their merchant panel. Re-read the item, level, quantity, and total before confirming. Giveaways are timed stand listings that eligible players may join.</p>
+<p>Ponty sells equipment recovered through the ordinary second-hand market. Ron in the West Office keeps unlooted-chest finds; a qualifying donation to the gold reserve is required before he shows that stock.</p>
+
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<div class="code">async function market_example() {
+	await open_stand();
+	await trade(0, 1, 100000, 1); // inventory 0 -> trade slot 1
+	await wishlist(2, "staff", 10000000, 9, 1);
+
+	var merchant = get_player("MerchantName");
+	if (merchant) await trade_buy(merchant, "trade1", 1);
+
+	// When finished:
+	await close_stand();
+}</div>
+<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">open_stand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">close_stand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">wishlist</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_buy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_sell</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">giveaway</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">join_giveaway</span>.</p>
+<div class="guide-note">Use the visible player object, not a remembered listing. The trade routines include the listing's request ID so a changed offer is rejected.</div>
+
+<div class="code">async function recovered_items() {
+	var ponty = await get_secondhands();
+	if (ponty.items.length) {
+		show_json(ponty.items[0]);
+		// await buy_secondhand(ponty.items[0]);
+	}
+
+	// Ron requires a qualifying reserve donation first.
+	// await donate_gold(1000000);
+	var found = await get_lost_and_found();
+	if (found.items.length) show_json(found.items[0]);
+	// await buy_lost_and_found(found.items[0]);
+}</div>
+<p>Recovered-market references: <span class="rlabel" onclick="render_function_reference($(this).html())">get_secondhands</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">buy_secondhand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">donate_gold</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">get_lost_and_found</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">buy_lost_and_found</span>.</p>
+
+<div class="guide-related">See also: <span onclick="hide_modal(); open_guide('shops-and-selling','/docs/guide/shops-and-selling')">Shops and Selling</span> · <span onclick="hide_modal(); open_guide('exchanges-and-quests','/docs/guide/exchanges-and-quests')">Exchanges and Quests</span></div>
+
+<style>
+	.guide-kicker{color:#2A7F6B;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#236353;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#236353;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #368C78;background:#DCEDE8;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#26735E;cursor:pointer;text-decoration:underline}
+</style>

@@ -1,0 +1,32 @@
+<div class="guide-kicker">ITEM PROGRESSION</div>
+<div class="guide-title">Compounding</div>
+<p>Accessories and other compoundable items grow by combining three matching copies. All three must have the same item name and level.</p>
+
+<div class="divider"></div>
+<div class="title mt15">Manual</div>
+<p>Visit a compound shrine and place the three matching items into its three item slots. Add a compatible compound scroll and, if desired, an offering. Check the displayed chance and the exact items before beginning.</p>
+<p>A failed compound can consume the items. Higher levels therefore require many copies, not merely one lucky accessory.</p>
+
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<p><span class="rlabel" onclick="render_function_reference($(this).html())">compound</span> accepts four inventory positions, plus an optional offering position.</p>
+<div class="code">var copies = [];
+for (var i = 0; i &lt; character.items.length; i++) {
+	var item = character.items[i];
+	if (item && item.name === "ringsj" && (item.level || 0) === 0) copies.push(i);
+}
+var scroll = locate_item("cscroll0");
+
+if (copies.length >= 3 && scroll !== -1) {
+	compound(copies[0], copies[1], copies[2], scroll).then(function (result) {
+		game_log(result.success ? "Compound complete" : "Compound failed");
+	});
+}</div>
+<p>Useful references: <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_grade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_properties</span>.</p>
+<div class="guide-note">The example deliberately selects +0 copies. The server rejects mismatched copies, but your CODE should choose the intended level before sending the request.</div>
+
+<div class="guide-related">See also: <span onclick="hide_modal(); open_guide('upgrading','/docs/guide/upgrading')">Upgrading</span> · <span onclick="hide_modal(); open_guide('crafting','/docs/guide/crafting')">Crafting and Dismantling</span></div>
+
+<style>
+	.guide-kicker{color:#79559A;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#5F3E83;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#5F3E83;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #79559A;background:#ECE4F3;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#66408A;cursor:pointer;text-decoration:underline}
+</style>
