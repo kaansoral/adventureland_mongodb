@@ -10607,6 +10607,11 @@ function init_socket_io(socket_server) {
 				if (!R.entity) ex("no_character");
 				if (!R.owner || !R.owner.info.auths.includes(A[0].auth)) ex("password_issue");
 				if (R.entity.owner !== get_id(R.owner)) ex("no_character");
+				if (A[0].mainframe_session !== undefined) {
+					var assignment = await tx_get("MK_mainframe_assignment-" + get_id(R.entity));
+					if (!is_valid_mainframe_session(assignment, A[0].mainframe_session)) ex("mainframe_issue");
+					R.mainframe = true;
+				}
 				if (R.entity.server && msince(R.entity.last_sync) < 120) ex("ingame");
 				R.entity.server = A[1];
 				R.entity.online = true;
@@ -10718,6 +10723,7 @@ function init_socket_io(socket_server) {
 			}
 			player.owner = data.user;
 			player.auth = data.user + "-" + data.auth;
+			player.mainframe = R.mainframe === true;
 			player.last_sync = new Date();
 			player.socket = socket;
 			player.max_stats = stats;

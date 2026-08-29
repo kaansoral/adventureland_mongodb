@@ -405,7 +405,7 @@ function is_player_allowed(player) {
 		if (players[id].name == player.name && player != players[id]) {
 			return false;
 		} // "hardcore"
-		if (get_ip_server(players[id]) == get_ip_server(player)) {
+		if (get_limit_identity(players[id]) == get_limit_identity(player)) {
 			ips++;
 		}
 		if (player.auth_id && players[id].auth_id == player.auth_id) {
@@ -770,6 +770,20 @@ function get_ip_raw(player) {
 	try {
 		return player.socket.handshake.address;
 	} catch (e) {}
+}
+
+function get_limit_identity(player) {
+	return player && player.mainframe === true ? "mainframe:" + player.owner : get_ip_server(player);
+}
+
+function is_valid_mainframe_session(assignment, session_id) {
+	return !!(
+		assignment &&
+		/^[0-9a-f]{32}$/.test(session_id || "") &&
+		assignment.session_id === session_id &&
+		assignment.desired_state === "running" &&
+		new Date(assignment.access_until) > new Date()
+	);
 }
 
 function get_ip_server(player) {

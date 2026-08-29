@@ -1441,7 +1441,7 @@ async function enforce_limitations() {
 			try {
 				var splayers = await server_eval(
 					server,
-					"var list=[]; for(var id in players) { var player=players[id]; list.push({owner:player.owner,name:player.name,ip:get_ip_server(player),type:player.type,bot:player.bot||'',free:player.p.free||player.s.licenced||player.role=='gm',ipx:player.ipx||1,temp_auth:player.temp_auth||'',auth_id:player.auth_id||''}); }; output=list;",
+					"var list=[]; for(var id in players) { var player=players[id]; list.push({owner:player.owner,name:player.name,ip:get_limit_identity(player),type:player.type,bot:player.bot||'',free:player.p.free||player.s.licenced||player.role=='gm',ipx:player.ipx||1,temp_auth:player.temp_auth||'',auth_id:player.auth_id||''}); }; output=list;",
 				);
 				if (!splayers) continue;
 				for (var i = 0; i < splayers.length; i++) {
