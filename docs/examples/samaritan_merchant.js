@@ -51,6 +51,7 @@ var SAMARITAN_MERCHANT_STATE = {
 	compoundAttempts: 0,
 	lastPartyAt: 0,
 	lastRespawnAt: 0,
+	lastStandAt: 0,
 	logs: {},
 };
 
@@ -373,7 +374,10 @@ async function samaritanMerchantWork() {
 				await samaritanMerchantCall("shop travel", function () { return smart_move(SAMARITAN_MERCHANT_SETTINGS.shop.location); });
 				return;
 			}
-			await samaritanMerchantCall("open stand", function () { return open_stand(); });
+			if (Date.now() - SAMARITAN_MERCHANT_STATE.lastStandAt > 30000) {
+				SAMARITAN_MERCHANT_STATE.lastStandAt = Date.now();
+				await samaritanMerchantCall("open stand", function () { return open_stand(); });
+			}
 			return;
 		}
 		var npcSale = samaritanMerchantFindNpcSale();
