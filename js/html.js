@@ -275,41 +275,6 @@ function get_guide_url(name) {
 	return found || "/docs/ref/" + name;
 }
 
-function interaction_guide_button_html(context, compact) {
-	if (!context || !context.definition || !context.definition.article) return "";
-	var definition = context.definition,
-		label = (compact && "GUIDE") || "? GUIDE";
-	return (
-		"<div class='slimbutton interactionguidebutton' style='" +
-		((compact && "margin-top: 5px;") || "float: right; clear: both; margin-top: 8px;") +
-		" border-color: #69BE86; color: #69BE86' onclick='pcs(event); open_interaction_guide(\"" +
-		context.key +
-		"\")'>" +
-		label +
-		"</div>"
-	);
-}
-
-var interaction_guide_observer = null;
-function append_interaction_guide_button() {
-	if (no_html || !active_interaction_guide || !active_interaction_guide.definition.article) return;
-	var root = $("#topleftcornerui"),
-		target = root.children("div").first();
-	if (!target.length || root.find(".interactionguidebutton").length) return;
-	target.append(interaction_guide_button_html(active_interaction_guide));
-}
-
-function defer_interaction_guide_button() {
-	if (no_html) return;
-	append_interaction_guide_button();
-	var root = document.getElementById("topleftcornerui");
-	if (!root || interaction_guide_observer) return;
-	interaction_guide_observer = new MutationObserver(function () {
-		append_interaction_guide_button();
-	});
-	interaction_guide_observer.observe(root, { childList: true, subtree: true });
-}
-
 function render_server() {
 	var html = "",
 		content = false;

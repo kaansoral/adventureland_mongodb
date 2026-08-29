@@ -126,8 +126,7 @@ var map_tiles = [],
 	wtile_height = 0;
 var map_animations = {};
 var quirks = {},
-	interaction_context = null,
-	active_interaction_guide = null;
+	interaction_context = null;
 var water_tiles = [],
 	last_water_frame = -1;
 var drawings = [],
@@ -980,8 +979,13 @@ function showhide_quirks_logic() {
 			}
 		});
 	});
-	for (var i = 0; i < map_npcs.length; i++) {
-		var map_npc = map_npcs[i],
+	var interaction_npcs = map_npcs.slice();
+	for (var entity_id in entities) {
+		var entity = entities[entity_id];
+		if (entity && entity.type == "npc" && interaction_npcs.indexOf(entity) == -1) interaction_npcs.push(entity);
+	}
+	for (var i = 0; i < interaction_npcs.length; i++) {
+		var map_npc = interaction_npcs[i],
 			context = get_npc_interaction_context(map_npc);
 		if (!context || !context.definition.proximity) continue;
 		var c_distance = distance(character, map_npc);
@@ -1779,7 +1783,7 @@ function init_socket(args) {
 				resolve_deferred(data.place, data);
 			}
 			if (!data.failed && data.place == "equip" && data.slot && !in_arr(data.slot, trade_slots)) tut("equip");
-			if (!data.failed && data.place == "skill") tut("useskill");
+			if (!data.failed && (data.place == "skill" || (data.place != "attack" && G.skills[data.place]))) tut("useskill");
 			if (
 				!data.failed &&
 				data.used &&
@@ -3211,7 +3215,6 @@ function init_socket(args) {
 
 function npc_right_click(event) {
 	var npc = G.npcs[this.npc];
-	active_interaction_guide = get_npc_interaction_context(this);
 	sfx("npc", this.x, this.y);
 	if (this.type == "character") npc = G.npcs[this.npc];
 	last_npc_right_click = new Date();
@@ -3432,7 +3435,6 @@ function npc_right_click(event) {
 			240,
 		);
 	}
-	defer_interaction_guide_button();
 	try {
 		if (event) event.stopPropagation();
 	} catch (e) {}
@@ -3443,7 +3445,6 @@ function player_click(event) {
 	if (is_npc(this) && this.npc == "pvp") player_right_click.apply(this, event);
 	else if (this.npc_onclick) npc_right_click.apply(this, event);
 	else {
-		active_interaction_guide = null;
 		if (topleft_npc && inventory) render_inventory();
 		topleft_npc = false;
 		xtarget = this;
@@ -3601,7 +3602,6 @@ function map_click(event) {
 		socket.emit("move", data);
 	}
 	if (!(topleft_npc == "dice" && current_map == "tavern")) {
-		active_interaction_guide = null;
 		if (topleft_npc && inventory) render_inventory();
 		topleft_npc = false;
 	}
@@ -5817,9 +5817,6 @@ function add_machine(machine) {
 	}
 
 	function machine_click(event) {
-		var interaction_key = G.docs.interaction_map.machines[machine.type],
-			interaction_definition = G.docs.interactions[interaction_key];
-		active_interaction_guide = interaction_definition && !interaction_definition.status ? { key: interaction_key, definition: interaction_definition } : null;
 		if (machine.type == "dice") render_dice(); // add_log("Curious device","gray");//
 		if (machine.type == "wheel") add_log("The hostess isn't around", "gray");
 		if (machine.type == "slots")
@@ -5832,7 +5829,6 @@ function add_machine(machine) {
 					socket.emit("bet", { type: "slots" });
 				},
 			});
-		defer_interaction_guide_button();
 		try {
 			if (event) event.stopPropagation();
 		} catch (e) {}
@@ -5907,9 +5903,6 @@ function add_quirk(quirk) {
 	sprite.hitArea = new PIXI.Rectangle(-round(quirk[2] * 0.5), -round(quirk[3] * 1), round(quirk[2]), round(quirk[3]));
 	sprite.type = "quirk";
 	function quirk_right_click(event) {
-		var interaction_key = G.docs.interaction_map.quirks[quirk[4]],
-			interaction_definition = G.docs.interactions[interaction_key];
-		active_interaction_guide = interaction_definition && !interaction_definition.status ? { key: interaction_key, definition: interaction_definition } : null;
 		if (quirk[4] == "sign") add_log('Sign reads: "' + quirk[5] + '"', "gray");
 		else if (quirk[4] == "note") add_log('Note reads: "' + quirk[5] + '"', "gray");
 		else if (quirk[4] == "tavern_info") socket.emit("tavern", { event: "info" });
@@ -5920,7 +5913,6 @@ function add_quirk(quirk) {
 		else if (quirk[4] == "compound") render_compound_shrine(1);
 		else if (quirk[4] == "list_pvp") socket.emit("list_pvp");
 		else if (quirk[4] == "invisible_statue") (render_none_shrine(), add_log("An invisible statue!", "gray"));
-		defer_interaction_guide_button();
 		try {
 			if (event) event.stopPropagation();
 		} catch (e) {}
