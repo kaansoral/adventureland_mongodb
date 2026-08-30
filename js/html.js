@@ -283,6 +283,7 @@ function render_server() {
 		var context = contexts[context_index],
 			definition = context.definition,
 			icon = definition.icon && G.items[definition.icon],
+			visual_icon = context.visual && G.items[context.visual.icon],
 			npc = context.npc,
 			context_title = ((npc && npc.name && npc.name + ": ") || "") + (definition.summary || definition.title);
 		html +=
@@ -291,8 +292,8 @@ function render_server() {
 			"' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_interaction_guide(\"" +
 			context.key +
 			"\")'>";
-		if (npc && npc.skin) html += "<div style='height: 42px; min-width: 42px; overflow: hidden'>" + sprite(npc.skin, { height: 42 }) + "</div>";
-		else if (context.visual && context.visual.sprite) html += "<div style='height: 42px; min-width: 42px; overflow: hidden'>" + sprite(context.visual.sprite, { height: 42 }) + "</div>";
+		if (npc && npc.skin) html += sprite(npc.skin, { height: 42, width: 42, overflow: true });
+		else if (visual_icon) html += "<div style='margin-top: -1px; margin-left: -3px; margin-right: -3px'>" + item_container({ skin: visual_icon.skin, bcolor: "black" }) + "</div>";
 		else if (icon) html += "<div style='margin-top: -1px; margin-left: -3px; margin-right: -3px'>" + item_container({ skin: icon.skin, bcolor: "black" }) + "</div>";
 		else html += "<div style='font-size: 32px; line-height: 42px; color:#69BE86'>?</div>";
 		html += "<div style='color:#69BE86; margin-top: 1px'>INFO</div></div>";

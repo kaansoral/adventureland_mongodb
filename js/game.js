@@ -962,8 +962,10 @@ function showhide_quirks_logic() {
 		consider_interaction_context(G.docs.interaction_map.machines[machine.type], "machine:" + machine.type, point_distance(character.real_x, character.real_y, machine.x, machine.y), 130, null, 2, "machine");
 	});
 	(G.maps[character.map].doors || []).forEach(function (door, index) {
-		var door_type = door[7] || "ordinary";
-		consider_interaction_context(G.docs.interaction_map.doors[door_type], "door:" + index, point_distance(character.real_x, character.real_y, door[0], door[1]), interaction_door_range(door), null, 1, "door", { sprite: "door0" });
+		var door_type = door[7] || "ordinary",
+			door_visual = interaction_door_visual(door);
+		if (!door_visual) return;
+		consider_interaction_context(G.docs.interaction_map.doors[door_type], "door:" + index, point_distance(character.real_x, character.real_y, door[0], door[1]), 180, null, 1, "door", door_visual);
 	});
 	(G.maps[character.map].zones || []).forEach(function (zone) {
 		[
@@ -1031,10 +1033,11 @@ function interaction_context_range(definition, source, fallback) {
 	return fallback;
 }
 
-function interaction_door_range(door) {
+function interaction_door_visual(door) {
 	var destination = door && G.maps[door[4]];
-	if ((door && door[7] && door[7] != "ordinary") || (destination && destination.instance)) return 180;
-	return 72;
+	if (!((door && door[7] && door[7] != "ordinary") || (destination && destination.instance))) return null;
+	var keys = { crypt: "cryptkey", winter_instance: "frozenkey", spider_instance: "spiderkey", tomb: "tombkey" };
+	return { icon: keys[door[4]] || "stonekey" };
 }
 
 function normalize_interaction_contexts() {
