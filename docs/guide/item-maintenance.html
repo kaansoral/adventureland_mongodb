@@ -1,32 +1,81 @@
 <div class="guide-kicker">PROTECT YOUR GEAR</div>
 <div class="guide-title">Item Maintenance</div>
-<p>Smith the Locksmith protects valuable items. Sir Bob the Scrollsmith can remove an applied stat from eligible equipment.</p>
+<p>Smith protects valuable items from ordinary destructive actions. Sir Bob removes an applied stat while preserving the item's upgrade or compound level.</p>
+
+<div class="guide-card-grid">
+	<div class="guide-card"><span class="guide-card-icon maintenance-smith"></span><b>Smith · Desertland</b>Lock instantly, seal for stronger protection, or begin and finish an unlock.</div>
+	<div class="guide-card"><span class="guide-card-icon maintenance-bob"></span><b>Sir Bob · Mainland</b>Remove a STR, INT, DEX, or other applied stat and return the appropriate scrolls.</div>
+</div>
+
+<div class="guide-flow" style="border-color:#607F98" data-guide-visual="item-protection">
+	<div class="guide-flow-node"><span class="guide-flow-icon maintenance-coat"></span><span class="guide-flow-label">Unprotected</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon maintenance-locked"></span><span class="guide-flow-label">Locked</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon maintenance-sealed"></span><span class="guide-flow-label">Sealed</span></div>
+</div>
 
 <div class="divider"></div>
-<div class="title mt15">Manual</div>
-<p>Visit Smith in Desertland. A <b>lock</b> blocks ordinary destructive item actions until you pay to unlock it. A <b>seal</b> is stronger: beginning its unlock starts a two-day wait, and you must return after the wait to finish.</p>
-<p>Visit Sir Bob to remove an applied stat. The service shows the cost and returned stat scroll before you confirm. You need room for the returned scroll.</p>
+<div class="title mt15">Lock, Seal, Unlock</div>
+<div class="guide-card-grid">
+	<div class="guide-card"><b>Lock</b>Blocks selling, upgrading, compounding, dismantling, destroying, and other ordinary destructive item actions. Smith can remove it immediately for the shown price.</div>
+	<div class="guide-card"><b>Seal</b>Uses stronger protection. The first unlock visit begins an unsealing wait; return to Smith after the timer ends to finish.</div>
+	<div class="guide-card"><b>Unsealing</b>The item remains protected while its marker shows that unsealing is in progress. Calling unlock again reports the remaining time.</div>
+	<div class="guide-card"><b>Verify the slot</b>Every routine works on an inventory position. Re-read <span class="dlabel">character.items[slot]</span> immediately before changing it.</div>
+</div>
+
+<div class="divider"></div>
+<div class="title mt15">Remove an Applied Stat</div>
+<div class="guide-flow" style="border-color:#7E63A4" data-guide-visual="destat">
+	<div class="guide-flow-node"><span class="guide-flow-icon maintenance-statted"></span><span class="guide-flow-label">STR Coat +4</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon maintenance-plain4"></span><span class="guide-flow-label">Coat +4</span></div>
+	<div class="guide-flow-node"><span class="guide-flow-icon maintenance-scroll"></span><span class="guide-flow-label">Stat Scrolls Returned</span></div>
+</div>
+<p>Sir Bob's preview names the scroll and quantity returned and shows the gold cost. De-statting removes only the applied stat: the item's +4 level in this example remains +4. Keep enough inventory space for the returned scroll stack.</p>
+<div class="guide-note">Locking protects an item; it does not make risky attempts safe. Unlock only when you are ready to perform the intended action, then protect the item again.</div>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
-<p>Each service accepts an inventory position. Run it while standing near the matching specialist.</p>
-<div class="code">async function maintain_items() {
-	await lock_item(0);
-	await seal_item(1);
+<div class="code">async function protect_named_item(name) {
+	var slot = locate_item(name);
+	if (slot === -1) return game_log(name + " is not in inventory");
+	if (character.items[slot].l) return game_log(name + " is already protected");
 
-	var result = await unlock_item(1);
+	await lock_item(slot); // Stand beside Smith.
+	game_log(name + " is locked");
+}
+
+protect_named_item("fireblade").catch(show_json);</div>
+<div class="code">async function check_sealed_item(slot) {
+	var result = await unlock_item(slot);
 	if (result.in_progress) {
-		game_log(result.hours + " hours remain on the seal");
+		game_log(result.hours + " hours remain");
+		return;
 	}
+	game_log("The item is unlocked");
+}
 
-	// Sir Bob removes the applied stat from slot 2.
-	var destat = await destat_item(2);
-	game_log("Returned " + destat.quantity + " " + destat.scroll);
+async function remove_applied_stat(slot) {
+	var item = character.items[slot];
+	if (!item || !item.stat_type) return game_log("That item has no applied stat");
+	var result = await destat_item(slot); // Stand beside Sir Bob.
+	game_log("Returned " + result.quantity + " " + result.scroll);
 }</div>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">lock_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">seal_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">unlock_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">destat_item</span>.</p>
-<div class="guide-note">De-statting removes only the applied stat. It does not remove the item's upgrade or compound level. Check the returned scroll and cost in the result.</div>
+<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">lock_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">seal_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">unlock_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">destat_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>.</p>
 
 <div class="guide-related">See also: <span onclick="hide_modal(); open_guide('upgrading',get_guide_url('upgrading'))">Upgrading</span> · <span onclick="hide_modal(); open_guide('compounding',get_guide_url('compounding'))">Compounding</span></div>
+
+<script>
+	$(".maintenance-smith").html(sprite(G.npcs.locksmith.skin, { height: 58 }));
+	$(".maintenance-bob").html(sprite(G.npcs.scrollsmith.skin, { height: 58 }));
+	$(".maintenance-coat").html(item_container({ skin: G.items.coat.skin }, { name: "coat", level: 0 }));
+	$(".maintenance-locked").html(item_container({ skin: G.items.coat.skin }, { name: "coat", level: 0, l: "l" }));
+	$(".maintenance-sealed").html(item_container({ skin: G.items.coat.skin }, { name: "coat", level: 0, l: "s" }));
+	$(".maintenance-statted").html(item_container({ skin: G.items.coat.skin }, { name: "coat", level: 4, stat_type: "str", stat: 4 }));
+	$(".maintenance-plain4").html(item_container({ skin: G.items.coat.skin }, { name: "coat", level: 4 }));
+	$(".maintenance-scroll").html(item_container({ skin: G.items.strscroll.skin }, { name: "strscroll", q: 4 }));
+</script>
 
 <style>
 	.guide-kicker{color:#62727E;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#3E5968;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#3E5968;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #647985;background:#E2E9EC;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#3E687D;cursor:pointer;text-decoration:underline}

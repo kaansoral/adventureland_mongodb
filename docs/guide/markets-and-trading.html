@@ -1,45 +1,89 @@
 <div class="guide-kicker">THE PLAYER ECONOMY</div>
 <div class="guide-title">Markets &amp; Trading</div>
-<p>Merchant stands let players list items for sale, publish buy orders, and hold giveaways. Prices come from adventurers, not NPCs.</p>
+<p>Merchant stands hold player-priced sales, buy orders, and giveaways. Ponty and Ron run separate recovered-item markets whose listings can disappear when another adventurer buys first.</p>
+
+<div class="guide-card-grid">
+	<div class="guide-card"><span class="guide-card-icon market-divian"></span><b>Divian</b>Buy a stand, then list your own items or publish exact buy orders.</div>
+	<div class="guide-card"><span class="guide-card-icon market-ponty"></span><b>Ponty</b>Browse equipment sold back into the ordinary second-hand market.</div>
+	<div class="guide-card"><span class="guide-card-icon market-ron"></span><b>Ron</b>Browse items recovered from unlooted chests after a qualifying reserve donation.</div>
+	<div class="guide-card"><span class="guide-card-icon market-stand"></span><b>Nearby Players</b>Open a visible merchant's stand to buy, fill a wishlist, or join a giveaway.</div>
+</div>
+
+<div class="guide-flow" style="border-color:#2F917A" data-guide-visual="market-listings">
+	<div class="guide-flow-node"><span class="guide-flow-icon market-staff"></span><span class="guide-flow-label">Your Staff +9</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon market-stand"></span><span class="guide-flow-label">SALE · Set Quantity &amp; Price</span></div>
+	<div class="guide-flow-node"><span class="guide-flow-icon market-wishlist"></span><span class="guide-flow-label">BUY · Name, Level &amp; Price</span></div>
+</div>
 
 <div class="divider"></div>
-<div class="title mt15">Manual</div>
-<p>Merchants can buy a stand from Divian. Open it, place an item in a trade slot, set its quantity and price, then leave the stand open. A wishlist reverses the trade: you offer gold for a named item and level.</p>
-<p>To trade with another player, stand nearby and open their merchant panel. Re-read the item, level, quantity, and total before confirming. Giveaways are timed stand listings that eligible players may join.</p>
-<p>Ponty sells equipment recovered through the ordinary second-hand market. Ron in the West Office keeps unlooted-chest finds; a qualifying donation to the gold reserve is required before he shows that stock.</p>
+<div class="title mt15">Your Merchant Stand</div>
+<div class="guide-card-grid">
+	<div class="guide-card"><b>Sale listing</b>Choose the exact inventory item, trade slot, unit price, and quantity. Modified gear keeps its level and properties in the listing.</div>
+	<div class="guide-card"><b>Wishlist</b>Name the item and level you will accept, the quantity wanted, and the gold paid for each. This is a buy order, not a sale.</div>
+	<div class="guide-card"><b>Giveaway</b>Move an item into a timed stand listing. Nearby eligible players join the current listing before its timer ends.</div>
+	<div class="guide-card"><b>Stay open</b>The character's stand must remain open for its listings to operate. Close it when you are done managing the market.</div>
+</div>
 
 <div class="divider"></div>
-<div class="title mt15">CODE</div>
-<div class="code">async function market_example() {
+<div class="title mt15">Buying from Another Player</div>
+<p>Stand nearby and open the player's merchant panel. Re-read the item name, level, special properties, quantity, and total. A CODE trade includes the listing's current ID so a changed or replaced offer is refused instead of silently buying something else.</p>
+<div class="guide-note">Prices are per unit. Before confirming a stack purchase, multiply the visible unit price by the quantity and make sure your inventory can receive it.</div>
+
+<div class="divider"></div>
+<div class="title mt15">CODE: List and Buy</div>
+<div class="code">async function open_example_shop() {
 	await open_stand();
-	await trade(0, 1, 100000, 1); // inventory 0 -> trade slot 1
-	await wishlist(2, "staff", 10000000, 9, 1);
 
-	var merchant = get_player("MerchantName");
-	if (merchant) await trade_buy(merchant, "trade1", 1);
-
-	// When finished:
-	await close_stand();
-}</div>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">open_stand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">close_stand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">wishlist</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_buy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_sell</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">giveaway</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">join_giveaway</span>.</p>
-<div class="guide-note">Read the nearby player's current trade slots before buying or selling. Trade calls include the listing ID, so a changed offer is refused.</div>
-
-<div class="code">async function recovered_items() {
-	var ponty = await get_secondhands();
-	if (ponty.items.length) {
-		show_json(ponty.items[0]);
-		// await buy_secondhand(ponty.items[0]);
+	var staff = locate_item("staff");
+	if (staff !== -1) {
+		// Inventory slot, trade slot, unit price, quantity.
+		await trade(staff, "trade1", 100000, 1);
 	}
 
-	// Ron requires a qualifying reserve donation first.
-	// await donate_gold(1000000);
+	// Offer 10,000,000 gold for one +9 staff in trade2.
+	await wishlist("trade2", "staff", 10000000, 9, 1);
+}
+
+open_example_shop().catch(show_json);</div>
+<div class="code">async function inspect_nearby_listing(player_name, slot) {
+	var merchant = get_player(player_name);
+	var listing = merchant &amp;&amp; merchant.slots[slot];
+	if (!listing) return game_log("Listing is not visible");
+
+	show_json(listing); // Read this before removing the comment below.
+	// await trade_buy(merchant, slot, 1);
+}
+
+// inspect_nearby_listing("MerchantName", "trade1");</div>
+<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">open_stand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">close_stand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">wishlist</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_buy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_sell</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">giveaway</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">join_giveaway</span>.</p>
+
+<div class="divider"></div>
+<div class="title mt15">CODE: Recovered Markets</div>
+<div class="code">async function inspect_recovered_items() {
+	var ponty = await get_secondhands();
+	show_json(ponty.items);
+	// if (ponty.items.length) await buy_secondhand(ponty.items[0]);
+
 	var found = await get_lost_and_found();
-	if (found.items.length) show_json(found.items[0]);
-	// await buy_lost_and_found(found.items[0]);
-}</div>
-<p>Recovered-market references: <span class="rlabel" onclick="render_function_reference($(this).html())">get_secondhands</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">buy_secondhand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">donate_gold</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">get_lost_and_found</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">buy_lost_and_found</span>.</p>
+	show_json(found.items);
+	// if (found.items.length) await buy_lost_and_found(found.items[0]);
+}
+
+inspect_recovered_items().catch(show_json);</div>
+<p>Ron refuses the listing request until this character has made a qualifying <span class="rlabel" onclick="render_function_reference($(this).html())">donate_gold</span> contribution. Retrieved listing objects contain the ID needed by their matching buy routine.</p>
+<p>Recovered-market references: <span class="rlabel" onclick="render_function_reference($(this).html())">get_secondhands</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">buy_secondhand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">get_lost_and_found</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">buy_lost_and_found</span>.</p>
 
 <div class="guide-related">See also: <span onclick="hide_modal(); open_guide('shops-and-selling',get_guide_url('shops-and-selling'))">Shops and Selling</span> · <span onclick="hide_modal(); open_guide('exchanges-and-quests',get_guide_url('exchanges-and-quests'))">Exchanges and Quests</span></div>
+
+<script>
+	$(".market-divian").html(sprite(G.npcs.standmerchant.skin, { height: 58 }));
+	$(".market-ponty").html(sprite(G.npcs.secondhands.skin, { height: 58 }));
+	$(".market-ron").html(sprite(G.npcs.lostandfound.skin, { height: 58 }));
+	$(".market-stand").html(item_container({ skin: G.items.stand0.skin }, { name: "stand0" }));
+	$(".market-staff").html(item_container({ skin: G.items.staff.skin }, { name: "staff", level: 9 }));
+	$(".market-wishlist").html(item_container({ skin: G.items.staff.skin }, { name: "staff", level: 9 }));
+</script>
 
 <style>
 	.guide-kicker{color:#2A7F6B;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#236353;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#236353;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #368C78;background:#DCEDE8;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#26735E;cursor:pointer;text-decoration:underline}

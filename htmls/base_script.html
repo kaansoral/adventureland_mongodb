@@ -13,6 +13,7 @@
 	var screenshot_mode='{% if domain.screenshot %}1{% endif %}';
 	var pro_mode='{% if not domain.newcomer_ui or 1 %}1{% endif %}';
 	var tutorial_ui='{% if domain.tutorial %}1{% endif %}';
+	var proximity_guides='{% if domain.proximity_guides %}1{% endif %}';
 	var new_attacks='{% if domain.new_attacks %}1{% endif %}';
 	var recording_mode='{% if domain.recording_mode %}1{% endif %}';
 	var cached_map='{% if domain.fast_mode %}1{%endif%}',scale='{{domain.scale}}';

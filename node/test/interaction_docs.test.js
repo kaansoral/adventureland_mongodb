@@ -22,6 +22,15 @@ const docs = loadGlobal("docs/directory.js", "docs");
 const npcs = loadGlobal("design/npcs.js", "npcs");
 const maps = loadGlobal("design/maps.js", "maps");
 
+function decodeCodeHtml(source) {
+	return source
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">")
+		.replace(/&amp;/g, "&")
+		.replace(/&quot;/g, '"')
+		.replace(/&#39;/g, "'");
+}
+
 test("every placed NPC role has an interaction classification", () => {
 	for (const [npcId, npc] of Object.entries(npcs)) {
 		if (!npc.role) continue;
@@ -73,6 +82,20 @@ test("active interactions have finished articles and documented CODE functions",
 				runner,
 				new RegExp(`function\\s+${name}\\s*\\(`),
 				`${key} function ${name} is absent from runner_functions.js`,
+			);
+		}
+	}
+});
+
+test("guide CODE examples are valid async JavaScript", () => {
+	const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+	for (const filename of fs.readdirSync(path.join(root, "docs/guide"))) {
+		if (!filename.endsWith(".html")) continue;
+		const html = fs.readFileSync(path.join(root, "docs/guide", filename), "utf8");
+		for (const match of html.matchAll(/<div class=["']code["']>([\s\S]*?)<\/div>/g)) {
+			assert.doesNotThrow(
+				() => new AsyncFunction(decodeCodeHtml(match[1])),
+				`${filename} contains an invalid CODE example`,
 			);
 		}
 	}

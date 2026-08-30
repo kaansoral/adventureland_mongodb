@@ -120,6 +120,14 @@
 	<div class="mt4 blockbutton tuton {%if not domain.tutorial %}hidden{% endif %}"
 		onclick="btc(event); $('.tuton').hide(); $('.tutoff').show(); tutorial_ui=false; update_tutorial_ui(); Cookies.set('no_tutorial','1',{ expires:12*365});">Tutorial: <span style='color: green'>ON</span></div>
 
+	<div class="mt4 blockbutton guidesoff {%if domain.proximity_guides %}hidden{% endif %}"
+		onclick="btc(event); set_proximity_guides(true)">Guides: <span style='color: #F54423'>OFF</span></div>
+	<div class="mt4 blockbutton guideson {%if not domain.proximity_guides %}hidden{% endif %}"
+		onclick="btc(event); set_proximity_guides(false)">Guides: <span style='color: green'>ON</span></div>
+	<div class="mt4 blockbutton" style="text-align: left">
+		Shows nearby INFO buttons for NPCs, shrines, gathering spots, and special places. Event buttons are always shown.
+	</div>
+
 	<div class="mt4 blockbutton"
 		onclick="btc(event); show_confirm('Reset the tutorial?','Yes!','Oh No!',function(){api_call('reset_tutorial')});">Reset Tutorial <span style='color: #F7B32F'>[!]</span></div>
 

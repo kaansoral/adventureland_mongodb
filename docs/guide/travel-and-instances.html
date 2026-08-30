@@ -1,31 +1,80 @@
 <div class="guide-kicker">ROADS, DOORS, AND STRANGE PLACES</div>
 <div class="guide-title">Travel &amp; Instances</div>
-<p>Adventure Land has roads, transporters, doors, town teleports, and private instances. They do not all follow the same rules.</p>
+<p>Walking, route planning, transporters, town teleports, doors, and private instances move you in different ways. Choose the routine that matches the next leg of the trip.</p>
+
+<div class="guide-showcase" style="border-color:#36799A">
+	<div class="guide-showcase-art"><span class="travel-alia"></span><span class="travel-key"></span></div>
+	<div class="guide-showcase-copy"><b>Alia handles public transport</b>Her panel lists reachable maps. Ordinary doors connect nearby areas; keyed doors create or enter private instances.</div>
+</div>
+
+<div class="guide-flow" style="border-color:#36799A" data-guide-visual="travel-route">
+	<div class="guide-flow-node"><span class="guide-flow-icon travel-you">YOU</span><span class="guide-flow-label">Current Position</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon travel-road">···</span><span class="guide-flow-label">Walk &amp; Route Points</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon travel-alia"></span><span class="guide-flow-label">Door or Transporter</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon travel-bank">BANK</span><span class="guide-flow-label">Destination</span></div>
+</div>
 
 <div class="divider"></div>
-<div class="title mt15">Manual</div>
-<p>Walk to a door and use it, or speak with a transporter such as Alia. The town button channels a return to town and can be interrupted. Some dungeons require a key to create an instance.</p>
-<p>For keyed party dungeons, one member can open the instance and the others can enter that same instance while a party member remains inside. Instances do not remain alive forever when nobody is inside and online.</p>
+<div class="title mt15">Four Ways to Move</div>
+<div class="guide-card-grid">
+	<div class="guide-card"><b><span class="dlabel">smart_move()</span></b>Plans and follows a collision-aware multi-map route to a place, NPC, monster, event, or coordinates.</div>
+	<div class="guide-card"><b><span class="dlabel">transport()</span></b>Uses a nearby transporter route point. It does not walk you to Alia first.</div>
+	<div class="guide-card"><b><span class="dlabel">use_nearest_door()</span></b>Uses a door already within local range. It rejects instead of walking to a distant door.</div>
+	<div class="guide-card"><b><span class="dlabel">town()</span></b>Channels a return to the map's town position. Movement, damage, or another interruption can stop it.</div>
+</div>
+<div class="guide-note">Wait for one travel Promise before starting another. A different <span class="dlabel">smart_move()</span> destination interrupts the active route; repeating the same destination shares it.</div>
 
 <div class="divider"></div>
-<div class="title mt15">CODE</div>
-<p><span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span> plans a route. <span class="rlabel" onclick="render_function_reference($(this).html())">transport</span> and <span class="rlabel" onclick="render_function_reference($(this).html())">use_nearest_door</span> use a nearby route point; they do not first walk you there.</p>
-<div class="code">async function travel_example() {
+<div class="title mt15">Keyed Party Instances</div>
+<div class="guide-flow" style="border-color:#695D9A" data-guide-visual="party-instance">
+	<div class="guide-flow-node"><span class="guide-flow-icon travel-key"></span><span class="guide-flow-label">Leader Opens Named Instance</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon travel-party">P</span><span class="guide-flow-label">Party Uses Same Name</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon travel-crypt">CRYPT</span><span class="guide-flow-label">Same Private Map</span></div>
+</div>
+<p>Stand at the matching entrance. One party member uses the required key to open a named instance; the others enter with exactly that same name while the instance is available. A different name creates or targets a different place.</p>
+<p>Instances do not remain alive forever when nobody is inside and online. Coordinate the name before entering and keep at least one party member present while others travel.</p>
+
+<div class="divider"></div>
+<div class="title mt15">CODE: Complete Trips</div>
+<div class="code">async function visit_bank_and_return() {
 	await smart_move("bank");
+	game_log("Arrived at the Bank");
+
+	// This is a separate trip and waits for its channel to finish.
 	await town();
+	game_log("Returned to town");
+}
 
-	// Use a nearby map door.
-	await use_nearest_door();
+visit_bank_and_return().catch(function (error) {
+	game_log("Travel stopped: " + (error.reason || error.message));
+});</div>
+<div class="code">async function use_local_route_point() {
+	// Call only while already beside the matching object.
+	// await transport("winterland", 0);
+	// await use_nearest_door();
+}
 
-	// Create or enter a named instance.
-	await enter("crypt");
-	await enter("crypt", character.in);
-}</div>
+async function enter_party_crypt(instance_name) {
+	// Call at the Crypt entrance. Every party member uses the same name.
+	var result = await enter("crypt", instance_name);
+	show_json(result);
+}
+
+// enter_party_crypt("sunday-party").catch(show_json);</div>
 <p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">transport</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">town</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">use_nearest_door</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">enter</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">leave</span>.</p>
-<div class="guide-note">Wait for travel functions to finish before starting the next trip. Starting a different route interrupts the active <span class="dlabel">smart_move</span>.</div>
 
 <div class="guide-related">Active portals are covered in <span onclick="hide_modal(); open_guide('events-and-home',get_guide_url('events-and-home'))">Events and Home Servers</span>.</div>
 
+<script>
+	$(".travel-alia").html(sprite(G.npcs.transporter.skin, { height: 62 }));
+	$(".travel-key").html(item_container({ skin: G.items.cryptkey.skin }, { name: "cryptkey" }));
+</script>
+
 <style>
-	.guide-kicker{color:#36799A;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#2A617C;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#2A617C;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #4087A7;background:#DEECF2;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#2D708E;cursor:pointer;text-decoration:underline}
+	.guide-kicker{color:#36799A;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#2A617C;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#2A617C;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #4087A7;background:#DEECF2;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#2D708E;cursor:pointer;text-decoration:underline}.travel-you,.travel-bank,.travel-party,.travel-crypt{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:40px;border:3px solid #5FA4C3;background:#15242B;color:#A6DDF3;font-size:17px}.travel-road{font-size:40px;color:#A6DDF3}
 </style>

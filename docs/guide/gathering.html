@@ -1,30 +1,66 @@
 <div class="guide-kicker">PATIENT WORK</div>
 <div class="guide-title">Fishing &amp; Mining</div>
-<p>Gathering is a Merchant specialty. A level 16 Merchant can fish with a rod or mine with a pickaxe at the matching gathering zone.</p>
+<p>Gathering is a Merchant specialty. A level 16 Merchant can equip the matching tool, stand inside a gathering zone, and spend time searching its local drop table.</p>
+
+<div class="guide-card-grid">
+	<div class="guide-card"><span class="guide-card-icon gather-rod"></span><b>Fishing</b>Equip a rod in the main hand and stand at the edge of a fishing zone.</div>
+	<div class="guide-card"><span class="guide-card-icon gather-pickaxe"></span><b>Mining</b>Equip a pickaxe in the main hand and stand inside a mining zone.</div>
+</div>
+
+<div class="guide-flow" style="border-color:#368D79" data-guide-visual="gathering">
+	<div class="guide-flow-node"><span class="guide-flow-icon gather-tool"></span><span class="guide-flow-label">Equip Tool</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon gather-zone">◎</span><span class="guide-flow-label">Stand Still in Zone</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon gather-result"></span><span class="guide-flow-label">Find Something—or Nothing</span></div>
+</div>
 
 <div class="divider"></div>
-<div class="title mt15">Manual</div>
-<p>Equip the tool in your main hand, stand at the edge of a fishing or mining zone, stop moving, and use the matching skill. Keep 120 MP and at least one inventory space free.</p>
-<p>The action takes a few moments and may find nothing. A successful attempt can also wear out a tool whose properties say it can break. The skill panel shows the long reuse time.</p>
+<div class="title mt15">Before Each Attempt</div>
+<div class="guide-card-grid">
+	<div class="guide-card"><b>Merchant · Level 16</b>Other classes and lower-level Merchants cannot start these gathering skills.</div>
+	<div class="guide-card"><b>Correct main-hand tool</b>A rod starts fishing; a pickaxe starts mining. Having the tool only in inventory is not enough.</div>
+	<div class="guide-card"><b>120 MP and one space</b>Keep enough mana and at least one empty inventory position for a possible find.</div>
+	<div class="guide-card"><b>Stopped inside the zone</b>Movement or standing outside the matching zone prevents the attempt from starting.</div>
+</div>
+<p>The action takes a few moments. A valid attempt can finish with nothing. On a find, the reward comes from that zone's own drop table; different fishing or mining places can produce different things.</p>
+<div class="guide-flow" style="border-color:#987B45" data-guide-visual="gathering-results">
+	<div class="guide-flow-node"><span class="guide-flow-icon gather-coat"></span><span class="guide-flow-label">Mainland Fishing Example</span></div>
+	<div class="guide-flow-node"><span class="guide-flow-icon gather-bronze"></span><span class="guide-flow-label">Tunnel Mining Example</span></div>
+	<div class="guide-flow-node"><span class="guide-flow-icon gather-empty">∅</span><span class="guide-flow-label">Valid Attempt, No Find</span></div>
+</div>
+<div class="guide-note">Some tools carry a break chance. A successful find can wear out the equipped tool, so inspect its properties and keep a replacement plan.</div>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
-<p><span class="rlabel" onclick="render_function_reference($(this).html())">use_skill</span> waits until fishing or mining finishes.</p>
 <div class="code">async function gather(kind) {
-	if (character.moving) return;
+	if (character.ctype !== "merchant" || character.level &lt; 16) return;
+	if (character.moving || character.mp &lt; 120 || character.esize &lt; 1) return;
 	if (is_on_cooldown(kind)) return;
 
+	var required = kind === "fishing" ? "rod" : "pickaxe";
+	var equipped = character.slots.mainhand;
+	if (!equipped || G.items[equipped.name].wtype !== required) {
+		return game_log("Equip a " + required + " first");
+	}
+
 	var result = await use_skill(kind);
-	if (result.found) game_log("Found something");
-	else game_log("Nothing this time");
+	game_log(result.found ? "Found something" : "Nothing this time");
 }
 
-gather("fishing"); // or "mining"</div>
+gather("fishing").catch(show_json); // or "mining"</div>
+<p><span class="rlabel" onclick="render_function_reference($(this).html())">use_skill</span> waits for the gathering animation and tells you whether the completed attempt found something. A rejected Promise means a prerequisite failed before completion.</p>
 <p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">use_skill</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">is_on_cooldown</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">equip</span>.</p>
-<div class="guide-note">If the spot, movement, tool, class, level, or MP check fails, no attempt starts. If <span class="dlabel">found</span> is false, the attempt finished and found nothing.</div>
 
-<div class="guide-related">Materials often continue into <span onclick="hide_modal(); open_guide('crafting',get_guide_url('crafting'))">Crafting and Dismantling</span>.</div>
+<div class="guide-related">Gathered materials often continue into <span onclick="hide_modal(); open_guide('crafting',get_guide_url('crafting'))">Crafting and Dismantling</span>.</div>
+
+<script>
+	$(".gather-rod").html(item_container({ skin: G.items.rod.skin }, { name: "rod" }));
+	$(".gather-pickaxe,.gather-tool").html(item_container({ skin: G.items.pickaxe.skin }, { name: "pickaxe" }));
+	$(".gather-result,.gather-coat").html(item_container({ skin: G.items.coat1.skin }, { name: "coat1" }));
+	$(".gather-bronze").html(item_container({ skin: G.items.bronzenugget.skin }, { name: "bronzenugget" }));
+</script>
 
 <style>
-	.guide-kicker{color:#368D79;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#286A5B;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#286A5B;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #3E9681;background:#DCEEE9;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#287461;cursor:pointer;text-decoration:underline}
+	.guide-kicker{color:#368D79;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#286A5B;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#286A5B;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #3E9681;background:#DCEEE9;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#287461;cursor:pointer;text-decoration:underline}.gather-zone,.gather-empty{font-size:42px;color:#71D3BC}
 </style>

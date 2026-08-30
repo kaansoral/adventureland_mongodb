@@ -2,6 +2,11 @@
 <div class="guide-title">The Bank</div>
 <p>The bank holds gold and items for your whole account. Every character sees the same vault, but only one of your characters can be inside it at a time.</p>
 
+<div class="guide-showcase" style="border-color:#4C83AA">
+	<div class="guide-showcase-art"><span class="bank-rich"></span><span class="bank-gabrielle"></span></div>
+	<div class="guide-showcase-copy"><b>Gold and items use different tellers</b>Mr. Rich handles the account's shared gold. Gabrielle and the other item tellers each open one named 42-slot pack.</div>
+</div>
+
 <div class="guide-cards">
 	<div><span class="guide-mark">G</span><b>Mr. Rich</b><br />Deposit carried gold or withdraw shared gold. You cannot deposit more than you carry or withdraw more than the bank holds.</div>
 	<div><span class="guide-mark">42</span><b>One Teller, One Pack</b><br />Every item teller controls a 42-slot pack. The first two packs are open on every account.</div>
@@ -10,6 +15,13 @@
 
 <div class="divider"></div>
 <div class="title mt15">Storing Items</div>
+<div class="guide-flow" style="border-color:#4C83AA" data-guide-visual="bank-storage">
+	<div class="guide-flow-node"><span class="guide-flow-icon bank-potions"></span><span class="guide-flow-label">Inventory Stack</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon bank-gabrielle"></span><span class="guide-flow-label">Open Teller</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon bank-potions"></span><span class="guide-flow-label">Shared Bank Pack</span></div>
+</div>
 <p>Open an item teller, then drag an inventory item into a bank slot. Drag it back to retrieve it, or move items between slots to organise the pack. Stackable items join compatible stacks when possible.</p>
 <p>Items cannot be equipped, sold, upgraded, or sent while stored. PVP markings are removed when an item is banked. Blocked items and operations already in progress are refused.</p>
 <div class="guide-note">Leave at least one inventory space before retrieving an item. Automatic storage needs a compatible stack or an empty bank slot.</div>
@@ -18,6 +30,12 @@
 <div class="title mt15">Opening More Space</div>
 <p>Walk up to a closed teller to see its current price in gold or Shells. The quote shown there is the price for that exact pack. Once opened, the pack remains part of the account.</p>
 <p>The Bank Key opens the Basement. The Underground has its own key. A Diamond Key opens the next unopened teller; using any key consumes it. Deeper floors remain inaccessible until their door has been unlocked.</p>
+<div class="guide-card-grid">
+	<div class="guide-card"><span class="guide-card-icon bank-bkey"></span><b>Basement Key</b>Unlocks the door from the Bank to its Basement.</div>
+	<div class="guide-card"><span class="guide-card-icon bank-ukey"></span><b>Underground Key</b>Unlocks the deeper Underground floor.</div>
+	<div class="guide-card"><span class="guide-card-icon bank-dkey"></span><b>Diamond Key</b>Opens the next unopened item teller and is consumed.</div>
+	<div class="guide-card"><b>Gold or Shells</b>A closed teller shows its own current opening price. Read that quote before choosing the payment.</div>
+</div>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
@@ -43,6 +61,15 @@ bank_trip().catch(show_json);</div>
 <p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">bank_deposit</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_withdraw</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_store</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_retrieve</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_swap</span>.</p>
 
 <div class="guide-related">Related: <span onclick="hide_modal(); open_guide('items',get_guide_url('items'))">Items</span> · <span onclick="hide_modal(); open_guide('item-maintenance',get_guide_url('item-maintenance'))">Item Maintenance</span> · <span onclick="hide_modal(); open_guide('travel-and-instances',get_guide_url('travel-and-instances'))">Travel</span></div>
+
+<script>
+	$(".bank-rich").html(sprite(G.npcs.goldnpc.skin, { height: 58 }));
+	$(".bank-gabrielle").html(sprite(G.npcs.items0.skin, { height: 58 }));
+	$(".bank-potions").html(item_container({ skin: G.items.hpot0.skin }, { name: "hpot0", q: 100 }));
+	$(".bank-bkey").html(item_container({ skin: G.items.bkey.skin }, { name: "bkey" }));
+	$(".bank-ukey").html(item_container({ skin: G.items.ukey.skin }, { name: "ukey" }));
+	$(".bank-dkey").html(item_container({ skin: G.items.dkey.skin }, { name: "dkey" }));
+</script>
 
 <style>
 	.guide-kicker{color:#3F7196;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#356F9B;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#386D91;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}.guide-cards>div{border:3px solid #8EABC0;padding:10px}.guide-mark{background:#356F9B;color:white;display:inline-block;margin-right:7px;min-width:31px;text-align:center}.guide-note{border-left:6px solid #356F9B;background:#E3EDF4;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#356F9B;cursor:pointer;text-decoration:underline}@media(max-width:760px){.guide-cards{grid-template-columns:1fr}}

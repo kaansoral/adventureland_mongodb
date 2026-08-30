@@ -275,10 +275,24 @@ function get_guide_url(name) {
 	return found || "/docs/ref/" + name;
 }
 
+function set_proximity_guides(enabled) {
+	proximity_guides = !!enabled;
+	if (proximity_guides) {
+		$(".guidesoff").hide();
+		$(".guideson").show();
+		Cookies.set("no_proximity_guides", "", { expires: 12 * 365 });
+	} else {
+		$(".guideson").hide();
+		$(".guidesoff").show();
+		Cookies.set("no_proximity_guides", "1", { expires: 12 * 365 });
+	}
+	render_server();
+}
+
 function render_server() {
 	var html = "",
 		content = false,
-		contexts = interaction_contexts.length ? interaction_contexts : interaction_context ? [interaction_context] : [];
+		contexts = proximity_guides ? (interaction_contexts.length ? interaction_contexts : interaction_context ? [interaction_context] : []) : [];
 	for (var context_index = 0; context_index < contexts.length; context_index++) {
 		var context = contexts[context_index],
 			definition = context.definition,
@@ -299,28 +313,28 @@ function render_server() {
 		html += "<div style='color:#69BE86; margin-top: 1px'>INFO</div></div>";
 		content = true;
 	}
-	if (quirks.crypt) {
+	if (proximity_guides && quirks.crypt) {
 		html += " <div class='gamebutton' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_guide(\"dungeon-crypt\",\"/docs/ref/dungeon-crypt\")'>";
 		html += "<div style='margin-top: -1px; margin-left: -3px; margin-right: -3px'>" + item_container({ skin: G.items.cryptkey.skin, bcolor: "black" }) + "</div>";
 		html += "<div style='color:#CFD1D1; margin-top: 1px'>INFO</div>";
 		html += "</div>";
 		content = true;
 	}
-	if (quirks.darkmage) {
+	if (proximity_guides && quirks.darkmage) {
 		html += " <div class='gamebutton' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_guide(\"dungeon-darkmage\",\"/docs/ref/dungeon-darkmage\")'>";
 		html += "<div style='margin-top: -1px; margin-left: -3px; margin-right: -3px'>" + item_container({ skin: G.items.frozenkey.skin, bcolor: "black" }) + "</div>";
 		html += "<div style='color:#CFD1D1; margin-top: 1px'>INFO</div>";
 		html += "</div>";
 		content = true;
 	}
-	if (quirks.fishing) {
+	if (proximity_guides && quirks.fishing) {
 		html += " <div class='gamebutton' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_interaction_guide(\"gathering\")'>";
 		html += "<div style='margin-top: -1px; margin-left: -3px; margin-right: -3px'>" + item_container({ skin: G.items.rod.skin, bcolor: "black" }) + "</div>";
 		html += "<div style='color:#CFD1D1; margin-top: 1px'>INFO</div>";
 		html += "</div>";
 		content = true;
 	}
-	if (quirks.mining) {
+	if (proximity_guides && quirks.mining) {
 		html += " <div class='gamebutton' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_interaction_guide(\"gathering\")'>";
 		html += "<div style='margin-top: -1px; margin-left: -3px; margin-right: -3px'>" + item_container({ skin: G.items.pickaxe.skin, bcolor: "black" }) + "</div>";
 		html += "<div style='color:#CFD1D1; margin-top: 1px'>INFO</div>";

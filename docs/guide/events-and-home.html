@@ -1,31 +1,72 @@
 <div class="guide-kicker">THE WORLD KEEPS MOVING</div>
 <div class="guide-title">Events &amp; Home Servers</div>
-<p>The clock, live server state, and event notices tell you what is happening now. A home server records where each character belongs and is used for that server's home rewards.</p>
+<p>The realm clock, event buttons, and live server state describe what is happening now. Your home server is a separate account choice used for that realm's home rewards.</p>
+
+<div class="guide-card-grid">
+	<div class="guide-card"><span class="guide-card-icon events-tracker"></span><b>Schedule</b>Open the clock to inspect planned events and their current realm timing.</div>
+	<div class="guide-card"><span class="guide-card-icon events-rgoo"></span><b>Live Event</b>An EVENT button, portal, creature, or NPC may appear when an activity is running.</div>
+	<div class="guide-card"><span class="guide-card-icon events-bean"></span><b>Bean</b>Sets the current eligible realm as your home after showing the long change cooldown.</div>
+	<div class="guide-card"><span class="guide-card-icon events-favore"></span><b>Favoré</b>Shows the Shell cost and remaining time before blessing the current server.</div>
+</div>
+
+<div class="guide-flow" style="border-color:#7D5DA5" data-guide-visual="events">
+	<div class="guide-flow-node"><span class="guide-flow-icon events-tracker"></span><span class="guide-flow-label">Read Schedule &amp; Status</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon events-rgoo"></span><span class="guide-flow-label">Open Event Guide</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon events-route">↗</span><span class="guide-flow-label">Join or Travel</span></div>
+</div>
 
 <div class="divider"></div>
-<div class="title mt15">Manual</div>
-<p>Open the clock at the bottom-left to inspect the schedule. Live events may appear as join buttons, portals, creatures, or NPC interactions; follow the event's own guide because not every event is entered the same way.</p>
-<p>Speak with Bean to make the current eligible server your home. Changing home has a long cooldown. Favoré can bless the current server with shells; her interface shows the exact cost and remaining blessing time before you confirm.</p>
+<div class="title mt15">Events Enter in Different Ways</div>
+<div class="guide-card-grid">
+	<div class="guide-card"><b>Joinable event</b>Some server activities accept <span class="dlabel">join(name)</span> and place you into their event map or queue.</div>
+	<div class="guide-card"><b>World creature</b>A live boss may need ordinary travel to the coordinates in <span class="dlabel">server.status</span>.</div>
+	<div class="guide-card"><b>Portal or NPC</b>Seasonal events may begin through a visible portal, turn-in, or local interaction.</div>
+	<div class="guide-card"><b>Scheduled window</b>The clock can announce an event before it is available. Read its guide and live state before acting.</div>
+</div>
+<div class="guide-note">An event name appearing in <span class="dlabel">G.events</span> proves only that the event is defined. Check <span class="dlabel">server.status</span> for the current realm before trying to join or travel.</div>
 
 <div class="divider"></div>
-<div class="title mt15">CODE</div>
-<p><span class="dlabel">server.status</span> shows live server state. <span class="dlabel">G.events</span> contains static event definitions.</p>
-<div class="code">async function event_example() {
-	show_json(server.status);
-	show_json(G.events);
+<div class="title mt15">Home and Blessings</div>
+<p>Speak with Bean while on the eligible realm you want to call home. Changing home has a long cooldown, so read his confirmation instead of using it as ordinary travel.</p>
+<p>Favoré's blessing is realm-wide and spends Shells. Her panel shows the exact current cost and remaining blessing time. This is separate from setting a home server.</p>
 
-	if (server.status.goobrawl) {
-		await join("goobrawl");
+<div class="divider"></div>
+<div class="title mt15">CODE: Read Before Acting</div>
+<div class="code">function report_live_events() {
+	for (var name in server.status) {
+		var state = server.status[name];
+		if (state &amp;&amp; (state.live || state.spawn || state.end)) {
+			game_log(name + " is active or scheduled");
+		}
 	}
+}
 
-	await set_home();
-	// await bless_server(); // Spends shells: read the reference first.
-}</div>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">join</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">set_home</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bless_server</span>.</p>
-<div class="guide-note">Only call <span class="rlabel" onclick="render_function_reference($(this).html())">join</span> for a currently available, joinable event. Many world events are reached by travel instead.</div>
+report_live_events();
+show_json(server.status);</div>
+<div class="code">async function join_goobrawl_if_live() {
+	if (!server.status.goobrawl) return game_log("No Goo Brawl here");
+	await join("goobrawl");
+}
+
+// These change account or realm state; call them only beside the NPC.
+// await set_home();
+// await bless_server(); // Spends Shells.
+
+join_goobrawl_if_live().catch(show_json);</div>
+<p>Static definitions are in <span class="dlabel">G.events</span>. Live state is in <span class="dlabel">server.status</span>.</p>
+<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">join</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">set_home</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bless_server</span>.</p>
 
 <div class="guide-related">See also: <span onclick="hide_modal(); open_guide('travel-and-instances',get_guide_url('travel-and-instances'))">Travel and Instances</span>.</div>
 
+<script>
+	$(".events-tracker").html(item_container({ skin: G.items.tracker.skin }, { name: "tracker" }));
+	$(".events-rgoo").html(sprite("rgoo", { height: 48, overflow: true }));
+	$(".events-bean").html(sprite(G.npcs.bean.skin, { height: 58 }));
+	$(".events-favore").html(sprite(G.npcs.favors.skin, { height: 58 }));
+</script>
+
 <style>
-	.guide-kicker{color:#7D5DA5;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#58417A;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#58417A;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #8061A8;background:#EAE3F1;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#674C8A;cursor:pointer;text-decoration:underline}
+	.guide-kicker{color:#7D5DA5;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#58417A;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#58417A;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #8061A8;background:#EAE3F1;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#674C8A;cursor:pointer;text-decoration:underline}.events-route{font-size:42px;color:#C2A8E0}
 </style>

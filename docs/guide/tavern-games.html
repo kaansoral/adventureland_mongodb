@@ -1,31 +1,70 @@
 <div class="guide-kicker">GOLD IN, FORTUNE OUT</div>
 <div class="guide-title">Tavern Games</div>
-<p>The Tavern's dice table and slot machine are gold games of chance. Read the wager twice. The house has already read it once.</p>
+<p>The Tavern's dice table and slot machine spend gold on games of chance. Read the wager twice. The house has already read it once.</p>
+
+<div class="guide-showcase" style="border-color:#AA7040">
+	<div class="guide-showcase-art"><span class="tavern-jaqk"></span><span class="tavern-die">55</span><span class="tavern-slots">777</span></div>
+	<div class="guide-showcase-copy"><b>Ask Jaqk for the current house</b>The tavern panel shows whether betting is open, its edge, and the largest win it can presently cover.</div>
+</div>
 
 <div class="divider"></div>
-<div class="title mt15">Manual</div>
-<p><b>Dice:</b> choose a number, choose Up or Down, enter the wager, then place the bet. Up wins on a roll at or above the chosen number; Down wins at or below it. The panel shows the payout, house edge, limits, and whether betting is open.</p>
-<p><b>Slots:</b> each play costs the amount shown by the machine and enters its short queue. Wait for the result before trying again. A machine that presents only dialogue or says its host is absent is not currently accepting a game.</p>
+<div class="title mt15">Dice</div>
+<div class="guide-flow" style="border-color:#AA7040" data-guide-visual="tavern-dice">
+	<div class="guide-flow-node"><span class="guide-flow-icon tavern-choice">DOWN</span><span class="guide-flow-label">Choose Direction</span></div>
+	<div class="guide-flow-node"><span class="guide-flow-icon tavern-die">55</span><span class="guide-flow-label">Choose Number</span></div>
+	<div class="guide-flow-node"><span class="guide-flow-icon tavern-gold">G</span><span class="guide-flow-label">Choose Wager</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon tavern-roll">42</span><span class="guide-flow-label">Roll ≤ 55 Wins</span></div>
+</div>
+<p><b>Down</b> wins when the roll is at or below your chosen number. <b>Up</b> wins when the roll is at or above it. The displayed payout changes with that choice, the threshold, the wager, and the house edge.</p>
 
 <div class="divider"></div>
-<div class="title mt15">CODE</div>
-<p>Read the current house information first. A completed losing wager fulfills its Promise with <span class="dlabel">won: false</span>; an invalid wager or unavailable machine rejects.</p>
-<div class="code">async function tavern_example() {
+<div class="title mt15">Slots</div>
+<div class="guide-flow" style="border-color:#8B5B96" data-guide-visual="tavern-slots">
+	<div class="guide-flow-node"><span class="guide-flow-icon tavern-gold">G</span><span class="guide-flow-label">Fixed Cost Shown</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon tavern-slots">777</span><span class="guide-flow-label">Wait for One Spin</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon tavern-result">?</span><span class="guide-flow-label">Payout or No Luck</span></div>
+</div>
+<p>Each play spends the machine's shown cost and enters its short queue. Wait for the result before trying again. A machine offering only dialogue is not currently accepting a game.</p>
+<div class="guide-note">A completed losing wager is a valid result and fulfills its Promise with <span class="dlabel">won: false</span>. A rejected Promise means the wager or machine failed validation.</div>
+
+<div class="divider"></div>
+<div class="title mt15">CODE: Inspect the House</div>
+<div class="code">async function inspect_tavern() {
 	var house = await get_tavern_info();
 	game_log("House edge: " + house.edge + "%");
-	game_log("Maximum covered win: " + house.max);
+	game_log("Largest covered win: " + house.max);
+	return house;
+}
 
-	var dice = await bet_dice("down", 55, 10000);
-	game_log(dice.won ? "Won " + dice.net : "Lost " + dice.wager);
+inspect_tavern().catch(show_json);</div>
 
-	var slots = await play_slots();
-	game_log(slots.won ? "Slots paid " + slots.payout : "No luck");
-}</div>
+<div class="title mt15">CODE: Place One Deliberate Wager</div>
+<div class="code">async function wager_once(direction, number, gold) {
+	var house = await get_tavern_info();
+	if (gold &gt; character.gold) return game_log("Not enough gold");
+
+	game_log(direction.toUpperCase() + " " + number + " for " + gold + " gold");
+	var result = await bet_dice(direction, number, gold);
+	game_log("Rolled " + result.roll);
+	game_log(result.won ? "Net win: " + result.net : "Lost: " + result.wager);
+}
+
+// This spends gold:
+// wager_once("down", 55, 10000).catch(show_json);
+
+// Slots also spend gold and wait for the completed spin:
+// show_json(await play_slots());</div>
 <p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">get_tavern_info</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bet_dice</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">play_slots</span>.</p>
-<div class="guide-note">Dice and slots spend gold immediately. Call <span class="dlabel">get_tavern_info()</span> first to read the current house edge and the largest win the tavern can cover.</div>
 
 <div class="guide-related">For ordinary trade, see <span onclick="hide_modal(); open_guide('markets-and-trading',get_guide_url('markets-and-trading'))">Markets and Trading</span>.</div>
 
+<script>
+	$(".tavern-jaqk").html(sprite(G.npcs.tavern.skin, { height: 62 }));
+</script>
+
 <style>
-	.guide-kicker{color:#AA7040;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#7D4C29;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#7D4C29;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #AA7040;background:#F2E4D8;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#85522D;cursor:pointer;text-decoration:underline}
+	.guide-kicker{color:#AA7040;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#7D4C29;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#7D4C29;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #AA7040;background:#F2E4D8;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#85522D;cursor:pointer;text-decoration:underline}.tavern-die,.tavern-roll,.tavern-choice,.tavern-gold,.tavern-slots,.tavern-result{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border:3px solid #D9B274;background:#2A1B13;color:#FFD888;font-size:23px}.tavern-slots{border-color:#C18ACB;background:#221525;color:#F1B6FB}.tavern-choice{font-size:18px}.tavern-roll{color:#8EE1A2}.tavern-gold{border-radius:50%;color:#F1CE4F}.tavern-result{color:#EFA9C9}
 </style>

@@ -380,6 +380,9 @@ canvas { display:block; } /*replaces the overflow: hidden solution [07/07/16] */
 	max-width: 100vw;
 	text-align: right;
 }
+#newparty:empty{
+	display: none !important;
+}
 #serverinfo{
 	box-sizing: border-box;
 	width: 100%;
@@ -392,6 +395,105 @@ canvas { display:block; } /*replaces the overflow: hidden solution [07/07/16] */
 }
 #serverinfo .gamebutton{
 	margin: 0px;
+}
+.guide-showcase{
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	margin: 14px 0;
+	padding: 14px 18px;
+	border: 4px solid #7D8790;
+	background: #171A1D;
+	color: #F3F3F3;
+}
+.guide-showcase-art{
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+	gap: 8px;
+	min-width: 118px;
+	overflow: visible;
+}
+.guide-showcase-copy{
+	flex: 1;
+}
+.guide-showcase-copy b{
+	display: block;
+	margin-bottom: 4px;
+	font-size: 28px;
+}
+.guide-flow{
+	display: flex;
+	align-items: stretch;
+	justify-content: center;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin: 12px 0;
+	padding: 12px;
+	border: 4px solid #7D8790;
+	background: #171A1D;
+	color: white;
+}
+.guide-flow-node{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-width: 92px;
+	padding: 7px;
+	border: 2px solid #596169;
+	background: #08090A;
+	text-align: center;
+}
+.guide-flow-icon{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 46px;
+	margin-bottom: 5px;
+	overflow: visible;
+}
+.guide-flow-label{
+	font-size: 18px;
+	line-height: 21px;
+	color: #D4D8DB;
+}
+.guide-flow-arrow{
+	display: flex;
+	align-items: center;
+	font-size: 40px;
+	color: #9FC9DF;
+}
+.guide-card-grid{
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 9px;
+	margin: 12px 0;
+}
+.guide-card{
+	border: 3px solid #A8AFB4;
+	background: #F4F5F5;
+	padding: 10px 12px;
+}
+.guide-card-icon{
+	float: left;
+	min-width: 54px;
+	min-height: 52px;
+	margin-right: 9px;
+	overflow: visible;
+}
+.guide-card b{
+	display: block;
+	margin-bottom: 3px;
+	font-size: 26px;
+}
+.guide-card:after{
+	display: block;
+	clear: both;
+	content: "";
+}
+@media(max-width:700px){
+	.guide-showcase{align-items:flex-start}.guide-showcase-art{min-width:72px}.guide-card-grid{grid-template-columns:1fr}.guide-flow-node{min-width:76px}.guide-flow-arrow{font-size:30px}
 }
 #bottomrightcorner{
 	z-index: 300;

@@ -1,29 +1,67 @@
 <div class="guide-kicker">DAISY'S WORK</div>
 <div class="guide-title">Monster Hunts</div>
-<p>Daisy assigns a monster type and a number to defeat. Finish the hunt on the server where you accepted it, then return for monster tokens.</p>
+<p>Daisy marks one monster type and a number to defeat. Finish on the server that issued the hunt, then return to her for a Monster Token.</p>
+
+<div class="guide-showcase" style="border-color:#B45C61">
+	<div class="guide-showcase-art"><span class="hunt-daisy"></span><span class="hunt-goo"></span><span class="hunt-token"></span></div>
+	<div class="guide-showcase-copy"><b>Accept · Hunt · Return</b>Your condition bar holds the target, remaining count, server, and time. The reward is not automatic: completed hunts must be turned in to Daisy.</div>
+</div>
+
+<div class="guide-flow" style="border-color:#B45C61" data-guide-visual="monster-hunt">
+	<div class="guide-flow-node"><span class="guide-flow-icon hunt-daisy"></span><span class="guide-flow-label">Accept from Daisy</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon hunt-goo"></span><span class="guide-flow-label">Defeat Marked Monsters</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon hunt-token"></span><span class="guide-flow-label">Return for Token</span></div>
+</div>
 
 <div class="divider"></div>
-<div class="title mt15">Manual</div>
-<p>Visit Daisy on Mainland and ask for a hunt. The hunt appears among your conditions with its target, remaining count, server, and time. Defeat the named monsters before it expires, then speak to Daisy again to claim the reward.</p>
-<p>Merchants cannot accept monster hunts. If you change server, your existing hunt does not become a hunt for the new server.</p>
+<div class="title mt15">Follow the Hunt Condition</div>
+<div class="guide-card-grid">
+	<div class="guide-card"><b>Target</b><span class="dlabel">id</span> is the monster key. Use <span class="dlabel">G.monsters[id].name</span> for its display name.</div>
+	<div class="guide-card"><b>Remaining</b><span class="dlabel">c</span> counts down only for eligible kills of the assigned monster.</div>
+	<div class="guide-card"><b>Server</b><span class="dlabel">sn</span> records the realm. Kills elsewhere do not advance this assignment.</div>
+	<div class="guide-card"><b>Time</b><span class="dlabel">ms</span> is the remaining duration. Return before the condition expires.</div>
+</div>
+<p>If the count reaches zero, stop hunting and return to Daisy. Merchants cannot accept hunts. A server change does not move an existing assignment to the new realm.</p>
+<div class="guide-note">Do not repeatedly call Daisy while a hunt still has a remaining count. The server will refuse it; read <span class="dlabel">character.s.monsterhunt</span> instead.</div>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
-<p><span class="rlabel" onclick="render_function_reference($(this).html())">interact</span> currently supports the complete monster-hunt interaction: the first call starts a hunt, and a later call at Daisy completes a finished one.</p>
+<div class="code">function show_hunt() {
+	var hunt = character.s.monsterhunt;
+	if (!hunt) return game_log("No active monster hunt");
+
+	var name = G.monsters[hunt.id].name;
+	game_log(name + ": " + hunt.c + " remaining on " + hunt.sn);
+}
+
+show_hunt();</div>
 <div class="code">async function visit_daisy() {
 	await smart_move("monsterhunter");
-	var result = await interact("monsterhunt");
+	var hunt = character.s.monsterhunt;
 
-	if (result.started) game_log("A new hunt begins");
-	if (result.completed) game_log("Hunt reward claimed");
+	// Start a hunt only when none exists; turn in only at zero.
+	if (!hunt || hunt.c === 0) {
+		var result = await interact("monsterhunt");
+		if (result.started) game_log("A new hunt begins");
+		if (result.completed) game_log("Monster Token received");
+		return;
+	}
 
-	// Current hunt data, when one is active:
-	show_json(character.s.monsterhunt);
-}</div>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">interact</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span>.</p>
-<div class="guide-note">Do not repeatedly call the interaction while fighting. Read <span class="dlabel">character.s.monsterhunt</span>, finish the assigned count, then return to Daisy.</div>
+	game_log(hunt.c + " targets remain");
+}
+
+visit_daisy().catch(show_json);</div>
+<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">interact</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">get_nearest_monster</span>.</p>
 
 <div class="guide-related">Need help finding creatures? Open <span onclick="hide_modal(); open_guide('tracktrix',get_guide_url('tracktrix'))">Tracktrix</span>.</div>
+
+<script>
+	$(".hunt-daisy").html(sprite(G.npcs.monsterhunter.skin, { height: 62 }));
+	$(".hunt-goo").html(sprite("goo", { height: 48, overflow: true }));
+	$(".hunt-token").html(item_container({ skin: G.items.monstertoken.skin }, { name: "monstertoken" }));
+</script>
 
 <style>
 	.guide-kicker{color:#B45C61;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#8D4248;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#8D4248;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #B45C61;background:#F3DFE0;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#98484E;cursor:pointer;text-decoration:underline}

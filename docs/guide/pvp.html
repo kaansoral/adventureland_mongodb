@@ -2,6 +2,11 @@
 <div class="guide-title">PVP &amp; Duels</div>
 <p>There are three different fights between adventurers: open PVP, safe PVP maps, and private duels. Check which one you are entering before you attack.</p>
 
+<div class="guide-showcase" style="border-color:#C3443D">
+	<div class="guide-showcase-art"><span class="pvp-ace"></span><span class="pvp-marked"></span><span class="pvp-token"></span></div>
+	<div class="guide-showcase-copy"><b>Know what can be lost</b>Open PVP can cost gold, experience, and <span class="guide-pvp">^</span>-marked items. Safe arenas and private duels use different defeat rules.</div>
+</div>
+
 <div class="guide-cards">
 	<div><b>Open PVP</b><br />On a PVP server—or an ordinary PVP map—other adventurers can attack you. Defeat can cost gold and experience. Items marked with <span class="guide-pvp">^</span> can also drop.</div>
 	<div><b>Safe PVP</b><br />Some PVE-server arenas allow fighting without the ordinary gold and experience loss. The map, not its appearance, decides the rule.</div>
@@ -16,6 +21,13 @@
 
 <div class="divider"></div>
 <div class="title mt15">Starting a Duel</div>
+<div class="guide-flow" style="border-color:#C3443D" data-guide-visual="duel">
+	<div class="guide-flow-node"><span class="guide-flow-icon pvp-side">P1</span><span class="guide-flow-label">Leader Challenges</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon pvp-side">P2</span><span class="guide-flow-label">Leader Accepts</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon pvp-duel">VS</span><span class="guide-flow-label">Parties Enter Duelland</span></div>
+</div>
 <ol>
 	<li>Both leaders must be online, outside PVP, and not already dueling.</li>
 	<li>Challenge the other leader. They accept while the challenge is still live.</li>
@@ -49,6 +61,12 @@ async function recent_pvp() {
 
 <div class="guide-related">Related: <span onclick="hide_modal(); open_guide('items',get_guide_url('items'))">Items</span> · <span onclick="hide_modal(); open_guide('travel-and-instances',get_guide_url('travel-and-instances'))">Travel &amp; Instances</span></div>
 
+<script>
+	$(".pvp-ace").html(sprite(G.npcs.pvp.skin, { height: 58 }));
+	$(".pvp-marked").html(item_container({ skin: G.items.gem1.skin }, { name: "gem1", v: true, q: 12 }));
+	$(".pvp-token").html(item_container({ skin: G.items.pvptoken.skin }, { name: "pvptoken" }));
+</script>
+
 <style>
-	.guide-kicker{color:#A33A35;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#C3443D;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#9E3E39;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}.guide-cards>div{border:3px solid #C18B87;padding:10px}.guide-pvp{color:#E66E5C;font-weight:bold}.guide-note{border-left:6px solid #C3443D;background:#F3E1DE;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#A33A35;cursor:pointer;text-decoration:underline}@media(max-width:760px){.guide-cards{grid-template-columns:1fr}}
+	.guide-kicker{color:#A33A35;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#C3443D;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#9E3E39;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}.guide-cards>div{border:3px solid #C18B87;padding:10px}.guide-pvp{color:#E66E5C;font-weight:bold}.guide-note{border-left:6px solid #C3443D;background:#F3E1DE;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#A33A35;cursor:pointer;text-decoration:underline}.pvp-side,.pvp-duel{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:42px;border:3px solid #E17068;background:#2D1412;color:#FFB2AC}.pvp-duel{border-color:#E1B14F;color:#FFE2A2}@media(max-width:760px){.guide-cards{grid-template-columns:1fr}}
 </style>

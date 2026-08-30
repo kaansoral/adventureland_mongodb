@@ -1,36 +1,67 @@
 <div class="guide-kicker">NOT EVERYTHING IS A SHOP</div>
-<div class="guide-title">Special Interactions</div>
-<p>Some places answer only when you stand beside them: terminals, levers, signs, statues, gates, and jailers. Their visible interface is part of the interaction.</p>
+<div class="guide-title">Strange Interactions</div>
+<p>Terminals, levers, trees, statues, and jailers follow their own local rules. Approach until their interface appears, then read the exact action before using it.</p>
+
+<div class="guide-card-grid">
+	<div class="guide-card"><span class="guide-card-icon special-tree"></span><b>New Year Tree</b>When awake, it can grant holiday spirit and perhaps a token. Keep inventory space free.</div>
+	<div class="guide-card"><span class="guide-card-icon special-computer"></span><b>Mainframe</b>Cyberland's visible terminal accepts its own contained command set.</div>
+	<div class="guide-card"><span class="guide-card-icon special-lever">⇊</span><b>Resort Lever</b>Works only beside the lever in its proper room and moves you through that interaction.</div>
+	<div class="guide-card"><span class="guide-card-icon special-jail"></span><b>Jailord</b>The LEAVE action exits the jail when its normal server checks allow it.</div>
+</div>
 
 <div class="divider"></div>
-<div class="title mt15">Manual</div>
-<p>Approach the object until its panel or prompt appears, then use the action it presents. Cyberland's Mainframe takes commands through its terminal. The Resort lever works only from its proper room. The Mainland PVP memorial opens the recent record. When the New Year tree is awake, it can bestow holiday spirit and perhaps a token; keep inventory space free.</p>
-<p>The invisible statue in Spooky Town accepts an item and offers <b>POOF</b>. This destroys the item, though the statue has strange exceptions. Locked items are refused. Jailord's <b>LEAVE</b> action exits the jail.</p>
-<p>If a guard, lottery host, wheel, or curious machine gives only a line of dialogue and no action, it is not currently offering a functional service. No secret click is required.</p>
+<div class="title mt15">The Invisible Statue</div>
+<div class="guide-flow" style="border-color:#725F86" data-guide-visual="invisible-statue">
+	<div class="guide-flow-node"><span class="guide-flow-icon special-item"></span><span class="guide-flow-label">Selected Eligible Item</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon special-poof">POOF</span><span class="guide-flow-label">Item Destroyed</span></div>
+</div>
+<p>The statue in Spooky Town accepts an inventory item and offers <b>POOF</b>. This permanently destroys the selected item, though the statue has strange exceptions. Locked items are refused.</p>
+<div class="guide-note">A visible character, guard, lottery host, wheel, or machine may currently offer only dialogue. If no action appears, there is no hidden service to click.</div>
 
 <div class="divider"></div>
-<div class="title mt15">CODE</div>
-<p><span class="rlabel" onclick="render_function_reference($(this).html())">interact</span> supports the New Year tree and Resort lever as well as monster hunts. <span class="rlabel" onclick="render_function_reference($(this).html())">leave</span> exits supported special areas. <span class="rlabel" onclick="render_function_reference($(this).html())">destroy</span> permanently consumes the chosen inventory item and receives the statue's special handling only when you are beside it.</p>
-<div class="code">async function special_example() {
-	// Use these only while beside the matching place.
-	// await interact("newyear_tree");
-	// await interact("the_lever");
-
-	if (character.map === "jail") {
-		await leave();
+<div class="title mt15">CODE: Local Interactions</div>
+<div class="code">async function use_special_place(name) {
+	if (name !== "newyear_tree" &amp;&amp; name !== "the_lever") {
+		return game_log("Unsupported interaction name");
 	}
+	var result = await interact(name);
+	show_json(result);
+}
 
-	// Destructive: inspect the slot immediately before calling.
-	var slot = locate_item("item_name");
-	if (slot !== -1 && !character.items[slot].l) {
-		// await destroy(slot);
-	}
+// Run only while standing beside the matching place:
+// use_special_place("newyear_tree").catch(show_json);</div>
+<div class="code">async function cyberland_hello() {
+	if (character.map !== "cyberland") return;
+	var reply = await mainframe_command("hello");
+	show_json(reply);
+}
+
+async function leave_jail() {
+	if (character.map === "jail") await leave();
 }</div>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">interact</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">mainframe_command</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">leave</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">destroy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span>.</p>
-<div class="guide-note">Inside Cyberland, <span class="dlabel">await mainframe_command("hello")</span> runs the visible terminal command and returns its reply.</div>
+
+<div class="title mt15">CODE: Destructive Actions</div>
+<div class="code">function inspect_before_poof(slot, expected_name) {
+	var item = character.items[slot];
+	if (!item || item.name !== expected_name || item.l) return false;
+	show_json(item);
+	return true;
+}
+
+// Stand beside the statue, inspect the output, then deliberately call:
+// if (inspect_before_poof(0, "coat")) await destroy(0);</div>
+<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">interact</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">mainframe_command</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">leave</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">destroy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>.</p>
 
 <div class="guide-related">Ordinary services are covered by <span onclick="hide_modal(); open_guide('shops-and-selling',get_guide_url('shops-and-selling'))">Shops and Selling</span> and <span onclick="hide_modal(); open_guide('travel-and-instances',get_guide_url('travel-and-instances'))">Travel and Instances</span>.</div>
 
+<script>
+	$(".special-tree").html(sprite(G.npcs.newyear_tree.skin, { height: 64, overflow: true }));
+	$(".special-computer").html(item_container({ skin: G.items.computer.skin }, { name: "computer" }));
+	$(".special-jail").html(sprite(G.npcs.jailer.skin, { height: 58 }));
+	$(".special-item").html(item_container({ skin: G.items.coat.skin }, { name: "coat" }));
+</script>
+
 <style>
-	.guide-kicker{color:#6D657B;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#4E465C;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#4E465C;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #786F87;background:#E8E5EC;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#5E536E;cursor:pointer;text-decoration:underline}
+	.guide-kicker{color:#6D657B;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#4E465C;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#4E465C;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #786F87;background:#E8E5EC;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#5E536E;cursor:pointer;text-decoration:underline}.special-lever{font-size:42px;color:#6D58A0}.special-poof{font-size:28px;color:#E35D68}
 </style>

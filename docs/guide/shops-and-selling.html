@@ -1,26 +1,68 @@
 <div class="guide-kicker">THE SIMPLE ECONOMY</div>
 <div class="guide-title">Shops &amp; Selling</div>
-<p>NPC merchants sell dependable supplies and buy unwanted items. Player merchants and buy orders belong to the wider market.</p>
+<p>NPC merchants keep dependable stock at fixed prices. Buy supplies from the merchant who carries them; sell unwanted inventory while any ordinary merchant panel is open.</p>
+
+<div class="guide-showcase" style="border-color:#C49A38">
+	<div class="guide-showcase-art"><span class="shop-ernis"></span><span class="shop-hpot"></span><span class="shop-mpot"></span></div>
+	<div class="guide-showcase-copy"><b>Ernis keeps adventurers moving</b>Health and mana potions are sold in quantities. The item popup shows the unit price and currency before you buy.</div>
+</div>
+
+<div class="guide-flow" style="border-color:#C49A38" data-guide-visual="shop-restock">
+	<div class="guide-flow-node"><span class="guide-flow-icon shop-ernis"></span><span class="guide-flow-label">Nearby Merchant</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon shop-hpot"></span><span class="guide-flow-label">100 HP Potions</span></div>
+	<div class="guide-flow-node"><span class="guide-flow-icon shop-mpot"></span><span class="guide-flow-label">100 MP Potions</span></div>
+</div>
 
 <div class="divider"></div>
-<div class="title mt15">Manual</div>
-<p>Stand near a merchant and open their shop. Inspect an item, then right-click it to buy. With a merchant interface open, right-click an inventory item to sell it. Locked items cannot be sold.</p>
-<p>Ponty deals in second-hand equipment. His stock changes as adventurers sell things back into the world.</p>
+<div class="title mt15">Buying</div>
+<div class="guide-card-grid">
+	<div class="guide-card"><b>1. Find the right merchant</b>A merchant can sell only the items in that shop. The Computer lets CODE reach ordinary NPC stock from farther away.</div>
+	<div class="guide-card"><b>2. Inspect one item</b>Read its price, currency, and stack behavior. Buying 100 means 100 units, not 100 stacks.</div>
+	<div class="guide-card"><b>3. Keep free space</b>A compatible stack can grow; otherwise the purchase needs an empty inventory position.</div>
+	<div class="guide-card"><b>4. Choose currency when needed</b><span class="dlabel">buy()</span> uses the available shop currency. Use the explicit gold or Shells routine when you must forbid the other.</div>
+</div>
+
+<div class="divider"></div>
+<div class="title mt15">Selling</div>
+<p>Open a nearby merchant and right-click the inventory item you want to sell. Ordinary NPC resale is immediate. Locked items and items already involved in another action are refused.</p>
+<div class="guide-note">CODE sales do not open a confirmation. Verify the item name, level, quantity, special property, stat, and lock marker from the current slot immediately before selling.</div>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
-<p>Without a Computer, stand near a merchant who sells the item. <span class="dlabel">buy()</span> chooses the payment automatically. Use <span class="dlabel">buy_with_gold()</span> or <span class="dlabel">buy_with_shells()</span> when you want to choose the currency yourself.</p>
 <div class="code">async function restock() {
-	await buy("hpot0", 100);
-	await buy_with_gold("mpot0", 100);
+	var hp_needed = Math.max(0, 1000 - quantity("hpot0"));
+	var mp_needed = Math.max(0, 1000 - quantity("mpot0"));
 
-	// Sell one item from inventory slot 0.
-	await sell(0, 1);
-}</div>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">buy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">buy_with_gold</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">buy_with_shells</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">sell</span>.</p>
-<div class="guide-note">Check the item and quantity immediately before selling. CODE sales do not ask for a confirmation.</div>
+	if (hp_needed) await buy_with_gold("hpot0", hp_needed);
+	if (mp_needed) await buy_with_gold("mpot0", mp_needed);
+	game_log("Potion stock is ready");
+}
 
-<div class="guide-related">For player shops, continue to <span onclick="hide_modal(); open_guide('markets-and-trading',get_guide_url('markets-and-trading'))">Markets and Trading</span>.</div>
+restock().catch(function (error) {
+	game_log(error.reason || error.message || "Restock failed");
+});</div>
+<p>Without a Computer, stand near a merchant who carries the item. With one equipped, ordinary NPC purchases can be made remotely.</p>
+<div class="code">async function sell_one_plain_item(slot, expected_name) {
+	var item = character.items[slot];
+	if (!item || item.name !== expected_name) return;
+	if (item.l || item.p || item.stat_type || item.level) {
+		return game_log("Refusing to sell a modified item");
+	}
+	await sell(slot, 1);
+}
+
+// Deliberately names both the slot and expected item.
+// sell_one_plain_item(0, "coat").catch(show_json);</div>
+<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">buy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">buy_with_gold</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">buy_with_shells</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">sell</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">quantity</span>.</p>
+
+<div class="guide-related">Player stands, Ponty's changing stock, and Ron's recovered finds are covered by <span onclick="hide_modal(); open_guide('markets-and-trading',get_guide_url('markets-and-trading'))">Markets and Trading</span>.</div>
+
+<script>
+	$(".shop-ernis").html(sprite(G.npcs.fancypots.skin, { height: 62 }));
+	$(".shop-hpot").html(item_container({ skin: G.items.hpot0.skin }, { name: "hpot0", q: 100 }));
+	$(".shop-mpot").html(item_container({ skin: G.items.mpot0.skin }, { name: "mpot0", q: 100 }));
+</script>
 
 <style>
 	.guide-kicker{color:#9A762D;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#6E571F;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#6E571F;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #B18A32;background:#F2E9CD;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#7C621E;cursor:pointer;text-decoration:underline}

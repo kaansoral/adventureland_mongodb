@@ -1,30 +1,73 @@
 <div class="guide-kicker">TURN IN YOUR TREASURES</div>
 <div class="guide-title">Exchanges &amp; Quests</div>
-<p>Some items are not ordinary loot to equip or sell. Their tooltip marks them for an exchange, a token shop, or a particular NPC.</p>
+<p>Some loot is meant to be turned in rather than equipped or sold. Its tooltip names an exchange quantity, token shop, quest, or specialist.</p>
+
+<div class="guide-showcase" style="border-color:#779C55">
+	<div class="guide-showcase-art"><span class="exchange-xyn"></span><span class="exchange-box"></span></div>
+	<div class="guide-showcase-copy"><b>Xyn handles boxes and bundles</b>Place the full required stack in the exchange slot, keep inventory space free, and wait for the timed exchange to finish.</div>
+</div>
+
+<div class="guide-flow" style="border-color:#779C55" data-guide-visual="exchange-box">
+	<div class="guide-flow-node"><span class="guide-flow-icon exchange-box"></span><span class="guide-flow-label">Armor Box</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon exchange-random">?</span><span class="guide-flow-label">Random Rare Armor</span></div>
+</div>
+
+<div class="guide-flow" style="border-color:#9B7A2E" data-guide-visual="token-shop">
+	<div class="guide-flow-node"><span class="guide-flow-icon exchange-funtoken"></span><span class="guide-flow-label">Fun Tokens</span></div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node"><span class="guide-flow-icon exchange-confetti"></span><span class="guide-flow-label">Confetti</span></div>
+</div>
 
 <div class="divider"></div>
-<div class="title mt15">Manual</div>
-<p>Read the item tooltip for the required quantity, then visit its exchange NPC. Xyn handles many boxes and bundles; other treasures belong to specialist collectors. Place the complete stack in the exchange slot and leave inventory room for the result.</p>
-<p>Token shops are more direct: inspect the offered reward, its token cost, and the quantity before confirming. Recipes, exchanges, and ordinary NPC errands are different systems even when they use the same materials.</p>
+<div class="title mt15">Read the Tooltip First</div>
+<div class="guide-card-grid">
+	<div class="guide-card"><b>Exchange item</b>The tooltip shows the required stack. The result may be fixed or drawn from a reward pool.</div>
+	<div class="guide-card"><b>Token shop</b>The NPC shows each named reward and exact token cost. You choose the result before paying.</div>
+	<div class="guide-card"><b>Quest material</b>A named collector may require several kinds of material or a particular item level.</div>
+	<div class="guide-card"><b>Seasonal turn-in</b>The NPC may exist only while its event is active. Keep the item if its collector is away.</div>
+</div>
+<p>Recipes, exchanges, and quests are different systems even when they use similar materials. A recipe appears in <span class="dlabel">G.craft</span>; an exchange item carries its exchange requirement; a quest follows its NPC's own panel.</p>
+<div class="guide-note">The exchange begins only with a complete eligible stack and enough free inventory space. Do not move the item or start another exchange while its progress bar is running.</div>
 
 <div class="divider"></div>
-<div class="title mt15">CODE</div>
-<p>Stand near the correct NPC. <span class="rlabel" onclick="render_function_reference($(this).html())">exchange</span> waits for the timed exchange and returns the reward.</p>
-<div class="code">async function exchange_example() {
-	var box = locate_item("armorbox");
-	if (box !== -1) {
-		var result = await exchange(box);
-		game_log("Received " + result.reward);
+<div class="title mt15">CODE: Exchange an Item</div>
+<div class="code">async function exchange_armor_box() {
+	var slot = locate_item("armorbox");
+	if (slot === -1) return game_log("No Armor Box found");
+
+	var item = character.items[slot];
+	var needed = G.items[item.name].e || 1;
+	if ((item.q || 1) &lt; needed) {
+		return game_log("Need " + needed + " boxes in one stack");
 	}
 
-	// Buy a named reward with a named token.
+	var result = await exchange(slot);
+	game_log("Received " + result.reward);
+}
+
+exchange_armor_box().catch(show_json);</div>
+
+<div class="title mt15">CODE: Buy with Tokens</div>
+<div class="code">async function buy_confetti() {
+	var price = G.tokens.funtoken.confetti;
+	game_log("Confetti token price: " + price);
+	if (quantity("funtoken") &lt; price) return;
 	await exchange_buy("funtoken", "confetti");
-}</div>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">exchange</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">exchange_buy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>.</p>
-<div class="guide-note">Use the current item tooltip for stack size and possible rewards. Exchange requirements can differ by item.</div>
+}
+
+buy_confetti().catch(show_json);</div>
+<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">exchange</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">exchange_buy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">quantity</span>.</p>
 
 <div class="guide-related">See also: <span onclick="hide_modal(); open_guide('crafting',get_guide_url('crafting'))">Crafting and Dismantling</span> · <span onclick="hide_modal(); open_guide('monster-hunts',get_guide_url('monster-hunts'))">Monster Hunts</span></div>
 
+<script>
+	$(".exchange-xyn").html(sprite(G.npcs.exchange.skin, { height: 62 }));
+	$(".exchange-box").html(item_container({ skin: G.items.armorbox.skin }, { name: "armorbox" }));
+	$(".exchange-funtoken").html(item_container({ skin: G.items.funtoken.skin }, { name: "funtoken" }));
+	$(".exchange-confetti").html(item_container({ skin: G.items.confetti.skin }, { name: "confetti" }));
+</script>
+
 <style>
-	.guide-kicker{color:#94752C;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#4D7040;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#4D7040;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #94752C;background:#F0E9D0;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#537541;cursor:pointer;text-decoration:underline}
+	.guide-kicker{color:#94752C;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#4D7040;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#4D7040;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #94752C;background:#F0E9D0;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#537541;cursor:pointer;text-decoration:underline}.exchange-random{font-size:42px;color:#9FCB7B}
 </style>
