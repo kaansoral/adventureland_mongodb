@@ -953,17 +953,17 @@ function showhide_quirks_logic() {
 	// $(".quirks").hide();
 	(G.maps[character.map].quirks || []).forEach(function (q) {
 		if (q[4] != "info")
-			consider_interaction_context(G.docs.interaction_map.quirks[q[4]], "quirk:" + q[4] + ":" + q[0] + ":" + q[1], point_distance(character.real_x, character.real_y, q[0], q[1]), 190, null, 2);
+			consider_interaction_context(G.docs.interaction_map.quirks[q[4]], "quirk:" + q[4] + ":" + q[0] + ":" + q[1], point_distance(character.real_x, character.real_y, q[0], q[1]), 120, null, 2, "quirk");
 		if (q[4] == "info" && point_distance(character.real_x, character.real_y, q[0], q[1]) < 200) {
 			quirks[q[5]] = true;
 		}
 	});
 	(G.maps[character.map].machines || []).forEach(function (machine) {
-		consider_interaction_context(G.docs.interaction_map.machines[machine.type], "machine:" + machine.type, point_distance(character.real_x, character.real_y, machine.x, machine.y), 190, null, 2);
+		consider_interaction_context(G.docs.interaction_map.machines[machine.type], "machine:" + machine.type, point_distance(character.real_x, character.real_y, machine.x, machine.y), 130, null, 2, "machine");
 	});
 	(G.maps[character.map].doors || []).forEach(function (door, index) {
 		var door_type = door[7] || "ordinary";
-		consider_interaction_context(G.docs.interaction_map.doors[door_type], "door:" + index, point_distance(character.real_x, character.real_y, door[0], door[1]), 120, null, 1);
+		consider_interaction_context(G.docs.interaction_map.doors[door_type], "door:" + index, point_distance(character.real_x, character.real_y, door[0], door[1]), interaction_door_range(door), null, 1, "door", { sprite: "door0" });
 	});
 	(G.maps[character.map].zones || []).forEach(function (zone) {
 		[
@@ -991,7 +991,7 @@ function showhide_quirks_logic() {
 			context = get_npc_interaction_context(map_npc);
 		if (!context || !context.definition.proximity) continue;
 		var c_distance = distance(character, map_npc);
-		consider_interaction_context(context.key, "npc:" + context.npc_id, c_distance, 190, context, 3);
+		consider_interaction_context(context.key, "npc:" + context.npc_id, c_distance, 72, context, 3, "npc");
 	}
 	normalize_interaction_contexts();
 	var near_npc = false;
@@ -1007,17 +1007,34 @@ function showhide_quirks_logic() {
 	if (JSON.stringify(initial) !== JSON.stringify(quirks) || initial_contexts !== interaction_context_signature()) render_server();
 }
 
-function consider_interaction_context(key, id, c_distance, range, context, priority) {
+function consider_interaction_context(key, id, c_distance, range, context, priority, source, visual) {
 	var definition = G.docs && G.docs.interactions && G.docs.interactions[key];
+	range = interaction_context_range(definition, source, range || 190);
 	if (!definition || definition.status || !definition.proximity || c_distance >= (range || 190)) return;
 	priority = priority || 1;
 	var candidate = context || { key: key, definition: definition };
 	candidate.npc_id = id;
 	candidate.distance = c_distance;
 	candidate.priority = priority;
+	candidate.source = source;
+	if (visual) candidate.visual = visual;
 	interaction_contexts.push(candidate);
 	if (interaction_context && (interaction_context.priority > priority || (interaction_context.priority == priority && interaction_context.distance <= c_distance))) return;
 	interaction_context = candidate;
+}
+
+function interaction_context_range(definition, source, fallback) {
+	if (!definition) return fallback;
+	var configured = definition.proximity_range;
+	if (is_number(configured)) return configured;
+	if (configured && is_number(configured[source])) return configured[source];
+	return fallback;
+}
+
+function interaction_door_range(door) {
+	var destination = door && G.maps[door[4]];
+	if ((door && door[7] && door[7] != "ordinary") || (destination && destination.instance)) return 180;
+	return 72;
 }
 
 function normalize_interaction_contexts() {

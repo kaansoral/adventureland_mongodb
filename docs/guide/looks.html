@@ -1,7 +1,11 @@
-<div class="title mt15">Cosmetics</div>
-<div class="mb15"></div>
-
+<div class="guide-kicker">YOUR LOOK, YOUR COLLECTION</div>
+<div class="guide-title">Cosmetics</div>
 <p>Cosmetics change how your character looks. They do not take an equipment slot.</p>
+
+<div class="guide-faces">
+	<div><span class="sphaila"></span><b>Haila</b><br />Exchanges a New Armor token for a random permanent look.</div>
+	<div><span class="spdworf"></span><b>Mr. Dworf</b><br />Runs the cosmetic shop in upper Mainland.</div>
+</div>
 
 <div class="divider"></div>
 <div class="title">Open the Wardrobe</div>
@@ -16,6 +20,11 @@
 <p>Looks can come from cosmetic shops, exchanges, monsters, achievements, classes, equipment, events, and Cosmetic Jars. The gallery marks exchange, monster, class, and item sources with small letters.</p>
 
 <p>Some looks have limited copies. Equipping one does not consume it. Sending one to another character does.</p>
+
+<div class="guide-items">
+	<div><span class="ecosmo0"></span><b>New Armor</b><br />Give it to Haila for one random look.</div>
+	<div><span class="ecxjar"></span><b>CX Jar</b><br />Use it to unlock the appearance stored inside.</div>
+</div>
 
 <div class="divider"></div>
 <div class="title">Sharing Between Characters</div>
@@ -35,9 +44,17 @@ await equip_cx("hat"); // clear the hat slot
 
 await send_cx("YourOtherCharacter", "bwhat");</div>
 
+<script>
+	$(".sphaila").html(sprite(G.npcs.appearance.skin, { height: 62 }));
+	$(".spdworf").html(sprite(G.npcs.antip2w.skin, { height: 62 }));
+	$(".ecosmo0").html(item_container({ skin: G.items.cosmo0.skin }, { name: "cosmo0" }));
+	$(".ecxjar").html(item_container({ skin: G.items.cxjar.skin }, { name: "cxjar" }));
+</script>
+
 <style>
+	.guide-kicker{color:#9A4E91;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#77376F;font-size:44px;line-height:48px;margin:2px 0 12px}
 	.title{
-		color: #406944;
+		color: #77376F;
 		font-size: 36px;
 		margin-top: 15px;
 	}
@@ -48,4 +65,5 @@ await send_cx("YourOtherCharacter", "bwhat");</div>
 		margin-left: -26px;
 		margin-right: -26px;
 	}
+	.guide-faces,.guide-items{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.guide-faces>div,.guide-items>div{display:grid;grid-template-columns:70px 1fr;align-items:center;border:3px solid #C3A1BD;background:#F5EDF4;padding:10px}.guide-faces span,.guide-items span{grid-row:1/3;min-width:60px;text-align:center}.guide-faces b,.guide-items b{align-self:end}.guide-faces br,.guide-items br{display:none}@media(max-width:650px){.guide-faces,.guide-items{grid-template-columns:1fr}}
 </style>

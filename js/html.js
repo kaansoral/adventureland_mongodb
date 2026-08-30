@@ -282,14 +282,18 @@ function render_server() {
 	for (var context_index = 0; context_index < contexts.length; context_index++) {
 		var context = contexts[context_index],
 			definition = context.definition,
-			icon = definition.icon && G.items[definition.icon];
+			icon = definition.icon && G.items[definition.icon],
+			npc = context.npc,
+			context_title = ((npc && npc.name && npc.name + ": ") || "") + (definition.summary || definition.title);
 		html +=
 			" <div class='gamebutton' title='" +
-			html_escape(definition.summary || definition.title) +
+			html_escape(context_title) +
 			"' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_interaction_guide(\"" +
 			context.key +
 			"\")'>";
-		if (icon) html += "<div style='margin-top: -1px; margin-left: -3px; margin-right: -3px'>" + item_container({ skin: icon.skin, bcolor: "black" }) + "</div>";
+		if (npc && npc.skin) html += "<div style='height: 42px; min-width: 42px; overflow: hidden'>" + sprite(npc.skin, { height: 42 }) + "</div>";
+		else if (context.visual && context.visual.sprite) html += "<div style='height: 42px; min-width: 42px; overflow: hidden'>" + sprite(context.visual.sprite, { height: 42 }) + "</div>";
+		else if (icon) html += "<div style='margin-top: -1px; margin-left: -3px; margin-right: -3px'>" + item_container({ skin: icon.skin, bcolor: "black" }) + "</div>";
 		else html += "<div style='font-size: 32px; line-height: 42px; color:#69BE86'>?</div>";
 		html += "<div style='color:#69BE86; margin-top: 1px'>INFO</div></div>";
 		content = true;
@@ -400,7 +404,7 @@ function render_server() {
 	}
 	$("#serverinfo").html(html);
 	if (!content) $("#serverinfo").hide();
-	else $("#serverinfo").show();
+	else $("#serverinfo").css("display", "flex");
 }
 
 function render_character_sheet() {

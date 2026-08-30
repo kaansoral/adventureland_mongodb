@@ -2,6 +2,20 @@
 <div class="guide-title">Compounding</div>
 <p>Accessories and other compoundable items grow by combining three matching copies. All three must have the same item name and level.</p>
 
+<div class="guide-place">
+	<div class="spcompound"></div>
+	<div><b>Cue and the Shrine of Combinations</b><br />Use the three accessory slots, the compound-scroll slot, and the optional offering slot.</div>
+</div>
+
+<div class="guide-process">
+	<div class="process-item ecompound0"></div><span>+</span>
+	<div class="process-item ecompound1"></div><span>+</span>
+	<div class="process-item ecompound2"></div><span>+</span>
+	<div class="process-item ecscroll0"></div><span class="process-arrow">→</span>
+	<div class="process-item ecompoundresult"></div>
+</div>
+<div class="guide-process-caption">Three matching +0 accessories and one compatible scroll attempt to make one +1 accessory.</div>
+
 <div class="divider"></div>
 <div class="title mt15">One Attempt</div>
 <p>Visit a compound shrine. Place three matching items of the same level into its item slots, then add a compatible compound scroll. The shrine calculates the real chance for that exact set.</p>
@@ -15,8 +29,23 @@
 </div>
 
 <div class="divider"></div>
+<div class="title mt15">Scroll Grades</div>
+<p>Match the scroll to the item's current grade. A higher-grade scroll is also accepted and slightly improves the displayed chance.</p>
+<div class="guide-scrolls">
+	<div><span class="ecscroll-grade0"></span><b>Normal</b><br />Compound Scroll</div>
+	<div><span class="ecscroll-grade1"></span><b>High</b><br />High Compound Scroll</div>
+	<div><span class="ecscroll-grade2"></span><b>Rare</b><br />Rare Compound Scroll</div>
+	<div><span class="ecscroll-grade3"></span><b>Legendary</b><br />Legendary Compound Scroll</div>
+</div>
+<div class="guide-note">Exalted is the end of the item's compound path. There is no Exalted compound scroll because another attempt is not allowed.</div>
+
+<div class="divider"></div>
 <div class="title mt15">Offerings &amp; Grace</div>
 <p>An offering can improve the chance. Its grade matters, so compare the shrine percentage before committing it. Higher levels represent many consumed copies; plan the whole chain, not only the next roll.</p>
+<div class="guide-offerings">
+	<div><span class="eprimling"></span><b>Primling</b><br />An offering for upgrade and compound attempts.</div>
+	<div><span class="eprimordial"></span><b>Primordial Essence</b><br />A stronger offering; preview its exact effect first.</div>
+</div>
 <p>Previous attempts can contribute grace. The shrine includes it in the shown chance, so check the preview before each roll.</p>
 <div class="guide-note">A compoundable item becomes Exalted at the end of its defined path. At that point the server refuses another compound.</div>
 
@@ -44,8 +73,22 @@ compound_three("ringsj", 0, 0.9).catch(show_json);</div>
 <p>Useful references: <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_grade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_properties</span>.</p>
 <div class="guide-note">If <span class="dlabel">compound()</span> rejects, no compound started. If it returns <span class="dlabel">success: false</span>, the roll happened and all three accessories were lost.</div>
 
-<div class="guide-related">See also: <span onclick="hide_modal(); open_guide('upgrading',get_guide_url('upgrading'))">Upgrading</span> · <span onclick="hide_modal(); open_guide('crafting',get_guide_url('crafting'))">Crafting and Dismantling</span></div>
+<div class="guide-related">See also: <span onclick="hide_modal(); open_guide('items',get_guide_url('items'))">Items and Grades</span> · <span onclick="hide_modal(); open_guide('upgrading',get_guide_url('upgrading'))">Upgrading</span> · <span onclick="hide_modal(); open_guide('crafting',get_guide_url('crafting'))">Crafting and Dismantling</span></div>
+
+<script>
+	$(".spcompound").html(sprite(G.npcs.newupgrade.skin, { height: 62 }));
+	[".ecompound0", ".ecompound1", ".ecompound2"].forEach(function (selector) {
+		$(selector).html(item_container({ skin: G.items.ringsj.skin }, { name: "ringsj", level: 0 }));
+	});
+	$(".ecompoundresult").html(item_container({ skin: G.items.ringsj.skin }, { name: "ringsj", level: 1 }));
+	$(".ecscroll0").html(item_container({ skin: G.items.cscroll0.skin }, { name: "cscroll0" }));
+	["cscroll0", "cscroll1", "cscroll2", "cscroll3"].forEach(function (name, grade) {
+		$(".ecscroll-grade" + grade).html(item_container({ skin: G.items[name].skin }, { name: name }));
+	});
+	$(".eprimling").html(item_container({ skin: G.items.offeringp.skin }, { name: "offeringp" }));
+	$(".eprimordial").html(item_container({ skin: G.items.offering.skin }, { name: "offering" }));
+</script>
 
 <style>
-	.guide-kicker{color:#79559A;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#5F3E83;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#5F3E83;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #79559A;background:#ECE4F3;padding:10px 14px;margin:12px 0}.guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.guide-grid>div{border:3px solid #B4A5C2;padding:10px}.guide-step{background:#5F3E83;color:white;display:inline-block;margin-right:7px;min-width:25px;text-align:center}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#66408A;cursor:pointer;text-decoration:underline}@media(max-width:700px){.guide-grid{grid-template-columns:1fr}}
+	.guide-kicker{color:#79559A;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#5F3E83;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#5F3E83;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #79559A;background:#ECE4F3;padding:10px 14px;margin:12px 0}.guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.guide-grid>div{border:3px solid #B4A5C2;padding:10px}.guide-step{background:#5F3E83;color:white;display:inline-block;margin-right:7px;min-width:25px;text-align:center}.guide-place{display:flex;align-items:center;gap:14px;border:3px solid #B4A5C2;background:#F4EFF7;padding:10px 14px;margin:12px 0}.spcompound{min-width:60px;text-align:center}.guide-process{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;border:4px solid #79559A;background:#19151D;padding:12px;color:white;font-size:30px}.process-item{min-width:46px}.process-arrow{color:#D9B7F1;font-size:42px}.guide-process-caption{text-align:center;color:#666;margin:7px 0 14px}.guide-scrolls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.guide-scrolls>div,.guide-offerings>div{border:3px solid #B4A5C2;padding:10px;text-align:center}.guide-scrolls span{display:block;min-height:46px;margin-bottom:5px}.guide-offerings{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.guide-offerings>div{display:grid;grid-template-columns:62px 1fr;align-items:center;text-align:left}.guide-offerings span{grid-row:1/3}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#66408A;cursor:pointer;text-decoration:underline}@media(max-width:700px){.guide-grid{grid-template-columns:1fr}.guide-scrolls{grid-template-columns:1fr 1fr}}
 </style>

@@ -2,6 +2,18 @@
 <div class="guide-title">Upgrading</div>
 <p>Weapons, armor, and other upgradeable items grow one level at a time. Every normal attempt needs the item and a compatible upgrade scroll. An offering is optional.</p>
 
+<div class="guide-place">
+	<div class="spupgrade"></div>
+	<div><b>Cue and the Upgrade Shrine</b><br />Use the item slot, upgrade-scroll slot, and optional offering slot. The displayed chance is for exactly what you placed.</div>
+</div>
+
+<div class="guide-process">
+	<div class="process-item eupgrading0"></div><span>+</span>
+	<div class="process-item euscroll0"></div><span class="process-arrow">→</span>
+	<div class="process-item eupgrading1"></div>
+</div>
+<div class="guide-process-caption">An upgradeable +0 item and a compatible scroll attempt to make that item +1.</div>
+
 <div class="divider"></div>
 <div class="title mt15">One Attempt</div>
 <p>Visit an upgrade shrine and place the item and scroll into their marked slots. The shrine calculates the real chance for that exact item, scroll, offering, and character. Read it before pressing <span class="gamebutton gamebutton-small">UPGRADE</span>.</p>
@@ -15,8 +27,23 @@
 </div>
 
 <div class="divider"></div>
+<div class="title mt15">Scroll Grades</div>
+<p>Normal, High, Rare, and Legendary items need a scroll that supports their current grade. Stronger scrolls are accepted and can improve the shown chance.</p>
+<div class="guide-scrolls">
+	<div><span class="euscroll-grade0"></span><b>Normal</b><br />Upgrade Scroll</div>
+	<div><span class="euscroll-grade1"></span><b>High</b><br />High Upgrade Scroll</div>
+	<div><span class="euscroll-grade2"></span><b>Rare</b><br />Rare Upgrade Scroll</div>
+	<div><span class="euscroll-grade3"></span><b>Legendary</b><br />Legendary Upgrade Scroll</div>
+	<div><span class="euscroll-grade4"></span><b>Ultimate</b><br />Any non-Exalted grade</div>
+</div>
+
+<div class="divider"></div>
 <div class="title mt15">Offerings, Grace &amp; Stats</div>
 <p>Primlings, Primordial Essences, stronger offerings, and certain metals can improve a chance. Their strength matters: do not spend one until you have compared the percentage with and without it.</p>
+<div class="guide-offerings">
+	<div><span class="eprimling"></span><b>Primling</b><br />An offering for upgrade and compound attempts.</div>
+	<div><span class="eprimordial"></span><b>Primordial Essence</b><br />A stronger offering; preview its exact effect first.</div>
+</div>
 <p>Upgrade and compound history can build grace. The shrine already includes grace in the shown chance, so check the preview each time.</p>
 <p>Stat scrolls are different. They replace the selected stat on armor carrying a <span class="dlabel">Stat</span> attribute. Higher-grade armor consumes more copies of the stat scroll, and the shrine shows the required quantity.</p>
 <div class="guide-note">Exalted means the item has reached the end of its defined upgrade path. Different item families reach grades at different levels.</div>
@@ -42,8 +69,20 @@ upgrade_item("coat", "scroll0", 0.9).catch(show_json);</div>
 <p>Useful references: <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_grade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_properties</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">lock_item</span>.</p>
 <div class="guide-note">If <span class="dlabel">upgrade()</span> rejects, no upgrade started. If it returns <span class="dlabel">success: false</span>, the roll happened and the item was lost.</div>
 
-<div class="guide-related">Next: <span onclick="hide_modal(); open_guide('compounding',get_guide_url('compounding'))">Compounding</span> · <span onclick="hide_modal(); open_guide('item-maintenance',get_guide_url('item-maintenance'))">Item Maintenance</span></div>
+<div class="guide-related">See also: <span onclick="hide_modal(); open_guide('items',get_guide_url('items'))">Items and Grades</span> · <span onclick="hide_modal(); open_guide('compounding',get_guide_url('compounding'))">Compounding</span> · <span onclick="hide_modal(); open_guide('item-maintenance',get_guide_url('item-maintenance'))">Item Maintenance</span></div>
+
+<script>
+	$(".spupgrade").html(sprite(G.npcs.newupgrade.skin, { height: 62 }));
+	$(".eupgrading0").html(item_container({ skin: G.items.coat.skin }, { name: "coat", level: 0 }));
+	$(".eupgrading1").html(item_container({ skin: G.items.coat.skin }, { name: "coat", level: 1 }));
+	$(".euscroll0").html(item_container({ skin: G.items.scroll0.skin }, { name: "scroll0" }));
+	["scroll0", "scroll1", "scroll2", "scroll3", "scroll4"].forEach(function (name, grade) {
+		$(".euscroll-grade" + grade).html(item_container({ skin: G.items[name].skin }, { name: name }));
+	});
+	$(".eprimling").html(item_container({ skin: G.items.offeringp.skin }, { name: "offeringp" }));
+	$(".eprimordial").html(item_container({ skin: G.items.offering.skin }, { name: "offering" }));
+</script>
 
 <style>
-	.guide-kicker{color:#8A623B;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#2E6B43;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#406944;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #C78B37;background:#F3E8D4;padding:10px 14px;margin:12px 0}.guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.guide-grid>div{border:3px solid #A9B6A5;padding:10px}.guide-step{background:#406944;color:white;display:inline-block;margin-right:7px;min-width:25px;text-align:center}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#2B7B50;cursor:pointer;text-decoration:underline}@media(max-width:700px){.guide-grid{grid-template-columns:1fr}}
+	.guide-kicker{color:#8A623B;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#2E6B43;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#406944;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #C78B37;background:#F3E8D4;padding:10px 14px;margin:12px 0}.guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.guide-grid>div{border:3px solid #A9B6A5;padding:10px}.guide-step{background:#406944;color:white;display:inline-block;margin-right:7px;min-width:25px;text-align:center}.guide-place{display:flex;align-items:center;gap:14px;border:3px solid #A9B6A5;background:#EFF4ED;padding:10px 14px;margin:12px 0}.spupgrade{min-width:60px;text-align:center}.guide-process{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;border:4px solid #406944;background:#141B15;padding:12px;color:white;font-size:30px}.process-item{min-width:46px}.process-arrow{color:#9FCEA6;font-size:42px}.guide-process-caption{text-align:center;color:#666;margin:7px 0 14px}.guide-scrolls{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0}.guide-scrolls>div,.guide-offerings>div{border:3px solid #A9B6A5;padding:10px;text-align:center}.guide-scrolls span{display:block;min-height:46px;margin-bottom:5px}.guide-offerings{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.guide-offerings>div{display:grid;grid-template-columns:62px 1fr;align-items:center;text-align:left}.guide-offerings span{grid-row:1/3}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#2B7B50;cursor:pointer;text-decoration:underline}@media(max-width:700px){.guide-grid{grid-template-columns:1fr}.guide-scrolls{grid-template-columns:1fr 1fr}}
 </style>

@@ -342,7 +342,7 @@ docs = {
 		compounding: {
 			title: "Compounding",
 			article: "compounding",
-			icon: "ringsj",
+			icon: "cscroll0",
 			summary: "Combine three matching accessories into one stronger accessory.",
 			functions: ["compound", "item_grade", "item_properties"],
 			proximity: true,
@@ -406,10 +406,11 @@ docs = {
 		travel: {
 			title: "Travel, Doors & Instances",
 			article: "travel-and-instances",
-			icon: "computer",
+			icon: "stonekey",
 			summary: "Cross the world by foot, transporter, door, or keyed instance.",
 			functions: ["smart_move", "transport", "town", "use_nearest_door", "enter", "leave"],
 			proximity: true,
+			proximity_range: { npc: 120 },
 		},
 		events: {
 			title: "Events, Schedules & Home",
@@ -474,6 +475,7 @@ docs = {
 			summary: "A terminal from another age, with its own contained commands.",
 			functions: ["mainframe_command", "leave"],
 			proximity: true,
+			proximity_range: { quirk: 150 },
 		},
 		special: {
 			title: "Strange Interactions",
@@ -482,6 +484,7 @@ docs = {
 			summary: "Trees, levers, statues, and other unusual places reward careful experiments.",
 			functions: ["interact", "destroy"],
 			proximity: true,
+			proximity_range: { quirk: 160 },
 		},
 		jail: {
 			title: "Jail",
