@@ -173,7 +173,8 @@
 <tr><td>What guides and rules exist?</td><td>Read <span class="dlabel">adventureland://catalog/docs</span>, then use <span class="dlabel">get_doc</span> or the exact documentation resource.</td></tr>
 <tr><td>Which CODE function performs an action?</td><td>Search <span class="dlabel">list_code_methods</span> by action or concept, then read the exact contract with <span class="dlabel">get_code_method</span>.</td></tr>
 <tr><td>What does an item, skill, monster, map, drop, or recipe define?</td><td>Use <span class="dlabel">search_game_data</span>, then read the exact record with <span class="dlabel">get_game_data</span>. Read a complete section only when exact records are insufficient.</td></tr>
-<tr><td>What does this account own?</td><td>Use <span class="dlabel">mainframe_get_dashboard</span>, <span class="dlabel">mainframe_get_character</span>, and the CODE-slot tools. Saved profile fields may lag a running character.</td></tr>
+<tr><td>What does this account own?</td><td>Use <span class="dlabel">mainframe_get_dashboard</span>, <span class="dlabel">mainframe_get_character</span>, <span class="dlabel">get_bank</span>, and the CODE-slot tools. The bank tool reads the live game-server copy while a character has the bank open.</td></tr>
+<tr><td>How should this character improve?</td><td>Use <span class="dlabel">plan_character_progression</span>. It compares the live character with owned inventory and bank equipment through the game server's final-stat calculation.</td></tr>
 <tr><td>What is the character doing now?</td><td>Use current Mainframe character state and CODE logs. Current map, coordinates, target, party roster, equipment, inventory summary, shop listings, activity, XP, gold, death state, and game responses matter more than saved profile fields or request counters.</td></tr>
 <tr><td>How is the game implemented?</td><td>Use the shipped runner resource and the open-source paths below. Prefer live MCP definitions and contracts when production and a repository branch differ.</td></tr>
 </table>
@@ -182,7 +183,7 @@
 
 <table style="width:100%; text-align:left; border-spacing:12px 7px">
 <tr><th>Capability</th><th>Purpose</th></tr>
-<tr><td>Tools</td><td>Search game data, read documentation and CODE contracts, manage saved slots, and control owned Mainframe characters.</td></tr>
+<tr><td>Tools</td><td>Search game data, read documentation and CODE contracts, inspect owned items, plan character progression, manage saved slots, and control owned Mainframe characters.</td></tr>
 <tr><td>Resources</td><td>Load the game model, CODE architecture, globals, object and event references, Mainframe rules, live account state, and shipped runner source.</td></tr>
 <tr><td>Resource templates</td><td>Read one exact guide, function, game definition, saved slot, or owned character by URI.</td></tr>
 <tr><td>Prompts</td><td>Teach the AI the game, write character CODE, review a slot, or operate one Mainframe character through a consistent workflow.</td></tr>
@@ -215,6 +216,7 @@
 <tr><td><span class="dlabel">adventureland://source/runner-functions</span></td><td>The JavaScript runner functions shipped by the game.</td></tr>
 <tr><td><span class="dlabel">adventureland://account/dashboard</span></td><td>Owned characters, assignments, status, and account Mainframe state.</td></tr>
 <tr><td><span class="dlabel">adventureland://account/code-slots</span></td><td>Saved character CODE slots.</td></tr>
+<tr><td><span class="dlabel">adventureland://account/bank</span></td><td>Every owned bank pack and the shared bank gold.</td></tr>
 <tr><td><span class="dlabel">adventureland://game/servers</span></td><td>Available game servers.</td></tr>
 </table>
 
@@ -230,6 +232,7 @@
 <tr><td><span class="dlabel">adventureland://game-data/{section}/{name}</span></td><td>Read one item, skill, monster, map, recipe, or other game definition.</td></tr>
 <tr><td><span class="dlabel">adventureland://code/slots/{slot}</span></td><td>Read one owned CODE slot.</td></tr>
 <tr><td><span class="dlabel">adventureland://mainframe/characters/{character}</span></td><td>Read one owned character's Mainframe state.</td></tr>
+<tr><td><span class="dlabel">adventureland://progression/characters/{character}</span></td><td>Read a balanced-farming progression plan for one live owned character.</td></tr>
 </table>
 
 <p>Find exact names with <span class="dlabel">list_docs</span>, <span class="dlabel">list_code_methods</span>, <span class="dlabel">search_game_data</span>, <span class="dlabel">list_codes</span>, and <span class="dlabel">mainframe_get_dashboard</span>. Resource paths are validated and remain inside public or account-owned collections.</p>
@@ -240,6 +243,7 @@
 <tr><th>Prompt</th><th>Use</th></tr>
 <tr><td><span class="dlabel">learn_adventure_land</span></td><td>Load the game model without changing account state.</td></tr>
 <tr><td><span class="dlabel">research_gameplay</span></td><td>Answer a game, build, progression, economy, or content question from exact sources.</td></tr>
+<tr><td><span class="dlabel">improve_character</span></td><td>Start with native live-stat analysis and owned equipment instead of inventing a scoring routine in CODE.</td></tr>
 <tr><td><span class="dlabel">configure_samaritan_code</span></td><td>Adapt the Samaritan adventurer or merchant baseline to an owned character without silently enabling item mutations.</td></tr>
 <tr><td><span class="dlabel">write_character_code</span></td><td>Research the goal, character, and optional slot before writing CODE.</td></tr>
 <tr><td><span class="dlabel">review_character_code</span></td><td>Check an owned slot against exact contracts, game state, safety, and Mainframe compatibility.</td></tr>
@@ -253,6 +257,14 @@
 <p>Character automation should not use public, private, or party Chat as a programmable output channel. Do not call Chat functions on timers, advertise automatically, imitate conversation, answer players with generated text, or turn nearby player messages into commands. Use local CODE logs for diagnostics. Use <span class="dlabel">send_cm</span> only for small structured messages between explicitly trusted characters, validate the sender and payload, and rate-limit retries.</p>
 
 <p>Respect other players' fights and space. Do not attack a monster already targeting an unrelated player, repeatedly invite strangers, follow someone without consent, block a spawn, or create avoidable visual and request spam. Rate-limit helpful healing and buffs, and never let them move another player's gold or items. PvP actions, trading, mail, giveaways, NPC sales, public listings, bank movement, upgrades, compounds, exchanges, and purchases require clear rules and conservative limits.</p>
+
+<p><span class="dlabel">Native character progression</span></p>
+
+<p>Use <span class="dlabel">plan_character_progression</span> before asking an AI to invent item-scoring CODE. Choose <span class="dlabel">balanced_farming</span>, <span class="dlabel">damage</span>, <span class="dlabel">survival</span>, <span class="dlabel">support</span>, <span class="dlabel">gold</span>, <span class="dlabel">luck</span>, or <span class="dlabel">xp</span>. The character must be live so its game server can calculate the real final stats.</p>
+
+<p>The planner reads equipped items, inventory, owned scroll counts, and up to 600 equipment candidates from the account bank. It returns current stats and practical metrics, the best reversible replacement for each slot, useful stat-scroll changes, and the stat benefit and material readiness of the next upgrade level. It does not equip, scroll, upgrade, compound, buy, sell, or move anything.</p>
+
+<p>Equipment is compared one replacement at a time under the character's current conditions, party bonuses, fear, and map effects. Final stats and equip legality are authoritative, but the objective score cannot fully value every ability, proc, target defense, party role, or consumable cost. Review entries marked <span class="dlabel">mechanics_review</span> against exact game definitions. Treat stat scrolls and upgrades as proposals, then check materials, live success chance, cost, and risk before asking the player for approval.</p>
 
 <p><span class="dlabel">Samaritan starter CODE</span></p>
 

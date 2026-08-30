@@ -712,6 +712,8 @@ server_api.post("/eval", (req, res) => {
 	res.send(JSON.stringify(output));
 });
 
+eval("" + fs.readFileSync(path.resolve(__dirname, "progression_api.js")));
+
 app.use(server_def.api_path, server_api);
 
 function player_to_server(player, place) {

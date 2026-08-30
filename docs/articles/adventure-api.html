@@ -111,7 +111,7 @@
 <div class="api-guide">
 <p><span class="dlabel">Adventure Land JSON API</span></p>
 
-<p>The JSON API gives your programs structured access to Adventure Land game definitions, public CODE references, your saved CODE slots, and your Mainframe characters. It does not expose unrestricted character socket commands; run those through contained CODE on Mainframe.</p>
+<p>The JSON API gives your programs structured access to Adventure Land game definitions, public CODE references, owned items, native progression plans, saved CODE slots, and Mainframe characters. It does not expose unrestricted character socket commands; run those through contained CODE on Mainframe.</p>
 
 <p><span class="dlabel">Create a token</span></p>
 
@@ -157,6 +157,19 @@
 POST /mcp_api/get_game_data
 {"token":"YOUR_TOKEN","section":"items","name":"fireblade"}</pre>
 
+<p><span class="dlabel">Owned items and progression</span></p>
+
+<table style="width:100%; text-align:left; border-spacing:12px 7px">
+<tr><th>Method</th><th>Arguments</th><th>Result</th></tr>
+<tr><td>get_bank</td><td>None</td><td>Every owned bank pack and the shared bank gold. Reads the live game-server copy while the bank is open.</td></tr>
+<tr><td>plan_character_progression</td><td>character, objective?</td><td>Read-only equipment, stat-scroll, and next-upgrade recommendations from authoritative final stats, owned items, and scroll counts. The character must be live.</td></tr>
+</table>
+
+<p>The progression objective can be <span class="dlabel">balanced_farming</span>, <span class="dlabel">damage</span>, <span class="dlabel">survival</span>, <span class="dlabel">support</span>, <span class="dlabel">gold</span>, <span class="dlabel">luck</span>, or <span class="dlabel">xp</span>. The planner never equips, scrolls, upgrades, compounds, buys, sells, or moves an item.</p>
+
+<pre class="api-example">POST /mcp_api/plan_character_progression
+{"token":"YOUR_TOKEN","character":"Merlin","objective":"balanced_farming"}</pre>
+
 <p><span class="dlabel">Saved CODE</span></p>
 
 <table style="width:100%; text-align:left; border-spacing:12px 7px">
@@ -190,5 +203,5 @@ POST /mcp_api/get_game_data
 
 <p>Unknown and missing arguments fail closed. A token can only read or change CODE and characters owned by its account. Keep polling measured; the account API is not a combat loop.</p>
 
-<p>The live discovery response lists the current request limits. Standard reads, full game-data dumps, and writes have separate token buckets. A throttled request uses HTTP 429, returns <span class="dlabel">reason: "rate_limited"</span>, and includes both <span class="dlabel">Retry-After</span> and <span class="dlabel">retry_after_ms</span>.</p>
+<p>The live discovery response lists the current request limits. Standard reads, bulk bank and game-data reads, progression plans, and writes have separate token buckets. A throttled request uses HTTP 429, returns <span class="dlabel">reason: "rate_limited"</span>, and includes both <span class="dlabel">Retry-After</span> and <span class="dlabel">retry_after_ms</span>.</p>
 </div>

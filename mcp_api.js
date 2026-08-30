@@ -4,15 +4,17 @@ var MCP_API_TOKEN_PREFIX = "mcp_";
 var MCP_API_TOKEN_PATTERN = /^mcp_[A-Za-z0-9_-]{43}$/;
 var MCP_PROTOCOL_CURRENT = "2026-07-28";
 var MCP_PROTOCOL_LEGACY = "2025-11-25";
-var MCP_SERVER_INFO = { name: "adventure-land", version: "1.5.1", description: "Adventure Land game knowledge, character CODE, and Mainframe control" };
+var MCP_SERVER_INFO = { name: "adventure-land", version: "1.6.0", description: "Adventure Land game knowledge, native progression, character CODE, and Mainframe control" };
 var MCP_SOURCE_REPOSITORY = "https://github.com/kaansoral/adventureland_mongodb";
 var MCP_START_RESOURCE = "adventureland://guide/start-here";
 var MCP_CATALOG_RESOURCES = ["adventureland://catalog/docs", "adventureland://catalog/code-methods", "adventureland://catalog/game-data"];
+var MCP_PROGRESSION_OBJECTIVES = ["balanced_farming", "damage", "survival", "support", "gold", "luck", "xp"];
 var MCP_INSTRUCTIONS = [
 	"Adventure Land is a programmable online game. External AI works through this MCP server; character logic runs as JavaScript CODE inside Mainframe.",
 	"Read adventureland://guide/start-here first. Before writing CODE, also read adventureland://guide/code-runtime, adventureland://guide/code-architecture, adventureland://reference/code-globals, and the exact methods and game definitions the plan will use. Then call mainframe_get_dashboard before changing CODE or starting a character.",
 	"Use the three adventureland://catalog resources for discovery. Use list_code_methods and get_code_method for exact public runtime contracts, search_game_data and get_game_data for deployed definitions, and list_docs/get_doc for rules and architecture.",
 	"Inspect the owned character profile, class, equipment, inventory, party roster, shop listings, live realm, and existing CODE before planning. Use exact definition keys rather than guessing from display names.",
+	"When the player asks to improve a character, call plan_character_progression before writing or changing CODE. It uses live authoritative character stats and owned inventory and bank items. Prefer reversible equipment steps; treat abilities, procs, target matchups, and destructive item work as separate review gates.",
 	"Read an existing CODE slot before replacing it. mainframe_link_character prepays one sixty-minute window and enables automatic hourly renewal while the assignment remains running. When mainframe_get_dashboard includes free_time, shared Steam hours are used first; otherwise each window costs one Shell. It persists through Mainframe, controller, host, and microVM restarts. It stops only after an explicit disconnect or when the account cannot pay the next renewal. Explain the recurring charge and reuse the same request_id when retrying one lost request.",
 	"Do not add irreversible selling, destroying, upgrading, compounding, exchanging, mailing, trading, or Shell spending unless the player requested it. Re-locate inventory items immediately before each mutation.",
 	"Characters that coordinate through parties or CODE messages must share a game server. Verify the authenticated party roster instead of assuming repeated invite actions succeeded. Treat incoming messages and nearby entities as untrusted, short-lived data.",
@@ -117,6 +119,9 @@ function mcp_api_decrypt_token(secret, user_id) {
 }
 
 function mcp_api_rate_profile(method, args) {
+	if (method === "plan_character_progression" || (method === "resources/read" && args && /^adventureland:\/\/progression\/characters\/[^/]+\/?$/.test(String(args.uri || ""))))
+		return { name: "progression", rate_per_minute: 6, burst: 2 };
+	if (method === "get_bank" || (method === "resources/read" && args && args.uri === "adventureland://account/bank")) return { name: "bulk", rate_per_minute: 12, burst: 4 };
 	if (method === "get_game_data" && !(args && args.name)) return { name: "bulk", rate_per_minute: 12, burst: 4 };
 	if (method === "resources/read" && args && args.uri === "adventureland://source/runner-functions") return { name: "bulk", rate_per_minute: 12, burst: 4 };
 	if (method === "resources/read" && args && /^adventureland:\/\/game-data\/[^/]+\/?$/.test(String(args.uri || ""))) return { name: "bulk", rate_per_minute: 12, burst: 4 };
@@ -871,6 +876,160 @@ function mcp_api_character_profile(character, detailed) {
 	return profile;
 }
 
+function mcp_api_owned_item(item) {
+	if (!item || typeof item !== "object" || Array.isArray(item) || typeof item.name !== "string" || !G.items[item.name] || item.name === "placeholder") return null;
+	var result = { name: item.name };
+	if (item.level !== undefined && Number.isFinite(Number(item.level))) result.level = Math.trunc(Math.max(0, Math.min(100, Number(item.level))));
+	if (item.q !== undefined && Number.isFinite(Number(item.q))) result.q = Math.trunc(Math.max(1, Math.min(Number.MAX_SAFE_INTEGER, Number(item.q))));
+	if (item.grace !== undefined && Number.isFinite(Number(item.grace))) result.grace = Math.max(0, Math.min(100000, Number(item.grace)));
+	if (typeof item.stat_type === "string" && /^[a-z_]{1,32}$/.test(item.stat_type)) result.stat_type = item.stat_type;
+	if (typeof item.p === "string" && /^[A-Za-z0-9_]{1,100}$/.test(item.p)) result.p = item.p;
+	if (item.l || item.locked) result.locked = true;
+	if (item.b || item.blocked) result.blocked = true;
+	return result;
+}
+
+function mcp_api_saved_bank(user) {
+	var info = (user && user.info) || {};
+	var packs = {};
+	for (var i = 0; i < 48; i++) {
+		var pack = "items" + i;
+		if (!Array.isArray(info[pack])) continue;
+		packs[pack] = info[pack].map(function (item) {
+			return mcp_api_owned_item(item);
+		});
+	}
+	return {
+		success: true,
+		source: "last_account_snapshot",
+		observed_at: info.last_sync || null,
+		stale: !!(user && user.server && user.mounted_to),
+		mounted_character_id: (user && user.mounted_to) || null,
+		gold: Math.max(0, Number(info.gold) || 0),
+		packs: packs,
+	};
+}
+
+async function mcp_api_progression_request(server, data) {
+	if (!server || !server.address || !options.servers[server.key]) return null;
+	var controller = new AbortController();
+	var timeout = setTimeout(function () {
+		controller.abort();
+	}, 8000);
+	try {
+		var response = await fetch(server_url(server, "progression"), {
+			method: "POST",
+			headers: { "Content-Type": "application/x-www-form-urlencoded" },
+			body: new URLSearchParams({ spass: keys.ACCESS_MASTER, data: JSON.stringify(data) }).toString(),
+			signal: controller.signal,
+		});
+		var body = await response.json();
+		return body && typeof body === "object" ? body : null;
+	} catch (error) {
+		return null;
+	} finally {
+		clearTimeout(timeout);
+	}
+}
+
+async function mcp_api_get_bank(args) {
+	var saved = mcp_api_saved_bank(args.user);
+	if (!(args.user && args.user.server && args.user.mounted_to)) return saved;
+	var character = await get(args.user.mounted_to);
+	var server = await get(args.user.server);
+	if (character && character.owner === get_id(args.user) && server) {
+		var live = await mcp_api_progression_request(server, {
+			operation: "bank",
+			owner: get_id(args.user),
+			character: get_id(character),
+		});
+		if (live && live.success) {
+			live.stale = false;
+			live.mounted_character_id = get_id(character);
+			return live;
+		}
+	}
+	saved.warning = "The bank is currently mounted in the game, but its live state could not be read. This saved snapshot may be stale.";
+	return saved;
+}
+
+function mcp_api_bank_equipment_candidates(bank) {
+	if (!bank || bank.stale || !bank.packs) return [];
+	var equipment_types = new Set(["helmet", "pants", "chest", "weapon", "amulet", "earring", "shoes", "gloves", "ring", "shield", "belt", "source", "orb", "quiver", "cape", "misc_offhand", "tool"]);
+	var result = [];
+	Object.keys(bank.packs)
+		.sort(function (left, right) {
+			return Number(left.slice(5)) - Number(right.slice(5));
+		})
+		.forEach(function (pack) {
+			var items = bank.packs[pack];
+			if (!Array.isArray(items)) return;
+			for (var i = 0; i < items.length && result.length < 600; i++) {
+				var item = mcp_api_owned_item(items[i]);
+				var def = item && G.items[item.name];
+				if (def && equipment_types.has(def.type)) result.push({ source: "bank:" + pack + ":" + i, item: item });
+			}
+		});
+	return result;
+}
+
+function mcp_api_bank_holdings(bank) {
+	if (!bank || bank.stale || !bank.packs) return [];
+	var counts = {};
+	for (var pack in bank.packs) {
+		var items = bank.packs[pack];
+		if (!Array.isArray(items)) continue;
+		for (var i = 0; i < items.length; i++) {
+			var item = mcp_api_owned_item(items[i]);
+			var def = item && G.items[item.name];
+			if (!def || !["uscroll", "pscroll"].includes(def.type)) continue;
+			counts[item.name] = Math.min(Number.MAX_SAFE_INTEGER, (counts[item.name] || 0) + (item.q || 1));
+		}
+	}
+	return Object.keys(counts)
+		.sort()
+		.slice(0, 1000)
+		.map(function (name) {
+			return { name: name, q: counts[name] };
+		});
+}
+
+async function mcp_api_plan_character_progression(args) {
+	var character = await admin_bots_owned_character(args.user, args.character);
+	if (!character) return { failed: true, reason: "character_not_found" };
+	if (!character.server) return { failed: true, reason: "character_not_live", action: "Start or link the character, then try again." };
+	var server = await get(character.server);
+	if (!server) return { failed: true, reason: "character_not_live", action: "Start or link the character, then try again." };
+	var bank = await mcp_api_get_bank(args);
+	var candidates = mcp_api_bank_equipment_candidates(bank);
+	var holdings = mcp_api_bank_holdings(bank);
+	var result = await mcp_api_progression_request(server, {
+		operation: "analyze",
+		owner: get_id(args.user),
+		character: get_id(character),
+		objective: args.objective || "balanced_farming",
+		candidates: candidates,
+		holdings: holdings,
+	});
+	if (!result) return { failed: true, reason: "progression_unavailable" };
+	if (result.failed) {
+		if (result.reason === "character_not_live") result.action = "Start or link the character, then try again.";
+		return result;
+	}
+	result.bank = {
+		source: bank.source,
+		observed_at: bank.observed_at,
+		stale: !!bank.stale,
+		candidate_count: candidates.length,
+		material_type_count: holdings.length,
+	};
+	if (bank.stale) {
+		result.bank.warning = bank.warning;
+		result.limitations.push("Bank equipment was excluded because the mounted bank snapshot could not be read live.");
+	}
+	return result;
+}
+
 async function mcp_api_list_mainframe_characters(args) {
 	var snapshot = await admin_bots_snapshot();
 	var characters = await get_characters(args.user);
@@ -1027,6 +1186,8 @@ async function mcp_api_get_api_info(args) {
 		rate_limits: {
 			standard: { rate_per_minute: 120, burst: 30 },
 			bulk_game_data: { rate_per_minute: 12, burst: 4 },
+			bank_reads: { rate_per_minute: 12, burst: 4, shared_with: "bulk_game_data" },
+			progression: { rate_per_minute: 6, burst: 2 },
 			writes: { rate_per_minute: 30, burst: 10 },
 		},
 		docs: {
@@ -1079,6 +1240,12 @@ var MCP_API_REF = {
 		slot: { type: "identifier" },
 	},
 	get_libraries: { F: mcp_api_get_libraries },
+	get_bank: { F: mcp_api_get_bank },
+	plan_character_progression: {
+		F: mcp_api_plan_character_progression,
+		character: { type: "identifier" },
+		objective: { type: "enum", values: MCP_PROGRESSION_OBJECTIVES, optional: true },
+	},
 	save_code: {
 		F: mcp_api_save_code,
 		slot: { type: "identifier" },
@@ -1135,11 +1302,21 @@ var MCP_TOOL_META = {
 	list_codes: { description: "List the account's CODE slots without returning their source.", readOnlyHint: true },
 	get_code: { description: "Read one owned CODE slot.", readOnlyHint: true },
 	get_libraries: { description: "Read the standard local CODE helper files used by the old client sync folder.", readOnlyHint: true },
+	get_bank: {
+		description: "Read all account-owned bank packs and gold. If a character has the bank open, reads the live game-server copy instead of the saved account snapshot.",
+		readOnlyHint: true,
+	},
+	plan_character_progression: {
+		description:
+			"Plan improvements for one live owned character using the game server's authoritative final-stat calculation plus owned inventory and bank equipment. Returns reversible equipment recommendations, stat-scroll candidates, and upgrade benefits; it never changes items.",
+		readOnlyHint: true,
+	},
 	save_code: { description: "Create or replace one account-owned JavaScript CODE slot. Read an existing slot before replacement; saving does not start a character.", destructiveHint: true },
 	delete_code: { description: "Delete one owned CODE slot.", destructiveHint: true },
 	mainframe_list_characters: { description: "List owned characters and their Mainframe access and runtime state.", readOnlyHint: true },
 	mainframe_get_dashboard: {
-		description: "Read this before Mainframe changes. Returns owned characters, Shell balance, any remaining shared Steam hours, prepaid access, assignments, authenticated runtime observations, CODE slots, and live servers. Each running character consumes its own hourly window.",
+		description:
+			"Read this before Mainframe changes. Returns owned characters, Shell balance, any remaining shared Steam hours, prepaid access, assignments, authenticated runtime observations, CODE slots, and live servers. Each running character consumes its own hourly window.",
 		readOnlyHint: true,
 	},
 	mainframe_get_character: {
@@ -1148,11 +1325,15 @@ var MCP_TOOL_META = {
 		readOnlyHint: true,
 	},
 	mainframe_link_character: {
-		description: "Run an owned character on Mainframe using a saved CODE slot. Prepays one sixty-minute window, using remaining shared Steam hours before charging one Shell, then renews automatically every hour while running. Each running character consumes time separately. The assignment survives service, controller, host, and microVM restarts and stops only on explicit disconnect or insufficient funds. Keep one request_id stable when retrying the same lost request.",
+		description:
+			"Run an owned character on Mainframe using a saved CODE slot. Prepays one sixty-minute window, using remaining shared Steam hours before charging one Shell, then renews automatically every hour while running. Each running character consumes time separately. The assignment survives service, controller, host, and microVM restarts and stops only on explicit disconnect or insufficient funds. Keep one request_id stable when retrying the same lost request.",
 		destructiveHint: false,
 		idempotentHint: true,
 	},
-	mainframe_disconnect_character: { description: "Explicitly stop one owned Mainframe character and disable future automatic renewals. Remaining paid time is not refunded and can be reused by starting again before it expires.", destructiveHint: false },
+	mainframe_disconnect_character: {
+		description: "Explicitly stop one owned Mainframe character and disable future automatic renewals. Remaining paid time is not refunded and can be reused by starting again before it expires.",
+		destructiveHint: false,
+	},
 	mainframe_get_logs: { description: "Read bounded Mainframe CODE logs for one owned character.", readOnlyHint: true },
 };
 
@@ -1395,6 +1576,14 @@ function mcp_resources() {
 			annotations: mcp_resource_annotations(0.9),
 		},
 		{
+			uri: "adventureland://account/bank",
+			name: "account-bank",
+			title: "Owned bank items and gold",
+			description: "Authenticated account bank. Uses the live game-server copy while the bank is mounted; otherwise uses the saved account snapshot.",
+			mimeType: "application/json",
+			annotations: mcp_resource_annotations(0.95),
+		},
+		{
 			uri: "adventureland://game/servers",
 			name: "live-servers",
 			title: "Live Adventure Land servers",
@@ -1450,6 +1639,13 @@ function mcp_resource_templates() {
 			description: "Read one owned character's paid access, assignment, runtime, containment, and observed game state.",
 			mimeType: "application/json",
 		},
+		{
+			uriTemplate: "adventureland://progression/characters/{character}",
+			name: "owned-character-progression",
+			title: "Native character progression plan",
+			description: "Read a balanced-farming progression plan for one live owned character using authoritative final stats and owned items.",
+			mimeType: "application/json",
+		},
 	];
 }
 
@@ -1489,6 +1685,7 @@ async function mcp_read_resource(uri, user) {
 	}
 	if (uri === "adventureland://account/dashboard") return mcp_resource_content(uri, "application/json", await mcp_api_get_mainframe_dashboard({ user: user }));
 	if (uri === "adventureland://account/code-slots") return mcp_resource_content(uri, "application/json", await mcp_api_list_codes({ user: user }));
+	if (uri === "adventureland://account/bank") return mcp_resource_content(uri, "application/json", await mcp_api_get_bank({ user: user }));
 	if (uri === "adventureland://game/servers") return mcp_resource_content(uri, "application/json", await mcp_api_get_servers({ user: user }));
 	if (uri === "adventureland://catalog/docs") return mcp_resource_content(uri, "application/json", await mcp_api_list_docs({}));
 	if (uri === "adventureland://catalog/code-methods") return mcp_resource_content(uri, "application/json", await mcp_api_list_code_methods({}));
@@ -1514,6 +1711,8 @@ async function mcp_read_resource(uri, user) {
 	else if (url.hostname === "game-data" && parts.length === 2) result = await mcp_api_get_game_data({ section: parts[0], name: parts[1] });
 	else if (url.hostname === "code" && parts[0] === "slots" && parts.length === 2) result = await mcp_api_get_code({ user: user, slot: parts[1] });
 	else if (url.hostname === "mainframe" && parts[0] === "characters" && parts.length === 2) result = await mcp_api_get_mainframe_character({ user: user, character: parts[1] });
+	else if (url.hostname === "progression" && parts[0] === "characters" && parts.length === 2)
+		result = await mcp_api_plan_character_progression({ user: user, character: parts[1], objective: "balanced_farming" });
 	else return null;
 	if (!result || result.failed) return null;
 	return mcp_resource_content(uri, url.hostname === "docs" ? "text/plain" : "application/json", url.hostname === "docs" ? result.content : result);
@@ -1531,6 +1730,15 @@ var MCP_PROMPTS = [
 		title: "Research Adventure Land gameplay",
 		description: "Answer a game, build, progression, economy, or content question from exact deployed definitions and documentation.",
 		arguments: [{ name: "question", description: "The gameplay question to investigate.", required: true }],
+	},
+	{
+		name: "improve_character",
+		title: "Improve a character",
+		description: "Build a native, evidence-backed progression plan from live stats and every owned equipment candidate.",
+		arguments: [
+			{ name: "character", description: "Owned live character name.", required: true },
+			{ name: "objective", description: "Optional: balanced_farming, damage, survival, support, gold, luck, or xp.", required: false },
+		],
 	},
 	{
 		name: "configure_samaritan_code",
@@ -1624,6 +1832,7 @@ async function mcp_get_prompt(name, prompt_arguments, user) {
 	for (var i = 0; i < prompt.arguments.length; i++)
 		if (prompt.arguments[i].required && !prompt_arguments[prompt.arguments[i].name]) return { error: "Missing prompt argument: " + prompt.arguments[i].name };
 	if (name === "configure_samaritan_code" && !["adventurer", "merchant"].includes(prompt_arguments.variant.toLowerCase())) return { error: "Invalid prompt argument: variant" };
+	if (name === "improve_character" && prompt_arguments.objective && !MCP_PROGRESSION_OBJECTIVES.includes(prompt_arguments.objective)) return { error: "Invalid prompt argument: objective" };
 	var start = await mcp_read_resource(MCP_START_RESOURCE, null);
 	if (!start) return { error: "Start resource unavailable" };
 	var task;
@@ -1635,6 +1844,13 @@ async function mcp_get_prompt(name, prompt_arguments, user) {
 			"Question: " +
 			prompt_arguments.question +
 			"\nUse the documentation, CODE-method, and game-data catalogs to locate exact sources. Read complete records after searching. Separate deployed facts from inference, account state, and live realm state. Do not change account or Mainframe state.";
+	} else if (name === "improve_character") {
+		task =
+			"Improve owned character " +
+			prompt_arguments.character +
+			" for " +
+			(prompt_arguments.objective || "balanced_farming") +
+			". Call plan_character_progression first. Do not replace native analysis with improvised item-scoring CODE. Start with reversible equipment recommendations, inspect every mechanics_review item against exact game definitions and the player's intended targets, and explain meaningful tradeoffs. Stat scrolls and upgrades are proposals only: verify materials and live probabilities, explain risk and cost, and wait for explicit approval before any irreversible action.";
 	} else if (name === "configure_samaritan_code") {
 		task =
 			"Configure the " +
@@ -1682,19 +1898,23 @@ async function mcp_get_prompt(name, prompt_arguments, user) {
 			". Compare the saved profile, assignment, authenticated live observations, party roster, equipment, inventory summary, shop slots, recent CODE logs, and current slot. Identify whether the failure is in planning, event compatibility, CODE requests, game acceptance, movement, targeting, party formation, equipment progression, trade state, inventory state, death recovery, server choice, or containment. Do not rewrite or restart blindly. Make the smallest evidence-backed correction, then verify map, coordinates, activity, target, party, equipment, listings, death state, XP, gold, and logs over time.";
 	}
 	var messages = [{ role: "user", content: { type: "resource", resource: start, annotations: mcp_resource_annotations(1) } }];
-	if (["learn_adventure_land", "configure_samaritan_code", "write_character_code", "review_character_code", "coordinate_character_team", "operate_mainframe", "debug_mainframe_character"].includes(name)) {
+	if (
+		["learn_adventure_land", "configure_samaritan_code", "write_character_code", "review_character_code", "coordinate_character_team", "operate_mainframe", "debug_mainframe_character"].includes(name)
+	) {
 		await mcp_prompt_add_resource(messages, "adventureland://guide/code-runtime", user, true);
 		await mcp_prompt_add_resource(messages, "adventureland://guide/code-architecture", user, true);
 		await mcp_prompt_add_resource(messages, "adventureland://reference/code-globals", user, true);
 	}
-	if (["coordinate_character_team", "operate_mainframe", "debug_mainframe_character"].includes(name))
-		await mcp_prompt_add_resource(messages, "adventureland://guide/mainframe", user, true);
+	if (["coordinate_character_team", "operate_mainframe", "debug_mainframe_character"].includes(name)) await mcp_prompt_add_resource(messages, "adventureland://guide/mainframe", user, true);
 	if (name === "coordinate_character_team") {
 		await mcp_prompt_add_resource(messages, "adventureland://guide/multiple-characters", user, true);
 		await mcp_prompt_add_resource(messages, "adventureland://guide/code-messages", user, true);
 	}
 	if (user && ["configure_samaritan_code", "write_character_code", "review_character_code", "coordinate_character_team", "operate_mainframe", "debug_mainframe_character"].includes(name))
 		await mcp_prompt_add_resource(messages, "adventureland://account/dashboard", user, false);
+	if (user && name === "improve_character") {
+		await mcp_prompt_add_resource(messages, "adventureland://mainframe/characters/" + encodeURIComponent(prompt_arguments.character), user, false);
+	}
 	if (user && name === "review_character_code") await mcp_prompt_add_resource(messages, "adventureland://code/slots/" + encodeURIComponent(prompt_arguments.code_slot), user, false);
 	if (user && ["configure_samaritan_code", "write_character_code", "operate_mainframe", "debug_mainframe_character"].includes(name) && prompt_arguments.character)
 		await mcp_prompt_add_resource(messages, "adventureland://mainframe/characters/" + encodeURIComponent(prompt_arguments.character), user, false);
