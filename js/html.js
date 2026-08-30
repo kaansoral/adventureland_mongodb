@@ -277,15 +277,17 @@ function get_guide_url(name) {
 
 function render_server() {
 	var html = "",
-		content = false;
-	if (interaction_context) {
-		var definition = interaction_context.definition,
+		content = false,
+		contexts = interaction_contexts.length ? interaction_contexts : interaction_context ? [interaction_context] : [];
+	for (var context_index = 0; context_index < contexts.length; context_index++) {
+		var context = contexts[context_index],
+			definition = context.definition,
 			icon = definition.icon && G.items[definition.icon];
 		html +=
 			" <div class='gamebutton' title='" +
 			html_escape(definition.summary || definition.title) +
 			"' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_interaction_guide(\"" +
-			interaction_context.key +
+			context.key +
 			"\")'>";
 		if (icon) html += "<div style='margin-top: -1px; margin-left: -3px; margin-right: -3px'>" + item_container({ skin: icon.skin, bcolor: "black" }) + "</div>";
 		else html += "<div style='font-size: 32px; line-height: 42px; color:#69BE86'>?</div>";

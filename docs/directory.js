@@ -342,7 +342,7 @@ docs = {
 		compounding: {
 			title: "Compounding",
 			article: "compounding",
-			icon: "cscroll0",
+			icon: "ringsj",
 			summary: "Combine three matching accessories into one stronger accessory.",
 			functions: ["compound", "item_grade", "item_properties"],
 			proximity: true,

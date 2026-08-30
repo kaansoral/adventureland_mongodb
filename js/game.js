@@ -126,7 +126,8 @@ var map_tiles = [],
 	wtile_height = 0;
 var map_animations = {};
 var quirks = {},
-	interaction_context = null;
+	interaction_context = null,
+	interaction_contexts = [];
 var water_tiles = [],
 	last_water_frame = -1;
 var drawings = [],
@@ -945,9 +946,10 @@ function update_overlays() {
 function showhide_quirks_logic() {
 	if (!character) return;
 	var initial = quirks,
-		initial_context = interaction_context && interaction_context.key + "|" + interaction_context.npc_id;
+		initial_contexts = interaction_context_signature();
 	quirks = {};
 	interaction_context = null;
+	interaction_contexts = [];
 	// $(".quirks").hide();
 	(G.maps[character.map].quirks || []).forEach(function (q) {
 		if (q[4] != "info")
@@ -991,25 +993,55 @@ function showhide_quirks_logic() {
 		var c_distance = distance(character, map_npc);
 		consider_interaction_context(context.key, "npc:" + context.npc_id, c_distance, 190, context, 3);
 	}
-	var current_context = interaction_context && interaction_context.key + "|" + interaction_context.npc_id;
-	if (interaction_context && interaction_context.priority == 3) {
-		tut("visitnpc");
-		if (interaction_context.key == "shops") tut("visitshop");
-		if (interaction_context.key == "crafting") tut("craftsman");
-		if (interaction_context.key == "exchanges") tut("exchanger");
+	normalize_interaction_contexts();
+	var near_npc = false;
+	for (var context_index = 0; context_index < interaction_contexts.length; context_index++) {
+		var nearby_context = interaction_contexts[context_index];
+		if (nearby_context.priority != 3) continue;
+		near_npc = true;
+		if (nearby_context.key == "shops") tut("visitshop");
+		if (nearby_context.key == "crafting") tut("craftsman");
+		if (nearby_context.key == "exchanges") tut("exchanger");
 	}
-	if (JSON.stringify(initial) !== JSON.stringify(quirks) || initial_context !== current_context) render_server();
+	if (near_npc) tut("visitnpc");
+	if (JSON.stringify(initial) !== JSON.stringify(quirks) || initial_contexts !== interaction_context_signature()) render_server();
 }
 
 function consider_interaction_context(key, id, c_distance, range, context, priority) {
 	var definition = G.docs && G.docs.interactions && G.docs.interactions[key];
 	if (!definition || definition.status || !definition.proximity || c_distance >= (range || 190)) return;
 	priority = priority || 1;
+	var candidate = context || { key: key, definition: definition };
+	candidate.npc_id = id;
+	candidate.distance = c_distance;
+	candidate.priority = priority;
+	interaction_contexts.push(candidate);
 	if (interaction_context && (interaction_context.priority > priority || (interaction_context.priority == priority && interaction_context.distance <= c_distance))) return;
-	interaction_context = context || { key: key, definition: definition };
-	interaction_context.npc_id = id;
-	interaction_context.distance = c_distance;
-	interaction_context.priority = priority;
+	interaction_context = candidate;
+}
+
+function normalize_interaction_contexts() {
+	interaction_contexts.sort(function (a, b) {
+		if (a.priority != b.priority) return b.priority - a.priority;
+		return a.distance - b.distance;
+	});
+	var unique = [],
+		seen = {};
+	for (var i = 0; i < interaction_contexts.length; i++) {
+		var context_key = "$" + interaction_contexts[i].key;
+		if (seen[context_key]) continue;
+		seen[context_key] = true;
+		unique.push(interaction_contexts[i]);
+	}
+	interaction_contexts = unique;
+}
+
+function interaction_context_signature() {
+	return interaction_contexts
+		.map(function (context) {
+			return context.key + "|" + context.npc_id;
+		})
+		.join(",");
 }
 
 function get_npc_interaction_context(npc) {
