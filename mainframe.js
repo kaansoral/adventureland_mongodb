@@ -2,7 +2,47 @@ var MAINFRAME_PERIOD_MS = 60 * 60 * 1000;
 var MAINFRAME_PERIOD_SHELLS = 1;
 var MAINFRAME_REQUEST_PATTERN = /^[A-Za-z0-9_.:@-]{16,100}$/;
 var MAINFRAME_CODE_SLOT_PATTERN = /^[A-Za-z0-9_.+ -]{1,100}$/;
-var MAINFRAME_ASSIGNMENT_CONTROLLER = "usd2";
+var MAINFRAME_CONTROLLER_COLLECTION = "admin_bots_control";
+var MAINFRAME_CONTROLLERS = Object.freeze({
+	w1: Object.freeze({ capacity: 300 }),
+	usd2: Object.freeze({ capacity: 100 }),
+});
+
+function mainframe_controller_ids() {
+	return Object.keys(MAINFRAME_CONTROLLERS);
+}
+
+function mainframe_controller_is_known(agent_id) {
+	return Object.prototype.hasOwnProperty.call(MAINFRAME_CONTROLLERS, agent_id);
+}
+
+function mainframe_preferred_controller(server) {
+	return server && /^US\s/i.test(server.label || "") ? "usd2" : "w1";
+}
+
+async function mainframe_select_controller(server, required_controller) {
+	if (required_controller && !mainframe_controller_is_known(required_controller)) return null;
+	var ids = mainframe_controller_ids();
+	var documents = await db.collection(MAINFRAME_CONTROLLER_COLLECTION).find({ _id: { $in: ids } }).limit(ids.length).toArray();
+	var by_id = {};
+	for (var document of documents) by_id[document._id] = document;
+	var preferred = required_controller || mainframe_preferred_controller(server);
+	var order = [preferred].concat(
+		ids.filter(function (agent_id) {
+			return agent_id !== preferred;
+		}),
+	);
+	for (var agent_id of order) {
+		var document = by_id[agent_id];
+		var updated = document && document.updated ? new Date(document.updated) : null;
+		var online = updated && Number.isFinite(updated.getTime()) && Date.now() - updated.getTime() < 10000;
+		var active = ((document && document.report && document.report.bots) || []).filter(function (bot) {
+			return bot && (bot.desired_state === "running" || ["loading_code", "starting", "bootstrapped", "running", "stopping"].includes(bot.phase));
+		}).length;
+		if (online && active < MAINFRAME_CONTROLLERS[agent_id].capacity) return agent_id;
+	}
+	return null;
+}
 
 function mainframe_access_record_id(character_id) {
 	return "MK_mainframe_access-" + character_id;
@@ -78,6 +118,8 @@ async function mainframe_begin_assignment(user, character, request_id, options) 
 	if (!code_slot) return { failed: true, reason: "code_not_found" };
 	var server = await mainframe_resolve_server(options.server);
 	if (!server) return { failed: true, reason: "server_not_found" };
+	var selected_controller = await mainframe_select_controller(server, options.controller);
+	if (!selected_controller) return { failed: true, reason: "mainframe_unavailable" };
 	var now = new Date();
 	var user_id = get_id(user);
 	var character_id = get_id(character);
@@ -146,7 +188,7 @@ async function mainframe_begin_assignment(user, character, request_id, options) 
 				existing.auth = auth;
 			}
 			existing.character_name = current_character.info.name;
-			existing.controller = MAINFRAME_ASSIGNMENT_CONTROLLER;
+			existing.controller = existing.desired_state === "running" && mainframe_controller_is_known(existing.controller) ? existing.controller : A.controller;
 			existing.server_key = A.server.key;
 			existing.server_label = A.server.label;
 			existing.connection_url = A.server.url;
@@ -190,6 +232,7 @@ async function mainframe_begin_assignment(user, character, request_id, options) 
 			assignment_id: assignment_id,
 			server: server,
 			code_slot: code_slot,
+			controller: selected_controller,
 			now: now,
 		},
 		3,
@@ -271,7 +314,7 @@ async function mainframe_renew_assignment(source, now) {
 				assignment.owner !== A.user_id ||
 				assignment.character !== A.character_id ||
 				assignment.session_id !== A.session_id ||
-				assignment.controller !== MAINFRAME_ASSIGNMENT_CONTROLLER ||
+				!mainframe_controller_is_known(assignment.controller) ||
 				assignment.desired_state !== "running"
 			) {
 				R.state = "inactive";
@@ -404,7 +447,7 @@ async function mainframe_renew_assignment(source, now) {
 }
 
 async function mainframe_controller_assignments(agent_id) {
-	if (agent_id !== MAINFRAME_ASSIGNMENT_CONTROLLER) return [];
+	if (!mainframe_controller_is_known(agent_id)) return [];
 	var now = new Date();
 	await mainframe_renew_access(now);
 	var assignments = await db
@@ -416,7 +459,7 @@ async function mainframe_controller_assignments(agent_id) {
 			access_until: { $gt: now },
 			$or: [{ start_after: null }, { start_after: { $exists: false } }, { start_after: { $lte: now } }],
 		})
-		.limit(100)
+		.limit(MAINFRAME_CONTROLLERS[agent_id].capacity)
 		.toArray();
 	return assignments
 		.map(function (assignment) {
@@ -464,7 +507,8 @@ async function mainframe_controller_assignments(agent_id) {
 		.filter(Boolean);
 }
 
-async function mainframe_record_controller_failures(report) {
+async function mainframe_record_controller_failures(report, agent_id) {
+	if (!mainframe_controller_is_known(agent_id)) return 0;
 	var failures = (report && report.bots ? report.bots : []).filter(function (bot) {
 		return bot.character_id && bot.assignment_id && bot.failure && bot.failure.assignment_id === bot.assignment_id;
 	});
@@ -478,7 +522,7 @@ async function mainframe_record_controller_failures(report) {
 					!assignment ||
 					assignment.session_id !== A.session_id ||
 					assignment.desired_state !== "running" ||
-					assignment.controller !== MAINFRAME_ASSIGNMENT_CONTROLLER
+					assignment.controller !== A.controller
 				)
 					return;
 				assignment.failure = A.failure;
@@ -490,6 +534,7 @@ async function mainframe_record_controller_failures(report) {
 				assignment_id: mainframe_assignment_record_id(bot.character_id),
 				session_id: bot.assignment_id,
 				failure: { code: bot.failure.code, at: bot.failure.at || now },
+				controller: agent_id,
 				now: now,
 			},
 			3,
@@ -567,6 +612,7 @@ async function mainframe_code_action(body) {
 		return await mainframe_begin_assignment(owner, target, "code:" + assignment.session_id + ":" + body.request_id, {
 			code_slot: data.code_slot,
 			server: assignment.server_key,
+			controller: assignment.controller,
 		});
 	}
 	if (body.operation === "stop_character") {
@@ -669,7 +715,7 @@ async function mainframe_renew_access(now) {
 	var expired_assignments = await db
 		.collection("mark")
 		.find({ type: "mainframe_assignment", desired_state: "running", access_until: { $lte: now } })
-		.limit(100)
+		.limit(400)
 		.toArray();
 	var renewed = 0;
 	var stopped = 0;

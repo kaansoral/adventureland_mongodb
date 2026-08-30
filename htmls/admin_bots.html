@@ -110,6 +110,9 @@
 			.runner.offline {
 				border-color: var(--red);
 			}
+			.runner.degraded {
+				border-color: var(--gold);
+			}
 			.dot {
 				width: 12px;
 				height: 12px;
@@ -122,6 +125,9 @@
 			.phase-running .dot {
 				background: var(--green);
 				box-shadow: 0 0 10px rgba(103, 200, 92, 0.55);
+			}
+			.degraded .dot {
+				background: var(--gold);
 			}
 			.offline .dot,
 			.phase-failed .dot {
@@ -290,7 +296,7 @@
 				var inactiveBotsNode = document.getElementById("inactive-bots");
 				var runnerNode = document.getElementById("runner");
 				var errorNode = document.getElementById("error");
-				var fleetCapacity = 100;
+				var fleetCapacity = 0;
 				function text(value) {
 					return value === undefined || value === null || value === "" ? "—" : String(value);
 				}
@@ -356,6 +362,7 @@
 					metrics.className = "metrics";
 					metrics.append(
 						metric("Game", bot.game_connected ? "Connected" : "Disconnected"),
+						metric("Mainframe", text(bot.controller_id).toUpperCase()),
 						metric("Observed state", text(observation.activity)),
 						metric("Observed position", observation.map ? observation.map + " " + number(observation.x, 0) + ", " + number(observation.y, 0) : "—"),
 						metric("Observed age", duration(observation.age_ms)),
@@ -412,6 +419,7 @@
 					return card;
 				}
 				function renderFleet(state, active, inactive) {
+					fleetCapacity = Number(state.capacity) || 0;
 					var bots = state.bots || [];
 					var totals = active.reduce(function (result, bot) {
 						var containment = bot.containment || {};
@@ -436,7 +444,8 @@
 						if (bot.failure && !isActive(bot)) totals.failed += 1;
 					});
 					var fleet = document.getElementById("fleet");
-					fleet.replaceChildren(
+					var alertMetric = metric("Alerts", totals.oom + " OOM / " + totals.failures + " probes / " + totals.failed + " failed / " + totals.stuck + " stuck");
+					var summary = [
 						metric("Active sessions", active.length + " / " + fleetCapacity),
 						metric("Available slots", Math.max(0, fleetCapacity - active.length)),
 						metric("Game connected", totals.connected + " / " + active.length),
@@ -449,16 +458,32 @@
 						metric("Isolated identities", totals.identities.size + " / " + active.length),
 						metric("Guest hardening", totals.hardened + " / " + active.length),
 						metric("Stopped configs", inactive.length),
-						metric("Alerts", totals.oom + " OOM / " + totals.failures + " probes / " + totals.failed + " failed / " + totals.stuck + " stuck")
-					);
-					if (totals.oom || totals.failures || totals.failed || totals.stuck) fleet.lastElementChild.classList.add("warning");
+						alertMetric,
+					];
+					(state.controllers || []).forEach(function (controller) {
+						summary.push(
+							metric(
+								controller.id.toUpperCase() + " Mainframe",
+								(controller.online ? "Online" : "Offline") + " / " + controller.active + " / " + controller.capacity,
+							),
+						);
+					});
+					fleet.replaceChildren.apply(fleet, summary);
+					if (totals.oom || totals.failures || totals.failed || totals.stuck) alertMetric.classList.add("warning");
 				}
 				function render(state) {
-					runnerNode.className = "runner " + (state.online ? "online" : "offline");
-					document.getElementById("runner-state").textContent = state.online ? "Mainframe online" : "Mainframe offline";
-					document.getElementById("runner-detail").textContent = state.updated_at
-						? "Controller " + text(state.controller_version) + " / last report " + new Date(state.updated_at).toLocaleString()
-						: "No Mainframe report yet.";
+					var health = state.all_online ? "online" : state.online ? "degraded" : "offline";
+					runnerNode.className = "runner " + health;
+					document.getElementById("runner-state").textContent = state.all_online
+						? "Both Mainframes online"
+						: state.online
+							? "Mainframe capacity reduced"
+							: "Mainframe offline";
+					document.getElementById("runner-detail").textContent = (state.controllers || [])
+						.map(function (controller) {
+							return controller.id.toUpperCase() + " " + (controller.online ? "online" : "offline") + " (" + controller.active + "/" + controller.capacity + ")";
+						})
+						.join(" / ") || "No Mainframe report yet.";
 					var active = (state.bots || []).filter(isActive);
 					var inactive = (state.bots || []).filter(function (bot) { return !isActive(bot); });
 					renderFleet(state, active, inactive);

@@ -2,7 +2,6 @@ var ADMIN_BOTS_COLLECTION = "admin_bots_control";
 var ADMIN_BOTS_MAX_REPORT_BYTES = 512 * 1024;
 var ADMIN_MAINFRAME_CODE_MAX_BYTES = 1150 * 1024;
 var ADMIN_BOTS_COMMAND_TTL_MS = 60 * 1000;
-var ADMIN_BOTS_AGENT_ID = "usd2";
 var ADMIN_BOTS_CONTROL_SECRET = null;
 try {
 	ADMIN_BOTS_CONTROL_SECRET = require("./secretsandconfig/bots_usd2_controller.json");
@@ -12,8 +11,9 @@ function admin_bots_configured() {
 	return !!(ADMIN_BOTS_CONTROL_SECRET && ADMIN_BOTS_CONTROL_SECRET.control_token);
 }
 
-function admin_bots_agent_id() {
-	return admin_bots_configured() ? ADMIN_BOTS_AGENT_ID : "";
+function admin_bots_controller_token(agent_id) {
+	if (!admin_bots_configured() || !mainframe_controller_is_known(agent_id)) return "";
+	return crypto.createHmac("sha256", ADMIN_BOTS_CONTROL_SECRET.control_token).update("mainframe-controller:" + agent_id, "utf8").digest("base64url");
 }
 
 function admin_bots_safe_equal(left, right) {
@@ -23,10 +23,11 @@ function admin_bots_safe_equal(left, right) {
 	return left_buffer.length === right_buffer.length && crypto.timingSafeEqual(left_buffer, right_buffer);
 }
 
-function admin_bots_agent_authorized(req) {
-	if (!admin_bots_configured()) return false;
+function admin_bots_agent_authorized(req, agent_id) {
+	var token = admin_bots_controller_token(agent_id);
+	if (!token) return false;
 	var authorization = String(req.get("authorization") || "");
-	return admin_bots_safe_equal(authorization, "Bearer " + ADMIN_BOTS_CONTROL_SECRET.control_token);
+	return admin_bots_safe_equal(authorization, "Bearer " + token);
 }
 
 function admin_bots_number(value, minimum, maximum) {
@@ -91,7 +92,7 @@ function admin_bots_clean_containment(containment) {
 	var limits = containment.limits && typeof containment.limits === "object" ? containment.limits : {};
 	return {
 		sampled_at: admin_bots_text(containment.sampled_at, 40) || null,
-		identity_slot: admin_bots_number(containment.identity_slot, 0, 99),
+		identity_slot: admin_bots_number(containment.identity_slot, 0, 299),
 		kvm_pit_cgrouped: containment.kvm_pit_cgrouped === true,
 		uptime_seconds: admin_bots_number(containment.uptime_seconds, 0, Number.MAX_SAFE_INTEGER),
 		memory_current_bytes: admin_bots_number(containment.memory_current_bytes, 0, Number.MAX_SAFE_INTEGER),
@@ -288,7 +289,7 @@ function admin_bots_clean_bot(bot) {
 }
 
 function admin_bots_clean_report(report) {
-	var bots = Array.isArray(report && report.bots) ? report.bots.slice(0, 100) : [];
+	var bots = Array.isArray(report && report.bots) ? report.bots.slice(0, 300) : [];
 	return {
 		version: 1,
 		controller_version: admin_bots_text(report && report.controller_version, 40),
@@ -297,28 +298,68 @@ function admin_bots_clean_report(report) {
 	};
 }
 
-async function admin_bots_document() {
-	if (!admin_bots_configured()) return null;
-	return await db.collection(ADMIN_BOTS_COLLECTION).findOne({ _id: admin_bots_agent_id() });
+async function admin_bots_document(agent_id) {
+	if (!admin_bots_configured() || !mainframe_controller_is_known(agent_id)) return null;
+	return await db.collection(ADMIN_BOTS_COLLECTION).findOne({ _id: agent_id });
 }
 
 async function admin_bots_snapshot() {
-	var document = await admin_bots_document();
-	var report = (document && document.report) || { bots: [] };
-	var updated = document && document.updated ? new Date(document.updated) : null;
-	var age_ms = updated && Number.isFinite(updated.getTime()) ? Date.now() - updated.getTime() : null;
-	var pending = {};
-	for (var command of (document && document.commands) || []) pending[command.bot_id] = command.desired_state;
+	var ids = mainframe_controller_ids();
+	var documents = admin_bots_configured()
+		? await db.collection(ADMIN_BOTS_COLLECTION).find({ _id: { $in: ids } }).limit(ids.length).toArray()
+		: [];
+	var by_id = {};
+	for (var document of documents) by_id[document._id] = document;
+	var controllers = [];
+	var bots = [];
+	var latest_updated = null;
+	for (var agent_id of ids) {
+		var document = by_id[agent_id];
+		var report = (document && document.report) || { bots: [] };
+		var updated = document && document.updated ? new Date(document.updated) : null;
+		var age_ms = updated && Number.isFinite(updated.getTime()) ? Date.now() - updated.getTime() : null;
+		var online = age_ms !== null && age_ms < 10000;
+		var pending = {};
+		for (var command of (document && document.commands) || []) pending[command.bot_id] = command.desired_state;
+		controllers.push({
+			id: agent_id,
+			online: online,
+			capacity: MAINFRAME_CONTROLLERS[agent_id].capacity,
+			controller_version: admin_bots_text(report.controller_version, 40) || null,
+			updated_at: updated ? updated.toISOString() : null,
+			age_ms: age_ms,
+			active: online
+				? (report.bots || []).filter(function (bot) {
+						return bot.desired_state === "running" || ["loading_code", "starting", "bootstrapped", "running", "stopping"].includes(bot.phase);
+					}).length
+				: 0,
+		});
+		if (updated && (!latest_updated || updated > latest_updated)) latest_updated = updated;
+		if (online) {
+			for (var bot of report.bots || []) {
+				bots.push(Object.assign({}, bot, { controller_id: agent_id, pending_state: pending[bot.bot_id] || null }));
+			}
+		}
+	}
 	return {
 		success: true,
 		configured: admin_bots_configured(),
-		online: age_ms !== null && age_ms < 10000,
-		controller_version: admin_bots_text(report.controller_version, 40) || null,
-		updated_at: updated ? updated.toISOString() : null,
-		age_ms: age_ms,
-		bots: (report.bots || []).map(function (bot) {
-			return Object.assign({}, bot, { pending_state: pending[bot.bot_id] || null });
+		online: controllers.some(function (controller) {
+			return controller.online;
 		}),
+		all_online: controllers.every(function (controller) {
+			return controller.online;
+		}),
+		capacity: controllers.reduce(function (total, controller) {
+			return total + (controller.online ? controller.capacity : 0);
+		}, 0),
+		configured_capacity: controllers.reduce(function (total, controller) {
+			return total + controller.capacity;
+		}, 0),
+		controllers: controllers,
+		updated_at: latest_updated ? latest_updated.toISOString() : null,
+		age_ms: latest_updated ? Date.now() - latest_updated.getTime() : null,
+		bots: bots,
 	};
 }
 
@@ -335,7 +376,7 @@ async function admin_mainframe_snapshot() {
 		? await db
 				.collection("mark")
 				.find({ _id: { $in: character_mark_ids } })
-				.limit(100)
+				.limit(400)
 				.toArray()
 		: [];
 	var access_ids = snapshot.bots
@@ -349,7 +390,7 @@ async function admin_mainframe_snapshot() {
 		? await db
 				.collection("mark")
 				.find({ _id: { $in: access_ids } })
-				.limit(100)
+				.limit(400)
 				.toArray()
 		: [];
 	var access_by_id = {};
@@ -389,7 +430,7 @@ async function admin_bots_queue_state(bot_id, desired_state, requested_by) {
 		created_at: now,
 		expires_at: new Date(now.getTime() + ADMIN_BOTS_COMMAND_TTL_MS),
 	};
-	var result = await db.collection(ADMIN_BOTS_COLLECTION).updateOne({ _id: admin_bots_agent_id(), "commands.99": { $exists: false } }, { $push: { commands: command } });
+	var result = await db.collection(ADMIN_BOTS_COLLECTION).updateOne({ _id: bot.controller_id, "commands.99": { $exists: false } }, { $push: { commands: command } });
 	if (!result.matchedCount) return { failed: true, reason: "bots_busy" };
 	return { success: true, queued: true, command_id: command.id, bot: Object.assign({}, bot, { pending_state: desired_state }) };
 }
@@ -403,11 +444,12 @@ async function admin_bots_owned_character(user, name) {
 
 app.post("/internal/bots/control", async function (req, res) {
 	res.set("Cache-Control", "no-store");
-	if (!admin_bots_agent_authorized(req)) return res.status(401).send({ failed: true, reason: "unauthorized" });
 	var body = req.body;
 	if (!body || typeof body !== "object" || Array.isArray(body)) return res.status(400).send({ failed: true, reason: "invalid_body" });
+	if (!mainframe_controller_is_known(body.agent_id)) return res.status(400).send({ failed: true, reason: "invalid_agent" });
+	if (!admin_bots_agent_authorized(req, body.agent_id)) return res.status(401).send({ failed: true, reason: "unauthorized" });
 	if (Buffer.byteLength(JSON.stringify(body), "utf8") > ADMIN_BOTS_MAX_REPORT_BYTES) return res.status(413).send({ failed: true, reason: "report_too_large" });
-	if (body.version !== 1 || body.agent_id !== admin_bots_agent_id()) return res.status(400).send({ failed: true, reason: "invalid_agent" });
+	if (body.version !== 1) return res.status(400).send({ failed: true, reason: "invalid_version" });
 	var completed = Array.isArray(body.completed) ? body.completed.slice(0, 20) : [];
 	if (
 		!completed.every(function (id) {
@@ -419,16 +461,16 @@ app.post("/internal/bots/control", async function (req, res) {
 	var report = admin_bots_clean_report(body.report || {});
 	var pull = { expires_at: { $lt: now } };
 	if (completed.length) pull = { $or: [{ id: { $in: completed } }, { expires_at: { $lt: now } }] };
-	await db.collection(ADMIN_BOTS_COLLECTION).updateOne({ _id: admin_bots_agent_id() }, { $setOnInsert: { created: now, commands: [] } }, { upsert: true });
+	await db.collection(ADMIN_BOTS_COLLECTION).updateOne({ _id: body.agent_id }, { $setOnInsert: { created: now, commands: [] } }, { upsert: true });
 	await db.collection(ADMIN_BOTS_COLLECTION).updateOne(
-		{ _id: admin_bots_agent_id() },
+		{ _id: body.agent_id },
 		{
 			$set: { report: report, updated: now },
 			$pull: { commands: pull },
 		},
 	);
-	await mainframe_record_controller_failures(report);
-	var document = await admin_bots_document();
+	await mainframe_record_controller_failures(report, body.agent_id);
+	var document = await admin_bots_document(body.agent_id);
 	var commands = ((document && document.commands) || []).slice(0, 10).map(function (command) {
 		return { id: command.id, bot_id: command.bot_id, desired_state: command.desired_state };
 	});
@@ -438,14 +480,14 @@ app.post("/internal/bots/control", async function (req, res) {
 
 app.post("/internal/mainframe/code", async function (req, res) {
 	res.set("Cache-Control", "no-store");
-	if (!admin_bots_agent_authorized(req)) return res.status(401).send({ failed: true, reason: "unauthorized" });
 	var body = req.body;
 	if (!body || typeof body !== "object" || Array.isArray(body)) return res.status(400).send({ failed: true, reason: "invalid_body" });
+	if (!mainframe_controller_is_known(body.agent_id)) return res.status(400).send({ failed: true, reason: "invalid_agent" });
+	if (!admin_bots_agent_authorized(req, body.agent_id)) return res.status(401).send({ failed: true, reason: "unauthorized" });
 	if (Buffer.byteLength(JSON.stringify(body), "utf8") > ADMIN_MAINFRAME_CODE_MAX_BYTES) return res.status(413).send({ failed: true, reason: "request_too_large" });
 	if (
 		Object.keys(body).sort().join(",") !== "agent_id,assignment_id,character_id,data,operation,request_id,version" ||
 		body.version !== 1 ||
-		body.agent_id !== admin_bots_agent_id() ||
 		!/^[0-9a-f]{32}$/.test(body.assignment_id || "") ||
 		!/^CH_[A-Za-z0-9_-]{1,100}$/.test(body.character_id || "") ||
 		!/^[A-Za-z0-9_-]{1,80}$/.test(body.request_id || "") ||
