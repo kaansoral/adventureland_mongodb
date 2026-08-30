@@ -8030,7 +8030,7 @@ var rogue_ent_items={
 		"compound":{"dex":2,"int":2,"mp":75,"mp_reduction":1.5},
 		"name":"Gloam Pendant",
 		"explanation":"It grows cold whenever its wearer is seen.",
-		"grades":[1,4,6,7],
+		"grades":[0,1,4],
 		"g":420000,
 	},
 	"sapstone":{

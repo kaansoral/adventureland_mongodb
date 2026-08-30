@@ -309,7 +309,7 @@ var drops = {
 		bat: [
 			[4.0 / 1000, "wbook0"],
 			[5.0 / 1000, "bwing"],
-			[1.0 / 2000, "voidthread"],
+			[1.0 / 40000, "voidthread"],
 			[1.0 / 100000000, "cxjar", 1, "wings102"],
 		],
 		scorpion: [

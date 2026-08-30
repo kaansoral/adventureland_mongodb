@@ -714,11 +714,11 @@ var craft={
 	"gloampendant":{
 		"items":[
 			[1,"dexamulet",2],
-			[12,"voidthread"],
+			[30,"voidthread"],
 			[80,"bwing"],
 			[6,"essenceofether"],
 		],
-		"cost":420000,
+		"cost":6400000,
 	},
 	"worldrootcrook":{
 		"items":[
