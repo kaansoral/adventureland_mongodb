@@ -315,11 +315,11 @@ setInterval(async function () {
 
 <p><span class="dlabel">Billing safety</span></p>
 
-<p><span class="dlabel">mainframe_link_character</span> charges 1 Shell when no paid time remains. A running assignment then renews automatically for 1 Shell every 60 minutes. It survives Adventure Land HTTP restarts, Mainframe controller restarts, host maintenance, and machine replacement. It stops only after <span class="dlabel">mainframe_disconnect_character</span> or when the account cannot pay the next renewal.</p>
+<p><span class="dlabel">mainframe_link_character</span> prepays one 60-minute window. When <span class="dlabel">mainframe_get_dashboard</span> includes <span class="dlabel">free_time</span>, Mainframe uses those shared Steam hours before charging Shells. Each running character consumes time separately. The assignment renews automatically, survives Adventure Land HTTP restarts, Mainframe controller restarts, host maintenance, and machine replacement, and stops only after <span class="dlabel">mainframe_disconnect_character</span> or when the account cannot pay the next renewal.</p>
 
 <p>If a link response is lost, retry the same character, CODE slot, server, and <span class="dlabel">request_id</span>. Do not invent a new request ID for a network retry. Disconnecting disables renewal but does not refund or pause remaining paid time.</p>
 
-<p>Reading state, logs, game data, documentation, CODE, resources, and prompts does not charge Shells. Disconnecting does not refund or pause active time.</p>
+<p>Reading state, logs, game data, documentation, CODE, resources, and prompts does not consume Mainframe time or Shells. Disconnecting does not refund or pause active time.</p>
 
 <p><span class="dlabel">Results and retries</span></p>
 

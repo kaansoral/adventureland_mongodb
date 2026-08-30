@@ -12,6 +12,9 @@
 	var copyTokenNode = document.getElementById("copy-token");
 	var revokeTokenNode = document.getElementById("revoke-token");
 	var tokenSecretNode = document.getElementById("token-secret");
+	var steamTimeNode = document.getElementById("steam-time");
+	var steamTimeHoursNode = document.getElementById("steam-time-hours");
+	var billingNoteNode = document.getElementById("billing-note");
 	var busy = Object.create(null);
 	var characterCards = Object.create(null);
 	var tokenConnection = "";
@@ -304,10 +307,14 @@
 			var current = card.mainframeState;
 			var access = current.entry.access || {};
 			var character = current.entry.character;
+			var freeTime = current.state.free_time;
+			var usesFreeTime = !!(freeTime && Number(freeTime.remaining_hours) > 0);
 			if (
 				!access.active &&
 				!window.confirm(
-					"Run " + character + " on Mainframe for 1 Shell? It renews for 1 Shell every 60 minutes until you disconnect or run out of Shells.",
+					usesFreeTime
+						? "Run " + character + " on Mainframe using 1 free Steam hour? It renews every 60 minutes, using shared Steam time before Shells, until you disconnect or cannot pay."
+						: "Run " + character + " on Mainframe for 1 Shell? It renews for 1 Shell every 60 minutes until you disconnect or run out of Shells.",
 				)
 			)
 				return;
@@ -389,7 +396,11 @@
 				: phase;
 		setMetric(
 			nodes.metrics.access,
-			access.active ? (running ? "Renews in " : "Paid time ") + duration(access.remaining_seconds) : "Not active",
+			access.active
+				? (access.billing_source === "steam_time" ? "Steam · " : access.billing_source === "shell" ? "Shell · " : "") +
+					(running ? "renews in " : "time ") +
+					duration(access.remaining_seconds)
+				: "Not active",
 		);
 		setMetric(nodes.metrics.server, text(assignment.server || runtime.server));
 		setMetric(nodes.metrics.game, runtime.game_connected ? "Connected" : "Disconnected");
@@ -406,7 +417,7 @@
 		}), assignment.server, running);
 		nodes.code.disabled = running;
 		nodes.server.disabled = running;
-		nodes.run.textContent = access.active ? "Run on Mainframe" : "Run — 1 Shell";
+		nodes.run.textContent = access.active ? "Run on Mainframe" : state.free_time ? "Run — 1 free hour" : "Run — 1 Shell";
 		nodes.run.disabled = !!busy[entry.character] || !state.online || !nodes.code.value || !nodes.server.value || running;
 		nodes.disconnect.disabled = !!busy[entry.character] || !running;
 	}
@@ -418,6 +429,15 @@
 		document.getElementById("shells").textContent = text(state.shells);
 		document.getElementById("running").textContent = (state.characters || []).filter(function (entry) { return entry.assignment && entry.assignment.desired_state === "running"; }).length + " / " + (state.characters || []).length;
 		document.getElementById("cost").textContent = state.contract.shells_per_period + " Shell / " + state.contract.period_minutes + " minutes";
+		if (state.free_time && Number(state.free_time.remaining_hours) > 0) {
+			steamTimeHoursNode.textContent = state.free_time.remaining_hours + " free Mainframe hours remaining";
+			steamTimeNode.hidden = false;
+			billingNoteNode.textContent = "Running characters use shared Steam time first, then renew for 1 Shell every 60 minutes. Disconnect to stop renewal; remaining time is not refunded.";
+		} else {
+			steamTimeNode.hidden = true;
+			steamTimeHoursNode.textContent = "";
+			billingNoteNode.textContent = "Running characters renew for 1 Shell every 60 minutes. Disconnect to stop renewal; remaining paid time is not refunded.";
+		}
 		if (!(state.characters || []).length) {
 			Object.keys(characterCards).forEach(function (character) { delete characterCards[character]; });
 			charactersNode.replaceChildren();

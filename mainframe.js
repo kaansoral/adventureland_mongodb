@@ -1,5 +1,7 @@
 var MAINFRAME_PERIOD_MS = 60 * 60 * 1000;
 var MAINFRAME_PERIOD_SHELLS = 1;
+var MAINFRAME_STEAM_FREE_PERIODS = 250;
+var MAINFRAME_STEAM_ID_PATTERN = /^[0-9]{16,20}$/;
 var MAINFRAME_REQUEST_PATTERN = /^[A-Za-z0-9_.:@-]{16,100}$/;
 var MAINFRAME_CODE_SLOT_PATTERN = /^[A-Za-z0-9_.+ -]{1,100}$/;
 var MAINFRAME_CONTROLLER_COLLECTION = "admin_bots_control";
@@ -51,6 +53,61 @@ function mainframe_access_record_id(character_id) {
 function mainframe_charge_record_id(user_id, request_id) {
 	var key = crypto.createHash("sha256").update(user_id + "\n" + request_id, "utf8").digest("hex");
 	return "MK_mainframe_charge-" + key;
+}
+
+function mainframe_steam_id(owner) {
+	if (!owner || owner.platform !== "steam") return "";
+	var steam_id = String(owner.pid || "");
+	return MAINFRAME_STEAM_ID_PATTERN.test(steam_id) ? steam_id : "";
+}
+
+function mainframe_steam_time_record_id(steam_id) {
+	var key = crypto.createHash("sha256").update("mainframe-steam-time\n" + steam_id, "utf8").digest("hex");
+	return "MK_mainframe_steam_time-" + key;
+}
+
+function mainframe_steam_time_record(record, now) {
+	if (!record)
+		return {
+			type: "mainframe_steam_time",
+			granted_periods: MAINFRAME_STEAM_FREE_PERIODS,
+			used_periods: 0,
+			grant_version: 1,
+			created: now,
+		};
+	if (
+		record.type !== "mainframe_steam_time" ||
+		!Number.isSafeInteger(record.granted_periods) ||
+		record.granted_periods < 0 ||
+		!Number.isSafeInteger(record.used_periods) ||
+		record.used_periods < 0 ||
+		record.used_periods > record.granted_periods
+	)
+		return null;
+	return record;
+}
+
+function mainframe_steam_time_to_client(owner, record) {
+	if (!mainframe_steam_id(owner)) return null;
+	var time = mainframe_steam_time_record(record, new Date());
+	if (!time) return null;
+	var remaining = time.granted_periods - time.used_periods;
+	if (remaining <= 0) return null;
+	return {
+		granted_hours: time.granted_periods,
+		used_hours: time.used_periods,
+		remaining_hours: remaining,
+		period_minutes: MAINFRAME_PERIOD_MS / 60000,
+		shared_by: "steam_account",
+	};
+}
+
+async function mainframe_get_steam_time(user) {
+	if (!user || !get_id(user)) return null;
+	var owner = (await get(get_id(user))) || user;
+	var steam_id = mainframe_steam_id(owner);
+	if (!steam_id) return null;
+	return mainframe_steam_time_to_client(owner, await get(mainframe_steam_time_record_id(steam_id)));
 }
 
 function mainframe_assignment_record_id(character_id) {
@@ -159,8 +216,27 @@ async function mainframe_begin_assignment(user, character, request_id, options) 
 			var access = await tx_get(A.access_id);
 			if (access && (access.owner !== A.user_id || access.character !== A.character_id)) access = null;
 			var charged = !(access && access.access_until && new Date(access.access_until) > A.now);
-			if (charged && gf(owner, "cash", 0) < MAINFRAME_PERIOD_SHELLS) ex("not_enough_shells");
-			if (charged) owner.cash -= MAINFRAME_PERIOD_SHELLS;
+			var billing_source = null;
+			var steam_time = null;
+			if (charged) {
+				var steam_id = mainframe_steam_id(owner);
+				if (steam_id) {
+					var steam_time_id = mainframe_steam_time_record_id(steam_id);
+					steam_time = mainframe_steam_time_record(await tx_get(steam_time_id), A.now);
+					if (!steam_time) ex("mainframe_billing_unavailable");
+					steam_time._id = steam_time_id;
+					if (steam_time.used_periods < steam_time.granted_periods) {
+						steam_time.used_periods++;
+						steam_time.updated = A.now;
+						billing_source = "steam_time";
+					}
+				}
+				if (!billing_source) {
+					if (gf(owner, "cash", 0) < MAINFRAME_PERIOD_SHELLS) ex("not_enough_shells");
+					owner.cash -= MAINFRAME_PERIOD_SHELLS;
+					billing_source = "shell";
+				}
+			}
 			var period_end = charged ? new Date(A.now.getTime() + MAINFRAME_PERIOD_MS) : new Date(access.access_until);
 			access = access || {
 				_id: A.access_id,
@@ -170,6 +246,7 @@ async function mainframe_begin_assignment(user, character, request_id, options) 
 				created: A.now,
 			};
 			access.access_until = period_end;
+			if (charged) access.billing_source = billing_source;
 			access.operator = null;
 			access.updated = A.now;
 			var session_id = existing && existing.desired_state === "running" ? existing.session_id : crypto.randomBytes(16).toString("hex");
@@ -207,12 +284,15 @@ async function mainframe_begin_assignment(user, character, request_id, options) 
 				character: A.character_id,
 				request_id: A.request_id,
 				session_id: session_id,
-				shells: charged ? MAINFRAME_PERIOD_SHELLS : 0,
+				billing_source: charged ? billing_source : access.billing_source || null,
+				steam_periods: charged && billing_source === "steam_time" ? 1 : 0,
+				shells: charged && billing_source === "shell" ? MAINFRAME_PERIOD_SHELLS : 0,
 				period_start: charged ? A.now : null,
 				period_end: period_end,
 				created: A.now,
 			};
 			await tx_save(owner);
+			if (charged && billing_source === "steam_time") await tx_save(steam_time);
 			await tx_save(access);
 			await tx_save(existing);
 			await tx_save(charge);
@@ -221,6 +301,8 @@ async function mainframe_begin_assignment(user, character, request_id, options) 
 			R.charge = charge;
 			R.assignment = existing;
 			R.charged = charged;
+			R.billing_source = charged ? billing_source : access.billing_source || null;
+			R.steam_time = steam_time;
 			R.replayed = false;
 		},
 		{
@@ -245,7 +327,9 @@ async function mainframe_begin_assignment(user, character, request_id, options) 
 		charged: R.charged,
 		replayed: R.replayed,
 		auto_renew: true,
-		shells_charged: R.charged ? MAINFRAME_PERIOD_SHELLS : 0,
+		billing_source: R.billing_source || (R.charge && R.charge.billing_source) || null,
+		steam_hours_charged: R.charged && R.billing_source === "steam_time" ? 1 : 0,
+		shells_charged: R.charged && R.billing_source === "shell" ? MAINFRAME_PERIOD_SHELLS : 0,
 		shells: gf(R.owner, "cash", 0),
 		receipt: R.charge ? R.charge._id.slice("MK_mainframe_charge-".length) : null,
 		access: mainframe_access_to_client(R.access, now),
@@ -340,7 +424,50 @@ async function mainframe_renew_assignment(source, now) {
 				R.assignment = assignment;
 				return;
 			}
-			if (gf(owner, "cash", 0) < MAINFRAME_PERIOD_SHELLS) {
+			var existing_charge = await tx_get(A.charge_id);
+			if (existing_charge) {
+				var existing_until = new Date(existing_charge.period_end);
+				if (!Number.isFinite(existing_until.getTime())) ex("renewal_conflict");
+				access = access || {
+					_id: A.access_id,
+					type: "mainframe_access",
+					owner: A.user_id,
+					character: A.character_id,
+					created: A.now,
+				};
+				access.access_until = existing_until;
+				access.billing_source = existing_charge.billing_source || access.billing_source || null;
+				access.operator = null;
+				access.updated = A.now;
+				assignment.access_until = existing_until;
+				assignment.updated = A.now;
+				await tx_save(access);
+				await tx_save(assignment);
+				R.state = "active";
+				R.assignment = assignment;
+				R.access = access;
+				R.charge = existing_charge;
+				return;
+			}
+			var billing_source = null;
+			var steam_time = null;
+			var steam_id = mainframe_steam_id(owner);
+			if (steam_id) {
+				var steam_time_id = mainframe_steam_time_record_id(steam_id);
+				steam_time = mainframe_steam_time_record(await tx_get(steam_time_id), A.now);
+				if (!steam_time) ex("mainframe_billing_unavailable");
+				steam_time._id = steam_time_id;
+				if (steam_time.used_periods < steam_time.granted_periods) {
+					steam_time.used_periods++;
+					steam_time.updated = A.now;
+					billing_source = "steam_time";
+				}
+			}
+			if (!billing_source && gf(owner, "cash", 0) >= MAINFRAME_PERIOD_SHELLS) {
+				owner.cash -= MAINFRAME_PERIOD_SHELLS;
+				billing_source = "shell";
+			}
+			if (!billing_source) {
 				if (assignment.auth && owner.info && Array.isArray(owner.info.auths)) {
 					owner.info.auths = owner.info.auths.filter(function (auth) {
 						return auth !== assignment.auth;
@@ -358,31 +485,6 @@ async function mainframe_renew_assignment(source, now) {
 				R.owner = owner;
 				return;
 			}
-			var existing_charge = await tx_get(A.charge_id);
-			if (existing_charge) {
-				var existing_until = new Date(existing_charge.period_end);
-				if (!Number.isFinite(existing_until.getTime())) ex("renewal_conflict");
-				access = access || {
-					_id: A.access_id,
-					type: "mainframe_access",
-					owner: A.user_id,
-					character: A.character_id,
-					created: A.now,
-				};
-				access.access_until = existing_until;
-				access.operator = null;
-				access.updated = A.now;
-				assignment.access_until = existing_until;
-				assignment.updated = A.now;
-				await tx_save(access);
-				await tx_save(assignment);
-				R.state = "active";
-				R.assignment = assignment;
-				R.access = access;
-				R.charge = existing_charge;
-				return;
-			}
-			owner.cash -= MAINFRAME_PERIOD_SHELLS;
 			var period_end = new Date(A.now.getTime() + MAINFRAME_PERIOD_MS);
 			access = access || {
 				_id: A.access_id,
@@ -392,6 +494,7 @@ async function mainframe_renew_assignment(source, now) {
 				created: A.now,
 			};
 			access.access_until = period_end;
+			access.billing_source = billing_source;
 			access.operator = null;
 			access.updated = A.now;
 			assignment.access_until = period_end;
@@ -405,12 +508,15 @@ async function mainframe_renew_assignment(source, now) {
 				character: A.character_id,
 				request_id: A.renewal_key,
 				session_id: A.session_id,
-				shells: MAINFRAME_PERIOD_SHELLS,
+				billing_source: billing_source,
+				steam_periods: billing_source === "steam_time" ? 1 : 0,
+				shells: billing_source === "shell" ? MAINFRAME_PERIOD_SHELLS : 0,
 				period_start: A.now,
 				period_end: period_end,
 				created: A.now,
 			};
 			await tx_save(owner);
+			if (billing_source === "steam_time") await tx_save(steam_time);
 			await tx_save(access);
 			await tx_save(assignment);
 			await tx_save(charge);
@@ -419,6 +525,8 @@ async function mainframe_renew_assignment(source, now) {
 			R.access = access;
 			R.charge = charge;
 			R.owner = owner;
+			R.billing_source = billing_source;
+			R.steam_time = steam_time;
 		},
 		{
 			user_id: source.owner,
@@ -438,7 +546,9 @@ async function mainframe_renew_assignment(source, now) {
 		state: R.state,
 		reason: R.reason || null,
 		charged: R.state === "renewed",
-		shells_charged: R.state === "renewed" ? MAINFRAME_PERIOD_SHELLS : 0,
+		billing_source: R.billing_source || (R.charge && R.charge.billing_source) || null,
+		steam_hours_charged: R.state === "renewed" && R.billing_source === "steam_time" ? 1 : 0,
+		shells_charged: R.state === "renewed" && R.billing_source === "shell" ? MAINFRAME_PERIOD_SHELLS : 0,
 		shells: R.owner ? gf(R.owner, "cash", 0) : null,
 		next_charge_at: R.access && R.access.access_until && R.state !== "stopped" ? new Date(R.access.access_until).toISOString() : null,
 		access: R.access ? mainframe_access_to_client(R.access, now) : null,
@@ -661,6 +771,7 @@ function mainframe_access_to_client(access, now) {
 		active: active,
 		access_until: access_until && Number.isFinite(access_until.getTime()) ? access_until.toISOString() : null,
 		remaining_seconds: active ? Math.max(0, Math.ceil((access_until.getTime() - now.getTime()) / 1000)) : 0,
+		billing_source: active && access ? access.billing_source || null : null,
 		shells_per_period: MAINFRAME_PERIOD_SHELLS,
 		period_minutes: MAINFRAME_PERIOD_MS / 60000,
 	};

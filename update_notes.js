@@ -2,6 +2,11 @@
 module.exports = [
 	{
 		deployed: null,
+		date: "[30/08/26]",
+		note: "Steam owners now receive 250 free Mainframe hours shared across their linked Adventure Land accounts, with automatic Shell renewal after the free time is used.",
+	},
+	{
+		deployed: null,
 		date: "[29/08/26]",
 		note: "Expanded the Tutorial and Game Guide with clear manual and optional CODE paths, nearby INFO guides for world services, and complete CODE access for duels, recovered-item shops, tavern games, item de-statting, and strange interactions.",
 	},

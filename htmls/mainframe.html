@@ -33,6 +33,10 @@
 			.summary { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); border:1px solid var(--line); background:var(--line); gap:1px; margin-bottom:16px; }
 			.summary > div { background:var(--panel2); padding:12px; }
 			.summary span, .metric span { display:block; color:var(--muted); font-size:15px; }
+			.steam-time { display:flex; align-items:center; justify-content:space-between; gap:18px; border:1px solid var(--gold); background:var(--panel); padding:15px; margin-bottom:16px; }
+			.steam-time[hidden] { display:none; }
+			.steam-time strong { color:var(--gold); font-size:22px; }
+			.steam-time p { color:var(--muted); text-align:right; max-width:680px; }
 			.connect { border:1px solid var(--blue); background:var(--panel); padding:17px; margin-bottom:16px; }
 			.connect-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
 			.token-state { display:flex; flex-direction:column; gap:5px; text-align:right; }
@@ -61,7 +65,7 @@
 			.notice, .empty, .error { border:1px solid var(--line); background:var(--panel); padding:20px; }
 			.error { display:none; color:#ffb8be; margin-bottom:16px; }
 			.footer { margin-top:22px; color:var(--muted); font-size:15px; }
-			@media (max-width:700px) { body{padding:12px}.top,.status,.card-head,.footer,.connect-head{align-items:flex-start;flex-direction:column}.token-state{text-align:left}.summary{grid-template-columns:1fr}.connection{grid-template-columns:1fr}.grid{grid-template-columns:1fr}h1{font-size:30px} }
+			@media (max-width:700px) { body{padding:12px}.top,.status,.card-head,.footer,.connect-head,.steam-time{align-items:flex-start;flex-direction:column}.token-state,.steam-time p{text-align:left}.summary{grid-template-columns:1fr}.connection{grid-template-columns:1fr}.grid{grid-template-columns:1fr}h1{font-size:30px} }
 		</style>
 	</head>
 	<body>
@@ -83,9 +87,10 @@
 					<ol class="connect-steps"><li>Create a token. Mainframe keeps it masked until you press <strong>Reveal token</strong>.</li><li>Add the server URL and Bearer token to your AI client's MCP settings.</li><li>Tell the AI to read the first resource and its CODE reading order, then inspect your Mainframe dashboard and exact game contracts.</li></ol>
 					<p class="muted" style="margin-top:10px">One token is active per account. It is encrypted at rest and returned only to the signed-in account. Treat it like a password. Rotating invalidates the old token immediately.</p>
 				</section>
+				<section id="steam-time" class="steam-time" hidden><strong id="steam-time-hours"></strong><p>Your Steam time is shared by every Adventure Land account linked to the same Steam account. Each running character uses one hour per hour. Mainframe uses this time before Shells.</p></section>
 				<section class="summary"><div><span>Cost</span><strong id="cost">1 Shell / 60 minutes</strong></div><div><span>Your Shells</span><strong id="shells">—</strong></div><div><span>Running</span><strong id="running">—</strong></div></section>
 				<section id="mainframe-characters" class="grid" aria-live="polite"><div class="empty">Loading characters…</div></section>
-				<footer class="footer"><span>Running characters renew for 1 Shell every 60 minutes. Disconnect to stop renewal; remaining paid time is not refunded.</span><span>One isolated machine per character.</span></footer>
+				<footer class="footer"><span id="billing-note">Running characters renew for 1 Shell every 60 minutes. Disconnect to stop renewal; remaining paid time is not refunded.</span><span>One isolated machine per character.</span></footer>
 				<script src="/js/mainframe_ui.js?v={{ domain.v }}"></script>
 			{% endif %}
 		</main>
