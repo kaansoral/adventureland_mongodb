@@ -285,6 +285,8 @@
 			memory: metric("VM memory", "—"),
 			dps: metric("DPS", "—"),
 			gps: metric("Gold / sec", "—"),
+			callCost: metric("Call cost", "—"),
+			disconnectReason: metric("Last disconnect", "—"),
 		};
 		Object.keys(metricNodes).forEach(function (key) { metrics.append(metricNodes[key]); });
 
@@ -375,6 +377,21 @@
 		return card;
 	}
 
+	function friendlyDisconnectReason(reason) {
+		var messages = {
+			limits: "Realm character limit",
+			limitdc: "Connection limit",
+			blocked: "Account blocked",
+			not_enough_shells: "Out of Mainframe time",
+			explicit_disconnect: "Disconnected by owner",
+			game_disconnect: "Game connection closed",
+			transport_closed: "Game connection closed",
+		};
+		reason = String(reason || "").trim();
+		if (!reason) return "—";
+		return messages[reason.toLowerCase()] || reason;
+	}
+
 	function updateCharacterCard(card, entry, state) {
 		var nodes = card.mainframeNodes;
 		var runtime = entry.runtime || {};
@@ -389,7 +406,12 @@
 		card.mainframeState = { entry: entry, state: state };
 		card.className = "card " + phase + (movement.stuck ? " stuck" : "");
 		nodes.name.textContent = entry.character;
-		nodes.detail.textContent = "Level " + text(entry.level) + " " + text(entry.class).toUpperCase();
+		var execution = assignment.execution === "included_worker"
+			? "Included with " + text(assignment.included_with)
+			: assignment.execution === "shared_microvm"
+				? "Shared machine"
+				: "Dedicated machine";
+		nodes.detail.textContent = "Level " + text(entry.level) + " " + text(entry.class).toUpperCase() + (assignment.desired_state ? " · " + execution : "");
 		nodes.phase.textContent =
 			phase === "stopped" && assignment.stop_reason === "not_enough_shells"
 				? "stopped — out of Shells"
@@ -409,6 +431,13 @@
 		setMetric(nodes.metrics.memory, bytes(containment.memory_current_bytes));
 		setMetric(nodes.metrics.dps, text(performance.dps));
 		setMetric(nodes.metrics.gps, text(performance.gps));
+		var callCost = Number(runtime.metrics && runtime.metrics.call_cost_percent);
+		if (!Number.isFinite(callCost)) {
+			var cpuRatio = Number(runtime.metrics && runtime.metrics.cpu_ratio);
+			callCost = Number.isFinite(cpuRatio) ? Math.min(100, Math.max(0, cpuRatio / 0.1 * 100)) : NaN;
+		}
+		setMetric(nodes.metrics.callCost, Number.isFinite(callCost) ? callCost.toFixed(1) + "% of worker CPU" : "—");
+		setMetric(nodes.metrics.disconnectReason, friendlyDisconnectReason((assignment.last_failure && assignment.last_failure.reason) || assignment.stop_reason));
 		updateSelect(nodes.code, (state.codes || []).map(function (code) {
 			return { value: String(code.slot), label: code.slot + " — " + code.name };
 		}), running ? assignment.code_slot : savedCharacterCodeSlot(entry) || assignment.code_slot, running);
@@ -429,11 +458,11 @@
 		document.getElementById("shells").textContent = text(state.shells);
 		document.getElementById("running").textContent = (state.characters || []).filter(function (entry) { return entry.assignment && entry.assignment.desired_state === "running"; }).length + " / " + (state.characters || []).length;
 		document.getElementById("cost").textContent = state.contract.shells_per_period + " Shell / " + state.contract.period_minutes + " minutes";
-		if (state.free_time && Number(state.free_time.remaining_hours) > 0) {
+		if (steamTimeNode && state.free_time && Number(state.free_time.remaining_hours) > 0) {
 			steamTimeHoursNode.textContent = state.free_time.remaining_hours + " free Mainframe hours remaining";
 			steamTimeNode.hidden = false;
 			billingNoteNode.textContent = "Running characters use shared Steam time first, then renew for 1 Shell every 60 minutes. Disconnect to stop renewal; remaining time is not refunded.";
-		} else {
+		} else if (steamTimeNode) {
 			steamTimeNode.hidden = true;
 			steamTimeHoursNode.textContent = "";
 			billingNoteNode.textContent = "Running characters renew for 1 Shell every 60 minutes. Disconnect to stop renewal; remaining paid time is not refunded.";

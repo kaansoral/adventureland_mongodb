@@ -355,7 +355,9 @@
 					title.append(name, sub);
 					var phaseNode = document.createElement("div");
 					phaseNode.className = "phase";
-					phaseNode.innerHTML = '<span class="dot"></span>';
+					var phaseDot = document.createElement("span");
+					phaseDot.className = "dot";
+					phaseNode.append(phaseDot);
 					phaseNode.append(document.createTextNode(bot.pending_state ? "queued " + bot.pending_state : phase));
 					head.append(title, phaseNode);
 					var metrics = document.createElement("div");
@@ -372,6 +374,13 @@
 						metric("Observed map changes", text(movement.map_changes_observed)),
 						metric("Guest RSS", bytes(bot.metrics && bot.metrics.rss)),
 						metric("Guest CPU", number((bot.metrics && bot.metrics.cpu_ratio) * 100, 1) + "%"),
+						metric(
+							"Call cost",
+							Number.isFinite(bot.metrics && bot.metrics.call_cost_percent)
+								? number(bot.metrics.call_cost_percent, 1) + "% of worker CPU"
+								: "—",
+						),
+						metric("Last disconnect", text(bot.failure && bot.failure.reason)),
 						metric("Host VM memory", bytes(containment.memory_current_bytes) + " / " + bytes(limits.memory_max_bytes)),
 						metric("Host CPU cap", number(Number(limits.cpu_quota_ratio) * 100, 0) + "%"),
 						metric("Host CPU throttled", duration(Number(containment.cpu_throttled_usec) / 1000)),

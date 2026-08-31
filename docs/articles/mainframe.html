@@ -1,16 +1,18 @@
 <p><span class="dlabel">Mainframe</span></p>
 
-<p>Mainframe keeps your characters running Adventure Land CODE when your browser is closed. Each character runs separately and uses one of your saved CODE slots.</p>
+<p>Mainframe keeps your characters running Adventure Land CODE when your browser is closed. A character you run from the Mainframe page gets its own isolated machine and uses one of your saved CODE slots.</p>
 
 <p>Open <a href="/mainframe">Mainframe</a> to choose a character, CODE slot, and live realm. Mainframe is also visible in COM and on <a href="/comm">/comm</a>.</p>
 
 <p><span class="dlabel">Cost</span></p>
 
-<p>Steam accounts receive <span class="dlabel">250 free Mainframe hours</span>. The allowance is shared by every Adventure Land account linked to the same Steam account. Each running character uses one hour per hour, so four characters running together use four hours.</p>
+<p>Steam accounts receive <span class="dlabel">250 free Mainframe hours</span>. The allowance is shared by every Adventure Land account linked to the same Steam account. Each direct Mainframe run uses one hour per hour. Included characters started from CODE share their root character's hour.</p>
 
 <p>Mainframe prepays each <span class="dlabel">60-minute</span> window. It uses shared Steam time first, then charges <span class="dlabel">1 Shell</span> per window. While the assignment remains running, Mainframe renews automatically until you explicitly disconnect the character or the account cannot pay the next renewal.</p>
 
 <p>Disconnecting disables future renewals but does not refund or pause the current prepaid window. Reconnecting the same character before that window ends costs nothing and enables renewal again.</p>
+
+<p>If running CODE calls <span class="dlabel">start_character</span>, Mainframe can place up to three additional characters inside that caller's machine. Those workers share the caller's prepaid window instead of opening more paid windows. The first child start reconnects the caller once while Mainframe changes it to the shared machine. Calling <span class="dlabel">stop_character</span> stops only that child; disconnecting the root character stops the complete shared group. Starting characters directly from the Mainframe page still gives each one a separate machine and charge.</p>
 
 <p>A running assignment is meant to survive maintenance. Mainframe restores it after Adventure Land HTTP restarts, controller restarts, host maintenance, and machine replacement. Recovery can briefly reconnect the character, but it does not mark the assignment as stopped.</p>
 
@@ -27,9 +29,13 @@ await smart_move({ map: "main", x: -100, y: -20 });</div>
 
 <p><span class="dlabel">Containment</span></p>
 
-<p>Every character runs with its own machine identity, read-only system image, memory, CPU, and disk limits, syscall filtering, and no internet interface. Character actions can reach Adventure Land only through the Mainframe bridge. Mainframe reports requested actions separately from confirmed game state, so you can tell the difference between "CODE asked" and "the server accepted."</p>
+<p>Every dedicated character, or shared group of up to four workers, runs with an isolated machine identity, read-only system image, memory, CPU, and disk limits, syscall filtering, and no internet interface. Workers inside a shared group also have separate operating-system identities and process limits. Character actions can reach Adventure Land only through the Mainframe bridge. Mainframe reports requested actions separately from confirmed game state, so you can tell the difference between "CODE asked" and "the server accepted."</p>
 
-<p>If CODE loops forever, uses too much memory, or repeatedly writes, its machine stays isolated and can be stopped without taking another character with it.</p>
+<p>If CODE loops forever, uses too much memory, or repeatedly writes, its machine stays isolated. A dedicated failure affects one character. A containment failure in a shared machine stops that four-worker group, but cannot reach another Mainframe machine.</p>
+
+<p><span class="dlabel">Status and logs</span></p>
+
+<p>The Mainframe card shows the last game disconnect reason when the server supplies one. <span class="dlabel">Call cost</span> is that worker's current CPU use as a percentage of its fixed worker CPU budget; it is not a Shell charge. CODE logs remain available for 30 days after a worker or machine stops.</p>
 
 <p><span class="dlabel">Automation interfaces</span></p>
 

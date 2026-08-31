@@ -2,6 +2,10 @@ var ADMIN_BOTS_COLLECTION = "admin_bots_control";
 var ADMIN_BOTS_MAX_REPORT_BYTES = 512 * 1024;
 var ADMIN_MAINFRAME_CODE_MAX_BYTES = 1150 * 1024;
 var ADMIN_BOTS_COMMAND_TTL_MS = 60 * 1000;
+var ADMIN_BOTS_LOG_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+var ADMIN_BOTS_LOG_MAX_ENTRIES = 200;
+var ADMIN_BOTS_LOG_MAX_BYTES = 384 * 1024;
+var ADMIN_BOTS_GROUP_MAX_WORKERS = 4;
 var ADMIN_BOTS_CONTROL_SECRET = null;
 try {
 	ADMIN_BOTS_CONTROL_SECRET = require("./secretsandconfig/bots_usd2_controller.json");
@@ -226,6 +230,7 @@ function admin_bots_clean_bot(bot) {
 	var failure = bot.failure && typeof bot.failure === "object" && !Array.isArray(bot.failure) ? bot.failure : null;
 	var actions = traffic.actions_by_event && typeof traffic.actions_by_event === "object" ? traffic.actions_by_event : {};
 	var clean_actions = {};
+	var worker_cpu_ratio = admin_bots_number(metrics.cpu_ratio, 0, 100);
 	Object.keys(actions)
 		.slice(0, 30)
 		.forEach(function (name) {
@@ -236,6 +241,10 @@ function admin_bots_clean_bot(bot) {
 		character_id: /^CH_[A-Za-z0-9_-]{1,100}$/.test(bot.character_id || "") ? bot.character_id : null,
 		assignment_id: /^[0-9a-f]{32}$/.test(bot.assignment_id || "") ? bot.assignment_id : null,
 		assignment_revision: admin_bots_number(bot.assignment_revision, 0, Number.MAX_SAFE_INTEGER),
+		billing_mode: ["dedicated", "group_root", "included"].includes(bot.billing_mode) ? bot.billing_mode : "dedicated",
+		group_id: /^[0-9a-f]{32}$/.test(bot.group_id || "") ? bot.group_id : null,
+		group_root: /^CH_[A-Za-z0-9_-]{1,100}$/.test(bot.group_root || "") ? bot.group_root : null,
+		worker_slot: admin_bots_number(bot.worker_slot, 1, ADMIN_BOTS_GROUP_MAX_WORKERS),
 		desired_state: ["running", "stopped"].includes(bot.desired_state) ? bot.desired_state : "stopped",
 		code_slot: admin_bots_text(bot.code_slot, 100),
 		server: admin_bots_text(bot.server, 50),
@@ -250,7 +259,8 @@ function admin_bots_clean_bot(bot) {
 			heap_used: admin_bots_number(metrics.heap_used, 0, Number.MAX_SAFE_INTEGER),
 			rss: admin_bots_number(metrics.rss, 0, Number.MAX_SAFE_INTEGER),
 			memory_limit: admin_bots_number(metrics.memory_limit, 0, Number.MAX_SAFE_INTEGER),
-			cpu_ratio: admin_bots_number(metrics.cpu_ratio, 0, 100),
+			cpu_ratio: worker_cpu_ratio,
+			call_cost_percent: Math.round(Math.min(100, worker_cpu_ratio / 0.1 * 100) * 10) / 10,
 			event_loop_lag_ms: admin_bots_number(metrics.event_loop_lag_ms, 0, 60000),
 			monotonic_ms: admin_bots_number(metrics.monotonic_ms, 0, Number.MAX_SAFE_INTEGER),
 			guest_memory_used: admin_bots_number(metrics.guest_memory_used, 0, Number.MAX_SAFE_INTEGER),
@@ -279,6 +289,7 @@ function admin_bots_clean_bot(bot) {
 				? {
 						assignment_id: /^[0-9a-f]{32}$/.test(failure.assignment_id || "") ? failure.assignment_id : null,
 						code: failure.code,
+						reason: admin_bots_text(failure.reason, 160) || null,
 						at: admin_bots_text(failure.at, 40) || null,
 					}
 				: null,
@@ -296,6 +307,99 @@ function admin_bots_clean_report(report) {
 		bots: bots.map(admin_bots_clean_bot).filter(Boolean),
 		reported_at: new Date(),
 	};
+}
+
+function admin_bots_log_record_id(character_id) {
+	return "MK_mainframe_logs-" + character_id;
+}
+
+function admin_bots_log_key(entry) {
+	return crypto
+		.createHash("sha256")
+		.update(String(entry.assignment_id || "") + "\n" + String(entry.at || "") + "\n" + String(entry.level || "") + "\n" + JSON.stringify(entry.values || []), "utf8")
+		.digest("base64url");
+}
+
+function admin_bots_bound_persisted_logs(logs, now) {
+	var cutoff = now.getTime() - ADMIN_BOTS_LOG_RETENTION_MS;
+	var result = logs
+		.filter(function (entry) {
+			var at = new Date(entry.at);
+			return Number.isFinite(at.getTime()) && at.getTime() >= cutoff;
+		})
+		.slice(-ADMIN_BOTS_LOG_MAX_ENTRIES);
+	while (result.length && Buffer.byteLength(JSON.stringify(result), "utf8") > ADMIN_BOTS_LOG_MAX_BYTES) result.shift();
+	return result;
+}
+
+async function admin_bots_persist_logs(report, agent_id) {
+	var reported = (report && report.bots ? report.bots : []).filter(function (bot) {
+		return bot.character_id && bot.assignment_id && bot.logs && bot.logs.length;
+	});
+	if (!reported.length) return 0;
+	var assignment_ids = reported.map(function (bot) {
+		return mainframe_assignment_record_id(bot.character_id);
+	});
+	var log_ids = reported.map(function (bot) {
+		return admin_bots_log_record_id(bot.character_id);
+	});
+	var records = await db
+		.collection("mark")
+		.find({ _id: { $in: assignment_ids.concat(log_ids) } })
+		.limit(reported.length * 2)
+		.toArray();
+	var by_id = {};
+	for (var record of records) by_id[record._id] = record;
+	var now = new Date();
+	var operations = [];
+	for (var bot of reported) {
+		var assignment = by_id[mainframe_assignment_record_id(bot.character_id)];
+		if (!assignment || assignment.owner === undefined || assignment.controller !== agent_id || assignment.session_id !== bot.assignment_id) continue;
+		var record_id = admin_bots_log_record_id(bot.character_id);
+		var previous = by_id[record_id];
+		var merged = Array.isArray(previous && previous.logs) ? previous.logs.slice() : [];
+		var seen = new Set(merged.map(admin_bots_log_key));
+		for (var entry of bot.logs) {
+			entry = {
+				assignment_id: bot.assignment_id,
+				at: admin_bots_text(entry.at, 40),
+				level: admin_bots_text(entry.level, 20),
+				values: Array.isArray(entry.values) ? entry.values.slice(0, 20).map(admin_bots_log_value) : [],
+			};
+			var key = admin_bots_log_key(entry);
+			if (!seen.has(key)) {
+				seen.add(key);
+				merged.push(entry);
+			}
+		}
+		merged = admin_bots_bound_persisted_logs(merged, now);
+		operations.push({
+			updateOne: {
+				filter: { _id: record_id },
+				update: {
+					$set: {
+						type: "mainframe_logs",
+						owner: assignment.owner,
+						character: bot.character_id,
+						logs: merged,
+						updated: now,
+						expires_at: new Date(now.getTime() + ADMIN_BOTS_LOG_RETENTION_MS),
+					},
+					$setOnInsert: { created: now },
+				},
+				upsert: true,
+			},
+		});
+	}
+	if (operations.length) await db.collection("mark").bulkWrite(operations, { ordered: false });
+	return operations.length;
+}
+
+async function admin_bots_persisted_logs(character_id, limit) {
+	if (!/^CH_[A-Za-z0-9_-]{1,100}$/.test(character_id || "")) return [];
+	var record = await get(admin_bots_log_record_id(character_id));
+	var logs = admin_bots_bound_persisted_logs(Array.isArray(record && record.logs) ? record.logs : [], new Date());
+	return logs.slice(-Math.max(1, Math.min(Number(limit) || 100, ADMIN_BOTS_LOG_MAX_ENTRIES)));
 }
 
 async function admin_bots_document(agent_id) {
@@ -469,6 +573,7 @@ app.post("/internal/bots/control", async function (req, res) {
 			$pull: { commands: pull },
 		},
 	);
+	await admin_bots_persist_logs(report, body.agent_id);
 	await mainframe_record_controller_failures(report, body.agent_id);
 	var document = await admin_bots_document(body.agent_id);
 	var commands = ((document && document.commands) || []).slice(0, 10).map(function (command) {

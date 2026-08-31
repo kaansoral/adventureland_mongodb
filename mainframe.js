@@ -4,6 +4,7 @@ var MAINFRAME_STEAM_FREE_PERIODS = 250;
 var MAINFRAME_STEAM_ID_PATTERN = /^[0-9]{16,20}$/;
 var MAINFRAME_REQUEST_PATTERN = /^[A-Za-z0-9_.:@-]{16,100}$/;
 var MAINFRAME_CODE_SLOT_PATTERN = /^[A-Za-z0-9_.+ -]{1,100}$/;
+var MAINFRAME_GROUP_MAX_WORKERS = 4;
 var MAINFRAME_CONTROLLER_COLLECTION = "admin_bots_control";
 var MAINFRAME_CONTROLLERS = Object.freeze({
 	w1: Object.freeze({ capacity: 300 }),
@@ -114,6 +115,19 @@ function mainframe_assignment_record_id(character_id) {
 	return "MK_mainframe_assignment-" + character_id;
 }
 
+function mainframe_group_record_id(group_id) {
+	return "MK_mainframe_group-" + group_id;
+}
+
+function mainframe_group_action_record_id(owner_id, request_id) {
+	var key = crypto.createHash("sha256").update(owner_id + "\n" + request_id, "utf8").digest("hex");
+	return "MK_mainframe_group_action-" + key;
+}
+
+function mainframe_shared_workers_enabled(owner) {
+	return !!(owner && owner.mainframe_shared_workers === true);
+}
+
 function mainframe_character_is_active(character, now) {
 	if (!character || !character.server || !character.last_sync) return false;
 	var last_sync = new Date(character.last_sync);
@@ -161,9 +175,13 @@ function mainframe_assignment_to_client(assignment) {
 		stop_reason: assignment.stop_reason || null,
 		last_failure:
 			assignment.failure && typeof assignment.failure === "object"
-				? { code: assignment.failure.code || null, at: assignment.failure.at || null }
+				? { code: assignment.failure.code || null, reason: assignment.failure.reason || null, at: assignment.failure.at || null }
 				: null,
 		revision: Number(assignment.revision) || 0,
+		execution: assignment.billing_mode === "included" ? "included_worker" : assignment.billing_mode === "group_root" ? "shared_microvm" : "dedicated_microvm",
+		billing_mode: assignment.billing_mode || "dedicated",
+		included_with: assignment.billing_mode === "included" ? assignment.group_root_name || null : null,
+		worker_slot: Number(assignment.worker_slot) || 1,
 	};
 }
 
@@ -208,7 +226,8 @@ async function mainframe_begin_assignment(user, character, request_id, options) 
 				R.replayed = true;
 				return;
 			}
-			if (existing && existing.desired_state === "running") {
+			var continuing_assignment = !!(existing && existing.desired_state === "running");
+			if (continuing_assignment) {
 				if (existing.server_key !== A.server.key || String(existing.code_slot) !== A.code_slot)
 					ex("character_already_linked");
 			} else if (mainframe_character_is_active(current_character, A.now)) ex("character_in_game");
@@ -271,6 +290,13 @@ async function mainframe_begin_assignment(user, character, request_id, options) 
 			existing.connection_url = A.server.url;
 			existing.connection_path = A.server.path;
 			existing.code_slot = A.code_slot;
+			if (!continuing_assignment) {
+				existing.billing_mode = "dedicated";
+				delete existing.group_id;
+				delete existing.group_root;
+				delete existing.group_root_name;
+				delete existing.worker_slot;
+			}
 			existing.desired_state = "running";
 			existing.stop_reason = null;
 			existing.failure = null;
@@ -338,6 +364,223 @@ async function mainframe_begin_assignment(user, character, request_id, options) 
 	};
 }
 
+async function mainframe_begin_included_assignment(user, parent_source, character, request_id, code_slot) {
+	if (!user || !character || character.owner !== get_id(user)) return { failed: true, reason: "character_not_found" };
+	if (typeof request_id !== "string" || !MAINFRAME_REQUEST_PATTERN.test(request_id)) return { failed: true, reason: "invalid_request_id" };
+	code_slot = await mainframe_validate_code_slot(user, code_slot);
+	if (!code_slot) return { failed: true, reason: "code_not_found" };
+	var now = new Date();
+	var user_id = get_id(user);
+	var character_id = get_id(character);
+	var child_session_id = crypto.randomBytes(16).toString("hex");
+	var new_group_id = crypto.randomBytes(16).toString("hex");
+	var action_id = mainframe_group_action_record_id(user_id, request_id);
+	var R = await tx(
+		async () => {
+			var owner = await tx_get(A.user_id);
+			var parent = await tx_get(A.parent_assignment_id);
+			var current_character = await tx_get(A.character_id);
+			if (!owner || !mainframe_shared_workers_enabled(owner)) ex("shared_workers_unavailable");
+			if (!current_character || current_character.owner !== A.user_id) ex("character_not_found");
+			var previous_action = await tx_get(A.action_id);
+			var existing = await tx_get(A.assignment_id);
+			if (previous_action) {
+				if (
+					previous_action.owner !== A.user_id ||
+					previous_action.character !== A.character_id ||
+					previous_action.source_session_id !== A.parent_session_id
+				)
+					ex("idempotency_conflict");
+				R.assignment =
+					existing && existing.session_id === previous_action.session_id && existing.desired_state === "running" ? existing : null;
+				R.access = R.assignment ? await tx_get(A.access_id) : null;
+				R.replayed = true;
+				return;
+			}
+			if (
+				!parent ||
+				parent.owner !== A.user_id ||
+				parent.session_id !== A.parent_session_id ||
+				parent.desired_state !== "running" ||
+				new Date(parent.access_until) <= A.now
+			)
+				ex("assignment_expired");
+			var group = null;
+			if ((parent.billing_mode || "dedicated") === "dedicated") {
+				if (parent.character !== A.parent_character_id) ex("shared_group_unavailable");
+				if (parent.auth && owner.info && Array.isArray(owner.info.auths)) {
+					owner.info.auths = owner.info.auths.filter(function (auth) {
+						return auth !== parent.auth;
+					});
+				}
+				parent.session_id = A.new_group_id;
+				parent.revision = (Number(parent.revision) || 0) + 1;
+				parent.auth = get_new_auth(owner);
+				parent.billing_mode = "group_root";
+				parent.group_id = A.new_group_id;
+				parent.group_root = parent.character;
+				parent.group_root_name = parent.character_name;
+				parent.worker_slot = 1;
+				parent.failure = null;
+				parent.updated = A.now;
+				group = {
+					_id: mainframe_group_record_id(A.new_group_id),
+					type: "mainframe_group",
+					group_id: A.new_group_id,
+					owner: A.user_id,
+					root_character: parent.character,
+					root_character_name: parent.character_name,
+					controller: parent.controller,
+					desired_state: "running",
+					members: [{ character: parent.character, character_name: parent.character_name, worker_slot: 1 }],
+					created: A.now,
+					updated: A.now,
+				};
+			} else {
+				if (!parent.group_id || !parent.group_root) ex("shared_group_unavailable");
+				group = await tx_get(mainframe_group_record_id(parent.group_id));
+				if (
+					!group ||
+					group.owner !== A.user_id ||
+					group.root_character !== parent.group_root ||
+					group.controller !== parent.controller ||
+					group.desired_state !== "running" ||
+					!Array.isArray(group.members)
+				)
+					ex("shared_group_unavailable");
+			}
+			if (existing && existing.desired_state === "running") {
+				if (existing.group_id === group.group_id) {
+					R.assignment = existing;
+					R.access = await tx_get(A.access_id);
+					R.replayed = true;
+					return;
+				}
+				ex("character_already_linked");
+			}
+			if (mainframe_character_is_active(current_character, A.now)) ex("character_in_game");
+			if (owner.server) ex("account_in_bank");
+			if (group.members.length >= MAINFRAME_GROUP_MAX_WORKERS) ex("shared_group_full");
+			var occupied = new Set(
+				group.members.map(function (member) {
+					return Number(member.worker_slot);
+				}),
+			);
+			var worker_slot = 0;
+			for (var slot = 2; slot <= MAINFRAME_GROUP_MAX_WORKERS; slot++) {
+				if (!occupied.has(slot)) {
+					worker_slot = slot;
+					break;
+				}
+			}
+			if (!worker_slot) ex("shared_group_full");
+			if (existing && existing.auth && owner.info && Array.isArray(owner.info.auths)) {
+				owner.info.auths = owner.info.auths.filter(function (auth) {
+					return auth !== existing.auth;
+				});
+			}
+			var auth = get_new_auth(owner);
+			existing = existing || {
+				_id: A.assignment_id,
+				type: "mainframe_assignment",
+				owner: A.user_id,
+				character: A.character_id,
+				created: A.now,
+				revision: 0,
+			};
+			existing.session_id = A.child_session_id;
+			existing.revision = (Number(existing.revision) || 0) + 1;
+			existing.auth = auth;
+			existing.character_name = current_character.info.name;
+			existing.controller = parent.controller;
+			existing.server_key = parent.server_key;
+			existing.server_label = parent.server_label;
+			existing.connection_url = parent.connection_url;
+			existing.connection_path = parent.connection_path;
+			existing.code_slot = A.code_slot;
+			existing.billing_mode = "included";
+			existing.group_id = group.group_id;
+			existing.group_root = group.root_character;
+			existing.group_root_name = group.root_character_name;
+			existing.worker_slot = worker_slot;
+			existing.desired_state = "running";
+			existing.stop_reason = null;
+			existing.failure = null;
+			existing.access_until = new Date(parent.access_until);
+			existing.start_after = null;
+			existing.updated = A.now;
+			var access = await tx_get(A.access_id);
+			if (access && (access.owner !== A.user_id || access.character !== A.character_id)) ex("access_conflict");
+			access = access || {
+				_id: A.access_id,
+				type: "mainframe_access",
+				owner: A.user_id,
+				character: A.character_id,
+				created: A.now,
+			};
+			access.access_until = new Date(parent.access_until);
+			access.billing_source = "included";
+			access.inherited_from = group.root_character;
+			access.operator = null;
+			access.updated = A.now;
+			group.members.push({ character: A.character_id, character_name: current_character.info.name, worker_slot: worker_slot });
+			group.updated = A.now;
+			var action = {
+				_id: A.action_id,
+				type: "mainframe_group_action",
+				operation: "start_character",
+				owner: A.user_id,
+				character: A.character_id,
+				request_id: A.request_id,
+				group_id: group.group_id,
+				source_session_id: A.parent_session_id,
+				session_id: A.child_session_id,
+				created: A.now,
+			};
+			await tx_save(owner);
+			await tx_save(parent);
+			await tx_save(access);
+			await tx_save(existing);
+			await tx_save(group);
+			await tx_save(action);
+			R.assignment = existing;
+			R.access = access;
+			R.group = group;
+			R.replayed = false;
+		},
+		{
+			user_id: user_id,
+			parent_assignment_id: mainframe_assignment_record_id(parent_source.character),
+			parent_session_id: parent_source.session_id,
+			parent_character_id: parent_source.character,
+			character_id: character_id,
+			assignment_id: mainframe_assignment_record_id(character_id),
+			access_id: mainframe_access_record_id(character_id),
+			action_id: action_id,
+			request_id: request_id,
+			child_session_id: child_session_id,
+			new_group_id: new_group_id,
+			code_slot: code_slot,
+			now: now,
+		},
+		3,
+	);
+	if (R.failed) return { failed: true, reason: R.reason || "shared_start_failed" };
+	if (!R.assignment) return { failed: true, reason: "request_already_used" };
+	return {
+		success: true,
+		charged: false,
+		replayed: R.replayed === true,
+		auto_renew: true,
+		billing_source: "included",
+		steam_hours_charged: 0,
+		shells_charged: 0,
+		next_charge_at: R.assignment.access_until ? new Date(R.assignment.access_until).toISOString() : null,
+		access: mainframe_access_to_client(R.access, now),
+		assignment: mainframe_assignment_to_client(R.assignment),
+	};
+}
+
 async function mainframe_stop_assignment(user, character) {
 	if (!user || !character || character.owner !== get_id(user)) return { failed: true, reason: "character_not_found" };
 	var now = new Date();
@@ -348,17 +591,42 @@ async function mainframe_stop_assignment(user, character) {
 			var assignment = await tx_get(A.assignment_id);
 			if (!owner || !current_character || current_character.owner !== A.user_id) ex("character_not_found");
 			if (!assignment || assignment.owner !== A.user_id || assignment.character !== A.character_id) ex("mainframe_unavailable");
-			if (assignment.auth && owner.info && Array.isArray(owner.info.auths)) {
-				owner.info.auths = owner.info.auths.filter(function (auth) {
-					return auth !== assignment.auth;
+			var assignments = [assignment];
+			var group = null;
+			if (assignment.billing_mode === "group_root") {
+				group = await tx_get(mainframe_group_record_id(assignment.group_id));
+				if (!group || group.owner !== A.user_id || group.root_character !== A.character_id || !Array.isArray(group.members))
+					ex("shared_group_unavailable");
+				assignments = [];
+				for (var member of group.members) {
+					var member_assignment = await tx_get(mainframe_assignment_record_id(member.character));
+					if (member_assignment && member_assignment.owner === A.user_id && member_assignment.group_id === group.group_id)
+						assignments.push(member_assignment);
+				}
+				group.desired_state = "stopped";
+				group.updated = A.now;
+			} else if (assignment.billing_mode === "included") {
+				group = await tx_get(mainframe_group_record_id(assignment.group_id));
+				if (!group || group.owner !== A.user_id || !Array.isArray(group.members)) ex("shared_group_unavailable");
+				group.members = group.members.filter(function (member) {
+					return member.character !== A.character_id;
 				});
+				group.updated = A.now;
 			}
-			assignment.desired_state = "stopped";
-			assignment.auth = null;
-			assignment.stop_reason = "explicit_disconnect";
-			assignment.updated = A.now;
+			for (var current of assignments) {
+				if (current.auth && owner.info && Array.isArray(owner.info.auths)) {
+					owner.info.auths = owner.info.auths.filter(function (auth) {
+						return auth !== current.auth;
+					});
+				}
+				current.desired_state = "stopped";
+				current.auth = null;
+				current.stop_reason = "explicit_disconnect";
+				current.updated = A.now;
+				await tx_save(current);
+			}
 			await tx_save(owner);
-			await tx_save(assignment);
+			if (group) await tx_save(group);
 			R.assignment = assignment;
 		},
 		{
@@ -415,10 +683,48 @@ async function mainframe_renew_assignment(source, now) {
 			if (!owner || !character || character.owner !== A.user_id) ex("character_not_found");
 			var access = await tx_get(A.access_id);
 			if (access && (access.owner !== A.user_id || access.character !== A.character_id)) ex("access_conflict");
+			var sync_group = async function (access_until, stop_reason) {
+				if (assignment.billing_mode !== "group_root") return;
+				var group = await tx_get(mainframe_group_record_id(assignment.group_id));
+				if (!group || group.owner !== A.user_id || group.root_character !== A.character_id || !Array.isArray(group.members))
+					ex("shared_group_unavailable");
+				for (var member of group.members) {
+					if (member.character === A.character_id) continue;
+					var child = await tx_get(mainframe_assignment_record_id(member.character));
+					if (!child || child.owner !== A.user_id || child.group_id !== group.group_id || child.billing_mode !== "included") continue;
+					if (stop_reason) {
+						if (child.auth && owner.info && Array.isArray(owner.info.auths)) {
+							owner.info.auths = owner.info.auths.filter(function (auth) {
+								return auth !== child.auth;
+							});
+						}
+						child.desired_state = "stopped";
+						child.auth = null;
+						child.stop_reason = stop_reason;
+					} else {
+						child.access_until = new Date(access_until);
+						child.stop_reason = null;
+						var child_access = await tx_get(mainframe_access_record_id(member.character));
+						if (child_access && child_access.owner === A.user_id && child_access.character === member.character) {
+							child_access.access_until = new Date(access_until);
+							child_access.billing_source = "included";
+							child_access.inherited_from = A.character_id;
+							child_access.updated = A.now;
+							await tx_save(child_access);
+						}
+					}
+					child.updated = A.now;
+					await tx_save(child);
+				}
+				group.desired_state = stop_reason ? "stopped" : "running";
+				group.updated = A.now;
+				await tx_save(group);
+			};
 			var access_until = access && access.access_until ? new Date(access.access_until) : null;
 			if (access_until && Number.isFinite(access_until.getTime()) && access_until > A.now) {
 				assignment.access_until = access_until;
 				assignment.updated = A.now;
+				await sync_group(access_until, null);
 				await tx_save(assignment);
 				R.state = "active";
 				R.assignment = assignment;
@@ -441,6 +747,7 @@ async function mainframe_renew_assignment(source, now) {
 				access.updated = A.now;
 				assignment.access_until = existing_until;
 				assignment.updated = A.now;
+				await sync_group(existing_until, null);
 				await tx_save(access);
 				await tx_save(assignment);
 				R.state = "active";
@@ -477,6 +784,7 @@ async function mainframe_renew_assignment(source, now) {
 				assignment.auth = null;
 				assignment.stop_reason = "not_enough_shells";
 				assignment.updated = A.now;
+				await sync_group(null, "not_enough_shells");
 				await tx_save(owner);
 				await tx_save(assignment);
 				R.state = "stopped";
@@ -500,6 +808,7 @@ async function mainframe_renew_assignment(source, now) {
 			assignment.access_until = period_end;
 			assignment.stop_reason = null;
 			assignment.updated = A.now;
+			await sync_group(period_end, null);
 			var charge = {
 				_id: A.charge_id,
 				type: "mainframe_charge",
@@ -579,6 +888,10 @@ async function mainframe_controller_assignments(agent_id) {
 			} catch (e) {
 				return null;
 			}
+			var billing_mode = assignment.billing_mode || "dedicated";
+			var group_id = assignment.group_id || assignment.session_id;
+			var group_root = assignment.group_root || assignment.character;
+			var worker_slot = Number(assignment.worker_slot) || 1;
 			if (
 				assignment._id !== mainframe_assignment_record_id(assignment.character) ||
 				!/^US_[A-Za-z0-9_-]{1,100}$/.test(assignment.owner || "") ||
@@ -589,6 +902,15 @@ async function mainframe_controller_assignments(agent_id) {
 				!Number.isSafeInteger(assignment.revision) ||
 				assignment.revision < 1 ||
 				!MAINFRAME_CODE_SLOT_PATTERN.test(assignment.code_slot || "") ||
+				!["dedicated", "group_root", "included"].includes(billing_mode) ||
+				!/^[0-9a-f]{32}$/.test(group_id) ||
+				!/^CH_[A-Za-z0-9_-]{1,100}$/.test(group_root) ||
+				!Number.isSafeInteger(worker_slot) ||
+				worker_slot < 1 ||
+				worker_slot > MAINFRAME_GROUP_MAX_WORKERS ||
+				(billing_mode === "dedicated" && (group_root !== assignment.character || worker_slot !== 1)) ||
+				(billing_mode === "group_root" && (group_root !== assignment.character || worker_slot !== 1)) ||
+				(billing_mode === "included" && group_root === assignment.character) ||
 				typeof assignment.server_label !== "string" ||
 				assignment.server_label.length < 3 ||
 				assignment.server_label.length > 50 ||
@@ -612,6 +934,10 @@ async function mainframe_controller_assignments(agent_id) {
 				connection: { url: assignment.connection_url, path: assignment.connection_path },
 				code_slot: String(assignment.code_slot),
 				credentials: { user: assignment.owner, character: assignment.character, auth: assignment.auth },
+				billing_mode: billing_mode,
+				group_id: group_id,
+				group_root: group_root,
+				worker_slot: worker_slot,
 			};
 		})
 		.filter(Boolean);
@@ -643,7 +969,7 @@ async function mainframe_record_controller_failures(report, agent_id) {
 			{
 				assignment_id: mainframe_assignment_record_id(bot.character_id),
 				session_id: bot.assignment_id,
-				failure: { code: bot.failure.code, at: bot.failure.at || now },
+				failure: { code: bot.failure.code, reason: bot.failure.reason || null, at: bot.failure.at || now },
 				controller: agent_id,
 				now: now,
 			},
@@ -719,6 +1045,14 @@ async function mainframe_code_action(body) {
 	if (body.operation === "start_character") {
 		var target = await admin_bots_owned_character(owner, data.character);
 		if (!target) return { failed: true, reason: "character_not_found" };
+		if (mainframe_shared_workers_enabled(owner))
+			return await mainframe_begin_included_assignment(
+				owner,
+				assignment,
+				target,
+				"code:" + assignment.session_id + ":" + body.request_id,
+				data.code_slot,
+			);
 		return await mainframe_begin_assignment(owner, target, "code:" + assignment.session_id + ":" + body.request_id, {
 			code_slot: data.code_slot,
 			server: assignment.server_key,
@@ -825,7 +1159,7 @@ async function mainframe_renew_access(now) {
 	now = now || new Date();
 	var expired_assignments = await db
 		.collection("mark")
-		.find({ type: "mainframe_assignment", desired_state: "running", access_until: { $lte: now } })
+		.find({ type: "mainframe_assignment", desired_state: "running", billing_mode: { $ne: "included" }, access_until: { $lte: now } })
 		.limit(400)
 		.toArray();
 	var renewed = 0;

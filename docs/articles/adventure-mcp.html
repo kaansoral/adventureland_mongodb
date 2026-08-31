@@ -144,7 +144,7 @@
 <table>
 <tr><th>Layer</th><th>Responsibility</th></tr>
 <tr><td>AI client</td><td>Reads game knowledge and account state, researches exact methods and records, manages CODE slots, and controls owned Mainframe characters.</td></tr>
-<tr><td>Mainframe</td><td>Runs one isolated machine per character and supplies the Adventure Land CODE bridge. The machine has no browser page, DOM, or general network access.</td></tr>
+<tr><td>Mainframe</td><td>Runs a separate isolated machine for each direct link and supplies the Adventure Land CODE bridge. CODE can add up to three included workers to its shared machine. Machines have no browser page, DOM, or general network access.</td></tr>
 <tr><td>Character CODE</td><td>Runs long-lived JavaScript using Adventure Land globals and public functions. It decides how the character moves, fights, loots, trades, crafts, and reacts.</td></tr>
 <tr><td>Game server</td><td>Owns the live character, map, entities, combat, inventory, economy, and action results.</td></tr>
 </table>
@@ -173,8 +173,8 @@
 <tr><td>What guides and rules exist?</td><td>Read <span class="dlabel">adventureland://catalog/docs</span>, then use <span class="dlabel">get_doc</span> or the exact documentation resource.</td></tr>
 <tr><td>Which CODE function performs an action?</td><td>Search <span class="dlabel">list_code_methods</span> by action or concept, then read the exact contract with <span class="dlabel">get_code_method</span>.</td></tr>
 <tr><td>What does an item, skill, monster, map, drop, or recipe define?</td><td>Use <span class="dlabel">search_game_data</span>, then read the exact record with <span class="dlabel">get_game_data</span>. Read a complete section only when exact records are insufficient.</td></tr>
-<tr><td>What does this account own?</td><td>Use <span class="dlabel">mainframe_get_dashboard</span>, <span class="dlabel">mainframe_get_character</span>, <span class="dlabel">get_bank</span>, and the CODE-slot tools. The bank tool reads the live game-server copy while a character has the bank open.</td></tr>
-<tr><td>How should this character improve?</td><td>Use <span class="dlabel">plan_character_progression</span>. It compares the live character with owned inventory and bank equipment through the game server's final-stat calculation.</td></tr>
+<tr><td>What does this account own?</td><td>Use <span class="dlabel">mainframe_get_dashboard</span>, <span class="dlabel">mainframe_get_character</span>, <span class="dlabel">get_bank</span>, and the CODE-slot tools. A mounted bank snapshot is marked stale.</td></tr>
+<tr><td>How should this character improve?</td><td>Use <span class="dlabel">plan_character_progression</span>. It compares current available character state with owned inventory and bank equipment inside the MCP service.</td></tr>
 <tr><td>What is the character doing now?</td><td>Use current Mainframe character state and CODE logs. Current map, coordinates, target, party roster, equipment, inventory summary, shop listings, activity, XP, gold, death state, and game responses matter more than saved profile fields or request counters.</td></tr>
 <tr><td>How is the game implemented?</td><td>Use the shipped runner resource and the open-source paths below. Prefer live MCP definitions and contracts when production and a repository branch differ.</td></tr>
 </table>
@@ -232,7 +232,7 @@
 <tr><td><span class="dlabel">adventureland://game-data/{section}/{name}</span></td><td>Read one item, skill, monster, map, recipe, or other game definition.</td></tr>
 <tr><td><span class="dlabel">adventureland://code/slots/{slot}</span></td><td>Read one owned CODE slot.</td></tr>
 <tr><td><span class="dlabel">adventureland://mainframe/characters/{character}</span></td><td>Read one owned character's Mainframe state.</td></tr>
-<tr><td><span class="dlabel">adventureland://progression/characters/{character}</span></td><td>Read a balanced-farming progression plan for one live owned character.</td></tr>
+<tr><td><span class="dlabel">adventureland://progression/characters/{character}</span></td><td>Read a contained approximate progression plan for one owned character.</td></tr>
 </table>
 
 <p>Find exact names with <span class="dlabel">list_docs</span>, <span class="dlabel">list_code_methods</span>, <span class="dlabel">search_game_data</span>, <span class="dlabel">list_codes</span>, and <span class="dlabel">mainframe_get_dashboard</span>. Resource paths are validated and remain inside public or account-owned collections.</p>
@@ -243,7 +243,7 @@
 <tr><th>Prompt</th><th>Use</th></tr>
 <tr><td><span class="dlabel">learn_adventure_land</span></td><td>Load the game model without changing account state.</td></tr>
 <tr><td><span class="dlabel">research_gameplay</span></td><td>Answer a game, build, progression, economy, or content question from exact sources.</td></tr>
-<tr><td><span class="dlabel">improve_character</span></td><td>Start with native live-stat analysis and owned equipment instead of inventing a scoring routine in CODE.</td></tr>
+<tr><td><span class="dlabel">improve_character</span></td><td>Start with the contained item-property comparison and owned equipment instead of inventing scoring CODE.</td></tr>
 <tr><td><span class="dlabel">configure_samaritan_code</span></td><td>Adapt the Samaritan adventurer or merchant baseline to an owned character without silently enabling item mutations.</td></tr>
 <tr><td><span class="dlabel">write_character_code</span></td><td>Research the goal, character, and optional slot before writing CODE.</td></tr>
 <tr><td><span class="dlabel">review_character_code</span></td><td>Check an owned slot against exact contracts, game state, safety, and Mainframe compatibility.</td></tr>
@@ -258,13 +258,13 @@
 
 <p>Respect other players' fights and space. Do not attack a monster already targeting an unrelated player, repeatedly invite strangers, follow someone without consent, block a spawn, or create avoidable visual and request spam. Rate-limit helpful healing and buffs, and never let them move another player's gold or items. PvP actions, trading, mail, giveaways, NPC sales, public listings, bank movement, upgrades, compounds, exchanges, and purchases require clear rules and conservative limits.</p>
 
-<p><span class="dlabel">Native character progression</span></p>
+<p><span class="dlabel">Character progression planning</span></p>
 
-<p>Use <span class="dlabel">plan_character_progression</span> before asking an AI to invent item-scoring CODE. Choose <span class="dlabel">balanced_farming</span>, <span class="dlabel">damage</span>, <span class="dlabel">survival</span>, <span class="dlabel">support</span>, <span class="dlabel">gold</span>, <span class="dlabel">luck</span>, or <span class="dlabel">xp</span>. The character must be live so its game server can calculate the real final stats.</p>
+<p>Use <span class="dlabel">plan_character_progression</span> before asking an AI to invent item-scoring CODE. Choose <span class="dlabel">balanced_farming</span>, <span class="dlabel">damage</span>, <span class="dlabel">survival</span>, <span class="dlabel">support</span>, <span class="dlabel">gold</span>, <span class="dlabel">luck</span>, or <span class="dlabel">xp</span>. The planner prefers authenticated Mainframe observations and otherwise uses the latest saved character snapshot.</p>
 
-<p>The planner reads equipped items, inventory, owned scroll counts, and up to 600 equipment candidates from the account bank. It returns current stats and practical metrics, the best reversible replacement for each slot, useful stat-scroll changes, and the stat benefit and material readiness of the next upgrade level. It does not equip, scroll, upgrade, compound, buy, sell, or move anything.</p>
+<p>The planner reads equipped items, inventory, owned scroll counts, and up to 600 equipment candidates from a current bank snapshot. It returns the best approximate replacement for each slot, useful stat-scroll changes, and the property benefit and material readiness of the next upgrade or compound level. It does not equip, scroll, upgrade, compound, buy, sell, or move anything.</p>
 
-<p>Equipment is compared one replacement at a time under the character's current conditions, party bonuses, fear, and map effects. Final stats and equip legality are authoritative, but the objective score cannot fully value every ability, proc, target defense, party role, or consumable cost. Review entries marked <span class="dlabel">mechanics_review</span> against exact game definitions. Treat stat scrolls and upgrades as proposals, then check materials, live success chance, cost, and risk before asking the player for approval.</p>
+<p>Equipment is compared one replacement at a time using loaded item properties, class restrictions, slots, upgrade curves, and an objective-specific score. This is an approximation, not a final character or combat simulation. Review tradeoffs and <span class="dlabel">mechanics_review</span> against exact definitions, abilities, procs, sets, target defenses, party roles, and costs. Treat stat scrolls, upgrades, and compounds as proposals, then confirm the live preview and risk before asking the player for approval.</p>
 
 <p><span class="dlabel">Samaritan starter CODE</span></p>
 
@@ -327,7 +327,9 @@ setInterval(async function () {
 
 <p><span class="dlabel">Billing safety</span></p>
 
-<p><span class="dlabel">mainframe_link_character</span> prepays one 60-minute window. When <span class="dlabel">mainframe_get_dashboard</span> includes <span class="dlabel">free_time</span>, Mainframe uses those shared Steam hours before charging Shells. Each running character consumes time separately. The assignment renews automatically, survives Adventure Land HTTP restarts, Mainframe controller restarts, host maintenance, and machine replacement, and stops only after <span class="dlabel">mainframe_disconnect_character</span> or when the account cannot pay the next renewal.</p>
+<p><span class="dlabel">mainframe_link_character</span> directly starts one character in a dedicated machine and prepays one 60-minute window. When <span class="dlabel">mainframe_get_dashboard</span> includes <span class="dlabel">free_time</span>, Mainframe uses those shared Steam hours before charging Shells. Each direct link consumes time separately. The assignment renews automatically, survives Adventure Land HTTP restarts, Mainframe controller restarts, host maintenance, and machine replacement, and stops only after <span class="dlabel">mainframe_disconnect_character</span> or when the account cannot pay the next renewal.</p>
+
+<p>Inside running CODE, <span class="dlabel">start_character</span> can add up to three owned characters as included workers in the caller's shared machine. They use separate CODE slots, game sessions, process identities, and realm-limit authentication but share the root character's prepaid window. The first child start reconnects the root once. <span class="dlabel">stop_character</span> stops one child; disconnecting the root stops all included workers. Direct Mainframe links remain separate machines and separate charges.</p>
 
 <p>If a link response is lost, retry the same character, CODE slot, server, and <span class="dlabel">request_id</span>. Do not invent a new request ID for a network retry. Disconnecting disables renewal but does not refund or pause remaining paid time.</p>
 
@@ -341,7 +343,7 @@ setInterval(async function () {
 
 <p><span class="dlabel">How to verify behavior</span></p>
 
-<p>Requested action counts show what CODE attempted, not what the game accepted. Confirm behavior through observations: connection state, map, coordinates, movement, target, activity, death state, experience, gold, DPS, gold per second, and CODE logs. Poll slowly; combat timing belongs inside CODE.</p>
+<p>Requested action counts show what CODE attempted, not what the game accepted. Confirm behavior through observations: connection state, disconnect reason, map, coordinates, movement, target, activity, death state, experience, gold, DPS, gold per second, and CODE logs. Logs remain readable for 30 days after the worker stops. Poll slowly; combat timing belongs inside CODE.</p>
 
 <p><span class="dlabel">Open-source map</span></p>
 

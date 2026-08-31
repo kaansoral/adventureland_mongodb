@@ -4,18 +4,19 @@ var MCP_API_TOKEN_PREFIX = "mcp_";
 var MCP_API_TOKEN_PATTERN = /^mcp_[A-Za-z0-9_-]{43}$/;
 var MCP_PROTOCOL_CURRENT = "2026-07-28";
 var MCP_PROTOCOL_LEGACY = "2025-11-25";
-var MCP_SERVER_INFO = { name: "adventure-land", version: "1.6.0", description: "Adventure Land game knowledge, native progression, character CODE, and Mainframe control" };
+var MCP_SERVER_INFO = { name: "adventure-land", version: "1.7.0", description: "Adventure Land game knowledge, contained progression planning, character CODE, and Mainframe control" };
 var MCP_SOURCE_REPOSITORY = "https://github.com/kaansoral/adventureland_mongodb";
 var MCP_START_RESOURCE = "adventureland://guide/start-here";
 var MCP_CATALOG_RESOURCES = ["adventureland://catalog/docs", "adventureland://catalog/code-methods", "adventureland://catalog/game-data"];
 var MCP_PROGRESSION_OBJECTIVES = ["balanced_farming", "damage", "survival", "support", "gold", "luck", "xp"];
+var MCP_MAINFRAME_LOG_RETENTION_DAYS = 30;
 var MCP_INSTRUCTIONS = [
 	"Adventure Land is a programmable online game. External AI works through this MCP server; character logic runs as JavaScript CODE inside Mainframe.",
 	"Read adventureland://guide/start-here first. Before writing CODE, also read adventureland://guide/code-runtime, adventureland://guide/code-architecture, adventureland://reference/code-globals, and the exact methods and game definitions the plan will use. Then call mainframe_get_dashboard before changing CODE or starting a character.",
 	"Use the three adventureland://catalog resources for discovery. Use list_code_methods and get_code_method for exact public runtime contracts, search_game_data and get_game_data for deployed definitions, and list_docs/get_doc for rules and architecture.",
 	"Inspect the owned character profile, class, equipment, inventory, party roster, shop listings, live realm, and existing CODE before planning. Use exact definition keys rather than guessing from display names.",
-	"When the player asks to improve a character, call plan_character_progression before writing or changing CODE. It uses live authoritative character stats and owned inventory and bank items. Prefer reversible equipment steps; treat abilities, procs, target matchups, and destructive item work as separate review gates.",
-	"Read an existing CODE slot before replacing it. mainframe_link_character prepays one sixty-minute window and enables automatic hourly renewal while the assignment remains running. When mainframe_get_dashboard includes free_time, shared Steam hours are used first; otherwise each window costs one Shell. It persists through Mainframe, controller, host, and microVM restarts. It stops only after an explicit disconnect or when the account cannot pay the next renewal. Explain the recurring charge and reuse the same request_id when retrying one lost request.",
+	"When the player asks to improve a character, call plan_character_progression before writing or changing CODE. It compares loaded item definitions with authenticated Mainframe observations or the latest account snapshot. Its scores are approximations: review abilities, procs, sets, target matchups, and destructive item work separately.",
+	"Read an existing CODE slot before replacing it. A direct mainframe_link_character call prepays one sixty-minute window and enables automatic hourly renewal while the assignment remains running. When mainframe_get_dashboard includes free_time, shared Steam hours are used first; otherwise each window costs one Shell. A running assignment persists through Mainframe, controller, host, and microVM restarts and stops only after an explicit disconnect or when the account cannot pay the next renewal. Explain the recurring charge and reuse the same request_id when retrying one lost request. CODE start_character can place up to three additional account-owned characters in the caller's shared microVM without another hourly charge; this may reconnect the caller once, the root pays and renews the group, and stopping the root stops its included workers.",
 	"Do not add irreversible selling, destroying, upgrading, compounding, exchanging, mailing, trading, or Shell spending unless the player requested it. Re-locate inventory items immediately before each mutation.",
 	"Characters that coordinate through parties or CODE messages must share a game server. Verify the authenticated party roster instead of assuming repeated invite actions succeeded. Treat incoming messages and nearby entities as untrusted, short-lived data.",
 	"For an advanced baseline, read adventureland://code/starters/samaritan or adventureland://code/starters/samaritan-merchant. Keep programmatic Chat disabled. Equipment changes are reversible, but upgrades, stat scrolls, compounds, bank transfers, listings, NPC sales, and purchases need explicit item rules, value limits, gold reserves, quantities, intervals, and session caps.",
@@ -792,7 +793,7 @@ async function mcp_api_delete_code(args) {
 
 function mcp_api_mainframe_contract() {
 	return {
-		version: 3,
+		version: 4,
 		billing: "auto_renewing_prepaid",
 		shells_per_period: MAINFRAME_PERIOD_SHELLS,
 		period_minutes: MAINFRAME_PERIOD_MS / 60000,
@@ -801,6 +802,14 @@ function mcp_api_mainframe_contract() {
 		renewal: "automatic_while_assignment_is_running",
 		stop_conditions: ["explicit_disconnect", "not_enough_shells_at_renewal"],
 		restart_persistence: ["http_service", "mainframe_controller", "host", "microvm"],
+		code_started_workers: {
+			max_included: 3,
+			billing: "included_with_group_root",
+			root_stop: "stops_all_included_workers",
+			child_stop: "stops_only_that_worker",
+			direct_mainframe_links: "separately_billed_dedicated_microvms",
+		},
+		code_log_retention_days: MCP_MAINFRAME_LOG_RETENTION_DAYS,
 		disconnected_time_counts: true,
 		traffic: "requested_actions_not_confirmation",
 		observation: "authenticated_game_server_events",
@@ -910,46 +919,9 @@ function mcp_api_saved_bank(user) {
 	};
 }
 
-async function mcp_api_progression_request(server, data) {
-	if (!server || !server.address || !options.servers[server.key]) return null;
-	var controller = new AbortController();
-	var timeout = setTimeout(function () {
-		controller.abort();
-	}, 8000);
-	try {
-		var response = await fetch(server_url(server, "progression"), {
-			method: "POST",
-			headers: { "Content-Type": "application/x-www-form-urlencoded" },
-			body: new URLSearchParams({ spass: keys.ACCESS_MASTER, data: JSON.stringify(data) }).toString(),
-			signal: controller.signal,
-		});
-		var body = await response.json();
-		return body && typeof body === "object" ? body : null;
-	} catch (error) {
-		return null;
-	} finally {
-		clearTimeout(timeout);
-	}
-}
-
 async function mcp_api_get_bank(args) {
 	var saved = mcp_api_saved_bank(args.user);
-	if (!(args.user && args.user.server && args.user.mounted_to)) return saved;
-	var character = await get(args.user.mounted_to);
-	var server = await get(args.user.server);
-	if (character && character.owner === get_id(args.user) && server) {
-		var live = await mcp_api_progression_request(server, {
-			operation: "bank",
-			owner: get_id(args.user),
-			character: get_id(character),
-		});
-		if (live && live.success) {
-			live.stale = false;
-			live.mounted_character_id = get_id(character);
-			return live;
-		}
-	}
-	saved.warning = "The bank is currently mounted in the game, but its live state could not be read. This saved snapshot may be stale.";
+	if (saved.stale) saved.warning = "The bank is currently mounted in the game. This saved account snapshot may be stale.";
 	return saved;
 }
 
@@ -973,61 +945,588 @@ function mcp_api_bank_equipment_candidates(bank) {
 	return result;
 }
 
-function mcp_api_bank_holdings(bank) {
-	if (!bank || bank.stale || !bank.packs) return [];
-	var counts = {};
-	for (var pack in bank.packs) {
-		var items = bank.packs[pack];
-		if (!Array.isArray(items)) continue;
-		for (var i = 0; i < items.length; i++) {
-			var item = mcp_api_owned_item(items[i]);
-			var def = item && G.items[item.name];
-			if (!def || !["uscroll", "pscroll"].includes(def.type)) continue;
-			counts[item.name] = Math.min(Number.MAX_SAFE_INTEGER, (counts[item.name] || 0) + (item.q || 1));
+// Keep this approximation aligned with calculate_item_properties, equip rules, and loaded upgrade/compound tables.
+var MCP_PROGRESSION_APPROXIMATION_VERSION = 1;
+var MCP_PROGRESSION_PROPERTY_FIELDS = [
+	"gold",
+	"luck",
+	"xp",
+	"int",
+	"str",
+	"dex",
+	"vit",
+	"for",
+	"hp",
+	"mp",
+	"attack",
+	"heal",
+	"range",
+	"armor",
+	"resistance",
+	"pnresistance",
+	"firesistance",
+	"fzresistance",
+	"phresistance",
+	"stresistance",
+	"speed",
+	"evasion",
+	"miss",
+	"reflection",
+	"lifesteal",
+	"manasteal",
+	"rpiercing",
+	"apiercing",
+	"crit",
+	"critdamage",
+	"dreturn",
+	"frequency",
+	"mp_cost",
+	"mp_reduction",
+	"output",
+	"courage",
+	"mcourage",
+	"pcourage",
+	"blast",
+	"explosion",
+	"attr0",
+	"attr1",
+	"stat",
+];
+
+function mcp_api_progression_number(value) {
+	value = Number(value);
+	return Number.isFinite(value) ? value : 0;
+}
+
+function mcp_api_progression_round(value, digits) {
+	var multiplier = Math.pow(10, digits === undefined ? 4 : digits);
+	return Math.round(mcp_api_progression_number(value) * multiplier) / multiplier;
+}
+
+function mcp_api_progression_definition(item, character_type, map) {
+	var source = item && G.items[item.name];
+	if (!source) return null;
+	var def = JSON.parse(JSON.stringify(source));
+	[character_type, map].forEach(function (scope) {
+		var extras = scope && source[scope];
+		if (!extras || typeof extras !== "object" || Array.isArray(extras)) return;
+		Object.keys(extras).forEach(function (name) {
+			if ((name === "upgrade" || name === "compound") && extras[name] && typeof extras[name] === "object") {
+				def[name] = def[name] || {};
+				Object.keys(extras[name]).forEach(function (property) {
+					def[name][property] = mcp_api_progression_number(def[name][property]) + mcp_api_progression_number(extras[name][property]);
+				});
+			} else if (typeof extras[name] === "number") def[name] = mcp_api_progression_number(def[name]) + extras[name];
+			else def[name] = extras[name];
+		});
+	});
+	return def;
+}
+
+function mcp_api_progression_item_properties(item, character_type, map) {
+	item = mcp_api_owned_item(item);
+	var def = mcp_api_progression_definition(item, character_type, map);
+	if (!item || !def) return {};
+	var properties = {};
+	for (var i = 0; i < MCP_PROGRESSION_PROPERTY_FIELDS.length; i++) properties[MCP_PROGRESSION_PROPERTY_FIELDS[i]] = 0;
+	if (item.p === "shiny") {
+		if (def.attack) properties.attack += 4 + (["axe", "basher", "great_staff"].includes(def.wtype) ? 3 : 0);
+		else if (def.stat) properties.stat += 2;
+		else if (def.armor) {
+			properties.armor += 12;
+			properties.resistance += 10;
+		} else {
+			properties.str++;
+			properties.dex++;
+			properties.int++;
+		}
+	} else if (item.p && G.titles && G.titles[item.p]) {
+		Object.keys(G.titles[item.p]).forEach(function (name) {
+			if (Object.prototype.hasOwnProperty.call(properties, name)) properties[name] += mcp_api_progression_number(G.titles[item.p][name]);
+		});
+	}
+	var progression = def.upgrade || def.compound;
+	var level = Math.max(0, Math.min(100, Math.trunc(mcp_api_progression_number(item.level))));
+	if (progression) {
+		for (var current_level = 1; current_level <= level; current_level++) {
+			var level_multiplier = 1;
+			if (def.upgrade) {
+				if (current_level === 7) level_multiplier = 1.25;
+				else if (current_level === 8) level_multiplier = 1.5;
+				else if (current_level === 9) level_multiplier = 2;
+				else if (current_level === 10) level_multiplier = 3;
+				else if (current_level === 11 || current_level === 12) level_multiplier = 1.25;
+			} else {
+				if (current_level === 5) level_multiplier = 1.25;
+				else if (current_level === 6) level_multiplier = 1.5;
+				else if (current_level === 7) level_multiplier = 2;
+				else if (current_level >= 8) level_multiplier = 3;
+			}
+			Object.keys(progression).forEach(function (name) {
+				if (!Object.prototype.hasOwnProperty.call(properties, name) || typeof progression[name] !== "number") return;
+				properties[name] += name === "stat" ? Math.round(progression[name] * level_multiplier) : progression[name] * level_multiplier;
+				if (name === "stat" && current_level >= 7) properties.stat++;
+			});
 		}
 	}
-	return Object.keys(counts)
-		.sort()
-		.slice(0, 1000)
-		.map(function (name) {
-			return { name: name, q: counts[name] };
+	if (level === 10 && properties.stat && def.tier >= 3) properties.stat += 2;
+	Object.keys(def).forEach(function (name) {
+		if (Object.prototype.hasOwnProperty.call(properties, name) && typeof def[name] === "number") properties[name] += def[name];
+	});
+	if (item.p === "legacy" && def.legacy) {
+		Object.keys(def.legacy).forEach(function (name) {
+			if (!Object.prototype.hasOwnProperty.call(properties, name)) return;
+			if (def.legacy[name] === null) delete properties[name];
+			else properties[name] = mcp_api_progression_number(properties[name]) + mcp_api_progression_number(def.legacy[name]);
 		});
+	}
+	var stat_multipliers = {
+		gold: 0.5,
+		luck: 1,
+		xp: 0.5,
+		int: 1,
+		str: 1,
+		dex: 1,
+		vit: 1,
+		for: 1,
+		armor: 2.25,
+		resistance: 2.25,
+		speed: 0.325,
+		evasion: 0.325,
+		reflection: 0.15,
+		lifesteal: 0.15,
+		manasteal: 0.04,
+		rpiercing: 2.25,
+		apiercing: 2.25,
+		crit: 0.125,
+		dreturn: 0.5,
+		frequency: 0.325,
+		mp_cost: -0.6,
+		output: 0.175,
+	};
+	if (def.stat && item.stat_type && Object.prototype.hasOwnProperty.call(properties, item.stat_type)) {
+		properties[item.stat_type] += properties.stat * mcp_api_progression_number(stat_multipliers[item.stat_type] === undefined ? 1 : stat_multipliers[item.stat_type]);
+		properties.stat = 0;
+	}
+	Object.keys(properties).forEach(function (name) {
+		properties[name] = mcp_api_progression_round(properties[name], ["evasion", "miss", "reflection", "dreturn", "lifesteal", "manasteal", "attr0", "attr1", "crit", "critdamage"].includes(name) ? 4 : 0);
+		if (!properties[name]) delete properties[name];
+	});
+	return properties;
+}
+
+function mcp_api_progression_item_signature(item) {
+	item = mcp_api_owned_item(item);
+	return item ? [item.name, item.level || 0, item.stat_type || "", item.p || "", item.locked ? 1 : 0, item.blocked ? 1 : 0].join("|") : "";
+}
+
+function mcp_api_progression_delta(before, after) {
+	var result = {};
+	var names = new Set(Object.keys(before || {}).concat(Object.keys(after || {})));
+	names.forEach(function (name) {
+		var delta = mcp_api_progression_round(mcp_api_progression_number(after && after[name]) - mcp_api_progression_number(before && before[name]));
+		if (delta) result[name] = delta;
+	});
+	return result;
+}
+
+function mcp_api_progression_weights(objective, character_type) {
+	var weights = {};
+	function add(values, multiplier) {
+		Object.keys(values).forEach(function (name) {
+			weights[name] = mcp_api_progression_number(weights[name]) + values[name] * (multiplier === undefined ? 1 : multiplier);
+		});
+	}
+	var damage = { attack: 5, frequency: 40, crit: 3, critdamage: 0.8, apiercing: 0.12, rpiercing: 0.12, output: 2, range: 0.15, blast: 0.5, explosion: 0.5 };
+	var survival = { hp: 0.04, vit: 4, armor: 0.25, resistance: 0.25, evasion: 3, reflection: 2.5, for: 2.5, speed: 0.3, dreturn: 1.5 };
+	var support = { heal: 5, int: 3, mp: 0.025, frequency: 30, output: 2, range: 0.15, hp: 0.015, armor: 0.08, resistance: 0.08 };
+	if (objective === "damage") add(damage);
+	else if (objective === "survival") add(survival);
+	else if (objective === "support") add(support);
+	else {
+		add(damage, objective === "balanced_farming" ? 0.65 : 0.4);
+		add(survival, objective === "balanced_farming" ? 0.35 : 0.15);
+	}
+	if (objective === "gold") weights.gold = 10;
+	if (objective === "luck") weights.luck = 10;
+	if (objective === "xp") weights.xp = 10;
+	var class_def = G.classes && G.classes[character_type];
+	var primary = (class_def && class_def.main_stat) || "vit";
+	weights[primary] = mcp_api_progression_number(weights[primary]) + (objective === "survival" ? 1 : 4);
+	if (character_type === "paladin" && objective !== "survival") weights.int = mcp_api_progression_number(weights.int) + 1.5;
+	return weights;
+}
+
+function mcp_api_progression_score(properties, objective, character_type) {
+	var weights = mcp_api_progression_weights(objective, character_type);
+	var score = 0;
+	Object.keys(weights).forEach(function (name) {
+		score += mcp_api_progression_number(properties && properties[name]) * weights[name];
+	});
+	return mcp_api_progression_round(score, 2);
+}
+
+function mcp_api_progression_mechanics(item) {
+	var def = item && G.items[item.name];
+	if (!def) return [];
+	var result = [];
+	["ability", "aura", "set", "projectile"].forEach(function (name) {
+		if (def[name]) result.push(name + ":" + def[name]);
+	});
+	if (def.attr0 !== undefined || def.attr1 !== undefined || (def.upgrade && (def.upgrade.attr0 !== undefined || def.upgrade.attr1 !== undefined))) result.push("special_scaling");
+	if (item.p === "glitched") result.push("unmodeled_glitched_bonus");
+	return result;
+}
+
+function mcp_api_progression_candidate_slots(character_type, character_level, slots, item) {
+	var def = item && G.items[item.name];
+	var class_def = G.classes && G.classes[character_type];
+	if (!def || !class_def) return [];
+	if (def.class && !(Array.isArray(def.class) ? def.class : [def.class]).includes(character_type)) return [];
+	if (def.level && mcp_api_progression_number(character_level) < def.level) return [];
+	if (def.type === "ring") return [{ slot: "ring1", unequip: [] }, { slot: "ring2", unequip: [] }];
+	if (def.type === "earring") return [{ slot: "earring1", unequip: [] }, { slot: "earring2", unequip: [] }];
+	if (["shield", "source", "quiver", "misc_offhand"].includes(def.type)) {
+		var main_def = slots.mainhand && G.items[slots.mainhand.name];
+		if (class_def.offhand && class_def.offhand[def.type] && !(main_def && class_def.doublehand && class_def.doublehand[main_def.wtype])) return [{ slot: "offhand", unequip: [] }];
+		return [];
+	}
+	if (def.type === "weapon" || def.type === "tool") {
+		var result = [];
+		var wtype = def.wtype || def.type;
+		if (class_def.doublehand && class_def.doublehand[wtype]) result.push({ slot: "mainhand", unequip: slots.offhand ? ["offhand"] : [] });
+		else if (class_def.mainhand && class_def.mainhand[wtype]) result.push({ slot: "mainhand", unequip: [] });
+		var main_def = slots.mainhand && G.items[slots.mainhand.name];
+		if (class_def.offhand && class_def.offhand[wtype] && !(main_def && class_def.doublehand && class_def.doublehand[main_def.wtype])) result.push({ slot: "offhand", unequip: [] });
+		return result;
+	}
+	if (["helmet", "pants", "chest", "amulet", "shoes", "gloves", "belt", "orb", "cape"].includes(def.type)) return [{ slot: def.type, unequip: [] }];
+	return [];
+}
+
+function mcp_api_progression_slot_properties(item, slot, character_type, map) {
+	var properties = mcp_api_progression_item_properties(item, character_type, map);
+	var def = item && G.items[item.name];
+	if (slot === "offhand" && def && def.type === "weapon" && properties.attack) properties.attack = mcp_api_progression_round(properties.attack * 0.7);
+	return properties;
+}
+
+function mcp_api_progression_add_properties(target, properties, multiplier) {
+	multiplier = multiplier === undefined ? 1 : multiplier;
+	Object.keys(properties || {}).forEach(function (name) {
+		target[name] = mcp_api_progression_round(mcp_api_progression_number(target[name]) + mcp_api_progression_number(properties[name]) * multiplier);
+		if (!target[name]) delete target[name];
+	});
+	return target;
+}
+
+function mcp_api_progression_state(character, bot) {
+	var info = (character && character.info) || {};
+	var equipment = {};
+	Object.keys(info.slots || {}).forEach(function (slot) {
+		var item = mcp_api_owned_item(info.slots[slot]);
+		if (item) equipment[slot] = item;
+	});
+	var inventory = [];
+	(Array.isArray(info.items) ? info.items : []).forEach(function (raw, index) {
+		var item = mcp_api_owned_item(raw);
+		if (item) inventory.push({ source: "inventory:" + index, item: item });
+	});
+	var state = {
+		source: "last_account_snapshot",
+		observed_at: character && character.last_sync ? new Date(character.last_sync).toISOString() : null,
+		online: !!(character && character.online),
+		map: info.map || null,
+		equipment: equipment,
+		inventory: inventory,
+	};
+	var observation = bot && bot.game_connected && bot.observation && bot.observation.source === "game_server" ? bot.observation : null;
+	if (!observation) return state;
+	state.source = "mainframe_observation";
+	state.observed_at = observation.observed_at || null;
+	state.online = true;
+	state.map = observation.map || state.map;
+	state.equipment = {};
+	Object.keys(observation.equipment || {}).forEach(function (slot) {
+		var item = mcp_api_owned_item(observation.equipment[slot]);
+		if (item) state.equipment[slot] = item;
+	});
+	state.inventory = [];
+	(Array.isArray(observation.inventory) ? observation.inventory : []).forEach(function (raw, index) {
+		var item = mcp_api_owned_item(raw);
+		if (item) state.inventory.push({ source: "inventory:" + (Number.isFinite(Number(raw.index)) ? Math.trunc(Number(raw.index)) : index), item: item });
+	});
+	return state;
+}
+
+function mcp_api_progression_owned_counts(state, bank) {
+	var by_name = Object.create(null);
+	var by_signature = Object.create(null);
+	function add(item) {
+		item = mcp_api_owned_item(item);
+		if (!item) return;
+		var quantity = item.q || 1;
+		by_name[item.name] = Math.min(Number.MAX_SAFE_INTEGER, mcp_api_progression_number(by_name[item.name]) + quantity);
+		var signature = mcp_api_progression_item_signature(item);
+		by_signature[signature] = Math.min(Number.MAX_SAFE_INTEGER, mcp_api_progression_number(by_signature[signature]) + quantity);
+	}
+	Object.keys(state.equipment || {}).forEach(function (slot) {
+		add(state.equipment[slot]);
+	});
+	(state.inventory || []).forEach(function (entry) {
+		add(entry.item);
+	});
+	if (bank && !bank.stale && bank.packs) {
+		Object.keys(bank.packs).forEach(function (pack) {
+			(bank.packs[pack] || []).forEach(add);
+		});
+	}
+	return { by_name: by_name, by_signature: by_signature };
+}
+
+function mcp_api_progression_grade(def, item) {
+	var level = (item && item.level) || 0;
+	var grades = def.grades || [9, 10, 11, 12];
+	if (level >= grades[3]) return 4;
+	if (level >= grades[2]) return 3;
+	if (level >= grades[1]) return 2;
+	if (level >= grades[0]) return 1;
+	return 0;
+}
+
+function mcp_api_progression_probability(def, level, compound) {
+	var tables = compound ? (typeof compounds === "object" ? compounds : null) : typeof upgrades === "object" ? upgrades : null;
+	var table = tables && tables[def.igrade || 0];
+	return table && table[level] !== undefined ? table[level] : null;
+}
+
+function mcp_api_progression_next_steps(state, objective, character_type, owned) {
+	var target_stat = objective === "survival" ? "vit" : objective === "support" ? "int" : (G.classes[character_type] && G.classes[character_type].main_stat) || "vit";
+	var stat_scrolls = [];
+	var upgrades_result = [];
+	var compounds_result = [];
+	Object.keys(state.equipment || {}).forEach(function (slot) {
+		var item = state.equipment[slot];
+		var def = item && G.items[item.name];
+		if (!def || item.locked) return;
+		var current_properties = mcp_api_progression_slot_properties(item, slot, character_type, state.map);
+		if (def.stat && item.stat_type !== target_stat) {
+			var stat_item = Object.assign({}, item, { stat_type: target_stat });
+			var stat_properties = mcp_api_progression_slot_properties(stat_item, slot, character_type, state.map);
+			var stat_delta = mcp_api_progression_delta(current_properties, stat_properties);
+			var stat_score = mcp_api_progression_score(stat_delta, objective, character_type);
+			if (stat_score > 0) {
+				var grade = Math.max(0, Math.min(6, mcp_api_progression_grade(def, item)));
+				var quantities = [1, 10, 100, 1000, 9999, 9999, 9999];
+				var scroll = target_stat + "scroll";
+				stat_scrolls.push({
+					action: item.stat_type ? "replace_stat" : "apply_stat",
+					slot: slot,
+					item: item,
+					stat: target_stat,
+					scroll: scroll,
+					quantity: quantities[grade],
+					owned: owned.by_name[scroll] || 0,
+					ready: (owned.by_name[scroll] || 0) >= quantities[grade],
+					approximate_score_delta: stat_score,
+					property_delta: stat_delta,
+					risk: "rare_destructive_failure_and_consumes_stat_scrolls",
+				});
+			}
+		}
+		var next_level = (item.level || 0) + 1;
+		if (def.upgrade) {
+			var chance = mcp_api_progression_probability(def, next_level, false);
+			if (chance !== null) {
+				var upgraded = Object.assign({}, item, { level: next_level });
+				var upgrade_delta = mcp_api_progression_delta(current_properties, mcp_api_progression_slot_properties(upgraded, slot, character_type, state.map));
+				var upgrade_score = mcp_api_progression_score(upgrade_delta, objective, character_type);
+				if (upgrade_score > 0) {
+					var scroll = "scroll" + Math.max(0, Math.min(2, mcp_api_progression_grade(def, item)));
+					upgrades_result.push({
+						action: "upgrade",
+						slot: slot,
+						item: item,
+						to_level: next_level,
+						scroll: scroll,
+						owned: owned.by_name[scroll] || 0,
+						ready: (owned.by_name[scroll] || 0) >= 1,
+						base_chance: chance,
+						approximate_score_delta: upgrade_score,
+						property_delta: upgrade_delta,
+						risk: "destructive_on_failure",
+					});
+				}
+			}
+		} else if (def.compound) {
+			var chance = mcp_api_progression_probability(def, next_level, true);
+			if (chance !== null) {
+				var compounded = Object.assign({}, item, { level: next_level });
+				var compound_delta = mcp_api_progression_delta(current_properties, mcp_api_progression_slot_properties(compounded, slot, character_type, state.map));
+				var compound_score = mcp_api_progression_score(compound_delta, objective, character_type);
+				var signature = mcp_api_progression_item_signature(item);
+				if (compound_score > 0)
+					compounds_result.push({
+						action: "compound",
+						slot: slot,
+						item: item,
+						to_level: next_level,
+						copies_required: 3,
+						copies_owned: owned.by_signature[signature] || 0,
+						ready: (owned.by_signature[signature] || 0) >= 3,
+						base_chance: chance,
+						approximate_score_delta: compound_score,
+						property_delta: compound_delta,
+						risk: "consumes_three_equal_level_items_and_can_fail",
+					});
+			}
+		}
+	});
+	function sort(left, right) {
+		return right.approximate_score_delta - left.approximate_score_delta;
+	}
+	return { stat_scrolls: stat_scrolls.sort(sort), upgrades: upgrades_result.sort(sort), compounds: compounds_result.sort(sort) };
 }
 
 async function mcp_api_plan_character_progression(args) {
-	var character = await admin_bots_owned_character(args.user, args.character);
-	if (!character) return { failed: true, reason: "character_not_found" };
-	if (!character.server) return { failed: true, reason: "character_not_live", action: "Start or link the character, then try again." };
-	var server = await get(character.server);
-	if (!server) return { failed: true, reason: "character_not_live", action: "Start or link the character, then try again." };
-	var bank = await mcp_api_get_bank(args);
-	var candidates = mcp_api_bank_equipment_candidates(bank);
-	var holdings = mcp_api_bank_holdings(bank);
-	var result = await mcp_api_progression_request(server, {
-		operation: "analyze",
-		owner: get_id(args.user),
-		character: get_id(character),
-		objective: args.objective || "balanced_farming",
-		candidates: candidates,
-		holdings: holdings,
-	});
-	if (!result) return { failed: true, reason: "progression_unavailable" };
-	if (result.failed) {
-		if (result.reason === "character_not_live") result.action = "Start or link the character, then try again.";
+	var stage = "character_lookup";
+	try {
+		var character = await admin_bots_owned_character(args.user, args.character);
+		if (!character) return { failed: true, reason: "character_not_found" };
+		stage = "character_snapshot";
+		var bot = await admin_bots_find(get_id(character));
+		var state = mcp_api_progression_state(character, bot);
+		var character_type = character.type;
+		if (!G.classes || !G.classes[character_type]) return { failed: true, reason: "unsupported_character_class" };
+		stage = "bank_read";
+		var bank = await mcp_api_get_bank(args);
+		var bank_candidates = mcp_api_bank_equipment_candidates(bank);
+		var objective = MCP_PROGRESSION_OBJECTIVES.includes(args.objective) ? args.objective : "balanced_farming";
+		stage = "approximate_analysis";
+		var candidates = state.inventory.concat(bank_candidates);
+		var seen = Object.create(null);
+		var best_by_slot = Object.create(null);
+		for (var i = 0; i < candidates.length; i++) {
+			var candidate = candidates[i];
+			if (!candidate || !candidate.item || candidate.item.blocked) continue;
+			var signature = mcp_api_progression_item_signature(candidate.item);
+			if (!signature || seen[signature]) continue;
+			seen[signature] = true;
+			var placements = mcp_api_progression_candidate_slots(character_type, character.level, state.equipment, candidate.item);
+			for (var j = 0; j < placements.length; j++) {
+				var placement = placements[j];
+				var current = state.equipment[placement.slot] || null;
+				if (mcp_api_progression_item_signature(current) === signature && !placement.unequip.length) continue;
+				var before = {};
+				mcp_api_progression_add_properties(before, mcp_api_progression_slot_properties(current, placement.slot, character_type, state.map));
+				for (var k = 0; k < placement.unequip.length; k++)
+					mcp_api_progression_add_properties(before, mcp_api_progression_slot_properties(state.equipment[placement.unequip[k]], placement.unequip[k], character_type, state.map));
+				var after = mcp_api_progression_slot_properties(candidate.item, placement.slot, character_type, state.map);
+				var delta = mcp_api_progression_delta(before, after);
+				var score_delta = mcp_api_progression_score(delta, objective, character_type);
+				if (score_delta <= 0) continue;
+				var recommendation = {
+					action: "equip",
+					source: candidate.source,
+					slot: placement.slot,
+					item: candidate.item,
+					replaces: current,
+					unequip: placement.unequip,
+					approximate_score_delta: score_delta,
+					property_delta: delta,
+					tradeoffs: Object.keys(delta).filter(function (name) {
+						return delta[name] < 0;
+					}),
+					mechanics_review: Array.from(new Set(mcp_api_progression_mechanics(candidate.item).concat(mcp_api_progression_mechanics(current)))),
+				};
+				if (!best_by_slot[placement.slot] || best_by_slot[placement.slot].approximate_score_delta < score_delta) best_by_slot[placement.slot] = recommendation;
+			}
+		}
+		var equipment_properties = {};
+		Object.keys(state.equipment).forEach(function (slot) {
+			mcp_api_progression_add_properties(equipment_properties, mcp_api_progression_slot_properties(state.equipment[slot], slot, character_type, state.map));
+		});
+		var owned = mcp_api_progression_owned_counts(state, bank);
+		var next_steps = mcp_api_progression_next_steps(state, objective, character_type, owned);
+		var snapshot = {
+			character: get_id(character),
+			objective: objective,
+			source: state.source,
+			observed_at: state.observed_at,
+			equipment: state.equipment,
+			inventory: state.inventory,
+			bank_observed_at: bank.observed_at,
+		};
+		var result = {
+			success: true,
+			source: "mcp_approximation",
+			observed_at: state.observed_at,
+			snapshot_id: crypto.createHash("sha256").update(JSON.stringify(snapshot), "utf8").digest("hex").slice(0, 32),
+			character: (character.info && character.info.name) || character.name,
+			character_id: get_id(character),
+			class: character_type,
+			level: Number(character.level) || 0,
+			objective: objective,
+			current: {
+				source: state.source,
+				online: state.online,
+				map: state.map,
+				equipment: state.equipment,
+				approximate_item_properties: equipment_properties,
+				approximate_score: mcp_api_progression_score(equipment_properties, objective, character_type),
+			},
+			recommendations: {
+				equip: Object.keys(best_by_slot)
+					.map(function (slot) {
+						return best_by_slot[slot];
+					})
+					.sort(function (left, right) {
+						return right.approximate_score_delta - left.approximate_score_delta;
+					}),
+				stat_scrolls: next_steps.stat_scrolls,
+				upgrades: next_steps.upgrades,
+				compounds: next_steps.compounds,
+			},
+			bank: {
+				source: bank.source,
+				observed_at: bank.observed_at,
+				stale: !!bank.stale,
+				candidate_count: bank_candidates.length,
+			},
+			approximation: {
+				exact: false,
+				model: "item_definition_delta",
+				model_version: MCP_PROGRESSION_APPROXIMATION_VERSION,
+				game_version: Version,
+			},
+			policy: {
+				read_only: true,
+				equipment_changes_are_reversible: true,
+				stat_scrolls_require_approval: true,
+				upgrades_require_live_preview_and_approval: true,
+				compounds_require_live_preview_and_approval: true,
+			},
+			limitations: [
+				"Scores compare loaded item properties, class restrictions, slots, levels, and upgrade curves. They are approximations, not final character or combat simulations.",
+				"Abilities, procs, sets, class weapon bonuses, conditions, party effects, target defenses, consumable costs, and complete-build interactions need separate review.",
+				"Recommendations compare one replacement or next item level at a time. Review tradeoffs and mechanics_review before acting.",
+			],
+		};
+		if (bank.stale) {
+			result.bank.warning = bank.warning;
+			result.limitations.push("Bank items were excluded because the account snapshot may be stale.");
+		}
 		return result;
+	} catch (error) {
+		console.error("mcp progression " + stage + " error", error);
+		return {
+			failed: true,
+			reason: "progression_failed",
+			stage: stage,
+			retryable: true,
+			action: "Retry the progression request. If it fails again, report the stage.",
+		};
 	}
-	result.bank = {
-		source: bank.source,
-		observed_at: bank.observed_at,
-		stale: !!bank.stale,
-		candidate_count: candidates.length,
-		material_type_count: holdings.length,
-	};
-	if (bank.stale) {
-		result.bank.warning = bank.warning;
-		result.limitations.push("Bank equipment was excluded because the mounted bank snapshot could not be read live.");
-	}
-	return result;
 }
 
 async function mcp_api_list_mainframe_characters(args) {
@@ -1131,9 +1630,23 @@ async function mcp_api_get_mainframe_logs(args) {
 	var character = await admin_bots_owned_character(args.user, args.character);
 	if (!character) return { failed: true, reason: "character_not_found" };
 	var bot = await admin_bots_find(get_id(character));
-	if (!bot) return { failed: true, reason: "mainframe_unavailable" };
 	var limit = Math.max(1, Math.min(Number(args.limit) || 100, 100));
-	return { success: true, logs: (bot.logs || []).slice(-limit) };
+	var persisted = await admin_bots_persisted_logs(get_id(character), limit);
+	var logs = persisted.slice();
+	var seen = new Set(
+		logs.map(function (entry) {
+			return JSON.stringify([entry.assignment_id || null, entry.at, entry.level, entry.values]);
+		}),
+	);
+	for (var entry of (bot && bot.logs) || []) {
+		var value = Object.assign({ assignment_id: bot.assignment_id || null }, entry);
+		var key = JSON.stringify([value.assignment_id, value.at, value.level, value.values]);
+		if (!seen.has(key)) {
+			seen.add(key);
+			logs.push(value);
+		}
+	}
+	return { success: true, active: !!bot, retention_days: MCP_MAINFRAME_LOG_RETENTION_DAYS, logs: logs.slice(-limit) };
 }
 
 async function mcp_api_get_mainframe_dashboard(args) {
@@ -1303,12 +1816,12 @@ var MCP_TOOL_META = {
 	get_code: { description: "Read one owned CODE slot.", readOnlyHint: true },
 	get_libraries: { description: "Read the standard local CODE helper files used by the old client sync folder.", readOnlyHint: true },
 	get_bank: {
-		description: "Read all account-owned bank packs and gold. If a character has the bank open, reads the live game-server copy instead of the saved account snapshot.",
+		description: "Read all account-owned bank packs and gold from the saved account snapshot. A mounted bank is marked stale and excluded from progression comparisons.",
 		readOnlyHint: true,
 	},
 	plan_character_progression: {
 		description:
-			"Plan improvements for one live owned character using the game server's authoritative final-stat calculation plus owned inventory and bank equipment. Returns reversible equipment recommendations, stat-scroll candidates, and upgrade benefits; it never changes items.",
+			"Plan improvements inside the MCP service using authenticated Mainframe observations or the latest owned snapshot and loaded item definitions. Returns approximate gear, stat-scroll, upgrade, and compound recommendations; it never changes items.",
 		readOnlyHint: true,
 	},
 	save_code: { description: "Create or replace one account-owned JavaScript CODE slot. Read an existing slot before replacement; saving does not start a character.", destructiveHint: true },
@@ -1316,7 +1829,7 @@ var MCP_TOOL_META = {
 	mainframe_list_characters: { description: "List owned characters and their Mainframe access and runtime state.", readOnlyHint: true },
 	mainframe_get_dashboard: {
 		description:
-			"Read this before Mainframe changes. Returns owned characters, Shell balance, any remaining shared Steam hours, prepaid access, assignments, authenticated runtime observations, CODE slots, and live servers. Each running character consumes its own hourly window.",
+			"Read this before Mainframe changes. Returns owned characters, Shell balance, any remaining shared Steam hours, prepaid access, assignments, authenticated runtime observations, CODE slots, and live servers. Directly linked characters consume separate hourly windows. Characters started from CODE can be included with that caller, up to four workers in one shared microVM and one hourly window.",
 		readOnlyHint: true,
 	},
 	mainframe_get_character: {
@@ -1326,7 +1839,7 @@ var MCP_TOOL_META = {
 	},
 	mainframe_link_character: {
 		description:
-			"Run an owned character on Mainframe using a saved CODE slot. Prepays one sixty-minute window, using remaining shared Steam hours before charging one Shell, then renews automatically every hour while running. Each running character consumes time separately. The assignment survives service, controller, host, and microVM restarts and stops only on explicit disconnect or insufficient funds. Keep one request_id stable when retrying the same lost request.",
+			"Run an owned character on a dedicated Mainframe microVM using a saved CODE slot. Prepays one sixty-minute window, using remaining shared Steam hours before charging one Shell, then renews automatically every hour while running. Each direct link consumes time separately. CODE start_character can instead add up to three included workers to the caller's shared microVM without another hourly charge. The assignment survives service, controller, host, and microVM restarts and stops only on explicit disconnect or insufficient funds. Keep one request_id stable when retrying the same lost request.",
 		destructiveHint: false,
 		idempotentHint: true,
 	},
@@ -1334,7 +1847,7 @@ var MCP_TOOL_META = {
 		description: "Explicitly stop one owned Mainframe character and disable future automatic renewals. Remaining paid time is not refunded and can be reused by starting again before it expires.",
 		destructiveHint: false,
 	},
-	mainframe_get_logs: { description: "Read bounded Mainframe CODE logs for one owned character.", readOnlyHint: true },
+	mainframe_get_logs: { description: "Read up to 100 recent Mainframe CODE logs for one owned character. Logs remain available for 30 days after its worker or microVM stops.", readOnlyHint: true },
 };
 
 function mcp_tool_schema(ref) {
@@ -1579,7 +2092,7 @@ function mcp_resources() {
 			uri: "adventureland://account/bank",
 			name: "account-bank",
 			title: "Owned bank items and gold",
-			description: "Authenticated account bank. Uses the live game-server copy while the bank is mounted; otherwise uses the saved account snapshot.",
+			description: "Authenticated saved account bank. A mounted snapshot is marked stale and excluded from progression comparisons.",
 			mimeType: "application/json",
 			annotations: mcp_resource_annotations(0.95),
 		},
@@ -1642,8 +2155,8 @@ function mcp_resource_templates() {
 		{
 			uriTemplate: "adventureland://progression/characters/{character}",
 			name: "owned-character-progression",
-			title: "Native character progression plan",
-			description: "Read a balanced-farming progression plan for one live owned character using authoritative final stats and owned items.",
+			title: "Character progression plan",
+			description: "Read a contained approximate progression plan for one owned character using loaded item definitions and current available account state.",
 			mimeType: "application/json",
 		},
 	];
@@ -1651,6 +2164,28 @@ function mcp_resource_templates() {
 
 function mcp_resource_content(uri, mime_type, value) {
 	return { uri: uri, mimeType: mime_type, text: typeof value === "string" ? value : JSON.stringify(value, null, 2) };
+}
+
+function mcp_resource_failure_content(uri, failure) {
+	var code = failure && typeof failure.reason === "string" ? failure.reason : "resource_unavailable";
+	var messages = {
+		character_not_found: "The requested owned character was not found.",
+		character_not_live: "The requested character is not reachable on its game server.",
+		progression_unavailable: "The progression inputs were unavailable.",
+		progression_failed: "The progression analysis could not be generated.",
+	};
+	var details = { uri: uri };
+	Object.keys(failure || {}).forEach(function (name) {
+		if (name !== "failed" && name !== "reason") details[name] = failure[name];
+	});
+	return mcp_resource_content(uri, "application/json", {
+		failed: true,
+		error: {
+			code: code,
+			message: messages[code] || "The requested resource is unavailable.",
+			details: details,
+		},
+	});
 }
 
 function mcp_resource_path_parts(url) {
@@ -1714,7 +2249,8 @@ async function mcp_read_resource(uri, user) {
 	else if (url.hostname === "progression" && parts[0] === "characters" && parts.length === 2)
 		result = await mcp_api_plan_character_progression({ user: user, character: parts[1], objective: "balanced_farming" });
 	else return null;
-	if (!result || result.failed) return null;
+	if (!result) return null;
+	if (result.failed) return mcp_resource_failure_content(uri, result);
 	return mcp_resource_content(uri, url.hostname === "docs" ? "text/plain" : "application/json", url.hostname === "docs" ? result.content : result);
 }
 
@@ -1734,9 +2270,9 @@ var MCP_PROMPTS = [
 	{
 		name: "improve_character",
 		title: "Improve a character",
-		description: "Build a native, evidence-backed progression plan from live stats and every owned equipment candidate.",
+		description: "Build an evidence-backed approximate progression plan from current account state and owned equipment candidates.",
 		arguments: [
-			{ name: "character", description: "Owned live character name.", required: true },
+			{ name: "character", description: "Owned character name.", required: true },
 			{ name: "objective", description: "Optional: balanced_farming, damage, survival, support, gold, luck, or xp.", required: false },
 		],
 	},
@@ -1850,7 +2386,7 @@ async function mcp_get_prompt(name, prompt_arguments, user) {
 			prompt_arguments.character +
 			" for " +
 			(prompt_arguments.objective || "balanced_farming") +
-			". Call plan_character_progression first. Do not replace native analysis with improvised item-scoring CODE. Start with reversible equipment recommendations, inspect every mechanics_review item against exact game definitions and the player's intended targets, and explain meaningful tradeoffs. Stat scrolls and upgrades are proposals only: verify materials and live probabilities, explain risk and cost, and wait for explicit approval before any irreversible action.";
+			". Call plan_character_progression first. Use its contained approximation as a starting point instead of writing item-scoring CODE. Inspect every tradeoff and mechanics_review item against exact game definitions and the player's intended targets. Stat scrolls, upgrades, and compounds are proposals only: verify materials and live probabilities, explain risk and cost, and wait for explicit approval before any irreversible action.";
 	} else if (name === "configure_samaritan_code") {
 		task =
 			"Configure the " +
@@ -1889,7 +2425,7 @@ async function mcp_get_prompt(name, prompt_arguments, user) {
 			prompt_arguments.character +
 			" toward this goal: " +
 			prompt_arguments.goal +
-			". Read the dashboard, CODE runtime, architecture, globals, saved character profile, current live state, existing slot, exact function references, and relevant game data first. Never overwrite an unread slot or load a character already active elsewhere. Explain that Mainframe prepays one sixty-minute window per character, uses any free_time reported by the dashboard before Shells, and then renews hourly until explicitly disconnected or the account cannot pay. Use one stable request_id for retries. The assignment is durable across service, controller, host, and microVM restarts; do not disconnect it as routine recovery. After linking, verify authenticated observations and logs; do not treat requested-action counters as success.";
+			". Read the dashboard, CODE runtime, architecture, globals, saved character profile, current live state, existing slot, exact function references, and relevant game data first. Never overwrite an unread slot or load a character already active elsewhere. Explain that each direct Mainframe link prepays one sixty-minute window, uses any free_time reported by the dashboard before Shells, and then renews hourly until explicitly disconnected or the account cannot pay. CODE start_character can add up to three included workers under the caller's one window; warn that the first child can reconnect the caller once, the root controls renewal, and stopping the root stops the included workers. Use one stable request_id for retries. The assignment is durable across service, controller, host, and microVM restarts; do not disconnect it as routine recovery. After linking, verify authenticated observations, disconnect reasons, and retained logs; do not treat requested-action counters as success.";
 	} else {
 		task =
 			"Debug owned character " +
@@ -2135,7 +2671,12 @@ async function handle_mcp_transport(req, res) {
 			return res.status(200).send(mcp_jsonrpc(message.id, { contents: [content], _meta: mcp_result_meta() }));
 		} catch (e) {
 			console.error("mcp resource read error", e);
-			return res.status(200).send(mcp_jsonrpc_error(message.id, -32603, "Resource read failed"));
+			return res.status(200).send(
+				mcp_jsonrpc_error(message.id, -32603, "Resource read failed", {
+					code: "resource_read_failed",
+					details: { uri: uri },
+				}),
+			);
 		}
 	}
 	if (message.method === "prompts/list") {
