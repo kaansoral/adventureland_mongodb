@@ -1646,7 +1646,12 @@ async function mcp_api_get_mainframe_logs(args) {
 			logs.push(value);
 		}
 	}
-	return { success: true, active: !!bot, retention_days: MCP_MAINFRAME_LOG_RETENTION_DAYS, logs: logs.slice(-limit) };
+	return {
+		success: true,
+		active: !!(bot && bot.desired_state === "running" && bot.phase !== "stopped"),
+		retention_days: MCP_MAINFRAME_LOG_RETENTION_DAYS,
+		logs: logs.slice(-limit),
+	};
 }
 
 async function mcp_api_get_mainframe_dashboard(args) {
