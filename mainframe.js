@@ -124,10 +124,6 @@ function mainframe_group_action_record_id(owner_id, request_id) {
 	return "MK_mainframe_group_action-" + key;
 }
 
-function mainframe_shared_workers_enabled(owner) {
-	return !!(owner && owner.mainframe_shared_workers === true);
-}
-
 function mainframe_character_is_active(character, now) {
 	if (!character || !character.server || !character.last_sync) return false;
 	var last_sync = new Date(character.last_sync);
@@ -380,7 +376,7 @@ async function mainframe_begin_included_assignment(user, parent_source, characte
 			var owner = await tx_get(A.user_id);
 			var parent = await tx_get(A.parent_assignment_id);
 			var current_character = await tx_get(A.character_id);
-			if (!owner || !mainframe_shared_workers_enabled(owner)) ex("shared_workers_unavailable");
+			if (!owner) ex("account_not_found");
 			if (!current_character || current_character.owner !== A.user_id) ex("character_not_found");
 			var previous_action = await tx_get(A.action_id);
 			var existing = await tx_get(A.assignment_id);
@@ -1045,19 +1041,13 @@ async function mainframe_code_action(body) {
 	if (body.operation === "start_character") {
 		var target = await admin_bots_owned_character(owner, data.character);
 		if (!target) return { failed: true, reason: "character_not_found" };
-		if (mainframe_shared_workers_enabled(owner))
-			return await mainframe_begin_included_assignment(
-				owner,
-				assignment,
-				target,
-				"code:" + assignment.session_id + ":" + body.request_id,
-				data.code_slot,
-			);
-		return await mainframe_begin_assignment(owner, target, "code:" + assignment.session_id + ":" + body.request_id, {
-			code_slot: data.code_slot,
-			server: assignment.server_key,
-			controller: assignment.controller,
-		});
+		return await mainframe_begin_included_assignment(
+			owner,
+			assignment,
+			target,
+			"code:" + assignment.session_id + ":" + body.request_id,
+			data.code_slot,
+		);
 	}
 	if (body.operation === "stop_character") {
 		var target = await admin_bots_owned_character(owner, data.character);
