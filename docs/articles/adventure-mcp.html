@@ -144,7 +144,7 @@
 <table>
 <tr><th>Layer</th><th>Responsibility</th></tr>
 <tr><td>AI client</td><td>Reads game knowledge and account state, researches exact methods and records, manages CODE slots, and controls owned Mainframe characters.</td></tr>
-<tr><td>Mainframe</td><td>Runs a separate isolated machine for each direct link and supplies the Adventure Land CODE bridge. CODE can add up to three included workers to its shared machine. Machines have no browser page, DOM, or general network access.</td></tr>
+<tr><td>Mainframe</td><td>Runs a separate isolated machine for each direct link and supplies the Adventure Land CODE bridge. CODE can add up to three included workers to a shared machine. Machines have no browser page, DOM, or general network access.</td></tr>
 <tr><td>Character CODE</td><td>Runs long-lived JavaScript using Adventure Land globals and public functions. It decides how the character moves, fights, loots, trades, crafts, and reacts.</td></tr>
 <tr><td>Game server</td><td>Owns the live character, map, entities, combat, inventory, economy, and action results.</td></tr>
 </table>
@@ -174,7 +174,7 @@
 <tr><td>Which CODE function performs an action?</td><td>Search <span class="dlabel">list_code_methods</span> by action or concept, then read the exact contract with <span class="dlabel">get_code_method</span>.</td></tr>
 <tr><td>What does an item, skill, monster, map, drop, or recipe define?</td><td>Use <span class="dlabel">search_game_data</span>, then read the exact record with <span class="dlabel">get_game_data</span>. Read a complete section only when exact records are insufficient.</td></tr>
 <tr><td>What does this account own?</td><td>Use <span class="dlabel">mainframe_get_dashboard</span>, <span class="dlabel">mainframe_get_character</span>, <span class="dlabel">get_bank</span>, and the CODE-slot tools. A mounted bank snapshot is marked stale.</td></tr>
-<tr><td>How should this character improve?</td><td>Use <span class="dlabel">plan_character_progression</span>. It compares current available character state with owned inventory and bank equipment inside the MCP service.</td></tr>
+<tr><td>How should this character improve?</td><td>Use <span class="dlabel">plan_character_progression</span> for the character's context and enduring objectives, then develop a strategy from exact definitions, account state, observed results, and the player's goals.</td></tr>
 <tr><td>What is the character doing now?</td><td>Use current Mainframe character state and CODE logs. Current map, coordinates, target, party roster, equipment, inventory summary, shop listings, activity, XP, gold, death state, and game responses matter more than saved profile fields or request counters.</td></tr>
 <tr><td>How is the game implemented?</td><td>Use the shipped runner resource and the open-source paths below. Prefer live MCP definitions and contracts when production and a repository branch differ.</td></tr>
 </table>
@@ -183,7 +183,7 @@
 
 <table style="width:100%; text-align:left; border-spacing:12px 7px">
 <tr><th>Capability</th><th>Purpose</th></tr>
-<tr><td>Tools</td><td>Search game data, read documentation and CODE contracts, inspect owned items, plan character progression, manage saved slots, and control owned Mainframe characters.</td></tr>
+<tr><td>Tools</td><td>Search game data, read documentation and CODE contracts, inspect owned items and progression context, manage saved slots, and control owned Mainframe characters.</td></tr>
 <tr><td>Resources</td><td>Load the game model, CODE architecture, globals, object and event references, Mainframe rules, live account state, and shipped runner source.</td></tr>
 <tr><td>Resource templates</td><td>Read one exact guide, function, game definition, saved slot, or owned character by URI.</td></tr>
 <tr><td>Prompts</td><td>Teach the AI the game, write character CODE, review a slot, or operate one Mainframe character through a consistent workflow.</td></tr>
@@ -232,7 +232,7 @@
 <tr><td><span class="dlabel">adventureland://game-data/{section}/{name}</span></td><td>Read one item, skill, monster, map, recipe, or other game definition.</td></tr>
 <tr><td><span class="dlabel">adventureland://code/slots/{slot}</span></td><td>Read one owned CODE slot.</td></tr>
 <tr><td><span class="dlabel">adventureland://mainframe/characters/{character}</span></td><td>Read one owned character's Mainframe state.</td></tr>
-<tr><td><span class="dlabel">adventureland://progression/characters/{character}</span></td><td>Read a contained approximate progression plan for one owned character.</td></tr>
+<tr><td><span class="dlabel">adventureland://progression/characters/{character}</span></td><td>Read one owned character's progression objectives, current context, evidence sources, and optional CODE starting point.</td></tr>
 </table>
 
 <p>Find exact names with <span class="dlabel">list_docs</span>, <span class="dlabel">list_code_methods</span>, <span class="dlabel">search_game_data</span>, <span class="dlabel">list_codes</span>, and <span class="dlabel">mainframe_get_dashboard</span>. Resource paths are validated and remain inside public or account-owned collections.</p>
@@ -243,7 +243,7 @@
 <tr><th>Prompt</th><th>Use</th></tr>
 <tr><td><span class="dlabel">learn_adventure_land</span></td><td>Load the game model without changing account state.</td></tr>
 <tr><td><span class="dlabel">research_gameplay</span></td><td>Answer a game, build, progression, economy, or content question from exact sources.</td></tr>
-<tr><td><span class="dlabel">improve_character</span></td><td>Start with the contained item-property comparison and owned equipment instead of inventing scoring CODE.</td></tr>
+<tr><td><span class="dlabel">improve_character</span></td><td>Give the AI character context and long-term objectives, then let it develop its own evidence-backed strategy.</td></tr>
 <tr><td><span class="dlabel">configure_samaritan_code</span></td><td>Adapt the Samaritan adventurer or merchant baseline to an owned character without silently enabling item mutations.</td></tr>
 <tr><td><span class="dlabel">write_character_code</span></td><td>Research the goal, character, and optional slot before writing CODE.</td></tr>
 <tr><td><span class="dlabel">review_character_code</span></td><td>Check an owned slot against exact contracts, game state, safety, and Mainframe compatibility.</td></tr>
@@ -258,17 +258,15 @@
 
 <p>Respect other players' fights and space. Do not attack a monster already targeting an unrelated player, repeatedly invite strangers, follow someone without consent, block a spawn, or create avoidable visual and request spam. Rate-limit helpful healing and buffs, and never let them move another player's gold or items. PvP actions, trading, mail, giveaways, NPC sales, public listings, bank movement, upgrades, compounds, exchanges, and purchases require clear rules and conservative limits.</p>
 
-<p><span class="dlabel">Character progression planning</span></p>
+<p><span class="dlabel">Character progression</span></p>
 
-<p>Use <span class="dlabel">plan_character_progression</span> before asking an AI to invent item-scoring CODE. Choose <span class="dlabel">balanced_farming</span>, <span class="dlabel">damage</span>, <span class="dlabel">survival</span>, <span class="dlabel">support</span>, <span class="dlabel">gold</span>, <span class="dlabel">luck</span>, or <span class="dlabel">xp</span>. The planner prefers authenticated Mainframe observations and otherwise uses the latest saved character snapshot.</p>
+<p>The enduring objective is to help a character become stronger and more capable over time. That includes coherent equipment, useful item levels, suitable stats, acquisition, gold and material supply, farming, combat, and effective CODE. These are goals, not a fixed sequence or an item checklist.</p>
 
-<p>The planner reads equipped items, inventory, owned scroll counts, and up to 600 equipment candidates from a current bank snapshot. It returns the best approximate replacement for each slot, useful stat-scroll changes, and the property benefit and material readiness of the next upgrade or compound level. It does not equip, scroll, upgrade, compound, buy, sell, or move anything.</p>
-
-<p>Equipment is compared one replacement at a time using loaded item properties, class restrictions, slots, upgrade curves, and an objective-specific score. This is an approximation, not a final character or combat simulation. Review tradeoffs and <span class="dlabel">mechanics_review</span> against exact definitions, abilities, procs, sets, target defenses, party roles, and costs. Treat stat scrolls, upgrades, and compounds as proposals, then confirm the live preview and risk before asking the player for approval.</p>
+<p><span class="dlabel">plan_character_progression</span> supplies current context, explains the game's item and progression systems, points to exact evidence, and keeps those objectives visible. It does not rank owned items or prescribe actions. The AI should learn the class and game, inspect exact definitions and account state, observe results, and develop its own strategy with the player.</p>
 
 <p><span class="dlabel">Samaritan starter CODE</span></p>
 
-<p>The two Samaritan resources are advanced starting points, not account-wide defaults. They do not modify the normal editor starter or the game's default CODE. Read the source, inspect the owned character and target slot, then change the settings block before saving it as account CODE.</p>
+<p>The two Samaritan resources are optional advanced starting points, not a required workflow, a finished answer, or account-wide defaults. They do not modify the normal editor starter or the game's default CODE. An AI can read and adapt one when it helps the player's goal, or build a different approach from the documented game model.</p>
 
 <table>
 <tr><th>Starter</th><th>Behavior</th></tr>
@@ -288,9 +286,9 @@
 <li>Find exact CODE methods with <span class="dlabel">list_code_methods</span>, then read each contract with <span class="dlabel">get_code_method</span>.</li>
 <li>Find exact items, skills, monsters, maps, and recipes with <span class="dlabel">search_game_data</span>, then read their definitions with <span class="dlabel">get_game_data</span>.</li>
 <li>Save the complete JavaScript slot with <span class="dlabel">save_code</span>.</li>
-<li>Explain that starting without paid time charges 1 Shell and that a running assignment automatically renews for 1 Shell every 60 minutes until explicitly disconnected or the account runs out of Shells.</li>
+<li>Explain that starting without paid time charges 1 Shell for 60 minutes. At each later renewal, 1 Shell or free Steam hour buys 60, 50, 45, or 40 minutes when 1, 2, 3, or 4 characters are active in the shared machine.</li>
 <li>Link the character with one stable <span class="dlabel">request_id</span>.</li>
-<li>Verify connection, position, activity, deaths, performance, and CODE logs.</li>
+<li>Verify connection, position, activity, deaths, performance, CODE logs, and the separate Mainframe event journal.</li>
 </ol>
 
 <p>Combat loops belong inside character CODE. MCP should plan, save CODE, observe, and correct. It should not poll fast enough to become the combat loop.</p>
@@ -329,7 +327,9 @@ setInterval(async function () {
 
 <p><span class="dlabel">mainframe_link_character</span> directly starts one character in a dedicated machine and prepays one 60-minute window. When <span class="dlabel">mainframe_get_dashboard</span> includes <span class="dlabel">free_time</span>, Mainframe uses those shared Steam hours before charging Shells. Each direct link consumes time separately. The assignment renews automatically, survives Adventure Land HTTP restarts, Mainframe controller restarts, host maintenance, and machine replacement, and stops only after <span class="dlabel">mainframe_disconnect_character</span> or when the account cannot pay the next renewal.</p>
 
-<p>Inside running CODE, <span class="dlabel">start_character</span> can add up to three owned characters as included workers in the caller's shared machine. They use separate CODE slots, game sessions, process identities, and realm-limit authentication but share the root character's prepaid window. The first child start reconnects the root once. <span class="dlabel">stop_character</span> stops one child; disconnecting the root stops all included workers. Direct Mainframe links remain separate machines and separate charges.</p>
+<p>Inside running CODE, <span class="dlabel">start_character</span> can add up to three owned characters as included workers in the caller's shared machine, for four characters total. Each uses a separate CODE slot, game session, Worker identity, memory limit, and realm-limit authentication, but all share the root character's prepaid window and fixed machine CPU budget. The first child start reconnects the root once while Mainframe changes machine type. Later workers can start without replacing that shared machine. <span class="dlabel">stop_character</span> stops only that child; disconnecting the root stops every included character. Direct Mainframe links remain separate machines and separate charges.</p>
+
+<p>At each renewal boundary, Mainframe counts the characters then running in the shared machine. One Shell or one free Steam hour buys <span class="dlabel">60 minutes for 1</span>, <span class="dlabel">50 minutes for 2</span>, <span class="dlabel">45 minutes for 3</span>, or <span class="dlabel">40 minutes for 4</span>. Starting or stopping a child does not reprice time already paid for. Shared guest memory grows only as workers are added, from 128 MiB for one character to at most 192 MiB for four; the machine retains the same fixed 10% CPU limit.</p>
 
 <p>If a link response is lost, retry the same character, CODE slot, server, and <span class="dlabel">request_id</span>. Do not invent a new request ID for a network retry. Disconnecting disables renewal but does not refund or pause remaining paid time.</p>
 
@@ -343,7 +343,7 @@ setInterval(async function () {
 
 <p><span class="dlabel">How to verify behavior</span></p>
 
-<p>Requested action counts show what CODE attempted, not what the game accepted. Confirm behavior through observations: connection state, disconnect reason, map, coordinates, movement, target, activity, death state, experience, gold, DPS, gold per second, and CODE logs. Logs remain readable for 30 days after the worker stops. Poll slowly; combat timing belongs inside CODE.</p>
+<p>Requested action counts show what CODE attempted, not what the game accepted. Confirm behavior through observations: connection state, disconnect reason, map, coordinates, movement, target, activity, death state, experience, gold, DPS, gold per second, and CODE logs. Use <span class="dlabel">mainframe_get_events</span> to distinguish Mainframe starts, renewal, recovery, restarts, server changes, and explicit stops from character CODE output. Both journals remain readable for 30 days after the worker stops. Poll slowly; combat timing belongs inside CODE.</p>
 
 <p><span class="dlabel">Open-source map</span></p>
 

@@ -59,9 +59,15 @@
 			.controls { align-items:stretch; flex-wrap:wrap; }
 			.controls label { display:flex; flex-direction:column; gap:4px; color:var(--muted); font-size:15px; flex:1; min-width:130px; }
 			.controls select { width:100%; min-height:42px; }
-			.actions { display:flex; gap:8px; margin-top:12px; }
-			.actions button { flex:1; }
+			.actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+			.actions button { flex:1 1 140px; }
+			.log-tab.active { border-color:var(--blue); color:var(--blue); }
+			.log-tab.alert { border-color:var(--red); color:#ff8f99; }
 			.logs { display:none; margin-top:12px; padding:10px; max-height:180px; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; border:1px solid #303a40; background:#060809; font:14px/1.45 pixel; }
+			.mainframe-log-line + .mainframe-log-line { margin-top:6px; }
+			.mainframe-log-line.event-info { color:var(--text); }
+			.mainframe-log-line.event-warn { color:var(--gold); }
+			.mainframe-log-line.event-error { color:#ff727f; }
 			.notice, .empty, .error { border:1px solid var(--line); background:var(--panel); padding:20px; }
 			.error { display:none; color:#ffb8be; margin-bottom:16px; }
 			.footer { margin-top:22px; color:var(--muted); font-size:15px; }
@@ -87,10 +93,10 @@
 					<ol class="connect-steps"><li>Create a token. Mainframe keeps it masked until you press <strong>Reveal token</strong>.</li><li>Add the server URL and Bearer token to your AI client's MCP settings.</li><li>Tell the AI to read the first resource and its CODE reading order, then inspect your Mainframe dashboard and exact game contracts.</li></ol>
 					<p class="muted" style="margin-top:10px">One token is active per account. It is encrypted at rest and returned only to the signed-in account. Treat it like a password. Rotating invalidates the old token immediately.</p>
 				</section>
-				<section id="steam-time" class="steam-time" hidden><strong id="steam-time-hours"></strong><p>Your Steam time is shared by every Adventure Land account linked to the same Steam account. Each direct run uses one hour per hour; included CODE workers share the root's hour. Mainframe uses this time before Shells.</p></section>
-				<section class="summary"><div><span>Cost</span><strong id="cost">1 Shell / 60 minutes</strong></div><div><span>Your Shells</span><strong id="shells">—</strong></div><div><span>Running</span><strong id="running">—</strong></div></section>
+				<section id="steam-time" class="steam-time" hidden><strong id="steam-time-hours"></strong><p>Your Steam time is shared by every Adventure Land account linked to the same Steam account. One free hour replaces one Shell at renewal. Included CODE workers shorten the next renewal period according to the active group size.</p></section>
+				<section class="summary"><div><span>Renewal cost</span><strong id="cost">1 Shell · 1=60m · 2=50m · 3=45m · 4=40m</strong></div><div><span>Your Shells</span><strong id="shells">—</strong></div><div><span>Running</span><strong id="running">—</strong></div></section>
 				<section id="mainframe-characters" class="grid" aria-live="polite"><div class="empty">Loading characters…</div></section>
-				<footer class="footer"><span id="billing-note">Running characters renew for 1 Shell every 60 minutes. Disconnect to stop renewal; remaining paid time is not refunded.</span><span>Direct runs are isolated; CODE can include three workers.</span></footer>
+				<footer class="footer"><span id="billing-note">At renewal, 1 Shell buys 60m for 1 active character, 50m for 2, 45m for 3, or 40m for 4. Disconnect to stop future renewals; paid time is not refunded.</span><span>Direct runs are isolated; CODE can include up to three more characters in the same machine.</span></footer>
 				<script src="/js/mainframe_ui.js?v={{ domain.v }}"></script>
 			{% endif %}
 		</main>

@@ -111,7 +111,7 @@
 <div class="api-guide">
 <p><span class="dlabel">Adventure Land JSON API</span></p>
 
-<p>The JSON API gives your programs structured access to Adventure Land game definitions, public CODE references, owned items, contained progression plans, saved CODE slots, and Mainframe characters. It does not expose unrestricted character socket commands; run those through contained CODE on Mainframe.</p>
+<p>The JSON API gives your programs structured access to Adventure Land game definitions, public CODE references, owned items, progression context, saved CODE slots, and Mainframe characters. It does not expose unrestricted character socket commands; run those through contained CODE on Mainframe.</p>
 
 <p><span class="dlabel">Create a token</span></p>
 
@@ -162,10 +162,10 @@ POST /mcp_api/get_game_data
 <table style="width:100%; text-align:left; border-spacing:12px 7px">
 <tr><th>Method</th><th>Arguments</th><th>Result</th></tr>
 <tr><td>get_bank</td><td>None</td><td>Every owned bank pack and the shared bank gold from the saved account snapshot. A mounted bank is marked stale.</td></tr>
-<tr><td>plan_character_progression</td><td>character, objective?</td><td>Approximate equipment, stat-scroll, upgrade, and compound recommendations from current available character state, owned items, and loaded game definitions.</td></tr>
+<tr><td>plan_character_progression</td><td>character, objective?</td><td>The character's current progression context, enduring objectives, game model, evidence sources, and optional Samaritan CODE starting point.</td></tr>
 </table>
 
-<p>The progression objective can be <span class="dlabel">balanced_farming</span>, <span class="dlabel">damage</span>, <span class="dlabel">survival</span>, <span class="dlabel">support</span>, <span class="dlabel">gold</span>, <span class="dlabel">luck</span>, or <span class="dlabel">xp</span>. Scores are transparent approximations from item-property differences, not final combat simulations. The planner never equips, scrolls, upgrades, compounds, buys, sells, or moves an item.</p>
+<p>The progression focus can be <span class="dlabel">balanced_farming</span>, <span class="dlabel">damage</span>, <span class="dlabel">survival</span>, <span class="dlabel">support</span>, <span class="dlabel">gold</span>, <span class="dlabel">luck</span>, or <span class="dlabel">xp</span>. The response explains how character growth, items, acquisition, economy, and CODE fit together. It does not rank owned items, choose actions, or replace the caller's judgment.</p>
 
 <pre class="api-example">POST /mcp_api/plan_character_progression
 {"token":"YOUR_TOKEN","character":"Merlin","objective":"balanced_farming"}</pre>
@@ -187,12 +187,13 @@ POST /mcp_api/get_game_data
 <tr><td>mainframe_get_dashboard</td><td>None</td><td>Characters, access windows, runtime state, CODE slots, and live server choices.</td></tr>
 <tr><td>mainframe_list_characters</td><td>None</td><td>Owned characters, access, assignments, and runtime state.</td></tr>
 <tr><td>mainframe_get_character</td><td>character</td><td>One owned character's saved profile plus live party roster, equipment, inventory summary, shop listings, observations, limits, and performance.</td></tr>
-<tr><td>mainframe_link_character</td><td>character, request_id, code_slot, server?</td><td>Prepays when needed, queues one dedicated durable assignment, and enables automatic hourly renewal. CODE can add up to three included workers with <span class="dlabel">start_character</span>.</td></tr>
+<tr><td>mainframe_link_character</td><td>character, request_id, code_slot, server?</td><td>Prepays when needed, queues one dedicated durable assignment, and enables automatic renewal. CODE can add up to three included workers with <span class="dlabel">start_character</span>.</td></tr>
 <tr><td>mainframe_disconnect_character</td><td>character</td><td>Explicitly stops the assignment and future renewals without refunding remaining paid time.</td></tr>
 <tr><td>mainframe_get_logs</td><td>character, limit?</td><td>Up to 100 recent CODE log records, retained for 30 days after the worker stops.</td></tr>
+<tr><td>mainframe_get_events</td><td>character, limit?</td><td>Up to 100 starts, renewals, server changes, stops, recovery, and restart records, retained for 30 days.</td></tr>
 </table>
 
-<p>Direct links use separate machines and prepaid windows. A running character's CODE can call <span class="dlabel">start_character</span> to add up to three owned characters inside its shared machine without another hourly charge. Stopping one included child leaves the others running; disconnecting the root stops the shared group.</p>
+<p>Direct links use separate machines and prepaid windows. A running character's CODE can call <span class="dlabel">start_character</span> to add up to three owned characters inside its shared machine. At renewal, one Shell or free Steam hour buys 60, 50, 45, or 40 minutes for 1, 2, 3, or 4 active characters. The count is checked only at renewal. Stopping one included child leaves the others running; disconnecting the root stops all included characters.</p>
 
 <p><span class="dlabel">Results and errors</span></p>
 
@@ -205,5 +206,5 @@ POST /mcp_api/get_game_data
 
 <p>Unknown and missing arguments fail closed. A token can only read or change CODE and characters owned by its account. Keep polling measured; the account API is not a combat loop.</p>
 
-<p>The live discovery response lists the current request limits. Standard reads, bulk bank and game-data reads, progression plans, and writes have separate token buckets. A throttled request uses HTTP 429, returns <span class="dlabel">reason: "rate_limited"</span>, and includes both <span class="dlabel">Retry-After</span> and <span class="dlabel">retry_after_ms</span>.</p>
+<p>The live discovery response lists the current request limits. Standard reads, bulk bank and game-data reads, progression context, and writes have separate token buckets. A throttled request uses HTTP 429, returns <span class="dlabel">reason: "rate_limited"</span>, and includes both <span class="dlabel">Retry-After</span> and <span class="dlabel">retry_after_ms</span>.</p>
 </div>

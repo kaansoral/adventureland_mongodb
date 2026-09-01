@@ -17,7 +17,10 @@ function admin_bots_configured() {
 
 function admin_bots_controller_token(agent_id) {
 	if (!admin_bots_configured() || !mainframe_controller_is_known(agent_id)) return "";
-	return crypto.createHmac("sha256", ADMIN_BOTS_CONTROL_SECRET.control_token).update("mainframe-controller:" + agent_id, "utf8").digest("base64url");
+	return crypto
+		.createHmac("sha256", ADMIN_BOTS_CONTROL_SECRET.control_token)
+		.update("mainframe-controller:" + agent_id, "utf8")
+		.digest("base64url");
 }
 
 function admin_bots_safe_equal(left, right) {
@@ -67,6 +70,28 @@ function admin_bots_clean_logs(logs) {
 			values: Array.isArray(entry && entry.values) ? entry.values.slice(0, 20).map(admin_bots_log_value) : [],
 		};
 	});
+}
+
+function admin_bots_clean_events(events) {
+	if (!Array.isArray(events)) return [];
+	return events
+		.slice(-20)
+		.map(function (event) {
+			if (!event || typeof event !== "object" || Array.isArray(event)) return null;
+			var at = new Date(event.at);
+			if (!/^[0-9a-f]{24,64}$/.test(event.id || "") || !Number.isFinite(at.getTime()) || !["info", "warn", "error"].includes(event.level) || !/^[a-z][a-z0-9_]{2,63}$/.test(event.code || ""))
+				return null;
+			return {
+				id: event.id,
+				assignment_id: /^[0-9a-f]{32}$/.test(event.assignment_id || "") ? event.assignment_id : null,
+				at: at.toISOString(),
+				level: event.level,
+				code: event.code,
+				message: admin_bots_text(event.message, 240).replace(/[\r\n\t]+/g, " "),
+				detail: event.detail === undefined || event.detail === null ? null : admin_bots_text(event.detail, 160).replace(/[\r\n\t]+/g, " "),
+			};
+		})
+		.filter(Boolean);
 }
 
 function admin_bots_clean_rate_summary(summary) {
@@ -260,7 +285,7 @@ function admin_bots_clean_bot(bot) {
 			rss: admin_bots_number(metrics.rss, 0, Number.MAX_SAFE_INTEGER),
 			memory_limit: admin_bots_number(metrics.memory_limit, 0, Number.MAX_SAFE_INTEGER),
 			cpu_ratio: worker_cpu_ratio,
-			call_cost_percent: Math.round(Math.min(100, worker_cpu_ratio / 0.1 * 100) * 10) / 10,
+			call_cost_percent: Math.round(Math.min(100, (worker_cpu_ratio / 0.1) * 100) * 10) / 10,
 			event_loop_lag_ms: admin_bots_number(metrics.event_loop_lag_ms, 0, 60000),
 			monotonic_ms: admin_bots_number(metrics.monotonic_ms, 0, Number.MAX_SAFE_INTEGER),
 			guest_memory_used: admin_bots_number(metrics.guest_memory_used, 0, Number.MAX_SAFE_INTEGER),
@@ -293,9 +318,11 @@ function admin_bots_clean_bot(bot) {
 						at: admin_bots_text(failure.at, 40) || null,
 					}
 				: null,
+		mainframe_event: admin_bots_clean_events(bot.mainframe_event ? [bot.mainframe_event] : [])[0] || null,
 		performance: admin_bots_clean_performance(bot.performance),
 		containment: admin_bots_clean_containment(bot.containment),
 		logs: admin_bots_clean_logs(bot.logs),
+		events: admin_bots_clean_events(bot.events),
 	};
 }
 
@@ -402,6 +429,33 @@ async function admin_bots_persisted_logs(character_id, limit) {
 	return logs.slice(-Math.max(1, Math.min(Number(limit) || 100, ADMIN_BOTS_LOG_MAX_ENTRIES)));
 }
 
+async function admin_bots_persist_events(report, agent_id) {
+	var reported = (report && report.bots ? report.bots : []).filter(function (bot) {
+		return bot.character_id && bot.assignment_id && bot.events && bot.events.length;
+	});
+	if (!reported.length) return 0;
+	var assignments = await db
+		.collection("mark")
+		.find({
+			_id: {
+				$in: reported.map(function (bot) {
+					return mainframe_assignment_record_id(bot.character_id);
+				}),
+			},
+		})
+		.limit(reported.length)
+		.toArray();
+	var by_id = {};
+	for (var assignment of assignments) by_id[assignment._id] = assignment;
+	var recorded = 0;
+	for (var bot of reported) {
+		var assignment = by_id[mainframe_assignment_record_id(bot.character_id)];
+		if (!assignment || assignment.controller !== agent_id || assignment.session_id !== bot.assignment_id) continue;
+		for (var event of bot.events) if (await mainframe_record_event(assignment.owner, bot.character_id, event)) recorded++;
+	}
+	return recorded;
+}
+
 async function admin_bots_document(agent_id) {
 	if (!admin_bots_configured() || !mainframe_controller_is_known(agent_id)) return null;
 	return await db.collection(ADMIN_BOTS_COLLECTION).findOne({ _id: agent_id });
@@ -410,7 +464,11 @@ async function admin_bots_document(agent_id) {
 async function admin_bots_snapshot() {
 	var ids = mainframe_controller_ids();
 	var documents = admin_bots_configured()
-		? await db.collection(ADMIN_BOTS_COLLECTION).find({ _id: { $in: ids } }).limit(ids.length).toArray()
+		? await db
+				.collection(ADMIN_BOTS_COLLECTION)
+				.find({ _id: { $in: ids } })
+				.limit(ids.length)
+				.toArray()
 		: [];
 	var by_id = {};
 	for (var document of documents) by_id[document._id] = document;
@@ -574,6 +632,7 @@ app.post("/internal/bots/control", async function (req, res) {
 		},
 	);
 	await admin_bots_persist_logs(report, body.agent_id);
+	await admin_bots_persist_events(report, body.agent_id);
 	await mainframe_record_controller_failures(report, body.agent_id);
 	var document = await admin_bots_document(body.agent_id);
 	var commands = ((document && document.commands) || []).slice(0, 10).map(function (command) {

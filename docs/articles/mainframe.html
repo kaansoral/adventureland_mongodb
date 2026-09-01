@@ -6,13 +6,15 @@
 
 <p><span class="dlabel">Cost</span></p>
 
-<p>Steam accounts receive <span class="dlabel">250 free Mainframe hours</span>. The allowance is shared by every Adventure Land account linked to the same Steam account. Each direct Mainframe run uses one hour per hour. Included characters started from CODE share their root character's hour.</p>
+<p>Steam accounts receive <span class="dlabel">250 free Mainframe hours</span>. The allowance is shared by every Adventure Land account linked to the same Steam account. Mainframe uses one free hour instead of one Shell at renewal.</p>
 
-<p>Mainframe prepays each <span class="dlabel">60-minute</span> window. It uses shared Steam time first, then charges <span class="dlabel">1 Shell</span> per window. While the assignment remains running, Mainframe renews automatically until you explicitly disconnect the character or the account cannot pay the next renewal.</p>
+<p>A direct run prepays <span class="dlabel">60 minutes</span>. Mainframe uses shared Steam time first, then charges <span class="dlabel">1 Shell</span>. While the assignment remains running, it renews automatically until you explicitly disconnect the character or the account cannot pay.</p>
+
+<p>At renewal, one active character receives <span class="dlabel">60 minutes</span>, two receive <span class="dlabel">50 minutes</span>, three receive <span class="dlabel">45 minutes</span>, and four receive <span class="dlabel">40 minutes</span>. Mainframe counts active characters only at that boundary. Starting or stopping an included character does not change the window already paid for.</p>
 
 <p>Disconnecting disables future renewals but does not refund or pause the current prepaid window. Reconnecting the same character before that window ends costs nothing and enables renewal again.</p>
 
-<p>If running CODE calls <span class="dlabel">start_character</span>, Mainframe can place up to three additional characters inside that caller's machine. Those workers share the caller's prepaid window instead of opening more paid windows. The first child start reconnects the caller once while Mainframe changes it to the shared machine. Calling <span class="dlabel">stop_character</span> stops only that child; disconnecting the root character stops the complete shared group. Starting characters directly from the Mainframe page still gives each one a separate machine and charge.</p>
+<p>If running CODE calls <span class="dlabel">start_character</span>, Mainframe can place up to three additional characters inside that caller's machine, for four total. They share the caller's prepaid window instead of opening separate paid windows. The first child start reconnects the caller once while Mainframe changes it to a shared machine. Calling <span class="dlabel">stop_character</span> stops only that child; disconnecting the root character stops every included character. Starting characters directly from the Mainframe page still gives each one a separate machine and charge.</p>
 
 <p>A running assignment is meant to survive maintenance. Mainframe restores it after Adventure Land HTTP restarts, controller restarts, host maintenance, and machine replacement. Recovery can briefly reconnect the character, but it does not mark the assignment as stopped.</p>
 
@@ -29,13 +31,15 @@ await smart_move({ map: "main", x: -100, y: -20 });</div>
 
 <p><span class="dlabel">Containment</span></p>
 
-<p>Every dedicated character, or shared group of up to four workers, runs with an isolated machine identity, read-only system image, memory, CPU, and disk limits, syscall filtering, and no internet interface. Workers inside a shared group also have separate operating-system identities and process limits. Character actions can reach Adventure Land only through the Mainframe bridge. Mainframe reports requested actions separately from confirmed game state, so you can tell the difference between "CODE asked" and "the server accepted."</p>
+<p>Every dedicated character, or shared group of up to four workers, runs with an isolated machine identity, read-only system image, memory, CPU, and disk limits, syscall filtering, and no internet interface. Workers inside a shared machine also have separate Worker identities and memory limits. Shared guest memory grows from 128 MiB to at most 192 MiB as workers are added; the machine keeps the same fixed 10% CPU limit. Character actions can reach Adventure Land only through the Mainframe bridge. Mainframe reports requested actions separately from confirmed game state, so you can tell the difference between "CODE asked" and "the server accepted."</p>
 
-<p>If CODE loops forever, uses too much memory, or repeatedly writes, its machine stays isolated. A dedicated failure affects one character. A containment failure in a shared machine stops that four-worker group, but cannot reach another Mainframe machine.</p>
+<p>If CODE loops forever, uses too much memory, or repeatedly writes, its machine stays isolated. In a shared machine, each CODE runtime has its own Worker and memory limit. An unresponsive Worker is stopped and restarted without restarting healthy workers. A complete machine failure can stop the group, but cannot reach another Mainframe machine.</p>
 
 <p><span class="dlabel">Status and logs</span></p>
 
-<p>The Mainframe card shows the last game disconnect reason when the server supplies one. <span class="dlabel">Call cost</span> is that worker's current CPU use as a percentage of its fixed worker CPU budget; it is not a Shell charge. CODE logs remain available for 30 days after a worker or machine stops.</p>
+<p>The Mainframe card shows the last game disconnect reason when the server supplies one. <span class="dlabel">Call cost</span> is that worker's current CPU use as a percentage of its fixed worker CPU budget; it is not a Shell charge.</p>
+
+<p><span class="dlabel">CODE log</span> contains output written by character CODE. <span class="dlabel">Mainframe log</span> contains starts, automatic renewals, server changes, explicit stops, recovery, and unexpected Worker restarts. Failures and restarts are red. Both logs remain available for 30 days after a worker or machine stops.</p>
 
 <p><span class="dlabel">Automation interfaces</span></p>
 
