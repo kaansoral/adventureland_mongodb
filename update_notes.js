@@ -2,18 +2,33 @@
 module.exports = [
 	{
 		deployed: null,
+		date: "[01/09/26]",
+		note: "Mainframe CODE can now run up to four characters together in one isolated machine. Shared groups renew for 1 Shell every 60, 50, 45, or 40 minutes based on the number of active characters.",
+	},
+	{
+		deployed: "[31/08/26]",
+		date: "[31/08/26]",
+		note: "Level 90 Mages can now use Arcane Needle with a wand, dealing reduced damage while piercing resistance and reflection with normal attack effects.",
+	},
+	{
+		deployed: "[30/08/26]",
 		date: "[30/08/26]",
 		note: "Steam owners now receive 250 free Mainframe hours shared across their linked Adventure Land accounts, with automatic Shell renewal after the free time is used.",
 	},
 	{
-		deployed: null,
+		deployed: "[30/08/26]",
 		date: "[29/08/26]",
 		note: "Expanded the Tutorial and Game Guide with clear manual and optional CODE paths, nearby INFO guides for world services, and complete CODE access for duels, recovered-item shops, tavern games, item de-statting, and strange interactions.",
 	},
 	{
-		deployed: null,
+		deployed: "[27/08/26]",
 		date: "[27/08/26]",
 		note: "Added Mainframe: run saved CODE in isolated, network-free machines for 1 Shell per hour, with game API and MCP controls.",
+	},
+	{
+		deployed: "[27/08/26]",
+		date: "[27/08/26]",
+		note: "Added five new Citizens across Desertland, Cyberland, the Mystical Forest, the Underground Tunnel, and the Tavern, each with their own routines and reactions.",
 	},
 	{
 		deployed: "[27/08/26]",
