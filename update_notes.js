@@ -1,7 +1,7 @@
 // Newest notes first. Add player-visible changes at the top with deployed: null.
 module.exports = [
 	{
-		deployed: null,
+		deployed: "[01/09/26]",
 		date: "[01/09/26]",
 		note: "Mainframe CODE can now run up to four characters together in one isolated machine. Shared groups renew for 1 Shell every 60, 50, 45, or 40 minutes based on the number of active characters.",
 	},
