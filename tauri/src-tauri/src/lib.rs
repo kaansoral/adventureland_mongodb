@@ -567,22 +567,27 @@ pub fn run() {
             })
             .build()?;
 
-            let handle = app.handle().clone();
-            main.on_window_event(move |event| {
-                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                    api.prevent_close();
-                    let confirmed = rfd::MessageDialog::new()
-                        .set_title("Adventure Land")
-                        .set_description("Are you sure you want to close Adventure Land?")
-                        .set_buttons(rfd::MessageButtons::YesNo)
-                        .show();
-                    if confirmed == rfd::MessageDialogResult::Yes {
-                        if let Some(window) = handle.get_webview_window("main") {
-                            let _ = window.destroy();
+            // A second blocking GTK dialog loop can deadlock WebKitGTK on
+            // Linux. Let the window manager close the client normally there.
+            #[cfg(not(target_os = "linux"))]
+            {
+                let handle = app.handle().clone();
+                main.on_window_event(move |event| {
+                    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                        api.prevent_close();
+                        let confirmed = rfd::MessageDialog::new()
+                            .set_title("Adventure Land")
+                            .set_description("Are you sure you want to close Adventure Land?")
+                            .set_buttons(rfd::MessageButtons::YesNo)
+                            .show();
+                        if confirmed == rfd::MessageDialogResult::Yes {
+                            if let Some(window) = handle.get_webview_window("main") {
+                                let _ = window.destroy();
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
 
             #[cfg(target_os = "macos")]
             {
