@@ -4139,6 +4139,7 @@ function cosmetic_emote_pixel_text(graphic, text, x, y, color, scale) {
 }
 
 function cosmetic_emote_targeted_start(player, name, role, peer, started, variation) {
+	if (no_graphics) return;
 	clear_cosmetic_emote(player);
 	var visual = new PIXI.Graphics();
 	visual.parentGroup = visual.displayGroup = text_layer;
@@ -4332,6 +4333,7 @@ function cosmetic_emote_targeted_logic(player, progress, elapsed) {
 }
 
 function play_cosmetic_emote(player, name, target, data) {
+	if (no_graphics) return;
 	if (name == "drop_egg") {
 		map_animation(random_one(["egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8", "goldenegg"]), {
 			x: get_x(player),
