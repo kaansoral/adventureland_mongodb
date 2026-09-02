@@ -793,7 +793,7 @@ async function mcp_api_delete_code(args) {
 
 function mcp_api_mainframe_contract() {
 	return {
-		version: 6,
+		version: 7,
 		billing: "auto_renewing_prepaid",
 		shells_per_period: MAINFRAME_PERIOD_SHELLS,
 		period_minutes: MAINFRAME_PERIOD_MS / 60000,
@@ -814,7 +814,8 @@ function mcp_api_mainframe_contract() {
 			direct_mainframe_links: "separately_billed_dedicated_microvms",
 			containment: "separate_worker_identities_and_limits_inside_one_microvm",
 			shared_cpu: "one_fixed_microvm_cpu_budget",
-			dynamic_guest_memory_mib: [128, 160, 176, 192],
+			shared_guest_memory_mib: 192,
+			dynamic_host_memory_cap_mib: [192, 224, 240, 256],
 		},
 		code_log_retention_days: MCP_MAINFRAME_LOG_RETENTION_DAYS,
 		mainframe_event_retention_days: MCP_MAINFRAME_LOG_RETENTION_DAYS,
