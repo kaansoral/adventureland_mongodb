@@ -354,9 +354,38 @@ function admin_bots_bound_persisted_logs(logs, now) {
 			var at = new Date(entry.at);
 			return Number.isFinite(at.getTime()) && at.getTime() >= cutoff;
 		})
+		.sort(function (left, right) {
+			return new Date(left.at).getTime() - new Date(right.at).getTime();
+		})
 		.slice(-ADMIN_BOTS_LOG_MAX_ENTRIES);
 	while (result.length && Buffer.byteLength(JSON.stringify(result), "utf8") > ADMIN_BOTS_LOG_MAX_BYTES) result.shift();
 	return result;
+}
+
+function admin_bots_merge_retained_logs(persisted, live, assignment_id, now, limit) {
+	var merged = [];
+	var seen = new Set();
+	for (var entry of (Array.isArray(persisted) ? persisted : []).concat(Array.isArray(live) ? live : [])) {
+		entry = {
+			assignment_id: /^[0-9a-f]{32}$/.test((entry && entry.assignment_id) || "") ? entry.assignment_id : assignment_id || null,
+			at: admin_bots_text(entry && entry.at, 40),
+			level: admin_bots_text(entry && entry.level, 20),
+			values: Array.isArray(entry && entry.values) ? entry.values.slice(0, 20).map(admin_bots_log_value) : [],
+		};
+		var key = admin_bots_log_key(entry);
+		if (seen.has(key)) continue;
+		seen.add(key);
+		merged.push(entry);
+	}
+	return admin_bots_bound_persisted_logs(merged, now)
+		.slice(-Math.max(1, Math.min(Number(limit) || 100, ADMIN_BOTS_LOG_MAX_ENTRIES)))
+		.reverse();
+}
+
+function admin_bots_merge_retained_events(persisted, live, now, limit) {
+	return mainframe_bound_events((Array.isArray(persisted) ? persisted : []).concat(Array.isArray(live) ? live : []), now)
+		.slice(-Math.max(1, Math.min(Number(limit) || 100, MAINFRAME_EVENT_MAX_ENTRIES)))
+		.reverse();
 }
 
 async function admin_bots_persist_logs(report, agent_id) {
@@ -527,6 +556,7 @@ async function admin_bots_snapshot() {
 
 async function admin_mainframe_snapshot() {
 	var snapshot = await admin_bots_snapshot();
+	var now = new Date();
 	var character_mark_ids = snapshot.bots
 		.filter(function (bot) {
 			return !bot.character_id;
@@ -557,6 +587,21 @@ async function admin_mainframe_snapshot() {
 		: [];
 	var access_by_id = {};
 	for (var i = 0; i < access_records.length; i++) access_by_id[access_records[i]._id] = access_records[i];
+	var activity_ids = [];
+	for (var i = 0; i < snapshot.bots.length; i++) {
+		if (!snapshot.bots[i].character_id) continue;
+		activity_ids.push(admin_bots_log_record_id(snapshot.bots[i].character_id));
+		activity_ids.push(mainframe_event_record_id(snapshot.bots[i].character_id));
+	}
+	var activity_records = activity_ids.length
+		? await db
+				.collection("mark")
+				.find({ _id: { $in: activity_ids } })
+				.limit(activity_ids.length)
+				.toArray()
+		: [];
+	var activity_by_id = {};
+	for (var i = 0; i < activity_records.length; i++) activity_by_id[activity_records[i]._id] = activity_records[i];
 	var character_id_by_name = {};
 	for (var i = 0; i < character_marks.length; i++) {
 		var character_name = character_marks[i].phrase || character_marks[i]._id.slice("MK_character-".length);
@@ -565,7 +610,13 @@ async function admin_mainframe_snapshot() {
 	snapshot.bots = snapshot.bots.map(function (bot) {
 		var character_id = bot.character_id || character_id_by_name[simplify_name(bot.bot_id)];
 		var access = character_id && access_by_id[mainframe_access_record_id(character_id)];
-		return Object.assign({}, bot, { mainframe_access: mainframe_access_to_client(access) });
+		var log_record = character_id && activity_by_id[admin_bots_log_record_id(character_id)];
+		var event_record = character_id && activity_by_id[mainframe_event_record_id(character_id)];
+		return Object.assign({}, bot, {
+			mainframe_access: mainframe_access_to_client(access),
+			logs: admin_bots_merge_retained_logs(log_record && log_record.logs, bot.logs, bot.assignment_id, now, 100),
+			events: admin_bots_merge_retained_events(event_record && event_record.events, bot.events, now, 100),
+		});
 	});
 	return snapshot;
 }

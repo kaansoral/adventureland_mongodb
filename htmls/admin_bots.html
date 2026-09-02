@@ -233,6 +233,28 @@
 				white-space: pre-wrap;
 				overflow-wrap: anywhere;
 			}
+			.log-tabs {
+				display: flex;
+				gap: 8px;
+				margin-top: 14px;
+			}
+			.log-tabs button {
+				padding: 7px 10px;
+				font-size: 15px;
+			}
+			.log-tabs button.active {
+				border-color: var(--blue);
+				color: var(--blue);
+			}
+			.mainframe-log-line + .mainframe-log-line {
+				margin-top: 6px;
+			}
+			.mainframe-log-line.event-warn {
+				color: var(--gold);
+			}
+			.mainframe-log-line.event-error {
+				color: #ff929c;
+			}
 			.empty {
 				grid-column: 1/-1;
 				padding: 40px;
@@ -291,6 +313,7 @@
 		<script>
 			(function () {
 				var busy = Object.create(null);
+				var selectedLogTab = Object.create(null);
 				var botsNode = document.getElementById("bots");
 				var inactiveNode = document.getElementById("inactive");
 				var inactiveBotsNode = document.getElementById("inactive-bots");
@@ -418,13 +441,49 @@
 						setState(bot.bot_id, "stopped");
 					};
 					actions.append(start, stop);
+					var logTabs = document.createElement("div");
+					logTabs.className = "log-tabs";
+					var mainframeTab = document.createElement("button");
+					mainframeTab.type = "button";
+					mainframeTab.textContent = "Mainframe log";
+					var codeTab = document.createElement("button");
+					codeTab.type = "button";
+					codeTab.textContent = "CODE log";
+					logTabs.append(mainframeTab, codeTab);
 					var logs = document.createElement("div");
 					logs.className = "logs";
-					var lines = (bot.logs || []).map(function (entry) {
-						return [entry.at, entry.level, (entry.values || []).map(text).join(" ")].filter(Boolean).join("  ");
-					});
-					logs.textContent = lines.length ? lines.join("\n") : "No CODE logs.";
-					card.append(head, metrics, actions, logs);
+					function renderLogs(selected) {
+						selectedLogTab[bot.bot_id] = selected;
+						mainframeTab.classList.toggle("active", selected === "mainframe");
+						codeTab.classList.toggle("active", selected === "code");
+						logs.replaceChildren();
+						if (selected === "code") {
+							var lines = (bot.logs || []).map(function (entry) {
+								return [entry.at, entry.level, (entry.values || []).map(text).join(" ")].filter(Boolean).join("  ");
+							});
+							logs.textContent = lines.length ? lines.join("\n") : "No CODE logs.";
+							return;
+						}
+						var events = bot.events || [];
+						if (!events.length) {
+							logs.textContent = "No Mainframe logs.";
+							return;
+						}
+						events.forEach(function (event) {
+							var row = document.createElement("div");
+							row.className = "mainframe-log-line event-" + (["warn", "error"].includes(event.level) ? event.level : "info");
+							row.textContent = [event.at, String(event.level || "info").toUpperCase(), event.message, event.detail].filter(Boolean).join("  ");
+							logs.append(row);
+						});
+					}
+					mainframeTab.onclick = function () {
+						renderLogs("mainframe");
+					};
+					codeTab.onclick = function () {
+						renderLogs("code");
+					};
+					renderLogs(selectedLogTab[bot.bot_id] || "mainframe");
+					card.append(head, metrics, actions, logTabs, logs);
 					return card;
 				}
 				function renderFleet(state, active, inactive) {

@@ -176,6 +176,9 @@ function mainframe_bound_events(events, now) {
 		seen.add(clean.id);
 		result.push(clean);
 	}
+	result.sort(function (left, right) {
+		return new Date(left.at).getTime() - new Date(right.at).getTime();
+	});
 	return result.slice(-MAINFRAME_EVENT_MAX_ENTRIES);
 }
 

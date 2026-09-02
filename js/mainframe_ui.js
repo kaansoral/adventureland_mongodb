@@ -129,6 +129,10 @@
 				nodes.logs.className = "logs code-logs";
 				nodes.logs.textContent =
 					(codeResult.logs || [])
+						.slice()
+						.sort(function (left, right) {
+							return new Date(right.at).getTime() - new Date(left.at).getTime();
+						})
 						.map(function (line) {
 							return [line.at, line.level, (line.values || []).join(" ")].filter(Boolean).join("  ");
 						})
@@ -138,7 +142,9 @@
 				if (nodes.logs.dataset.request !== request) return;
 				nodes.logs.className = "logs mainframe-logs";
 				nodes.logs.textContent = "";
-				var events = eventResult.events || [];
+				var events = (eventResult.events || []).slice().sort(function (left, right) {
+					return new Date(right.at).getTime() - new Date(left.at).getTime();
+				});
 				if (!events.length) nodes.logs.textContent = "No Mainframe logs.";
 				else
 					events.forEach(function (event) {
