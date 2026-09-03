@@ -73,18 +73,7 @@ jobs:
             runtime/usr/lib/libwayland-client.so* \
             runtime/usr/lib/libwayland-cursor.so* \
             runtime/usr/lib/libwayland-egl.so* \
-            runtime/usr/lib/libwayland-server.so* \
-            runtime/usr/lib/libglib-2.0.so* \
-            runtime/usr/lib/libgio-2.0.so* \
-            runtime/usr/lib/libgobject-2.0.so* \
-            runtime/usr/lib/libgmodule-2.0.so* \
-            runtime/usr/lib/libmount.so* \
-            runtime/usr/lib/libblkid.so* \
-            runtime/usr/lib/libselinux.so* \
-            runtime/usr/lib/libpcre2-8.so* \
-            runtime/usr/lib/libzstd.so* \
-            runtime/usr/lib/libelf.so* \
-            runtime/usr/lib/libffi.so*
+            runtime/usr/lib/libwayland-server.so*
           cp "$OLDPWD/tauri/src-tauri/target/release/adventure-land" adventure-land-native
           cp "$OLDPWD/tauri/src-tauri/binaries/libsteam_api.so" libsteam_api.so
           cp "$OLDPWD/tauri/linux/Adventure Land" "Adventure Land"
@@ -94,22 +83,21 @@ jobs:
           ldd adventure-land-native | grep -F 'libsteam_api.so'
           test -x runtime/AppRun
           test -z "$(find runtime/usr/lib -maxdepth 1 \( -type f -o -type l \) \( \
-            -name 'libwayland-*.so*' -o \
-            -name 'libglib-2.0.so*' -o \
-            -name 'libgio-2.0.so*' -o \
-            -name 'libgobject-2.0.so*' -o \
-            -name 'libgmodule-2.0.so*' -o \
-            -name 'libmount.so*' -o \
-            -name 'libblkid.so*' -o \
-            -name 'libselinux.so*' -o \
-            -name 'libpcre2-8.so*' -o \
-            -name 'libzstd.so*' -o \
-            -name 'libelf.so*' -o \
-            -name 'libffi.so*' \
+            -name 'libwayland-*.so*' \
           \) -print -quit)"
+          find runtime -name 'libglib-2.0.so*' -print -quit | grep -q .
           find runtime -name 'libwebkit2gtk-4.1.so*' -print -quit | grep -q .
           find runtime -name 'WebKitNetworkProcess' -print -quit | grep -q .
           find runtime -name 'libsteam_api.so' -print -quit | grep -q .
+          bundle_library_path="$PWD/runtime/usr/lib:$PWD/runtime/usr/lib/x86_64-linux-gnu"
+          for bundled_library in \
+            runtime/usr/lib/libpango-1.0.so.0 \
+            runtime/usr/lib/libjavascriptcoregtk-4.1.so.0 \
+            runtime/usr/lib/libwebkit2gtk-4.1.so.0; do
+            resolution="$(LD_LIBRARY_PATH="$bundle_library_path" ldd -r "$bundled_library" 2>&1)"
+            printf '%s\n' "$resolution"
+            ! printf '%s\n' "$resolution" | grep -E 'not found|undefined symbol'
+          done
           cd ../../..
           tar -czf tauri/dist/adventure-land-linux-x86_64.tar.gz -C tauri/dist/linux .
 

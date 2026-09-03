@@ -22,7 +22,7 @@ if [ -n "${SteamAppId:-}${SteamGameId:-}" ]; then
 fi
 
 if [ "$steam_environment" = "1" ]; then
-	native_dependencies=$(env -u LD_LIBRARY_PATH ldd "$native_binary" 2>&1) || native_dependencies=""
+	native_dependencies=$(env -u LD_LIBRARY_PATH -u LD_PRELOAD ldd "$native_binary" 2>&1) || native_dependencies=""
 else
 	native_dependencies=$(ldd "$native_binary" 2>&1) || native_dependencies=""
 fi
@@ -33,7 +33,7 @@ if [ "${ADVENTURELAND_FORCE_BUNDLED:-0}" != "1" ] && [ -n "$native_dependencies"
 	fi
 	printf '%s\n' "Adventure Land: using system Linux libraries" >&2
 	if [ "$steam_environment" = "1" ]; then
-		exec env -u LD_LIBRARY_PATH "$native_binary" "$@"
+		exec env -u LD_LIBRARY_PATH -u LD_PRELOAD "$native_binary" "$@"
 	fi
 	exec "$native_binary" "$@"
 fi
@@ -44,6 +44,6 @@ fi
 
 printf '%s\n' "Adventure Land: using bundled Linux libraries" >&2
 if [ "$steam_environment" = "1" ]; then
-	exec env -u LD_LIBRARY_PATH "$launcher_dir/runtime/AppRun" "$@"
+	exec env -u LD_LIBRARY_PATH -u LD_PRELOAD "$launcher_dir/runtime/AppRun" "$@"
 fi
 exec "$launcher_dir/runtime/AppRun" "$@"
