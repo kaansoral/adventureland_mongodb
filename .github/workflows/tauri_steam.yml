@@ -69,6 +69,11 @@ jobs:
           cd tauri/dist/linux
           "$OLDPWD/$appimage" --appimage-extract
           mv squashfs-root runtime
+          for runtime_soname in libharfbuzz.so.0 libfribidi.so.0; do
+            runtime_source="$(ldconfig -p | awk -v soname="$runtime_soname" '$1 == soname && !found { source = $NF; found = 1 } END { print source }')"
+            test -n "$runtime_source"
+            cp -L "$runtime_source" "runtime/usr/lib/$runtime_soname"
+          done
           rm -f \
             runtime/usr/lib/libwayland-client.so* \
             runtime/usr/lib/libwayland-cursor.so* \
@@ -86,6 +91,8 @@ jobs:
             -name 'libwayland-*.so*' \
           \) -print -quit)"
           find runtime -name 'libglib-2.0.so*' -print -quit | grep -q .
+          find runtime -name 'libharfbuzz.so*' -print -quit | grep -q .
+          find runtime -name 'libfribidi.so*' -print -quit | grep -q .
           find runtime -name 'libwebkit2gtk-4.1.so*' -print -quit | grep -q .
           find runtime -name 'WebKitNetworkProcess' -print -quit | grep -q .
           find runtime -name 'libsteam_api.so' -print -quit | grep -q .
@@ -97,6 +104,11 @@ jobs:
             resolution="$(LD_LIBRARY_PATH="$bundle_library_path" ldd -r "$bundled_library" 2>&1)"
             printf '%s\n' "$resolution"
             ! printf '%s\n' "$resolution" | grep -E 'not found|undefined symbol'
+            if [ "$bundled_library" = runtime/usr/lib/libpango-1.0.so.0 ]; then
+              for runtime_soname in libglib-2.0.so.0 libharfbuzz.so.0 libfribidi.so.0; do
+                printf '%s\n' "$resolution" | grep -F "$runtime_soname => $PWD/runtime/usr/lib/$runtime_soname"
+              done
+            fi
           done
           cd ../../..
           tar -czf tauri/dist/adventure-land-linux-x86_64.tar.gz -C tauri/dist/linux .
