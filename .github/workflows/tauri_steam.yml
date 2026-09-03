@@ -69,7 +69,13 @@ jobs:
           cd tauri/dist/linux
           "$OLDPWD/$appimage" --appimage-extract
           mv squashfs-root runtime
-          for runtime_soname in libharfbuzz.so.0 libfribidi.so.0; do
+          for runtime_soname in \
+            libglib-2.0.so.0 \
+            libharfbuzz.so.0 \
+            libfribidi.so.0 \
+            libfreetype.so.6 \
+            libfontconfig.so.1 \
+            libexpat.so.1; do
             runtime_source="$(ldconfig -p | awk -v soname="$runtime_soname" '$1 == soname && !found { source = $NF; found = 1 } END { print source }')"
             test -n "$runtime_source"
             cp -L "$runtime_source" "runtime/usr/lib/$runtime_soname"
@@ -93,6 +99,9 @@ jobs:
           find runtime -name 'libglib-2.0.so*' -print -quit | grep -q .
           find runtime -name 'libharfbuzz.so*' -print -quit | grep -q .
           find runtime -name 'libfribidi.so*' -print -quit | grep -q .
+          find runtime -name 'libfreetype.so*' -print -quit | grep -q .
+          find runtime -name 'libfontconfig.so*' -print -quit | grep -q .
+          find runtime -name 'libexpat.so*' -print -quit | grep -q .
           find runtime -name 'libwebkit2gtk-4.1.so*' -print -quit | grep -q .
           find runtime -name 'WebKitNetworkProcess' -print -quit | grep -q .
           find runtime -name 'libsteam_api.so' -print -quit | grep -q .
@@ -105,7 +114,12 @@ jobs:
             printf '%s\n' "$resolution"
             ! printf '%s\n' "$resolution" | grep -E 'not found|undefined symbol'
             if [ "$bundled_library" = runtime/usr/lib/libpango-1.0.so.0 ]; then
-              for runtime_soname in libglib-2.0.so.0 libharfbuzz.so.0 libfribidi.so.0; do
+              for runtime_soname in libglib-2.0.so.0 libharfbuzz.so.0 libfribidi.so.0 libfreetype.so.6; do
+                printf '%s\n' "$resolution" | grep -F "$runtime_soname => $PWD/runtime/usr/lib/$runtime_soname"
+              done
+            fi
+            if [ "$bundled_library" = runtime/usr/lib/libwebkit2gtk-4.1.so.0 ]; then
+              for runtime_soname in libfreetype.so.6 libfontconfig.so.1 libexpat.so.1; do
                 printf '%s\n' "$resolution" | grep -F "$runtime_soname => $PWD/runtime/usr/lib/$runtime_soname"
               done
             fi
