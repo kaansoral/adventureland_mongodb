@@ -716,6 +716,23 @@ server_api.post("/eval", (req, res) => {
 	res.send(JSON.stringify(output));
 });
 
+
+server_api.post("/discord_chat", (req, res) => {
+	if (req.body.spass !== keys.ACCESS_MASTER) return res.status(403).send("");
+	const message = strip_string(req.body.message || "").substr(0, 1200);
+	const owner = strip_string(req.body.owner || "").substr(0, 80);
+	if (!message || !owner) {
+		return res.status(400).send("bad");
+	}
+	broadcast("chat_log", {
+		owner: owner,
+		message: message,
+		p: true,
+		color: req.body.color || "#5865F2",
+	});
+	res.send("yes");
+});
+
 app.use(server_def.api_path, server_api);
 
 function player_to_server(player, place) {
@@ -4665,6 +4682,7 @@ function init_socket_io(socket_server) {
 			} else {
 				if (1) {
 					broadcast("chat_log", { owner: player.name, message: message, id: player.id, p: true });
+					discord_public_chat(player, message);
 					var owners = {};
 					for (var id in players) {
 						var p = players[id];

@@ -684,6 +684,21 @@ app.all("/api", async (req, res, next) => {
 const PORT = process.env.PORT || options.port;
 app.listen(PORT, () => {
 	console.log(`\x1b[32mAdventure Land\x1b[0m listening on port ${PORT}`);
+	try {
+		const discord_inbound = require("./node/discord/inbound.js");
+		discord_inbound
+			.start_discord_inbound({
+				options: options,
+				keys: keys,
+				get_servers: get_servers,
+				server_discord_chat: server_discord_chat,
+			})
+			.catch(function (err) {
+				console.error("discord_inbound start failed", err);
+			});
+	} catch (e) {
+		console.error("discord_inbound load failed", e);
+	}
 });
 
 process.on("uncaughtException", function (err) {
