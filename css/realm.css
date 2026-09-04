@@ -1,0 +1,693 @@
+:root {
+	color-scheme: dark;
+	--realm-bg: #080b0d;
+	--realm-panel: #10171b;
+	--realm-panel-strong: #172126;
+	--realm-panel-soft: #0c1114;
+	--realm-line: #3c4d55;
+	--realm-line-soft: #243239;
+	--realm-text: #eef4f2;
+	--realm-muted: #9aabb0;
+	--realm-cyan: #54bfd9;
+	--realm-green: #68bd78;
+	--realm-gold: #e8bd58;
+	--realm-orange: #df8754;
+	--realm-violet: #a882e8;
+	--realm-red: #db6671;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	min-height: 100%;
+	margin: 0;
+	background: var(--realm-bg);
+	color: var(--realm-text);
+	font-family: pixel, monospace;
+	font-size: 18px;
+	line-height: 1.35;
+}
+
+body {
+	background-image: linear-gradient(rgba(84, 191, 217, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(84, 191, 217, 0.025) 1px, transparent 1px);
+	background-size: 32px 32px;
+}
+
+button,
+input {
+	font: inherit;
+}
+
+a {
+	color: var(--realm-text);
+}
+
+button,
+input,
+.realm-nav a {
+	border: 1px solid var(--realm-line);
+	background: var(--realm-panel-strong);
+	color: var(--realm-text);
+}
+
+button,
+.realm-nav a,
+.map-card {
+	cursor: pointer;
+}
+
+button:hover,
+button:focus-visible,
+.realm-nav a:hover,
+.realm-nav a:focus-visible,
+.map-card:hover,
+.map-card:focus-visible {
+	border-color: var(--realm-cyan);
+}
+
+.realm-shell {
+	width: min(1680px, 100%);
+	margin: 0 auto;
+	padding: 32px;
+}
+
+.realm-header,
+.section-heading,
+.map-focus-heading,
+.catalog-toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 24px;
+}
+
+.realm-header {
+	padding: 10px 0 30px;
+}
+
+.realm-kicker,
+.section-number,
+.map-id {
+	margin: 0 0 5px;
+	color: var(--realm-cyan);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+	margin-top: 0;
+}
+
+h1 {
+	margin-bottom: 6px;
+	font-size: clamp(38px, 6vw, 72px);
+	font-weight: normal;
+	line-height: 0.9;
+}
+
+h2 {
+	margin-bottom: 0;
+	font-size: clamp(30px, 4vw, 48px);
+	font-weight: normal;
+	line-height: 1;
+}
+
+h3 {
+	margin-bottom: 4px;
+	font-size: 26px;
+	font-weight: normal;
+}
+
+.realm-intro,
+.section-heading > p,
+.map-access,
+.map-card-access,
+.monster-locations,
+.map-card-meta {
+	color: var(--realm-muted);
+}
+
+.realm-intro {
+	max-width: 720px;
+	margin-bottom: 0;
+}
+
+.realm-nav {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 8px;
+}
+
+.realm-nav a {
+	padding: 9px 12px;
+	text-decoration: none;
+}
+
+.realm-summary {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 1px;
+	margin-bottom: 70px;
+	border: 1px solid var(--realm-line);
+	background: var(--realm-line);
+}
+
+.realm-summary > div {
+	padding: 16px 18px;
+	background: var(--realm-panel-strong);
+}
+
+.realm-summary strong,
+.realm-summary span {
+	display: block;
+}
+
+.realm-summary strong {
+	font-size: 34px;
+	font-weight: normal;
+}
+
+.realm-summary span {
+	color: var(--realm-muted);
+	font-size: 15px;
+	text-transform: uppercase;
+}
+
+.realm-section {
+	margin-bottom: 86px;
+	scroll-margin-top: 20px;
+}
+
+.section-heading {
+	align-items: flex-end;
+	margin-bottom: 20px;
+}
+
+.section-heading > p {
+	max-width: 650px;
+	margin-bottom: 0;
+	text-align: right;
+}
+
+.graph-legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px 18px;
+	margin-bottom: 12px;
+	color: var(--realm-muted);
+	font-size: 15px;
+}
+
+.graph-legend span {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+}
+
+.legend-line {
+	display: inline-block;
+	width: 26px;
+	height: 3px;
+	background: var(--realm-cyan);
+}
+
+.legend-line.one-way {
+	background: var(--realm-orange);
+}
+
+.legend-line.transport {
+	height: 2px;
+	background: repeating-linear-gradient(90deg, var(--realm-violet) 0 5px, transparent 5px 8px);
+}
+
+.legend-node {
+	display: inline-block;
+	width: 13px;
+	height: 13px;
+	border: 1px solid currentColor;
+	background: currentColor;
+}
+
+.legend-node.outdoor {
+	color: var(--realm-green);
+}
+
+.legend-node.underground {
+	color: var(--realm-violet);
+}
+
+.legend-node.interior {
+	color: var(--realm-gold);
+}
+
+.legend-node.special {
+	color: var(--realm-red);
+}
+
+.realm-graph-frame {
+	min-height: 620px;
+	overflow: auto;
+	border: 1px solid var(--realm-line);
+	background: var(--realm-panel-soft);
+}
+
+#realm-graph {
+	display: block;
+	width: 100%;
+	min-width: 1120px;
+	height: auto;
+	min-height: 620px;
+}
+
+.graph-edge {
+	fill: none;
+	stroke-width: 2;
+	vector-effect: non-scaling-stroke;
+}
+
+.graph-edge.passage {
+	stroke: var(--realm-cyan);
+	stroke-opacity: 0.5;
+}
+
+.graph-edge.one-way {
+	stroke: var(--realm-orange);
+	stroke-opacity: 0.8;
+}
+
+.graph-edge.transport {
+	stroke: var(--realm-violet);
+	stroke-dasharray: 6 6;
+	stroke-opacity: 0.35;
+}
+
+.graph-node rect {
+	stroke-width: 2;
+	vector-effect: non-scaling-stroke;
+}
+
+.graph-node text {
+	fill: var(--realm-text);
+	font-family: pixel, monospace;
+	font-size: 17px;
+	pointer-events: none;
+}
+
+.graph-node .graph-node-id {
+	fill: var(--realm-muted);
+	font-size: 12px;
+}
+
+.graph-node.outdoor rect {
+	fill: #173021;
+	stroke: var(--realm-green);
+}
+
+.graph-node.underground rect {
+	fill: #251d35;
+	stroke: var(--realm-violet);
+}
+
+.graph-node.interior rect {
+	fill: #332b18;
+	stroke: var(--realm-gold);
+}
+
+.graph-node.special rect {
+	fill: #351d23;
+	stroke: var(--realm-red);
+}
+
+.graph-node.is-selected rect {
+	stroke: var(--realm-text);
+	stroke-width: 4;
+}
+
+.map-focus {
+	margin-bottom: 26px;
+	border: 1px solid var(--realm-line);
+	background: var(--realm-panel);
+}
+
+.map-focus-heading {
+	padding: 17px 19px;
+	border-bottom: 1px solid var(--realm-line);
+}
+
+.map-focus-heading p,
+.map-focus-heading h3 {
+	margin-bottom: 0;
+}
+
+.map-zoom {
+	display: grid;
+	grid-template-columns: 42px minmax(70px, auto) 42px;
+	align-items: stretch;
+}
+
+.map-zoom button,
+.map-zoom span {
+	display: grid;
+	min-height: 42px;
+	place-items: center;
+}
+
+.map-zoom button {
+	padding: 0;
+}
+
+.map-zoom span {
+	border-top: 1px solid var(--realm-line);
+	border-bottom: 1px solid var(--realm-line);
+	background: var(--realm-panel-soft);
+	color: var(--realm-muted);
+	font-size: 15px;
+}
+
+.map-focus-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 330px;
+	min-height: 560px;
+}
+
+.map-canvas-viewport {
+	display: grid;
+	min-height: 560px;
+	max-height: 820px;
+	overflow: auto;
+	place-items: center;
+	background: #080b0d;
+	background-image:
+		linear-gradient(45deg, #0c1215 25%, transparent 25%), linear-gradient(-45deg, #0c1215 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #0c1215 75%),
+		linear-gradient(-45deg, transparent 75%, #0c1215 75%);
+	background-position:
+		0 0,
+		0 8px,
+		8px -8px,
+		-8px 0;
+	background-size: 16px 16px;
+}
+
+.map-canvas-viewport canvas,
+.map-card-canvas canvas,
+.monster-sprite canvas {
+	image-rendering: crisp-edges;
+	image-rendering: pixelated;
+}
+
+.map-canvas-viewport canvas {
+	display: block;
+	max-width: none;
+	margin: auto;
+}
+
+.map-empty {
+	padding: 30px;
+	color: var(--realm-muted);
+	text-align: center;
+}
+
+.zone-panel {
+	overflow: auto;
+	border-left: 1px solid var(--realm-line);
+	background: var(--realm-panel-soft);
+}
+
+.zone-panel h3 {
+	margin: 0;
+	padding: 16px;
+	border-bottom: 1px solid var(--realm-line-soft);
+	font-size: 21px;
+}
+
+.zone-list {
+	display: grid;
+}
+
+.zone-row {
+	display: grid;
+	grid-template-columns: 12px minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 10px;
+	padding: 11px 16px;
+	border-bottom: 1px solid var(--realm-line-soft);
+}
+
+.zone-row button {
+	min-width: 0;
+	padding: 0;
+	overflow-wrap: anywhere;
+	border: 0;
+	background: transparent;
+	color: var(--realm-text);
+	text-align: left;
+}
+
+.zone-row button:hover,
+.zone-row button:focus-visible {
+	color: var(--realm-cyan);
+}
+
+.zone-swatch {
+	width: 12px;
+	height: 12px;
+}
+
+.zone-count {
+	color: var(--realm-muted);
+	font-size: 14px;
+}
+
+.zone-empty {
+	padding: 18px 16px;
+	color: var(--realm-muted);
+}
+
+.catalog-toolbar {
+	justify-content: flex-start;
+	margin: 18px 0 14px;
+}
+
+.catalog-toolbar label {
+	color: var(--realm-muted);
+	white-space: nowrap;
+}
+
+.catalog-toolbar input {
+	width: min(560px, 100%);
+	min-height: 44px;
+	padding: 8px 11px;
+}
+
+.catalog-toolbar span {
+	margin-left: auto;
+	color: var(--realm-muted);
+	white-space: nowrap;
+}
+
+.map-grid,
+.monster-grid {
+	display: grid;
+	gap: 14px;
+}
+
+.map-grid {
+	grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+}
+
+.map-card {
+	min-width: 0;
+	padding: 0;
+	border: 1px solid var(--realm-line-soft);
+	background: var(--realm-panel);
+	color: var(--realm-text);
+	text-align: left;
+}
+
+.map-card.is-selected {
+	border-color: var(--realm-cyan);
+	box-shadow: inset 0 0 0 1px var(--realm-cyan);
+}
+
+.map-card-canvas {
+	display: grid;
+	height: 220px;
+	overflow: hidden;
+	place-items: center;
+	border-bottom: 1px solid var(--realm-line-soft);
+	background: #080b0d;
+}
+
+.map-card-canvas canvas {
+	display: block;
+}
+
+.map-card-copy {
+	padding: 13px 14px 15px;
+}
+
+.map-card-title,
+.monster-name {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+.map-card-title strong,
+.monster-name strong {
+	font-size: 21px;
+	font-weight: normal;
+}
+
+.map-card-title code,
+.monster-name code {
+	color: var(--realm-muted);
+	font-family: pixel, monospace;
+	font-size: 13px;
+}
+
+.map-card-meta,
+.map-card-access {
+	display: block;
+	margin: 7px 0 0;
+	font-size: 15px;
+}
+
+.map-card-access {
+	min-height: 41px;
+}
+
+.monster-grid {
+	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.monster-card {
+	display: grid;
+	grid-template-columns: 88px minmax(0, 1fr);
+	min-height: 142px;
+	border: 1px solid var(--realm-line-soft);
+	background: var(--realm-panel);
+}
+
+.monster-sprite {
+	display: grid;
+	min-height: 140px;
+	place-items: center;
+	border-right: 1px solid var(--realm-line-soft);
+	background: var(--realm-panel-soft);
+}
+
+.monster-sprite canvas {
+	display: block;
+}
+
+.monster-copy {
+	min-width: 0;
+	padding: 12px;
+}
+
+.monster-stats {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1px;
+	margin-top: 9px;
+	background: var(--realm-line-soft);
+}
+
+.monster-stats span {
+	padding: 5px 7px;
+	background: var(--realm-panel-strong);
+	color: var(--realm-muted);
+	font-size: 13px;
+}
+
+.monster-stats strong {
+	display: block;
+	color: var(--realm-text);
+	font-size: 16px;
+	font-weight: normal;
+}
+
+.monster-locations {
+	margin: 9px 0 0;
+	overflow-wrap: anywhere;
+	font-size: 14px;
+}
+
+[hidden] {
+	display: none !important;
+}
+
+@media (max-width: 980px) {
+	.realm-header,
+	.section-heading {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.realm-nav {
+		justify-content: flex-start;
+	}
+
+	.section-heading > p {
+		max-width: none;
+		text-align: left;
+	}
+
+	.map-focus-layout {
+		grid-template-columns: 1fr;
+	}
+
+	.zone-panel {
+		max-height: 360px;
+		border-top: 1px solid var(--realm-line);
+		border-left: 0;
+	}
+}
+
+@media (max-width: 680px) {
+	.realm-shell {
+		padding: 16px;
+	}
+
+	.realm-summary {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		margin-bottom: 52px;
+	}
+
+	.realm-section {
+		margin-bottom: 62px;
+	}
+
+	.map-focus-heading,
+	.catalog-toolbar {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.catalog-toolbar input {
+		width: 100%;
+	}
+
+	.catalog-toolbar span {
+		margin-left: 0;
+	}
+
+	.map-grid,
+	.monster-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.map-canvas-viewport,
+	.map-focus-layout {
+		min-height: 430px;
+	}
+}

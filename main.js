@@ -711,6 +711,14 @@ app.get("/roadmap", async (req, res, next) => {
 		domain = await get_domain(req, user);
 	res.status(200).send(nunjucks.render("htmls/roadmap.html", { domain: domain, user: user }));
 });
+app.get("/realm", async (req, res, next) => {
+	var user = await get_user(req),
+		domain = await get_domain(req, user);
+	domain.title = "Realm Atlas | Adventure Land";
+	res.set("Cache-Control", "no-store");
+	res.set("X-Robots-Tag", "noindex, nofollow");
+	res.status(200).send(nunjucks.render("htmls/realm.html", { domain: domain, user: user }));
+});
 app.get("/drm-free", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
