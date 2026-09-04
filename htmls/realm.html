@@ -17,7 +17,7 @@
 				<div>
 					<p class="realm-kicker">Adventure Land world reference</p>
 					<h1>Realm Atlas</h1>
-					<p class="realm-intro">Every live map, passage, monster, and known way in. Built from the current game data.</p>
+					<p class="realm-intro">Every live map, passage, monster, NPC, citizen, and known way in. Built from the current game data.</p>
 				</div>
 				<nav class="realm-nav" aria-label="Realm atlas sections">
 					<a href="#connections">Connections</a>
@@ -30,6 +30,7 @@
 			<section class="realm-summary" aria-label="Realm totals">
 				<div><strong id="map-total">—</strong><span>maps</span></div>
 				<div><strong id="monster-total">—</strong><span>monsters</span></div>
+				<div><strong id="npc-total">—</strong><span>NPCs and citizens</span></div>
 				<div><strong id="zone-total">—</strong><span>spawn zones</span></div>
 				<div><strong id="connection-total">—</strong><span>connections</span></div>
 			</section>
@@ -65,7 +66,15 @@
 						<p class="section-number">02</p>
 						<h2 id="maps-title">Map survey</h2>
 					</div>
-					<p>Map tiles are rendered from the current geometry. Coloured regions mark monster territory; labels show the local pack size.</p>
+					<p>Map tiles are rendered from the current geometry. Monster territory, doorways, arrivals, NPCs, and citizen routes are placed on top.</p>
+				</div>
+				<div class="map-legend" aria-label="Map annotation legend">
+					<span><i class="map-mark monster"></i>Monster zone</span>
+					<span><i class="map-mark doorway"></i>Doorway</span>
+					<span><i class="map-mark arrival"></i>Arrival</span>
+					<span><i class="map-mark npc"></i>NPC</span>
+					<span><i class="map-mark citizen"></i>Citizen</span>
+					<span><i class="map-mark transporter"></i>Transporter</span>
 				</div>
 
 				<article id="map-focus" class="map-focus" aria-live="polite">
@@ -75,27 +84,44 @@
 							<h3 id="focus-map-name">Loading maps</h3>
 							<p id="focus-map-access" class="map-access"></p>
 						</div>
-						<div class="map-zoom" aria-label="Map zoom controls">
-							<button id="map-zoom-out" type="button" aria-label="Zoom map out">−</button>
-							<span id="map-scale">—</span>
-							<button id="map-zoom-in" type="button" aria-label="Zoom map in">+</button>
+						<div class="map-focus-controls">
+							<div class="map-layers" aria-label="Map annotation layers">
+								<label><input id="layer-monsters" type="checkbox" checked /> Monsters</label>
+								<label><input id="layer-connections" type="checkbox" checked /> Doors and arrivals</label>
+								<label><input id="layer-npcs" type="checkbox" checked /> NPCs and citizens</label>
+							</div>
+							<div class="map-zoom" aria-label="Map zoom controls">
+								<button id="map-zoom-out" type="button" aria-label="Zoom map out">−</button>
+								<span id="map-scale">—</span>
+								<button id="map-zoom-in" type="button" aria-label="Zoom map in">+</button>
+							</div>
 						</div>
 					</div>
 					<div class="map-focus-layout">
 						<div id="focus-map-viewport" class="map-canvas-viewport">
-							<canvas id="focus-map-canvas" aria-label="Selected map with monster zones"></canvas>
+							<canvas id="focus-map-canvas" aria-label="Selected map with world annotations"></canvas>
 							<p id="focus-map-empty" class="map-empty" hidden>Map geometry is not available in the current data.</p>
 						</div>
-						<aside class="zone-panel" aria-labelledby="zone-panel-title">
-							<h3 id="zone-panel-title">Monster zones</h3>
-							<div id="focus-zone-list" class="zone-list"></div>
+						<aside class="annotation-panel" aria-label="Selected map annotations">
+							<section class="annotation-group" aria-labelledby="connection-panel-title">
+								<h3 id="connection-panel-title">Doors and arrivals</h3>
+								<div id="focus-connection-list" class="annotation-list"></div>
+							</section>
+							<section class="annotation-group" aria-labelledby="npc-panel-title">
+								<h3 id="npc-panel-title">NPCs and citizens</h3>
+								<div id="focus-npc-list" class="annotation-list"></div>
+							</section>
+							<section class="annotation-group" aria-labelledby="zone-panel-title">
+								<h3 id="zone-panel-title">Monster zones</h3>
+								<div id="focus-zone-list" class="annotation-list"></div>
+							</section>
 						</aside>
 					</div>
 				</article>
 
 				<div class="catalog-toolbar">
 					<label for="map-search">Find a map</label>
-					<input id="map-search" type="search" placeholder="Name, id, monster, or access" autocomplete="off" />
+					<input id="map-search" type="search" placeholder="Name, id, monster, NPC, or access" autocomplete="off" />
 					<span id="map-result-count" aria-live="polite"></span>
 				</div>
 				<div id="map-grid" class="map-grid"></div>

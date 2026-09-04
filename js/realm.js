@@ -14,6 +14,7 @@
 	var mapById = {};
 	var inboundByMap = {};
 	var zonesByMap = {};
+	var npcsByMap = {};
 	var monsterMaps = {};
 	var imagePromises = {};
 	var tileCanvases = {};
@@ -24,8 +25,16 @@
 	var mapCards = {};
 	var graphNodes = {};
 	var focusRenderToken = 0;
+	var layerState = { connections: true, monsters: true, npcs: true };
 	var scaleSteps = [1 / 16, 1 / 12, 1 / 10, 1 / 8, 1 / 6, 1 / 5, 1 / 4, 1 / 3, 1 / 2, 1, 2, 3];
 	var zonePalette = ["#54bfd9", "#68bd78", "#e8bd58", "#df8754", "#a882e8", "#db6671", "#55a6e8", "#83c55b", "#d778bd", "#d69c54"];
+	var annotationColors = {
+		arrival: "#54bfd9",
+		citizen: "#68bd78",
+		doorway: "#e8bd58",
+		npc: "#eef4f2",
+		transporter: "#a882e8",
+	};
 
 	var specialAccess = {
 		main: "Starting realm",
@@ -45,10 +54,27 @@
 		mapById[entry[0]] = entry[1];
 		inboundByMap[entry[0]] = [];
 		zonesByMap[entry[0]] = [];
+		npcsByMap[entry[0]] = [];
 	});
 
 	mapEntries.forEach(function (entry) {
 		var from = entry[0];
+		npcsByMap[from] = (entry[1].npcs || []).map(function (placement, index) {
+			var definition = G.npcs[placement.id] || {};
+			var points = placement.positions || (placement.position ? [placement.position] : []);
+			var category = definition.role === "citizen" ? "citizen" : definition.role === "transport" ? "transporter" : "npc";
+			return {
+				boundary: placement.boundary,
+				category: category,
+				id: placement.id,
+				index: index,
+				name: definition.name || placement.name || placement.id,
+				points: points.map(function (point) {
+					return [point[0], point[1]];
+				}),
+				role: definition.role || "npc",
+			};
+		});
 		(entry[1].doors || []).forEach(function (door) {
 			if (mapById[door[4]]) inboundByMap[door[4]].push({ from: from, door: door });
 		});
@@ -149,6 +175,60 @@
 
 	function linkFrom(link) {
 		return link.from;
+	}
+
+	function titleCase(value) {
+		return String(value || "NPC")
+			.replace(/_/g, " ")
+			.replace(/\b\w/g, function (character) {
+				return character.toUpperCase();
+			});
+	}
+
+	function npcRole(npc) {
+		if (npc.category === "transporter") return "Transporter";
+		if (npc.category === "citizen") return "Citizen";
+		return titleCase(npc.role);
+	}
+
+	function doorRequirement(door) {
+		if (door[7] === "key") return "Consumes " + itemName(door[8]);
+		if (door[7] === "ulocked") {
+			var unlockName = unlockItemFor(door[4]);
+			return unlockName ? "Unlock with " + unlockName : "Requires the account unlock";
+		}
+		if (door[7] === "protected") return "Protected passage";
+		return mapById[door[4]] && mapById[door[4]].instance ? "Creates or joins an instance" : "Direct passage";
+	}
+
+	function arrivalsForMap(mapId) {
+		var map = mapById[mapId];
+		var grouped = {};
+		function add(spawnIndex, source, type) {
+			var spawn = (map.spawns || [])[spawnIndex];
+			if (!spawn) return;
+			var key = spawnIndex + ":" + type;
+			if (!grouped[key]) grouped[key] = { sources: [], spawn: spawn, spawnIndex: spawnIndex, type: type };
+			if (grouped[key].sources.indexOf(source) === -1) grouped[key].sources.push(source);
+		}
+		(inboundByMap[mapId] || []).forEach(function (link) {
+			add(link.door[5], link.from, "passage");
+		});
+		var transporter = G.npcs.transporter;
+		if (transporter && transporter.places && transporter.places[mapId] !== undefined) add(transporter.places[mapId], "transporter", "transport");
+		return Object.keys(grouped).map(function (key) {
+			var group = grouped[key];
+			var names = group.sources.map(function (source) {
+				return source === "transporter" ? "Transporter" : (mapById[source] && mapById[source].name) || source;
+			});
+			return {
+				label: "From " + names.join(", "),
+				sources: group.sources,
+				spawn: group.spawn,
+				spawnIndex: group.spawnIndex,
+				type: group.type,
+			};
+		});
 	}
 
 	function mapCategory(mapId) {
@@ -414,6 +494,19 @@
 				});
 			}
 		});
+		(mapById[mapId].doors || []).forEach(function (door) {
+			include(door[0] - door[2] / 2, door[1] - door[3]);
+			include(door[0] + door[2] / 2, door[1]);
+		});
+		(npcsByMap[mapId] || []).forEach(function (npc) {
+			npc.points.forEach(function (point) {
+				include(point[0], point[1]);
+			});
+			if (npc.boundary) {
+				include(npc.boundary[0], npc.boundary[1]);
+				include(npc.boundary[2], npc.boundary[3]);
+			}
+		});
 		(mapById[mapId].spawns || []).forEach(function (spawn) {
 			include(spawn[0], spawn[1]);
 		});
@@ -475,8 +568,70 @@
 		return [total[0] / zone.shape.length, total[1] / zone.shape.length];
 	}
 
-	function drawZones(context, mapId, bounds, scale, labels) {
-		(zonesByMap[mapId] || []).forEach(function (zone, index) {
+	function canvasPoint(point, bounds, scale) {
+		return [(point[0] - bounds.minX) * scale, (point[1] - bounds.minY) * scale];
+	}
+
+	function labelsOverlap(a, b) {
+		return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+	}
+
+	function shortLabel(value) {
+		return value.length > 34 ? value.slice(0, 33) + "…" : value;
+	}
+
+	function drawCanvasLabel(context, value, anchorX, anchorY, color, occupied) {
+		var label = shortLabel(value);
+		context.font = "14px pixel, monospace";
+		context.textAlign = "center";
+		context.textBaseline = "middle";
+		var width = context.measureText(label).width + 10;
+		var height = 21;
+		var placements = [
+			[0, -18],
+			[0, 18],
+			[width / 2 + 9, 0],
+			[-width / 2 - 9, 0],
+			[width / 2 + 9, -18],
+			[-width / 2 - 9, -18],
+			[width / 2 + 9, 18],
+			[-width / 2 - 9, 18],
+		];
+		var box = null;
+		for (var i = 0; i < placements.length; i++) {
+			var centerX = Math.max(width / 2 + 3, Math.min(context.canvas.width - width / 2 - 3, anchorX + placements[i][0]));
+			var centerY = Math.max(height / 2 + 3, Math.min(context.canvas.height - height / 2 - 3, anchorY + placements[i][1]));
+			var candidate = { h: height, w: width, x: centerX - width / 2, y: centerY - height / 2 };
+			var collision = occupied.some(function (other) {
+				return labelsOverlap(candidate, other);
+			});
+			if (!collision || i === placements.length - 1) {
+				box = candidate;
+				break;
+			}
+		}
+		var labelX = box.x + box.w / 2;
+		var labelY = box.y + box.h / 2;
+		if (Math.abs(labelX - anchorX) > 3 || Math.abs(labelY - anchorY) > 3) {
+			context.beginPath();
+			context.moveTo(anchorX, anchorY);
+			context.lineTo(labelX, labelY);
+			context.strokeStyle = color;
+			context.lineWidth = 1;
+			context.stroke();
+		}
+		context.fillStyle = "rgba(4, 8, 10, 0.9)";
+		context.fillRect(box.x, box.y, box.w, box.h);
+		context.strokeStyle = color;
+		context.lineWidth = 2;
+		context.strokeRect(box.x, box.y, box.w, box.h);
+		context.fillStyle = "#f4f7f5";
+		context.fillText(label, labelX, labelY + 1);
+		occupied.push(box);
+	}
+
+	function drawZones(context, mapId, bounds, scale, labels, occupied) {
+		(zonesByMap[mapId] || []).forEach(function (zone) {
 			var color = zoneColor(zone.monster);
 			context.save();
 			context.scale(scale, scale);
@@ -502,31 +657,83 @@
 
 			if (!labels) return;
 			var center = zoneCenter(zone);
-			var x = (center[0] - bounds.minX) * scale;
-			var y = (center[1] - bounds.minY) * scale;
+			var point = canvasPoint(center, bounds, scale);
 			var monster = G.monsters[zone.monster];
 			var label = (monster && monster.name) || zone.monster;
 			if (zone.count !== undefined) label += " ×" + zone.count;
-			context.font = "16px pixel, monospace";
-			context.textAlign = "center";
-			context.textBaseline = "middle";
-			var textWidth = context.measureText(label).width;
-			var labelX = Math.max(textWidth / 2 + 5, Math.min(context.canvas.width - textWidth / 2 - 5, x));
-			var labelY = Math.max(13, Math.min(context.canvas.height - 13, y));
-			context.fillStyle = "rgba(4, 8, 10, 0.86)";
-			context.fillRect(labelX - textWidth / 2 - 5, labelY - 11, textWidth + 10, 22);
-			context.strokeStyle = color;
+			drawCanvasLabel(context, label, point[0], point[1], color, occupied);
+		});
+	}
+
+	function drawConnections(context, mapId, bounds, scale, labels, occupied) {
+		(mapById[mapId].doors || []).forEach(function (door) {
+			var point = canvasPoint(door, bounds, scale);
+			var width = Math.max(7, door[2] * scale);
+			var height = Math.max(8, door[3] * scale);
+			context.fillStyle = hexToRgba(annotationColors.doorway, 0.18);
+			context.strokeStyle = annotationColors.doorway;
+			context.lineWidth = labels ? 3 : 2;
+			context.fillRect(point[0] - width / 2, point[1] - height, width, height);
+			context.strokeRect(point[0] - width / 2, point[1] - height, width, height);
+			if (labels) drawCanvasLabel(context, "To " + ((mapById[door[4]] && mapById[door[4]].name) || door[4]), point[0], point[1] - height / 2, annotationColors.doorway, occupied);
+		});
+		arrivalsForMap(mapId).forEach(function (arrival) {
+			var point = canvasPoint(arrival.spawn, bounds, scale);
+			var radius = labels ? 7 : 5;
+			context.beginPath();
+			context.moveTo(point[0], point[1] - radius);
+			context.lineTo(point[0] + radius, point[1]);
+			context.lineTo(point[0], point[1] + radius);
+			context.lineTo(point[0] - radius, point[1]);
+			context.closePath();
+			context.fillStyle = annotationColors.arrival;
+			context.strokeStyle = "#080b0d";
 			context.lineWidth = 2;
-			context.strokeRect(labelX - textWidth / 2 - 5, labelY - 11, textWidth + 10, 22);
-			context.fillStyle = "#f4f7f5";
-			context.fillText(label, labelX, labelY + 1);
-			if (Math.abs(labelX - x) > 2 || Math.abs(labelY - y) > 2) {
-				context.beginPath();
-				context.moveTo(x, y);
-				context.lineTo(labelX, labelY);
-				context.strokeStyle = color;
-				context.stroke();
+			context.fill();
+			context.stroke();
+			if (labels) drawCanvasLabel(context, arrival.label, point[0], point[1], annotationColors.arrival, occupied);
+		});
+	}
+
+	function drawNpcs(context, mapId, bounds, scale, labels, occupied) {
+		(npcsByMap[mapId] || []).forEach(function (npc) {
+			var color = annotationColors[npc.category];
+			if (npc.boundary) {
+				var boundaryStart = canvasPoint(npc.boundary, bounds, scale);
+				var boundaryEnd = canvasPoint([npc.boundary[2], npc.boundary[3]], bounds, scale);
+				context.save();
+				context.setLineDash([5, 4]);
+				context.strokeStyle = hexToRgba(color, 0.72);
+				context.lineWidth = labels ? 2 : 1;
+				context.strokeRect(boundaryStart[0], boundaryStart[1], boundaryEnd[0] - boundaryStart[0], boundaryEnd[1] - boundaryStart[1]);
+				context.restore();
 			}
+			if (!npc.points.length) return;
+			if (npc.points.length > 1) {
+				context.save();
+				context.beginPath();
+				npc.points.forEach(function (routePoint, index) {
+					var point = canvasPoint(routePoint, bounds, scale);
+					if (index) context.lineTo(point[0], point[1]);
+					else context.moveTo(point[0], point[1]);
+				});
+				context.setLineDash([6, 5]);
+				context.strokeStyle = hexToRgba(color, labels ? 0.88 : 0.7);
+				context.lineWidth = labels ? 3 : 2;
+				context.stroke();
+				context.restore();
+			}
+			var marker = canvasPoint(npc.points[0], bounds, scale);
+			var radius = labels ? 7 : 5;
+			context.beginPath();
+			if (npc.category === "npc") context.rect(marker[0] - radius, marker[1] - radius, radius * 2, radius * 2);
+			else context.arc(marker[0], marker[1], radius, 0, Math.PI * 2);
+			context.fillStyle = color;
+			context.strokeStyle = "#080b0d";
+			context.lineWidth = 2;
+			context.fill();
+			context.stroke();
+			if (labels) drawCanvasLabel(context, npc.name, marker[0], marker[1], color, occupied);
 		});
 	}
 
@@ -586,9 +793,51 @@
 			context.translate(-bounds.minX, -bounds.minY);
 			drawMapTiles(context, geometry, bounds, images);
 			context.restore();
-			drawZones(context, mapId, bounds, scale, !!options.labels);
+			var layers = options.layers || { connections: true, monsters: true, npcs: true };
+			var occupied = [];
+			if (layers.monsters) drawZones(context, mapId, bounds, scale, !!options.labels, occupied);
+			if (layers.connections) drawConnections(context, mapId, bounds, scale, !!options.labels, occupied);
+			if (layers.npcs) drawNpcs(context, mapId, bounds, scale, !!options.labels, occupied);
 			return { bounds: bounds, scale: scale };
 		});
+	}
+
+	function annotationRow(category, title, detail, suffix) {
+		return (
+			'<div class="annotation-row"><i class="annotation-swatch ' +
+			category +
+			'"></i><div class="annotation-copy"><strong>' +
+			escapeHtml(title) +
+			"</strong><span>" +
+			escapeHtml(detail) +
+			"</span></div>" +
+			(suffix ? '<span class="annotation-suffix">' + escapeHtml(suffix) + "</span>" : "") +
+			"</div>"
+		);
+	}
+
+	function renderConnectionList(mapId) {
+		var list = document.getElementById("focus-connection-list");
+		var rows = (mapById[mapId].doors || []).map(function (door) {
+			var destination = (mapById[door[4]] && mapById[door[4]].name) || door[4];
+			return annotationRow("doorway", "To " + destination, doorRequirement(door), "door");
+		});
+		arrivalsForMap(mapId).forEach(function (arrival) {
+			var detail = (arrival.type === "transport" ? "Transporter arrival" : "Passage arrival") + " · spawn " + arrival.spawnIndex;
+			rows.push(annotationRow("arrival", arrival.label, detail, "entry"));
+		});
+		list.innerHTML = rows.length ? rows.join("") : '<p class="zone-empty">No doorway or arrival is defined.</p>';
+	}
+
+	function renderNpcList(mapId) {
+		var list = document.getElementById("focus-npc-list");
+		var rows = (npcsByMap[mapId] || []).map(function (npc) {
+			var detail = npcRole(npc) + " · " + npc.id;
+			if (npc.points.length > 1) detail += " · " + npc.points.length + " route points";
+			if (npc.boundary) detail += " · roaming area";
+			return annotationRow(npc.category, npc.name, detail, "NPC");
+		});
+		list.innerHTML = rows.length ? rows.join("") : '<p class="zone-empty">No NPC placement is defined.</p>';
 	}
 
 	function renderZoneList(mapId) {
@@ -628,6 +877,8 @@
 		document.getElementById("focus-map-id").textContent = mapId;
 		document.getElementById("focus-map-name").textContent = map.name;
 		document.getElementById("focus-map-access").textContent = accessText(mapId);
+		renderConnectionList(mapId);
+		renderNpcList(mapId);
 		renderZoneList(mapId);
 		var canvas = document.getElementById("focus-map-canvas");
 		var empty = document.getElementById("focus-map-empty");
@@ -645,9 +896,12 @@
 		empty.hidden = true;
 		document.getElementById("map-scale").textContent = scaleLabel(selectedScale);
 		var token = ++focusRenderToken;
-		renderMapCanvas(canvas, mapId, { labels: true, maxHeight: 760, maxWidth: 1260, scale: selectedScale }).then(function (result) {
+		renderMapCanvas(canvas, mapId, { labels: true, layers: layerState, maxHeight: 760, maxWidth: 1260, scale: selectedScale }).then(function (result) {
 			if (token !== focusRenderToken || !result) return;
-			canvas.setAttribute("aria-label", map.name + " at " + scaleLabel(result.scale) + " scale with " + zonesByMap[mapId].length + " monster zones");
+			canvas.setAttribute(
+				"aria-label",
+				map.name + " at " + scaleLabel(result.scale) + " scale with " + zonesByMap[mapId].length + " monster zones, " + (map.doors || []).length + " doors, and " + npcsByMap[mapId].length + " NPCs",
+			);
 		});
 	}
 
@@ -685,7 +939,10 @@
 		card.className = "map-card " + mapCategory(mapId) + (mapId === selectedMap ? " is-selected" : "");
 		card.setAttribute("data-map-id", mapId);
 		var monsters = mapMonsterNames(mapId);
-		card.setAttribute("data-search", [mapId, map.name, accessText(mapId)].concat(monsters).join(" ").toLowerCase());
+		var npcNames = (npcsByMap[mapId] || []).map(function (npc) {
+			return npc.name + " " + npc.id + " " + npcRole(npc);
+		});
+		card.setAttribute("data-search", [mapId, map.name, accessText(mapId)].concat(monsters, npcNames).join(" ").toLowerCase());
 		card.innerHTML =
 			'<span class="map-card-canvas"><canvas width="330" height="220" aria-label="' +
 			escapeHtml(map.name) +
@@ -697,6 +954,10 @@
 			monsters.length +
 			" monster" +
 			(monsters.length === 1 ? "" : "s") +
+			" · " +
+			npcsByMap[mapId].length +
+			" NPC" +
+			(npcsByMap[mapId].length === 1 ? "" : "s") +
 			" · " +
 			(map.doors || []).length +
 			" exit" +
@@ -716,7 +977,7 @@
 		card.setAttribute("data-rendered", "1");
 		var mapId = card.getAttribute("data-map-id");
 		var canvas = card.querySelector("canvas");
-		renderMapCanvas(canvas, mapId, { labels: false, maxHeight: 210, maxWidth: 330 }).then(function (result) {
+		renderMapCanvas(canvas, mapId, { labels: false, layers: { connections: true, monsters: true, npcs: true }, maxHeight: 210, maxWidth: 330 }).then(function (result) {
 			if (result) return;
 			var context = canvas.getContext("2d");
 			context.fillStyle = "#080b0d";
@@ -916,6 +1177,16 @@
 		document.getElementById("map-zoom-in").addEventListener("click", function () {
 			changeScale(1);
 		});
+		[
+			["layer-monsters", "monsters"],
+			["layer-connections", "connections"],
+			["layer-npcs", "npcs"],
+		].forEach(function (control) {
+			document.getElementById(control[0]).addEventListener("change", function (event) {
+				layerState[control[1]] = event.target.checked;
+				renderFocusMap();
+			});
+		});
 		document.getElementById("focus-zone-list").addEventListener("click", function (event) {
 			var button = event.target.closest("[data-monster]");
 			if (!button) return;
@@ -929,6 +1200,9 @@
 		var edges = buildConnections();
 		document.getElementById("map-total").textContent = mapEntries.length;
 		document.getElementById("monster-total").textContent = monsterEntries.length;
+		document.getElementById("npc-total").textContent = Object.keys(npcsByMap).reduce(function (total, mapId) {
+			return total + npcsByMap[mapId].length;
+		}, 0);
 		document.getElementById("zone-total").textContent = Object.keys(zonesByMap).reduce(function (total, mapId) {
 			return total + zonesByMap[mapId].length;
 		}, 0);
