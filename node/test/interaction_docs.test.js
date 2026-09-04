@@ -87,6 +87,15 @@ test("active interactions have finished articles and documented CODE functions",
 	}
 });
 
+test("item-maintenance guide names every service NPC's placed map", () => {
+	const html = fs.readFileSync(path.join(root, "docs/guide/item-maintenance.html"), "utf8");
+	for (const npcId of ["locksmith", "scrollsmith"]) {
+		const placements = Object.values(maps).filter((map) => (map.npcs || []).some((npc) => npc.id === npcId));
+		assert.ok(placements.length, `${npcId} is not placed on a map`);
+		for (const map of placements) assert.match(html, new RegExp(`${npcs[npcId].name} · ${map.name}`));
+	}
+});
+
 test("guide CODE examples are valid async JavaScript", () => {
 	const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 	for (const filename of fs.readdirSync(path.join(root, "docs/guide"))) {
