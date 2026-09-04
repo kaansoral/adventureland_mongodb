@@ -19,12 +19,14 @@
 	var imagePromises = {};
 	var tileCanvases = {};
 	var spriteFrames = null;
-	var selectedMap = G.maps.main && !G.maps.main.ignore ? "main" : mapEntries[0][0];
+	var requestedMap = mapIdFromPath();
+	var selectedMap = requestedMap && G.maps[requestedMap] && !G.maps[requestedMap].ignore ? requestedMap : G.maps.main && !G.maps.main.ignore ? "main" : mapEntries[0][0];
 	var selectedScale = 0;
 	var mapObserver = null;
 	var mapCards = {};
 	var graphNodes = {};
 	var focusRenderToken = 0;
+	var focusDoorTargets = [];
 	var layerState = { connections: true, monsters: true, npcs: true };
 	var scaleSteps = [1 / 16, 1 / 12, 1 / 10, 1 / 8, 1 / 6, 1 / 5, 1 / 4, 1 / 3, 1 / 2, 1, 2, 3];
 	var zonePalette = ["#54bfd9", "#68bd78", "#e8bd58", "#df8754", "#a882e8", "#db6671", "#55a6e8", "#83c55b", "#d778bd", "#d69c54"];
@@ -49,6 +51,22 @@
 		shellsisland: "Client loading scene; not entered during normal play",
 		ship0: "Available during the Pirate Ship event",
 	};
+
+	function mapIdFromPath() {
+		var match = window.location.pathname.match(/^\/realm\/([^/]+)\/?$/);
+		if (!match) return null;
+		try {
+			return decodeURIComponent(match[1]);
+		} catch (error) {
+			return null;
+		}
+	}
+
+	function syncMapUrl(mapId, replace) {
+		var path = "/realm/" + encodeURIComponent(mapId) + window.location.search;
+		if (window.location.pathname + window.location.search === path) return;
+		window.history[replace ? "replaceState" : "pushState"]({ realmMap: mapId }, "", path);
+	}
 
 	mapEntries.forEach(function (entry) {
 		mapById[entry[0]] = entry[1];
@@ -415,7 +433,7 @@
 		svg.appendChild(edgeLayer);
 		var nodeLayer = createSvgElement("g", {});
 		layout.nodes.forEach(function (node) {
-			var anchor = createSvgElement("a", { href: "#map-focus", "data-map": node.id });
+			var anchor = createSvgElement("a", { href: "/realm/" + encodeURIComponent(node.id), "data-map": node.id });
 			var group = createSvgElement("g", {
 				class: "graph-node " + node.category + (node.id === selectedMap ? " is-selected" : ""),
 				transform: "translate(" + (node.x - node.w / 2).toFixed(1) + " " + (node.y - node.h / 2).toFixed(1) + ")",
@@ -628,6 +646,7 @@
 		context.fillStyle = "#f4f7f5";
 		context.fillText(label, labelX, labelY + 1);
 		occupied.push(box);
+		return box;
 	}
 
 	function drawZones(context, mapId, bounds, scale, labels, occupied) {
@@ -665,7 +684,7 @@
 		});
 	}
 
-	function drawConnections(context, mapId, bounds, scale, labels, occupied) {
+	function drawConnections(context, mapId, bounds, scale, labels, occupied, doorTargets) {
 		(mapById[mapId].doors || []).forEach(function (door) {
 			var point = canvasPoint(door, bounds, scale);
 			var width = Math.max(7, door[2] * scale);
@@ -675,7 +694,18 @@
 			context.lineWidth = labels ? 3 : 2;
 			context.fillRect(point[0] - width / 2, point[1] - height, width, height);
 			context.strokeRect(point[0] - width / 2, point[1] - height, width, height);
-			if (labels) drawCanvasLabel(context, "To " + ((mapById[door[4]] && mapById[door[4]].name) || door[4]), point[0], point[1] - height / 2, annotationColors.doorway, occupied);
+			var labelBox = null;
+			if (labels) labelBox = drawCanvasLabel(context, "To " + ((mapById[door[4]] && mapById[door[4]].name) || door[4]), point[0], point[1] - height / 2, annotationColors.doorway, occupied);
+			if (doorTargets && mapById[door[4]]) {
+				doorTargets.push({
+					h: Math.max(32, height),
+					labelBox: labelBox,
+					mapId: door[4],
+					w: Math.max(28, width),
+					x: point[0],
+					y: point[1] - height / 2,
+				});
+			}
 		});
 		arrivalsForMap(mapId).forEach(function (arrival) {
 			var point = canvasPoint(arrival.spawn, bounds, scale);
@@ -796,19 +826,20 @@
 			var layers = options.layers || { connections: true, monsters: true, npcs: true };
 			var occupied = [];
 			if (layers.monsters) drawZones(context, mapId, bounds, scale, !!options.labels, occupied);
-			if (layers.connections) drawConnections(context, mapId, bounds, scale, !!options.labels, occupied);
+			if (layers.connections) drawConnections(context, mapId, bounds, scale, !!options.labels, occupied, options.doorTargets);
 			if (layers.npcs) drawNpcs(context, mapId, bounds, scale, !!options.labels, occupied);
 			return { bounds: bounds, scale: scale };
 		});
 	}
 
-	function annotationRow(category, title, detail, suffix) {
+	function annotationRow(category, title, detail, suffix, mapId) {
+		var titleMarkup = mapId ? '<button type="button" data-map="' + escapeHtml(mapId) + '">' + escapeHtml(title) + "</button>" : "<strong>" + escapeHtml(title) + "</strong>";
 		return (
 			'<div class="annotation-row"><i class="annotation-swatch ' +
 			category +
-			'"></i><div class="annotation-copy"><strong>' +
-			escapeHtml(title) +
-			"</strong><span>" +
+			'"></i><div class="annotation-copy">' +
+			titleMarkup +
+			"<span>" +
 			escapeHtml(detail) +
 			"</span></div>" +
 			(suffix ? '<span class="annotation-suffix">' + escapeHtml(suffix) + "</span>" : "") +
@@ -820,7 +851,7 @@
 		var list = document.getElementById("focus-connection-list");
 		var rows = (mapById[mapId].doors || []).map(function (door) {
 			var destination = (mapById[door[4]] && mapById[door[4]].name) || door[4];
-			return annotationRow("doorway", "To " + destination, doorRequirement(door), "door");
+			return annotationRow("doorway", "To " + destination, doorRequirement(door), "door", mapById[door[4]] ? door[4] : null);
 		});
 		arrivalsForMap(mapId).forEach(function (arrival) {
 			var detail = (arrival.type === "transport" ? "Transporter arrival" : "Passage arrival") + " · spawn " + arrival.spawnIndex;
@@ -874,6 +905,7 @@
 	function renderFocusMap() {
 		var mapId = selectedMap;
 		var map = mapById[mapId];
+		focusDoorTargets = [];
 		document.getElementById("focus-map-id").textContent = mapId;
 		document.getElementById("focus-map-name").textContent = map.name;
 		document.getElementById("focus-map-access").textContent = accessText(mapId);
@@ -896,8 +928,10 @@
 		empty.hidden = true;
 		document.getElementById("map-scale").textContent = scaleLabel(selectedScale);
 		var token = ++focusRenderToken;
-		renderMapCanvas(canvas, mapId, { labels: true, layers: layerState, maxHeight: 760, maxWidth: 1260, scale: selectedScale }).then(function (result) {
+		var doorTargets = [];
+		renderMapCanvas(canvas, mapId, { doorTargets: doorTargets, labels: true, layers: layerState, maxHeight: 760, maxWidth: 1260, scale: selectedScale }).then(function (result) {
 			if (token !== focusRenderToken || !result) return;
+			focusDoorTargets = doorTargets;
 			canvas.setAttribute(
 				"aria-label",
 				map.name + " at " + scaleLabel(result.scale) + " scale with " + zonesByMap[mapId].length + " monster zones, " + (map.doors || []).length + " doors, and " + npcsByMap[mapId].length + " NPCs",
@@ -905,7 +939,7 @@
 		});
 	}
 
-	function selectMap(mapId, scroll) {
+	function selectMap(mapId, scroll, updateUrl) {
 		if (!mapById[mapId]) return;
 		if (mapCards[selectedMap]) mapCards[selectedMap].classList.remove("is-selected");
 		if (graphNodes[selectedMap]) graphNodes[selectedMap].classList.remove("is-selected");
@@ -913,6 +947,10 @@
 		selectedScale = 0;
 		if (mapCards[selectedMap]) mapCards[selectedMap].classList.add("is-selected");
 		if (graphNodes[selectedMap]) graphNodes[selectedMap].classList.add("is-selected");
+		if (updateUrl !== false) syncMapUrl(mapId, false);
+		var viewport = document.getElementById("focus-map-viewport");
+		viewport.scrollLeft = 0;
+		viewport.scrollTop = 0;
 		renderFocusMap();
 		if (scroll) document.getElementById("map-focus").scrollIntoView({ behavior: "smooth", block: "start" });
 	}
@@ -1170,6 +1208,80 @@
 		renderFocusMap();
 	}
 
+	function canvasPointFromEvent(event) {
+		var canvas = document.getElementById("focus-map-canvas");
+		var rect = canvas.getBoundingClientRect();
+		return {
+			x: ((event.clientX - rect.left) * canvas.width) / rect.width,
+			y: ((event.clientY - rect.top) * canvas.height) / rect.height,
+		};
+	}
+
+	function pointInBox(point, box) {
+		return box && point.x >= box.x && point.x <= box.x + box.w && point.y >= box.y && point.y <= box.y + box.h;
+	}
+
+	function doorTargetFromEvent(event) {
+		var point = canvasPointFromEvent(event);
+		for (var i = focusDoorTargets.length - 1; i >= 0; i--) {
+			var target = focusDoorTargets[i];
+			var hitBox = { h: target.h, w: target.w, x: target.x - target.w / 2, y: target.y - target.h / 2 };
+			if (pointInBox(point, hitBox) || pointInBox(point, target.labelBox)) return target;
+		}
+		return null;
+	}
+
+	function bindMapPanning() {
+		var viewport = document.getElementById("focus-map-viewport");
+		var canvas = document.getElementById("focus-map-canvas");
+		var drag = null;
+		viewport.addEventListener("pointerdown", function (event) {
+			if (event.button !== 0 || event.target !== canvas) return;
+			canvas.classList.remove("is-door-hover");
+			drag = {
+				door: doorTargetFromEvent(event),
+				moved: false,
+				pointerId: event.pointerId,
+				scrollLeft: viewport.scrollLeft,
+				scrollTop: viewport.scrollTop,
+				x: event.clientX,
+				y: event.clientY,
+			};
+			viewport.classList.add("is-panning");
+			viewport.setPointerCapture(event.pointerId);
+			event.preventDefault();
+		});
+		viewport.addEventListener("pointermove", function (event) {
+			if (drag && drag.pointerId === event.pointerId) {
+				var deltaX = event.clientX - drag.x;
+				var deltaY = event.clientY - drag.y;
+				if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) drag.moved = true;
+				viewport.scrollLeft = drag.scrollLeft - deltaX;
+				viewport.scrollTop = drag.scrollTop - deltaY;
+				event.preventDefault();
+				return;
+			}
+			canvas.classList.toggle("is-door-hover", !!doorTargetFromEvent(event));
+		});
+		function finishDrag(event, cancelled) {
+			if (!drag || drag.pointerId !== event.pointerId) return;
+			var destination = !cancelled && !drag.moved && drag.door && doorTargetFromEvent(event);
+			viewport.classList.remove("is-panning");
+			if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
+			drag = null;
+			if (destination) selectMap(destination.mapId, false);
+		}
+		viewport.addEventListener("pointerup", function (event) {
+			finishDrag(event, false);
+		});
+		viewport.addEventListener("pointercancel", function (event) {
+			finishDrag(event, true);
+		});
+		viewport.addEventListener("pointerleave", function () {
+			if (!drag) canvas.classList.remove("is-door-hover");
+		});
+	}
+
 	function bindControls() {
 		document.getElementById("map-zoom-out").addEventListener("click", function () {
 			changeScale(-1);
@@ -1194,6 +1306,15 @@
 			document.getElementById("monster-search").dispatchEvent(new Event("input"));
 			document.getElementById("bestiary").scrollIntoView({ behavior: "smooth", block: "start" });
 		});
+		document.getElementById("focus-connection-list").addEventListener("click", function (event) {
+			var button = event.target.closest("[data-map]");
+			if (button) selectMap(button.getAttribute("data-map"), false);
+		});
+		window.addEventListener("popstate", function () {
+			var mapId = mapIdFromPath();
+			if (mapById[mapId]) selectMap(mapId, false, false);
+		});
+		bindMapPanning();
 	}
 
 	function init() {
@@ -1213,6 +1334,7 @@
 		bindSearch("map-search", "map-grid", "map-result-count", "map");
 		bindSearch("monster-search", "monster-grid", "monster-result-count", "monster");
 		bindControls();
+		syncMapUrl(selectedMap, true);
 		renderFocusMap();
 	}
 

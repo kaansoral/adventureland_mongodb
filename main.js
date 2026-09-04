@@ -711,7 +711,8 @@ app.get("/roadmap", async (req, res, next) => {
 		domain = await get_domain(req, user);
 	res.status(200).send(nunjucks.render("htmls/roadmap.html", { domain: domain, user: user }));
 });
-app.get("/realm", async (req, res, next) => {
+app.get("/realm/:map?", async (req, res, next) => {
+	if (req.params.map && (!Object.prototype.hasOwnProperty.call(maps, req.params.map) || maps[req.params.map].ignore)) return next();
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
 	domain.title = "Realm Atlas | Adventure Land";
