@@ -6786,6 +6786,15 @@ function get_code_file(name) {
 			return fs.readFileSync(folder + "/" + code_ref[slot].file, "utf8");
 		}
 	}
+	var legacy_filename = to_legacy_filename(filename);
+	if (legacy_filename == filename) return null;
+	for (var legacy_slot in code_ref) {
+		if (code_ref[legacy_slot].name == legacy_filename) {
+			var legacy_folder = ide_root + "/adventureland/characters";
+			if (parseInt(legacy_slot) <= 100) legacy_folder = ide_root + "/adventureland/codes";
+			return fs.readFileSync(legacy_folder + "/" + code_ref[legacy_slot].file, "utf8");
+		}
+	}
 	return null;
 }
 

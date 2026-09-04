@@ -340,15 +340,14 @@ app.all("/code.js", async (req, res, next) => {
 	if (user) {
 		var data = await get_user_data(user);
 		var code_list = gf(data, "code_list", {});
-		for (var slot in code_list) {
-			if ("" + slot === "" + name || ("" + code_list[slot][0]).toLowerCase() === ("" + to_filename(name)).toLowerCase()) {
-				var code = await get("IE_USERCODE-" + get_id(user) + "-" + slot);
-				if (code)
-					return res
-						.status(200)
-						.set("Content-Type", "application/javascript")
-						.send("" + code.info.code);
-			}
+		var slot = find_code_slot(code_list, name);
+		if (slot !== null) {
+			var code = await get("IE_USERCODE-" + get_id(user) + "-" + slot);
+			if (code)
+				return res
+					.status(200)
+					.set("Content-Type", "application/javascript")
+					.send("" + code.info.code);
 		}
 	}
 	if (req.query.xrequire) res.status(200).set("Content-Type", "application/javascript").send("throw('xrequire: Code not found')");

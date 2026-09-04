@@ -1066,7 +1066,7 @@ function to_shrinked_num(num)
 	return "LOTS";
 }
 
-var valid_file_chars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghiklmnopqrstuvwxyz_-.+ ";
+var valid_file_chars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-.+ ";
 function to_filename(name)
 {
 	var c="",v=valid_file_chars.split("");
@@ -1074,6 +1074,11 @@ function to_filename(name)
 		if(v.includes(ch)) c+=ch;
 	})
 	return c;
+}
+
+function to_legacy_filename(name)
+{
+	return to_filename(name).replace(/j/g,"");
 }
 
 function e_array(num)

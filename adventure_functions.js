@@ -119,11 +119,29 @@ function to_pretty_num(num) {
 
 function to_filename(name) {
 	var f = "";
-	var allowed = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghiklmnopqrstuvwxyz_-.+ ";
+	var allowed = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-.+ ";
 	for (var i = 0; i < ("" + name).length; i++) {
 		if (allowed.indexOf(("" + name)[i]) !== -1) f += ("" + name)[i];
 	}
 	return f;
+}
+
+function to_legacy_filename(name) {
+	return to_filename(name).replace(/j/g, "");
+}
+
+function find_code_slot(code_list, name) {
+	var filename = to_filename(name);
+	for (var slot in code_list) {
+		if ("" + slot === filename || ("" + code_list[slot][0]).toLowerCase() === filename.toLowerCase()) return slot;
+	}
+
+	var legacy_filename = to_legacy_filename(filename);
+	if (legacy_filename === filename) return null;
+	for (var legacy_slot in code_list) {
+		if (("" + code_list[legacy_slot][0]).toLowerCase() === legacy_filename.toLowerCase()) return legacy_slot;
+	}
+	return null;
 }
 
 // ==================== GAME DATA UTILITIES ====================

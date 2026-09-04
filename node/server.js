@@ -10668,12 +10668,7 @@ function init_socket_io(socket_server) {
 				code_slot = "" + code_slot;
 				if (!code_list[code_slot]) {
 					var filename = code_slot;
-					code_slot = null;
-					for (var slot in code_list) {
-						if (code_list[slot][0] === to_filename(filename)) {
-							code_slot = slot;
-						}
-					}
+					code_slot = find_code_slot(code_list, filename);
 				}
 				if (code_slot) {
 					code_version = code_list[code_slot] ? code_list[code_slot][1] : 0;

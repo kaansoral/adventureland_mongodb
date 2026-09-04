@@ -1133,19 +1133,18 @@ async function load_code_api(args) {
 	}
 
 	var code_list = gf(data, "code_list", {});
-	for (var slot in code_list) {
-		if ("" + slot === "" + name || ("" + code_list[slot][0]).toLowerCase() === ("" + name).toLowerCase()) {
-			var code_entity = await get("IE_USERCODE-" + get_id(user) + "-" + slot);
-			if (!code_entity) {
-				console.log("WARNING: code_list has slot " + slot + " but USERCODE entity missing: IE_USERCODE-" + get_id(user) + "-" + slot);
-			}
-			if (code_entity) {
-				if (args.pure) return { code: code_entity.info.code };
-				args.res.infs.push({ type: "code", code: code_entity.info.code, run: args.run, slot: slot, save: args.save, name: code_list[slot][0], v: code_list[slot][1] });
-				if (args.log) args.res.infs.push({ type: "message", message: "Loaded " + code_list[slot][0] + "." + slot + ".js", color: "#32A3B0" });
-				else if (!args.save) args.res.infs.push({ type: "chat_message", message: "Loaded " + code_list[slot][0] + "." + slot + ".js", color: "#32A3B0" });
-				return { success: true };
-			}
+	var slot = find_code_slot(code_list, name);
+	if (slot !== null) {
+		var code_entity = await get("IE_USERCODE-" + get_id(user) + "-" + slot);
+		if (!code_entity) {
+			console.log("WARNING: code_list has slot " + slot + " but USERCODE entity missing: IE_USERCODE-" + get_id(user) + "-" + slot);
+		}
+		if (code_entity) {
+			if (args.pure) return { code: code_entity.info.code };
+			args.res.infs.push({ type: "code", code: code_entity.info.code, run: args.run, slot: slot, save: args.save, name: code_list[slot][0], v: code_list[slot][1] });
+			if (args.log) args.res.infs.push({ type: "message", message: "Loaded " + code_list[slot][0] + "." + slot + ".js", color: "#32A3B0" });
+			else if (!args.save) args.res.infs.push({ type: "chat_message", message: "Loaded " + code_list[slot][0] + "." + slot + ".js", color: "#32A3B0" });
+			return { success: true };
 		}
 	}
 	if (args.pure) return { code: "say('Code not found'); set_status('Not Found')" };
