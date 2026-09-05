@@ -2830,9 +2830,7 @@ function init_socket(args) {
 		});
 	});
 	socket.on("merrit_status", function (data) {
-		if (character) character.merrit = data;
-		$(".merrit-status").html(merrit_status_html(data));
-		if (data.open) render_merrit_info(data);
+		merrit_status_received(data);
 	});
 	socket.on("merrit_gift", function (data) {
 		merrit_gift_feedback(data);
@@ -3476,7 +3474,8 @@ function npc_right_click(event) {
 		render_interaction({ auto: true, skin: "lionsuit", message: "Daily Events? Yes. Soon. Hopefully ... Definitely one day." });
 	}
 	if (npc.citizen_behavior == "market_patron") {
-		request_merrit_info();
+		render_merrit_interaction();
+		request_merrit_status();
 	} else if (npc.interaction) {
 		var message = npc.interaction;
 		if (is_array(message)) message = message[seed0() % message.length];

@@ -1,6 +1,6 @@
 // Newest notes first. Add player-visible changes at the top with deployed: null.
 module.exports = [
-	{deployed:null,date:"[05/09/26]",note:"Merrit visits settled shops in Mainland with stackable Market Parcels and occasional SHELLS. Keep stands clear of fixed NPCs and neighboring shops; INFO explains the spacing, hourly visits, and parcel exchanges."},
+	{deployed:null,date:"[05/09/26]",note:"Merrit visits settled shops in Mainland with stackable Market Parcels and occasional SHELLS. Exchange parcels for supplies or five rare T3 finds. Keep stands clear of fixed NPCs and neighboring shops; INFO explains her visits and rewards."},
 	{
 		deployed: "[01/09/26]",
 		date: "[01/09/26]",

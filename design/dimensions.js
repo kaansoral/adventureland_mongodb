@@ -1061,7 +1061,12 @@ var positions={
 	// Rogue: Five Ways In
 	// Approved native 20x20 items and skill glyphs. Append row-major; never
 	// reorder existing cells because these coordinates are persistent.
-	"marketparcel":["rawitems",16,2],
+	"marketwatch":["rawitems",18,2],
+	"ledgerlight":["rawitems",19,2],
+	"waybill":["rawitems",0,3],
+	"surety":["rawitems",1,3],
+	"nighttill":["rawitems",2,3],
+	"marketparcel":["rawitems",17,2],
 	"softstepgloves":["rawitems",0,0],
 	"valourdirk":["rawitems",1,0],
 	"knifebelt":["rawitems",2,0],

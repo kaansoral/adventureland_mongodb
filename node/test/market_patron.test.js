@@ -110,7 +110,7 @@ test("shared pathfinder visits Mainland patrol stops and bounds every searched s
 				within: (x, y) => c.point_distance(0, 0, x, y) <= config.radius,
 			});
 			assert.ok(step, `route to ${tx},${ty}`);
-			assert.ok(c.path.every(([x, y]) => Math.hypot(x, y) <= 400));
+			assert.ok(c.path.every(([x, y]) => Math.hypot(x, y) <= config.radius));
 			assert.ok(step[0] !== sx || step[1] !== sy, "route advances");
 			[sx, sy] = step;
 		}
@@ -331,32 +331,111 @@ test("gift feedback preserves CODE events headlessly and queues no coin visuals"
 });
 
 test("public INFO and server exchange share odds; parcels stay out of Glitch pools", () => {
-	const c = { console: { log() {} }, require };
+	const c = { console: { log() {}, error() {} }, require };
 	vm.createContext(c);
 	for (const file of ["multipliers", "items", "npcs", "drops"])
 		vm.runInContext(fs.readFileSync(path.join(__dirname, "../../design/" + file + ".js"), "utf8"), c);
 	assert.equal(c.drops.marketparcel, c.npcs.citizen22.market.exchange);
 	assert.equal(
 		c.drops.marketparcel.reduce((sum, row) => sum + row[0], 0),
-		10000,
+		9000000,
 	);
-	assert.equal(c.items.marketparcel.exclusive, true);
-	for (const table of ["glitch", "lglitch"])
-		assert.equal(
-			c.drops[table].some((row) => row[1] === "marketparcel"),
-			false,
-		);
+	assert.deepEqual(Array.from(config.chase), ["marketwatch", "ledgerlight", "waybill", "surety", "nighttill"]);
+	for (const id of ["marketparcel", ...config.chase]) {
+		assert.equal(c.items[id].exclusive, true);
+		for (const table of ["glitch", "lglitch"])
+			assert.equal(
+				c.drops[table].some((row) => row[1] === id),
+				false,
+			);
+	}
+	for (const id of config.chase) {
+		const row = c.drops.marketparcel.find((row) => row[1] === id);
+		assert.equal(row[0] / 9000000, 1 / 4500);
+		assert.equal(row[2], 1);
+		assert.equal(c.items[id].tier, 3);
+		assert.deepEqual(Array.from(c.items[id].grades), [0, 0, 9, 10]);
+	}
 	c.G = { npcs: c.npcs, items: c.items };
 	c.html_escape = (text) => text;
+	c.item_container = (args, item) => item.name;
 	const html = fs.readFileSync(path.join(__dirname, "../../js/html.js"), "utf8");
 	vm.runInContext(html.slice(html.indexOf("function merrit_spacing_html(")), c);
-	const info = c.merrit_rules_html();
-	for (const expected of ["40px", "10px", "15px", "32px", "400px", "0.5%", "0.001%", "30%"])
+	const info = fs.readFileSync(path.join(__dirname, "../../docs/guide/npc-merrit.html"), "utf8");
+	for (const expected of ["40px", "10px", "15px", "32px", "600px", "0.5%", "0.001%", "1 in 900"])
 		assert.ok(info.includes(expected), expected);
+	const featured = c.merrit_rewards_html(true);
+	assert.equal((featured.match(/class='merrit-reward'/g) || []).length, 5);
+	for (const id of config.chase) assert.ok(featured.includes(id));
+	assert.equal((c.merrit_rewards_html(false).match(/class='merrit-reward'/g) || []).length, 14);
+});
+
+test("Merrit has separate proximity INFO and portrait dialogue; late replies cannot reopen it", () => {
+	const c = { no_html: false, character: { name: "Shop" }, clone: (v) => ({ ...v }), html_escape: (v) => v };
+	vm.createContext(c);
+	vm.runInContext(fs.readFileSync(path.join(__dirname, "../../docs/directory.js"), "utf8"), c);
+	c.G = { npcs: require("../../design/npcs").npcs, docs: c.docs };
+	const game = fs.readFileSync(path.join(__dirname, "../../js/game.js"), "utf8");
+	vm.runInContext(
+		game.slice(game.indexOf("function get_npc_interaction_context("), game.indexOf("var last_loader")),
+		c,
+	);
+	const context = c.get_npc_interaction_context({ npc: "citizen22", role: "market_patron" });
+	assert.equal(context.key, "merrit");
+	assert.equal(context.definition.article, "npc-merrit");
+	assert.equal(context.definition.proximity, true);
+	const html = fs.readFileSync(path.join(__dirname, "../../js/html.js"), "utf8");
+	vm.runInContext(html.slice(html.indexOf("function merrit_spacing_html(")), c);
+	let conversations = 0,
+		guides = 0,
+		dialogueVisible = true;
+	c.merrit_item_preview = () => "parcel preview";
+	c.render_interaction = (data) => {
+		conversations++;
+		c.rendered_interaction = data;
+	};
+	c.open_guide = (article) => {
+		assert.equal(article, "npc-merrit");
+		guides++;
+	};
+	c.get_guide_url = (article) => article;
+	c.$ = () => ({ length: dialogueVisible ? 1 : 0, html() {} });
+	c.render_merrit_interaction();
+	assert.equal(conversations, 1);
+	assert.equal(guides, 0);
+	assert.equal(c.rendered_interaction.skin, c.G.npcs.citizen22.skin);
+	assert.equal(c.rendered_interaction.button, "INFO");
+	c.rendered_interaction.onclick();
+	assert.equal(guides, 1);
+	c.merrit_status_received({
+		last: { name: "Shop", at: Date.now(), shells: 1, reason: "Your shop stayed stocked and left the neighbors room." },
+	});
+	c.rendered_interaction.onclick2();
+	assert.ok(c.rendered_interaction.message.includes("1 SHELL"));
+	assert.ok(c.rendered_interaction.message.includes("Your shop stayed stocked"));
+	dialogueVisible = false;
+	const previous = conversations;
+	c.merrit_status_received({ reasons: [] });
+	assert.equal(conversations, previous);
+	c.no_html = true;
+	c.$ = () => {
+		throw Error("Headless status touched the DOM");
+	};
+	c.merrit_status_received({ reasons: [{ code: "closed" }] });
+	c.render_merrit_info();
+	c.render_merrit_interaction();
+	assert.equal(conversations, previous);
+	assert.equal(guides, 1);
 });
 
 test("handoff requires physical proximity, a clear path, and the same instance", () => {
 	const h = harness();
+	assert.equal(config.radius, 600);
+	h.npc.x = h.p.x = 600;
+	assert.equal(h.context.market_patron_can_visit(h.npc, h.p), true);
+	h.npc.x = h.p.x = 600.001;
+	assert.equal(h.context.market_patron_can_visit(h.npc, h.p), false);
+	h.npc.x = 0;
 	h.p.x = 32;
 	assert.equal(h.context.market_patron_can_visit(h.npc, h.p), true);
 	h.p.x = 32.001;

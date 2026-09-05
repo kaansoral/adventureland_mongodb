@@ -331,6 +331,14 @@ docs = {
 		c0: [[1, "open", "cosmo0"]],
 	},
 	interactions: {
+		merrit: {
+			title: "Merrit's Market Parcels",
+			article: "npc-merrit",
+			icon: "marketparcel",
+			summary: "Keep a shop on the square. Merrit brings parcels to traders who stay.",
+			functions: ["open_stand", "trade", "wishlist", "exchange"],
+			proximity: true,
+		},
 		upgrading: {
 			title: "Upgrading",
 			article: "upgrading",
@@ -500,6 +508,7 @@ docs = {
 	},
 	interaction_map: {
 		npc_ids: {
+			citizen22: "merrit",
 			appearance: "cosmetics",
 			antip2w: "cosmetics",
 			bean: "events",

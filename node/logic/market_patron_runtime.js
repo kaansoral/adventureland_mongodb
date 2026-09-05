@@ -55,11 +55,11 @@ async function market_patron_info(player) {
 		if (players[player.socket.id] === player)
 			player.socket.emit(
 				"merrit_status",
-				market_patron_public_status(player, Date.now(), { account_last: latest || null, open: true }),
+				market_patron_public_status(player, Date.now(), { account_last: latest || null }),
 			);
 	} catch (e) {
 		if (players[player.socket.id] === player)
-			player.socket.emit("merrit_status", { open: true, reasons: [{ code: "unavailable" }] });
+			player.socket.emit("merrit_status", { reasons: [{ code: "unavailable" }] });
 	}
 }
 function market_patron_can_visit(npc, player) {
