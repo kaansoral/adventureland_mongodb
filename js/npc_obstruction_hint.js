@@ -1,4 +1,17 @@
-var npc_obstruction_hint = null;
+var npc_obstruction_hints = [],
+	npc_obstruction_hints_enabled = storage_get("npc_obstruction_hints") != "off";
+
+function set_npc_obstruction_hints(enabled, just_ui) {
+	npc_obstruction_hints_enabled = !!enabled;
+	if (!just_ui) storage_set("npc_obstruction_hints", enabled ? "on" : "off");
+	$(".npc-hints-state")
+		.text(enabled ? "ON" : "OFF")
+		.css("color", enabled ? "green" : "#F54423");
+	if (!enabled)
+		npc_obstruction_hints.forEach(function (button) {
+			button.style.display = "none";
+		});
+}
 
 function npc_hint_bounds(sprite) {
 	if (no_graphics) return;
@@ -23,102 +36,105 @@ function npc_hint_bounds(sprite) {
 	return { left: Math.min.apply(Math, xs), right: Math.max.apply(Math, xs), top: Math.min.apply(Math, ys), bottom: Math.max.apply(Math, ys) };
 }
 
-function obstructed_focus_npc() {
+function obstructed_npcs() {
 	if (no_graphics) return;
-	if (!proximity_guides || !character || character.rip) return;
-	// Match npc_focus(), including doors, so the advertised key opens this NPC.
-	var selected = null,
-		nearest = 102;
-	Object.keys(entities).forEach(function (id) {
-		var entity = entities[id];
-		if (!entity.npc) return;
-		var d = distance(entity, character);
-		if (d < nearest) {
-			nearest = d;
-			selected = entity;
-		}
+	if (!proximity_guides || !npc_obstruction_hints_enabled || !character || character.rip) return [];
+	var all = Object.keys(entities).map(function (id) {
+			return entities[id];
+		}),
+		stands = all.concat(character).filter(function (entity) {
+			return entity.stand && entity.standed && entity.parent && entity.visible && entity.worldAlpha && entity.standed.visible;
+		}),
+		result = [];
+	all.forEach(function (npc) {
+		if (!npc.npc || !npc.onrclick || !npc.parent || !npc.visible || !npc.worldAlpha || distance(npc, character) >= 300) return;
+		var body = npc_hint_bounds(npc);
+		if (!body) return;
+		var blocked = stands.some(function (merchant) {
+			if (merchant === npc) return false;
+			// Match the world's front-to-back sorting, including the stand offset.
+			if ((merchant.real_y === undefined ? merchant.y : merchant.real_y) + 3 - (merchant.y_disp || 0) < (npc.real_y === undefined ? npc.y : npc.real_y) - (npc.y_disp || 0)) return false;
+			var cover = npc_hint_bounds(merchant.standed);
+			if (!cover) return false;
+			var width = Math.min(body.right, cover.right) - Math.max(body.left, cover.left),
+				height = Math.min(body.bottom, cover.bottom) - Math.max(body.top, cover.top);
+			return width > 0 && height > 0 && width * height >= (body.right - body.left) * (body.bottom - body.top) * 0.2;
+		});
+		if (blocked) result.push({ npc: npc, bounds: body });
 	});
-	map_doors.forEach(function (door) {
-		var d = distance(door, character);
-		if (d < nearest) {
-			nearest = d;
-			selected = door;
-		}
-	});
-	if (!selected || !selected.npc || !selected.onrclick || !selected.parent || !selected.visible || !selected.worldAlpha) return;
-	var body = npc_hint_bounds(selected);
-	if (!body) return;
-	var blockers = Object.keys(entities).map(function (id) {
-		return entities[id];
-	});
-	if (blockers.indexOf(character) == -1) blockers.push(character);
-	for (var i = 0; i < blockers.length; i++) {
-		var merchant = blockers[i],
-			stand = merchant.standed;
-		if (merchant === selected || !merchant.stand || !stand || !merchant.parent || !merchant.visible || !merchant.worldAlpha || !stand.visible) continue;
-		// The world renderer sorts stands three units in front of their owner.
-		var front = (merchant.real_y === undefined ? merchant.y : merchant.real_y) + 3 - (merchant.y_disp || 0),
-			back = (selected.real_y === undefined ? selected.y : selected.real_y) - (selected.y_disp || 0);
-		if (front < back) continue;
-		var cover = npc_hint_bounds(stand);
-		if (!cover) continue;
-		var width = Math.min(body.right, cover.right) - Math.max(body.left, cover.left),
-			height = Math.min(body.bottom, cover.bottom) - Math.max(body.top, cover.top);
-		// Ignore edge contact; require a meaningful part of the NPC's click area.
-		if (width > 0 && height > 0 && width * height >= (body.right - body.left) * (body.bottom - body.top) * 0.2) return { npc: selected, bounds: body };
-	}
+	return result;
 }
 
 function update_npc_obstruction_hint() {
 	if (no_graphics) return;
 	if (no_html) return;
-	var target = obstructed_focus_npc();
-	if (!target || !renderer || !renderer.view) {
-		if (npc_obstruction_hint) npc_obstruction_hint.hidden = true;
-		return;
-	}
+	if (!renderer || !renderer.view) return;
 	var canvas = renderer.view.getBoundingClientRect(),
 		scale_x = canvas.width / renderer.screen.width,
 		scale_y = canvas.height / renderer.screen.height,
-		x = canvas.left + ((target.bounds.left + target.bounds.right) / 2) * scale_x,
-		y = canvas.top + target.bounds.top * scale_y;
-	if (x < canvas.left || x > canvas.right || y < canvas.top || y > canvas.bottom) {
-		if (npc_obstruction_hint) npc_obstruction_hint.hidden = true;
-		return;
-	}
-	if (!npc_obstruction_hint) {
-		npc_obstruction_hint = document.createElement("div");
-		npc_obstruction_hint.id = "npc-obstruction-hint";
-		npc_obstruction_hint.style.cssText = "position:fixed;z-index:97;pointer-events:none;text-align:center;transform:translateX(-50%);font-family:pixel,monospace";
-		var button = document.createElement("button");
-		button.type = "button";
-		button.className = "gamebutton";
-		button.style.cssText = "display:block;pointer-events:auto;font:24px/24px pixel,monospace;color:#F5D78E;background:#080808;border:2px solid #B69C60;padding:6px 10px;white-space:pre-line";
-		button.onmousedown = button.ontouchstart = function (event) {
-			event.stopPropagation();
-		};
-		button.onclick = function (event) {
-			event.stopPropagation();
-			var current = obstructed_focus_npc();
-			if (current && current.npc === npc_obstruction_hint.npc) current.npc.onrclick();
-		};
-		npc_obstruction_hint.appendChild(button);
-		var stem = document.createElement("div");
-		stem.style.cssText = "width:2px;margin:0 auto;background:#B69C60";
-		npc_obstruction_hint.appendChild(stem);
-		document.body.appendChild(npc_obstruction_hint);
-	}
-	var key = Object.keys(keymap).find(function (key) {
-			return keymap[key] == "interact" || (keymap[key] && keymap[key].name == "interact");
-		}),
-		definition = G.npcs[target.npc.npc] || {};
-	npc_obstruction_hint.npc = target.npc;
-	var label = (definition.name || target.npc.name || "NPC") + "\n" + (key ? "Press " + key + " or click to interact" : "Click to interact");
-	if (npc_obstruction_hint.firstChild.textContent != label) npc_obstruction_hint.firstChild.textContent = label;
-	npc_obstruction_hint.hidden = false;
-	var height = npc_obstruction_hint.firstChild.offsetHeight,
-		top = Math.max(canvas.top + 8, y - height - 64);
-	npc_obstruction_hint.style.left = Math.round(Math.max(canvas.left + npc_obstruction_hint.offsetWidth / 2, Math.min(canvas.right - npc_obstruction_hint.offsetWidth / 2, x))) + "px";
-	npc_obstruction_hint.style.top = Math.round(top) + "px";
-	npc_obstruction_hint.lastChild.style.height = Math.max(0, Math.round(y - top - height - 8)) + "px";
+		placed = [],
+		targets = obstructed_npcs().sort(function (a, b) {
+			return a.bounds.top - b.bounds.top || a.bounds.left - b.bounds.left;
+		});
+	targets.forEach(function (target) {
+		var x = canvas.left + ((target.bounds.left + target.bounds.right) / 2) * scale_x,
+			y = canvas.top + target.bounds.top * scale_y;
+		if (x < canvas.left || x > canvas.right || y < canvas.top || y > canvas.bottom) return;
+		var button = npc_obstruction_hints[placed.length];
+		if (!button) {
+			button = document.createElement("button");
+			button.type = "button";
+			button.className = "gamebutton npc-obstruction-hint";
+			button.style.cssText =
+				"position:fixed;z-index:97;pointer-events:auto;font:24px/24px pixel,monospace;color:white;background:black;border:4px solid gray;padding:6px 10px;white-space:pre-line;cursor:pointer;touch-action:none";
+			// Keep pointer input (including move-with-mouse) out of the game canvas.
+			["pointerdown", "pointerup", "pointermove", "mousedown", "mouseup", "touchstart", "touchend", "mousemove", "touchmove"].forEach(function (type) {
+				button.addEventListener(type, function (event) {
+					event.stopPropagation();
+				});
+			});
+			button.onclick = function (event) {
+				event.preventDefault();
+				event.stopPropagation();
+				var npc = this.npc;
+				if (
+					proximity_guides &&
+					npc_obstruction_hints_enabled &&
+					character &&
+					!character.rip &&
+					this.style.display != "none" &&
+					Object.keys(entities).some(function (id) {
+						return entities[id] === npc;
+					}) &&
+					distance(npc, character) < 300
+				)
+					npc.onrclick();
+			};
+			document.body.appendChild(button);
+			npc_obstruction_hints.push(button);
+		}
+		button.npc = target.npc;
+		var definition = G.npcs[target.npc.npc] || {},
+			label = (definition.name || target.npc.name || "NPC") + "\nClick to interact";
+		if (button.textContent != label) button.textContent = label;
+		button.style.display = "block";
+		var w = button.offsetWidth,
+			h = button.offsetHeight,
+			left = Math.round(Math.max(canvas.left + 8, Math.min(canvas.right - w - 8, x - w / 2))),
+			top = Math.round(Math.max(canvas.top + 8, y - h - 128)),
+			overlap;
+		// Place colliding notices below earlier ones, keeping a small gap.
+		while (
+			(overlap = placed.find(function (rect) {
+				return left < rect.right + 8 && left + w + 8 > rect.left && top < rect.bottom + 8 && top + h + 8 > rect.top;
+			}))
+		)
+			top = overlap.bottom + 8;
+		button.style.left = left + "px";
+		button.style.top = top + "px";
+		placed.push({ left: left, right: left + w, top: top, bottom: top + h });
+	});
+	npc_obstruction_hints.slice(placed.length).forEach(function (button) {
+		button.style.display = "none";
+	});
 }

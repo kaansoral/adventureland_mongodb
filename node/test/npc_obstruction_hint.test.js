@@ -21,8 +21,8 @@ function sprite(x, y, width = 24, height = 36) {
 	};
 }
 
-function setup() {
-	const npc = Object.assign(sprite(300, 300), { npc: "upgrade", proximity: 20, onrclick() {} });
+function setup(saved) {
+	const npc = Object.assign(sprite(300, 300), { npc: "upgrade", proximity: 250, onrclick() {} });
 	const merchant = Object.assign(sprite(300, 305), { stand: "stand0", standed: sprite(300, 308, 40, 30) });
 	const context = {
 		no_graphics: false,
@@ -30,44 +30,107 @@ function setup() {
 		proximity_guides: true,
 		character: {},
 		entities: { npc, merchant },
-		map_doors: [],
 		distance: (entity) => entity.proximity,
-		keymap: { F: "interact" },
-		G: { npcs: { upgrade: { name: "Upgrade" } } },
+		storage_get: () => saved,
+		storage_set: (key, value) => {
+			saved = value;
+		},
+		$: () => ({
+			text() {
+				return this;
+			},
+			css() {},
+		}),
+		G: { npcs: { upgrade: { name: "Upgrade" }, compound: { name: "Compound" } } },
+		document: {
+			createElement: () => ({
+				style: {},
+				offsetWidth: 200,
+				offsetHeight: 68,
+				listeners: {},
+				addEventListener(type, fn) {
+					this.listeners[type] = fn;
+				},
+			}),
+			body: { appendChild() {} },
+		},
+		renderer: {
+			screen: { width: 800, height: 600 },
+			view: { getBoundingClientRect: () => ({ left: 0, top: 0, right: 800, bottom: 600, width: 800, height: 600 }) },
+		},
 	};
 	vm.createContext(context);
 	vm.runInContext(source, context);
 	return context;
 }
 
-test("only an overlapping stand drawn in front triggers the nearby NPC hint", () => {
+test("notices reach 300 units but still require a stand overlapping in front", () => {
 	const c = setup();
-	assert.equal(c.obstructed_focus_npc().npc, c.entities.npc);
+	assert.equal(c.obstructed_npcs()[0].npc, c.entities.npc, "visible beyond the old 102-unit limit");
+	c.entities.npc.proximity = 300;
+	assert.equal(c.obstructed_npcs().length, 0);
+	c.entities.npc.proximity = 250;
 	c.entities.merchant.real_y = 290;
-	assert.equal(c.obstructed_focus_npc(), undefined, "stand behind NPC");
+	assert.equal(c.obstructed_npcs().length, 0, "stand behind NPC");
 	c.entities.merchant.real_y = 305;
-	c.entities.merchant.standed.worldTransform.tx = 400;
-	assert.equal(c.obstructed_focus_npc(), undefined, "nearby but not overlapping");
 	c.entities.merchant.standed.worldTransform.tx = 330;
-	assert.equal(c.obstructed_focus_npc(), undefined, "minor edge overlap");
+	assert.equal(c.obstructed_npcs().length, 0, "minor edge overlap");
 	c.entities.merchant.standed.worldTransform.tx = 300;
 	c.entities.merchant.stand = false;
-	assert.equal(c.obstructed_focus_npc(), undefined, "closed stand");
+	assert.equal(c.obstructed_npcs().length, 0, "closed stand");
 });
 
-test("GUIDE, range and nearest-door selection match the interaction shortcut", () => {
+test("two blocked NPCs get separate non-overlapping buttons that open the correct NPC", () => {
+	const c = setup(),
+		calls = [];
+	c.entities.second = Object.assign(sprite(306, 300), {
+		npc: "compound",
+		proximity: 240,
+		onrclick() {
+			calls.push(this.npc);
+		},
+	});
+	c.entities.npc.onrclick = function () {
+		calls.push(this.npc);
+	};
+	c.update_npc_obstruction_hint();
+	const [first, second] = c.npc_obstruction_hints;
+	assert.equal(first.textContent, "Upgrade\nClick to interact");
+	assert.equal(second.textContent, "Compound\nClick to interact");
+	assert.ok(parseInt(second.style.top) >= parseInt(first.style.top) + first.offsetHeight + 8);
+	assert.ok(parseInt(second.style.top) + second.offsetHeight < 264, "both notices above the NPC bodies");
+	const event = { preventDefault() {}, stopPropagation() {} };
+	first.onclick(event);
+	second.onclick(event);
+	assert.deepEqual(calls, ["upgrade", "compound"]);
+	for (const type of ["pointerdown", "mousedown", "touchstart", "mousemove"]) {
+		let stopped = false;
+		first.listeners[type]({
+			stopPropagation() {
+				stopped = true;
+			},
+		});
+		assert.ok(stopped, type + " cannot reach game movement handlers");
+	}
+	delete c.entities.npc;
+	first.onclick(event);
+	assert.equal(calls.length, 2, "stale button cannot interact after map change");
+});
+
+test("advanced preference persists, hides immediately, and remains subordinate to GUIDE", () => {
 	const c = setup();
+	c.update_npc_obstruction_hint();
+	c.set_npc_obstruction_hints(false);
+	assert.equal(c.storage_get(), "off");
+	assert.equal(c.npc_obstruction_hints[0].style.display, "none");
+	assert.equal(setup("off").obstructed_npcs().length, 0);
+	c.set_npc_obstruction_hints(true);
+	assert.equal(c.storage_get(), "on");
 	c.proximity_guides = false;
-	assert.equal(c.obstructed_focus_npc(), undefined);
+	assert.equal(c.obstructed_npcs().length, 0);
 	c.proximity_guides = true;
-	c.entities.npc.proximity = 102;
-	assert.equal(c.obstructed_focus_npc(), undefined);
-	c.entities.npc.proximity = 20;
-	c.map_doors.push({ proximity: 10 });
-	assert.equal(c.obstructed_focus_npc(), undefined, "F would open the nearer door");
-	c.map_doors = [];
 	c.character.rip = true;
-	assert.equal(c.obstructed_focus_npc(), undefined);
+	assert.equal(c.obstructed_npcs().length, 0);
 });
 
 test("headless calls return before touching fake PIXI or DOM", () => {
@@ -83,50 +146,6 @@ test("headless calls return before touching fake PIXI or DOM", () => {
 		},
 	);
 	c.npc_hint_bounds(null);
-	c.obstructed_focus_npc();
+	c.obstructed_npcs();
 	c.update_npc_obstruction_hint();
-});
-
-test("hint follows canvas scale, sits well above the NPC, revalidates clicks and clears", () => {
-	const c = setup();
-	function element() {
-		return {
-			style: {},
-			children: [],
-			offsetHeight: 64,
-			offsetWidth: 260,
-			appendChild(child) {
-				this.children.push(child);
-				this.firstChild = this.children[0];
-				this.lastChild = child;
-			},
-		};
-	}
-	c.document = { createElement: element, body: element() };
-	c.renderer = {
-		screen: { width: 800, height: 600 },
-		view: {
-			getBoundingClientRect: () => ({ left: 10, top: 20, right: 1610, bottom: 1220, width: 1600, height: 1200 }),
-		},
-	};
-	let clicks = 0;
-	c.entities.npc.onrclick = () => clicks++;
-	c.keymap = { E: { name: "interact" } };
-	c.update_npc_obstruction_hint();
-	const hint = c.npc_obstruction_hint;
-	assert.equal(hint.firstChild.textContent, "Upgrade\nPress E or click to interact");
-	assert.equal(hint.style.left, "610px");
-	assert.equal(hint.style.top, "420px");
-	assert.equal(hint.lastChild.style.height, "56px");
-	hint.firstChild.onclick({ stopPropagation() {} });
-	assert.equal(clicks, 1);
-	c.proximity_guides = false;
-	hint.firstChild.onclick({ stopPropagation() {} });
-	assert.equal(clicks, 1);
-	c.update_npc_obstruction_hint();
-	assert.equal(hint.hidden, true);
-	c.proximity_guides = true;
-	c.entities = {};
-	c.update_npc_obstruction_hint();
-	assert.equal(hint.hidden, true, "map change removes stale hint");
 });
