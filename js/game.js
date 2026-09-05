@@ -6813,6 +6813,7 @@ function draw(arg1, manual_draw) {
 
 	if (force_draw_on || (!manual_draw && !is_hidden() && !paused)) {
 		renderer.render(stage);
+		if (typeof update_npc_obstruction_hint == "function") update_npc_obstruction_hint();
 		force_draw_on = false;
 	}
 
