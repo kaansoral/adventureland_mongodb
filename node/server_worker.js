@@ -14,6 +14,10 @@ var amap_data = workerData.amap_data;
 parentPort.on("message", function (data) {
 	try {
 		//console.log(data);
+		if (data.type == "map_data") {
+			smap_data[data.map] = data.smap_data;
+			amap_data[data.map] = data.amap_data;
+		}
 		if (data.type == "fast_astar") {
 			parentPort.postMessage({ type: "monster_move", move: fast_astar(data), id: data.id, in: data.in });
 		}
@@ -22,6 +26,9 @@ parentPort.on("message", function (data) {
 		}
 	} catch (e) {
 		console.log(e);
+		if (data.type == "fast_astar") {
+			parentPort.postMessage({ type: "monster_move", move: null, id: data.id, in: data.in });
+		}
 	}
 });
 

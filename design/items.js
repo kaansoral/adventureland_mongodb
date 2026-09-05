@@ -5519,9 +5519,9 @@ var premiums={
 	"xptome":{
 		"type":"tome",
 		"skin":"xptome",
-		"reward":2,
+		"gold_reward":1600000,
 		"name":"Tome of Protection",
-		"explanation":"Significantly reduces experience loss on death. If the owner is defeated by another player, the victor receives a portion of the Tome's cost.",
+		"explanation":"Significantly reduces experience loss on death. If the owner is defeated by another player, the victor receives 1,600,000 gold.",
 		"s":true,
 		"g":3200000,
 	},

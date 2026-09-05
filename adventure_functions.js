@@ -4,9 +4,15 @@ var TAURI_STEAM_APP_ID = "777150";
 var TAURI_STEAM_IDENTITY = "adventure-land-tauri-v1";
 
 async function verify_tauri_steam_ticket(ticket) {
-	if (typeof ticket !== "string" || ticket.length < 2 || ticket.length > 8192 || !/^[0-9a-f]+$/i.test(ticket) || ticket.length % 2) return "";
-	if (!keys.steam_publisher_web_apikey) return "";
+	function rejected(reason, status) {
+		// Never log tickets, request URLs, credentials, or Steam response bodies.
+		console.error("#A Tauri Steam ticket rejected: " + reason + (Number.isInteger(status) ? " (HTTP " + status + ")" : ""));
+		return "";
+	}
+	if (typeof ticket !== "string" || ticket.length < 2 || ticket.length > 8192 || !/^[0-9a-f]+$/i.test(ticket) || ticket.length % 2) return rejected("invalid_ticket");
+	if (!keys.steam_publisher_web_apikey) return rejected("missing_configuration");
 	var controller = new AbortController();
+	var stage = "request";
 	var timeout = setTimeout(function () {
 		controller.abort();
 	}, 8000);
@@ -20,15 +26,16 @@ async function verify_tauri_steam_ticket(ticket) {
 		var response = await fetch("https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1/?" + new URLSearchParams(data), {
 			signal: controller.signal,
 		});
-		if (!response.ok) return "";
+		if (!response.ok) return rejected("http_error", response.status);
+		stage = "response";
 		var body = await response.json();
 		var params = body && body.response && body.response.params;
-		if (!params || params.result !== "OK" || params.publisherbanned) return "";
+		if (!params || params.result !== "OK") return rejected("steam_rejected");
+		if (params.publisherbanned) return rejected("publisher_banned");
 		var steam_id = "" + (params.steamid || "");
-		return /^[0-9]{16,20}$/.test(steam_id) ? steam_id : "";
+		return /^[0-9]{16,20}$/.test(steam_id) ? steam_id : rejected("invalid_steam_id");
 	} catch (e) {
-		console.error("#A Tauri Steam ticket verification failed");
-		return "";
+		return rejected(controller.signal.aborted ? "timeout" : stage == "response" ? "invalid_response" : "network_error");
 	} finally {
 		clearTimeout(timeout);
 	}

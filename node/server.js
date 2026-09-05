@@ -2814,14 +2814,14 @@ function issue_player_award(attacker, target) {
 	pwns[pend++ % 200] = [attacker.name, target.name];
 
 	target.socket.emit("game_log", { message: "Slain by " + attacker.name, color: "#F12F02" });
-	var lost_shells = 0;
+	var tome_gold = 0;
 	var psize = 1;
 	if (lost_xp) {
 		for (var i = 0; i < target.isize; i++) {
 			if (target.items[i] && target.items[i].name == "xptome") {
-				lost_shells = 2;
 				lost_xp = floor(lost_xp / 50);
 				consume_one(target, i);
+				if (gameplay != "hardcore" && gameplay != "test") tome_gold = G.items.xptome.gold_reward;
 				target.to_reopen = true;
 				target.socket.emit("game_log", { message: "A tome fades away", color: "#B5C09C" });
 				break;
@@ -2850,6 +2850,12 @@ function issue_player_award(attacker, target) {
 		drop_something_pvp(attacker, target);
 	}
 
+	// A consumed tome pays its bounty once to the victor, before ordinary party loot is divided.
+	if (tome_gold) {
+		attacker.gold += tome_gold;
+		attacker.socket.emit("game_log", "Received " + to_pretty_num(tome_gold) + " gold from the tome");
+	}
+
 	if (!attacker.party) {
 		if (attacker.type == "merchant") {
 			lost_xp = 0;
@@ -2871,17 +2877,10 @@ function issue_player_award(attacker, target) {
 			y: target.y - 30,
 			args: { color: colors.party_xp },
 		});
-		if (lost_shells) {
-			add_shells(attacker, lost_shells, "xptome");
-		}
 	} else {
 		var name = attacker.name;
 		lost_xp = floor((lost_xp * 0.92) / parties[attacker.party].length);
 		gain_gold = floor(gain_gold / parties[attacker.party].length);
-		if (lost_shells) {
-			add_shells(attacker, lost_shells, "xptome");
-		}
-		// ,lost_shells=ceil(lost_shells/parties[attacker.party].length)
 		parties[attacker.party].forEach(function (a_name) {
 			var attacker = players[name_to_id[a_name]];
 			if (!attacker) return; // party member already disconnected
@@ -4074,8 +4073,9 @@ function transport_monster_to(monster, to_in, to_map, x, y) {
 }
 
 function transport_observer_to(observer, to_in, map, x, y) {
-	delete instances[observer.in].observers[observer.id];
 	var instance = instances[to_in];
+	if (!instance) return;
+	if (instances[observer.in]) delete instances[observer.in].observers[observer.id];
 	instance.observers[observer.id] = observer;
 	resume_instance(instance);
 	observer.in = to_in;
@@ -4534,10 +4534,11 @@ function init_socket_io(socket_server) {
 		});
 		socket.on("say", function (data) {
 			var player = players[socket.id];
-			var message = strip_string(data.message).substr(0, 1200);
 			if (!player || player.s.mute) {
 				return fail_response("muted");
 			}
+			if (!data || typeof data.message !== "string") return fail_response("invalid");
+			var message = strip_string(data.message).substr(0, 1200);
 			if (data.code && player.last_say && ssince(player.last_say) < 15) {
 				return fail_response("chat_slowdown");
 			}
@@ -5544,7 +5545,7 @@ function init_socket_io(socket_server) {
 				the_door[7] == "ulocked" &&
 				G.maps[data.to].mount &&
 				player.user &&
-				!player.user.unlocked[data.to]
+				!(player.user.unlocked && player.user.unlocked[data.to])
 			) {
 				return fail_response("transport_cant_locked");
 			}
@@ -9007,10 +9008,11 @@ function init_socket_io(socket_server) {
 		});
 		socket.on("booster", function (data) {
 			var player = players[socket.id];
-			var item = player.items[data.num];
 			if (!player) {
 				return;
 			}
+			if (!data) return fail_response("invalid");
+			var item = player.items[data.num];
 			server_log("booster " + data.num + " " + data.action);
 			if (!item || !booster_items.includes(item.name)) {
 				return fail_response("invalid");
@@ -11212,7 +11214,7 @@ function init_socket_io(socket_server) {
 				if (player.duel) {
 					return duel_failure("already_dueling", "Already in a duel!");
 				}
-				if (!E.duels[data.id]) {
+				if (!E.duels || !E.duels[data.id] || !instances[data.id]) {
 					return duel_failure("duel_expired", "Duel expired");
 				}
 				if (E.duels[data.id].active) {
@@ -15003,13 +15005,16 @@ function sync_loop() {
 			return;
 		}
 		player.mount_call = true;
+		// Diagnostic metadata only; tx() discards its R object on an explicit abort.
+		var bank_conflict = {};
 		var R = await tx(
 			async () => {
+				delete A[1].in_bank;
 				var owner = await tx_get(A[0].owner);
 				var entity = await tx_get(A[0].real_id);
 				if (!entity || entity.server != server_id) ex("character_gone"); // [03/03/26]
 				if (!owner || (owner.server && (owner.server != server_id || owner.mounted_to != get_id(A[0])))) {
-					R.in_bank = owner.mounted_to;
+					A[1].in_bank = owner && owner.mounted_to;
 					ex("already_in_bank");
 				}
 				owner.server = server_id;
@@ -15024,7 +15029,7 @@ function sync_loop() {
 				entity.to_backup = true;
 				await tx_save(entity);
 			},
-			[player],
+			[player, bank_conflict],
 			6,
 		);
 		delete player.mounting;
@@ -15039,6 +15044,7 @@ function sync_loop() {
 				resend(player);
 			}
 		} else {
+			if (R.reason == "already_in_bank") R.in_bank = bank_conflict.in_bank;
 			server_log("mount_user[failed]: " + player.name + " in-bank: " + R.in_bank + " result: " + R.reason, 1);
 			player.socket.emit("game_response", { response: "bank_opx", name: R.in_bank, reason: R.reason });
 		}

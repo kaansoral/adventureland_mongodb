@@ -892,6 +892,7 @@ async function persist_tauri_steam_install(owner, entity, auth, steam_id) {
 			await tx_save(R.entity);
 		},
 		{ owner: get_id(owner), entity: get_id(entity), auth: auth, steam_id: steam_id },
+		3,
 	);
 	if (R.failed) console.error("#A Tauri Steam install link failed: " + R.reason);
 	return !R.failed;
@@ -1670,6 +1671,15 @@ function create_instance(name, map_name, args) {
 	}
 	if (!smap_data[map_name] && smap_data[map_name] != -1) {
 		server_bfs(map_name);
+		// Workers receive a snapshot at startup; publish grids for maps opened later.
+		for (var worker of workers) {
+			worker.postMessage({
+				type: "map_data",
+				map: map_name,
+				smap_data: smap_data[map_name],
+				amap_data: amap_data[map_name],
+			});
+		}
 	}
 	if (!args) {
 		args = {};
@@ -1766,6 +1776,7 @@ function resume_instance(instance) {
 }
 
 function destroy_instance(name) {
+	if (!instances[name]) return;
 	for (var id in instances[name].players) {
 		var player = instances[name].players[id];
 		if (player.npc) {
@@ -1784,6 +1795,16 @@ function destroy_instance(name) {
 		}
 		restore_state(player);
 		resend(player, "cid+reopen"); // reopen for abtesting
+	}
+	for (var id in instances[name].observers) {
+		var observer = instances[name].observers[id];
+		transport_observer_to(
+			observer,
+			observer_map,
+			observer_map,
+			observer_x,
+			observer_y + ((observer.socket.desktop && 120) || 0),
+		);
 	}
 	for (var id in instances[name].monsters) {
 		remove_monster(instances[name].monsters[id], { silent: true }); // to make sure targets are always updated
@@ -2649,7 +2670,8 @@ function new_worker(num) {
 	worker.wnum = num;
 	worker.on("message", function (data) {
 		if (data.type == "monster_move") {
-			var monster = instances[data.in].monsters[data.id];
+			var instance = instances[data.in];
+			var monster = instance && instance.monsters[data.id];
 			if (!monster) {
 				return;
 			}
@@ -3208,12 +3230,16 @@ function leave_party(name, leaver) {
 function delete_observer(socket) {
 	var observer = observers[socket.id];
 	delete observers[socket.id];
-	delete instances[observer.in].observers[observer.id];
+	if (observer && instances[observer.in]) delete instances[observer.in].observers[observer.id];
 }
 
 function send_all_xy(observer, args) {
 	var data = { players: [], monsters: [], type: "all", in: observer.in, map: observer.map };
 	var instance = instances[observer.in];
+	if (!instance) {
+		if (args && args.raw) return data;
+		return;
+	}
 	for (var id in instance.players) {
 		if (!instance.players[id].s.invis && within_xy_range(observer, instance.players[id])) {
 			data.players.push(player_to_client(instance.players[id], 1));
@@ -4105,7 +4131,13 @@ var smap_edge = 60; // for smap_step 24, the edge was 40 - also check out access
 // if(Dev) smap_step=24; // 10 takes toooo long [22/06/18]
 var hiding_places = [];
 function server_bfs(map) {
-	if ((precomputed_bfs && precomputed_bfs.version == G.version) || (precomputed_bfs && precomputed_bfs.smap_data)) {
+	if (
+		precomputed_bfs &&
+		precomputed_bfs.smap_data &&
+		precomputed_bfs.smap_data[map] !== undefined &&
+		precomputed_bfs.amap_data &&
+		precomputed_bfs.amap_data[map] !== undefined
+	) {
 		smap_data[map] = precomputed_bfs.smap_data[map];
 		amap_data[map] = precomputed_bfs.amap_data[map];
 		return;
@@ -4464,6 +4496,7 @@ function random_place(map) {
 
 function fast_astar(args) {
 	var map = args.map;
+	if (!amap_data[map]) return null;
 	var sx = args.sx;
 	var sy = args.sy;
 	var tx = args.tx;
