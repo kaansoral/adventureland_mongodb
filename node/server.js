@@ -8522,6 +8522,10 @@ function init_socket_io(socket_server) {
 				// All unneccessary causes of resend's should be patched [03/08/18]
 				reslot_player(player);
 				resend(player, "u+cid");
+				player.socket.emit(
+					"merrit_status",
+					market_patron_public_status(player, Date.now(), { stand_opened: !!player.p.stand }),
+				);
 			}
 			success_response({});
 		});

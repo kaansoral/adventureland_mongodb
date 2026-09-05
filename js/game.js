@@ -2831,6 +2831,7 @@ function init_socket(args) {
 	});
 	socket.on("merrit_status", function (data) {
 		merrit_status_received(data);
+		show_merrit_stand_notice(data);
 	});
 	socket.on("merrit_gift", function (data) {
 		merrit_gift_feedback(data);

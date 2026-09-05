@@ -1,0 +1,38 @@
+#merrit-stand-notice {
+	pointer-events: none;
+}
+#merrit-stand-notice button {
+	max-width: min(440px, calc(100vw - 24px));
+	padding: 8px 12px;
+	font:
+		24px/24px pixel,
+		monospace;
+	border: 4px solid gray;
+	background: black;
+	color: white;
+	animation: merrit-stand-warning 2.4s ease-in-out 3;
+}
+#merrit-stand-notice span {
+	display: block;
+}
+.merrit-notice-title {
+	color: #e6b16b;
+}
+.merrit-notice-link {
+	color: #89c79f;
+	margin-top: 4px;
+}
+@keyframes merrit-stand-warning {
+	0%,
+	100% {
+		border-color: gray;
+	}
+	50% {
+		border-color: #e58b36;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	#merrit-stand-notice button {
+		animation: none;
+	}
+}
