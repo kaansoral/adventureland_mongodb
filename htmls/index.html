@@ -43,6 +43,7 @@
 		<script src="/js/functions.js?v={{domain.v}}"></script>
 		<script src="/js/game.js?v={{domain.v}}"></script>
 		<script src="/js/html.js?v={{domain.v}}"></script>
+		{% if not domain.no_html %}<script src="/js/steam_news.js?v={{domain.v}}"></script><link href="/css/steam_news.css?v={{domain.v}}" rel="stylesheet" type="text/css"/>{% endif %}
 		<script src="/js/payments.js?v={{domain.v}}"></script>
 		<script src="/js/keyboard.js?v={{domain.v}}"></script>
 		<script src="/data.js?v={{domain.v}}"></script>
@@ -136,6 +137,9 @@
 					<div style="position: absolute; width: 316px; top: 2px; left: 0px; height: 30px; color: white; vertical-align: middle; line-height: 30px; text-align: center; font-size: 30px" id="xpui">
 						LV54 87%
 					</div>
+				</div>
+				<div id="steam-news-banner" class="enableclicks" hidden>
+					<button type="button" class="gamebutton steam-news-button" aria-haspopup="dialog"><span class="steam-news-arrow" aria-hidden="true">&gt;</span><span><small>NEWS FROM STEAM</small>Latest Update</span></button>
 				</div>
 				<div id="gamelog" class="noscroll cbold enableclicks"></div>
 			</div>
@@ -292,6 +296,7 @@
 				the_game();
 				drag_logic();
 				init_interface();
+				if(window.SteamNews) SteamNews.init();
 				window.onresize=on_resize;
 				on_resize();
 				code_logic();

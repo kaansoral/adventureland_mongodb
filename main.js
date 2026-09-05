@@ -18,6 +18,7 @@ if (keys.mongodb_uri) {
 
 eval("" + fs.readFileSync(path.resolve(__dirname, "version.js")));
 var update_notes = require("./update_notes.js");
+var latest_steam_news = require("./steam_news.js").create_news_loader();
 if (Local) {
 	const filePath = path.join(__dirname, "version.js");
 	let lines = fs.readFileSync(filePath, "utf-8").split("\n");
@@ -705,6 +706,11 @@ app.get("/update-notes", function (req, res) {
 		offset = Math.max(0, parseInt(req.query.offset, 10) || 0),
 		notes = update_notes.slice(offset, offset + page_size);
 	res.status(200).send({ notes: notes, more: offset + notes.length < update_notes.length });
+});
+app.get("/steam-news", async function (req, res) {
+	var post = await latest_steam_news();
+	res.set("Cache-Control", "public, max-age=60");
+	res.status(post ? 200 : 503).send(post || { error: "Steam news unavailable" });
 });
 app.get("/roadmap", async (req, res, next) => {
 	var user = await get_user(req),

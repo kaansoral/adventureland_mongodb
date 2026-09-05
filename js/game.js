@@ -1518,6 +1518,7 @@ function init_socket(args) {
 		call_code_function("trigger_character_event", "new_map", data);
 	});
 	socket.on("start", function (data) {
+		if (window.SteamNews) SteamNews.stop();
 		// alert(JSON.stringify(data));
 		if (!no_html) {
 			$("#progressui").remove();

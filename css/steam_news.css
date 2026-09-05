@@ -1,0 +1,198 @@
+#steam-news-banner {
+	position: relative;
+	width: 330px;
+	height: 82px;
+	max-width: 100vw;
+	text-align: left;
+}
+#steam-news-banner[hidden] {
+	display: none;
+}
+#steam-news-banner .steam-news-button {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	box-sizing: border-box;
+	width: 100%;
+	padding: 8px 14px;
+	border-color: #ba91ec;
+	font-family: Pixel;
+	font-size: 32px;
+	line-height: 26px;
+	cursor: pointer;
+	text-align: right;
+}
+.steam-news-button small {
+	display: block;
+	color: #f4ca64;
+	font-size: 20px;
+	line-height: 18px;
+}
+.steam-news-arrow {
+	color: #69d6cf;
+	font-size: 40px;
+}
+#steam-news-banner .steam-news-button:hover {
+	border-color: #69d6cf;
+	background: #141321;
+}
+.steam-news-button:focus-visible,
+.steam-news-dialog button:focus-visible,
+.steam-news-dialog a:focus-visible {
+	outline: 3px solid #f4ca64;
+	outline-offset: 2px;
+}
+.steam-news-confetti {
+	position: absolute;
+	inset: 48px 0 0;
+	overflow: hidden;
+	pointer-events: none;
+	contain: strict;
+}
+.steam-news-confetti i {
+	position: absolute;
+	top: -8px;
+	width: 4px;
+	height: 8px;
+	animation: steam-news-fall 2.4s steps(12, end) 5;
+}
+.steam-news-confetti i:nth-child(even) {
+	height: 4px;
+	width: 8px;
+}
+@keyframes steam-news-fall {
+	0% {
+		transform: translate(0, 0);
+		opacity: 1;
+	}
+	75% {
+		opacity: 1;
+	}
+	100% {
+		transform: translate(12px, 48px);
+		opacity: 0;
+	}
+}
+.steam-news-dialog {
+	box-sizing: border-box;
+	width: 800px;
+	max-width: calc(100vw - 24px);
+	max-height: calc(100vh - 32px);
+	padding: 0;
+	border: 4px solid #ba91ec;
+	background: #08090f;
+	color: #e5e7ed;
+	font-family: Pixel;
+	text-align: left;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	user-select: text;
+	-webkit-user-select: text;
+}
+.steam-news-dialog::backdrop {
+	background: rgba(0, 0, 0, 0.78);
+}
+.steam-news-toolbar {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 20px;
+	border-bottom: 4px solid #38314e;
+	color: #f4ca64;
+	background: #10101b;
+	font-size: 24px;
+}
+.steam-news-dialog .steam-news-close {
+	font-family: Pixel;
+	padding: 4px 10px;
+	border-color: #696078;
+	cursor: pointer;
+}
+.steam-news-article {
+	padding: 24px 28px 0;
+}
+.steam-news-article h1 {
+	margin: 0;
+	font-size: 40px;
+	line-height: 36px;
+	font-weight: normal;
+	color: white;
+}
+.steam-news-date {
+	margin: 16px 0 24px;
+	color: #a9a2bc;
+	font-size: 22px;
+}
+.steam-news-body {
+	font-size: 24px;
+	line-height: 28px;
+	overflow-wrap: anywhere;
+}
+.steam-news-body p {
+	margin: 0 0 20px;
+	white-space: pre-line;
+}
+.steam-news-body h2,
+.steam-news-body h3 {
+	color: #69d6cf;
+	font-weight: normal;
+	font-size: 32px;
+	line-height: 30px;
+	margin: 28px 0 12px;
+}
+.steam-news-body strong {
+	color: #f4ca64;
+	font-weight: normal;
+}
+.steam-news-body img {
+	display: block;
+	/* Lazy images need a nonzero box to enter the dialog's visible area. */
+	min-width: 1px;
+	min-height: 1px;
+	max-width: 100%;
+	height: auto;
+	margin: 20px auto;
+	image-rendering: pixelated;
+}
+.steam-news-body a {
+	color: #69d6cf;
+}
+.steam-news-body pre {
+	white-space: pre-wrap;
+	font: 16px/24px monospace;
+}
+.steam-news-dialog footer {
+	padding: 24px 28px;
+}
+.steam-news-dialog footer a {
+	border-color: #4a9794;
+}
+@media (prefers-reduced-motion: reduce) {
+	.steam-news-confetti {
+		display: none;
+	}
+	.steam-news-confetti i {
+		animation: none;
+	}
+}
+@media (max-width: 500px) {
+	.steam-news-toolbar {
+		padding: 8px 12px;
+	}
+	.steam-news-article {
+		padding: 20px 16px 0;
+	}
+	.steam-news-article h1 {
+		font-size: 32px;
+		line-height: 30px;
+	}
+	.steam-news-dialog footer {
+		padding: 20px 16px;
+	}
+}
