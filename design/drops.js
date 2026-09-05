@@ -10,6 +10,7 @@ if (typeof items === "undefined") {
 }
 
 var drops = {
+	marketparcel: (typeof npcs !== "undefined" ? npcs : require("./npcs.js").npcs).citizen22.market.exchange,
 	gold: {
 		base: 0.64, //originally 0.75
 		random: 0.8, //originally 1

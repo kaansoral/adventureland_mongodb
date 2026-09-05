@@ -5808,6 +5808,17 @@ var gems={
 		//"event":true,
 		//"quest":"candycane", #xmas
 	},
+	"marketparcel":{
+		"type":"gem",
+		"name":"Market Parcel",
+		"exclusive":true,
+		"skin":"marketparcel",
+		"explanation":"Supplies from Merrit, for keeping a shop on the square. Exchange one with Xyn.",
+		"g":100,
+		"s":9999,
+		"e":1,
+		"cx":{"accent":"#B97B45"},
+	},
 	"gift0":{
 		"type":"gem",
 		"skin":"gift0",

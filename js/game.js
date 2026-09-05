@@ -2829,6 +2829,14 @@ function init_socket(args) {
 			if (data.type && data.item) call_code_function("trigger_event", data.type, { item: data.item, name: data.name });
 		});
 	});
+	socket.on("merrit_status", function (data) {
+		if (character) character.merrit = data;
+		$(".merrit-status").html(merrit_status_html(data));
+		if (data.open) render_merrit_info(data);
+	});
+	socket.on("merrit_gift", function (data) {
+		merrit_gift_feedback(data);
+	});
 	socket.on("notice", function (data) {
 		add_chat("SERVER", data.message, data.color || "orange");
 	});
@@ -3467,7 +3475,9 @@ function npc_right_click(event) {
 	if (this.role == "announcer") {
 		render_interaction({ auto: true, skin: "lionsuit", message: "Daily Events? Yes. Soon. Hopefully ... Definitely one day." });
 	}
-	if (npc.interaction) {
+	if (npc.citizen_behavior == "market_patron") {
+		request_merrit_info();
+	} else if (npc.interaction) {
 		var message = npc.interaction;
 		if (is_array(message)) message = message[seed0() % message.length];
 		if (message == "rbin") message = random_binaries();
@@ -6836,4 +6846,19 @@ function draw(arg1, manual_draw) {
 		}
 	}
 	in_draw = false;
+}
+
+var merrit_seen_gifts = [];
+function merrit_gift_feedback(data) {
+	if (!data || typeof data.id !== "string" || !character || merrit_seen_gifts.indexOf(data.id) !== -1) return;
+	merrit_seen_gifts.push(data.id);
+	if (merrit_seen_gifts.length > 20) merrit_seen_gifts.shift();
+	add_log("Merrit gave you 1 Market Parcel" + (data.receipt && data.receipt.shells ? " and 1 SHELL" : "") + " for keeping your shop on the square.", "#DDB979");
+	call_code_function("trigger_character_event", "merrit", { item: "marketparcel", quantity: 1, shells: (data.receipt && data.receipt.shells) || 0 });
+	if (no_graphics) return;
+	draw_trigger(function () {
+		if (no_graphics || !character) return;
+		start_animation(character, "merrit_bonus");
+		sfx("coins", character.real_x === undefined ? character.x : character.real_x, character.real_y === undefined ? character.y : character.real_y);
+	});
 }

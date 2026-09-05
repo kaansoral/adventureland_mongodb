@@ -29,6 +29,7 @@ app.get("/", (req, res) => {
 //var io=require('socket.io')(app,{pingInterval:2400,pingTimeout:6000});
 const SocketIOServer = require("socket.io").Server;
 const msgpack_parser = require("./msgpack_parser");
+const market_patron_rules = require("./logic/market_patron")((a, b) => simple_distance(a, b));
 var socket_cors = {
 	origin: "*",
 	methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -71,6 +72,7 @@ eval("" + fs.readFileSync(path.resolve(__dirname, "../adventure_functions.js")))
 var server_eval_direct = server_eval;
 eval("" + fs.readFileSync(path.resolve(__dirname, "../models.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "server_functions.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/market_patron_runtime.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "../version.js")));
 var precomputed_bfs_path = path.resolve(__dirname, "precomputed_map_data.js");
 if (fs.existsSync(precomputed_bfs_path)) eval("" + fs.readFileSync(precomputed_bfs_path));
@@ -4016,6 +4018,7 @@ function duel_defeat(player) {
 }
 
 function resend(player, events) {
+	market_patron_observe(player);
 	if (player.halt || player.is_npc) {
 		return;
 	}
@@ -4097,6 +4100,7 @@ function transport_observer_to(observer, to_in, map, x, y) {
 }
 
 function transport_player_to(player, name, point, effect) {
+	market_patron_reset(player);
 	// if((player.duel || player.team) && player.in!=name) restore_state(player); // PROBLEMATIC [29/07/22]
 	if (!instances[name]) {
 		name = "main";
@@ -8494,6 +8498,7 @@ function init_socket_io(socket_server) {
 			if (!player) {
 				return;
 			}
+			market_patron_reset(player);
 			var initial = player.p.stand;
 			server_log("merchant: " + player.name);
 			if (data.close || player.p.stand) {
@@ -10170,6 +10175,10 @@ function init_socket_io(socket_server) {
 				if (request_id) interaction_failure("invalid");
 				return;
 			}
+			if (data.type == "merrit_info") {
+				market_patron_info(player);
+				return;
+			}
 			if (data.type == "newyear_tree") {
 				var x = "";
 				if (
@@ -10277,6 +10286,7 @@ function init_socket_io(socket_server) {
 				player.konami.push(data.key[0]);
 			}
 			if (player && player.m == data.m && can_walk(player) && (x != player.x || y != player.y)) {
+				market_patron_reset(player);
 				// if(Dev) server_log("Player moving to: "+data.going_x+","+data.going_y);
 
 				// player.x=data.x; player.y=data.y; [03/08/16] Seems like a really bad idea to update x/y based on what players provide
@@ -14139,6 +14149,35 @@ function instance_loop() {
 	setTimeout(instance_loop, max(75, min(1000, ms_since * 2 + 2)));
 }
 
+
+function citizen_npc_in_instance(instance_name, npc_id) {
+	var instance = instances[instance_name];
+	var def = G.npcs[npc_id];
+	if (!instance || !instance.players || !def) return null;
+	return instance.players[NPC_prefix + def.name] || null;
+}
+
+function citizen_move_to(npc, x, y) {
+	if (npc.moving && abs(npc.going_x - x) < 0.1 && abs(npc.going_y - y) < 0.1) return true;
+	var old_x = npc.going_x;
+	var old_y = npc.going_y;
+	npc.going_x = x;
+	npc.going_y = y;
+	if (!can_move(npc)) {
+		npc.going_x = old_x;
+		npc.going_y = old_y;
+		return false;
+	}
+	npc.u = true;
+	start_moving_element(npc);
+	return true;
+}
+
+function citizen_behavior_loop(npc, def, now_date) {
+	if (def.citizen_behavior == "market_patron") return market_patron_loop(npc, now_date);
+	return false;
+}
+
 function npc_loop() {
 	// now mainly just NPC's, back in the day pretty much everything [11/08/22]
 	if (!server.live) {
@@ -14253,6 +14292,8 @@ function npc_loop() {
 					npc.cid++;
 				}
 			}
+
+			if (def.citizen_behavior && citizen_behavior_loop(npc, def, now_date)) continue;
 
 			if (!npc.movable) {
 				continue;
@@ -14999,7 +15040,14 @@ function sync_loop() {
 	// mount_call: Bank entry using tx() (following qwazy pattern)
 	async function mount_call(player) {
 		// player.last_sync=new Date(); - sync doesn't happen at mount - maybe it should [16/08/17] it does now [06/03/26]
-		if (player.dc || player.mount_call || player.unmount_call || player.sync_call || player.stop_call) {
+		if (
+			player.merrit_grant ||
+			player.dc ||
+			player.mount_call ||
+			player.unmount_call ||
+			player.sync_call ||
+			player.stop_call
+		) {
 			// hopefully an effective race condition bugfix [06/03/26]
 			console.log("race_condition mount_call fix worked: ", player.name);
 			return;
@@ -15051,7 +15099,14 @@ function sync_loop() {
 	}
 	// unmount_call: Bank exit using tx() (following qwazy pattern)
 	async function unmount_call(player) {
-		if (player.dc || player.mount_call || player.unmount_call || player.sync_call || player.stop_call) {
+		if (
+			player.merrit_grant ||
+			player.dc ||
+			player.mount_call ||
+			player.unmount_call ||
+			player.sync_call ||
+			player.stop_call
+		) {
 			// hopefully an effective race condition bugfix [06/03/26]
 			console.log("race_condition unmount_call fix worked: ", player.name);
 			return;
@@ -15104,6 +15159,7 @@ function sync_loop() {
 	// sync_call: Character sync using tx() (following qwazy pattern)
 	async function sync_call(player) {
 		if (
+			player.merrit_grant ||
 			player.dc ||
 			player.mount_call ||
 			player.unmount_call ||
@@ -15220,7 +15276,9 @@ function sync_loop() {
 		try {
 			check_for_delays(player);
 
-			if (player.unmount_call || player.mount_call || player.sync_call || player.stop_call) {
+			if (player.merrit_grant) {
+				market_patron_recover(player);
+			} else if (player.unmount_call || player.mount_call || player.sync_call || player.stop_call) {
 			} else if (!server.live) {
 				player.socket.disconnect();
 			} else if (player.unmounting) {
@@ -15242,7 +15300,9 @@ function sync_loop() {
 		try {
 			check_for_delays(player);
 
-			if (player.unmount_call || player.mount_call || player.sync_call || player.stop_call) {
+			if (player.merrit_grant) {
+				market_patron_recover(player);
+			} else if (player.unmount_call || player.mount_call || player.sync_call || player.stop_call) {
 			} else if (!player.stop_call) {
 				stop_call(player);
 			}

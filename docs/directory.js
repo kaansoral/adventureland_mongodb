@@ -623,7 +623,8 @@ docs = {
 			"#E0C05E",
 			[
 				["shops-and-selling", "Buying & Selling", "merchant,shop,buy,sell,gold,shells", "#E8CF68"],
-				["markets-and-trading", "Markets & Trading", "ponty,lost and found,stand,trade,wishlist,giveaway", "#D9A257"],
+				["markets-and-trading", "Markets & Trading", "ponty,lost and found,stand,trade,wishlist,giveaway,merrit", "#D9A257"],
+				["npc-merrit", "Merrit’s Visits", "merrit,merchant,parcel,stand,spacing,shells", "#B97B45"],
 				["banking", "Banking", "bank,storage,pack,deposit,withdraw", "#71A9D8"],
 				["exchanges-and-quests", "Exchanges & Quests", "exchange,quest,token,seasonal,collection", "#8FBF79"],
 				["monster-hunts", "Monster Hunts", "hunt,daisy,monstertoken", "#C97868"],

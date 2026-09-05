@@ -599,8 +599,13 @@ function render_mimickers() {
 }
 
 function render_npc(npc) {
+	if (npc.npc === "citizen22" || npc.ntype === "citizen22") {
+		request_merrit_info();
+		return;
+	}
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top;' class='renderedinfo'>";
 	html += bold_prop_line("NPC", npc.name, "gray");
+	html += merrit_spacing_html();
 	html += bold_prop_line("LEVEL", npc.level, "orange");
 	html += "</div>";
 	$("#topleftcornerui").html(html);
@@ -924,6 +929,7 @@ function render_slots(player, args) {
 		"'>";
 	if (args.pure) html = "";
 	if (player.stand) {
+		if(!args.pure)html += merrit_spacing_html() + (player.me ? "<div class='merrit-status' style='font-size:18px;max-width:420px'>"+merrit_status_html(character.merrit)+"</div><div class='slimbutton' onclick='request_merrit_info()'>MERRIT: STATUS & INFO</div>" : "");
 		var row = 4,
 			col = 4,
 			found = false;
@@ -1876,6 +1882,7 @@ function render_merchant(npc, premium) {
 	}
 	html += "</div>";
 	html +=
+		merrit_spacing_html() +
 		"<div id='merchant-item' class='rendercontainer' style='display: inline-block; vertical-align: top; margin-left: 5px'>" +
 		((next_side_interaction && render_interaction(next_side_interaction, "return_html")) || " ") +
 		"</div>";
@@ -2644,6 +2651,7 @@ function render_secondhands(type) {
 		}
 		html += "</div>";
 	}
+	html += merrit_spacing_html();
 	html += "</div>";
 	html +=
 		"<div id='merchant-item' class='rendercontainer' style='display: inline-block; vertical-align: top; margin-left: 5px'>" +
@@ -3720,6 +3728,7 @@ function render_item(selector, args) {
 		if (actual && item.charge && !actual.b) {
 			html += bold_prop_line("Charge", to_pretty_float(((actual.charges || 0) / item.charge) * 100) + "%", "#7433A7");
 		}
+		if (item.type === "stand" || item.name === "Market Parcel") html += merrit_spacing_html();
 		if (item.explanation) {
 			html += "<div style='color: #C3C3C3'>" + item.explanation + "</div>";
 		} else if (item.type == "material") {
@@ -4988,7 +4997,8 @@ function render_travel(the_map) {
 	var html = "<div style='max-width: 420px; text-align: center' class='cxmodalteleporter' onclick='hide_modal()'>";
 	var one = false,
 		places = false;
-	if (!the_map) (the_map = character["map"]), (places = true);
+	if (!the_map) ((the_map = character["map"]), (places = true));
+	if(the_map==="main")html += "<div onclick='stpr(event);render_merrit_info()' class='gamebutton'>MERRIT · MARKET INFO</div>"+merrit_spacing_html();
 	(G.maps[the_map].npcs || []).forEach(function (def) {
 		var npc = G.npcs[def.id];
 		if (!in_arr(npc.role, ["citizen", "guard", "pvp_announcer"])) {
@@ -5281,6 +5291,7 @@ function render_interaction(type, sub_type, args) {
 		html += "<span style='float: right; margin-top: 5px'><div class='slimbutton' onclick='render_exchange_shrine(\"candycane\")'>I HAVE ONE!</div></span>";
 	} else if (type == "standmerchant") {
 		html += "Anyone can become a merchant and start trading. You only need a merchant stand to display your items on!";
+		html += merrit_spacing_html();
 		html += "<span style='float: right; margin-top: 5px'><div class='slimbutton' onclick='render_merchant(get_npc(\"standmerchant\"))'>LET ME BUY ONE!</div></span>";
 	} else if (type == "candycane_success") {
 		html += "Ah! Thanks for cheering him up. Here's something for you in return!";
@@ -6462,4 +6473,122 @@ function to_pretty_fraction(num) {
 		if (num * l[0] > 1) html = to_pretty_float(num * l[0]) + "<span style='color:" + l[2] + "'>/" + l[1] + "</span>";
 	});
 	return html;
+}
+
+function merrit_spacing_html() {
+	var cfg = G.npcs.citizen22 && G.npcs.citizen22.market;
+	if (!cfg) return "";
+	return (
+		"<div style='font-size:18px;color:#DEBA91;margin:8px 0;max-width:440px'>" +
+		html_escape(cfg.spacing_text) +
+		" <span class='clickable' onclick='render_merrit_info()' style='color:#8FD4B1'>INFO</span></div>"
+	);
+}
+function merrit_reason_text(reason) {
+	var name = html_escape(reason.name || "another shop"),
+		remaining = Math.max(1, Math.ceil((reason.remaining_ms || 0) / 60000));
+	if (reason.code === "npc") return "Too close to " + name + ": stay more than 40px from stationary NPCs.";
+	if (reason.code === "stand_close") return "Too close to " + name + ": leave more than 10px between open stands.";
+	if (reason.code === "stand_front") return "In front of " + name + ": move out of the area 15px south and 10px sideways of that stand.";
+	if (reason.code === "warming") return "Keep this shop in place for " + remaining + " more minutes.";
+	if (reason.code === "cooldown") return "Your account's next parcel can arrive in " + remaining + " minutes, when Merrit visits.";
+	return (
+		{
+			area: "Set up in Mainland's square or southern aisle.",
+			closed: "Keep your stand open and remain in place.",
+			listing: "List an item for sale or a buy order you can afford. Giveaways alone do not count.",
+			inventory: "Make room for a Market Parcel, or unlock a matching stack with space.",
+			unreachable: "Merrit cannot reach this spot. Move onto the open pavement.",
+			unavailable: "Visit information is unavailable. Please try again shortly.",
+		}[reason.code] || "Waiting for Merrit."
+	);
+}
+function merrit_status_html(status) {
+	if (!status) return "<div>Waiting for Merrit's visit information.</div>";
+	return (status.reasons || []).length
+		? status.reasons
+				.map(function (r) {
+					return "<div>" + merrit_reason_text(r) + "</div>";
+				})
+				.join("")
+		: "<div style='color:#89C79F'>Ready for a parcel. Keep your stand open; Merrit must walk within 32px.</div>";
+}
+function merrit_receipt_html(receipt) {
+	if (!receipt) return "<p>I haven't brought you a parcel yet. Keep a shop in the square and leave your neighbors room.</p>";
+	return (
+		"<p>I brought you 1 Market Parcel" +
+		(receipt.shells ? " and 1 SHELL" : "") +
+		" on " +
+		html_escape(new Date(receipt.at).toLocaleString()) +
+		".</p><p>" +
+		html_escape(receipt.reason) +
+		"</p>"
+	);
+}
+function request_merrit_info() {
+	if (typeof socket !== "undefined" && socket && character) socket.emit("interaction", { type: "merrit_info" });
+	else render_merrit_info();
+}
+function merrit_rules_html() {
+	var c = G.npcs.citizen22.market,
+		table = c.exchange || [],
+		total = table.reduce(function (s, r) {
+			return s + r[0];
+		}, 0);
+	var result =
+		"<h2>Merrit's visits</h2><p>Any class can take part. Keep an open stand with an item for sale or a buy order funded for at least one unit. Keep the same spot for a full hour before the first parcel, and another full hour after each parcel. Giveaways alone do not count.</p>";
+	result += merrit_spacing_html();
+	result +=
+		"<p>The 10px rule blocks both shops. The 15px rule blocks the stand in front: up to 15px south, with no more than 10px of sideways separation. Distances use character foot positions, not nameplates. Roaming citizens do not create NPC exclusions when they pause.</p>";
+	result +=
+		"<p>Moving, closing or reopening your stand, disconnecting, leaving the area, losing your last qualifying listing, or failing the spacing rules restarts the hour in place. Replacing listings without becoming empty keeps your progress. Moving a stand in front of Merrit does not earn a quick gift.</p>";
+	result +=
+		"<p>Merrit stays within " +
+		c.radius +
+		"px of (0,0). Your stand must be in the central square (x −240 to 240, y −120 to 144) or southern aisle (x −88 to 88, y 144 to 360), on pavement he can reach. He prioritizes ready shops. An hour makes you eligible; delivery waits until he is within " +
+		c.handoff +
+		"px with a clear path.</p>";
+	result +=
+		"<p>The account limit is one parcel per hour across all characters and servers. Time away never builds up parcels. A parcel joins an unlocked matching stack when it has space; otherwise it needs a free slot. A full bag does not consume your hour. Normal trading still works while you cannot receive a parcel.</p>";
+	result +=
+		"<h3>Market Parcel</h3><p>Each visit gives 1 stackable Market Parcel. Trade it, bank it, or exchange one with Xyn for one result below. The usual Computer exchange access also works. Parcel exchanges need room for their result. Luck, premium stands, and sales volume do not change these chances.</p><table style='width:100%'><tr><th>Result</th><th>Quantity</th><th>Chance per parcel</th></tr>";
+	table.forEach(function (r) {
+		result +=
+			"<tr><td>" +
+			html_escape(G.items[r[1]].name) +
+			"</td><td>" +
+			(r[2] || 1) +
+			"</td><td>" +
+			((r[0] / total) * 100).toLocaleString(undefined, { maximumFractionDigits: 6 }) +
+			"%</td></tr>";
+	});
+	result +=
+		"</table><h3>An occasional SHELL</h3><p>A successful visit may also give exactly 1 SHELL directly to your account. The chance is higher below 10 SHELLS and falls as you approach 10. Exchanging, buying or trading parcels gives no extra visit-bonus roll.</p><table style='width:100%'><tr><th>Account SHELLS before the visit</th><th>Bonus chance</th></tr>";
+	for (var s = 0; s <= 10; s++) {
+		var chance = c.shell_floor + (c.shell_zero - c.shell_floor) * Math.pow((10 - s) / 10, 2);
+		result += "<tr><td>" + s + (s === 10 ? " or more" : "") + "</td><td>" + (chance * 100).toFixed(5).replace(/0+$/, "").replace(/\.$/, "") + "%</td></tr>";
+	}
+	result +=
+		"</table><p>The chance uses your account balance at the visit. Spending SHELLS can raise it again, up to 0.5%; receiving them lowers it. There is no guaranteed bonus. Existing gem exchange rewards keep their own separate tables.</p><p>Each delivered parcel gives a brief sparkle and one coin sound, with no coin animation. Sound settings are respected. Click Merrit for your last parcel and why he gave it; your stand status explains any current obstacle.</p>";
+	return result;
+}
+function render_merrit_info(status) {
+	var text = merrit_rules_html();
+	if (character) {
+		var s = status || character.merrit;
+		text =
+			"<h2>Merrit</h2><div class='merrit-status'>" +
+			merrit_status_html(s) +
+			"</div>" +
+			merrit_receipt_html(s && s.last) +
+			(s && s.account_last && (!s.last || s.account_last.id !== s.last.id)
+				? "<p>Your account's latest parcel went to " +
+					html_escape(s.account_last.name) +
+					" on " +
+					html_escape(new Date(s.account_last.at).toLocaleString()) +
+					".</p>"
+				: "") +
+			text;
+	}
+	show_modal("<div style='max-width:700px;font-size:20px;line-height:1.4'>" + text + "</div>");
 }

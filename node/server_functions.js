@@ -4509,6 +4509,8 @@ function fast_astar(args) {
 	var theone = null;
 	var good = false;
 	function hpush(cx, cy, fr, dir, bad) {
+		// Callers may bound the search without changing the shared map grid.
+		if (args.within && !args.within(cx, cy)) return;
 		// if(visited[cx+"|"+cy]) return;
 		var value = point_distance(cx, cy, tx, ty);
 		var hash = cx + "|" + cy;

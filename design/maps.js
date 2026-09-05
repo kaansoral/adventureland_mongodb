@@ -528,6 +528,7 @@ var maps = {
 			{ id: "craftsman", position: [92, 670] },
 			{ id: "pete", position: [-776, 1256] },
 			//{"id":"citizen0","position":[-152,152]},
+			{ id: "citizen22", position: [0, 0] },
 			{ id: "citizen0", position: [0, 0] },
 			{ id: "citizen2", position: [0, 0] },
 			{ id: "citizen3", position: [0, 0] },

@@ -266,3 +266,5 @@ character.remove(listener);</div>
 <p><span class="dlabel">bank_new_pack</span> and <span class="dlabel">bank_new_pack_failed</span> include <span class="dlabel">pack</span> and <span class="dlabel">shells</span> for shell purchases. Calls made through <span class="dlabel">open_bank_pack</span> also include a unique <span class="dlabel">request_id</span>.</p>
 
 <p><span class="dlabel">picked</span>, <span class="dlabel">pick_failed</span>, and the fishing/mining result events include a <span class="dlabel">request_id</span> when started through <span class="dlabel">use_skill</span>. Fishing/mining failure events include <span class="dlabel">reason</span>; a <span class="dlabel">*_none</span> event means the timed action completed but produced no resource.</p>
+
+<p><span class="dlabel">merrit</span>: a delivered Market Parcel, with <span class="dlabel">item</span>, <span class="dlabel">quantity</span>, and <span class="dlabel">shells</span> (0 or 1). Emitted after the server confirms delivery. Read <span class="dlabel">character.merrit</span> for eligibility.</p>

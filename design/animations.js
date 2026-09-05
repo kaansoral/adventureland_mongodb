@@ -1,4 +1,5 @@
 var animations={
+	"merrit_bonus":{"file":"/images/sprites/animations/CGreen_Spark3.png","frames":10,"exact":true,"alpha":1},
 	"block":{
 		"file":"/images/sprites/animations/Block.png", //sparks ...
 		"frames":11,

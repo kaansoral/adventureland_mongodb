@@ -26,6 +26,8 @@ const DOCS_PATHS = [
 	"/docs/tutorial",
 	"/docs/ref",
 	"/docs/ref/boosters",
+	"/docs/ref/npc-merrit",
+	"/docs/guide/npc-merrit",
 	"/docs/ref/keymapping",
 	"/docs/ref/shells",
 ];
