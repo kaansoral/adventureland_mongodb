@@ -137,7 +137,7 @@ async function market_patron_grant(npc, player) {
 				item: "marketparcel",
 				quantity: 1,
 				shells: shells,
-				reason: "An open, stocked shop kept its place and left the neighboring shops clear for an hour.",
+				reason: "Your shop stayed stocked for two minutes and left the neighbors room.",
 			};
 			data.p.merrit_receipt = R.receipt;
 			A.sync(entity, data);

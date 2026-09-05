@@ -625,6 +625,7 @@ var npcs={
 			"front_width":10,
 			"handoff":32,
 			"hour_ms":3600000,
+			"settle_ms":120000,
 			"anchor_tolerance":4,
 			"max_observation_gap":5000,
 			"shell_floor":1e-05,
@@ -634,7 +635,7 @@ var npcs={
 			"spacing_text":"No parcels within 40px of a stationary NPC or within 10px of another open stand. A stand directly in front of another, up to 15px south and 10px sideways, also receives no parcel.",
 		},
 		"says":["Fresh stock? Let me have a look.","Good to see the square busy.","Leave your neighbors some room."],
-		"interaction":["A parcel for every hour your shop keeps its place. Give your neighbors room, and I will come round."],
+		"interaction":["Keep a stocked shop here for two minutes and leave the neighbors room. I bring parcels once an hour."],
 	},
 	"holo0":{
 		"name":"Green",

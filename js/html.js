@@ -306,8 +306,7 @@ function render_server() {
 			"' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_interaction_guide(\"" +
 			context.key +
 			"\")'>";
-		if (npc && npc.skin) html += sprite(npc.skin, context.key === "merrit" ?
-			{ cx: clone(G.npcs.citizen22.cx), scale: 2, width: 52, height: 64, overflow: true } : { overflow: true });
+		if (npc && npc.skin) html += sprite(npc.skin, { cx: clone(npc.cx || {}), overflow: true });
 		else if (visual_icon) html += "<div style='margin-top: -1px; margin-left: -3px; margin-right: -3px'>" + item_container({ skin: visual_icon.skin, bcolor: "black" }) + "</div>";
 		else if (icon) html += "<div style='margin-top: -1px; margin-left: -3px; margin-right: -3px'>" + item_container({ skin: icon.skin, bcolor: "black" }) + "</div>";
 		else html += "<div style='font-size: 32px; line-height: 42px; color:#69BE86'>?</div>";
@@ -600,13 +599,8 @@ function render_mimickers() {
 }
 
 function render_npc(npc) {
-	if (npc.npc === "citizen22" || npc.ntype === "citizen22") {
-		request_merrit_info();
-		return;
-	}
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top;' class='renderedinfo'>";
 	html += bold_prop_line("NPC", npc.name, "gray");
-	html += merrit_spacing_html();
 	html += bold_prop_line("LEVEL", npc.level, "orange");
 	html += "</div>";
 	$("#topleftcornerui").html(html);
@@ -930,7 +924,6 @@ function render_slots(player, args) {
 		"'>";
 	if (args.pure) html = "";
 	if (player.stand) {
-		if(!args.pure)html += merrit_spacing_html() + (player.me ? "<div class='merrit-status' style='font-size:18px;max-width:420px'>"+merrit_status_html(character.merrit)+"</div><div class='slimbutton' onclick='request_merrit_info()'>MERRIT: STATUS & INFO</div>" : "");
 		var row = 4,
 			col = 4,
 			found = false;
@@ -1883,7 +1876,6 @@ function render_merchant(npc, premium) {
 	}
 	html += "</div>";
 	html +=
-		merrit_spacing_html() +
 		"<div id='merchant-item' class='rendercontainer' style='display: inline-block; vertical-align: top; margin-left: 5px'>" +
 		((next_side_interaction && render_interaction(next_side_interaction, "return_html")) || " ") +
 		"</div>";
@@ -2652,7 +2644,6 @@ function render_secondhands(type) {
 		}
 		html += "</div>";
 	}
-	html += merrit_spacing_html();
 	html += "</div>";
 	html +=
 		"<div id='merchant-item' class='rendercontainer' style='display: inline-block; vertical-align: top; margin-left: 5px'>" +
@@ -3729,7 +3720,6 @@ function render_item(selector, args) {
 		if (actual && item.charge && !actual.b) {
 			html += bold_prop_line("Charge", to_pretty_float(((actual.charges || 0) / item.charge) * 100) + "%", "#7433A7");
 		}
-		if (item.type === "stand" || item.name === "Market Parcel") html += merrit_spacing_html();
 		if (item.explanation) {
 			html += "<div style='color: #C3C3C3'>" + item.explanation + "</div>";
 		} else if (item.type == "material") {
@@ -4999,7 +4989,6 @@ function render_travel(the_map) {
 	var one = false,
 		places = false;
 	if (!the_map) ((the_map = character["map"]), (places = true));
-	if(the_map==="main")html += "<div onclick='stpr(event);render_merrit_info()' class='gamebutton'>MERRIT · MARKET INFO</div>"+merrit_spacing_html();
 	(G.maps[the_map].npcs || []).forEach(function (def) {
 		var npc = G.npcs[def.id];
 		if (!in_arr(npc.role, ["citizen", "guard", "pvp_announcer"])) {
@@ -5292,7 +5281,6 @@ function render_interaction(type, sub_type, args) {
 		html += "<span style='float: right; margin-top: 5px'><div class='slimbutton' onclick='render_exchange_shrine(\"candycane\")'>I HAVE ONE!</div></span>";
 	} else if (type == "standmerchant") {
 		html += "Anyone can become a merchant and start trading. You only need a merchant stand to display your items on!";
-		html += merrit_spacing_html();
 		html += "<span style='float: right; margin-top: 5px'><div class='slimbutton' onclick='render_merchant(get_npc(\"standmerchant\"))'>LET ME BUY ONE!</div></span>";
 	} else if (type == "candycane_success") {
 		html += "Ah! Thanks for cheering him up. Here's something for you in return!";
@@ -6476,22 +6464,13 @@ function to_pretty_fraction(num) {
 	return html;
 }
 
-function merrit_spacing_html() {
-	var cfg = G.npcs.citizen22 && G.npcs.citizen22.market;
-	if (!cfg) return "";
-	return (
-		"<div style='font-size:18px;color:#DEBA91;margin:8px 0;max-width:440px'>" +
-		html_escape(cfg.spacing_text) +
-		" <span class='clickable' onclick='render_merrit_info()' style='color:#8FD4B1'>INFO</span></div>"
-	);
-}
 function merrit_reason_text(reason) {
 	var name = html_escape(reason.name || "another shop"),
 		remaining = Math.max(1, Math.ceil((reason.remaining_ms || 0) / 60000));
 	if (reason.code === "npc") return "Too close to " + name + ": stay more than 40px from stationary NPCs.";
 	if (reason.code === "stand_close") return "Too close to " + name + ": leave more than 10px between open stands.";
 	if (reason.code === "stand_front") return "In front of " + name + ": move out of the area 15px south and 10px sideways of that stand.";
-	if (reason.code === "warming") return "Keep this shop in place for " + remaining + " more minutes.";
+	if (reason.code === "warming") return "Keep this shop in place for " + remaining + " more minute" + (remaining === 1 ? "" : "s") + ".";
 	if (reason.code === "cooldown") return "Your account's next parcel can arrive in " + remaining + " minutes, when Merrit visits.";
 	return (
 		{
@@ -6516,7 +6495,7 @@ function merrit_status_html(status) {
 }
 function merrit_receipt_html(receipt) {
 	if (!receipt)
-		return "I haven't brought you a parcel yet. Keep your shop stocked, stay a while, and leave your neighbors room.";
+		return "No parcel yet. Keep your shop stocked for two minutes and leave your neighbors room.";
 	return (
 		"I brought you 1 Market Parcel" +
 		(receipt.shells ? " and 1 SHELL" : "") +
@@ -6540,7 +6519,7 @@ function render_merrit_interaction(view) {
 			message = "My last delivery on your account was to " + html_escape(receipt.name) + ".<br><br>" + message;
 	} else {
 		message =
-			"Good to see a shop on the square! Keep yours stocked and give your neighbors room. I'll bring a parcel when you've stayed an hour.";
+			"Keep a stocked shop here for two minutes and leave the neighbors room. I bring parcels once an hour.";
 		if (receipt)
 			message =
 				"Welcome back! I last brought " +
@@ -6555,17 +6534,9 @@ function render_merrit_interaction(view) {
 		cx: clone(npc.cx),
 		cosmetic_head_y: npc.cosmetic_head_y,
 		merrit: view,
-		message:
-			"<span id='merrit-dialogue'>" +
-			message +
-			"</span>" +
-			"<div style='clear:both;display:flex;align-items:center;gap:10px;padding-top:10px;font-size:24px;line-height:24px'>" +
-			merrit_item_preview("marketparcel", 1) +
-			"<span>A little parcel.<br>Perhaps a lucky find.</span></div>",
-		button: "INFO",
-		onclick: render_merrit_info,
-		button2: view === "receipt" ? "LET'S TALK" : "LAST GIFT",
-		onclick2: function () {
+		message: "<span id='merrit-dialogue'>" + message + "</span>",
+		button: view === "receipt" ? "BACK" : "LAST GIFT",
+		onclick: function () {
 			render_merrit_interaction(view === "receipt" ? "greeting" : "receipt");
 			request_merrit_status();
 		},
@@ -6601,8 +6572,6 @@ function merrit_item_preview(name, quantity) {
 		item_container(
 			{
 				skin: G.items[name].skin,
-				size: 60,
-				bcolor: "#947348",
 				draggable: false,
 				onclick: "pcs(event);render_item_info('" + name + "')",
 			},
@@ -6624,7 +6593,7 @@ function merrit_rewards_html(featured) {
 	return rows
 		.map(function (row) {
 			return (
-				"<div class='merrit-reward'>" +
+				"<div class='guide-card merrit-reward'>" +
 				merrit_item_preview(row[1], row[2]) +
 				"<div><b>" +
 				html_escape(G.items[row[1]].name) +

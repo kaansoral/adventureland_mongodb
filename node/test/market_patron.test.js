@@ -55,24 +55,26 @@ test("all spacing boundaries and mobility use world positions", () => {
 	o.y = 0;
 	assert.equal(rules.blockers(p, [o], [], config).length, 0);
 });
-test("settled hour cannot be banked by moving, emptying, or reopening", () => {
+test("two-minute settling time cannot be banked by moving, emptying, or reopening", () => {
+	assert.equal(config.settle_ms, 120000);
+	assert.equal(config.hour_ms, 3600000);
 	const p = merchant();
 	let q = rules.qualify(p, [p], [], config, items, null, 0);
-	assert.equal(q.ready_at, 3600000);
-	q.session.checked = 3599999;
-	q = rules.qualify(p, [p], [], config, items, q.session, 3599999);
+	assert.equal(q.ready_at, 120000);
+	q.session.checked = 119999;
+	q = rules.qualify(p, [p], [], config, items, q.session, 119999);
 	assert.equal(q.reasons[0].code, "warming");
-	q = rules.qualify(p, [p], [], config, items, q.session, 3600000);
+	q = rules.qualify(p, [p], [], config, items, q.session, 120000);
 	assert.equal(q.reasons.length, 0);
 	p.x = 4.001;
-	q = rules.qualify(p, [p], [], config, items, q.session, 3600001);
-	assert.equal(q.ready_at, 7200001);
+	q = rules.qualify(p, [p], [], config, items, q.session, 120001);
+	assert.equal(q.ready_at, 240001);
 	p.p.stand = false;
-	q = rules.qualify(p, [p], [], config, items, q.session, 3600002);
+	q = rules.qualify(p, [p], [], config, items, q.session, 120002);
 	assert.equal(q.session, null);
 	p.p.stand = true;
 	delete p.slots.trade1;
-	q = rules.qualify(p, [p], [], config, items, null, 3600003);
+	q = rules.qualify(p, [p], [], config, items, null, 120003);
 	assert.equal(q.session, null);
 	p.slots.trade1 = { name: "scroll0", price: 101, b: true, q: 1 };
 	assert.equal(rules.hasListing(p, items), false);
@@ -217,7 +219,7 @@ function harness(options = {}) {
 			x: p.x,
 			y: p.y,
 			in: "main",
-			since: Date.now() - 3600001,
+			since: Date.now() - config.settle_ms - 1,
 			checked: Date.now(),
 		});
 	ready();
@@ -360,14 +362,14 @@ test("public INFO and server exchange share odds; parcels stay out of Glitch poo
 	c.html_escape = (text) => text;
 	c.item_container = (args, item) => item.name;
 	const html = fs.readFileSync(path.join(__dirname, "../../js/html.js"), "utf8");
-	vm.runInContext(html.slice(html.indexOf("function merrit_spacing_html(")), c);
+	vm.runInContext(html.slice(html.indexOf("function merrit_reason_text(")), c);
 	const info = fs.readFileSync(path.join(__dirname, "../../docs/guide/npc-merrit.html"), "utf8");
 	for (const expected of ["40px", "10px", "15px", "32px", "600px", "0.5%", "0.001%", "1 in 900"])
 		assert.ok(info.includes(expected), expected);
 	const featured = c.merrit_rewards_html(true);
-	assert.equal((featured.match(/class='merrit-reward'/g) || []).length, 5);
+	assert.equal((featured.match(/class='guide-card merrit-reward'/g) || []).length, 5);
 	for (const id of config.chase) assert.ok(featured.includes(id));
-	assert.equal((c.merrit_rewards_html(false).match(/class='merrit-reward'/g) || []).length, 14);
+	assert.equal((c.merrit_rewards_html(false).match(/class='guide-card merrit-reward'/g) || []).length, 14);
 });
 
 test("Merrit has separate proximity INFO and portrait dialogue; late replies cannot reopen it", () => {
@@ -385,7 +387,7 @@ test("Merrit has separate proximity INFO and portrait dialogue; late replies can
 	assert.equal(context.definition.article, "npc-merrit");
 	assert.equal(context.definition.proximity, true);
 	const html = fs.readFileSync(path.join(__dirname, "../../js/html.js"), "utf8");
-	vm.runInContext(html.slice(html.indexOf("function merrit_spacing_html(")), c);
+	vm.runInContext(html.slice(html.indexOf("function merrit_reason_text(")), c);
 	let conversations = 0,
 		guides = 0,
 		dialogueVisible = true;
@@ -404,13 +406,15 @@ test("Merrit has separate proximity INFO and portrait dialogue; late replies can
 	assert.equal(conversations, 1);
 	assert.equal(guides, 0);
 	assert.equal(c.rendered_interaction.skin, c.G.npcs.citizen22.skin);
-	assert.equal(c.rendered_interaction.button, "INFO");
-	c.rendered_interaction.onclick();
+	assert.equal(c.rendered_interaction.button, "LAST GIFT");
+	assert.equal(c.rendered_interaction.button2, undefined);
+	assert.ok(!c.rendered_interaction.message.includes("parcel preview"));
+	c.render_merrit_info();
 	assert.equal(guides, 1);
 	c.merrit_status_received({
 		last: { name: "Shop", at: Date.now(), shells: 1, reason: "Your shop stayed stocked and left the neighbors room." },
 	});
-	c.rendered_interaction.onclick2();
+	c.rendered_interaction.onclick();
 	assert.ok(c.rendered_interaction.message.includes("1 SHELL"));
 	assert.ok(c.rendered_interaction.message.includes("Your shop stayed stocked"));
 	dialogueVisible = false;

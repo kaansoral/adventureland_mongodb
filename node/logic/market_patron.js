@@ -59,7 +59,7 @@ module.exports = function (distance) {
 		)
 			session = { x: p.x, y: p.y, in: p.in, since: now, checked: now };
 		session.checked = now;
-		const ready_at = session.since + config.hour_ms;
+		const ready_at = session.since + config.settle_ms;
 		if (now < ready_at) reasons.push({ code: "warming", remaining_ms: ready_at - now });
 		return { session, reasons, ready_at };
 	}
