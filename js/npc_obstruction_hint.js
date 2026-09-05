@@ -42,23 +42,26 @@ function obstructed_npcs() {
 	var all = Object.keys(entities).map(function (id) {
 			return entities[id];
 		}),
-		stands = all.concat(character).filter(function (entity) {
-			return entity.stand && entity.standed && entity.parent && entity.visible && entity.worldAlpha && entity.standed.visible;
+		players = all.concat(character).filter(function (entity) {
+			return entity.type == "character" && !entity.npc && entity.parent && entity.visible && entity.worldAlpha;
 		}),
 		result = [];
 	all.forEach(function (npc) {
 		if (!npc.npc || !npc.onrclick || !npc.parent || !npc.visible || !npc.worldAlpha || distance(npc, character) >= 300) return;
 		var body = npc_hint_bounds(npc);
 		if (!body) return;
-		var blocked = stands.some(function (merchant) {
-			if (merchant === npc) return false;
+		var blocked = players.some(function (player) {
 			// Match the world's front-to-back sorting, including the stand offset.
-			if ((merchant.real_y === undefined ? merchant.y : merchant.real_y) + 3 - (merchant.y_disp || 0) < (npc.real_y === undefined ? npc.y : npc.real_y) - (npc.y_disp || 0)) return false;
-			var cover = npc_hint_bounds(merchant.standed);
-			if (!cover) return false;
-			var width = Math.min(body.right, cover.right) - Math.max(body.left, cover.left),
-				height = Math.min(body.bottom, cover.bottom) - Math.max(body.top, cover.top);
-			return width > 0 && height > 0 && width * height >= (body.right - body.left) * (body.bottom - body.top) * 0.2;
+			if ((player.real_y === undefined ? player.y : player.real_y) + (player.stand ? 3 : 0) - (player.y_disp || 0) < (npc.real_y === undefined ? npc.y : npc.real_y) - (npc.y_disp || 0)) return false;
+			var covers = [player];
+			if (player.stand && player.standed && player.standed.visible) covers.push(player.standed);
+			return covers.some(function (sprite) {
+				var cover = npc_hint_bounds(sprite);
+				if (!cover) return false;
+				var width = Math.min(body.right, cover.right) - Math.max(body.left, cover.left),
+					height = Math.min(body.bottom, cover.bottom) - Math.max(body.top, cover.top);
+				return width > 0 && height > 0 && width * height >= (body.right - body.left) * (body.bottom - body.top) * 0.2;
+			});
 		});
 		if (blocked) result.push({ npc: npc, bounds: body });
 	});

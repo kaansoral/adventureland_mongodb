@@ -23,7 +23,11 @@ function sprite(x, y, width = 24, height = 36) {
 
 function setup(saved) {
 	const npc = Object.assign(sprite(300, 300), { npc: "upgrade", proximity: 250, onrclick() {} });
-	const merchant = Object.assign(sprite(300, 305), { stand: "stand0", standed: sprite(300, 308, 40, 30) });
+	const merchant = Object.assign(sprite(340, 305), {
+		type: "character",
+		stand: "stand0",
+		standed: sprite(300, 308, 40, 30),
+	});
 	const context = {
 		no_graphics: false,
 		no_html: false,
@@ -78,6 +82,28 @@ test("notices reach 300 units but still require a stand overlapping in front", (
 	c.entities.merchant.standed.worldTransform.tx = 300;
 	c.entities.merchant.stand = false;
 	assert.equal(c.obstructed_npcs().length, 0, "closed stand");
+});
+
+test("a player without a stand covering Ernis triggers the notice and moving away clears it", () => {
+	const c = setup();
+	delete c.entities.merchant;
+	c.entities.merc = Object.assign(sprite(300, 312), { type: "character" });
+	c.update_npc_obstruction_hint();
+	assert.equal(c.obstructed_npcs()[0].npc, c.entities.npc);
+	assert.equal(c.npc_obstruction_hints[0].style.display, "block");
+	c.entities.merc.visible = false;
+	assert.equal(c.obstructed_npcs().length, 0, "hidden players cannot obstruct");
+	c.entities.merc.visible = true;
+	c.entities.merc.real_y = 299;
+	assert.equal(c.obstructed_npcs().length, 0, "players drawn behind do not obstruct");
+	c.entities.merc.real_y = 312;
+	c.entities.merc.worldTransform.tx = 400;
+	c.update_npc_obstruction_hint();
+	assert.equal(c.npc_obstruction_hints[0].style.display, "none");
+	c.character = c.entities.merc;
+	delete c.entities.merc;
+	c.character.worldTransform.tx = 300;
+	assert.equal(c.obstructed_npcs()[0].npc, c.entities.npc, "the local player can also cover an NPC");
 });
 
 test("two blocked NPCs get separate non-overlapping buttons that open the correct NPC", () => {
