@@ -127,7 +127,17 @@ test("a player without a stand covering Ernis triggers the notice and moving awa
 	c.character = c.entities.merc;
 	delete c.entities.merc;
 	c.character.worldTransform.tx = 300;
-	assert.equal(c.obstructed_npcs()[0].npc, c.entities.npc, "the local player can also cover an NPC");
+	assert.equal(c.obstructed_npcs().length, 0, "the local player alone does not trigger a notice");
+	c.character.stand = "stand0";
+	c.character.standed = sprite(300, 315, 40, 30);
+	c.entities.self = c.character;
+	assert.equal(c.obstructed_npcs().length, 0, "the local stand is also ignored, even in entities");
+	c.entities.other = Object.assign(sprite(300, 312), { type: "character" });
+	assert.equal(
+		c.obstructed_npcs()[0].npc,
+		c.entities.npc,
+		"another blocker still triggers the notice beside the local player",
+	);
 });
 
 test("two blocked NPCs get separate non-overlapping buttons that open the correct NPC", () => {
@@ -145,8 +155,9 @@ test("two blocked NPCs get separate non-overlapping buttons that open the correc
 	};
 	c.update_npc_obstruction_hint();
 	const [first, second] = c.npc_obstruction_hints;
-	assert.equal(first.textContent, "Upgrade\nClick to interact");
-	assert.equal(second.textContent, "Compound\nClick to interact");
+	assert.equal(first.textContent, "Upgrade\nPress F or Click");
+	assert.equal(second.textContent, "Compound\nPress F or Click");
+	assert.equal(parseInt(first.style.top), 264 - first.offsetHeight - 104);
 	assert.ok(parseInt(second.style.top) >= parseInt(first.style.top) + first.offsetHeight + 8);
 	assert.ok(parseInt(second.style.top) + second.offsetHeight < 264, "both notices above the NPC bodies");
 	const event = { preventDefault() {}, stopPropagation() {} };

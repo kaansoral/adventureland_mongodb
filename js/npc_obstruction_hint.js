@@ -42,8 +42,8 @@ function obstructed_npcs() {
 	var all = Object.keys(entities).map(function (id) {
 			return entities[id];
 		}),
-		players = all.concat(character).filter(function (entity) {
-			return entity.type == "character" && !entity.npc && entity.parent && entity.visible && entity.worldAlpha;
+		players = all.filter(function (entity) {
+			return entity !== character && entity.type == "character" && !entity.npc && entity.parent && entity.visible && entity.worldAlpha;
 		}),
 		result = [];
 	all.forEach(function (npc) {
@@ -118,13 +118,13 @@ function update_npc_obstruction_hint() {
 		}
 		button.npc = target.npc;
 		var definition = G.npcs[target.npc.npc] || {},
-			label = (definition.name || target.npc.name || "NPC") + "\nClick to interact";
+			label = (definition.name || target.npc.name || "NPC") + "\nPress F or Click";
 		if (button.textContent != label) button.textContent = label;
 		button.style.display = "block";
 		var w = button.offsetWidth,
 			h = button.offsetHeight,
 			left = Math.round(Math.max(canvas.left + 8, Math.min(canvas.right - w - 8, x - w / 2))),
-			top = Math.round(Math.max(canvas.top + 8, y - h - 128)),
+			top = Math.round(Math.max(canvas.top + 8, y - h - 104)),
 			overlap;
 		// Place colliding notices below earlier ones, keeping a small gap.
 		while (
