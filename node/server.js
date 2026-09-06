@@ -5612,7 +5612,7 @@ function init_socket_io(socket_server) {
 			// 	if(data.place!="resort" && !G.maps[player.map].ref.transporter || simple_distance(G.maps[player.map].ref.transporter,player)>80) return socket.emit("game_response","transport_cant_reach");
 			// 	if(data.place=="resort" && player.map!="resort") return socket.emit("game_response","transport_cant_reach");
 			// }
-			server_log(data);
+			server_log(`${player.name} enter ${JSON.stringify(data)}`);
 			var name = randomStr(24);
 			if (data.place == "resort" && 0) {
 				var name = "resort_" + data.name;
@@ -5625,50 +5625,6 @@ function init_socket_io(socket_server) {
 				} else {
 					return fail_response("cant_enter");
 				}
-			} else if (
-				data.place == "crypt" ||
-				data.place == "winter_instance" ||
-				data.place == "spider_instance" ||
-				data.place == "tomb"
-			) {
-				var f = "cave";
-				var ref = G.maps.cave.spawns[2];
-				var item = "cryptkey";
-				if (data.place == "winter_instance") {
-					f = "winterland";
-					ref = G.maps.winterland.spawns[5];
-					item = "frozenkey";
-				}
-				if (data.place == "spider_instance") {
-					f = "gateway";
-					ref = G.maps.gateway.spawns[3];
-					item = "spiderkey";
-				}
-				if (data.place == "tomb") {
-					f = "mansion";
-					ref = G.maps.mansion.spawns[1];
-					item = "tombkey";
-				}
-				if (simple_distance(player, { in: f, map: f, x: ref[0], y: ref[1] }) > 120) {
-					return fail_response("transport_cant_reach");
-				}
-				if (data.name) {
-					// Player requested to enter an existing instance
-					if (instances[data.name] && instances[data.name].map == data.place) {
-						// The instance exists
-						transport_player_to(player, data.name);
-					} else {
-						// The instance doesn't exist
-						return fail_response("transport_cant_invalid");
-					}
-				} else {
-					if (!consume_one_by_id(player, item)) {
-						return fail_response("transport_cant_item");
-					}
-					instance = create_instance(name, data.place);
-					transport_player_to(player, name);
-				}
-				resend(player, "u+cid+reopen");
 			} else if (data.place == "dungeon0" && player.role == "gm") {
 				instance = create_instance(name, "dungeon0", { solo: player.id });
 				transport_player_to(player, name);
@@ -5773,6 +5729,86 @@ function init_socket_io(socket_server) {
 					instance.players[NPC_prefix + npc.id] = npc;
 				}
 			} else {
+				const gMap = data.place && G.maps[data.place];
+				if (gMap && gMap.instance) {
+					const instanceExists = data.name && instances[data.name] && instances[data.name].map == data.place;
+
+					if (data.name) {
+						if (!instanceExists) {
+							server_log(`${player.name} tried to enter ${data.place} (${data.name}) but it does not exist`);
+							return fail_response("transport_cant_invalid");
+						}
+					}
+
+					if (gMap.enter) {
+						const validateRange = gMap.enter.locations && gMap.enter.locations.length > 0;
+						let inRange = !validateRange;
+
+						if (validateRange) {
+							for (const [locationsMapKey, locationType, locationIndex, range = 120] of gMap.enter.locations) {
+								if (
+									!G.maps[locationsMapKey] ||
+									!G.maps[locationsMapKey][locationType] ||
+									!G.maps[locationsMapKey][locationType][locationIndex]
+								) {
+									continue;
+								}
+								const location = G.maps[locationsMapKey][locationType][locationIndex];
+								const distanceToLocation = distance(player, {
+									in: locationsMapKey,
+									map: locationsMapKey,
+									x: location[0],
+									y: location[1],
+								});
+								if (distanceToLocation <= range) {
+									inRange = true;
+									break;
+								}
+							}
+						}
+
+						if (!inRange) {
+							return fail_response("transport_cant_reach");
+						}
+
+						if (gMap.enter.items && !instanceExists) {
+							const itemsToConsume = [];
+							const quantityByItem = Object.assign({}, gMap.enter.items);
+
+							for (let i = 0; i < player.items.length; i++) {
+								const item = player.items[i];
+								if (item && quantityByItem[item.name]) {
+									const quantity = Math.min(item.q || 1, quantityByItem[item.name]);
+									quantityByItem[item.name] -= quantity;
+									itemsToConsume.push([i, quantity]);
+									if (quantityByItem[item.name] == 0) {
+										delete quantityByItem[item.name];
+									}
+								}
+							}
+
+							if (Object.keys(quantityByItem).length > 0) {
+								return fail_response("transport_cant_item", data.place, { items: quantityByItem });
+							}
+
+							for (const [inventory_index, quantity] of itemsToConsume) {
+								consume(player, inventory_index, quantity);
+							}
+						}
+					}
+
+					if (instanceExists) {
+						transport_player_to(player, data.name);
+					} else {
+						instance = create_instance(name, data.place);
+						transport_player_to(player, name);
+					}
+
+					resend(player, "u+cid+reopen");
+					success_response();
+					return;
+				}
+
 				return fail_response("transport_cant_reach");
 			}
 			success_response();

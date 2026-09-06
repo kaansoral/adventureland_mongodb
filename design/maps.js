@@ -138,6 +138,12 @@ var maps = {
 		on_exit: ["cave", 2],
 		doors: [[-1.54, 105.6, 126.56, 56.96, "cave", 2, 0]],
 		instance: true,
+		enter: {
+			items: {
+				cryptkey: 1,
+			},
+			locations: [["cave", "doors", 2, 120]],
+		},
 	},
 	goobrawl: {
 		key: "jayson_GooIsland",
@@ -795,6 +801,12 @@ var maps = {
 		doors: [[0, -68.83, 33.4, 57.5, "mansion", 1, 0]],
 		spawns: [[0.82, -53.5]],
 		instance: true,
+		enter: {
+			items: {
+				tombkey: 1,
+			},
+			locations: [["mansion", "spawns", 1, 120]],
+		},
 		lux: 0.8,
 	},
 	jail: {
@@ -1100,6 +1112,12 @@ var maps = {
 		quirks: [],
 		drop_norm: 4000,
 		instance: true,
+		enter: {
+			items: {
+				frozenkey: 1,
+			},
+			locations: [["winterland", "doors", 3, 120]],
+		},
 		lux: 0.75,
 	},
 	winterland: {
@@ -1852,6 +1870,12 @@ var maps = {
 			},
 		],
 		instance: true,
+		enter: {
+			items: {
+				spiderkey: 1,
+			},
+			locations: [["gateway", "spawns", 3, 120]],
+		},
 	},
 };
 for (var name in maps) {
