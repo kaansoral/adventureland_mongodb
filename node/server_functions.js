@@ -4504,7 +4504,6 @@ function fast_astar(args) {
 	var heap = vHeap();
 	var visited = {};
 	var total = 0;
-	var start = new Date();
 	var best = 999999999999;
 	var theone = null;
 	var good = false;
@@ -4554,7 +4553,6 @@ function fast_astar(args) {
 			}
 		}
 		// if(!good && point_distance(sx,sy,dx,dy)<30) return null;
-		server_log([total, dx, dy, mssince(start)]);
 		return [dx, dy];
 	}
 	for (var step = 1; step <= 2; step++) {
@@ -4629,7 +4627,6 @@ function fast_abfs(monster, tx, ty) {
 	var last = 0;
 	var queue = [];
 	var visited = {};
-	var start_t = new Date();
 	var best = 999999999999;
 	var theone = null;
 	var good = false;
@@ -4668,7 +4665,6 @@ function fast_abfs(monster, tx, ty) {
 		if (!good && point_distance(sx, sy, dx, dy) < 30) {
 			return null;
 		}
-		server_log([last, dx, dy, mssince(start_t)]);
 		return [dx, dy];
 	}
 	for (var step = 1; step <= 2; step++) {
