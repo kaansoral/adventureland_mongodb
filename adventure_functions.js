@@ -1233,6 +1233,24 @@ function server_url(server, api_method) {
 	return protocol + "://" + server.address + options.servers[server.key].api_path + api_method;
 }
 
+async function server_discord_chat(server, payload) {
+	if (!payload) payload = {};
+	try {
+		await fetch(server_url(server, "discord_chat"), {
+			method: "POST",
+			headers: { "Content-Type": "application/x-www-form-urlencoded" },
+			body: new URLSearchParams({
+				spass: keys.ACCESS_MASTER,
+				owner: payload.owner || "",
+				message: payload.message || "",
+				color: payload.color || "#5865F2",
+			}).toString(),
+		});
+	} catch (e) {
+		console.error("server_discord_chat error", e);
+	}
+}
+
 async function server_eval(server, code, data) {
 	if (!data) data = {};
 	try {
