@@ -5269,6 +5269,8 @@ function cosmetics_logic(sprite) {
 
 	var x_disp = head_x;
 	var head_dy = { large: 2, tall: 1, normal: 0, small: -1, xsmall: -3, xxsmall: -4 }[SS[sprite.skin]];
+	var cosmetic_head_y = head_y + (sprite.cosmetic_head_y || 0);
+	if (!sprite.rip) cosmetic_head_y += (G.cosmetics.head_y && G.cosmetics.head_y[sprite.skin]) || 0;
 	var head_dh = (G.cosmetics.head[sprite.cx.head] && G.cosmetics.head[sprite.cx.head][3]) || 0;
 	var hair_dy = (G.cosmetics.hair[sprite.cx.hair] && G.cosmetics.hair[sprite.cx.hair][0]) || 0;
 	hair_dy += head_dh;
@@ -5392,7 +5394,7 @@ function cosmetics_logic(sprite) {
 			c.zy = -100 * ZEPS;
 		} else if (c.stype == "head") {
 			var covers = G.cosmetics.prop[sprite.skin] && G.cosmetics.prop[sprite.skin].includes("covers");
-			c.y_disp = -(G.cosmetics.default_head_place + head_dy) + head_y;
+			c.y_disp = -(G.cosmetics.default_head_place + head_dy) + cosmetic_head_y;
 			c.zy = ZEPS;
 			var tilt = 0;
 			if (sprite.i == 0) c.y = c.y_disp + 1;
@@ -5408,7 +5410,7 @@ function cosmetics_logic(sprite) {
 			if (sprite.j !== undefined) set_texture(c, sprite.j);
 			c.moved = false;
 		} else if (c.stype == "hair") {
-			c.y_disp = -(G.cosmetics.default_hair_place + head_dy + hair_dy) + head_y;
+			c.y_disp = -(G.cosmetics.default_hair_place + head_dy + hair_dy) + cosmetic_head_y;
 			var tilt = 0;
 			c.zy = 2 * ZEPS;
 			if (sprite.i == 0) c.y = c.y_disp + 1;
@@ -5423,7 +5425,7 @@ function cosmetics_logic(sprite) {
 			if (sprite.j !== undefined) set_texture(c, sprite.j);
 			c.moved = false;
 		} else if (c.stype == "hat" || c.stype == "a_hat") {
-			c.y_disp = -(G.cosmetics.default_hat_place + head_dy + hair_dh + hat_dy) + head_y;
+			c.y_disp = -(G.cosmetics.default_hat_place + head_dy + hair_dh + hat_dy) + cosmetic_head_y;
 			var tilt = 0;
 			c.zy = 3 * ZEPS;
 			if (sprite.i == 0) c.y = c.y_disp + 1;
@@ -5436,7 +5438,7 @@ function cosmetics_logic(sprite) {
 			if (sprite.j !== undefined) set_texture(c, sprite.j, sprite.i);
 			c.moved = false;
 		} else if (c.stype == "face") {
-			c.y_disp = -(G.cosmetics.default_head_place + head_dy + G.cosmetics.default_face_position) + head_y;
+			c.y_disp = -(G.cosmetics.default_head_place + head_dy + G.cosmetics.default_face_position) + cosmetic_head_y;
 			c.y = c.y_disp;
 			var tilt = 0;
 			c.zy = 2.5 * ZEPS;
@@ -5450,10 +5452,11 @@ function cosmetics_logic(sprite) {
 			if (sprite.j !== undefined) set_texture(c, sprite.j);
 			c.moved = false;
 		} else if (c.stype == "beard" || c.stype == "makeup" || c.stype == "a_makeup") {
-			c.y_disp = -(G.cosmetics.default_head_place + head_dy + G.cosmetics.default_beard_position) + head_y;
+			var face_position = c.stype == "beard" ? G.cosmetics.default_beard_position : G.cosmetics.default_makeup_position;
+			c.y_disp = -(G.cosmetics.default_head_place + head_dy + face_position) + cosmetic_head_y;
 			c.y = c.y_disp;
 			var tilt = 0;
-			c.zy = 3.5 * ZEPS;
+			c.zy = (c.stype == "beard" ? 2.75 : 3.5) * ZEPS; // Chin cosmetics sit above the face, below hats.
 			if (sprite.i == 0) c.y = c.y_disp + 1;
 			else if (sprite.i == 1) c.y = c.y_disp;
 			else if (sprite.i == 2) c.y = c.y_disp + 1;
@@ -5512,14 +5515,16 @@ function cosmetics_logic(sprite) {
 			else if (sprite.j == 3) ((c.zy = 6 * ZEPS), (c.x = -5 + x_disp));
 			if (sprite.j !== undefined) set_texture(c, sprite.i, sprite.j);
 		} else if (c.stype == "s_wings") {
+			var back_dx = G.cosmetics.back && G.cosmetics.back[cid];
+			if (back_dx === undefined) back_dx = 3;
 			c.y_disp = 0;
 			if (sprite.i == 0) ((c.y = c.y_disp + 1), (c.x = x_disp - 1));
 			else if (sprite.i == 1) ((c.y = c.y_disp), (c.x = x_disp));
 			else if (sprite.i == 2) ((c.y = c.y_disp + 1), (c.x = x_disp + 1));
 
 			if (sprite.j == 0) c.zy = -6 * ZEPS;
-			else if (sprite.j == 1) ((c.zy = -6 * ZEPS), (c.x += 3));
-			else if (sprite.j == 2) ((c.zy = -6 * ZEPS), (c.x -= 3));
+			else if (sprite.j == 1) ((c.zy = -6 * ZEPS), (c.x += back_dx));
+			else if (sprite.j == 2) ((c.zy = -6 * ZEPS), (c.x -= back_dx));
 			else if (sprite.j == 3) c.zy = 6 * ZEPS;
 			if (sprite.j !== undefined) set_texture(c, sprite.j);
 			c.moved = false;

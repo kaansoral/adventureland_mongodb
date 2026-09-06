@@ -5902,6 +5902,7 @@ function sprite_image(name, args) {
 		var height = IID[name][5];
 		if (G.dimensions[name]) (width = G.dimensions[name][0]), (height = G.dimensions[name][1]);
 		if (args.cwidth) l_disp = (args.cwidth - width * scale) / 2;
+		l_disp += (args.x || 0) * scale;
 		// l_disp=parseInt(l_disp); // currently, on Chrome, -0.25, 0.5 px corrections etc. look bad [02/10/18]
 		if (IID[name][6] == 1) w_disp = width;
 		if (args.opacity && args.opacity != 1) css += "opacity: " + args.opacity + ";";
@@ -5969,9 +5970,10 @@ function sprite(name, args) {
 			"px; position: relative; text-align: center; overflow:" +
 			((args.overflow && "visible") || "hidden") +
 			"; display: inline-block'>";
-		var head_y = G.cosmetics.default_head_place;
-		var hair_y = G.cosmetics.default_hair_place;
-		var hat_y = G.cosmetics.default_hat_place;
+		var cosmetic_head_y = (args.cosmetic_head_y || 0) + ((G.cosmetics.head_y && G.cosmetics.head_y[name]) || 0);
+		var head_y = G.cosmetics.default_head_place - cosmetic_head_y;
+		var hair_y = G.cosmetics.default_hair_place - cosmetic_head_y;
+		var hat_y = G.cosmetics.default_hat_place - cosmetic_head_y;
 		var skin = null,
 			rip = false,
 			cxs = [name],
@@ -6021,7 +6023,7 @@ function sprite(name, args) {
 				if (body_type != "full" && T[cid] == "armor" && SSU[cid] == SSU[name]) cx.upper = cid;
 			} else cx[place] = cid;
 		}
-		if (cx.head && !skin) {
+		if (cx.head && !skin && body_type == "armor") {
 			skin = {
 				small: (G.cosmetics.head[cx.head] && G.cosmetics.head[cx.head][0]) || "sskin1a",
 				normal: (G.cosmetics.head[cx.head] && G.cosmetics.head[cx.head][1]) || "mskin1a",
@@ -6029,21 +6031,28 @@ function sprite(name, args) {
 				large: (G.cosmetics.head[cx.head] && G.cosmetics.head[cx.head][2]) || "lskin1a",
 			}[SS[name]];
 		}
-		if (cx.head && hidden_head) html += sprite_image(cx.head, { p: head_y, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
-		if (cx.back && j != 3) html += sprite_image(cx.back, { cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
+		var x_disp = IID[name][4] % 2 ? 0 : -0.5;
+		var back_x = x_disp;
+		if (cx.back && T[cx.back] == "s_wings") {
+			var back_dx = G.cosmetics.back && G.cosmetics.back[cx.back];
+			if (back_dx === undefined) back_dx = 3;
+			back_x += j == 1 ? back_dx : j == 2 ? -back_dx : 0;
+		} else if (cx.back && T[cx.back] == "wings") back_x += [-2.5, 5, -9, -5][j];
+		if (cx.head && hidden_head) html += sprite_image(cx.head, { x: x_disp, p: head_y, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
+		if (cx.back && j != 3) html += sprite_image(cx.back, { x: back_x, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
 		if (skin) html += sprite_image(skin, { cwidth: args.width, scale: args.scale, opacity: opacity, j: j, x_disp: args.x_disp });
 		if (!(IID[name][4] % 2))
 			html += sprite_image(name, { cwidth: args.width, scale: args.scale, opacity: opacity, j: j, x_disp: args.rx_disp + -0.5 }); // old 26px width frame
 		else html += sprite_image(name, { cwidth: args.width, scale: args.scale, opacity: opacity, j: j, x_disp: args.rx_disp });
 		if (cx.upper) html += sprite_image(cx.upper, { cwidth: args.width, scale: args.scale, opacity: opacity, j: j, rheight: 8 });
-		if (cx.head && !hidden_head) html += sprite_image(cx.head, { p: head_y, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
-		if (j != 3 && cx.makeup) html += sprite_image(cx.makeup, { p: head_y + G.cosmetics.default_makeup_position, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
-		if (cx.hair) html += sprite_image(cx.hair, { p: hair_y, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
-		if (j != 3 && cx.face) html += sprite_image(cx.face, { p: head_y + G.cosmetics.default_face_position, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
-		if (j != 3 && cx.chin) html += sprite_image(cx.chin, { p: head_y + G.cosmetics.default_beard_position, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
+		if (cx.head && !hidden_head) html += sprite_image(cx.head, { x: x_disp, p: head_y, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
+		if (cx.hair) html += sprite_image(cx.hair, { x: x_disp, p: hair_y, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
+		if (cx.face) html += sprite_image(cx.face, { x: x_disp, p: head_y + G.cosmetics.default_face_position, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
+		if (cx.chin) html += sprite_image(cx.chin, { x: x_disp, p: head_y + G.cosmetics.default_beard_position, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
 		if (cx.tail) html += sprite_image(cx.tail, { p: 0, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
-		if (cx.hat) html += sprite_image(cx.hat, { p: hat_y, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
-		if (cx.back && j == 3) html += sprite_image(cx.back, { cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
+		if (cx.hat) html += sprite_image(cx.hat, { x: x_disp, p: hat_y, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
+		if (cx.makeup) html += sprite_image(cx.makeup, { x: x_disp, p: head_y + G.cosmetics.default_makeup_position, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
+		if (cx.back && j == 3) html += sprite_image(cx.back, { x: back_x, cwidth: args.width, scale: args.scale, opacity: opacity, j: j });
 		if (rip) html += sprite_image(rip, { cwidth: args.width, scale: args.scale, j: j });
 		html += "</div>";
 		return html;

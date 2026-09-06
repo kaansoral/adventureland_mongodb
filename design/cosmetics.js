@@ -2,9 +2,21 @@ var cosmetics={
 	"default_head_place":7,
 	"default_hair_place":7, //previously 6 [01/05/20]
 	"default_hat_place":7,
-	"default_face_position":8,
+	"default_face_position":7, // Glasses sit on the eyes, not the brow.
 	"default_makeup_position":0,
 	"default_beard_position":0,
+	"head_y":{ // Body-specific head placement; positive moves the head, hair and hat down.
+		"mbody4b":1,
+	},
+	"back":{ // Side-view displacement; wings default to 3, backpacks use 1.
+		"backpacks00":1,
+		"backpacks01":1,
+		"backpacks02":1,
+		"backpacks03":1,
+		"backpacks04":1,
+		"backpacks200":1,
+		"backpacks201":1,
+	},
 	"no_upper":[],
 	"map":{
 		"old":"new",
