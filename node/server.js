@@ -515,12 +515,18 @@ async function init_game() {
 			create_instance("ucliffs");
 			create_instance("uhills");
 			create_instance("mforest");
-			server_bfs("crypt");
-			server_bfs("winter_instance");
-			server_bfs("spider_instance");
-			server_bfs("tomb");
-			server_bfs("dungeon0");
-			server_bfs("cgallery");
+			for (const name in G.maps) {
+				const gMap = G.maps[name];
+				if (gMap.ignore) {
+					continue;
+				}
+				const hasNpcs = gMap.npcs && gMap.npcs.length > 0;
+				const hasMonsters = gMap.monsters && gMap.monsters.length > 0;
+				if (gMap.instance && (hasNpcs || hasMonsters)) {
+					// running this is important for instances, so that npcs and monsters can navigate / move
+					server_bfs(name);
+				}
+			}
 		} else if (gameplay == "dungeon") {
 			for (var name in G.maps) {
 				if (G.maps[name].world == "dungeon") {
