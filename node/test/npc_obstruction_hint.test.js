@@ -7,6 +7,30 @@ const test = require("node:test");
 const vm = require("node:vm");
 const source = fs.readFileSync(path.resolve(__dirname, "../../js/npc_obstruction_hint.js"), "utf8");
 
+test("page initializes platform globals before the notice reads the real storage helper", () => {
+	const read = (file) => fs.readFileSync(path.resolve(__dirname, "../..", file), "utf8");
+	const template = read("htmls/index.html");
+	const functions = read("js/functions.js");
+	const storage = functions.slice(
+		functions.indexOf("function storage_get("),
+		functions.indexOf("function storage_set("),
+	);
+	const platform = read("htmls/base_script.html").match(/var is_electron=[^;]+;/)[0];
+	for (const electron of [false, true]) {
+		const c = vm.createContext({
+			window: { localStorage: { getItem: () => "off" } },
+			electron_store: { get: () => "off" },
+		});
+		vm.runInContext(storage, c);
+		for (const part of template.matchAll(/include "htmls\/base_script.html"|src="\/js\/npc_obstruction_hint.js/g)) {
+			if (part[0].startsWith("include"))
+				vm.runInContext(platform.replace(/\{%if domain.electron %\}1\{% endif %\}/, electron ? "1" : ""), c);
+			else vm.runInContext(source, c);
+		}
+		assert.equal(c.npc_obstruction_hints_enabled, false, "saved preference loads on web and Electron");
+	}
+});
+
 function sprite(x, y, width = 24, height = 36) {
 	return {
 		x,

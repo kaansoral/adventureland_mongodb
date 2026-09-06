@@ -100,7 +100,7 @@ function client() {
 	return { c, rendered, callbacks, removed };
 }
 
-test("placement notice links to Merrit, expires, and does not repeat each status tick", () => {
+test("placement notice stays visible and does not repeat each status tick", () => {
 	const { c, rendered, callbacks } = client();
 	const reasons = [{ code: "npc", name: "Shopkeeper" }, { code: "area" }, { code: "listing" }];
 	c.show_merrit_stand_notice({ stand_opened: true, reasons });
@@ -109,8 +109,7 @@ test("placement notice links to Merrit, expires, and does not repeat each status
 	assert.match(rendered[0], /Mainland's square/, "moving to Merrit's area takes priority over local spacing");
 	assert.match(rendered[0], /render_merrit_info/);
 	assert.match(rendered[0], /How Merrit works/);
-	assert.equal(callbacks[0].ms, 12000);
-	callbacks[0].fn();
+	assert.equal(callbacks.length, 0, "placement warning must not expire while the stand is still blocked");
 	c.show_merrit_stand_notice({ reasons });
 	assert.equal(rendered.length, 1);
 	c.show_merrit_stand_notice({ stand_opened: false, reasons });
@@ -118,6 +117,9 @@ test("placement notice links to Merrit, expires, and does not repeat each status
 	assert.equal(rendered.length, 2, "opening again can warn again");
 	c.show_merrit_stand_notice({ reasons: [{ code: "unreachable" }] });
 	assert.match(rendered[2], /open pavement/);
+	c.show_merrit_stand_notice({ reasons: [] });
+	c.show_merrit_stand_notice({ reasons: [{ code: "unreachable" }] });
+	assert.equal(rendered.length, 4, "warn again if a resolved obstruction returns");
 });
 
 test("normal waits, missing stock, headless clients and closed stands do not show a placement warning", () => {

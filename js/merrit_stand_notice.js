@@ -1,12 +1,10 @@
-var merrit_stand_notice_reason = "",
-	merrit_stand_notice_timer = null;
+var merrit_stand_notice_reason = "";
 
 function show_merrit_stand_notice(data) {
 	if (no_graphics) return;
 	if (no_html || !character || !data) return;
 	if (data.stand_opened !== undefined) {
 		merrit_stand_notice_reason = "";
-		clearTimeout(merrit_stand_notice_timer);
 		$("#merrit-stand-notice").remove();
 	}
 	if (data.stand_opened === false || (!character.stand && data.stand_opened !== true)) return;
@@ -19,6 +17,7 @@ function show_merrit_stand_notice(data) {
 				return ["npc", "stand_close", "stand_front", "unreachable"].indexOf(reason.code) !== -1;
 			});
 	if (!reason) {
+		merrit_stand_notice_reason = "";
 		$("#merrit-stand-notice").remove();
 		return;
 	}
@@ -45,8 +44,4 @@ function show_merrit_stand_notice(data) {
 	$("#merrit-stand-notice").on("pointerdown mousedown touchstart mousemove", function (event) {
 		event.stopPropagation();
 	});
-	clearTimeout(merrit_stand_notice_timer);
-	merrit_stand_notice_timer = setTimeout(function () {
-		$("#merrit-stand-notice").remove();
-	}, 12000);
 }
