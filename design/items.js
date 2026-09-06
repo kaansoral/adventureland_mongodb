@@ -229,7 +229,69 @@ var items={
 }
 
 var armor={
+	"duskweavehood":{
+		"name": "Duskweave Hood",
+		"type": "helmet",
+		"tier": 3,
+		"skin": "duskweavehood",
+		"cx": {
+			"accent": "#666383"
+		},
+		"exclusive": true,
+		"g": 320000,
+		"explanation": "A quiet place to gather your thoughts.",
+		"scroll": true,
+		"mp_reduction": 5,
+		"upgrade": {}
+	},
+	"caravanbrigandine":{
+		"name": "Caravan Brigandine",
+		"type": "chest",
+		"tier": 3,
+		"skin": "caravanbrigandine",
+		"cx": {
+			"accent": "#A57243"
+		},
+		"exclusive": true,
+		"g": 480000,
+		"explanation": "Hold your ground. The wagons are nearly through.",
+		"scroll": true,
+		"courage": 1,
+		"mcourage": 1,
+		"upgrade": {}
+	},
+	"mirrorsteelgauntlet":{
+		"name": "Mirrorsteel Gauntlet",
+		"type": "gloves",
+		"tier": 3,
+		"skin": "mirrorsteelgauntlet",
+		"cx": {
+			"accent": "#A9BCC6"
+		},
+		"exclusive": true,
+		"g": 340000,
+		"explanation": "Some spells find their way home.",
+		"scroll": true,
+		"reflection": 6,
+		"upgrade": {}
+	},
+	"ironheelboots":{
+		"name": "Ironheel Boots",
+		"type": "shoes",
+		"tier": 3,
+		"skin": "ironheelboots",
+		"cx": {
+			"accent": "#A05B5B"
+		},
+		"exclusive": true,
+		"g": 1240000,
+		"explanation": "The road leaves its mark on everything.",
+		"scroll": true,
+		"dreturn": 6,
+		"upgrade": {}
+	},
 	"marketwatch":{
+		"ignore":true,
 		"name":"Marketwatch Visor",
 		"type":"helmet",
 		"tier":3,
@@ -2829,7 +2891,33 @@ for(var name in accessories){
 //Ring of Warrior PVP: 20 Res, 10 Armor, 10 Armor. Piercing
 
 var weapons={
+	"tollkeeperspike":{
+		"name": "Tollkeeper's Pike",
+		"type": "weapon",
+		"tier": 3,
+		"skin": "tollkeeperspike",
+		"cx": {
+			"accent": "#7CA38A"
+		},
+		"exclusive": true,
+		"g": 960000,
+		"explanation": "Keep trouble on the far side of the gate.",
+		"wtype": "spear",
+		"class": [
+			"warrior",
+			"rogue"
+		],
+		"damage_type": "physical",
+		"range": 8,
+		"hp": 240,
+		"apiercing": 20,
+		"dex": 24,
+		"upgrade": {
+			"hp": 40
+		}
+	},
 	"ledgerlight":{
+		"ignore":true,
 		"name":"Ledgerlight",
 		"wtype":"staff",
 		"class":["mage","priest"],
@@ -2848,6 +2936,7 @@ var weapons={
 		"exclusive":true,
 	},
 	"waybill":{
+		"ignore":true,
 		"name":"Waybill",
 		"wtype":"bow",
 		"class":["ranger"],
@@ -2865,6 +2954,7 @@ var weapons={
 		"exclusive":true,
 	},
 	"surety":{
+		"ignore":true,
 		"name":"Surety",
 		"wtype":"sword",
 		"class":["warrior"],
@@ -2881,6 +2971,7 @@ var weapons={
 		"exclusive":true,
 	},
 	"nighttill":{
+		"ignore":true,
 		"name":"Night Till",
 		"wtype":"dagger",
 		"class":["rogue"],

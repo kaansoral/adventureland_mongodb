@@ -617,8 +617,8 @@ var npcs={
 		"modal":"npc-merrit",
 		"market":{
 			"radius":600,
-			"exchange":[[2697000,"scroll0",5],[1977800,"cscroll0",2],[1618200,"seashell",5],[1258600,"leather",2],[899000,"scroll1",1],[359600,"gem1",1],[134850,"cscroll1",1],[35960,"offeringp",1],[8990,"gem0",1],[2000,"marketwatch",1],[2000,"ledgerlight",1],[2000,"waybill",1],[2000,"surety",1],[2000,"nighttill",1]],
-			"chase":["marketwatch","ledgerlight","waybill","surety","nighttill"],
+			"exchange":[[2697000,"scroll0",5],[1977800,"cscroll0",2],[1618200,"seashell",5],[1258600,"leather",2],[899000,"scroll1",1],[359600,"gem1",1],[134850,"cscroll1",1],[35960,"offeringp",1],[8990,"gem0",1],[2000,"duskweavehood",1],[2000,"caravanbrigandine",1],[2000,"mirrorsteelgauntlet",1],[2000,"ironheelboots",1],[2000,"tollkeeperspike",1]],
+			"chase":["duskweavehood","caravanbrigandine","mirrorsteelgauntlet","ironheelboots","tollkeeperspike"],
 			"npc_clearance":40,
 			"stand_clearance":10,
 			"front_clearance":15,

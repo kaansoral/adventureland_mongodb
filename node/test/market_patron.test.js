@@ -348,7 +348,13 @@ test("public INFO and server exchange share odds; parcels stay out of Glitch poo
 		c.drops.marketparcel.reduce((sum, row) => sum + row[0], 0),
 		9000000,
 	);
-	assert.deepEqual(Array.from(config.chase), ["marketwatch", "ledgerlight", "waybill", "surety", "nighttill"]);
+	assert.deepEqual(Array.from(config.chase), [
+		"duskweavehood",
+		"caravanbrigandine",
+		"mirrorsteelgauntlet",
+		"ironheelboots",
+		"tollkeeperspike",
+	]);
 	for (const id of ["marketparcel", ...config.chase]) {
 		assert.equal(c.items[id].exclusive, true);
 		for (const table of ["glitch", "lglitch"])
@@ -364,18 +370,38 @@ test("public INFO and server exchange share odds; parcels stay out of Glitch poo
 		assert.equal(c.items[id].tier, 3);
 		assert.deepEqual(Array.from(c.items[id].grades), [0, 0, 9, 10]);
 	}
-	c.G = { npcs: c.npcs, items: c.items };
+	assert.equal(config.chase.filter((id) => c.items[id].type === "weapon").length, 1);
+	assert.equal(c.items.tollkeeperspike.dex, 24);
+	assert.equal(c.items.tollkeeperspike.upgrade.dex, undefined);
+	for (const id of config.chase.slice(0, 4)) {
+		assert.equal(c.items[id].stat, 3);
+		assert.equal(c.items[id].upgrade.stat, 1);
+	}
+	for (const id of ["marketwatch", "ledgerlight", "waybill", "surety", "nighttill"]) {
+		assert.equal(c.items[id].ignore, true);
+		assert.equal(
+			c.drops.marketparcel.some((row) => row[1] === id),
+			false,
+		);
+	}
+	c.G = { npcs: c.npcs, items: c.items, drops: c.drops };
+	c.round = Math.round;
+	c.to_pretty_num = shared.to_pretty_num;
+	c.to_pretty_float = shared.to_pretty_float;
 	c.html_escape = (text) => text;
 	c.item_container = (args, item) => item.name;
 	const html = fs.readFileSync(path.join(__dirname, "../../js/html.js"), "utf8");
 	vm.runInContext(html.slice(html.indexOf("function merrit_reason_text(")), c);
+	vm.runInContext(html.slice(html.indexOf("function render_drop("), html.indexOf("function smart_smart_move(")), c);
 	const info = fs.readFileSync(path.join(__dirname, "../../docs/guide/npc-merrit.html"), "utf8");
 	for (const expected of ["40px", "10px", "15px", "32px", "600px", "0.5%", "0.001%", "1 in 900"])
 		assert.ok(info.includes(expected), expected);
-	const featured = c.merrit_rewards_html(true);
-	assert.equal((featured.match(/class='guide-card merrit-reward'/g) || []).length, 5);
-	for (const id of config.chase) assert.ok(featured.includes(id));
-	assert.equal((c.merrit_rewards_html(false).match(/class='guide-card merrit-reward'/g) || []).length, 14);
+	const rewards = c.render_drop([1, "open", "marketparcel"], 1, "#858B8E");
+	assert.equal((rewards.match(/render_item_info/g) || []).length, 14);
+	assert.equal((rewards.match(/1 \/ 4,500/g) || []).length, 5);
+	for (const id of config.chase) assert.ok(rewards.includes(id));
+	assert.ok(info.includes('render_drop([1,"open","marketparcel"],1,"#858B8E")'));
+	assert.ok(!/<details\b(?:(?!<\/details>)[\s\S])*merrit-all-rewards/.test(info));
 });
 
 test("Merrit has separate proximity INFO and portrait dialogue; late replies cannot reopen it", () => {

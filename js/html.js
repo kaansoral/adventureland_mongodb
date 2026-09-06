@@ -6581,35 +6581,6 @@ function merrit_item_preview(name, quantity) {
 	);
 }
 
-function merrit_rewards_html(featured) {
-	var rows = G.npcs.citizen22.market.exchange,
-		total = rows.reduce(function (sum, row) {
-			return sum + row[0];
-		}, 0);
-	if (featured)
-		rows = rows.filter(function (row) {
-			return G.npcs.citizen22.market.chase.indexOf(row[1]) !== -1;
-		});
-	return rows
-		.map(function (row) {
-			return (
-				"<div class='guide-card merrit-reward'>" +
-				merrit_item_preview(row[1], row[2]) +
-				"<div><b>" +
-				html_escape(G.items[row[1]].name) +
-				"</b><span>" +
-				(featured
-					? "1 in " + Math.round(total / row[0]).toLocaleString()
-					: (row[2] || 1) +
-						" × · " +
-						((row[0] / total) * 100).toLocaleString(undefined, { maximumFractionDigits: 6 }) +
-						"%") +
-				"</span></div></div>"
-			);
-		})
-		.join("");
-}
-
 function merrit_shell_odds_html() {
 	var c = G.npcs.citizen22.market,
 		html = "";

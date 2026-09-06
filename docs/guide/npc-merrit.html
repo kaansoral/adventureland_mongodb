@@ -1,6 +1,6 @@
-<div style="width:640px">
+<div class="merrit-guide" style="width:640px;text-align:left">
 	<p style="font-size:32px;text-decoration:underline dotted #C7C7B3">Merrit</p>
-	<p><span class="merrit-portrait"></span> Keep a shop on Mainland's square. Merrit brings Market Parcels to traders who leave room for their neighbors.</p>
+	<div class="merrit-icon-text"><div class="merrit-portrait"></div><div>Keep a shop on Mainland's square. Merrit brings Market Parcels to traders who leave room for their neighbors.</div></div>
 
 	<div class="guide-card-grid">
 		<div class="guide-card"><b>Set up shop</b>Any class can take part. Open a stand with an item for sale or a buy order funded for at least one unit. Giveaways alone don't count.</div>
@@ -9,10 +9,10 @@
 	<p>She must walk within <b>32px with a clear path</b> to deliver. Following her and opening a stand won't skip the two-minute wait.</p>
 
 	<p style="font-size:32px;text-decoration:underline dotted #C7C7B3">Market Parcels</p>
-	<p><span class="merrit-parcel-icon"></span> Each visit gives <b>1 Market Parcel</b>. Trade it, bank it, or exchange one with Xyn for supplies or a rare find. Computer exchange access also works.</p>
-	<div class="merrit-featured"></div>
+	<div class="merrit-icon-text"><div class="merrit-parcel-icon"></div><div>Each visit gives <b>1 Market Parcel</b>. Trade it, bank it, or exchange one with Xyn for supplies or a rare find. Computer exchange access also works.</div></div>
 	<p><b>1 in 900 parcels</b> holds one of five rare T3 items. Each is <b>1 in 4,500</b>. Click an item to inspect it.</p>
-	<details><summary>All rewards and chances</summary><div class="guide-card-grid merrit-all-rewards"></div><p>Exchange 1 parcel for 1 result. Luck, stand type and sales volume do not change these chances.</p></details>
+	<div class="merrit-all-rewards" style="font-size:24px"></div>
+	<p>Exchange 1 parcel for 1 result. Luck, stand type and sales volume do not change these chances.</p>
 
 	<p style="font-size:32px;text-decoration:underline dotted #C7C7B3">Leave room</p>
 	<p><b>No parcels within 40px of a stationary NPC.</b> Keep the entrances to Ponty, Favoré and other fixed NPCs clear. Roaming citizens don't count when they pause.</p>
@@ -38,12 +38,20 @@
 	</details>
 	<p>A sparkle and a coin sound mark each delivery. Click Merrit to talk or recall her last gift.</p>
 </div>
+<style>
+	.merrit-guide .merrit-icon-text{display:flex;align-items:flex-start;gap:12px;margin:1em 0}
+	.merrit-guide .merrit-icon-text>div:first-child{flex:0 0 auto;line-height:0}
+	.merrit-guide .merrit-icon-text>div:last-child{flex:1;min-width:0}
+	.merrit-guide summary{list-style:none;cursor:pointer}
+	.merrit-guide summary::-webkit-details-marker{display:none}
+	.merrit-guide summary::before{content:">";display:inline-block;width:24px}
+	.merrit-guide details[open]>summary::before{content:"-"}
+</style>
 <script>
 	var merrit = G.npcs.citizen22;
 	$(".merrit-portrait").html(sprite(merrit.skin,{cx:clone(merrit.cx)}));
 	$(".merrit-parcel-icon").html(merrit_item_preview("marketparcel",1));
-	$(".merrit-featured").html(merrit.market.chase.map(function(name){return merrit_item_preview(name,1);}).join(" "));
-	$(".merrit-all-rewards").html(merrit_rewards_html(false));
+	$(".merrit-all-rewards").html(render_drop([1,"open","marketparcel"],1,"#858B8E"));
 	$(".merrit-shell-odds").html(merrit_shell_odds_html());
 	if(character){$(".merrit-status").html(merrit_status_html(character.merrit));request_merrit_status();}
 	else $(".merrit-shop-status").hide();
