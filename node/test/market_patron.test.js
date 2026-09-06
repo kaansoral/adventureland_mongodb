@@ -90,14 +90,16 @@ test("shell curve diminishes to the fixed floor", () => {
 	for (let i = 0; i < 10; i++) assert.ok(rules.shellChance(i, config) > rules.shellChance(i + 1, config));
 	assert.ok(Math.abs(rules.shellChance(5, config) - 0.0012575) < 1e-12);
 });
-test("shared pathfinder visits Mainland patrol stops and bounds every searched step", () => {
-	const c = { server_log() {}, mssince: () => 0 };
+test("patrol routes respect the radius with the server path constant in scope", () => {
+	const c = { server_log() {}, mssince: () => 0, node_path: path };
 	vm.createContext(c);
+	// Match server.js: helpers are evaluated in the scope of its Node path import.
+	vm.runInContext("const path = node_path;", c);
 	vm.runInContext(fs.readFileSync(path.join(__dirname, "../../js/old_common_functions.js"), "utf8"), c);
 	vm.runInContext(fs.readFileSync(path.join(__dirname, "../precomputed_map_data.js"), "utf8"), c);
 	const source = fs.readFileSync(path.join(__dirname, "../server_functions.js"), "utf8");
 	vm.runInContext(source.slice(source.indexOf("function amap_round("), source.indexOf("function server_bfs2(")), c);
-	vm.runInContext(source.slice(source.indexOf("function can_amove("), source.indexOf("function fast_abfs(")), c);
+	vm.runInContext(source.slice(source.indexOf("function can_amove("), source.indexOf("function add_call_cost(")), c);
 	c.amap_data = c.precomputed_bfs.amap_data;
 	for (const [tx, ty] of config.stops) {
 		let sx = 0,
@@ -112,13 +114,17 @@ test("shared pathfinder visits Mainland patrol stops and bounds every searched s
 				within: (x, y) => c.point_distance(0, 0, x, y) <= config.radius,
 			});
 			assert.ok(step, `route to ${tx},${ty}`);
-			assert.ok(c.path.every(([x, y]) => Math.hypot(x, y) <= config.radius));
+			assert.ok(Math.hypot(step[0], step[1]) <= config.radius, "next waypoint respects the radius");
 			assert.ok(step[0] !== sx || step[1] !== sy, "route advances");
 			[sx, sy] = step;
 		}
 		assert.ok(c.point_distance(sx, sy, tx, ty) < 28, "reaches handoff distance");
 	}
 	assert.equal(c.fast_astar({ map: "main", sx: 0, sy: 0, tx: 80, ty: 0, within: () => false }), undefined);
+	const alternative = c.fast_abfs({ map: "main", x: 0, y: 0 }, 80, 0);
+	assert.ok(alternative && alternative[0] > 0, "alternate pathfinder also returns a route");
+	assert.equal(vm.runInContext("path", c), path, "Node path import is unchanged");
+	assert.equal(Object.hasOwn(c, "path"), false, "route does not leak into global scope");
 });
 function harness(options = {}) {
 	const now = Date.now(),

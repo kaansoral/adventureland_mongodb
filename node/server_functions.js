@@ -4529,7 +4529,7 @@ function fast_astar(args) {
 	function finalise(current) {
 		var dx = current.x;
 		var dy = current.y;
-		path = [[dx, dy]];
+		var path = [[dx, dy]];
 		while (visited[dx + "|" + dy] && visited[dx + "|" + dy] != "start") {
 			dx = visited[dx + "|" + dy].split("|");
 			dy = parseInt(dx[1]);
@@ -4642,7 +4642,7 @@ function fast_abfs(monster, tx, ty) {
 	function finalise(current) {
 		var dx = current.x;
 		var dy = current.y;
-		path = [[dx, dy]];
+		var path = [[dx, dy]];
 		while (visited[dx + "|" + dy] && visited[dx + "|" + dy] != "start") {
 			dx = visited[dx + "|" + dy].split("|");
 			dy = parseInt(dx[1]);
