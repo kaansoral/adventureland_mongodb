@@ -1,11 +1,11 @@
 <div class="guide-kicker">THE WORLD KEEPS MOVING</div>
 <div class="guide-title">Events &amp; Home Servers</div>
-<p>The realm clock, event buttons, and live server state describe what is happening now. Your home server is a separate account choice used for that realm's home rewards.</p>
+<p>The realm clock, event buttons, and live server state describe what is happening now. Each character chooses a home server for that realm's home rewards.</p>
 
 <div class="guide-card-grid">
 	<div class="guide-card"><span class="guide-card-icon events-tracker"></span><b>Schedule</b>Open the clock to inspect planned events and their current realm timing.</div>
 	<div class="guide-card"><span class="guide-card-icon events-rgoo"></span><b>Live Event</b>An EVENT button, portal, creature, or NPC may appear when an activity is running.</div>
-	<div class="guide-card"><span class="guide-card-icon events-bean"></span><b>Bean</b>Sets the current eligible realm as your home after showing the long change cooldown.</div>
+	<div class="guide-card"><span class="guide-card-icon events-bean"></span><b>Bean</b>Sets this character's home realm. Home changes have a 36-hour cooldown.</div>
 	<div class="guide-card"><span class="guide-card-icon events-favore"></span><b>Favoré</b>Shows the Shell cost and remaining time before blessing the current server.</div>
 </div>
 
@@ -28,8 +28,20 @@
 <div class="guide-note">An event name appearing in <span class="dlabel">G.events</span> proves only that the event is defined. Check <span class="dlabel">server.status</span> for the current realm before trying to join or travel.</div>
 
 <div class="divider"></div>
+<div class="title mt15">The Tenth Anniversary</div>
+<p>During the anniversary, a non-AFK player is picked every 30 minutes on each non-PvP realm. Open the anniversary button to find them. Reach them within five minutes and use <span class="dlabel">I Kiss You</span> from within 80 range. You do not need to own the emote.</p>
+<p>Each character's first valid kiss that round gives one cake slice and one Anniversary Gift. Repeated kisses give no extra rewards. Your own account's characters cannot earn rewards by kissing each other. The featured player receives one Gift after their first eligible visitor.</p>
+<p>Every character on your account finds the same slice flavor, on every realm. Slices are tradeable: collect all six flavors, then bring one of each and 100,000 gold to Mira in Town. Her workshop also lets you choose a particular reward using a cake and the listed ingredients.</p>
+<p>Opening a Sixfold Cake gives one anniversary equipment item and three Gifts, with a separate, extremely rare chance of an I Kiss You CX Jar. Gifts mainly contain gold, with chances for returning anniversary prizes, equipment, or emote jars. Make a Wish costs 50 MP and has a four-minute cooldown. Both jar unlocks are permanent; the permanent kiss remains usable on other players after the event.</p>
+<p>Ordinary eligible monsters also have separate slice and Gift rolls. Luck does not increase these two seasonal rolls. Mira leaves when the event ends, but unopened cakes and Gifts remain usable.</p>
+<div class="guide-note">Check <span class="dlabel">server.status.anniversary</span>. Its <span class="dlabel">live</span> field identifies an active visit round; <span class="dlabel">target</span>, <span class="dlabel">id</span>, <span class="dlabel">map</span>, <span class="dlabel">x</span>, and <span class="dlabel">y</span> identify the featured player. <span class="dlabel">expires</span> and <span class="dlabel">next</span> are timestamps in milliseconds. Travel normally, then use <span class="dlabel">use_skill("ikissyou", server.status.anniversary.id)</span> when nearby.</div>
+
+<div class="divider"></div>
 <div class="title mt15">Home and Blessings</div>
-<p>Speak with Bean while on the eligible realm you want to call home. Changing home has a long cooldown, so read his confirmation instead of using it as ordinary travel.</p>
+<p>Speak with Bean while on the realm this character wants to call home. At home, your contribution against cooperative monsters grows five times faster before rewards are shared. Selected monsters can also carry extra home rewards.</p>
+<p>If another non-merchant character on your account visited a different server during the previous 30 minutes, you receive 30 minutes of Realm Fatigue when you enter. You can still fight and receive normal rewards, but the home contribution bonus and home-only drops wait until the condition ends. Switching again renews the condition. Merchants are ignored.</p>
+<div class="guide-note">Realm Fatigue limits quick event hopping without changing any character's home. Stay on one server for 30 minutes and its home rewards return.</div>
+<p>Changing home has a 36-hour cooldown, so read Bean's confirmation instead of using it as ordinary travel.</p>
 <p>Favoré's blessing is realm-wide and spends Shells. Her panel shows the exact current cost and remaining blessing time. This is separate from setting a home server.</p>
 
 <div class="divider"></div>

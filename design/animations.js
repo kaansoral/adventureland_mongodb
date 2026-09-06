@@ -55,6 +55,18 @@ var animations={
 		"size":2,
 		"alpha":1,
 	},
+	"makeawish_overlay":{
+		"file":"/images/sprites/animations/MakeAWish.png?v=1",
+		"frames":3,
+		"exact":true,
+		"alpha":1,
+	},
+	"ikissyou_fx":{
+		"file":"/images/sprites/animations/IKissYou.png?v=1",
+		"frames":10,
+		"exact":true,
+		"alpha":1,
+	},
 	"starkiller":{
 		"file":"/images/sprites/animations/attack3.png", //perfect explosion
 		"frames":12,
@@ -265,6 +277,21 @@ var animations={
 		"speed":800,
 		"framefps":9,
 	},
+	// Arcane Needle deliberately reuses shipped native art. Its separate record
+	// keeps the faster projectile from changing magic_purple's loaded speed.
+	"arcane_needle_projectile":{
+		"file":"/images/sprites/animations/magic3.png?v=1",
+		"frames":4,
+		"continuous":true,
+		"directional":true,
+		"speed":640,
+		"framefps":9,
+	},
+	"arcane_needle_impact":{
+		"file":"/images/sprites/animations/Electric.png?v=1",
+		"frames":6,
+		"alpha":0.7,
+	},
 	"magic4":{
 		"file":"/images/sprites/animations/magic4.png",
 		"frames":4,
@@ -331,6 +358,19 @@ var animations={
 		"alpha":0.9,
 		"size":0.8,
 	},
+	"reunionarrow":{
+		"file":"/images/sprites/animations/ReunionArrow.png?v=1",
+		"frames":3,
+		"continuous":true,
+		"directional":true,
+		"speed":500,
+	},
+	"reunionarrow_hit":{
+		"file":"/images/sprites/animations/ReunionArrowHit.png?v=1",
+		"frames":7,
+		"alpha":0.9,
+		"size":0.8,
+	},
 	"fanknife_hit":{
 		"file":"/images/sprites/animations/Slash0FanKnife.png?v=1",
 		"frames":7,
@@ -361,6 +401,33 @@ var animations={
 		"alpha":1,
 		"aspeed":"slow",
 		"exact":true,
+		"y":6,
+	},
+	"cleansing_light":{
+		"file":"/images/sprites/animations/cleansing_light.png?v=1",
+		"frames":5,
+		"alpha":1,
+		"aspeed":"slow",
+		"exact":true,
+		"above":true,
+		"y":6,
+	},
+	"guardians_oath":{
+		"file":"/images/sprites/animations/guardians_oath.png?v=1",
+		"frames":5,
+		"alpha":1,
+		"aspeed":"slow",
+		"exact":true,
+		"above":true,
+		"y":6,
+	},
+	"beacon_of_resolve":{
+		"file":"/images/sprites/animations/beacon_of_resolve.png?v=1",
+		"frames":5,
+		"alpha":1,
+		"aspeed":"slow",
+		"exact":true,
+		"above":true,
 		"y":6,
 	},
 	"curse_new":{

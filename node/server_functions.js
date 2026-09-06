@@ -511,6 +511,7 @@ function is_same(player1, player2, party) {
 
 function decay_s(player, ms) {
 	for (var name in player.s || {}) {
+		if (name == "anniversary_visit") continue; // This invitation ends at the round's wall-clock deadline.
 		if (G.conditions[name] && G.conditions[name].debuff) {
 			continue;
 		}
@@ -1080,6 +1081,43 @@ function serverhop_logic(player) {
 	if (player.p.home != region + server_name && player.level >= 60 && server_name != "PVP") {
 		add_condition(player, "hopsickness");
 	}
+}
+
+function recent_character_server(character, minutes) {
+	if (!character || msince(character.last_online) >= minutes) {
+		return "";
+	}
+	if (character.server) {
+		return character.server.startsWith("SR_") ? character.server.slice(3) : character.server;
+	}
+	var entries = character.info && character.info.p && character.info.p.entries;
+	return (entries && entries[0] && entries[0][0]) || "";
+}
+
+function realmfatigue_logic(player, characters) {
+	delete player.s.realmfatigue;
+	if (player.type == "merchant") {
+		return;
+	}
+	// Authentication already loaded every character; keep this check in memory.
+	characters = characters || [];
+	var current_server = region + server_name;
+	var fatigue_minutes = G.conditions.realmfatigue.duration / 60000;
+	for (var i = 0; i < characters.length; i++) {
+		var character = characters[i];
+		if (!character || get_id(character) == player.real_id || character.type == "merchant") {
+			continue;
+		}
+		var recent_server = recent_character_server(character, fatigue_minutes);
+		if (recent_server && recent_server != current_server) {
+			add_condition(player, "realmfatigue");
+			return;
+		}
+	}
+}
+
+function has_home_server_bonus(player) {
+	return player.p && player.p.home == region + server_name && !(player.s && player.s.realmfatigue);
 }
 
 function ghash(entity, zone, a_d, b_d) {
@@ -2022,8 +2060,130 @@ function collect_signups(event) {
 }
 
 var last_daily = null;
+var anniversary_controller = null;
+function anniversary_is_active() {
+	return !is_pvp && events.anniversary === true;
+}
+
+function anniversary_reachable(player) {
+	const map = G.maps[player.map];
+	if (!map || map.instance || map.pvp || !map.spawns || !map.spawns[0] || !G.geometry[player.map]) return false;
+	const start = map.spawns[0];
+	// A direct walk from a public arrival point is a conservative, bounded proof
+	// of reachability. It excludes isolated terrain without starting a path search.
+	if (Math.hypot(player.x - start[0], player.y - start[1]) > 600) return false;
+	return can_move({
+		map: player.map,
+		x: start[0],
+		y: start[1],
+		going_x: player.x,
+		going_y: player.y,
+		base: player.base,
+	});
+}
+
+function anniversary_state() {
+	if (!anniversary_controller)
+		anniversary_controller = anniversary_rules.createEvent({
+			players: () => Object.values(players),
+			active: anniversary_is_active,
+			reachable: anniversary_reachable,
+			realm: region + " " + server_name,
+			addCondition: add_condition,
+			resend,
+			distance,
+		});
+	return anniversary_controller;
+}
+
+function anniversary_deliver(player, names) {
+	const items = names.map((name) => create_new_item(name));
+	// add_item already retains overflow items; no reward is discarded for a full bag.
+	for (const item of items) add_item(player, item, { announce: false });
+	player.socket.emit("game_log", {
+		message: "Anniversary gift: " + names.map((name) => G.items[name].name).join(" + "),
+		color: "#E6AE3F",
+	});
+	resend(player, "reopen+nc+inv");
+}
+
+function anniversary_tick() {
+	const active = anniversary_is_active(),
+		instance = instances.main;
+	const definition = G.npcs.anniversary_baker;
+	if (instance && definition) {
+		const key = NPC_prefix + definition.name,
+			npc = instance.players[key];
+		if (active && !npc) {
+			const entry = (G.maps.main.seasonal_npcs || []).find((entry) => entry.id === "anniversary_baker");
+			if (entry) {
+				npcs.anniversary_baker = instance.players[key] = create_npc(definition, entry, instance);
+				instance.npcs++;
+			}
+		} else if (active && npc && npc.def !== definition) {
+			npc.def = definition;
+			npc.skin = definition.skin;
+			npc.cx = definition.cx || {};
+			npc.u = true;
+			npc.cid++;
+		} else if (!active && npc) {
+			instance_emit(instance, "disappear", { id: npc.id, reason: "left" });
+			if (instance.pmap[npc.last_hash]) delete instance.pmap[npc.last_hash][npc.id];
+			delete instance.players[key];
+			delete npcs.anniversary_baker;
+			instance.npcs--;
+		}
+	}
+	const before = E.anniversary,
+		next = anniversary_state().tick();
+	if (next) E.anniversary = next;
+	else delete E.anniversary;
+	if (JSON.stringify(before) !== JSON.stringify(next || undefined)) {
+		if (next && next.live && (!before || before.round !== next.round || before.id !== next.id)) {
+			broadcast("server_message", {
+				message:
+					"Find " +
+					next.target +
+					" in " +
+					G.maps[next.map].name +
+					"! Use your Anniversary Visit to send a kiss for a slice and a Gift.",
+				color: "#E6AE3F",
+			});
+		}
+		broadcast_e();
+	}
+}
+
+function anniversary_craft(player, name) {
+	if (!player || player.user) return fail_response("cant_in_bank", "craft");
+	if (player.rip || player.dead) return fail_response("disabled", "craft");
+	if (!anniversary_is_active()) {
+		player.socket.emit("game_log", {
+			message: "Mira is away. Cake crafting returns during the anniversary.",
+			color: "gray",
+		});
+		return fail_response("craft_cant", "craft");
+	}
+	const recipe = typeof name === "string" && Object.prototype.hasOwnProperty.call(G.craft, name) && G.craft[name];
+	if (!recipe || recipe.quest !== "anniversary_baker") return fail_response("craft_cant", "craft");
+	const npc = npcs.anniversary_baker;
+	if (!npc || (!player.computer && distance(npc, player) > B.sell_dist)) return fail_response("distance", "craft");
+	const plan = anniversary_rules.planCraft(player, recipe);
+	if (plan.error) return fail_response(plan.error, "craft");
+	const output = recipe.output ? create_new_item(recipe.output.name) : create_new_item(name);
+	if (recipe.output && recipe.output.data) output.data = recipe.output.data;
+	if (!plan.take.some(([index, count]) => (player.items[index].q || 1) === count) && !can_add_item(player, output))
+		return fail_response("inventory_full", "craft");
+	player.gold -= plan.cost;
+	for (const [index, count] of plan.take) consume(player, index, count);
+	const num = add_item(player, output);
+	resend(player, "reopen+nc+inv");
+	success_response("craft", "craft", { num: num, name: output.name, cevent: true });
+}
+
 function event_loop() {
 	try {
+		anniversary_tick();
 		var c = new Date();
 		var ch = (c.getUTCHours() + 24 + E.schedule.time_offset) % 24;
 		var change = false;
@@ -3604,6 +3764,10 @@ function exchange(player, name, args) {
 	if (!done) {
 		socket.emit("game_log", "Didn't receive anything");
 	}
+	if (done && name === "sixcake") {
+		add_item(player, { name: "anniversarygift", q: 3 });
+		if (Math.random() < 1 / 100000) add_item(player, { name: "cxjar", q: 1, data: "ikissyou" });
+	}
 }
 
 function chest_exchange(chest, name) {
@@ -3629,10 +3793,16 @@ function chest_exchange(chest, name) {
 			} else if (drop[1] == "open") {
 				chest_exchange(chest, drop[2]);
 			} else {
-				chest.items.push(create_new_item(drop[1], drop[2]));
+				const item = create_new_item(drop[1], drop[2]);
+				if (drop[1] === "cxjar") item.data = drop[3];
+				chest.items.push(item);
 			}
 		}
 	});
+	if (done && name === "sixcake") {
+		chest.items.push({ name: "anniversarygift", q: 3 });
+		if (Math.random() < 1 / 100000) chest.items.push({ name: "cxjar", q: 1, data: "ikissyou" });
+	}
 }
 
 var item_p_ignore = {

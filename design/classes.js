@@ -118,7 +118,7 @@ var classes={
 		"pcourage":2,
 	},
 	"paladin":{
-		"description":"Paladins are an unbalanced mix-use class!",
+		"description":"Paladins protect nearby allies with oaths and auras, wield maces, and draw strength from magic endured.",
 		"stats":{
 			"str":10,
 			"dex":2,

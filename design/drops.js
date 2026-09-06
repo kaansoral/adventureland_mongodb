@@ -416,6 +416,7 @@ var drops = {
 			[0.02, "weaponbox"],
 			[0.05, "armorbox"],
 			[0.01, "shadowstone"],
+			[1.0 / 50, "dawnwardaegis"],
 			[1.0 / 5000, "scythe"],
 		],
 		greenfairy: [[1, "stick"]],
@@ -682,6 +683,27 @@ var drops = {
 		],
 	},
 	monsters_home_server: {
+		crabxx: [[1.0, "reefglass", 3]],
+		rharpy: [
+			[0.05, "feather1"],
+			[0.2, "essenceoffrost"],
+		],
+		phoenix: [
+			[0.5, "stormfeather"],
+			[0.005, "embercore"],
+		],
+		icegolem: [
+			[1.0, "essenceoffrost", 2],
+			[0.05, "frostcore"],
+		],
+		dragold: [
+			[1.0, "essenceoffire"],
+			[0.005, "embercore"],
+		],
+		franky: [
+			[1.0, "bandages", 10],
+			[0.005, "ectoplasm"],
+		],
 		mrgreen: [
 			[0.01, "fallen"],
 			[1.0, "candy0", 7],
@@ -991,6 +1013,24 @@ var drops = {
 		[0.006, "mysterybox"],
 		[0.002, "offering"],
 		[0.0003, "luckbooster"],
+	],
+	anniversary_equipment: [
+		[15, "candleward"],
+		[15, "paradequiver"],
+		[14, "homecominghelm"],
+		[14, "homecomingcoat"],
+		[14, "homecomingcape"],
+		[10, "guestbook"],
+		[10, "reunionbow"],
+		[8, "keepsakependant"],
+	],
+	anniversarygift: [
+		[600000, "gold", 5000],
+		[200000, "gold", 20000],
+		[190000, "open", "anniversary_legacy"],
+		[9900, "open", "anniversary_equipment"],
+		[99, "cxjar", 1, "makeawish"],
+		[1, "cxjar", 1, "ikissyou"],
 	],
 	//thrash
 	thrash: [
@@ -1434,6 +1474,15 @@ var drops = {
 		[0.1, "cx", "mirrordance"],
 	],
 };
+
+// Keep the established gift rewards intact; the anniversary opens that same pool.
+drops.anniversary_legacy = drops.gift1.map(function (entry) { return entry.slice(); });
+drops.sixcake = drops.anniversary_equipment.map(function (entry) { return entry.slice(); }).concat([
+	[1.0 / 100, "cx", "aniv0"],
+	[1.0 / 100, "cx", "aniv1"],
+	[1.0 / 100, "cx", "aniv2"],
+	[1.0 / 100, "cx", "aniv3"],
+]);
 
 // The elemental mage chain previously had no item drops. Void Thread gives
 // those encounters a deterministic crafting reward without adding direct gear.

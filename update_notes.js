@@ -2,6 +2,26 @@
 module.exports = [
 	{deployed:null,date:"[05/09/26]",note:"Merrit visits settled shops in Mainland with stackable Market Parcels and occasional SHELLS. Exchange parcels for supplies, four rare T3 armor pieces or a spear. Keep stands clear of fixed NPCs and neighboring shops; INFO explains her visits and rewards."},
 	{
+		deployed: null,
+		date: "[05/09/26]",
+		note: "Celebrate ten years of Adventure Land: find featured players, trade six cake flavors, and visit Mira for anniversary equipment, returning prizes, and two new emotes.",
+	},
+	{
+		deployed: "[05/09/26]",
+		date: "[05/09/26]",
+		note: "Gloam Pendant now grants less Dexterity, Intelligence, and skill MP reduction while retaining its full MP growth.",
+	},
+	{
+		deployed: "[05/09/26]",
+		date: "[04/09/26]",
+		note: "Paladins can cleanse and protect friendlies, rally them with Fortitude and Courage, and carry one of four level-scaled auras. Aether Shield restores MP from magical wounds, while Guardian's Oath restores MP from shared damage. Shield Slam turns Armor and MP into a crushing shield strike. Five Paladin-only items form the Oathkeeper Set through material, crafting, token, and Skeletor rewards.",
+	},
+	{
+		deployed: "[04/09/26]",
+		date: "[04/09/26]",
+		note: "Home servers now offer themed material drops from more cooperative monsters. Quickly switching non-merchant characters between servers causes 30 minutes of Realm Fatigue, temporarily pausing home contribution bonuses and home-only drops while normal rewards continue.",
+	},
+	{
 		deployed: "[01/09/26]",
 		date: "[01/09/26]",
 		note: "Mainframe CODE can now run up to four characters together in one isolated machine. Shared groups renew for 1 Shell every 60, 50, 45, or 40 minutes based on the number of active characters.",

@@ -27,6 +27,9 @@ use_skill("mluck", get_player("LuckyCharacter"));</div>
 
 <p>Reference functions: <span class='rlabel' onclick="render_function_reference($(this).html())">use_skill</span> <span class='rlabel' onclick="render_function_reference($(this).html())">is_in_range</span> <span class='rlabel' onclick="render_function_reference($(this).html())">is_on_cooldown</span></p>
 
+<p>Special Usage: Paladin Aura</p>
+<p>To select an aura directly, pass its state as the second argument: <span class="dlabel">use_skill("paladin_aura", "zeal")</span>. Valid states are <span class="dlabel">"bulwark"</span>, <span class="dlabel">"sanctuary"</span>, <span class="dlabel">"zeal"</span>, and <span class="dlabel">"warding"</span>. This requires Paladin level 60, costs no MP, and has a 500ms switching cooldown. The selected aura applies passively; it does not need a refresh loop. A switch removes your previous state's contribution, so one Paladin cannot maintain all four states.</p>
+
 <p>Special Usage: 3-Shot</p>
 
 <div class='code'>

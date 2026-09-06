@@ -57,6 +57,15 @@ server.status.abtesting.<span data-status-field="B">B</span></div>
 
 <p>Event objects can expose timers, signup windows, scores, routes, choices, or other event-specific fields. Read the active entry and its event guide instead of assuming every event looks like a boss.</p>
 
+<p><span class="dlabel">Anniversary visits</span></p>
+<div class="code">show_json(server.status.anniversary);
+// active: the celebration is running
+// live: a player is currently featured
+// round, expires: round ID and deadline (Unix milliseconds)
+// id, target, map, x, y: featured player's ID, name and location
+// next: the next scheduled selection (Unix milliseconds)</div>
+<p>Participation requires a matching, unexpired <span class="dlabel">character.s.anniversary_visit</span>. See <span class="rlabel" onclick="open_guide('event-anniversary',get_guide_url('event-anniversary'))">Ten Years &amp; Mira's Cakes</span> for CODE examples covering visits, crafting, and exchanges.</p>
+
 <p><span class="dlabel">Schedule</span></p>
 
 <div class="code">server.status.<span data-status-field="schedule">schedule</span> = {

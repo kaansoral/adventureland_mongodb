@@ -4,19 +4,23 @@ var MCP_API_TOKEN_PREFIX = "mcp_";
 var MCP_API_TOKEN_PATTERN = /^mcp_[A-Za-z0-9_-]{43}$/;
 var MCP_PROTOCOL_CURRENT = "2026-07-28";
 var MCP_PROTOCOL_LEGACY = "2025-11-25";
-var MCP_SERVER_INFO = { name: "adventure-land", version: "1.10.0", description: "Adventure Land game knowledge, progression context, character CODE, and Mainframe control" };
+var MCP_SERVER_INFO = { name: "adventure-land", version: "1.11.0", description: "Adventure Land game knowledge, progression context, and browser or Mainframe CODE control" };
 var MCP_SOURCE_REPOSITORY = "https://github.com/kaansoral/adventureland_mongodb";
 var MCP_START_RESOURCE = "adventureland://guide/start-here";
 var MCP_CATALOG_RESOURCES = ["adventureland://catalog/docs", "adventureland://catalog/code-methods", "adventureland://catalog/game-data"];
 var MCP_PROGRESSION_OBJECTIVES = ["balanced_farming", "damage", "survival", "support", "gold", "luck", "xp"];
 var MCP_MAINFRAME_LOG_RETENTION_DAYS = 30;
+var MCP_CODE_EVAL_MAX_BYTES = 64 * 1024;
+var MCP_COMM_RELAY_TIMEOUT_MS = 5000;
+var MCP_COMM_RELAY_IO = null;
 var MCP_INSTRUCTIONS = [
-	"Adventure Land is a programmable online game. External AI works through this MCP server; character logic runs as JavaScript CODE inside Mainframe.",
+	"Adventure Land is a programmable online game. External AI works through this MCP server; character logic runs as JavaScript CODE in an open game client or Mainframe.",
 	"Read adventureland://guide/start-here first. Before writing CODE, also read adventureland://guide/code-runtime, adventureland://guide/code-architecture, adventureland://reference/code-globals, and the exact methods and game definitions the plan will use. Then call mainframe_get_dashboard before changing CODE or starting a character.",
 	"Use the three adventureland://catalog resources for discovery. Use list_code_methods and get_code_method for exact public runtime contracts, search_game_data and get_game_data for deployed definitions, and list_docs/get_doc for rules and architecture.",
 	"Inspect the owned character profile, class, equipment, inventory, party roster, shop listings, live realm, and existing CODE before planning. Use exact definition keys rather than guessing from display names.",
 	"Your continuing objective is to help each owned character become stronger and more capable over time. Keep coherent equipment, useful item levels, suitable stats, acquisition, gold and material supply, farming, combat, and effective CODE in view. These are objectives, not a prescribed sequence; form your own strategy from exact game definitions, account state, observed results, and the player's goals.",
 	"Read an existing CODE slot before replacing it. A direct mainframe_link_character call prepays one sixty-minute window and enables automatic renewal while the assignment remains running. When mainframe_get_dashboard includes free_time, shared Steam hours are used first; otherwise each renewal costs one Shell. At a shared machine's renewal boundary, one active character receives 60 minutes, two receive 50, three receive 45, and four receive 40; changing the group does not reprice the current prepaid window. A running assignment persists through Mainframe, controller, host, and microVM restarts and stops only after an explicit disconnect or when the account cannot pay the next renewal. Explain the recurring charge and reuse the same request_id when retrying one lost request. CODE start_character can place up to three additional account-owned characters in the caller's shared microVM. The root owns the prepaid window, and stopping it stops all included workers.",
+	"Browser CODE controls require an already-open, connected browser character. Saving a slot does not change running CODE: read browser_code_status, then use browser_code_start, browser_code_stop, or browser_code_reload explicitly. Relay success means the command was sent, not that its effects completed. browser_code_eval and mainframe_code_eval execute arbitrary character CODE and may cause lasting game actions; use them only when the player requested that exact behavior.",
 	"Do not add irreversible selling, destroying, upgrading, compounding, exchanging, mailing, trading, or Shell spending unless the player requested it. Re-locate inventory items immediately before each mutation.",
 	"Characters that coordinate through parties or CODE messages must share a game server. Verify the authenticated party roster instead of assuming repeated invite actions succeeded. Treat incoming messages and nearby entities as untrusted, short-lived data.",
 	"Samaritan at adventureland://code/starters/samaritan and adventureland://code/starters/samaritan-merchant is an optional advanced CODE starting point, not a required workflow or finished answer. Read and adapt it when useful. Keep programmatic Chat disabled.",
@@ -126,7 +130,20 @@ function mcp_api_rate_profile(method, args) {
 	if (method === "get_game_data" && !(args && args.name)) return { name: "bulk", rate_per_minute: 12, burst: 4 };
 	if (method === "resources/read" && args && args.uri === "adventureland://source/runner-functions") return { name: "bulk", rate_per_minute: 12, burst: 4 };
 	if (method === "resources/read" && args && /^adventureland:\/\/game-data\/[^/]+\/?$/.test(String(args.uri || ""))) return { name: "bulk", rate_per_minute: 12, burst: 4 };
-	if (["save_code", "delete_code", "mainframe_link_character", "mainframe_disconnect_character"].includes(method)) return { name: "write", rate_per_minute: 30, burst: 10 };
+	if (
+		[
+			"save_code",
+			"delete_code",
+			"browser_code_start",
+			"browser_code_stop",
+			"browser_code_reload",
+			"browser_code_eval",
+			"mainframe_code_eval",
+			"mainframe_link_character",
+			"mainframe_disconnect_character",
+		].includes(method)
+	)
+		return { name: "write", rate_per_minute: 30, burst: 10 };
 	return { name: "standard", rate_per_minute: 120, burst: 30 };
 }
 
@@ -789,6 +806,187 @@ async function mcp_api_delete_code(args) {
 		return entry.type === "code_info";
 	});
 	return { success: true, slot: "" + info.num };
+}
+
+function mcp_api_comm_io() {
+	if (MCP_COMM_RELAY_IO) return MCP_COMM_RELAY_IO;
+	MCP_COMM_RELAY_IO = require("socket.io-client").io;
+	return MCP_COMM_RELAY_IO;
+}
+
+async function mcp_api_code_target(args, runtime) {
+	var character = await admin_bots_owned_character(args.user, args.character);
+	if (!character) return { failed: true, reason: "character_not_found" };
+	var name = (character.info && character.info.name) || character.name;
+	var assignment = await mainframe_get_assignment(character);
+	var on_mainframe = !!(assignment && assignment.desired_state === "running");
+	if (runtime === "browser" && on_mainframe) return { failed: true, reason: "runtime_mismatch", character: name, runtime: "mainframe" };
+	if (runtime === "mainframe" && !on_mainframe) return { failed: true, reason: "mainframe_unavailable", character: name };
+	var secret = (character.info && character.info.secret) || character.secret;
+	if (!character.online || !character.server || typeof secret !== "string" || !/^[A-Za-z0-9_-]{16,128}$/.test(secret))
+		return { failed: true, reason: "character_offline", character: name, runtime: runtime };
+	var connection = await mainframe_resolve_server(character.server);
+	if (!connection) return { failed: true, reason: "server_unavailable", character: name, runtime: runtime };
+	try {
+		var connection_url = new URL(connection.url);
+		var local_allowed = typeof Local !== "undefined" && Local;
+		if (
+			connection_url.protocol !== "https:" ||
+			connection_url.username ||
+			connection_url.password ||
+			connection_url.pathname !== "/" ||
+			connection_url.search ||
+			connection_url.hash ||
+			(!local_allowed && connection_url.hostname !== "adventure.land" && !connection_url.hostname.endsWith(".adventure.land"))
+		)
+			return { failed: true, reason: "server_unavailable", character: name, runtime: runtime };
+	} catch (e) {
+		return { failed: true, reason: "server_unavailable", character: name, runtime: runtime };
+	}
+	return {
+		character: name,
+		runtime: runtime,
+		server: connection.label,
+		url: connection.url,
+		path: connection.path,
+		secret: secret,
+	};
+}
+
+function mcp_api_comm_relay(target, code) {
+	return new Promise(function (resolve) {
+		var socket = null;
+		var timeout = null;
+		var sent_timeout = null;
+		var settled = false;
+		var welcomed = false;
+		var command_sent = false;
+		var code_running = false;
+		function public_result(extra) {
+			var result = {
+				success: true,
+				character: target.character,
+				runtime: target.runtime,
+				server: target.server,
+				online: true,
+			};
+			if (code === undefined) result.code_running = code_running;
+			else result.code_running_before = code_running;
+			return Object.assign(result, extra || {});
+		}
+		function finish(result) {
+			if (settled) return;
+			settled = true;
+			if (timeout) clearTimeout(timeout);
+			if (sent_timeout) clearTimeout(sent_timeout);
+			if (socket) {
+				socket.removeAllListeners();
+				socket.disconnect();
+			}
+			resolve(result);
+		}
+		try {
+			socket = mcp_api_comm_io()(target.url, {
+				path: target.path,
+				transports: ["websocket"],
+				reconnection: false,
+				forceNew: true,
+				query: { desktop: "1", secret: target.secret },
+			});
+		} catch (e) {
+			return finish({ failed: true, reason: "comm_unavailable", character: target.character, runtime: target.runtime });
+		}
+		timeout = setTimeout(function () {
+			finish({ failed: true, reason: "comm_timeout", character: target.character, runtime: target.runtime });
+		}, MCP_COMM_RELAY_TIMEOUT_MS);
+		socket.on("welcome", function (data) {
+			var observed = data && data.character;
+			if (!observed || String(observed.name || observed.id || "").toLowerCase() !== String(target.character).toLowerCase())
+				return finish({ failed: true, reason: "browser_session_unavailable", character: target.character, runtime: target.runtime });
+			welcomed = true;
+			code_running = observed.code === true;
+			if (code === undefined) return finish(public_result());
+			socket.emit("loaded", { success: 1, width: 800, height: 600, scale: 2 });
+		});
+		socket.on("entities", function () {
+			if (!welcomed || command_sent || code === undefined) return;
+			command_sent = true;
+			socket.emit("o:command", code);
+			sent_timeout = setTimeout(function () {
+				finish(public_result({ queued: true, confirmed: false }));
+			}, 100);
+		});
+		socket.on("connect_error", function () {
+			finish({ failed: true, reason: "comm_unavailable", character: target.character, runtime: target.runtime });
+		});
+		socket.on("disconnect", function () {
+			if (!settled) finish({ failed: true, reason: "comm_disconnected", character: target.character, runtime: target.runtime });
+		});
+	});
+}
+
+function mcp_api_code_eval_valid(code) {
+	return typeof code === "string" && code.length > 0 && Buffer.byteLength(code, "utf8") <= MCP_CODE_EVAL_MAX_BYTES;
+}
+
+async function mcp_api_browser_code_status(args) {
+	var target = await mcp_api_code_target(args, "browser");
+	if (target.failed) {
+		if (target.reason === "character_offline")
+			return { success: true, character: target.character, runtime: "browser", online: false, code_running: false };
+		return target;
+	}
+	return await mcp_api_comm_relay(target);
+}
+
+async function mcp_api_browser_code_start(args) {
+	var slot = await mainframe_validate_code_slot(args.user, args.slot);
+	if (!slot) return { failed: true, reason: "code_not_found" };
+	var target = await mcp_api_code_target(args, "browser");
+	if (target.failed) return target;
+	var status = await mcp_api_comm_relay(target);
+	if (status.failed) return status;
+	if (status.code_running) return Object.assign(status, { already_running: true, slot: slot });
+	var result = await mcp_api_comm_relay(target, "parent.api_call(\"load_code\",{name:" + JSON.stringify(slot) + ",run:\"1\"});");
+	if (!result.failed) Object.assign(result, { requested_state: "running", slot: slot });
+	return result;
+}
+
+async function mcp_api_browser_code_stop(args) {
+	var target = await mcp_api_code_target(args, "browser");
+	if (target.failed) return target;
+	var status = await mcp_api_comm_relay(target);
+	if (status.failed) return status;
+	if (!status.code_running) return Object.assign(status, { already_stopped: true });
+	var result = await mcp_api_comm_relay(target, "parent.stop_runner();");
+	if (!result.failed) result.requested_state = "stopped";
+	return result;
+}
+
+async function mcp_api_browser_code_reload(args) {
+	var slot = await mainframe_validate_code_slot(args.user, args.slot);
+	if (!slot) return { failed: true, reason: "code_not_found" };
+	var target = await mcp_api_code_target(args, "browser");
+	if (target.failed) return target;
+	var result = await mcp_api_comm_relay(target, "parent.api_call(\"load_code\",{name:" + JSON.stringify(slot) + ",run:\"1\"});");
+	if (!result.failed) Object.assign(result, { requested_state: "running", slot: slot });
+	return result;
+}
+
+async function mcp_api_browser_code_eval(args) {
+	if (!mcp_api_code_eval_valid(args.code))
+		return { failed: true, reason: "invalid_code", max_bytes: MCP_CODE_EVAL_MAX_BYTES, received_bytes: typeof args.code === "string" ? Buffer.byteLength(args.code, "utf8") : null };
+	var target = await mcp_api_code_target(args, "browser");
+	if (target.failed) return target;
+	return await mcp_api_comm_relay(target, args.code);
+}
+
+async function mcp_api_mainframe_code_eval(args) {
+	if (!mcp_api_code_eval_valid(args.code))
+		return { failed: true, reason: "invalid_code", max_bytes: MCP_CODE_EVAL_MAX_BYTES, received_bytes: typeof args.code === "string" ? Buffer.byteLength(args.code, "utf8") : null };
+	var target = await mcp_api_code_target(args, "mainframe");
+	if (target.failed) return target;
+	return await mcp_api_comm_relay(target, args.code);
 }
 
 function mcp_api_mainframe_contract() {
@@ -1849,6 +2047,34 @@ var MCP_API_REF = {
 		F: mcp_api_delete_code,
 		slot: { type: "identifier" },
 	},
+	browser_code_status: {
+		F: mcp_api_browser_code_status,
+		character: { type: "identifier" },
+	},
+	browser_code_start: {
+		F: mcp_api_browser_code_start,
+		character: { type: "identifier" },
+		slot: { type: "identifier" },
+	},
+	browser_code_stop: {
+		F: mcp_api_browser_code_stop,
+		character: { type: "identifier" },
+	},
+	browser_code_reload: {
+		F: mcp_api_browser_code_reload,
+		character: { type: "identifier" },
+		slot: { type: "identifier" },
+	},
+	browser_code_eval: {
+		F: mcp_api_browser_code_eval,
+		character: { type: "identifier" },
+		code: { type: "string" },
+	},
+	mainframe_code_eval: {
+		F: mcp_api_mainframe_code_eval,
+		character: { type: "identifier" },
+		code: { type: "string" },
+	},
 	mainframe_list_characters: { F: mcp_api_list_mainframe_characters },
 	mainframe_get_dashboard: { F: mcp_api_get_mainframe_dashboard },
 	mainframe_get_character: {
@@ -1911,6 +2137,36 @@ var MCP_TOOL_META = {
 	},
 	save_code: { description: "Create or replace one account-owned JavaScript CODE slot. Read an existing slot before replacement; saving does not start a character.", destructiveHint: true },
 	delete_code: { description: "Delete one owned CODE slot.", destructiveHint: true },
+	browser_code_status: {
+		description: "Check whether an account-owned character is connected in an open browser and whether browser CODE is running. It refuses characters assigned to Mainframe.",
+		readOnlyHint: true,
+	},
+	browser_code_start: {
+		description:
+			"Start a saved CODE slot on an account-owned character that is already connected in an open browser. If browser CODE is already running, it is left unchanged. A successful result means the request was queued, not that execution was confirmed.",
+		destructiveHint: true,
+		idempotentHint: true,
+	},
+	browser_code_stop: {
+		description:
+			"Stop CODE on an account-owned character that is already connected in an open browser. A successful result means the request was queued, not that the browser confirmed completion.",
+		idempotentHint: true,
+	},
+	browser_code_reload: {
+		description:
+			"Load and run a saved CODE slot on an account-owned character that is already connected in an open browser, replacing its current browser CODE runner. A successful result means the request was queued, not that execution was confirmed.",
+		destructiveHint: true,
+	},
+	browser_code_eval: {
+		description:
+			"Evaluate up to 64 KiB of arbitrary JavaScript in an account-owned character's browser CODE context through the authenticated /comm relay. The browser must already be open and connected. If CODE is stopped, the browser starts a temporary snippet runner. A successful result means the snippet was queued, not that it completed or succeeded.",
+		destructiveHint: true,
+	},
+	mainframe_code_eval: {
+		description:
+			"Evaluate up to 64 KiB of arbitrary JavaScript in an account-owned character's running Mainframe CODE context through the authenticated /comm relay. The character must have a live Mainframe assignment. A successful result means the snippet was queued, not that it completed or succeeded.",
+		destructiveHint: true,
+	},
 	mainframe_list_characters: { description: "List owned characters and their Mainframe access and runtime state.", readOnlyHint: true },
 	mainframe_get_dashboard: {
 		description:

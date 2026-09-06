@@ -251,6 +251,10 @@ var cosmetics={
 	"hat":{ //dy
 		"hat100":0,
 	},
+	"hat_animation":{ // Milliseconds per frame; other animated hats follow the walking frame.
+		"gcandle":180,
+		"aniv2":160,
+	},
 	//gravestones
 	"gravestone":{
 		"gravestone":19,

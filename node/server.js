@@ -29,6 +29,7 @@ app.get("/", (req, res) => {
 //var io=require('socket.io')(app,{pingInterval:2400,pingTimeout:6000});
 const SocketIOServer = require("socket.io").Server;
 const msgpack_parser = require("./msgpack_parser");
+const anniversary_rules = require("./logic/anniversary_event");
 const market_patron_rules = require("./logic/market_patron")((a, b) => simple_distance(a, b));
 var socket_cors = {
 	origin: "*",
@@ -217,6 +218,7 @@ var mode = {
 	implicit_targets: 0, // Do skills that don't have an explicit target, such as self-buffing skills, trigger mana restoring effects with increased chances?
 };
 var events = {
+	anniversary: true, // Remains on until manually disabled.
 	// SEASONS
 	holidayseason: false,
 	lunarnewyear: false,
@@ -713,8 +715,6 @@ server_api.post("/eval", (req, res) => {
 	}
 	res.send(JSON.stringify(output));
 });
-
-eval("" + fs.readFileSync(path.resolve(__dirname, "progression_api.js")));
 
 app.use(server_def.api_path, server_api);
 
@@ -2114,6 +2114,10 @@ function drop_something(player, monster, share) {
 	const is_pvp = is_in_pvp(player, 1);
 	achievement_logic_monster_kill(player, monster);
 	share = (share === undefined && 1) || share || 0;
+	if (anniversary_is_active() && B.global_drops && player.tskin !== "konami") {
+		const rewards = anniversary_rules.monsterRewards(player.owner, monster, share);
+		if (rewards.length) drop_one_thing(player, rewards, { x: monster.x, y: monster.y, map: monster.map });
+	}
 	// console.log("share: "+share);
 	var drop_id = randomStr(30);
 	var drop;
@@ -2231,12 +2235,7 @@ function drop_something(player, monster, share) {
 		});
 	}
 	// Home-server monster-specific drops
-	if (
-		player.p.home &&
-		player.p.home === region + server_name &&
-		D.drops.monsters_home_server[monster.type] &&
-		player.tskin != "konami"
-	) {
+	if (has_home_server_bonus(player) && D.drops.monsters_home_server[monster.type] && player.tskin != "konami") {
 		D.drops.monsters_home_server[monster.type].forEach(function (item) {
 			let itemShouldDrop = shouldItemDrop(item);
 			if (itemShouldDrop || mode.drop_all) {
@@ -2912,6 +2911,10 @@ function issue_player_award(attacker, target) {
 }
 
 function commence_attack(attacker, target, atype) {
+	// Direct attack callers must also have the required offhand equipped.
+	if (G.skills[atype].offhand_type && !skill_offhand_matches(attacker, G.skills[atype])) {
+		return { failed: true, reason: "skill_cant_slot", place: atype, id: target.id };
+	}
 	var attack = attacker.attack;
 	var mp_cost = 0;
 	var info = {
@@ -3073,6 +3076,10 @@ function commence_attack(attacker, target, atype) {
 	} else if (atype == "piercingshot") {
 		info.apiercing = 500;
 		attack = attacker.attack * 0.75;
+	} else if (atype == "arcane_needle") {
+		info.rpiercing = G.skills.arcane_needle.rpiercing;
+		info.no_reflection = true;
+		attack = attacker.attack * G.skills.arcane_needle.damage_multiplier;
 	} else if (atype == "partyheal") {
 		if (attacker.level >= 80) {
 			attack = 800;
@@ -3139,6 +3146,11 @@ function commence_attack(attacker, target, atype) {
 		if (target.is_monster || is_in_pvp(attacker, true)) {
 			info.conditions.push("frozen");
 		}
+	} else if (atype == "shield_slam") {
+		var shield_skill = G.skills[atype];
+		attack =
+			attacker.attack * shield_skill.damage_multiplier +
+			Math.min(Math.max(attacker.armor || 0, 0), shield_skill.armor_cap) * shield_skill.armor_multiplier;
 	} else if (atype == "quickpunch" || atype == "quickstab" || atype == "smash") {
 		attack = attacker.attack * G.skills[atype].damage_multiplier;
 	} else if (atype == "mentalburst") {
@@ -3255,6 +3267,10 @@ function commence_attack(attacker, target, atype) {
 		m: target.m,
 		pid: pid,
 	};
+	if (atype == "shield_slam") {
+		// Capture the equipped item at cast time; do not expose other item data.
+		action.shield = { name: attacker.slots.offhand.name, level: attacker.slots.offhand.level || 0 };
+	}
 
 	if (def.projectile) {
 		action.projectile = def.projectile;
@@ -3304,6 +3320,98 @@ function commence_attack(attacker, target, atype) {
 	action.place = atype;
 
 	return action;
+}
+
+function skill_offhand_matches(player, skill) {
+	var offhand = player.slots && player.slots.offhand;
+	return !!(offhand && G.items[offhand.name] && G.items[offhand.name].type === skill.offhand_type);
+}
+
+function paladin_damage_mp(player, hp_loss, skill_name) {
+	if (!player || player.type != "paladin" || player.rip || player.hp <= 0 || !Number.isFinite(hp_loss) || hp_loss <= 0)
+		return 0;
+	var levels = G.skills[skill_name].mp_return_levels;
+	var ratio = 0;
+	for (var i = 0; i < levels.length; i++) {
+		if (player.level >= levels[i][0]) ratio = levels[i][1];
+	}
+	var restored = Math.max(0, Math.min(Math.floor(hp_loss * ratio), Math.floor(player.max_mp - player.mp)));
+	if (!Number.isFinite(restored) || !restored) return 0;
+	player.mp += restored;
+	return restored;
+}
+
+function toggle_paladin_shield(player, skill_name) {
+	var skill = G.skills[skill_name];
+	var active = !!player.s[skill.condition];
+	delete player.s[skill.exclusive_condition];
+	if (active) delete player.s[skill.condition];
+	else player.s[skill.condition] = { ms: skill.duration };
+}
+
+function guardians_oath_source(target) {
+	var oath = target && target.s && target.s.guardians_oath;
+	if (!oath || oath.ms <= 0 || !oath.f) return null;
+	var guardian = get_player(oath.f);
+	if (
+		!guardian ||
+		guardian == target ||
+		guardian.type != "paladin" ||
+		guardian.rip ||
+		guardian.hp <= 1 ||
+		guardian.in != target.in ||
+		!is_same(guardian, target, 3) ||
+		distance(guardian, target) > G.skills.guardians_oath.link_range
+	)
+		return null;
+	return guardian;
+}
+
+function end_guardians_oath(target) {
+	if (!target || !target.s || !target.s.guardians_oath) return;
+	delete target.s.guardians_oath;
+	target.cid++;
+	target.u = true;
+}
+
+function active_guardians_oath_target(guardian) {
+	for (var id in players) {
+		var target = players[id];
+		if (!target || !target.s || !target.s.guardians_oath || target.s.guardians_oath.f != guardian.name) continue;
+		if (guardians_oath_source(target) == guardian) return target;
+		end_guardians_oath(target);
+		resend(target, "u+cid");
+	}
+	return null;
+}
+
+function redirect_guardians_oath_damage(target, attack, mp_eligible) {
+	var result = { attack: attack, redirected: 0, guardian: null, broken: false };
+	if (!target || !target.is_player || attack <= 0 || !target.s || !target.s.guardians_oath) return result;
+	var guardian = guardians_oath_source(target);
+	if (!guardian) {
+		end_guardians_oath(target);
+		resend(target, "u+cid");
+		result.broken = true;
+		return result;
+	}
+	var requested = floor(attack * G.skills.guardians_oath.ratio);
+	var redirected = min(requested, guardian.hp - 1);
+	if (redirected > 0) {
+		guardian.hp -= redirected;
+		result.attack -= redirected;
+		result.redirected = redirected;
+		result.guardian = guardian;
+		result.mp_restored = mp_eligible === false ? 0 : paladin_damage_mp(guardian, redirected, "guardians_oath");
+		disappearing_text(guardian.socket, guardian, "-" + redirected, { color: "#D8A234", xy: 1 });
+		resend(guardian, "u+cid");
+	}
+	if (redirected < requested || guardian.hp <= 1) {
+		end_guardians_oath(target);
+		resend(target, "u+cid");
+		result.broken = true;
+	}
+	return result;
 }
 
 function complete_attack(attacker, target, info) {
@@ -3359,6 +3467,7 @@ function complete_attack(attacker, target, info) {
 		target.reflection &&
 		defense == "resistance" &&
 		Math.random() * 100 < target.reflection &&
+		!info.no_reflection &&
 		!info.heal &&
 		attacker != target
 	) {
@@ -3557,6 +3666,12 @@ function complete_attack(attacker, target, info) {
 		delete def.dreturn;
 		delete def.kill;
 		delete def.unintentional;
+		delete def.mp_damage;
+		delete def.mp_restored;
+		delete def.shield_reaction;
+		delete def.redirected;
+		delete def.guardian;
+		delete def.guardian_mp;
 
 		var target = target_def[0];
 		if (target_def[1] != "normal") {
@@ -3774,14 +3889,41 @@ function complete_attack(attacker, target, info) {
 				attack -= max_hp;
 				target.mp = 200;
 			} else {
-				def.mp_damage = parseInt(attack / damage_per_mp);
+				def.mp_damage = min(max_mp, ceil(attack / damage_per_mp));
 				attack = 0;
 				target.mp -= def.mp_damage;
 			}
 			change = true;
+			def.shield_reaction = "mshield";
+		}
+		var oath_transfer = redirect_guardians_oath_damage(
+			target,
+			attack,
+			!info.heal && !info.positive && attacker != target,
+		);
+		attack = oath_transfer.attack;
+		if (oath_transfer.redirected) {
+			def.damage = attack;
+			def.redirected = oath_transfer.redirected;
+			def.guardian = oath_transfer.guardian.name;
+			def.guardian_mp = oath_transfer.mp_restored;
 		}
 		target.hp = min(target.hp - attack, target.max_hp); // both for damage and heal
 		var net = original - max(0, target.hp);
+		if (!info.heal) def.damage = attack;
+		if (
+			!info.heal &&
+			!info.positive &&
+			attacker != target &&
+			net > 0 &&
+			target.s.aether_shield &&
+			!target.s.mshield &&
+			info.damage_type == "magical"
+		) {
+			def.mp_restored = paladin_damage_mp(target, net, "aether_shield");
+			def.shield_reaction = "aether_shield";
+			if (def.mp_restored) change = true;
+		}
 		if (target.hp <= 0) {
 			def.kill = true;
 			if (G.skills[atype].kill_buff) {
@@ -4388,8 +4530,9 @@ function init_socket_io(socket_server) {
 						}
 						add_call_cost(add * data.to.length * mult, undefined, "cm_data");
 					} else {
-						if (CC[method]) {
-							add_call_cost(CC[method] || 0);
+						const cost_method = method === "anniversary_craft" ? "craft" : method;
+						if (CC[cost_method]) {
+							add_call_cost(CC[cost_method] || 0);
 						}
 					}
 					if (get_call_cost() > climit && method != "disconnect") {
@@ -6062,6 +6205,9 @@ function init_socket_io(socket_server) {
 			resend(player, "reopen+nc+inv");
 			success_response("dismantle", { name: item.name, cevent: true });
 		});
+		socket.on("anniversary_craft", function (data) {
+			anniversary_craft(players[socket.id], data && data.name);
+		});
 		socket.on("craft", function (data) {
 			var player = players[socket.id];
 			var check = true;
@@ -6107,6 +6253,7 @@ function init_socket_io(socket_server) {
 				return fail_response("craft_cant");
 			}
 			var name = D.craftmap[key];
+			if (G.craft[name].quest === "anniversary_baker") return anniversary_craft(player, name);
 			var enough = true;
 			if (
 				!player.computer &&
@@ -9091,7 +9238,10 @@ function init_socket_io(socket_server) {
 			if (!gSkill) {
 				return fail_response("no_skill", data.name);
 			}
-			if (gSkill.emote && (!player.p.acx || !player.p.acx[gSkill.emote])) {
+			const anniversary_target = gSkill.emote === "ikissyou" && players[id_to_id[data.id]];
+			const anniversary_guest_access =
+				anniversary_target && anniversary_state().isTarget(anniversary_target) && anniversary_state().canVisit(player);
+			if (gSkill.emote && (!player.p.acx || !player.p.acx[gSkill.emote]) && !anniversary_guest_access) {
 				return fail_response("skill_cant_use", data.name);
 			}
 
@@ -9129,7 +9279,7 @@ function init_socket_io(socket_server) {
 				return fail_response("skill_cant_use", data.name);
 			}
 
-			if (gSkill.wtype && player.role != "gm") {
+			if (gSkill.wtype) {
 				let canUse;
 				if (!player.slots.mainhand) {
 					canUse = false;
@@ -9141,6 +9291,10 @@ function init_socket_io(socket_server) {
 				if (!canUse) {
 					return fail_response("skill_cant_wtype", data.name);
 				}
+			}
+
+			if (gSkill.offhand_type && !skill_offhand_matches(player, gSkill)) {
+				return fail_response("skill_cant_slot", data.name);
 			}
 
 			const gMap = G.maps[player.map];
@@ -9184,8 +9338,23 @@ function init_socket_io(socket_server) {
 				const sameParty = player.party && target.party == player.party;
 				const sameAccount = target.owner == player.owner;
 				const isFriend = in_arr(target.owner, player.friends || []);
-				if (target.in != player.in || (!sameParty && !sameAccount && !isFriend)) {
+				if (target.in != player.in || (gSkill.emote !== "ikissyou" && !sameParty && !sameAccount && !isFriend)) {
 					return fail_response("non_friendly_target", data.name);
+				}
+				if (
+					gSkill.emote === "ikissyou" &&
+					(target.npc ||
+						target.dc ||
+						target.rip ||
+						target.dead ||
+						!(target.hp > 0) ||
+						player.rip ||
+						player.dead ||
+						!(player.hp > 0) ||
+						target.map !== player.map ||
+						distance(target, player) > gSkill.range)
+				) {
+					return fail_response("invalid_target", data.name);
 				}
 			}
 
@@ -9254,17 +9423,18 @@ function init_socket_io(socket_server) {
 				}
 
 				const dist = distance(player, target);
-				if (dist > range + player.xrange) {
+				var extra_range = gSkill.fixed_range ? 0 : player.xrange;
+				if (dist > range + extra_range) {
 					return true;
 				}
-				if (dist > range) {
+				if (!gSkill.fixed_range && dist > range) {
 					// xrange was used, reduce it by however much we used
 					player.xrange -= dist - range;
 				}
 				return false;
 			};
 			if (target && isTargetTooFar(target)) {
-				return fail_response("too_far", data.name, { dist: dist, id: target.id });
+				return fail_response("too_far", data.name, { dist: distance(player, target), id: target.id });
 			}
 
 			// Consume item check
@@ -9299,6 +9469,7 @@ function init_socket_io(socket_server) {
 			}
 
 			if (gSkill.emote) {
+				if (gSkill.emote === "ikissyou") anniversary_state().claim(player, target, anniversary_deliver);
 				if (gSkill.mp) {
 					consume_mp(player, gSkill.mp);
 					player.to_resend = "u+cid";
@@ -9311,6 +9482,7 @@ function init_socket_io(socket_server) {
 				});
 			} else if (
 				[
+					"arcane_needle",
 					"attack",
 					"burst",
 					"heal",
@@ -9320,6 +9492,7 @@ function init_socket_io(socket_server) {
 					"purify",
 					"quickpunch",
 					"quickstab",
+					"shield_slam",
 					"smash",
 					"snowball",
 					"supershot",
@@ -9438,19 +9611,82 @@ function init_socket_io(socket_server) {
 						player.socket.emit("eval", { code: "ui_move(" + spot.x + "," + spot.y + ")" });
 					}
 				}
+			} else if (data.name == "cleansing_light") {
+				if (
+					!target ||
+					target == player ||
+					target.npc ||
+					target.rip ||
+					target.in != player.in ||
+					!is_same(player, target, 3)
+				)
+					return fail_response("non_friendly_target", data.name);
+				var cleansed = [];
+				for (var condition in target.s) {
+					if (G.conditions[condition] && G.conditions[condition].cleansable) cleansed.push(condition);
+				}
+				cleansed.forEach(function (condition) {
+					delete target.s[condition];
+				});
+				consume_mp(player, gSkill.mp, target);
+				resend(target, "u+cid");
+				resend(player, "u+cid");
+				xy_emit(player, "ui", { type: data.name, from: player.name, targets: [target.name] });
+				add_pdps(player, target, cleansed.length * 500);
+				resolve.cleansed = cleansed;
+			} else if (data.name == "guardians_oath") {
+				if (
+					!target ||
+					target == player ||
+					target.npc ||
+					target.rip ||
+					target.in != player.in ||
+					!is_same(player, target, 3)
+				)
+					return fail_response("non_friendly_target", data.name);
+				if (active_guardians_oath_target(player))
+					return fail_response("skill_cant_use", data.name, { reason: "outgoing_oath" });
+				if (guardians_oath_source(target))
+					return fail_response("skill_cant_use", data.name, { reason: "incoming_oath" });
+				consume_mp(player, gSkill.mp, target);
+				add_condition(target, gSkill.condition, { duration: gSkill.duration, from: player });
+				resend(target, "u+cid");
+				resend(player, "u+cid");
+				xy_emit(player, "ui", { type: data.name, from: player.name, targets: [target.name] });
+				add_pdps(player, target, 2000);
+				resolve.target = target.name;
+			} else if (data.name == "beacon_of_resolve") {
+				var affected = [];
+				consume_mp(player, gSkill.mp);
+				for (var id in instances[player.in].players) {
+					var beacon_target = instances[player.in].players[id];
+					if (
+						!beacon_target ||
+						beacon_target.npc ||
+						beacon_target.rip ||
+						!is_same(player, beacon_target, 3) ||
+						distance(player, beacon_target) > gSkill.range
+					)
+						continue;
+					add_condition(beacon_target, gSkill.condition, { duration: gSkill.duration, from: player });
+					resend(beacon_target, "u+cid");
+					if (beacon_target != player) add_pdps(player, beacon_target, 1000);
+					affected.push(beacon_target.name);
+				}
+				xy_emit(player, "ui", { type: data.name, from: player.name, targets: affected });
+				resolve.affected = affected;
+			} else if (data.name == "paladin_aura") {
+				var requested_aura = select_paladin_aura_state(player, data.id || data.state);
+				player.to_resend = "u+cid";
+				resolve.aura = requested_aura;
 			} else if (data.name == "hardshell" || data.name == "power" || data.name == "xpower" || data.name == "shelter") {
 				consume_mp(player, gSkill.mp, mode.implicit_targets && player);
 				player.s[gSkill.condition] = {
 					ms: gSkill.duration || G.conditions[gSkill.condition].duration,
 				};
 				player.to_resend = "u+cid";
-			} else if (data.name == "mshield") {
-				// consume_mp(player, gSkill.mp);
-				if (player.s[gSkill.condition]) {
-					delete player.s[gSkill.condition];
-				} else {
-					player.s[gSkill.condition] = { ms: 999999999 };
-				}
+			} else if (data.name == "mshield" || data.name == "aether_shield") {
+				toggle_paladin_shield(player, data.name);
 				player.to_resend = "u+cid";
 			} else if (
 				data.name == "mcourage" ||
@@ -10183,7 +10419,42 @@ function init_socket_io(socket_server) {
 				market_patron_info(player);
 				return;
 			}
-			if (data.type == "newyear_tree") {
+			if (data.type == "citizen_route") {
+				var destinations = ["transporter", "locksmith", "scrollsmith"];
+				var rook = citizen_npc_in_instance(player.in, "citizen17");
+				var destination = citizen_map_position("desertland", data.destination);
+				if (
+					player.map != "desertland" ||
+					!rook ||
+					rook.in != player.in ||
+					distance(player, rook) > 160 ||
+					!destinations.includes(data.destination) ||
+					!destination
+				) {
+					return socket.emit("game_response", "distance");
+				}
+				if (player.last.citizen_route && mssince(player.last.citizen_route) < 10000) {
+					return socket.emit("game_log", "Rook is still reading the sands.");
+				}
+				player.last.citizen_route = new Date();
+				player.socket.emit("citizen", {
+					type: "route_marks",
+					destination: data.destination,
+					from: [rook.x, rook.y],
+					to: [destination.x, destination.y],
+				});
+				player.socket.emit("game_log", "Rook marks the first steps toward " + G.npcs[data.destination].name + ".");
+				if (!rook.citizen_wayfinder && !rook.moving) {
+					var dx = destination.x - rook.x;
+					var dy = destination.y - rook.y;
+					var length = Math.sqrt(dx * dx + dy * dy) || 1;
+					rook.citizen_wayfinder = { home: [rook.x, rook.y], phase: "out" };
+					if (!citizen_move_to(rook, rook.x + (dx / length) * 24, rook.y + (dy / length) * 24)) {
+						delete rook.citizen_wayfinder;
+					}
+				}
+				interaction_completion("citizen_route", { destination: data.destination });
+			} else if (data.type == "newyear_tree") {
 				var x = "";
 				if (
 					!G.maps[player.map].ref ||
@@ -10835,6 +11106,7 @@ function init_socket_io(socket_server) {
 			cache_player_items(player);
 			invincible_logic(player);
 			serverhop_logic(player);
+			realmfatigue_logic(player, characters);
 			calculate_player_stats(player);
 
 			if (data.epl == "mas" && data.receipt) {
@@ -11858,6 +12130,7 @@ function init_socket_io(socket_server) {
 			resend(player, "u+cid");
 		});
 		socket.on("blend", function (data) {
+			return;
 			var player = players[socket.id];
 			var min = 99999;
 			var x = null;
@@ -12153,7 +12426,7 @@ function add_coop_points(m, attacker, mnet) {
 	if (attacker.s.hopsickness) {
 		mnet /= 4;
 	}
-	if (attacker.p && attacker.p.home == region + server_name) {
+	if (has_home_server_bonus(attacker)) {
 		// Favoring home server characters [12/02/26]
 		mnet *= 5;
 	}
@@ -13467,6 +13740,7 @@ function update_instance(instance) {
 		for (var name in player.s) {
 			var def = G.conditions[name];
 			var ref = player.s[name];
+			if (name == "guardians_oath" && !guardians_oath_source(player)) player.s[name].ms = 0;
 			var value = player.s[name].ms;
 			player.s[name].ms -= ms;
 			if (def && def.interval) {
@@ -14153,12 +14427,21 @@ function instance_loop() {
 	setTimeout(instance_loop, max(75, min(1000, ms_since * 2 + 2)));
 }
 
-
 function citizen_npc_in_instance(instance_name, npc_id) {
 	var instance = instances[instance_name];
 	var def = G.npcs[npc_id];
 	if (!instance || !instance.players || !def) return null;
 	return instance.players[NPC_prefix + def.name] || null;
+}
+
+function citizen_map_position(map_name, npc_id) {
+	var map_def = G.maps[map_name];
+	if (!map_def || !map_def.npcs) return null;
+	for (var i = 0; i < map_def.npcs.length; i++) {
+		var npc = map_def.npcs[i];
+		if (npc.id == npc_id && npc.position && npc.position.length >= 2) return { x: npc.position[0], y: npc.position[1] };
+	}
+	return null;
 }
 
 function citizen_move_to(npc, x, y) {
@@ -14177,8 +14460,135 @@ function citizen_move_to(npc, x, y) {
 	return true;
 }
 
+function citizen_at(npc, position) {
+	return abs(npc.x - position[0]) < 0.5 && abs(npc.y - position[1]) < 0.5;
+}
+
+function citizen_wayfinder_loop(npc, now_date) {
+	var state = npc.citizen_wayfinder;
+	if (!state) return true;
+	if (npc.moving) return true;
+	if (state.phase == "out") {
+		if (!state.wait) state.wait = future_ms(450);
+		if (state.wait > now_date) return true;
+		state.phase = "home";
+		if (!citizen_move_to(npc, state.home[0], state.home[1])) delete npc.citizen_wayfinder;
+	} else {
+		delete npc.citizen_wayfinder;
+	}
+	return true;
+}
+
+function citizen_repairer_loop(npc, now_date) {
+	var instance = instances[npc.in];
+	if (!instance || instance.paused) return true;
+	var home = [0, -136];
+	var workers = [];
+	var alarm = false;
+	for (var id in instance.monsters) {
+		var worker = instance.monsters[id];
+		if (worker.type != "mechagnome" || worker.dead) continue;
+		workers.push(worker);
+		if (worker.target) alarm = true;
+	}
+
+	if (alarm) {
+		delete npc.citizen_repair_target;
+		npc.citizen_repair_state = "alarm";
+		if (!citizen_at(npc, home)) citizen_move_to(npc, home[0], home[1]);
+		return true;
+	}
+	if (npc.moving) return true;
+	if (!npc.citizen_repair_state) {
+		npc.citizen_repair_state = "idle";
+		npc.citizen_repair_next = future_ms(3000);
+	}
+	if (npc.citizen_repair_state == "alarm") {
+		npc.citizen_repair_state = "idle";
+		npc.citizen_repair_next = future_ms(3000);
+	}
+	if (npc.citizen_repair_next && npc.citizen_repair_next > now_date) return true;
+
+	if (npc.citizen_repair_state == "to_worker") {
+		var target = instance.monsters[npc.citizen_repair_target];
+		if (target && !target.dead && !target.target) {
+			xy_emit(npc, "citizen", { type: "repair", target: target.id, x: target.x, y: target.y });
+			npc.citizen_repair_state = "repairing";
+			npc.citizen_repair_next = future_ms(2200);
+			return true;
+		}
+		npc.citizen_repair_state = "returning";
+	}
+	if (npc.citizen_repair_state == "repairing") npc.citizen_repair_state = "returning";
+	if (npc.citizen_repair_state == "returning") {
+		delete npc.citizen_repair_target;
+		if (citizen_at(npc, home)) {
+			npc.citizen_repair_state = "idle";
+			npc.citizen_repair_next = future_ms(5000 + Math.random() * 3000);
+		} else if (!citizen_move_to(npc, home[0], home[1])) {
+			npc.citizen_repair_next = future_ms(2000);
+		}
+		return true;
+	}
+
+	var idle_workers = workers.filter(function (worker) {
+		return !worker.target;
+	});
+	if (!idle_workers.length) {
+		npc.citizen_repair_next = future_ms(3000);
+		return true;
+	}
+	var target = random_one(idle_workers);
+	var repair_x = max(-24, min(24, round(target.x / 8) * 8));
+	npc.citizen_repair_target = target.id;
+	npc.citizen_repair_state = "to_worker";
+	npc.citizen_repair_next = null;
+	if (!citizen_move_to(npc, repair_x, -120)) {
+		npc.citizen_repair_state = "idle";
+		npc.citizen_repair_next = future_ms(2000);
+	}
+	return true;
+}
+
+function citizen_lamp_stop(def, npc) {
+	for (var i = 0; i < def.citizen_lamp_stops.length; i++) if (citizen_at(npc, def.citizen_lamp_stops[i])) return true;
+	return false;
+}
+
+function citizen_lamplighter_loop(npc, def, now_date) {
+	var instance = instances[npc.in];
+	if (!instance || instance.paused || !npc.positions || npc.positions.length < 2) return true;
+	if (npc.citizen_route_index === undefined) {
+		npc.citizen_route_index = 0;
+		npc.citizen_route_next = future_ms(1200);
+		xy_emit(npc, "citizen", { type: "lamp", x: npc.x, y: npc.y });
+		return true;
+	}
+	if (npc.moving) return true;
+	if (npc.citizen_route_traveling) {
+		npc.citizen_route_traveling = false;
+		var stop = citizen_lamp_stop(def, npc);
+		if (stop) xy_emit(npc, "citizen", { type: "lamp", x: npc.x, y: npc.y });
+		npc.citizen_route_next = future_ms(stop ? 1200 : 50);
+		return true;
+	}
+	if (npc.citizen_route_next > now_date) return true;
+	var next = (npc.citizen_route_index + 1) % npc.positions.length;
+	var position = npc.positions[next];
+	if (citizen_move_to(npc, position[0], position[1])) {
+		npc.citizen_route_index = next;
+		npc.citizen_route_traveling = true;
+	} else {
+		npc.citizen_route_next = future_ms(1000);
+	}
+	return true;
+}
+
 function citizen_behavior_loop(npc, def, now_date) {
 	if (def.citizen_behavior == "market_patron") return market_patron_loop(npc, now_date);
+	if (def.citizen_behavior == "wayfinder") return citizen_wayfinder_loop(npc, now_date);
+	if (def.citizen_behavior == "repairer") return citizen_repairer_loop(npc, now_date);
+	if (def.citizen_behavior == "lamplighter") return citizen_lamplighter_loop(npc, def, now_date);
 	return false;
 }
 
@@ -14296,7 +14706,6 @@ function npc_loop() {
 					npc.cid++;
 				}
 			}
-
 			if (def.citizen_behavior && citizen_behavior_loop(npc, def, now_date)) continue;
 
 			if (!npc.movable) {
@@ -14437,10 +14846,147 @@ function game_loop() {
 	setTimeout(game_loop, max(28, min(1000, ms_since * 2 + 2))); // originally 24
 }
 
+var PALADIN_AURA_CONDITIONS = [
+	"paladin_aura_bulwark",
+	"paladin_aura_sanctuary",
+	"paladin_aura_zeal",
+	"paladin_aura_warding",
+];
+
+function paladin_aura_rank(player) {
+	var levels = G.skills.paladin_aura.rank_levels;
+	var rank = 0;
+	for (var i = 0; i < levels.length; i++) {
+		if (player.level >= levels[i]) rank = i + 1;
+	}
+	return rank;
+}
+
+function paladin_aura_state(player) {
+	var skill = G.skills.paladin_aura;
+	if (!player.p) player.p = {};
+	if (!skill.states[player.p.paladin_aura]) player.p.paladin_aura = skill.default_state;
+	return player.p.paladin_aura;
+}
+
+function paladin_aura_values(state, rank) {
+	var values = {};
+	var state_values = G.skills.paladin_aura.states[state].values;
+	for (var name in state_values) values[name] = state_values[name][rank - 1];
+	return values;
+}
+
+function paladin_aura_needs_refresh(current, expected) {
+	if (!current || current.ms <= 10000) return true;
+	for (var name in expected) {
+		if (name != "ms" && current[name] != expected[name]) return true;
+	}
+	for (var name in current) {
+		if (name != "ms" && expected[name] === undefined) return true;
+	}
+	return false;
+}
+
+function stronger_paladin_aura_source(candidate, current) {
+	if (!current) return true;
+	var candidate_rank = paladin_aura_rank(candidate);
+	var current_rank = paladin_aura_rank(current);
+	if (candidate_rank != current_rank) return candidate_rank > current_rank;
+	if (candidate.level != current.level) return candidate.level > current.level;
+	if ((candidate.for || 0) != (current.for || 0)) return (candidate.for || 0) > (current.for || 0);
+	return candidate.name < current.name;
+}
+
+function paladin_aura_reaches(source, target) {
+	return (
+		source &&
+		target &&
+		source.type == "paladin" &&
+		paladin_aura_rank(source) &&
+		!source.rip &&
+		!target.rip &&
+		source.in == target.in &&
+		is_same(source, target, 3) &&
+		distance(source, target) <= G.skills.paladin_aura.range
+	);
+}
+
+function clear_paladin_aura_source(source) {
+	var instance = source && instances[source.in];
+	if (!instance || !instance.players) return;
+	for (var id in instance.players) {
+		var target = instance.players[id];
+		if (!target || !target.s) continue;
+		var changed = false;
+		for (var i = 0; i < PALADIN_AURA_CONDITIONS.length; i++) {
+			var condition = PALADIN_AURA_CONDITIONS[i];
+			if (target.s[condition] && target.s[condition].f == source.name) {
+				delete target.s[condition];
+				changed = true;
+			}
+		}
+		if (changed) resend(target, "u+cid");
+	}
+}
+
+function select_paladin_aura_state(player, requested) {
+	var states = Object.keys(G.skills.paladin_aura.states);
+	var current = paladin_aura_state(player);
+	if (!G.skills.paladin_aura.states[requested]) requested = states[(states.indexOf(current) + 1) % states.length];
+	clear_paladin_aura_source(player);
+	player.p.paladin_aura = requested;
+	refresh_paladin_auras();
+	return requested;
+}
+
+function refresh_paladin_auras() {
+	for (var instance_id in instances) {
+		var instance = instances[instance_id];
+		if (!instance || !instance.players) continue;
+		var sources = [];
+		for (var source_id in instance.players) {
+			var source = instance.players[source_id];
+			if (source && source.type == "paladin" && paladin_aura_rank(source) && !source.rip) sources.push(source);
+		}
+		for (var target_id in instance.players) {
+			var target = instance.players[target_id];
+			if (!target || !target.s) continue;
+			var best = {};
+			for (var i = 0; i < sources.length; i++) {
+				var source = sources[i];
+				if (!paladin_aura_reaches(source, target)) continue;
+				var state = paladin_aura_state(source);
+				if (stronger_paladin_aura_source(source, best[state])) best[state] = source;
+			}
+			var changed = false;
+			for (var state in G.skills.paladin_aura.states) {
+				var condition = G.skills.paladin_aura.states[state].condition;
+				var source = best[state];
+				if (!source) {
+					if (target.s[condition]) {
+						delete target.s[condition];
+						changed = true;
+					}
+					continue;
+				}
+				var rank = paladin_aura_rank(source);
+				var aura = { ms: G.conditions[condition].duration, f: source.name, rank: rank };
+				var values = paladin_aura_values(state, rank);
+				for (var name in values) aura[name] = values[name];
+				if (!paladin_aura_needs_refresh(target.s[condition], aura)) continue;
+				target.s[condition] = aura;
+				changed = true;
+			}
+			if (changed) resend(target, "u+cid");
+		}
+	}
+}
+
 var lrid = 0;
 function aura_loop() {
 	try {
 		lrid++;
+		refresh_paladin_auras();
 		for (var id in players) {
 			var player = players[id];
 			if (!player || !player.aura || player.rid % 5 != lrid % 5) {

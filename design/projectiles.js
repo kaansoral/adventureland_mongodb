@@ -26,6 +26,12 @@ var projectiles={
 		"speed":400,
 		"hit_animation":"worldroot_impact",
 	},
+	"shield_slam":{
+		"animation":"slash",
+		"speed":420,
+		"hit_animation":"slash2",
+		"hit_text":["SLAM!","#E5C36A"],
+	},
 	"smash":{
 		"animation":"slash",
 		"speed":420,
@@ -41,6 +47,11 @@ var projectiles={
 		"animation":"carrow",
 		"speed":500,
 		"hit_animation":"arrow_hit",
+	},
+	"reunionarrow":{
+		"animation":"reunionarrow",
+		"speed":500,
+		"hit_animation":"reunionarrow_hit",
 	},
 	"crossbowarrow":{
 		"animation":"carrow",
@@ -107,6 +118,11 @@ var projectiles={
 		"animation":"magic3",
 		"speed":400,
 		"hit_animation":"explode_c",
+	},
+	"arcane_needle":{
+		"animation":"arcane_needle_projectile",
+		"speed":640,
+		"hit_animation":"arcane_needle_impact",
 	},
 	"magic_divine":{
 		"animation":"magic4",

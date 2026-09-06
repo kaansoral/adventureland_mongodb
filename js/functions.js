@@ -1071,6 +1071,8 @@ function use_skill(name, target, arg, request_id) {
 		return request(name, "skill", { name: "dash", x: get_x(character) + [0, -40, 40, 0][d], y: get_y(character) + [40, 0, 0, -40][d] });
 	} else if (name == "energize") {
 		return request(name, "skill", { name: "energize", id: target, mp: arg });
+	} else if (name == "paladin_aura") {
+		return request(name, "skill", { name: name, id: target });
 	} else if (name == "stack") return rejecting_promise({ reason: "passive_skill", skill: name });
 	else if (name == "warp") {
 		if (target && is_string(target) && !target[2]) target[2] = character.map;
@@ -1279,7 +1281,8 @@ function on_skill(key, event) {
 			title: "Magiport",
 		});
 	} else if (G.skills[name] && G.skills[name].emote) {
-		if (G.skills[name].target) use_skill(name, xtarget || ctarget || (!G.skills[name].no_self && character));
+		if (name == "ikissyou" && !(character.acx && character.acx.ikissyou) && anniversary_can_visit()) anniversary_kiss();
+		else if (G.skills[name].target) use_skill(name, xtarget || ctarget || (!G.skills[name].no_self && character));
 		else use_skill(name);
 	} else if (name == "throw") {
 		use_skill(name, xtarget || ctarget, skill.num || 0);
@@ -3034,6 +3037,63 @@ function quantity(name, level) {
 	return q;
 }
 
+function anniversary_live_event() {
+	var state = typeof S != "undefined" && S.anniversary;
+	return state && state.active && state.live && state.id ? state : null;
+}
+
+function anniversary_can_visit() {
+	var state = anniversary_live_event(),
+		ticket = character && character.s && character.s.anniversary_visit;
+	return !!(state && ticket && ticket.ms > 0 && ticket.round == state.round && ticket.realm == server_region + " " + server_identifier && Date.now() < ticket.expires && Date.now() < state.expires);
+}
+
+function anniversary_kiss() {
+	var state = anniversary_live_event();
+	if (!state) return add_log("No player is featured right now.", "gray");
+	if (!anniversary_can_visit() && !(character.acx && character.acx.ikissyou)) return add_log("You don't have an Anniversary Visit for this round.", "gray");
+	return use_skill("ikissyou", state.id);
+}
+
+function find_anniversary_player() {
+	var state = anniversary_live_event();
+	if (!state || !G.maps[state.map] || !Number.isFinite(state.x) || !Number.isFinite(state.y)) return add_log("No player is featured right now.", "gray");
+	return call_code_function_f("smart_move", { map: state.map, x: state.x, y: state.y });
+}
+
+function anniversary_ingredient_count(name, level) {
+	var count = 0;
+	(character.items || []).forEach(function (item) {
+		if (!item || item.name != name || item.l || item.b || item.giveaway || item.name == "placeholder" || (level !== undefined && (item.level || 0) != level)) return;
+		count += item.q || 1;
+	});
+	return count;
+}
+
+function anniversary_recipe_state(name) {
+	var recipe = G.craft && G.craft[name];
+	if (!recipe || recipe.quest != "anniversary_baker") return null;
+	var ready = !!(typeof S != "undefined" && S.anniversary && S.anniversary.active),
+		rows = [];
+	(recipe.items || []).forEach(function (ingredient) {
+		var count = anniversary_ingredient_count(ingredient[1], ingredient[2]);
+		rows.push({ name: ingredient[1], level: ingredient[2], needed: ingredient[0], count: count });
+		if (count < ingredient[0]) ready = false;
+	});
+	if ((character.gold || 0) < (recipe.cost || 0)) ready = false;
+	return { recipe: recipe, rows: rows, ready: ready };
+}
+
+function anniversary_craft(name) {
+	var state = anniversary_recipe_state(name);
+	if (!state) return add_log("Mira can't make that item.", "gray");
+	if (!(typeof S != "undefined" && S.anniversary && S.anniversary.active)) return add_log("Mira's anniversary workshop is closed.", "gray");
+	if (!state.ready) return add_log("You need the listed ingredients and gold.", "gray");
+	var promise = push_deferred("craft");
+	socket.emit("anniversary_craft", { name: name });
+	return promise;
+}
+
 function auto_craft(name, code) {
 	var issue = null;
 	if (!G.craft[name]) issue = "recipe";
@@ -3348,6 +3408,7 @@ function reopen() {
 		else if (rendered_target == "gold") render_gold_npc();
 		else if (rendered_target == "items") render_items_npc();
 		else if (rendered_target == "craftsman") render_craftsman();
+		else if (rendered_target == "anniversary_baker") render_anniversary_baker();
 		else if (rendered_target == "dismantler") render_dismantler();
 		else if (rendered_target == "none") render_none_shrine();
 		else if (rendered_target == "locksmith") render_locksmith();
@@ -3549,14 +3610,9 @@ function generate_textures(name, stype) {
 	}
 	if (in_arr(stype, ["a_makeup", "a_hat"])) {
 		var d = XYWH[name];
-		textures[name] = [
-			[null, null, null],
-			[null, null, null],
-			[null, null, null],
-			[null, null, null],
-		];
+		textures[name] = [[], [], [], []];
 		for (var i = 0; i < 4; i++) {
-			for (var j = 0; j < 3; j++) {
+			for (var j = 0; j < (d[4] || 3); j++) {
 				var rectangle = new PIXI.Rectangle(d[0] + j * d[2], d[1] + i * d[3], d[2], d[3]);
 				textures[name][i][j] = new PIXI.Texture(C[FC[name]], rectangle);
 			}
@@ -3587,7 +3643,7 @@ function set_texture(sprite, i, j) {
 		sprite.texture = textures[sprite.skin][i % sprite.frames];
 	}
 	if (in_arr(sprite.stype, ["a_makeup", "a_hat"])) {
-		sprite.texture = textures[sprite.skin][i % sprite.frames][j % 3];
+		sprite.texture = textures[sprite.skin][i % sprite.frames][j % textures[sprite.skin][0].length];
 	}
 	if (sprite.stype == "animatable") {
 		sprite.texture = textures[sprite.skin][i % sprite.frames];
@@ -4067,7 +4123,8 @@ function start_animation(sprite, name, mode) {
 	}
 	if (def.speeding) asprite.speeding = true;
 	if (def.front) asprite.y_disp = -30;
-	if (def.y) asprite.y = -def.y;
+	if (def.above) asprite.y = -height - (def.y || 0);
+	else if (def.y) asprite.y = -def.y;
 	asprite.zy = 1200;
 	asprite.aspeed = def.aspeed;
 	asprite.aspeed = (asprite.aspeed == "fast" && 0.8) || (asprite.aspeed == "mild" && 1.4) || (asprite.aspeed == "slow" && 3) || 2;
@@ -4601,9 +4658,12 @@ function restart_skill_tints() {
 }
 
 function skill_timeout(name, ms) {
-	if (G.skills[name].share) {
-		skill_timeout_singular(G.skills[name].share, ms);
-		for (var s in G.skills) if (G.skills[s].share == G.skills[name].share) skill_timeout_singular(s, ms);
+	var shared = G.skills[name].share || name;
+	var has_shared_skills = false;
+	for (var s in G.skills) if (G.skills[s].share == shared) has_shared_skills = true;
+	if (G.skills[name].share || has_shared_skills) {
+		skill_timeout_singular(shared, ms);
+		for (var s in G.skills) if (G.skills[s].share == shared) skill_timeout_singular(s, ms);
 	} else if ((G.skills[name].cooldown || G.skills[name].reuse_cooldown) !== undefined || name == "attack") skill_timeout_singular(name, ms);
 }
 
@@ -5587,7 +5647,12 @@ async function api_call_l(method, args, r_args) {
 		.catch(function (data) {
 			result = data;
 		});
-	if (result && result.failed) ui_error("Fail reason: " + result.reason);
+	if (result && result.failed) {
+		ui_error("Fail reason: " + result.reason);
+		if (method == "signup_or_login" && result.reason == "invalid_field") {
+			ui_error("New player? Enter your email, choose a password, then click Signup or Login. If the email has no account, one will be created.");
+		}
+	}
 	return result;
 }
 

@@ -1,4 +1,12 @@
 var sprites = {
+	jubchan: {
+		file: "/images/tiles/characters/jubchan_1.png",
+		rows: 1,
+		columns: 1,
+		width: 78,
+		height: 144,
+		matrix: [["jubchan"]],
+	},
 	test: {
 		//"ignore":true,
 		file: "/images/tiles/characters/ninja_turtles.png",
@@ -58,6 +66,14 @@ var sprites = {
 		type: "a_hat",
 		matrix: [["halo"]],
 	},
+	aniv2: {
+		file: "/images/cosmetics/hats/aniv2_anim.png?v=1",
+		rows: 1,
+		columns: 1,
+		type: "a_hat",
+		frames: 6,
+		matrix: [["aniv2"]],
+	},
 	kunique: {
 		file: "/images/cosmetics/makeup/kunique.png?v=2",
 		rows: 1,
@@ -95,18 +111,7 @@ var sprites = {
 		columns: 10,
 		type: "gravestone",
 		matrix: [
-			[
-				"gravestonea",
-				"gravestone",
-				"xgravestone0",
-				"xgravestone1",
-				"xgravestone2",
-				"xgravestone3",
-				"xgravestone4",
-				null,
-				null,
-				null,
-			],
+			["gravestonea", "gravestone", "xgravestone0", "xgravestone1", "xgravestone2", "xgravestone3", "xgravestone4", null, null, null],
 			[null, null, null, null, null, null, null, null, null, null],
 		],
 	},
@@ -1089,7 +1094,7 @@ var rowsets = [
 	["hats1", "hat", 25, 16, "/images/cosmetics/hats/hats1.png?v=2"],
 	["hats2", "hat", 25, 25, "/images/cosmetics/hats/hats2.png?v=3"],
 	["hats3", "hat", 25, 24, "/images/cosmetics/hats/hats3.png?v=2"],
-	["hats4", "hat", 25, 11, "/images/cosmetics/hats/hats4.png?v=4"],
+	["hats4", "hat", 25, 11, "/images/cosmetics/hats/hats4.png?v=5"],
 	["wings1", "s_wings", 5, 5, "/images/cosmetics/wings/wings1.png"],
 	//["wings2","s_wings",2,2,"/images/cosmetics/wings/wings2.png"],
 	["wings3", "s_wings", 5, 5, "/images/cosmetics/wings/wings3.png?v=2"],
@@ -1131,6 +1136,10 @@ for (var si = 0; si < rowsets.length; si++) {
 		}
 	}
 }
+
+sprites.hats4.matrix[0][11] = "aniv0";
+sprites.hats4.matrix[0][12] = "aniv1";
+sprites.hats4.matrix[0][13] = "aniv3";
 
 for (var i = 0; i < 42; i++) {
 	sprites["makeup1"]["matrix"][0].push("makeup1" + ("0" + i).slice(-2));
@@ -1205,7 +1214,7 @@ var tilesets = {
 	inside: { file: "/images/tiles/map/inside.png?v=9" },
 	outside: { file: "/images/tiles/map/outside.png?v=7" },
 	puzzle: { frames: 3, frame_width: 16, file: "/images/tiles/map/puzzle.png?v=7" },
-	water: { frames: 3, frame_width: 48, file: "/images/tiles/map/water_updated.png?v=13" },
+	water: { frames: 3, frame_width: 48, file: "/images/tiles/map/water_updated.png?v=14" },
 	winter: { file: "/images/tiles/map/winter.png?v=5" },
 	fort: { file: "/images/tiles/map/fort.png?v=3" },
 	beach: { file: "/images/tiles/map/beach_v2.png" },
@@ -1218,9 +1227,9 @@ var tilesets = {
 	ship: { file: "/images/tiles/map/ship.png" },
 	ash: { file: "/images/tiles/map/ashlands.png" },
 	ruins: { file: "/images/tiles/map/ruins.png?v=2" },
+	biocaves: { file: "/images/tiles/map/biocaves.png?v=2" },
 	tree: { file: "/images/tiles/map/tree.png" },
 	lights: { file: "/images/tiles/map/lights.png?v=3", light: "yes" }, // "frames":3,"frame_width":48,
 };
 
-if (typeof module !== "undefined")
-	module.exports = { sprites: sprites, bodysets: bodysets, rowsets: rowsets, imagesets: imagesets, tilesets: tilesets };
+if (typeof module !== "undefined") module.exports = { sprites: sprites, bodysets: bodysets, rowsets: rowsets, imagesets: imagesets, tilesets: tilesets };

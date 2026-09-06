@@ -1,8 +1,9 @@
 <p><span class='dlabel'>find_npc(npc_id)</span></p>
-<p>Finds static map coordinates for an NPC key from G.npcs.</p>
+<p>Finds map coordinates for an NPC key from G.npcs, including seasonal NPCs while their event is active.</p>
 <p><b>Returns:</b> Object containing map, in, x, and y, or null when no location is found.</p>
 <p><b>Example:</b></p>
 <div class='code'>var potion_vendor = find_npc("fancypots");</div>
+<p>During the anniversary, <span class='dlabel'>find_npc("anniversary_baker")</span> locates Mira. You can also use <span class='dlabel'>smart_move("anniversary_baker")</span>.</p>
 
 <p></p>
 <span class='redlabel'>"source"</span>

@@ -9,6 +9,17 @@
 	if (result.found === false) game_log("Nothing caught this time");
 }
 example();</div>
+<p><b>Paladin Aura:</b> At level 60, pass the aura state as the second argument, not extra_arg. Choose <span class='dlabel'>"bulwark"</span> (armor and HP), <span class='dlabel'>"sanctuary"</span> (resistance and MP), <span class='dlabel'>"zeal"</span> (damage output and attack frequency), or <span class='dlabel'>"warding"</span> (elemental and status resistances, and reduced MP costs).</p>
+<div class='code'>async function select_aura() {
+	try {
+		var result = await use_skill("paladin_aura", "zeal");
+		game_log("Aura: " + result.aura);
+	} catch (error) {
+		game_log("Aura change failed: " + error.reason);
+	}
+}
+select_aura();</div>
+<p>Switching costs no MP and has a 500ms cooldown. The aura stays active passively; do not recast it to refresh its 60-second condition. Switching removes your previous aura's contribution immediately. Only the strongest nearby source of each state applies, while different states from different Paladins can coexist. See <span class='dlabel'>G.skills.paladin_aura.states</span> for the stat values.</p>
 
 <p></p>
 <span class='redlabel'>"source"</span>

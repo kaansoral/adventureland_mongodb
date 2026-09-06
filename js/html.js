@@ -70,7 +70,7 @@ function open_chat_window(type, id, open) {
 		cid = type + id,
 		zindex = 70 + cwindows.length - docked.length,
 		onkeypress = 'last_say=\"' + cid + '\"; if(event.keyCode==13) private_say(\"' + id + '\",$(this).rfval())';
-	if (type == "party") (name = "Party"), (onkeypress = 'last_say=\"' + cid + '\"; if(event.keyCode==13) party_say($(this).rfval())');
+	if (type == "party") ((name = "Party"), (onkeypress = 'last_say=\"' + cid + '\"; if(event.keyCode==13) party_say($(this).rfval())'));
 	var html = "<div style='position:fixed; bottom: 0px; left: 0px; background: black; border: 5px solid gray; z-index: " + zindex + "' id='chatw" + cid + "' onclick='last_say=\"" + cid + "\"'>";
 	html +=
 		"<div style='border-bottom: 5px solid gray; text-align: center; font-size: 24px; line-height: 24px; padding: 2px 6px 2px 6px;'><span style='float:left' class='clickable chatb" +
@@ -113,7 +113,7 @@ function prop_line(prop, value, args) {
 		bold = "";
 	if (!args) args = {};
 	if (args.bold) bold = "font-weight: bold;";
-	if (is_string(args)) (color = args), (args = {});
+	if (is_string(args)) ((color = args), (args = {}));
 	if (!color) color = args.color || "grey";
 	return "<div><span style='color: " + color + "; " + bold + "'>" + prop + "</span>: " + value + "</div>";
 }
@@ -255,6 +255,163 @@ function render_rewards() {
 	show_json(S.rewards);
 }
 
+function anniversary_event_html() {
+	var html =
+		"<div style='width:860px;max-width:calc(100vw - 40px);max-height:calc(100vh - 40px);display:flex;flex-direction:column;box-sizing:border-box;background:black;border:5px solid gray;color:#E5E5E5;font-size:24px;line-height:26px'>";
+	html += "<div style='padding:14px 16px;border-bottom:4px solid gray;display:flex;flex-shrink:0;align-items:center;justify-content:space-between;gap:12px'>";
+	html += "<div><div style='color:#F0B742;font-size:32px;line-height:34px'>10 Years of Adventure</div><div style='color:#AAA'>Come celebrate with everyone on your server.</div></div>";
+	html += anniversary_ui_button("Close", "hide_modal()") + "</div>";
+	html += "<div id='anniversary-event-content' style='padding:16px;min-height:0;overflow-y:auto;box-sizing:border-box;overflow-wrap:break-word'>";
+	html += "<div id='anniversary-event-status'>" + anniversary_event_status_html() + "</div>";
+	html += "<div style='display:flex;flex-wrap:wrap;gap:24px;margin-top:16px'>";
+	html += "<div id='anniversary-event-collection' style='flex:1 1 310px;min-width:0;border-top:2px solid #555;padding-top:14px'>" + anniversary_collection_html() + "</div>";
+	html += "<div style='flex:1 1 310px;min-width:0;border-top:2px solid #555;padding-top:14px'>";
+	html += "<div style='display:flex;align-items:center;gap:10px'><div style='flex:none'>";
+	html += item_container({ skin: G.items.sixcake.skin, size: 40, draggable: false, onclick: "pcs(event);render_item_info('sixcake',0)" }, { name: "sixcake" });
+	html += "</div><div><div style='color:#F0B742'>Inside a Sixfold Cake</div><div style='font-size:22px;line-height:24px'>Equipment or a rare anniversary cosmetic, plus three Anniversary Gifts.</div></div></div>";
+	html += "<div style='display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:8px 0'>";
+	(G.drops.anniversary_equipment || []).forEach(function (drop) {
+		var name = drop[1],
+			item = G.items[name];
+		if (!item || !/^[a-z0-9_]+$/.test(name)) return;
+		html += "<div title='" + html_escape(item.name) + "' style='text-align:center'>";
+		html += item_container({ skin: item.skin, size: 40, draggable: false, onclick: "pcs(event);render_item_info('" + name + "',0)" }, { name: name });
+		html += "</div>";
+	});
+	html += "</div><div style='color:#AAA;font-size:20px;line-height:22px'>Click an item for stats.</div>";
+	html += "<div style='color:#AAA;font-size:22px;line-height:24px;margin-top:4px'>Want a particular gift? Keep the cake for Mira's recipes instead.</div>";
+	html += "<div style='display:flex;align-items:center;gap:10px;margin-top:14px'><div style='flex:none'>";
+	html += item_container({ skin: G.items.anniversarygift.skin, size: 40, draggable: false, onclick: "pcs(event);render_item_info('anniversarygift',0)" }, { name: "anniversarygift" });
+	html +=
+		"</div><div><div style='color:#7CC7BB'>Inside an Anniversary Gift</div><div style='font-size:22px;line-height:24px'>Gold, returning anniversary items, or a lucky surprise. Click the Gift for drop rates.</div></div></div>";
+	html += "<div style='display:flex;flex-wrap:wrap;gap:12px;margin-top:12px'>";
+	["makeawish", "ikissyou"].forEach(function (name) {
+		html += "<div style='flex:1 1 280px;display:flex;align-items:center;gap:8px'><div style='flex:none'>";
+		html += item_container({ skin: G.skills[name].skin, size: 40, draggable: false, onclick: "pcs(event);render_item_info('cxjar',0,'" + name + "')" });
+		html += "</div><div style='font-size:22px;line-height:24px;color:#AAA'><span style='color:#E990AB'>" + (name == "makeawish" ? "Make a Wish" : "I Kiss You") + "</span><br>";
+		html += (name == "makeawish" ? "An emote to keep. Craft its jar with Mira, or find it in a Gift." : "Keep the kiss with a very rare jar from Cakes or Gifts.") + "</div></div>";
+	});
+	html += "</div></div></div><div style='border-top:2px solid #555;margin-top:14px;padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap'>";
+	html += "<span style='color:#AAA;font-size:22px'>Monsters can drop slices and Gifts, too.</span>";
+	html += anniversary_ui_button("Event Guide", 'open_guide("event-anniversary","/docs/ref/event-anniversary")');
+	return html + "</div></div></div>";
+}
+
+function anniversary_event_status_html() {
+	var state = (typeof S != "undefined" && S.anniversary) || {},
+		live = anniversary_live_event(),
+		html = "";
+	if (!state.active) return "<div style='color:#AAA'>The anniversary event has ended. You can still open your Cakes and Gifts.</div>";
+	html += "<div style='display:flex;align-items:start;justify-content:space-between;gap:12px;flex-wrap:wrap'>";
+	html += "<div style='min-width:0;flex:1 1 260px'><div style='color:#E990AB'>I Kiss You</div>";
+	if (live) {
+		var map = G.maps[state.map],
+			host = character && (String(character.id) == String(state.id) || character.name == state.target),
+			remaining = Math.max(1, Math.ceil((Number(state.expires) - Date.now()) / 60000));
+		if (host) html += "<div style='color:#FFE2A0;font-size:28px;line-height:30px'>You're the featured player!</div>";
+		else html += "<div style='font-size:28px;line-height:30px'>Find <span style='color:#FFE2A0'>" + html_escape(String(state.target || "the featured player")) + "</span></div>";
+		html += "<div style='color:#AAA'>" + html_escape((map && map.name) || String(state.map || "")) + " (" + Math.round(state.x || 0) + ", " + Math.round(state.y || 0) + ")</div></div>";
+		html += "<div style='color:#F0B742'>" + (Number.isFinite(remaining) ? remaining + " minute" + (remaining == 1 ? "" : "s") + " left" : "Round in progress") + "</div></div>";
+		if (host) html += "<div style='margin-top:10px'>Stay nearby and welcome your visitors. Your first visitor brings you one Anniversary Gift.</div>";
+		else
+			html +=
+				"<div style='display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px'>" +
+				anniversary_ui_button("Find Player", "find_anniversary_player()") +
+				anniversary_ui_button("I Kiss You", "anniversary_kiss()", !anniversary_can_visit() && !(character.acx && character.acx.ikissyou)) +
+				"<span style='color:#AAA'>Get close, then send a kiss.</span></div>";
+	} else {
+		html += "<div style='font-size:28px;line-height:30px'>Who will we visit next?</div></div>";
+		html +=
+			"<div style='color:#F0B742'>" +
+			(Number.isFinite(state.next) && state.next > Date.now() ? "Next round in " + Math.ceil((state.next - Date.now()) / 60000) + " min" : "Waiting for a player") +
+			"</div></div>";
+		html += "<div style='margin-top:10px'>Every 30 minutes, someone on this server is featured. Everyone else online gets an Anniversary Visit condition lasting five minutes.</div>";
+	}
+	if (!host)
+		html +=
+			"<div style='color:#9ACA87;margin-top:10px'>Use your Anniversary Visit: 1 Cake Slice + 1 Anniversary Gift.</div><div style='font-size:22px;line-height:24px;color:#AAA'>Find the featured player and send a kiss before your condition expires. The kiss uses it up. No jar needed.</div>";
+	if (live && !host && !anniversary_can_visit()) html += "<div style='color:#AAA;margin-top:8px'>No Anniversary Visit remaining for this round. Be online when the next player is selected.</div>";
+	return html;
+}
+
+function anniversary_collection_html() {
+	var state = character && anniversary_recipe_state("sixcake"),
+		rows = state ? state.rows : [],
+		owned = rows.filter(function (row) {
+			return row.count >= row.needed;
+		}).length,
+		npc = G.npcs.anniversary_baker,
+		html =
+			"<div style='display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap'><span style='color:#F0B742'>Put the cake together</span><span style='color:" +
+			(owned == 6 ? "#9ACA87" : "#AAA") +
+			"'>" +
+			owned +
+			" / 6 flavors in your bag</span></div>";
+	html += "<div style='margin:6px 0 10px;font-size:22px;line-height:24px'>Your account always finds the same flavor. Trade your spare slices for the other five.</div>";
+	html += "<div style='display:flex;flex-wrap:wrap;justify-content:center;gap:8px'>";
+	rows.forEach(function (row) {
+		var item = G.items[row.name],
+			enough = row.count >= row.needed;
+		html += "<div style='width:96px;text-align:center;font-size:20px;line-height:22px'>";
+		html += item_container({ skin: item.skin, size: 40, draggable: false, bcolor: enough ? "#597F5B" : "gray", onclick: "pcs(event);render_item_info('" + row.name + "',0)" }, { name: row.name });
+		html +=
+			"<div>" +
+			html_escape(item.name.replace(/ Slice$/, "")) +
+			"</div><div style='color:" +
+			(enough ? "#9ACA87" : "#AAA") +
+			"'>" +
+			(enough ? to_pretty_num(row.count) + " in bag" : "Missing") +
+			"</div></div>";
+	});
+	html += "</div><div style='display:flex;align-items:center;gap:10px;margin-top:14px'>";
+	if (npc) html += "<div style='flex:none'>" + sprite(npc.skin, { cx: clone(npc.cx || {}), cosmetic_head_y: npc.cosmetic_head_y, width: 52, height: 72, scale: 2 }) + "</div>";
+	html +=
+		"<div style='flex:1;min-width:0'><span style='color:#FFE2A0'>Mira</span> <span style='color:#AAA'>/ Mainland</span><div style='font-size:22px;line-height:24px;margin:4px 0 8px'>Bring all six slices + <span style='color:#F0B742'>" +
+		to_pretty_num(state ? state.recipe.cost : G.craft.sixcake.cost) +
+		" Gold</span>.</div>";
+	html += anniversary_ui_button("Visit Mira", 'smart_smart_move("npc","anniversary_baker")', !(typeof S != "undefined" && S.anniversary && S.anniversary.active));
+	html += " " + anniversary_ui_button("Combine Cake", 'hide_modal();render_anniversary_baker("combine")', !(typeof S != "undefined" && S.anniversary && S.anniversary.active));
+	html += "<div style='font-size:20px;line-height:22px;color:#AAA;margin-top:6px'>Mira is at (64, -88). Click her, choose Combine Cake, then Make Cake. You must be nearby to craft.</div>";
+	return html + "</div></div>";
+}
+
+function render_anniversary_event(refresh) {
+	if (no_html) return;
+	if (!$("#anniversary-event-panel").length) {
+		if (refresh) return;
+		show_modal("<div id='anniversary-event-panel'>" + anniversary_event_html() + "</div>", { wrap: false, styles: "padding:0" });
+	}
+	// Keep the window and its scroll position intact when server state changes.
+	var status = anniversary_event_status_html(),
+		collection = JSON.stringify([
+			!!(S.anniversary && S.anniversary.active),
+			character &&
+				G.craft.sixcake.items.map(function (row) {
+					return anniversary_ingredient_count(row[1], row[2]);
+				}),
+		]),
+		$status = $("#anniversary-event-status"),
+		$collection = $("#anniversary-event-collection");
+	if ($status.data("content") !== status) $status.html(status).data("content", status);
+	if ($collection.data("counts") !== collection) $collection.html(anniversary_collection_html()).data("counts", collection);
+}
+
+function anniversary_ui_button(label, action, disabled, selected) {
+	return (
+		"<button type='button' class='gamebutton' style='font-family:inherit;font-size:22px;line-height:24px;padding:6px 8px;border-color:" +
+		(selected ? "#F0B742" : "gray") +
+		";" +
+		(disabled ? "opacity:0.45;cursor:default;" : "") +
+		"'" +
+		(disabled ? " disabled" : " onclick='pcs(event);" + action + "'") +
+		">" +
+		html_escape(label) +
+		"</button>"
+	);
+}
+
+var anniversary_visible_skill = false;
+
 function open_interaction_guide(key) {
 	var definition = G.docs && G.docs.interactions && G.docs.interactions[key];
 	if (!definition || !definition.article) return add_log("No guide is available for this interaction yet.", "gray");
@@ -356,8 +513,8 @@ function render_server() {
 				lcolor = "#ECECEC",
 				lphrase = "EVENT!",
 				s = type;
-			if (type == "goobrawl") (lcolor = "#FF5D34"), (s = "rgoo");
-			if (type == "abtesting") (lcolor = "#E10029"), (s = "thehelmet");
+			if (type == "goobrawl") ((lcolor = "#FF5D34"), (s = "rgoo"));
+			if (type == "abtesting") ((lcolor = "#E10029"), (s = "thehelmet"));
 			else if (G.monsters[type] && G.monsters[type].announce) lcolor = G.monsters[type].announce;
 			html += " <div class='gamebutton' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_guide(\"event-" + type + '","/docs/ref/event-' + type + "\")'>";
 			html += sprite(s, { overflow: true });
@@ -371,8 +528,8 @@ function render_server() {
 			var scolor = "#ECECEC",
 				lcolor = "#ECECEC",
 				lphrase = "LIVE";
-			if (type == "snowman") (lcolor = colors.xmasgreen), (scolor = colors.xmas);
-			if (type == "grinch") (scolor = colors.xmasgreen), (lcolor = colors.xmas), (lphrase = "BEWARE");
+			if (type == "snowman") ((lcolor = colors.xmasgreen), (scolor = colors.xmas));
+			if (type == "grinch") ((scolor = colors.xmasgreen), (lcolor = colors.xmas), (lphrase = "BEWARE"));
 			html += " <div class='gamebutton' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); emonster_click(\"" + type + "\")'>";
 			html += sprite(type, { overflow: true });
 			if (!S[type].live) html += "<div style='color:" + scolor + "; margin-top: 1px'>" + parseInt(round(-msince(new Date(S[type].spawn)))) + "M</div>";
@@ -417,9 +574,22 @@ function render_server() {
 		html += "</div>";
 		content = true;
 	}
+	if (S.anniversary && S.anniversary.active) {
+		html += " <div class='gamebutton' style='padding:6px 8px;font-size:24px;line-height:18px' onclick='pcs(event);render_anniversary_event()'>";
+		html += "<div style='margin-top:-1px;margin-left:-3px;margin-right:-3px'>" + item_container({ skin: "anniversarygift", bcolor: "black", draggable: false }) + "</div>";
+		html += "<div style='color:#F0B742;margin-top:1px'>" + (anniversary_live_event() ? "KISS!" : "10 YEARS") + "</div></div>";
+		content = true;
+	}
 	$("#serverinfo").html(html);
 	if (!content) $("#serverinfo").hide();
 	else $("#serverinfo").css("display", "flex");
+	if (!no_html && $("#anniversary-event-panel").length) render_anniversary_event(true);
+	var anniversary_available = anniversary_can_visit();
+	if (!no_html && character && anniversary_visible_skill != anniversary_available) {
+		anniversary_visible_skill = anniversary_available;
+		render_skillbar();
+		if (skillsui) (render_skills(), render_skills());
+	}
 }
 
 function render_character_sheet() {
@@ -429,7 +599,7 @@ function render_character_sheet() {
 	html += "<div><span style='color:gray'>XP:</span> " + to_pretty_num(character.xp) + " / " + to_pretty_num(character.max_xp) + "</div>";
 	var divider = 1,
 		disclaimer = "";
-	if (pvp && !(!is_pvp && G.maps[character.map].safe_pvp)) (divider = 10), (disclaimer = "<span style='color:#605B85'>(PVP)</span>");
+	if (pvp && !(!is_pvp && G.maps[character.map].safe_pvp)) ((divider = 10), (disclaimer = "<span style='color:#605B85'>(PVP)</span>"));
 	var lost_xp = floor(min(max((character.max_xp * 0.01) / divider, (character.xp * 0.02) / divider), character.xp));
 	if (character.ctype != "merchant") html += "<div><span style='color:gray'>Max XP Loss:</span> " + to_pretty_num(lost_xp) + " " + disclaimer + "</div>";
 	if (character.party && party && party[character.name])
@@ -611,12 +781,12 @@ function render_monster(monster) {
 		styles = (def.explanation && "max-width: 200px") || "",
 		name = def.name;
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top; " + styles + "' class='renderedinfo'>";
-	if (monster.dead) (name += " X"), (monster.hp = 0);
+	if (monster.dead) ((name += " X"), (monster.hp = 0));
 	if (monster.level > 1) name += " Lv." + monster.level;
 	var hp = monster.hp,
 		max_hp = monster.max_hp,
 		xp = monster.xp;
-	if (max_hp >= 1000000) (hp = to_pretty_num(hp)), (max_hp = to_pretty_num(max_hp));
+	if (max_hp >= 1000000) ((hp = to_pretty_num(hp)), (max_hp = to_pretty_num(max_hp)));
 	if (xp >= 1000000) xp = to_pretty_num(xp);
 	html += info_line({ line: name, color: "gray", onclick: "render_monster_info('" + monster.mtype + "')" });
 	html += info_line({
@@ -873,7 +1043,7 @@ function render_slots(player, args) {
 			chtml = "",
 			cached = cache_slots && cache_slots[slot],
 			cid = "slot" + slot; // empty border color
-		if (!window.mode || mode.empty_borders_darker) (ecolor = "#222424"), (ecolor = "#292929"); //,ecolor="black";
+		if (!window.mode || mode.empty_borders_darker) ((ecolor = "#222424"), (ecolor = "#292929")); //,ecolor="black";
 		if (!op) op = 0.4;
 		if (player.slots[slot]) {
 			var current = player.slots[slot];
@@ -927,8 +1097,8 @@ function render_slots(player, args) {
 		var row = 4,
 			col = 4,
 			found = false;
-		for (var t = 30; t >= 25; t--) if ("trade" + t in player.slots) (row = 5), (col = 6), (found = true);
-		for (var t = 24; t >= 17; t--) if (!found && "trade" + t in player.slots) (row = 4), (col = 6), (found = true);
+		for (var t = 30; t >= 25; t--) if ("trade" + t in player.slots) ((row = 5), (col = 6), (found = true));
+		for (var t = 24; t >= 17; t--) if (!found && "trade" + t in player.slots) ((row = 4), (col = 6), (found = true));
 		html += "<div class='cmerchant'>";
 		for (var i = 0; i < row; i++) {
 			html += "<div>";
@@ -1122,7 +1292,7 @@ function render_items_npc(pack) {
 			.on("click", item_click(entity))
 			.addClass("clickable");
 	}
-	if (!inventory) render_inventory(), (inventory_opened_for = topleft_npc);
+	if (!inventory) (render_inventory(), (inventory_opened_for = topleft_npc));
 }
 
 function ui_items_same(cached, current) {
@@ -1317,7 +1487,7 @@ function render_craftsman() {
 	reset_inventory(1);
 	topleft_npc = "craftsman";
 	rendered_target = topleft_npc;
-	(cr_items = e_array(9)), (cr_last = 0);
+	((cr_items = e_array(9)), (cr_last = 0));
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top; text-align: center'>";
 	/*html+="<div class='ering ering1 mb10'>";
 			html+="<div class='ering ering2'>";
@@ -1348,7 +1518,73 @@ function render_craftsman() {
 		"</div></div>";
 	html += "</div>";
 	$("#topleftcornerui").html(html);
-	if (!inventory) render_inventory(), (inventory_opened_for = topleft_npc);
+	if (!inventory) (render_inventory(), (inventory_opened_for = topleft_npc));
+}
+
+var anniversary_baker_tab = "combine",
+	anniversary_baker_recipe = "candleward";
+
+function render_anniversary_baker(tab, selected_recipe) {
+	if (no_html || !character || !G.npcs.anniversary_baker) return;
+	if (tab == "combine" || tab == "gifts") anniversary_baker_tab = tab;
+	if (selected_recipe && G.craft[selected_recipe] && G.craft[selected_recipe].quest == "anniversary_baker" && selected_recipe != "sixcake") anniversary_baker_recipe = selected_recipe;
+	var npc = G.npcs.anniversary_baker,
+		html =
+			"<div style='width:450px;max-width:calc(100vw - 24px);max-height:calc(100vh - 24px);overflow-y:auto;box-sizing:border-box;background:black;border:5px solid gray;padding:12px;font-size:22px;line-height:25px;text-align:center'>";
+	topleft_npc = rendered_target = "anniversary_baker";
+	html += "<div style='display:flex;align-items:center;justify-content:center;gap:10px;text-align:left'>";
+	html += sprite(npc.skin, { cx: clone(npc.cx || {}), cosmetic_head_y: npc.cosmetic_head_y, width: 78, height: 108, scale: 3 });
+	html += "<div><div style='font-size:30px;color:#F0B742'>" + html_escape(npc.name) + "</div><div>One of each flavor.<br>I'll put the cake together.</div></div></div>";
+	html += "<div style='display:flex;justify-content:center;gap:6px;margin-bottom:12px'>";
+	html += anniversary_ui_button("Combine Cake", 'render_anniversary_baker("combine")', false, anniversary_baker_tab == "combine");
+	html += anniversary_ui_button("Choose a Gift", 'render_anniversary_baker("gifts")', false, anniversary_baker_tab == "gifts");
+	html += " " + anniversary_ui_button("INFO", 'open_interaction_guide("anniversary")') + "</div>";
+	var name = anniversary_baker_tab == "combine" ? "sixcake" : anniversary_baker_recipe,
+		state = anniversary_recipe_state(name);
+	if (anniversary_baker_tab == "gifts") {
+		html += "<div style='display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:12px'>";
+		Object.keys(G.craft).forEach(function (recipe_name) {
+			var recipe = G.craft[recipe_name];
+			if (recipe_name == "sixcake" || recipe.quest != "anniversary_baker" || !/^[a-z0-9_]+$/.test(recipe_name)) return;
+			var output = recipe.output || { name: recipe_name },
+				item = G.items[output.name];
+			if (!item) return;
+			html += "<div style='padding:3px;border:2px solid " + (recipe_name == name ? "#F0B742" : "#555") + "'>";
+			html += item_container({ skin: item.skin, size: 40, draggable: false, onclick: "pcs(event);render_anniversary_baker('gifts','" + recipe_name + "')" }, output);
+			html += "<div style='font-size:18px;line-height:20px;overflow-wrap:break-word'>" + html_escape(recipe_name == "makeawishjar" ? "Make a Wish Jar" : item.name) + "</div></div>";
+		});
+		html += "</div>";
+	}
+	if (!state) html += "<div>Mira is getting ready.</div>";
+	else {
+		var output = state.recipe.output || { name: name },
+			item = G.items[output.name],
+			missing = state.rows.filter(function (row) {
+				return row.count < row.needed;
+			}).length;
+		if (anniversary_baker_tab == "gifts") html += "<div style='color:#FFE2A0;margin-bottom:8px'>" + html_escape(name == "makeawishjar" ? "Make a Wish Jar" : item.name) + "</div>";
+		html += "<div style='display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px'>";
+		state.rows.forEach(function (row) {
+			var definition = G.items[row.name],
+				enough = row.count >= row.needed;
+			html += "<div style='padding:5px 2px;border:2px solid " + (enough ? "#597F5B" : "#77504F") + "'>";
+			html += item_container({ skin: definition.skin, size: 40, draggable: false, bcolor: enough ? "#597F5B" : "#77504F" }, { name: row.name, level: row.level });
+			html += "<div style='font-size:18px;line-height:20px'>" + html_escape(definition.name) + (row.level !== undefined ? " +" + row.level : "") + "</div>";
+			html += "<div style='color:" + (enough ? "#9ACA87" : "#E98C83") + "'>" + to_pretty_num(row.count) + " / " + to_pretty_num(row.needed) + "</div></div>";
+		});
+		html += "</div>";
+		if (anniversary_baker_tab == "combine") html += "<div style='margin-top:10px'>" + item_container({ skin: item.skin, size: 40, draggable: false, onclick: "pcs(event);render_item_info('sixcake',0)" }, output) + "</div>";
+		html += "<div style='margin-top:10px;color:" + ((character.gold || 0) >= state.recipe.cost ? "#E8C66B" : "#E98C83") + "'>" + to_pretty_num(state.recipe.cost) + " Gold</div>";
+		if (missing) html += "<div style='color:#E98C83;font-size:20px'>Missing " + missing + (anniversary_baker_tab == "combine" ? " flavor" : " ingredient") + (missing == 1 ? "" : "s") + "</div>";
+		html += "<div style='margin-top:8px'>" + anniversary_ui_button(anniversary_baker_tab == "combine" ? "Make Cake" : "Make Gift", 'anniversary_craft("' + name + '")', !state.ready) + "</div>";
+		if (anniversary_baker_tab == "combine")
+			html += "<div style='margin-top:10px;color:#BBB;font-size:20px;line-height:23px'>Open the cake for equipment or a rare anniversary cosmetic, plus three Gifts. Or bring it back to choose a specific gift.</div>";
+		else html += "<div style='margin-top:8px;color:#BBB;font-size:18px'>Only the listed +0 equipment and ingredients are used.</div>";
+	}
+	if (!(S.anniversary && S.anniversary.active)) html += "<div style='margin-top:10px;color:#E98C83'>The anniversary workshop is closed.</div>";
+	html += "</div>";
+	$("#topleftcornerui").html(html);
+	if (!inventory) (render_inventory(), (inventory_opened_for = topleft_npc));
 }
 
 function render_dismantler() {
@@ -1373,7 +1609,7 @@ function render_dismantler() {
 	html += "<div style='margin-top: 12px'><div class='gamebutton clickable' onclick='dismantle()'>" + button + "</div></div>";
 	html += "</div>";
 	$("#topleftcornerui").html(html);
-	if (!inventory) render_inventory(), (inventory_opened_for = topleft_npc);
+	if (!inventory) (render_inventory(), (inventory_opened_for = topleft_npc));
 }
 
 var last_lmode = "lock";
@@ -1383,8 +1619,8 @@ function render_locksmith(mode) {
 	var button = "LOCK",
 		f = "lock_item",
 		shade = "shade_seal";
-	if (mode == "unlock") (button = "UNLOCK"), (f = "unlock_item"), (shade = "shade_unlock");
-	if (mode == "seal") (button = "SEAL"), (f = "seal_item"), (shade = "shade_lock");
+	if (mode == "unlock") ((button = "UNLOCK"), (f = "unlock_item"), (shade = "shade_unlock"));
+	if (mode == "seal") ((button = "SEAL"), (f = "seal_item"), (shade = "shade_lock"));
 	reset_inventory(1);
 	topleft_npc = "locksmith";
 	rendered_target = topleft_npc;
@@ -1404,7 +1640,7 @@ function render_locksmith(mode) {
 	html += "<div style='margin-top: 12px'><div class='gamebutton clickable' onclick='" + f + "()'>" + button + "</div></div>";
 	html += "</div>";
 	$("#topleftcornerui").html(html);
-	if (!inventory) render_inventory(), (inventory_opened_for = topleft_npc);
+	if (!inventory) (render_inventory(), (inventory_opened_for = topleft_npc));
 }
 
 function render_scrollsmith() {
@@ -1430,10 +1666,11 @@ function render_scrollsmith() {
 	html += "<div style='margin-top: 12px'><div class='gamebutton clickable' onclick='" + f + "()'>" + button + "</div></div>";
 	html += "</div>";
 	$("#topleftcornerui").html(html);
-	if (!inventory) render_inventory(), (inventory_opened_for = topleft_npc);
+	if (!inventory) (render_inventory(), (inventory_opened_for = topleft_npc));
 }
 
 function render_recipe(element, type, name) {
+	if (type != "dismantle" && G.craft[name] && G.craft[name].output) return show_recipe(name);
 	last_selector = "#recipe-item";
 	var html;
 	if (type != "dismantle") {
@@ -1447,6 +1684,7 @@ function render_recipe(element, type, name) {
 
 var r_page = {};
 function render_recipes(type) {
+	if (type == "anniversary_baker") return render_anniversary_baker("gifts");
 	if (!type) type = "";
 	reset_inventory(1);
 	topleft_npc = "recipes";
@@ -1494,6 +1732,7 @@ function render_recipes(type) {
 }
 
 function render_recipes_old(quest) {
+	if (quest == "anniversary_baker") return render_anniversary_baker("gifts");
 	topleft_npc = "recipes";
 	rendered_target = topleft_npc;
 	i = 0;
@@ -1527,14 +1766,14 @@ function render_exchange_shrine(type) {
 	topleft_npc = "exchange";
 	rendered_target = topleft_npc;
 	exchange_type = type;
-	if (type == "leather") (shade = "leather"), (button = "GIVE");
-	if (type == "lostearring") (shade = "lostearring"), (button = "PROVIDE");
-	if (type == "mistletoe") (shade = "mistletoe"), (button = "GIVE IT");
-	if (type == "candycane") (shade = "candycane"), (button = "FEED");
-	if (type == "ornament") (shade = "ornament"), (button = "GIVE");
-	if (type == "seashell") (shade = "seashell"), (button = "GIVE");
-	if (type == "gemfragment") (shade = "gemfragment"), (button = "PROVIDE");
-	if (type == "cx") (shade = "cosmo0"), (button = "SHAZAM");
+	if (type == "leather") ((shade = "leather"), (button = "GIVE"));
+	if (type == "lostearring") ((shade = "lostearring"), (button = "PROVIDE"));
+	if (type == "mistletoe") ((shade = "mistletoe"), (button = "GIVE IT"));
+	if (type == "candycane") ((shade = "candycane"), (button = "FEED"));
+	if (type == "ornament") ((shade = "ornament"), (button = "GIVE"));
+	if (type == "seashell") ((shade = "seashell"), (button = "GIVE"));
+	if (type == "gemfragment") ((shade = "gemfragment"), (button = "PROVIDE"));
+	if (type == "cx") ((shade = "cosmo0"), (button = "SHAZAM"));
 	e_item = null;
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top; text-align: center'>";
 	html += "<div class='ering ering1 mb10'>";
@@ -1556,7 +1795,7 @@ function render_exchange_shrine(type) {
 	html += "</div>";
 	html += "<div id='exc-ui' class='rendercontainer' style='display: inline-block; vertical-align: top; margin-left: 5px'>" + "</div>";
 	$("#topleftcornerui").html(html);
-	if (!inventory) render_inventory(), (inventory_opened_for = topleft_npc);
+	if (!inventory) (render_inventory(), (inventory_opened_for = topleft_npc));
 	return (!character.q.exchange && originals) || [];
 }
 
@@ -1587,7 +1826,7 @@ function render_pet_shrine() {
 	html += "<div><div class='gamebutton clickable' onclick='exchange()'>RELEASE</div></div>";
 	html += "</div>";
 	$("#topleftcornerui").html(html);
-	if (!inventory) render_inventory(), (inventory_opened_for = topleft_npc);
+	if (!inventory) (render_inventory(), (inventory_opened_for = topleft_npc));
 	return (!character.q.exchange && originals) || [];
 }
 
@@ -1611,7 +1850,7 @@ function render_none_shrine(type) {
 	html += "<div><div class='gamebutton clickable' onclick='poof()'>" + button + "</div></div>";
 	html += "</div>";
 	$("#topleftcornerui").html(html);
-	if (!inventory) render_inventory(), (inventory_opened_for = topleft_npc);
+	if (!inventory) (render_inventory(), (inventory_opened_for = topleft_npc));
 }
 
 function render_shells_buyer() {
@@ -1629,7 +1868,7 @@ function render_shells_buyer() {
 	html += "<div>" + prefix + "<span class='clickable' onclick='topleft_npc=false;' style='color: #555556'>Nope</span></div>";
 	html += "</div>";
 	$("#topleftcornerui").html(html);
-	if (!inventory) render_inventory(), (inventory_opened_for = topleft_npc);
+	if (!inventory) (render_inventory(), (inventory_opened_for = topleft_npc));
 }
 
 function render_upgrade_shrine(explicit) {
@@ -1638,7 +1877,7 @@ function render_upgrade_shrine(explicit) {
 		already = topleft_npc == "upgrade";
 	topleft_npc = "upgrade";
 	rendered_target = topleft_npc;
-	(u_item = null), (u_scroll = null), (u_offering = null);
+	((u_item = null), (u_scroll = null), (u_offering = null));
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top'>",
 		rid = randomStr(6),
 		core = "";
@@ -1674,7 +1913,7 @@ function render_upgrade_shrine(explicit) {
 		$(".loadertheuitem" + rid).css("opacity", 0.8);
 		add_tint(".loadertheuitem" + rid, { ms: character.q.upgrade.ms, start: future_ms(character.q.upgrade.ms - character.q.upgrade.len), type: "progress", upgrade: true });
 	}
-	if (!inventory && explicit) render_inventory(), (inventory_opened_for = topleft_npc);
+	if (!inventory && explicit) (render_inventory(), (inventory_opened_for = topleft_npc));
 	return (!character.q.upgrade && originals) || [];
 }
 
@@ -1684,7 +1923,7 @@ function render_compound_shrine(explicit) {
 		already = topleft_npc == "compound";
 	topleft_npc = "compound";
 	rendered_target = topleft_npc;
-	(c_items = e_array(3)), (c_scroll = null), (c_offering = null);
+	((c_items = e_array(3)), (c_scroll = null), (c_offering = null));
 	c_last = 0;
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top'>",
 		rid = randomStr(6),
@@ -1726,7 +1965,7 @@ function render_compound_shrine(explicit) {
 		$(".loadertheuitem" + rid).css("opacity", 0.8);
 		add_tint(".loadertheuitem" + rid, { ms: character.q.compound.ms, start: future_ms(character.q.compound.ms - character.q.compound.len), type: "progress", compound: true });
 	}
-	if (!inventory && explicit) render_inventory(), (inventory_opened_for = topleft_npc);
+	if (!inventory && explicit) (render_inventory(), (inventory_opened_for = topleft_npc));
 	return (!character.q.compound && originals) || [];
 }
 
@@ -1792,7 +2031,7 @@ function render_dice() {
 	html += "</div>";
 	html += "</div>";
 	$("#topleftcornerui").html(html);
-	if (!inventory) render_inventory(), (inventory_opened_for = topleft_npc);
+	if (!inventory) (render_inventory(), (inventory_opened_for = topleft_npc));
 	on_dice_change();
 }
 
@@ -1814,7 +2053,7 @@ function render_tavern_info(data) {
 	html += "</div>";
 	html += "</div>";
 	$("#topleftcornerui").html(html);
-	if (!inventory) render_inventory(), (inventory_opened_for = topleft_npc);
+	if (!inventory) (render_inventory(), (inventory_opened_for = topleft_npc));
 }
 
 function on_donate_change() {
@@ -1843,7 +2082,7 @@ function render_donate() {
 	html += "</div>";
 	html += "</div>";
 	$("#topleftcornerui").html(html);
-	if (!inventory) render_inventory(), (inventory_opened_for = topleft_npc);
+	if (!inventory) (render_inventory(), (inventory_opened_for = topleft_npc));
 	on_donate_change();
 }
 
@@ -2020,6 +2259,10 @@ function smart_smart_move(type, id) {
 		var npc = G.npcs[id];
 		show_confirm("Smart move to " + npc.name + "?", "Yes", "Cancel", function () {
 			hide_modals();
+			if (id == "anniversary_baker") {
+				var entry = (G.maps.main.seasonal_npcs || []).find(function (entry) { return entry.id == id; });
+				if (entry) return call_code_function_f("smart_move", { map: "main", x: entry.position[0], y: entry.position[1] });
+			}
 			call_code_function_f("smart_move", id);
 		});
 	} else if (type == "monster") {
@@ -2096,7 +2339,7 @@ function render_item_help(container, name, level, pure) {
 	for (var nname in G.npcs) {
 		var done = false;
 		(G.npcs[nname].items || []).forEach(function (item) {
-			if (!done && item && item == name) (done = true), npcs.push(nname);
+			if (!done && item && item == name) ((done = true), npcs.push(nname));
 		});
 	}
 	var monsters = [];
@@ -2180,7 +2423,7 @@ function render_item_help(container, name, level, pure) {
 		html += "<div style='color:#DDDDDD'>Spend At:</div>";
 		var npc = {},
 			npc_id = null;
-		for (var nname in G.npcs) if (G.npcs[nname].token == name) (npc = G.npcs[nname]), (npc_id = nname);
+		for (var nname in G.npcs) if (G.npcs[nname].token == name) ((npc = G.npcs[nname]), (npc_id = nname));
 		html += "<div>";
 		html +=
 			"<div style='display:inline-block; text-align: center; margin-right: 5px' class='clickable' onclick='smart_smart_move(\"npc\",\"" +
@@ -2197,7 +2440,7 @@ function render_item_help(container, name, level, pure) {
 		tokens.forEach(function (token) {
 			var npc = {},
 				npc_id = null;
-			for (var nname in G.npcs) if (G.npcs[nname].token == token) (npc = G.npcs[nname]), (npc_id = nname);
+			for (var nname in G.npcs) if (G.npcs[nname].token == token) ((npc = G.npcs[nname]), (npc_id = nname));
 			html += "<div>";
 			html +=
 				"<div style='display:inline-block; text-align: center; margin-right: 5px' class='clickable' onclick='smart_smart_move(\"npc\",\"" +
@@ -2216,7 +2459,7 @@ function render_item_help(container, name, level, pure) {
 		var npc = G.npcs.exchange,
 			phrase = "Exchange From",
 			id = "exchange";
-		for (var nname in G.npcs) if (G.items[name].quest && G.npcs[nname].quest == G.items[name].quest) (npc = G.npcs[nname]), (phrase = "Bring To"), (id = nname);
+		for (var nname in G.npcs) if (G.items[name].quest && G.npcs[nname].quest == G.items[name].quest) ((npc = G.npcs[nname]), (phrase = "Bring To"), (id = nname));
 		html += "<div style='color:#DDDDDD'>" + phrase + ":</div>";
 		html +=
 			"<div style='display:inline-block; text-align: center' class='clickable' onclick='smart_smart_move(\"npc\",\"" +
@@ -2262,7 +2505,8 @@ function render_item_help(container, name, level, pure) {
 	if (crafting.length) {
 		html += "<div style='color:#DDDDDD'>Used For Crafting:</div>";
 		crafting.forEach(function (i) {
-			html += item_container({ skin: G.items[i].skin, onclick: "stpr(event); render_recipe(null,'','" + i + "')" }, { name: i });
+			var output = G.craft[i].output || { name: i };
+			html += item_container({ skin: G.items[output.name].skin, onclick: "stpr(event); render_recipe(null,'','" + i + "')" }, output);
 		});
 	}
 	if (collecting.length) {
@@ -2276,14 +2520,15 @@ function render_item_help(container, name, level, pure) {
 			npc = G.npcs.craftsman,
 			id = "craftsman",
 			rphrase = "Recipe";
-		if (G.craft[name].quest == "mcollector") (phrase = "Obtainable From"), (npc = G.npcs.mcollector), (id = "mcollector"), (rphrase = "Materials");
-		if (G.craft[name].quest == "witch") (phrase = "Concoctiable At"), (npc = G.npcs.witch), (id = "witch"), (rphrase = "Materials");
+		if (G.craft[name].quest == "mcollector") ((phrase = "Obtainable From"), (npc = G.npcs.mcollector), (id = "mcollector"), (rphrase = "Materials"));
+		if (G.craft[name].quest == "witch") ((phrase = "Concoctiable At"), (npc = G.npcs.witch), (id = "witch"), (rphrase = "Materials"));
+		if (G.craft[name].quest == "anniversary_baker") ((phrase = "Craftable During the Anniversary"), (npc = G.npcs.anniversary_baker), (id = "anniversary_baker"));
 		html += "<div style='color:#DDDDDD'>" + phrase + ":</div>";
 		html +=
 			"<div style='display:inline-block; text-align: center' class='clickable' onclick='smart_smart_move(\"npc\",\"" +
 			id +
 			"\")'><div style='border: 2px solid gray; background-color: #464973; height: 54px; width: 54px; display: inline-block'>" +
-			sprite(npc.skin, { width: 50, height: 50 }) +
+			sprite(npc.skin, { cx: clone(npc.cx || {}), cosmetic_head_y: npc.cosmetic_head_y, width: 50, height: 50 }) +
 			"</div><div></div><div class='tinybutton' style='margin-top: -6px'>" +
 			npc.name +
 			"</div></div>";
@@ -2392,7 +2637,7 @@ function render_monster_info(name) {
 	if (tracker && tracker.monsters) {
 		count = tracker.monsters[name] || 0;
 		diff = tracker.monsters_diff[name] || 0;
-		if (tracker.max.monsters[name]) (mcount = tracker.max.monsters[name][0]), (mowner = tracker.max.monsters[name][1]);
+		if (tracker.max.monsters[name]) ((mcount = tracker.max.monsters[name][0]), (mowner = tracker.max.monsters[name][1]));
 	}
 	html += render_item("html", { pure: true, item: G.monsters[name], prop: G.monsters[name], monster: name, count: count, mcount: mcount, score: count + diff, mowner: mowner });
 	if (MR && MR[name] && MR[name].length) {
@@ -2442,6 +2687,11 @@ function render_monster_info(name) {
 function render_exchange_info(name, count) {
 	var html = "<div style='font-size: 24px'>";
 	html += render_drop([1, "open", name], 1, "#858B8E");
+	if (name == "sixcake") {
+		html += "<div style='margin-top:12px;color:#AAA'>Also receive:</div>";
+		html += render_drop([1, "anniversarygift", 3], 1, "#858B8E");
+		html += render_drop([1.0 / 100000, "cxjar", 1, "ikissyou"], 1, "#858B8E");
+	}
 	html += "</div>";
 	show_modal(html, { wwidth: 240, styles: "max-width: 460px", hideinbackground: true });
 }
@@ -2557,6 +2807,7 @@ function render_skill(selector, skill_name, args) {
 			else if (skill.range_multiplier) html += bold_prop_line("Range", to_pretty_float(skill.range_multiplier || 1) + "X of Character Range", "gray");
 			if (skill.level) html += bold_prop_line("Level Requirement", skill.level, "gray");
 			if (skill.wtype) html += bold_prop_line("Weapon Requirement", is_array(skill.wtype) ? `"${skill.wtype.join('", "')}"` : `"${skill.wtype}"`, "gray");
+			if (skill.offhand_type) html += bold_prop_line("Offhand Requirement", skill.offhand_type.toTitleCase(), "gray");
 			if (skill.max) html += bold_prop_line("Max", skill.max, "gray");
 			if (skill.type == "passive") html += "<div><span style='color: #696C68;'>Passive</span></div>";
 			if (skill.damage_type) {
@@ -2576,6 +2827,9 @@ function render_skill(selector, skill_name, args) {
 				var level = lv[0],
 					value = lv[1];
 				html += bold_prop_line("Output", value + (level > 0 && " (Lv. " + level + ")"), "gray");
+			});
+			(skill.mp_return_levels || []).forEach(function (lv) {
+				html += bold_prop_line("HP loss to MP", Math.round(lv[1] * 100) + "% (Lv. " + lv[0] + ")", colors.mp);
 			});
 			for (var requirement in skill.requirements || {}) {
 				var amount = skill.requirements[requirement];
@@ -2825,9 +3079,10 @@ function render_all_recipes() {
 		if (xprev) html += "<div style='border-top: 4px solid gray; margin-left: -12px; margin-right: -12px'></div>";
 		var prev = false,
 			name = r[0],
-			recipe = r[1];
+			recipe = r[1],
+			output = recipe.output || { name: name };
 		html += "<div style='line-height: 50px; vertical-align: middle; padding: 12px'>";
-		html += item_container({ skin: G.items[name].skin, onclick: "render_item_info('" + name + "')" }, { name: name });
+		html += item_container({ skin: G.items[output.name].skin, onclick: "render_item_info('" + output.name + "')" }, output);
 		html += " <span style='color: #00DE51'>&lt;=</span> ";
 		recipe.items.forEach(function (i) {
 			if (prev) html += " <span style='color: gray'>+</span> ";
@@ -2863,8 +3118,9 @@ function show_recipe(name) {
 	var html = "<div style='font-size: 24px'>";
 	var prev = false,
 		recipe = G.craft[name];
+	var output = recipe.output || { name: name };
 	html += "<div style='line-height: 50px; vertical-align: middle; padding: 12px'>";
-	html += item_container({ skin: G.items[name].skin, onclick: "render_item_info('" + name + "')" }, { name: name });
+	html += item_container({ skin: G.items[output.name].skin, onclick: "render_item_info('" + output.name + "')" }, output);
 	html += " <span style='color: #00DE51'>&lt;=</span> ";
 	recipe.items.forEach(function (i) {
 		if (prev) html += " <span style='color: gray'>+</span> ";
@@ -3045,7 +3301,7 @@ function render_guide(path, title, color) {
 		suffix = "";
 	docs = G.docs.guide;
 	if (!path || is_string(path)) {
-		(path = []), (more = true), (ref = true);
+		((path = []), (more = true), (ref = true));
 	} else {
 		path.forEach(function (step) {
 			for (var i = 0; i < docs.length; i++)
@@ -3129,7 +3385,7 @@ function render_code_articles(path, title, color) {
 	var more = false,
 		suffix = "";
 	docs = G.docs.articles;
-	if (!path) (path = []), (more = true);
+	if (!path) ((path = []), (more = true));
 	else {
 		path.forEach(function (step) {
 			for (var i = 0; i < docs.length; i++)
@@ -3753,14 +4009,14 @@ function render_item(selector, args) {
 				for (var iname in G.craft) {
 					if (G.craft[iname].quest != "mcollector") continue;
 					G.craft[iname].items.forEach(function (i) {
-						if (i[1] == iname) (done = true), (phrase = "Collectable");
+						if (i[1] == iname) ((done = true), (phrase = "Collectable"));
 					});
 				}
 				if (!done) {
 					for (var iname in G.craft) {
 						if (G.craft[iname].quest == "mcollector") continue;
 						G.craft[iname].items.forEach(function (i) {
-							if (i[1] == iname) (done = true), (phrase = "Useable");
+							if (i[1] == iname) ((done = true), (phrase = "Useable"));
 						});
 					}
 				}
@@ -3881,7 +4137,7 @@ function render_item(selector, args) {
 			var f = "buy_with_gold";
 			if (item.days) html += "<div style='color: #C3C3C3'>Lasts 30 days</div>";
 
-			if (cash) (html += "<div style='color: " + colors.cash + "'>" + to_pretty_num(item.cash) + " SHELLS</div>"), (f = "buy_with_shells");
+			if (cash) ((html += "<div style='color: " + colors.cash + "'>" + to_pretty_num(item.cash) + " SHELLS</div>"), (f = "buy_with_shells"));
 			else html += "<div style='color: gold'>" + to_pretty_num(value) + " GOLD</div>";
 			if (cash && character && item.cash >= character.cash) {
 				if (is_electron || is_tauri) {
@@ -4017,7 +4273,7 @@ function render_item(selector, args) {
 				phrase = "Recipe",
 				action = "CRAFT",
 				ecolor = "#419FBE";
-			if (G.craft[name].quest) (phrase = "Collect"), (action = "EXCHANGE"), (ecolor = "#4DC353");
+			if (G.craft[name].quest) ((phrase = "Collect"), (action = "EXCHANGE"), (ecolor = "#4DC353"));
 			html += "<div style='margin-top: 5px'></div>";
 			html += "<div style='color: " + color + "; display: inline-block; border-bottom: 2px dashed gray; margin-bottom: 3px' class='cbold'>" + phrase + "</div>";
 			html += "<div></div>";
@@ -4405,7 +4661,7 @@ function on_drop(event) {
 				change = true;
 			while (change) {
 				change = false;
-				for (var id in keymap) if (keymap[id] && keymap[id].name && keymap[id].name == "throw" && keymap[id].num == num) num++, (change = true);
+				for (var id in keymap) if (keymap[id] && keymap[id].name && keymap[id].name == "throw" && keymap[id].num == num) (num++, (change = true));
 			}
 			keymap[skid] = { name: "throw", num: num };
 		} else keymap[skid] = skname;
@@ -4455,7 +4711,7 @@ function on_drop(event) {
 				console.log("TRADE-ERROR: " + e);
 			}
 		} else {
-			socket.emit("equip", { num: inum, slot: slot }), (move = true), (cache_slots[slot] = -1);
+			(socket.emit("equip", { num: inum, slot: slot }), (move = true), (cache_slots[slot] = -1));
 			push_deferred("equip");
 		}
 	}
@@ -4735,7 +4991,7 @@ function item_container(item, actual) {
 
 function unlocked_skill_mapping(current) {
 	var skill = current && G.skills[current.name || current];
-	if (skill && skill.emote && !(character.acx && character.acx[skill.emote])) return null;
+	if (skill && skill.emote && !(character.acx && character.acx[skill.emote]) && !(skill.emote == "ikissyou" && anniversary_can_visit())) return null;
 	return current;
 }
 
@@ -4781,8 +5037,8 @@ function render_skills() {
 	}
 	var last = 0,
 		right_style = "text-align: right";
-	var html = "<div id='skills-item' class='rendercontainer' style='display: inline-block; vertical-align: top; margin-right: 5px'></div>";
-	html += "<div style='background-color: black; border: 5px solid gray; padding: 2px; font-size: 24px; display: inline-block'>";
+	var html = "<div id='skills-item' class='rendercontainer' style='flex-shrink: 0; max-height: 100vh; overflow-y: auto; margin-right: 5px'></div>";
+	html += "<div id='skills-panel' style='background-color: black; border: 5px solid gray; padding: 2px; font-size: 24px; flex-shrink: 0'>";
 	html +=
 		"<div class='textbutton' style='margin-left: 5px'><span  onclick='btc(event); show_snippet()'>MAPPING</span> <span style='color: " +
 		((skills_page == "I" && "#76BDE5") || "#7C7C7C") +
@@ -4793,8 +5049,8 @@ function render_skills() {
 		";' class='clickable' onclick='btc(event); skills_page=\"U\"; render_skills(); render_skills();'>U</span><!-- <span style='float:right; color: #7C7C7C; margin-right: 5px' class='clickable' onclick='btc(event); show_json(keymap)'><span style='color:#DECE31'>&gt;</span> DATA <span style='color:#DECE31'>&lt;</span></span>--></div>";
 	var km1 = ["1", "2", "3", "4", "5", "6", "7"],
 		km2 = ["Q", "W", "E", "R", "X", "T", "B"];
-	if (skills_page == "II") (km1 = ["8", "9", "0", "G", "H", "J", "K"]), (km2 = ["SHIFT", "Z", "V", "M", "P", "D", "BACK"]);
-	if (skills_page == "U") (km1 = ["ESC", "A", "C", "F", "I", "TAB", "ENTER"]), (km2 = ["UP", "LEFT", "DOWN", "RIGHT", ",", "S", "U"]);
+	if (skills_page == "II") ((km1 = ["8", "9", "0", "G", "H", "J", "K"]), (km2 = ["SHIFT", "Z", "V", "M", "P", "D", "BACK"]));
+	if (skills_page == "U") ((km1 = ["ESC", "A", "C", "F", "I", "TAB", "ENTER"]), (km2 = ["UP", "LEFT", "DOWN", "RIGHT", ",", "S", "U"]));
 	html += "<div>";
 	km1.forEach(function (N) {
 		var current = unlocked_skill_mapping(keymap[N]),
@@ -4843,7 +5099,7 @@ function render_skills() {
 			if (!found) return;
 		}
 		if (skill.emote) {
-			if (character.acx && character.acx[skill.emote]) e.push({ name: name });
+			if ((character.acx && character.acx[skill.emote]) || (skill.emote == "ikissyou" && anniversary_can_visit())) e.push({ name: name });
 			return;
 		}
 		if (skill.type == "skill" && (!skill["class"] || in_arr(character.ctype, skill["class"]) || character.role == "gm")) s.push({ name: name });
@@ -4868,8 +5124,7 @@ function render_skills() {
 		for (var i = 0; i < 10; i++) {
 			html += "<div>";
 			for (var j = 0; j < 7; j++) {
-				if (elast < e.length)
-					html += item_container({ skin: G.skills[e[elast].name].skin, onclick: "skill_click('" + e[elast].name + "')", skname: e[elast].name, loader: e[elast].name }, e[elast]);
+				if (elast < e.length) html += item_container({ skin: G.skills[e[elast].name].skin, onclick: "skill_click('" + e[elast].name + "')", skname: e[elast].name, loader: e[elast].name }, e[elast]);
 				else html += item_container({});
 				elast++;
 			}
@@ -4892,7 +5147,7 @@ function render_skills() {
 	html += "</div>";
 	skillsui = true;
 	render_skillbar(1);
-	$("body").append("<div id='theskills' style='position: fixed; z-index: 310; bottom: 0px; right: 0px' class='disableclicks bpclicks'></div>");
+	$("body").append("<div id='theskills' style='position: fixed; z-index: 310; bottom: 0px; right: 0px; display: flex; align-items: flex-end' class='disableclicks bpclicks'></div>");
 	$(".skillsui").show();
 	$("#theskills").html(html);
 	restart_skill_tints();
@@ -5108,6 +5363,8 @@ function render_spawns(id) {
 
 function render_interaction(type, sub_type, args) {
 	if (!args) args = {};
+	var cosmetic_preview = type.auto && type.cx && Object.keys(type.cx).length;
+	var cosmetic_type = cosmetic_preview && type;
 	if (sub_type != "return_html") {
 		topleft_npc = "interaction";
 		rendered_target = topleft_npc;
@@ -5123,10 +5380,12 @@ function render_interaction(type, sub_type, args) {
 	//face
 	if (type.auto) {
 		// likely, this will be the future method [25/07/17]
-		file = FC[type.skin];
-		left = FM[type.skin][1];
-		top = FM[type.skin][0];
-		img_type = T[type.skin];
+		if (!cosmetic_preview) {
+			file = FC[type.skin];
+			left = FM[type.skin][1];
+			top = FM[type.skin][0];
+			img_type = T[type.skin];
+		}
 		if (type.dialog) type = type.dialog;
 	} else if (in_arr(type, ["wizard", "hardcoretp"])) {
 		left = 2;
@@ -5197,16 +5456,21 @@ function render_interaction(type, sub_type, args) {
 		left = 3;
 		top = 1;
 		file = "/images/tiles/characters/npc4.png";
-		if (type == "unlock_items2") (top = 1), (left = 0);
-		if (type == "unlock_items3") (top = 1), (left = 0);
-		if (type == "unlock_items4") (top = 1), (left = 2);
-		if (type == "unlock_items5") (top = 1), (left = 2);
-		if (type == "unlock_items6") (top = 0), (left = 1);
-		if (type == "unlock_items7") (top = 0), (left = 1);
+		if (type == "unlock_items2") ((top = 1), (left = 0));
+		if (type == "unlock_items3") ((top = 1), (left = 0));
+		if (type == "unlock_items4") ((top = 1), (left = 2));
+		if (type == "unlock_items5") ((top = 1), (left = 2));
+		if (type == "unlock_items6") ((top = 0), (left = 1));
+		if (type == "unlock_items7") ((top = 0), (left = 1));
 	} else if (type.startsWith("unlock_")) pass = true;
 	else return;
 
 	if (pass);
+	else if (cosmetic_preview)
+		html +=
+			"<div style='float: left; margin-top: -20px; width: 104px; height: 98px; overflow: hidden'>" +
+			sprite(cosmetic_type.skin, { cx: clone(cosmetic_type.cx), cosmetic_head_y: cosmetic_type.cosmetic_head_y, width: 104, height: 144, scale: 4 }) +
+			"</div>";
 	else if (img_type == "normal" || img_type == "full")
 		html +=
 			"<div style='float: left; margin-top: -20px; width: 104px; height: 92px; overflow: hidden'><img style='margin-left: -" +
@@ -5229,10 +5493,10 @@ function render_interaction(type, sub_type, args) {
 	if (type.auto) {
 		html += type.message;
 		if (type.button)
-			(interaction_onclick = type.onclick), (html += "<span style='float: right; margin-top: 5px'><div class='slimbutton' onclick='interaction_onclick()'>" + type.button + "</div></span>");
+			((interaction_onclick = type.onclick), (html += "<span style='float: right; margin-top: 5px'><div class='slimbutton' onclick='interaction_onclick()'>" + type.button + "</div></span>"));
 		if (type.button2)
-			(interaction_onclick2 = type.onclick2),
-				(html += "<span style='float: right; margin-top: 5px; margin-right: 5px'><div class='slimbutton' onclick='interaction_onclick2()'>" + type.button2 + "</div></span>");
+			((interaction_onclick2 = type.onclick2),
+				(html += "<span style='float: right; margin-top: 5px; margin-right: 5px'><div class='slimbutton' onclick='interaction_onclick2()'>" + type.button2 + "</div></span>"));
 	} else if (type == "seashells") {
 		html += "Ah, I love the sea, so calming. As a kid, I loved spending time on the beach. Collecting seashells. If you happen to find some, I would love to add them to my collection.";
 		html += "<span style='float: right; margin-top: 5px'><div class='slimbutton' onclick='render_exchange_shrine(\"seashell\")'>I HAVE 20!</div></span>";
@@ -5597,10 +5861,10 @@ function load_character_list() {
 			party = player.party,
 			name = player.name,
 			online = false;
-		if (player.online) (afk = "<span style='color: #34bf15'>ONLINE</span>"), (link = "<span class='gray'>Deployed</span>");
+		if (player.online) ((afk = "<span style='color: #34bf15'>ONLINE</span>"), (link = "<span class='gray'>Deployed</span>"));
 		else
-			(afk = "<span style='color: gray'>OFFLINE</span>"),
-				(link = "<a href='/character/" + player.name + "/in/" + server_region + "/" + server_identifier + "/' target='_blank' class='cancela' style='color: #4C9BC8'>Deploy</span>");
+			((afk = "<span style='color: gray'>OFFLINE</span>"),
+				(link = "<a href='/character/" + player.name + "/in/" + server_region + "/" + server_identifier + "/' target='_blank' class='cancela' style='color: #4C9BC8'>Deploy</span>"));
 		if (player.name != character.name && player.name != "Hidden") party += " <span style='color: #A255BA' class='clickable' onclick='hide_modal(); cpm_window(\"" + player.name + "\");'>PM</span>";
 		if (name == "Hidden") name = "<span style='color:gray'>Hidden</span>";
 		html += "<tr><td>" + name + "</td><td>" + player.level + "</td><td>" + player.type.toUpperCase() + "</td><td>" + afk + "</td>";
@@ -5630,7 +5894,12 @@ function load_mainframe_list(info) {
 		return;
 	}
 	var html = "<div style='text-align:left; margin: 10px'>";
-	html += "<div style='margin-bottom: 12px'><span style='color:#5ED6A8'>" + (info.online ? "MAINFRAME ONLINE" : "MAINFRAME OFFLINE") + "</span> &nbsp; <span style='color:gray'>" + to_pretty_num(info.shells || 0) + " Shells</span></div>";
+	html +=
+		"<div style='margin-bottom: 12px'><span style='color:#5ED6A8'>" +
+		(info.online ? "MAINFRAME ONLINE" : "MAINFRAME OFFLINE") +
+		"</span> &nbsp; <span style='color:gray'>" +
+		to_pretty_num(info.shells || 0) +
+		" Shells</span></div>";
 	(info.characters || []).forEach(function (entry) {
 		var assignment = entry.assignment || {};
 		var runtime = entry.runtime || {};
@@ -5638,9 +5907,21 @@ function load_mainframe_list(info) {
 		var status = runtime.phase || assignment.desired_state || "stopped";
 		var remaining = Math.max(0, Math.ceil(Number(access.remaining_seconds) || 0));
 		html += "<div style='padding: 8px; margin-bottom: 6px; border: 2px solid #4C4C4C'>";
-		html += "<span style='color:#F3A05D'>" + html_escape(entry.character) + "</span> <span style='color:gray'>Lv." + to_pretty_num(entry.level || 0) + " " + html_escape((entry.class || "").toUpperCase()) + "</span>";
+		html +=
+			"<span style='color:#F3A05D'>" +
+			html_escape(entry.character) +
+			"</span> <span style='color:gray'>Lv." +
+			to_pretty_num(entry.level || 0) +
+			" " +
+			html_escape((entry.class || "").toUpperCase()) +
+			"</span>";
 		html += "<span style='float:right; color:" + (status == "running" ? "#67C85C" : "gray") + "'>" + html_escape(status.toUpperCase()) + "</span>";
-		html += "<div style='font-size:18px; color:gray; margin-top:4px'>" + html_escape(assignment.server || runtime.server || "Not linked") + " / " + (access.active ? Math.ceil(remaining / 60) + " minutes left" : "No active window") + "</div>";
+		html +=
+			"<div style='font-size:18px; color:gray; margin-top:4px'>" +
+			html_escape(assignment.server || runtime.server || "Not linked") +
+			" / " +
+			(access.active ? Math.ceil(remaining / 60) + " minutes left" : "No active window") +
+			"</div>";
 		html += "</div>";
 	});
 	if (!(info.characters || []).length) html += "<div>You don't have any characters yet.</div>";
@@ -5760,7 +6041,7 @@ function load_chat(info, type) {
 					server = "";
 				window.messages[message.id] = message;
 				var color = "gray";
-				if (message.type == "private") (color = "#CD7879"), (server = " <span style='color: #505259'>[" + message.to[0] + "]</span>");
+				if (message.type == "private") ((color = "#CD7879"), (server = " <span style='color: #505259'>[" + message.to[0] + "]</span>"));
 				if (message.type == "party") color = "#5B8DB0";
 				if (message.type == "ambient" || type == "global") server = " <span style='color: #505259'>[" + server_to_ui(message.server) + "]</span>";
 				html += "<div title='" + message.date + "'>" + html_escape(message.fro) + ":" + " <span style='color: " + color + "'>" + html_escape(message.message) + server + "</span></div>";
@@ -5796,9 +6077,9 @@ function load_coming_soon(num) {
 	var message = "Coming Sooner!";
 	$(".friendslist").parent().find(".active2").removeClass("active2");
 	if (num == 1) $(".fserver").addClass("active2");
-	else if (num == 2) $(".fguild").addClass("active2"), (message = "Coming Soon!");
-	else if (num == 3) $(".fleaders").addClass("active2"), (message = "Planned, along with achievements, character statistics, weekly, monthly leaderboards");
-	else if (num == 4) $(".fmail").addClass("active2"), (message = "Coming Soon!");
+	else if (num == 2) ($(".fguild").addClass("active2"), (message = "Coming Soon!"));
+	else if (num == 3) ($(".fleaders").addClass("active2"), (message = "Planned, along with achievements, character statistics, weekly, monthly leaderboards"));
+	else if (num == 4) ($(".fmail").addClass("active2"), (message = "Coming Soon!"));
 	$(".friendslist").html("<div style='margin-top: 8px'>" + message + "</div>");
 }
 
@@ -5826,7 +6107,7 @@ function render_com() {
 	html += "<div style='font-size: 16px; margin-top: 5px; color: gray; text-align: center'>NOTE: The Communicator is an evolving protoype</div>";
 	// html+="<div class='gamebutton mt5' style='display: block'>Refresh</div>";
 	html += "</div>";
-	show_modal(html, {}); //styles:"background: #CACACA; border-color: #4C4C4C"
+	show_modal(html, { wwidth: min(680, $(window).width() - 52) }); //styles:"background: #CACACA; border-color: #4C4C4C"
 	load_nearby(1);
 }
 
@@ -5844,7 +6125,7 @@ var IID = null;
 function precompute_image_positions() {
 	// G.images is new [25/09/18]
 	if (IID) return;
-	if (!window.SS) (window.SS = {}), (window.SSU = {});
+	if (!window.SS) ((window.SS = {}), (window.SSU = {}));
 	if (!Object.keys(T).length) process_game_data();
 	IID = {}; // IID is reset after game loads, so actual dimensions are live
 	for (var name in G.sprites) {
@@ -5853,12 +6134,12 @@ function precompute_image_positions() {
 		var row_num = 4,
 			col_num = 3,
 			s_type = "full";
-		if (in_arr(s_def.type, ["animation"])) (row_num = 1), (s_type = s_def.type);
-		if (in_arr(s_def.type, ["tail"])) (col_num = 4), (s_type = s_def.type);
-		if (in_arr(s_def.type, ["v_animation", "head", "hair", "hat", "s_wings", "face", "makeup", "beard"])) (col_num = 1), (s_type = s_def.type);
-		if (in_arr(s_def.type, ["a_makeup", "a_hat"])) (col_num = 3), (s_type = s_def.type);
+		if (in_arr(s_def.type, ["animation"])) ((row_num = 1), (s_type = s_def.type));
+		if (in_arr(s_def.type, ["tail"])) ((col_num = 4), (s_type = s_def.type));
+		if (in_arr(s_def.type, ["v_animation", "head", "hair", "hat", "s_wings", "face", "makeup", "beard"])) ((col_num = 1), (s_type = s_def.type));
+		if (in_arr(s_def.type, ["a_makeup", "a_hat"])) ((col_num = s_def.frames || 3), (s_type = s_def.type));
 		if (in_arr(s_def.type, ["wings", "body", "armor", "skin", "character"])) s_type = s_def.type;
-		if (in_arr(s_def.type, ["emblem", "gravestone"])) (row_num = 1), (col_num = 1), (s_type = s_def.type);
+		if (in_arr(s_def.type, ["emblem", "gravestone"])) ((row_num = 1), (col_num = 1), (s_type = s_def.type));
 		var matrix = s_def.matrix;
 		var width = (G.images[s_def.file.split("?")[0]] && G.images[s_def.file.split("?")[0]].width) || s_def.width || (window.C && C[s_def.file] && C[s_def.file].width) || 312;
 		var height = (G.images[s_def.file.split("?")[0]] && G.images[s_def.file.split("?")[0]].height) || s_def.height || (window.C && C[s_def.file] && C[s_def.file].height) || 288;
@@ -5900,7 +6181,7 @@ function sprite_image(name, args) {
 			l_disp = 0,
 			j = args.j || 0;
 		var height = IID[name][5];
-		if (G.dimensions[name]) (width = G.dimensions[name][0]), (height = G.dimensions[name][1]);
+		if (G.dimensions[name]) ((width = G.dimensions[name][0]), (height = G.dimensions[name][1]));
 		if (args.cwidth) l_disp = (args.cwidth - width * scale) / 2;
 		l_disp += (args.x || 0) * scale;
 		// l_disp=parseInt(l_disp); // currently, on Chrome, -0.25, 0.5 px corrections etc. look bad [02/10/18]
@@ -5958,8 +6239,8 @@ function sprite(name, args) {
 		if (!args.height) args.height = 50;
 		if (!args.rx_disp) args.rx_disp = 0;
 		if (args.full) {
-			if (G.dimensions[name]) (args.width = (G.dimensions[name][0] + 4) * args.scale), (args.height = (G.dimensions[name][1] + 5) * args.scale);
-			else (args.width = IID[name][4] * args.scale), (args.height = IID[name][5] * args.scale);
+			if (G.dimensions[name]) ((args.width = (G.dimensions[name][0] + 4) * args.scale), (args.height = (G.dimensions[name][1] + 5) * args.scale));
+			else ((args.width = IID[name][4] * args.scale), (args.height = IID[name][5] * args.scale));
 		}
 		if (G.dimensions[name] && G.dimensions[name][3]) args.rx_disp = -G.dimensions[name][3] * args.scale;
 		var html =
@@ -6232,7 +6513,7 @@ function render_cgallery(skin, cx, slot) {
 			height = 64,
 			html = "";
 		var aheight = 32;
-		if (cx.hat || (reset && slot == "hat")) (height += 12), (aheight += 6);
+		if (cx.hat || (reset && slot == "hat")) ((height += 12), (aheight += 6));
 		if (slot == "gravestone") height = 48;
 		var scale = 2,
 			found = false,
@@ -6280,7 +6561,7 @@ function render_cgallery(skin, cx, slot) {
 
 	if (slot == "upper") types = ["body", "armor"];
 	if (slot == "back") types.push("tail"); // synced with server.js/'cx'
-	if (slot == "face") types.push("makeup"), types.push("a_makeup");
+	if (slot == "face") (types.push("makeup"), types.push("a_makeup"));
 
 	if (slot == "tail" || slot == "back") j = 3;
 	object_sort(T).forEach(function (x) {
@@ -6340,7 +6621,7 @@ function render_cosmetics(player, args) {
 			height = 48;
 		if (rargs.size == "big") {
 			rargs.scale = 3;
-			(width = 91), (height = 118);
+			((width = 91), (height = 118));
 			rargs.top = 12;
 		}
 		if (rargs.rip) height = 48;
@@ -6379,8 +6660,7 @@ function render_cosmetics(player, args) {
 		html += "<div style='background-color: #504254; border: 2px solid gray; font-size: 0px; padding: 2px'>";
 		emotes.forEach(function (name) {
 			var item = { skin: G.skills[name].skin, size: 40, draggable: !!player.me, skname: name, loader: name };
-			if (player.me && G.skills[name].target)
-				item.onclick = "use_skill('" + name + "',xtarget||ctarget||(!G.skills['" + name + "'].no_self&&character))";
+			if (player.me && G.skills[name].target) item.onclick = "use_skill('" + name + "',xtarget||ctarget||(!G.skills['" + name + "'].no_self&&character))";
 			else if (player.me) item.onclick = "use_skill('" + name + "')";
 			html += item_container(item);
 		});

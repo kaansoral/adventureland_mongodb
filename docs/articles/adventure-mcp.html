@@ -291,6 +291,22 @@
 <li>Verify connection, position, activity, deaths, performance, CODE logs, and the separate Mainframe event journal.</li>
 </ol>
 
+<p><span class="dlabel">Live CODE controls</span></p>
+
+<p>Saving a CODE slot does not replace CODE that is already running. Browser controls require the character to be connected in an open browser. Mainframe controls require a running Mainframe assignment.</p>
+
+<table>
+<tr><th>Tool</th><th>Use</th></tr>
+<tr><td><span class="dlabel">browser_code_status</span></td><td>Check whether the browser character is online and whether CODE is running.</td></tr>
+<tr><td><span class="dlabel">browser_code_start</span></td><td>Start a saved slot only when browser CODE is stopped.</td></tr>
+<tr><td><span class="dlabel">browser_code_stop</span></td><td>Stop the current browser CODE runner.</td></tr>
+<tr><td><span class="dlabel">browser_code_reload</span></td><td>Replace the current browser CODE runner with a saved slot.</td></tr>
+<tr><td><span class="dlabel">browser_code_eval</span></td><td>Evaluate a requested JavaScript snippet in browser CODE.</td></tr>
+<tr><td><span class="dlabel">mainframe_code_eval</span></td><td>Evaluate a requested JavaScript snippet in running Mainframe CODE.</td></tr>
+</table>
+
+<p>The two eval tools can perform any game action available to that character. Use them only for the exact behavior the player requested. A successful relay means the command was queued; it does not prove that the snippet completed or that the game accepted its actions. Verify the result through browser status or Mainframe observations and logs.</p>
+
 <p>Combat loops belong inside character CODE. MCP should plan, save CODE, observe, and correct. It should not poll fast enough to become the combat loop.</p>
 
 <p><span class="dlabel">How to write character CODE</span></p>

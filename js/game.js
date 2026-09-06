@@ -788,11 +788,13 @@ function adopt_soft_properties(element, data) {
 			if (data[attr]) element[attr] = data[attr];
 		});
 	}
-	if (element.type == "character" && element.skin && element.skin != data.skin && !element.rip) {
-		if (!XYWH[data.skin]) data.skin = "naked";
+	if ((element.type == "character" || (element.type == "npc" && element.stype == "full")) && element.skin && data.skin && element.skin != data.skin && !element.rip) {
+		if (!no_graphics && !XYWH[data.skin]) data.skin = "naked";
 		element.skin = data.skin;
-		new_sprite(element, "full", "renew");
-		restore_dimensions(element);
+		if (!no_graphics) {
+			new_sprite(element, "full", "renew");
+			restore_dimensions(element);
+		}
 	}
 	// if(data.cash) {data.shells=data.cash; delete data.shells;}
 	for (prop in data) {
@@ -893,6 +895,8 @@ function update_overlays() {
 	if (character) send_target_logic();
 	if (mode.dom_tests || no_html) return;
 	if (character) {
+		if (anniversary_visible_skill != anniversary_can_visit()) render_server();
+		else if ($("#anniversary-event-panel").length) render_anniversary_event(true);
 		if (!cached("att", character.attack)) $(".attackui").html(((character.ctype == "priest" && "HEAL ") || "ATT ") + ((character.ctype == "priest" && character.heal) || character.attack));
 		if (!cached("inv", character.esize + "|" + character.isize)) $(".invui").html("INV " + (character.isize - character.esize) + "/" + character.isize);
 		if (!cached("hptop", character.hp, character.max_hp)) {
@@ -1256,30 +1260,30 @@ function the_game(demo) {
 	loader = PIXI.loader;
 	loader.on("progress", on_load_progress);
 
-	//alert(JSON.stringify(M));
+	// Different animations can share a sheet; register each resource only once.
 	for (var name in G.animations) {
 		G.animations[name].file = url_factory(G.animations[name].file);
-		loader.add(G.animations[name].file);
+		if (!loader.resources || !loader.resources[G.animations[name].file]) loader.add(G.animations[name].file);
 	}
 	for (var name in G.tilesets) {
 		G.tilesets[name].file = url_factory(G.tilesets[name].file);
-		loader.add(G.tilesets[name].file);
+		if (!loader.resources || !loader.resources[G.tilesets[name].file]) loader.add(G.tilesets[name].file);
 	}
 	for (var name in G.sprites) {
 		var s_def = G.sprites[name];
 		if (s_def.skip) continue;
 		s_def.file = url_factory(s_def.file);
-		loader.add(s_def.file);
+		if (!loader.resources || !loader.resources[s_def.file]) loader.add(s_def.file);
 	}
 	for (var name in G.imagesets) {
 		if (!G.imagesets[name].load) continue;
 		G.imagesets[name].file = url_factory(G.imagesets[name].file);
-		loader.add(G.imagesets[name].file);
+		if (!loader.resources || !loader.resources[G.imagesets[name].file]) loader.add(G.imagesets[name].file);
 	}
 
 	gprocess_game_data();
 
-	if (mode.bitmapfonts) loader.add("/css/fonts/m5x7.xml"); //,{xhrType:PIXI.loaders.Resource.XHR_RESPONSE_TYPE.DOCUMENT}
+	if (mode.bitmapfonts && (!loader.resources || !loader.resources["/css/fonts/m5x7.xml"])) loader.add("/css/fonts/m5x7.xml"); //,{xhrType:PIXI.loaders.Resource.XHR_RESPONSE_TYPE.DOCUMENT}
 
 	set_status("75% ->Server");
 
@@ -1837,13 +1841,7 @@ function init_socket(args) {
 			}
 			if (!data.failed && data.place == "equip" && data.slot && !in_arr(data.slot, trade_slots)) tut("equip");
 			if (!data.failed && (data.place == "skill" || (data.place != "attack" && G.skills[data.place]))) tut("useskill");
-			if (
-				!data.failed &&
-				data.used &&
-				((data.place == "use" && in_arr(data.used, ["hp", "mp"])) ||
-					(data.place == "equip" && G.items[data.used] && G.items[data.used].gives))
-			)
-				tut("usepotion");
+			if (!data.failed && data.used && ((data.place == "use" && in_arr(data.used, ["hp", "mp"])) || (data.place == "equip" && G.items[data.used] && G.items[data.used].gives))) tut("usepotion");
 			if (!data.failed && data.place == "bank" && data.bank_action == "store") tut("store");
 			var merge_transfer_cevent = cevent == response && in_arr(response, ["item_received", "item_sent", "gold_sent", "gold_received"]);
 			if (cevent && !merge_transfer_cevent) call_code_function("trigger_character_event", cevent, data);
@@ -2114,8 +2112,7 @@ function init_socket(args) {
 			else if (response == "bank_store") {
 				tut("deposit");
 				ui_log("Stored " + to_pretty_num(data.gold) + " gold", "gray");
-			}
-			else if (response == "bank_new_pack") {
+			} else if (response == "bank_new_pack") {
 				if (data.gold) ui_log("Opened an account for " + to_pretty_num(data.gold) + " gold", "gray");
 				else ui_log("Opened an account for " + to_pretty_num(data.shells) + " shells", "gray");
 			} else if (response == "locked") ui_log("Locked", "gray");
@@ -2286,8 +2283,9 @@ function init_socket(args) {
 				transfer_event.amount = data.gold;
 				transfer_event.to = data.name;
 				call_code_function("trigger_character_event", "gold_sent", transfer_event);
-			} else if (response == "gold_received" && !data.name) add_log("Received " + to_pretty_num(data.gold) + " gold", "gray");
-			else if (response == "gold_received") {
+			} else if (response == "gold_received" && !data.name) {
+				add_log("Received " + to_pretty_num(data.gold) + " gold", "gray");
+			} else if (response == "gold_received") {
 				add_chat("", "Received " + to_pretty_num(data.gold) + " gold from " + data.name, colors.gold);
 				var transfer_event = clone(data);
 				transfer_event.amount = data.gold;
@@ -2447,9 +2445,26 @@ function init_socket(args) {
 		draw_trigger(function () {
 			var player = get_player(data.player);
 			var emote = data.name;
-			if (player && G.skills[emote] && G.skills[emote].emote) play_cosmetic_emote(player, emote, data.target && get_player(data.target), data);
+			if (player && G.skills[emote] && G.skills[emote].emote) {
+				play_cosmetic_emote(player, emote, data.target && get_player(data.target), data);
+				citizen_echo_emote(player, emote, data);
+			}
 		});
 	});
+	socket.on("citizen", function (data) {
+		draw_trigger(function () {
+			if (data.type == "route_marks") citizen_draw_route_marks(data);
+			else if (data.type == "repair") citizen_draw_repair(data);
+			else if (data.type == "lamp") citizen_draw_lamp(data);
+		});
+	});
+	function paladin_support_animation(name, targets) {
+		if (no_graphics) return;
+		(targets || []).forEach(function (target_name) {
+			var target = get_player(target_name);
+			if (target) start_animation(target, name);
+		});
+	}
 	socket.on("ui", function (data) {
 		if (data.event) call_code_function("trigger_event", (data.event === true && data.type) || data.event, data);
 		if (data.cevent && data.name == character.name) call_code_function("trigger_character_event", (data.cevent === true && data.type) || data.cevent, data);
@@ -2579,6 +2594,12 @@ function init_socket(args) {
 				var sender = get_player(data.from),
 					receiver = get_player(data.to);
 				if (sender && receiver) d_line(sender, receiver, { color: "#9488BF" });
+			} else if (data.type == "cleansing_light") {
+				paladin_support_animation("cleansing_light", data.targets);
+			} else if (data.type == "guardians_oath") {
+				paladin_support_animation("guardians_oath", data.targets);
+			} else if (data.type == "beacon_of_resolve") {
+				paladin_support_animation("beacon_of_resolve", data.targets);
 			} else if (data.type == "alchemy") {
 				var sender = get_player(data.name);
 				if (sender) {
@@ -2996,7 +3017,9 @@ function init_socket(args) {
 		if (target.me) call_code_function("trigger_character_event", "incoming", event_data);
 
 		var color = "red";
-		if (new_attacks) {
+		if (data.source == "shield_slam") {
+			animate_shield_slam(attacker, target, data.shield);
+		} else if (new_attacks) {
 			if (G.projectiles[data.projectile] && G.projectiles[data.projectile].animation)
 				map_animation(G.projectiles[data.projectile].animation, {
 					x: get_x(attacker),
@@ -3041,6 +3064,7 @@ function init_socket(args) {
 		draw_trigger(function () {
 			var evade = false,
 				offsets = 0;
+			paladin_shield_hit_feedback(data, entity);
 			if (entity && data.evade) sfx("whoosh", entity.real_x, entity.real_y);
 			if (entity && data.reflect) sfx("reflect", entity.real_x, entity.real_y);
 			if (data.reflect) {
@@ -3319,7 +3343,10 @@ function npc_right_click(event) {
 			render_interaction({
 				auto: true,
 				skin: "lionsuit",
-				message: "This is not your home server. You are a resident of " + character.home + ". Would you like to set this server as your home?",
+				message:
+					"This is not your home server. You are a resident of " +
+					character.home +
+					". Home realms offer stronger cooperative credit and special rewards; rapid non-merchant character switching pauses them for 30 minutes. Would you like to set this server as your home?",
 				button: "Yes!",
 				onclick: function () {
 					push_deferred("set_home");
@@ -3330,7 +3357,8 @@ function npc_right_click(event) {
 			render_interaction({
 				auto: true,
 				skin: "lionsuit",
-				message: "This is your home server. Make sure to follow daily and nightly server events! Just click the time icon in the bottom left corner for the schedule!",
+				message:
+					"This is your home server. Your help against cooperative monsters counts for more here, and some monsters carry extra home rewards. Switching here after another non-merchant character visits a different server causes 30 minutes of Realm Fatigue. Normal rewards continue while you settle in.",
 			});
 		}
 	}
@@ -3357,6 +3385,11 @@ function npc_right_click(event) {
 				"return_html",
 			),
 		);
+	}
+	if (this.role == "anniversary_crafter") {
+		render_anniversary_baker("combine");
+		if (event) event.stopPropagation();
+		return;
 	}
 	if (this.role == "witch") {
 		render_recipes("witch");
@@ -3477,11 +3510,13 @@ function npc_right_click(event) {
 	if (npc.citizen_behavior == "market_patron") {
 		render_merrit_interaction();
 		request_merrit_status();
+	} else if (npc.citizen_behavior == "wayfinder") {
+		render_citizen_routes(this);
 	} else if (npc.interaction) {
 		var message = npc.interaction;
 		if (is_array(message)) message = message[seed0() % message.length];
 		if (message == "rbin") message = random_binaries();
-		render_interaction({ auto: true, skin: this.skin, message: message });
+		render_interaction({ auto: true, skin: this.skin, cx: this.cx, cosmetic_head_y: this.cosmetic_head_y, message: message });
 	}
 	if (this.stype == "full") {
 		direction_logic(this, character, "npc");
@@ -3501,6 +3536,22 @@ function npc_right_click(event) {
 	try {
 		if (event) event.stopPropagation();
 	} catch (e) {}
+}
+
+function request_citizen_route(destination) {
+	socket.emit("interaction", { type: "citizen_route", destination: destination });
+	$("#topleftcornerui").html("");
+}
+
+function render_citizen_routes(npc) {
+	render_interaction({ auto: true, skin: npc.skin, cx: npc.cx, cosmetic_head_y: npc.cosmetic_head_y, message: "Who are you looking for?" });
+	$("#topleftcornerui > div").append(
+		"<div style='clear: both; float: right; margin-top: 7px'>" +
+			"<div class='slimbutton' onclick='request_citizen_route(\"transporter\")'>TRANSPORTER</div> " +
+			"<div class='slimbutton' onclick='request_citizen_route(\"locksmith\")'>LOCKSMITH</div> " +
+			"<div class='slimbutton' onclick='request_citizen_route(\"scrollsmith\")'>SCROLLSMITH</div>" +
+			"</div>",
+	);
 }
 
 function player_click(event) {
@@ -3697,6 +3748,8 @@ var cosmetic_emote_durations = {
 	spotlight: 2800,
 	pocketstorm: 3300,
 	mirrordance: 2400,
+	makeawish: 2800,
+	ikissyou: 1200,
 };
 var cosmetic_targeted_emotes = { highfive: 1, boop: 1, spotlight: 1, pocketstorm: 1, mirrordance: 1 };
 var cosmetic_emote_fart_variants = [
@@ -3783,13 +3836,15 @@ function cosmetic_emote_noise(context, output, start, duration, frequency, volum
 }
 
 function play_cosmetic_emote_sound(name, variation) {
-	if (!sound_sfx || no_html) return;
+	if (no_graphics || !sound_sfx || no_html) return;
+	var volume = typeof sfx_volume == "number" && isFinite(sfx_volume) ? max(0, min(100, sfx_volume)) : 100;
+	if (!volume) return;
 	try {
 		var context = cosmetic_emote_audio();
 		if (!context) return;
 		if (context.state == "suspended") context.resume();
 		var output = context.createGain();
-		output.gain.value = 0.55 * (sfx_volume || 100) / 100;
+		output.gain.value = (0.55 * volume) / 100;
 		output.connect((window.Howler && Howler.masterGain) || context.destination);
 		var start = context.currentTime + 0.012;
 		var pitch = [0.94, 1, 1.08][variation % 3];
@@ -3808,6 +3863,11 @@ function play_cosmetic_emote_sound(name, variation) {
 			[523.25, 659.25, 783.99, 1046.5].forEach(function (frequency, i) {
 				cosmetic_emote_tone(context, output, start + i * 0.09, 0.24, frequency * pitch, frequency * pitch, "sine", 0.05);
 			});
+		} else if (name == "makeawish") {
+			[659.25, 783.99, 1046.5].forEach(function (frequency, i) {
+				cosmetic_emote_tone(context, output, start + i * 0.16, 0.32, frequency, frequency, "triangle", 0.04);
+			});
+			cosmetic_emote_tone(context, output, start + 0.54, 0.42, 1567.98, 1567.98, "sine", 0.025);
 		} else if (name == "jump") {
 			cosmetic_emote_tone(context, output, start, 0.14, 270 * pitch, 700 * pitch, "square", 0.055);
 		} else if (name == "superjump") {
@@ -3856,9 +3916,12 @@ function play_cosmetic_emote_sound(name, variation) {
 				cosmetic_emote_tone(context, output, start + 2.02, 0.28, frequency * pitch, frequency * pitch, "triangle", 0.04);
 			});
 		}
-		setTimeout(function () {
+		setTimeout(
+			function () {
 			output.disconnect();
-		}, (cosmetic_emote_durations[name] || 1500) + 500);
+			},
+			(cosmetic_emote_durations[name] || 1500) + 500,
+		);
 	} catch (e) {
 		console.log(e);
 	}
@@ -3869,7 +3932,14 @@ function cosmetic_emote_head_layer(sprite) {
 }
 
 function clear_cosmetic_emote(player, keep_peer) {
+	if (no_graphics) return;
 	var emote = player.cosmetic_emote;
+	if (emote && emote.name == "ikissyou" && emote.target && emote.target.cosmetic_kiss_casters) {
+		emote.target.cosmetic_kiss_casters = emote.target.cosmetic_kiss_casters.filter(function (caster) {
+			return caster != player;
+		});
+		if (!emote.target.cosmetic_kiss_casters.length) delete emote.target.cosmetic_kiss_casters;
+	}
 	if (!keep_peer && emote && cosmetic_targeted_emotes[emote.name] && emote.peer) {
 		var peer = get_player(emote.peer);
 		if (peer && peer.cosmetic_emote && peer.cosmetic_emote.name == emote.name && peer.cosmetic_emote.peer == player.name) clear_cosmetic_emote(peer, true);
@@ -3881,6 +3951,80 @@ function clear_cosmetic_emote(player, keep_peer) {
 	if (player.cosmetic_emote_visual) destroy_sprite(player.cosmetic_emote_visual, "children");
 	delete player.cosmetic_emote_visual;
 	delete player.cosmetic_emote;
+}
+
+function cosmetic_emote_sheet_start(player, name, target) {
+	if (no_graphics) return;
+	if (!player || player.rip || !player.parent || (name != "makeawish" && name != "ikissyou")) return;
+	var casters;
+	if (name == "ikissyou") {
+		if (!target || target == player || target.rip || !target.parent) return;
+		casters = (target.cosmetic_kiss_casters || []).filter(function (caster) {
+			var emote = caster.cosmetic_emote;
+			return caster != player && get_player(caster.name) == caster && emote && emote.name == "ikissyou" && emote.target == target && caster.cosmetic_emote_visual && mssince(emote.start) < emote.duration;
+		});
+		// A crowd still receives every server result; only redundant visuals are coalesced.
+		target.cosmetic_kiss_casters = casters;
+		if (casters.length >= 4) return;
+	}
+	var skin = name == "makeawish" ? "makeawish_overlay" : "ikissyou_fx";
+	if (!G.animations[skin]) return;
+	clear_cosmetic_emote(player);
+	var visual = new_sprite(skin, "animation");
+	visual.anchor.set(0.5, 0.5);
+	visual.parentGroup = visual.displayGroup = text_layer;
+	visual.zy = 1200;
+	player.addChild(visual);
+	player.cosmetic_emote_visual = visual;
+	player.cosmetic_emote = { name: name, start: new Date(), duration: cosmetic_emote_durations[name] };
+	if (name == "ikissyou") {
+		player.cosmetic_emote.target = target;
+		player.cosmetic_emote.peer = target.name;
+		var side = target.real_x >= player.real_x ? 1 : -1;
+		player.cosmetic_emote.side = side;
+		player.cosmetic_emote.from_x = player.real_x + side * 5;
+		player.cosmetic_emote.from_y = player.real_y - get_height(player) + 8;
+		casters.push(player);
+		target.cosmetic_kiss_casters = casters;
+	}
+	cosmetic_emote_sheet_logic(player, 0);
+	return true;
+}
+
+function cosmetic_emote_sheet_logic(player, elapsed) {
+	if (no_graphics) return;
+	var emote = player.cosmetic_emote;
+	var visual = player.cosmetic_emote_visual;
+	if (!emote || !visual) return;
+	if (player.rip || !player.parent || elapsed >= emote.duration) {
+		clear_cosmetic_emote(player);
+		return;
+	}
+	if (emote.name == "makeawish") {
+		set_texture(visual, min(2, floor(elapsed / 900)));
+		visual.x = 0;
+		visual.y = round(-get_height(player) - 10);
+		return;
+	}
+	var target = emote.target;
+	if (!target || target.rip || !target.parent || get_player(emote.peer) != target) {
+		clear_cosmetic_emote(player);
+		return;
+	}
+	var x = emote.from_x, y = emote.from_y;
+	var target_x = target.real_x - emote.side * 4;
+	var target_y = target.real_y - get_height(target) + 8;
+	if (elapsed >= 480) {
+		x = target_x;
+		y = target_y;
+	} else if (elapsed >= 120) {
+		var amount = (elapsed - 120) / 360;
+		x += (target_x - x) * amount;
+		y += (target_y - y) * amount - Math.sin(amount * Math.PI) * 3;
+	}
+	set_texture(visual, min(9, floor(elapsed / 120)));
+	visual.x = round(x - player.real_x);
+	visual.y = round(y - player.real_y);
 }
 
 function cosmetic_emote_fart_cloud(player, variation) {
@@ -3962,8 +4106,7 @@ function cosmetic_emote_joy_rainbow(player, variation) {
 		var stage_graphic = new PIXI.Graphics();
 		for (var band = 0; band < colors.length; band++) {
 			stage_graphic.beginFill(colors[band], 1);
-			for (var point = 9 - stage_widths[stage]; point <= 9 + stage_widths[stage]; point++)
-				stage_graphic.drawRect(arch[point][0], arch[point][1] + band * 2, 2, 2);
+			for (var point = 9 - stage_widths[stage]; point <= 9 + stage_widths[stage]; point++) stage_graphic.drawRect(arch[point][0], arch[point][1] + band * 2, 2, 2);
 			stage_graphic.endFill();
 		}
 		stage_graphic.visible = false;
@@ -3982,8 +4125,7 @@ function cosmetic_emote_joy_rainbow(player, variation) {
 		var rows = letters[word[letter]];
 		graphic.beginFill(colors[(letter * 2 + variation) % colors.length], 1);
 		for (var row = 0; row < rows.length; row++)
-			for (var column = 0; column < rows[row].length; column++)
-				if (rows[row][column] == "1") graphic.drawRect(-15 + letter * 9 + column * 2, 3 + row * 2, 2, 2);
+			for (var column = 0; column < rows[row].length; column++) if (rows[row][column] == "1") graphic.drawRect(-15 + letter * 9 + column * 2, 3 + row * 2, 2, 2);
 		graphic.endFill();
 	}
 	rainbow.addChild(graphic);
@@ -4143,8 +4285,7 @@ function cosmetic_emote_pixel_text(graphic, text, x, y, color, scale) {
 			continue;
 		}
 		for (var row = 0; row < glyph.length; row++)
-			for (var column = 0; column < glyph[row].length; column++)
-				if (glyph[row][column] == "1") cosmetic_emote_rect(graphic, color, cursor + column * scale, y + row * scale, scale, scale);
+			for (var column = 0; column < glyph[row].length; column++) if (glyph[row][column] == "1") cosmetic_emote_rect(graphic, color, cursor + column * scale, y + row * scale, scale, scale);
 		cursor += (glyph[0].length + 1) * scale;
 	}
 }
@@ -4343,8 +4484,228 @@ function cosmetic_emote_targeted_logic(player, progress, elapsed) {
 	}
 }
 
+var citizen_route_marks = [];
+var citizen_lamp_pools = [];
+
+function citizen_destroy_visual(visual) {
+	if (!visual || visual.citizen_destroyed) return;
+	visual.citizen_destroyed = true;
+	if (visual.parent) visual.parent.removeChild(visual);
+	visual.destroy({ children: true });
+}
+
+function citizen_add_map_visual(visual, layer) {
+	visual.parentGroup = visual.displayGroup = layer || player_layer;
+	map.addChild(visual);
+}
+
+function citizen_fade_map_visual(visual, duration, animate) {
+	var started = Date.now();
+	var effect_map = current_map;
+	function step() {
+		if (!visual || visual.citizen_destroyed) return;
+		var elapsed = Date.now() - started;
+		if (effect_map != current_map || elapsed >= duration || !visual.parent) {
+			citizen_destroy_visual(visual);
+			return;
+		}
+		var progress = elapsed / duration;
+		if (animate) animate(visual, progress);
+		visual.alpha = progress < 0.7 ? 1 : 1 - (progress - 0.7) / 0.3;
+		draw_timeout(step, 80);
+	}
+	draw_timeout(step, 80);
+}
+
+function citizen_draw_route_marks(data) {
+	if (no_graphics) return;
+	if (current_map != "desertland" || !data.from || !data.to) return;
+	for (var i = 0; i < citizen_route_marks.length; i++) citizen_destroy_visual(citizen_route_marks[i]);
+	citizen_route_marks = [];
+	var dx = data.to[0] - data.from[0];
+	var dy = data.to[1] - data.from[1];
+	var length = Math.sqrt(dx * dx + dy * dy) || 1;
+	dx /= length;
+	dy /= length;
+	for (var i = 0; i < 4; i++) {
+		var mark = new PIXI.Graphics();
+		mark.lineStyle(2, 0xcaa66b, 0.85);
+		mark.moveTo(-5, -3);
+		mark.lineTo(0, 0);
+		mark.lineTo(-5, 3);
+		mark.lineStyle(0);
+		mark.beginFill(0x9d7346, 0.55);
+		mark.drawCircle(-7, i % 2 ? 4 : -4, 1);
+		mark.endFill();
+		mark.x = data.from[0] + dx * (22 + i * 18);
+		mark.y = data.from[1] + dy * (22 + i * 18);
+		mark.rotation = Math.atan2(dy, dx);
+		citizen_add_map_visual(mark, map_layer);
+		citizen_route_marks.push(mark);
+		citizen_fade_map_visual(mark, 6000);
+	}
+}
+
+function citizen_draw_repair(data) {
+	if (no_graphics) return;
+	if (current_map != "cyberland" || !is_number(data.x) || !is_number(data.y)) return;
+	var sparks = new PIXI.Container();
+	sparks.x = data.x;
+	sparks.y = data.y - 10;
+	for (var i = 0; i < 8; i++) {
+		var spark = new PIXI.Graphics();
+		spark.beginFill(i % 3 ? 0x73e7ef : 0xf6dc72, 1);
+		spark.drawRect(-1, -1, i % 2 ? 2 : 1, i % 2 ? 1 : 2);
+		spark.endFill();
+		spark.citizen_dx = ((i % 4) - 1.5) * 0.45;
+		spark.citizen_dy = -0.25 - floor(i / 4) * 0.18;
+		sparks.addChild(spark);
+	}
+	citizen_add_map_visual(sparks, player_layer);
+	citizen_fade_map_visual(sparks, 900, function (visual) {
+		for (var i = 0; i < visual.children.length; i++) {
+			var spark = visual.children[i];
+			spark.x += spark.citizen_dx;
+			spark.y += spark.citizen_dy;
+		}
+	});
+}
+
+function citizen_draw_lamp(data) {
+	if (no_graphics) return;
+	if (current_map != "mtunnel" || !is_number(data.x) || !is_number(data.y)) return;
+	citizen_lamp_pools = citizen_lamp_pools.filter(function (pool) {
+		return pool && !pool.citizen_destroyed && pool.parent;
+	});
+	while (citizen_lamp_pools.length >= 4) citizen_destroy_visual(citizen_lamp_pools.shift());
+	var pool = new PIXI.Graphics();
+	pool.beginFill(0xffd36a, 0.12);
+	pool.drawCircle(0, 0, 30);
+	pool.endFill();
+	pool.beginFill(0xffe6a1, 0.12);
+	pool.drawCircle(0, 0, 17);
+	pool.endFill();
+	pool.x = data.x;
+	pool.y = data.y + 2;
+	pool.scale.y = 0.35;
+	citizen_add_map_visual(pool, map_layer);
+	citizen_lamp_pools.push(pool);
+	citizen_fade_map_visual(pool, 12000);
+}
+
+var citizen_fairy_colors = { redfairy: 0xf05a67, greenfairy: 0x6bc46d, bluefairy: 0x668ee8 };
+
+function citizen_build_fairy_motes(sprite, color) {
+	if (sprite.citizen_fairy_visual) citizen_destroy_visual(sprite.citizen_fairy_visual);
+	if (no_graphics) return;
+	var visual = new PIXI.Container();
+	var colors = color ? [color] : [0x7c8468, 0x82918c, 0x8b8172];
+	for (var i = 0; i < colors.length; i++) {
+		var mote = new PIXI.Graphics();
+		mote.beginFill(colors[i], color ? 0.95 : 0.55);
+		mote.drawRect(-1, -1, 3, 3);
+		mote.endFill();
+		visual.addChild(mote);
+	}
+	visual.parentGroup = visual.displayGroup = text_layer;
+	sprite.addChild(visual);
+	sprite.citizen_fairy_visual = visual;
+}
+
+function citizen_fairy_echo_logic(sprite) {
+	var now = Date.now();
+	var state = sprite.citizen_fairy_echo;
+	if (state && state.release_until) {
+		if (now >= state.release_until) {
+			if (sprite.citizen_fairy_visual) citizen_destroy_visual(sprite.citizen_fairy_visual);
+			delete sprite.citizen_fairy_visual;
+			delete sprite.citizen_fairy_echo;
+			state = null;
+		} else if (sprite.citizen_fairy_visual) {
+			var release = 1 - (state.release_until - now) / 700;
+			sprite.citizen_fairy_visual.y = -release * 20;
+			sprite.citizen_fairy_visual.alpha = 1 - release;
+			return;
+		}
+	}
+	if (state && now >= state.until) {
+		if (state.color) {
+			state.release_until = now + 700;
+			return;
+		}
+		if (sprite.citizen_fairy_visual) citizen_destroy_visual(sprite.citizen_fairy_visual);
+		delete sprite.citizen_fairy_visual;
+		delete sprite.citizen_fairy_echo;
+		state = null;
+	}
+	if (!state) {
+		var nearest = null;
+		var nearest_distance = 520;
+		for (var id in entities) {
+			var entity = entities[id];
+			if (!entity || entity.type != "monster" || !citizen_fairy_colors[entity.mtype] || entity.dead || entity.visible === false) continue;
+			var entity_distance = point_distance(get_x(sprite), get_y(sprite), get_x(entity), get_y(entity));
+			if (entity_distance < nearest_distance) {
+				nearest = entity;
+				nearest_distance = entity_distance;
+			}
+		}
+		state = sprite.citizen_fairy_echo = {
+			color: nearest && citizen_fairy_colors[nearest.mtype],
+			started: now,
+			until: now + ((nearest && 8000) || 4000),
+		};
+		if (nearest) direction_logic(sprite, nearest, "npc");
+		citizen_build_fairy_motes(sprite, state.color);
+	}
+	if (!sprite.citizen_fairy_visual) return;
+	var base_y = -get_height(sprite) - 5;
+	for (var i = 0; i < sprite.citizen_fairy_visual.children.length; i++) {
+		var mote = sprite.citizen_fairy_visual.children[i];
+		var angle = now / (state.color ? 430 : 900) + (i * Math.PI * 2) / sprite.citizen_fairy_visual.children.length;
+		mote.x = Math.cos(angle) * (state.color ? 9 : 7);
+		mote.y = base_y + Math.sin(angle) * (state.color ? 4 : 2);
+	}
+}
+
+function citizen_echo_emote(player, emote, data) {
+	if (!["wiggle", "headwiggle", "joy", "jump"].includes(emote)) return;
+	var brio = get_npc("citizen21");
+	if (!brio || current_map != "tavern" || point_distance(get_x(brio), get_y(brio), get_x(player), get_y(player)) > 200) return;
+	if (brio.citizen_echo_ready && brio.citizen_echo_ready > Date.now()) return;
+	brio.citizen_echo_ready = Date.now() + 6000;
+	var player_name = player.name;
+	var variation = data.variation;
+	draw_timeout(function () {
+		var source = get_player(player_name);
+		var echo = get_npc("citizen21");
+		if (!source || !echo || current_map != "tavern" || point_distance(get_x(echo), get_y(echo), get_x(source), get_y(source)) > 240) return;
+		direction_logic(echo, source, "npc");
+		play_cosmetic_emote(echo, emote, null, { silent: true, variation: variation });
+		draw_timeout(function () {
+			var current = get_npc("citizen21");
+			if (current == echo && current_map == "tavern") current.citizen_bow = { started: new Date(), duration: 450 };
+		}, cosmetic_emote_durations[emote] + 30);
+	}, 800);
+}
+
+function citizen_behavior_logic(sprite) {
+	if (sprite.citizen_behavior == "fairy_echo") citizen_fairy_echo_logic(sprite);
+	if (sprite.citizen_behavior == "tavern_echo" && sprite.citizen_bow) {
+		var progress = mssince(sprite.citizen_bow.started) / sprite.citizen_bow.duration;
+		if (progress >= 1) {
+			sprite.rotation = 0;
+			delete sprite.citizen_bow;
+		} else sprite.rotation = Math.sin(progress * Math.PI) * 0.12;
+	}
+}
+
 function play_cosmetic_emote(player, name, target, data) {
 	if (no_graphics) return;
+	if (name == "makeawish" || name == "ikissyou") {
+		if (cosmetic_emote_sheet_start(player, name, target) && name == "makeawish" && !(data && data.silent)) play_cosmetic_emote_sound(name, 1);
+		return;
+	}
 	if (name == "drop_egg") {
 		map_animation(random_one(["egg0", "egg1", "egg2", "egg3", "egg4", "egg5", "egg6", "egg7", "egg8", "goldenegg"]), {
 			x: get_x(player),
@@ -4376,7 +4737,7 @@ function play_cosmetic_emote(player, name, target, data) {
 			cosmetic_emote_targeted_start(player, name, "caster", target && target.name, started, variation);
 			if (target) cosmetic_emote_targeted_start(target, name, "target", player.name, started, variation);
 		}
-		play_cosmetic_emote_sound(name, variation);
+		if (!(data && data.silent)) play_cosmetic_emote_sound(name, variation);
 		return;
 	}
 	clear_cosmetic_emote(player);
@@ -4387,16 +4748,21 @@ function play_cosmetic_emote(player, name, target, data) {
 	} else if (name == "joy") {
 		cosmetic_emote_joy_rainbow(player, variation);
 	}
-	play_cosmetic_emote_sound(name, variation);
+	if (!(data && data.silent)) play_cosmetic_emote_sound(name, variation);
 }
 
 function cosmetic_emote_logic(player) {
+	if (no_graphics) return;
 	var emote = player.cosmetic_emote;
 	if (!emote) return;
 	var elapsed = mssince(emote.start);
 	var progress = elapsed / emote.duration;
 	if (progress >= 1) {
 		clear_cosmetic_emote(player);
+		return;
+	}
+	if (emote.name == "makeawish" || emote.name == "ikissyou") {
+		cosmetic_emote_sheet_logic(player, elapsed);
 		return;
 	}
 	if (cosmetic_targeted_emotes[emote.name]) {
@@ -4437,6 +4803,10 @@ function cosmetic_emote_logic(player) {
 
 function update_sprite(sprite) {
 	if (!sprite || !sprite.stype) return;
+	if (sprite.atype == "shield_slam_item") {
+		update_shield_slam_item(sprite);
+		return;
+	}
 	for (name in sprite.animations || {}) update_sprite(sprite.animations[name]);
 	for (name in sprite.emblems || {}) update_sprite(sprite.emblems[name]);
 	if (sprite.stype == "static") return;
@@ -4759,7 +5129,8 @@ function update_sprite(sprite) {
 		if (!sprite.cx) sprite.cx = {};
 		if (sprite.stype == "full") cosmetics_logic(sprite);
 	}
-	if (sprite.type == "character") cosmetic_emote_logic(sprite);
+	if (sprite.type == "character" || sprite.cosmetic_emote) cosmetic_emote_logic(sprite);
+	if (sprite.type == "npc" && sprite.citizen_behavior) citizen_behavior_logic(sprite);
 
 	if (sprite.last_ms && sprite.s) {
 		var ms = mssince(sprite.last_ms);
@@ -4838,8 +5209,86 @@ function add_monster(data) {
 	return sprite;
 }
 
+function item_upgrade_glow(item) {
+	if (no_graphics) return;
+	var def = item && G.items[item.name];
+	if (!def) return;
+	var level = item.level || 0, grade = calculate_item_grade(def);
+	if (level + grade < 10) return;
+	var distance = 8 + (Math.min(level, 13) + [1, 1.5, 2, 2, 2][grade] - 10) * 3;
+	var strength = 4 + (Math.min(level, 13) + [1.5, 1.75, 2, 2, 2][grade] - 10) * 2;
+	return new PIXI.filters.GlowFilter(distance, strength, 0, hx((def.cx && def.cx.accent) || "#DBDBBF", 0.05));
+}
+
+function animate_shield_slam(attacker, target, item) {
+	if (no_graphics) return;
+	if (!attacker || attacker.destroyed || attacker.rip || !target || !item || !G.items[item.name] || G.items[item.name].type != "shield") return;
+	if (!attacker.animations) attacker.animations = {};
+	if (attacker.animations.shield_slam_item) stop_animation(attacker, "shield_slam_item");
+	var sprite = new_sprite(item.name, "item");
+	var angle = Math.atan2(get_y(target) - get_height(target) / 2 - (get_y(attacker) - 15), get_x(target) - get_x(attacker));
+	sprite.anchor.set(0.5, 1);
+	// The native bottom edge (+Y), rather than the top edge, leads the thrust.
+	sprite.rotation = angle - Math.PI / 2;
+	sprite.thrust_x = Math.cos(angle);
+	sprite.thrust_y = Math.sin(angle);
+	sprite.thrust_started = Date.now();
+	sprite.atype = "shield_slam_item";
+	sprite.zy = 1200;
+	var glow = item_upgrade_glow(item);
+	if (glow) sprite.filters = [glow];
+	attacker.animations.shield_slam_item = sprite;
+	attacker.addChild(sprite);
+	update_shield_slam_item(sprite);
+}
+
+function update_shield_slam_item(sprite) {
+	if (no_graphics) return;
+	var parent = sprite.parent;
+	if (!parent || sprite.destroyed) return;
+	var elapsed = Math.max(0, Date.now() - sprite.thrust_started);
+	if (elapsed >= 150 || parent.rip) {
+		stop_animation(parent, "shield_slam_item");
+		return;
+	}
+	var distance = 8 + 20 * Math.min(1, elapsed / 75);
+	sprite.x = Math.round(sprite.thrust_x * distance);
+	sprite.y = -15 + Math.round(sprite.thrust_y * distance);
+	sprite.alpha = elapsed <= 75 ? 1 : (150 - elapsed) / 75;
+}
+
+function paladin_shield_hit_feedback(data, entity) {
+	if (no_graphics) return;
+	if (data.evade || data.miss || data.avoid || data.reflect || data.heal !== undefined) return;
+	if (entity && (data.damage > 0 || data.mp_damage > 0 || data.shield_reaction)) {
+		var state = data.shield_reaction || (entity.s && (entity.s.mshield ? "mshield" : entity.s.aether_shield && "aether_shield"));
+		if (state) paladin_shield_reaction(entity, state);
+	}
+	if (data.redirected > 0 && data.guardian) {
+		var guardian = get_entity(data.guardian);
+		var state = guardian && guardian.s && (guardian.s.mshield ? "mshield" : guardian.s.aether_shield && "aether_shield");
+		if (state) paladin_shield_reaction(guardian, state);
+	}
+}
+
+function paladin_shield_reaction(sprite, state) {
+	if (no_graphics) return;
+	if (!sprite || sprite.destroyed || (state != "mshield" && state != "aether_shield")) return;
+	// One short reaction per sprite; rapid hits cannot accumulate filters or timers.
+	if (sprite.filter_shield_hit) return;
+	start_filter(sprite, "shield_hit", state);
+	sprite.shield_hit_started = Date.now();
+}
+
 function update_filters(sprite) {
 	if (no_graphics) return;
+	if (sprite.filter_shield_hit) {
+		var progress = (Date.now() - sprite.shield_hit_started) / 120;
+		if (progress >= 1) {
+			stop_filter(sprite, "shield_hit");
+			delete sprite.shield_hit_started;
+		} else sprite.filter_shield_hit.outerStrength = 0.35 * Math.max(0, 1 - progress);
+	}
 	if (sprite.pglow) {
 		if (sprite.updates % 3) return;
 
@@ -4875,7 +5324,9 @@ function update_filters(sprite) {
 function start_filter(sprite, ftype, args) {
 	if (no_graphics) return;
 	var filter = null;
-	if (ftype == "darkgray") {
+	if (ftype == "shield_hit") {
+		filter = new PIXI.filters.GlowFilter(2, 0.35, 0, args == "mshield" ? 0x75a7df : 0xab91db);
+	} else if (ftype == "darkgray") {
 		filter = new PIXI.filters.OutlineFilter(3, 0x5e615e);
 	} else if (ftype == "fingered") {
 		filter = new PIXI.filters.OutlineFilter(3, 0x934fb2);
@@ -5349,7 +5800,6 @@ function cosmetics_logic(sprite) {
 					item = sprite.slots.mainhand,
 					main = true;
 				if (cid[4] == "2") ((item = sprite.slots.offhand), (main = false));
-				var gr = calculate_item_grade(G.items[wname]);
 				c = new_sprite(wname, "item");
 				c.anchor.set(0.5, 1);
 				c.y = -4;
@@ -5361,13 +5811,9 @@ function cosmetics_logic(sprite) {
 				if (wcx.lightborder) ((bcolor = 0x666666), (bsize = 1));
 				if (wcx.border) bsize = wcx.border;
 
-				var glow_distance = 8 + (min(item.level, 13) + [1, 1.5, 2, 2, 2][gr] - 10) * 3;
-				var glow_strength = 4 + (min(item.level, 13) + [1.5, 1.75, 2, 2, 2][gr] - 10) * 2;
-
-				if (item.level + gr >= 10) {
-					var glow_filter = new PIXI.filters.GlowFilter(glow_distance, glow_strength, 0, hx(wcx.accent || "#DBDBBF", 0.05)); // "#DAC7CF"
+				var glow_filter = item_upgrade_glow(item);
+				if (glow_filter) {
 					c.filters = [glow_filter];
-					// if(item.level+gr>=11) c.filterArea = new PIXI.Rectangle(-4000, -4000, 4000, 4000);
 					if (main) sprite.filter_wglow = glow_filter;
 				} else if (wcx.scale == 0.5)
 					c.filters = [new PIXI.filters.OutlineFilter(bsize || 2, bcolor)]; // ,new PIXI.filters.PixelateFilter(2,2)
@@ -5435,7 +5881,10 @@ function cosmetics_logic(sprite) {
 			else if (sprite.j == 1) c.x = -tilt + x_disp;
 			else if (sprite.j == 2) c.x = +tilt + x_disp;
 			else if (sprite.j == 3) c.x = 0 + x_disp;
-			if (sprite.j !== undefined) set_texture(c, sprite.j, sprite.i);
+			var hat_frame = sprite.i,
+				hat_interval = G.cosmetics.hat_animation && G.cosmetics.hat_animation[cid];
+			if (c.stype == "a_hat" && hat_interval) hat_frame = Math.floor(Date.now() / hat_interval);
+			if (sprite.j !== undefined) set_texture(c, sprite.j, hat_frame);
 			c.moved = false;
 		} else if (c.stype == "face") {
 			c.y_disp = -(G.cosmetics.default_head_place + head_dy + G.cosmetics.default_face_position) + cosmetic_head_y;
@@ -6628,7 +7077,7 @@ function load_game(c) {
 			if (in_arr(s_def.type, ["animation"])) ((row_num = 1), (s_type = s_def.type));
 			if (in_arr(s_def.type, ["tail"])) ((col_num = 4), (s_type = s_def.type));
 			if (in_arr(s_def.type, ["v_animation", "head", "hair", "hat", "s_wings", "face", "makeup", "beard"])) ((col_num = 1), (s_type = s_def.type));
-			if (in_arr(s_def.type, ["a_makeup", "a_hat"])) ((col_num = 3), (s_type = s_def.type));
+			if (in_arr(s_def.type, ["a_makeup", "a_hat"])) ((col_num = s_def.frames || 3), (s_type = s_def.type));
 			if (in_arr(s_def.type, ["wings", "body", "armor", "skin", "character"])) s_type = s_def.type;
 			if (in_arr(s_def.type, ["emblem", "gravestone"])) ((row_num = 1), (col_num = 1), (s_type = s_def.type));
 			var matrix = s_def.matrix;
@@ -6642,7 +7091,7 @@ function load_game(c) {
 					SSU[name] = SS[name] = s_def.size || "normal";
 					FC[name] = s_def.file;
 					FM[name] = [i, j];
-					XYWH[name] = [j * col_num * width, i * row_num * height, width, height];
+					XYWH[name] = [j * col_num * width, i * row_num * height, width, height, col_num];
 					if (G.cosmetics.prop[name] && G.cosmetics.prop[name].includes("slender")) SSU[name] += "slender";
 				}
 		}

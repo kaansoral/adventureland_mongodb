@@ -2,10 +2,10 @@
 <html>
 	<head>
 		<title>Adventure Land on Linux: Native Steam, Proton and WebView2 Help</title>
-		<meta name="description" content="Run and troubleshoot Adventure Land's native Linux Steam client, or experiment with Proton, Protontricks and Microsoft Edge WebView2 Runtime." />
+		<meta name="description" content="Run and troubleshoot Adventure Land's native Linux Steam client, authorize your account for browser play, or experiment with Proton and WebView2." />
 		<meta
 			name="keywords"
-			content="Adventure Land Linux, Adventure Land Steam Linux, Tauri Linux crash, Steam Proton WebView2, Wine WebView2 Runtime, Could not find the WebView2 Runtime, protontricks webview2"
+			content="Adventure Land Linux, Adventure Land Steam Linux, Tauri Linux crash, Steam Linux browser play, Steam Proton WebView2, Wine WebView2 Runtime, Could not find the WebView2 Runtime, protontricks webview2"
 		/>
 		<link rel="apple-touch-icon-precomposed" href="/images/favicon.png" />
 		<!-- 152 -->
@@ -112,6 +112,19 @@
 			<p>Adventure Land's current Steam client uses Tauri. Steam includes a native Linux build, so Proton isn't normally needed.</p>
 
 			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
+				<div style="color: #7bb18f">#1: Run Adventure Land from the Command Line</div>
+				<p>Keep Steam open. In your Steam Library, right-click <b>Adventure Land</b>, then select <b>Properties &gt; Installed Files &gt; Browse</b>. This opens the exact game folder, even if you use a custom Steam Library.</p>
+				<p>Open a terminal in that folder. In KDE's Dolphin, press <b>F4</b>. In other file managers, right-click inside the folder and select <b>Open in Terminal</b>.</p>
+				<p>Make sure the terminal lists <b>Adventure Land</b>, then run it:</p>
+				<pre class="command">
+ls -la
+./Adventure\ Land</pre>
+				<p>To save the output for troubleshooting, close the game and run this instead:</p>
+				<pre class="command">./Adventure\ Land 2&gt;&amp;1 | tee "$HOME/adventure-land-native.log"</pre>
+				<p>If the game opens, sign up or log in and start a character. If it fails, send <b>~/adventure-land-native.log</b> to hello@adventure.land.</p>
+			</div>
+
+			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
 				<div style="color: #4da9df">Use the Native Linux Client</div>
 				<p>
 					Open Adventure Land's Steam Properties, select Compatibility, and turn off "Force the use of a specific Steam Play compatibility tool". Then select Installed Files and Verify integrity of
@@ -157,6 +170,22 @@ sudo apt install libwebkit2gtk-4.1-0</pre>
 					WebKitGTK 4.1.
 				</p>
 				<p>Please send the complete terminal output and <b>~/adventure-land-native.log</b> to hello@adventure.land. Even an empty log is useful when paired with the other results.</p>
+			</div>
+
+			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
+				<div style="color: #7bb18f">Authorize Once, Then Play in Your Browser</div>
+				<p>
+					Linux distributions combine different desktop environments, graphics drivers and WebKit versions. Some combinations are difficult for us to reproduce and support reliably. If the client works from a
+					terminal but not from Steam, you can still use it once to authorize your account.
+				</p>
+				<p>
+					Open the native client from a terminal, sign up or log in, then start one character and wait until the game says <b>Connected</b>. This saves the Steam authorization on that Adventure Land account and
+					character.
+				</p>
+				<p>
+					After that, visit <a href="https://adventure.land">adventure.land</a>, log in with the same email and password, and play that character from your browser indefinitely. Steam doesn't need to be open,
+					and the browser won't ask for another Steam verification.
+				</p>
 			</div>
 
 			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">

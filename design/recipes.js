@@ -1,4 +1,55 @@
 var craft={
+	"sixcake":{
+		"items":[[1,"slice_strawberry"],[1,"slice_citrus"],[1,"slice_honey"],[1,"slice_mint"],[1,"slice_blueberry"],[1,"slice_nightberry"]],
+		"cost":100000,
+		"quest":"anniversary_baker",
+	},
+	"candleward":{
+		"items":[[1,"sixcake"],[1,"shield",0],[3,"bronzeingot"],[40,"leather"]],
+		"cost":2000000,
+		"quest":"anniversary_baker",
+	},
+	"guestbook":{
+		"items":[[1,"sixcake"],[1,"wbook0",0],[1,"ink"],[2,"voidthread"],[30,"drapes"]],
+		"cost":2000000,
+		"quest":"anniversary_baker",
+	},
+	"paradequiver":{
+		"items":[[1,"sixcake"],[1,"quiver",0],[6,"stormfeather"],[40,"leather"]],
+		"cost":2000000,
+		"quest":"anniversary_baker",
+	},
+	"homecominghelm":{
+		"items":[[1,"sixcake"],[1,"helmet1",0],[2,"bronzeingot"],[20,"drapes"]],
+		"cost":2000000,
+		"quest":"anniversary_baker",
+	},
+	"homecomingcoat":{
+		"items":[[1,"sixcake"],[1,"coat1",0],[3,"bronzeingot"],[60,"drapes"]],
+		"cost":2000000,
+		"quest":"anniversary_baker",
+	},
+	"homecomingcape":{
+		"items":[[1,"sixcake"],[1,"cape",0],[4,"voidthread"],[80,"drapes"]],
+		"cost":2000000,
+		"quest":"anniversary_baker",
+	},
+	"reunionbow":{
+		"items":[[2,"sixcake"],[1,"t2bow",0],[20,"stormfeather"],[4,"essenceofether"]],
+		"cost":4000000,
+		"quest":"anniversary_baker",
+	},
+	"keepsakependant":{
+		"items":[[1,"sixcake"],[1,"hpamulet",0],[1,"bronzeingot"],[20,"drapes"]],
+		"cost":1000000,
+		"quest":"anniversary_baker",
+	},
+	"makeawishjar":{
+		"items":[[1,"sixcake"]],
+		"cost":250000,
+		"quest":"anniversary_baker",
+		"output":{"name":"cxjar","data":"makeawish"},
+	},
 	"basketofeggs":{
 		"items":[
 			[1,"egg0"],
@@ -321,6 +372,15 @@ var craft={
 		"items":[
 			[60,"beewings"],
 			[20,"spores"],
+		],
+		"cost":0,
+		"quest":"mcollector",
+	},
+	"vowkeepergloves":{
+		"items":[
+			[60,"beewings"],
+			[30,"spores"],
+			[2,"crabclaw"],
 		],
 		"cost":0,
 		"quest":"mcollector",
@@ -765,6 +825,23 @@ var craft={
 			[2,"cshell"],
 		],
 		"cost":400000,
+	},
+	"oathplate":{
+		"items":[
+			[1,"coat1"],
+			[4,"pleather"],
+			[2,"ascale"],
+			[20,"spores"],
+		],
+		"cost":180000,
+	},
+	"resolutesallet":{
+		"items":[
+			[1,"helmet1",0],
+			[12,"dstones"],
+			[4,"rfangs"],
+		],
+		"cost":240000,
 	},
 	"silkgrips":{
 		"items":[

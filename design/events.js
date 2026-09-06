@@ -1,4 +1,10 @@
 var events={
+	"anniversary":{
+		"name":"Ten Years of Adventure Land",
+		"modal":"event-anniversary",
+		"sprite":"sixcake",
+		"type":"seasonal",
+	},
 	"abtesting":{
 		"name":"A/B Testing",
 		"modal":"event-abtesting",

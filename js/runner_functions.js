@@ -1298,9 +1298,13 @@ function find_npc(npc_id) {
 	// returns smart_move'able coordinates for an NPC key from G.npcs
 	for (var name in parent.G.maps) {
 		var map = parent.G.maps[name];
-		if (map.ignore || !map.npcs) continue;
-		for (var i = 0; i < map.npcs.length; i++) {
-			var npc = map.npcs[i];
+		if (map.ignore) continue;
+		var locations = (map.npcs || []).concat((map.seasonal_npcs || []).filter(function (npc) {
+			var state = parent.S && parent.S[npc.event];
+			return !npc.event || (state && state.active !== false);
+		}));
+		for (var i = 0; i < locations.length; i++) {
+			var npc = locations[i];
 			if (npc.id == npc_id) return { map: name, in: name, x: npc.position[0], y: npc.position[1] };
 		}
 	}

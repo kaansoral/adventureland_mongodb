@@ -12,6 +12,7 @@ var tokens={
 		"hammer":120,
 		"harbringer":25,
 		"valourdirk":25,
+		"resolutesallet":12,
 		"spear":1,
 		"t2bow":1,
 		"weaponbox":1,
@@ -30,6 +31,7 @@ var tokens={
 		"mrgloves":8, "mrarmor":12, "mrpants":11, "mrhood":7, "mrboots":15,
 		"mcgloves":8, "mcarmor":12, "mcpants":11, "mchat":7, "mcboots":15,
 		"fieldgen0":100,
+		"concordmace":12,
 	},
 	"friendtoken":{
 		"cxjar-xgravestone2":4,

@@ -1,4 +1,11 @@
 var conditions = {
+	anniversary_visit: {
+		name: "Anniversary Visit",
+		skin: "emote_ikissyou",
+		ui: true,
+		duration: 5 * 60 * 1000,
+		explanation: "Find the featured player and send I Kiss You for a cake slice and an Anniversary Gift. Used up after one visit.",
+	},
 	tangled: {
 		name: "Tangled",
 		skin: "condition_bad",
@@ -105,6 +112,13 @@ var conditions = {
 		buff: true,
 		explanation: "Mana absorbs damage before health.",
 	},
+	aether_shield: {
+		skin: "skill_aether_shield",
+		name: "Aether Shield",
+		ui: true,
+		buff: true,
+		explanation: "Magical HP damage restores MP. Cannot coexist with Mana Shield.",
+	},
 	phasedout: {
 		skin: "skill_phaseout",
 		name: "Phased Out",
@@ -144,6 +158,62 @@ var conditions = {
 		ui: true,
 		buff: true,
 		explanation: "Increases your chance to reflect attacks.",
+	},
+	guardians_oath: {
+		skin: "skill_guardians_oath",
+		name: "Guardian's Oath",
+		duration: 8000,
+		ui: true,
+		buff: true,
+		explanation: "A nearby Paladin takes part of your damage and regains MP from the HP they lose.",
+	},
+	beacon_of_resolve: {
+		skin: "skill_beacon_of_resolve",
+		name: "Beacon of Resolve",
+		for: 15,
+		courage: 1,
+		mcourage: 1,
+		pcourage: 1,
+		duration: 8000,
+		ui: true,
+		buff: true,
+		explanation: "Increases Fortitude and every type of Courage.",
+	},
+	paladin_aura_bulwark: {
+		skin: "paladin_aura_bulwark",
+		name: "Aura of the Bulwark",
+		duration: 60 * 1000,
+		ui: true,
+		buff: true,
+		aura: true,
+		explanation: "Increases armor and maximum HP.",
+	},
+	paladin_aura_sanctuary: {
+		skin: "paladin_aura_sanctuary",
+		name: "Aura of Sanctuary",
+		duration: 60 * 1000,
+		ui: true,
+		buff: true,
+		aura: true,
+		explanation: "Increases resistance and maximum MP.",
+	},
+	paladin_aura_zeal: {
+		skin: "paladin_aura_zeal",
+		name: "Aura of Zeal",
+		duration: 60 * 1000,
+		ui: true,
+		buff: true,
+		aura: true,
+		explanation: "Increases damage and attack speed.",
+	},
+	paladin_aura_warding: {
+		skin: "paladin_aura_warding",
+		name: "Aura of Warding",
+		duration: 60 * 1000,
+		ui: true,
+		buff: true,
+		aura: true,
+		explanation: "Resists harmful effects and reduces MP costs.",
 	},
 	eburn: {
 		skin: "essenceoffire",
@@ -341,6 +411,14 @@ var conditions = {
 		persistent: true,
 		duration: 1000 * 60 * 12,
 		special: "snakeoil",
+	},
+	realmfatigue: {
+		skin: "condition_bad",
+		name: "Realm Fatigue",
+		explanation: "Another non-merchant character on your account recently visited a different server. Home rewards return after you settle in; normal rewards continue.",
+		ui: true,
+		persistent: true,
+		duration: 1000 * 60 * 30,
 	},
 	fullguard: {
 		skin: "fullguard",
@@ -688,6 +766,14 @@ var conditions = {
 		duration: 8000,
 	},
 };
+
+// Cleansing Light removes short-lived combat afflictions only. Persistent,
+// account, travel, economy, cooldown, and target-stack states stay untouched.
+for (var cleansable of [
+	"tangled","weakness","woven","eburn","stunned","deepfreezed","frozen",
+	"burned","shocked","fingered","stoned","slowness","poisoned","cursed",
+	"dampened","charmed","marked","sleeping",
+]) conditions[cleansable].cleansable=true;
 
 // The tarot card condition generation block below was disabled in the original Python (if 0:)
 // It is preserved here as a comment for reference.

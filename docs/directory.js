@@ -331,6 +331,14 @@ docs = {
 		c0: [[1, "open", "cosmo0"]],
 	},
 	interactions: {
+		anniversary: {
+			title: "Mira's Anniversary Workshop",
+			article: "event-anniversary",
+			icon: "sixcake",
+			summary: "Bring six cake flavors to Mira. Craft a cake or choose a gift.",
+			functions: ["smart_move", "auto_craft", "exchange", "use_skill"],
+			proximity: true,
+		},
 		merrit: {
 			title: "Merrit's Market Parcels",
 			article: "npc-merrit",
@@ -508,6 +516,7 @@ docs = {
 	},
 	interaction_map: {
 		npc_ids: {
+			anniversary_baker: "anniversary",
 			citizen22: "merrit",
 			appearance: "cosmetics",
 			antip2w: "cosmetics",
@@ -540,6 +549,7 @@ docs = {
 			witch: "crafting",
 		},
 		npc_roles: {
+			anniversary_crafter: "anniversary",
 			announcer: "prototype",
 			blocker: "pvp",
 			bouncer: "tavern",
@@ -647,6 +657,7 @@ docs = {
 			[
 				["travel-and-instances", "Travel, Doors & Instances", "travel,door,key,instance,transport,smart_move", "#6DB7B8"],
 				["events-and-home", "Events, Schedules & Home", "event,schedule,home,server,status", "#A58BC8"],
+				["event-anniversary", "Ten Years & Mira's Cakes", "anniversary,mira,cake,slice,gift,kiss,craft", "#E6AE3F"],
 				["tavern-games", "Tavern Games", "tavern,dice,slots,wager,house edge", "#C78A6B"],
 				["gathering", "Fishing & Mining", "fishing,mining,rod,pickaxe", "#62B9A6"],
 				["special-interactions", "Strange Interactions", "tree,lever,statue,jail,quirk", "#9083BC"],
