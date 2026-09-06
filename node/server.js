@@ -405,12 +405,12 @@ async function init_game() {
 		for (var id in maps) {
 			if (maps[id].ignore) continue;
 			var key = maps[id].key;
-			rpc[id] = get("MP_" + key);
+			rpc[id] = load_map_geometry_or_import(key);
 		}
 		for (var id in maps) {
 			if (maps[id].ignore) continue;
-			var map = await rpc[id];
-			if (map) geometry[id] = map.info.data;
+			var mapData = await rpc[id];
+			if (mapData) geometry[id] = mapData;
 		}
 
 		// Build G (game data) from design globals (matches create_server_api output)
@@ -585,12 +585,12 @@ async function reload_server(to_broadcast, change) {
 		var rpc = {};
 		for (var id in maps) {
 			if (maps[id].ignore) continue;
-			rpc[id] = get("MP_" + maps[id].key);
+			rpc[id] = load_map_geometry_or_import(maps[id].key);
 		}
 		for (var id in maps) {
 			if (maps[id].ignore) continue;
-			var map = await rpc[id];
-			if (map) geometry[id] = map.info.data;
+			var mapData = await rpc[id];
+			if (mapData) geometry[id] = mapData;
 		}
 
 		G = {
