@@ -109,6 +109,12 @@ node server.js local
 
 The argument is a key from `servers` in `secretsandconfig/options.js`. The default `local` server runs on port **7192**.
 
+### Discord chat (optional)
+
+The game server reuses `discord_token` from `secretsandconfig/keys.js` for event announcements and public chat. Set `discord_chat_channel` in `secretsandconfig/options.js` to the string ID of your `#game_chat` channel, and give the bot permission to view that channel and send messages. Use the same channel ID on every game server to combine their public chat. An empty setting disables chat forwarding; event and join announcements keep their existing channels.
+
+Messages include the realm and character name. Public chat is batched over ten seconds; party chat and private messages are excluded. The relay sends nothing back into the game and is disabled in development, test, and hardcore modes. It uses bounded memory, five-second request timeouts, and at most three attempts per batch. Messages expire after two minutes, so an outage or overload can drop chat. No extra Discord package or Gateway connection is needed.
+
 ## Seeding Game Data
 
 The database needs map data and game entities to function. You have two options:

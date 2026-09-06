@@ -29,6 +29,12 @@ app.get("/", (req, res) => {
 //var io=require('socket.io')(app,{pingInterval:2400,pingTimeout:6000});
 const SocketIOServer = require("socket.io").Server;
 const msgpack_parser = require("./msgpack_parser");
+const discord_relay = require("./logic/discord")({
+	token: keys.discord_token,
+	chatChannel: options.discord_chat_channel,
+	realm: region + " " + server_name,
+	enabled: !Dev,
+});
 const anniversary_rules = require("./logic/anniversary_event");
 const market_patron_rules = require("./logic/market_patron")((a, b) => simple_distance(a, b));
 var socket_cors = {
@@ -714,23 +720,6 @@ server_api.post("/eval", (req, res) => {
 		log_trace("chttp_eval", e);
 	}
 	res.send(JSON.stringify(output));
-});
-
-
-server_api.post("/discord_chat", (req, res) => {
-	if (req.body.spass !== keys.ACCESS_MASTER) return res.status(403).send("");
-	const message = strip_string(req.body.message || "").substr(0, 1200);
-	const owner = strip_string(req.body.owner || "").substr(0, 80);
-	if (!message || !owner) {
-		return res.status(400).send("bad");
-	}
-	broadcast("chat_log", {
-		owner: owner,
-		message: message,
-		p: true,
-		color: req.body.color || "#5865F2",
-	});
-	res.send("yes");
 });
 
 app.use(server_def.api_path, server_api);
@@ -4828,7 +4817,7 @@ function init_socket_io(socket_server) {
 			} else {
 				if (1) {
 					broadcast("chat_log", { owner: player.name, message: message, id: player.id, p: true });
-					discord_public_chat(player, message);
+					if (gameplay !== "hardcore" && gameplay !== "test") discord_relay.chat(player.name, message);
 					var owners = {};
 					for (var id in players) {
 						var p = players[id];

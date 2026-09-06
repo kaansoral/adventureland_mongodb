@@ -3540,26 +3540,14 @@ function xy_upush_logic(element) {
 
 // appengine_call removed - all calls replaced with direct MongoDB operations
 
-/** GS eval-scope ctx for node/discord outbound helpers. */
-function discord_gs_ctx() {
-	return {
-		options: options,
-		keys: keys,
-		gameplay: gameplay,
-		Dev: Dev,
-		server_key: server_key,
-		region: region,
-		server_name: server_name,
-		server_log: server_log,
-	};
-}
-
 function discord_call(message) {
-	return require("./discord").discord_call(message, discord_gs_ctx());
-}
-
-function discord_public_chat(player, message) {
-	return require("./discord").discord_public_chat(player, message, discord_gs_ctx());
+	if (gameplay == "hardcore" || gameplay == "test") {
+		return;
+	}
+	if (Dev) {
+		return server_log("Discord: " + message);
+	}
+	return discord_relay.event(message);
 }
 
 function server_log(message, important) {
