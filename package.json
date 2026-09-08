@@ -12,6 +12,7 @@
 		"@aws-sdk/client-ses": "^3.998.0",
 		"@mongodb-js/zstd": "^2.0.1",
 		"argon2": "^0.44.0",
+		"body-parser": "^2.2.0",
 		"cookie-parser": "^1.4.5",
 		"express": "^4.16.4",
 		"geoip-lite": "^1.4.10",
