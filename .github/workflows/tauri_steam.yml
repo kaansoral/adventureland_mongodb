@@ -33,6 +33,12 @@ jobs:
       - name: Install Linux dependencies
         if: matrix.platform == 'linux'
         run: |
+          # Chrome is not used by this build; its repository must not block Ubuntu packages.
+          for apt_source in /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources; do
+            if [ -f "$apt_source" ] && grep -Fq 'dl.google.com/linux/chrome' "$apt_source"; then
+              sudo mv "$apt_source" "$apt_source.disabled"
+            fi
+          done
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev patchelf
 
