@@ -1,0 +1,1 @@
+phrase.load("fi",{"desktop.loading":"LADATAAN","desktop.connection_help":"Adventure Land tarvitsee internetyhteyden. Tarkista yhteys ja kokeile ladata uudelleen. Jos peli ei vieläkään lataudu, lähetä sähköpostia osoitteeseen hello@adventure.land.","desktop.apology":"Pahoittelut odotuksesta :)"});

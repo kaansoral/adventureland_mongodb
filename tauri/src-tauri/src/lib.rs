@@ -5,7 +5,9 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Manager, State, WebviewWindow, WebviewWindowBuilder};
 use tauri_plugin_opener::OpenerExt;
 
-const BUILD: &str = "b260825a";
+mod desktop;
+
+const BUILD: &str = "b260909a";
 const STEAM_APP_ID: u32 = 777150;
 const STEAM_IDENTITY: &str = "adventure-land-tauri-v1";
 const STEAM_TICKET_WAIT_ATTEMPTS: usize = 150;
@@ -116,9 +118,18 @@ fn init_steam(
     ticket: Arc<Mutex<String>>,
     error: Arc<Mutex<String>>,
     purchases: Arc<Mutex<HashMap<u64, bool>>>,
+    language: Arc<desktop::DesktopLanguage>,
 ) {
     match steamworks::Client::init_app(STEAM_APP_ID) {
         Ok(client) => {
+            if language.cached().is_none() {
+                let language_client = client.clone();
+                // GetCurrentGameLanguage is optional and must never hold up the UI,
+                // ticket callbacks, or game connection. Query once, off their threads.
+                std::thread::spawn(move || {
+                    language.steam_ready(&language_client.apps().current_game_language());
+                });
+            }
             if let Ok(mut value) = client_state.lock() {
                 *value = Some(client.clone());
             }
@@ -173,6 +184,7 @@ fn init_steam(
             });
         }
         Err(_) => {
+            language.steam_ready("");
             eprintln!("[Tauri Steam] Steam is unavailable.");
             if let Ok(mut value) = error.lock() {
                 *value = "Steam is unavailable. Start Adventure Land through Steam.".to_string();
@@ -184,8 +196,10 @@ fn init_steam(
 #[cfg(test)]
 mod tests {
     use super::{
-        is_external_url, is_game_url, is_steam_checkout_url, STEAM_APP_ID, STEAM_IDENTITY,
+        character_window_url, game_url, is_external_url, is_game_url, is_steam_checkout_url,
+        BUILD, PLATFORM, STEAM_APP_ID, STEAM_IDENTITY,
     };
+    use std::collections::HashMap;
     use std::sync::{Arc, Mutex};
     use std::time::Duration;
 
@@ -236,6 +250,38 @@ mod tests {
     }
 
     #[test]
+    fn character_window_keeps_character_realm_and_code() {
+        let url = character_window_url("https://adventure.land/character/MacTest/in/EU/PVP/?code=3").unwrap();
+        assert_eq!(url.path(), "/character/MacTest/in/EU/PVP/");
+        let query: HashMap<_, _> = url.query_pairs().collect();
+        assert_eq!(query.get("code").unwrap(), "3");
+        assert_eq!(query.get("buildid").unwrap(), &format!("{BUILD}-{PLATFORM}-tauri"));
+        assert_eq!(tauri::Url::parse(&game_url()).unwrap().path(), "/");
+        assert!(character_window_url("https://www.adventure.land/character/WindowsTest/in/US/II/").is_ok());
+    }
+
+    #[test]
+    fn character_window_rejects_external_and_non_game_destinations() {
+        for value in [
+            "http://adventure.land/character/MacTest/in/EU/I/",
+            "https://example.org/character/MacTest/in/EU/I/",
+            "https://adventure.land.example.org/character/MacTest/in/EU/I/",
+            "https://name@adventure.land/character/MacTest/in/EU/I/",
+            "https://adventure.land:444/character/MacTest/in/EU/I/",
+            "file:///character/MacTest/in/EU/I/",
+            "javascript:alert(1)",
+            "https://adventure.land/",
+            "https://adventure.land/docs",
+            "https://adventure.land/character/MacTest",
+            "https://adventure.land/character//in/EU/I/",
+            "https://adventure.land/character/MacTest/in/EU/",
+            "https://adventure.land/character/MacTest/in/EU/I/../../../../docs",
+        ] {
+            assert!(character_window_url(value).is_err(), "accepted {value}");
+        }
+    }
+
+    #[test]
     #[ignore = "requires the Steam client and an account that owns Adventure Land"]
     fn receives_live_steam_web_api_ticket() {
         let client =
@@ -272,7 +318,7 @@ async fn get_steam_auth(state: State<'_, AppState>) -> Result<SteamAuthData, Str
         {
             break;
         }
-        std::thread::sleep(Duration::from_millis(100));
+        tokio::time::sleep(Duration::from_millis(100)).await;
     }
     Ok(SteamAuthData {
         ticket: lock_string(&state.steam_ticket),
@@ -314,7 +360,7 @@ async fn refresh_steam_auth(state: State<'_, AppState>) -> Result<SteamAuthData,
         {
             break;
         }
-        std::thread::sleep(Duration::from_millis(100));
+        tokio::time::sleep(Duration::from_millis(100)).await;
     }
     Ok(SteamAuthData {
         ticket: lock_string(&state.steam_ticket),
@@ -363,6 +409,37 @@ fn reload_game(window: WebviewWindow, selection: bool) -> Result<(), String> {
 
 #[tauri::command]
 async fn create_subwindow(app: AppHandle, state: State<'_, AppState>) -> Result<(), String> {
+    let url = game_url().parse().map_err(|error: url::ParseError| error.to_string())?;
+    open_subwindow(app, &state, url)
+}
+
+fn character_window_url(value: &str) -> Result<tauri::Url, String> {
+    let mut url = tauri::Url::parse(value).map_err(|_| "Invalid character URL")?;
+    let parts: Vec<_> = url.path().trim_end_matches('/').split('/').collect();
+    if !is_game_url(&url)
+        || !url.username().is_empty()
+        || url.password().is_some()
+        || url.port().is_some()
+        || !matches!(parts.as_slice(), ["", "character", name, "in", region, server]
+            if !name.is_empty() && !region.is_empty() && !server.is_empty())
+    {
+        return Err("Invalid character URL".to_string());
+    }
+    url.query_pairs_mut()
+        .append_pair("buildid", &format!("{BUILD}-{PLATFORM}-tauri"));
+    Ok(url)
+}
+
+#[tauri::command]
+async fn create_character_window(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    url: String,
+) -> Result<(), String> {
+    open_subwindow(app, &state, character_window_url(&url)?)
+}
+
+fn open_subwindow(app: AppHandle, state: &AppState, url: tauri::Url) -> Result<(), String> {
     let open_subwindows = app
         .webview_windows()
         .keys()
@@ -379,9 +456,6 @@ async fn create_subwindow(app: AppHandle, state: State<'_, AppState>) -> Result<
         *counter += 1;
         format!("sub-{counter}")
     };
-    let url = game_url()
-        .parse()
-        .map_err(|error: url::ParseError| error.to_string())?;
     WebviewWindowBuilder::new(&app, &label, tauri::WebviewUrl::External(url))
         .title("Adventure Land")
         .inner_size(WIN_WIDTH, WIN_HEIGHT)
@@ -495,6 +569,10 @@ fn build_menu(app: &AppHandle) -> Result<tauri::menu::Menu<tauri::Wry>, tauri::E
         .build()
 }
 
+fn app_context() -> tauri::Context<tauri::Wry> {
+    tauri::generate_context!()
+}
+
 pub fn run() {
     let steam_client = Arc::new(Mutex::new(None));
     let steam_ticket = Arc::new(Mutex::new(String::new()));
@@ -521,12 +599,14 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             set_macos_dock_icon();
 
-            init_steam(
-                steam_client,
-                steam_ticket,
-                steam_error,
-                steam_purchases,
-            );
+            let language = Arc::new(desktop::DesktopLanguage::new(
+                app.path().app_config_dir().ok().map(|path| path.join("language.txt")),
+            ));
+            app.manage(language.clone());
+            // Steam initialization is also optional; create the windows immediately.
+            std::thread::spawn(move || {
+                init_steam(steam_client, steam_ticket, steam_error, steam_purchases, language);
+            });
 
             WebviewWindowBuilder::new(app, "loader", tauri::WebviewUrl::App("loader.html".into()))
                 .title("Adventure Land")
@@ -567,22 +647,27 @@ pub fn run() {
             })
             .build()?;
 
-            let handle = app.handle().clone();
-            main.on_window_event(move |event| {
-                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                    api.prevent_close();
-                    let confirmed = rfd::MessageDialog::new()
-                        .set_title("Adventure Land")
-                        .set_description("Are you sure you want to close Adventure Land?")
-                        .set_buttons(rfd::MessageButtons::YesNo)
-                        .show();
-                    if confirmed == rfd::MessageDialogResult::Yes {
-                        if let Some(window) = handle.get_webview_window("main") {
-                            let _ = window.destroy();
+            // A second blocking GTK dialog loop can deadlock WebKitGTK on
+            // Linux. Let the window manager close the client normally there.
+            #[cfg(not(target_os = "linux"))]
+            {
+                let handle = app.handle().clone();
+                main.on_window_event(move |event| {
+                    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                        api.prevent_close();
+                        let confirmed = rfd::MessageDialog::new()
+                            .set_title("Adventure Land")
+                            .set_description("Are you sure you want to close Adventure Land?")
+                            .set_buttons(rfd::MessageButtons::YesNo)
+                            .show();
+                        if confirmed == rfd::MessageDialogResult::Yes {
+                            if let Some(window) = handle.get_webview_window("main") {
+                                let _ = window.destroy();
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
 
             #[cfg(target_os = "macos")]
             {
@@ -617,11 +702,14 @@ pub fn run() {
             get_steam_purchase_authorization,
             reload_game,
             create_subwindow,
+            create_character_window,
             open_external,
             open_steam_checkout,
             open_devtools,
             toggle_fullscreen,
+            desktop::get_desktop_language,
+            desktop::get_bundled_images,
         ])
-        .run(tauri::generate_context!())
+        .run(app_context())
         .expect("error while running Adventure Land");
 }

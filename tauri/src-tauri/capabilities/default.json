@@ -12,10 +12,13 @@
 		"allow-get-steam-purchase-authorization",
 		"allow-reload-game",
 		"allow-create-subwindow",
+		"allow-create-character-window",
 		"allow-open-external",
 		"allow-open-steam-checkout",
 		"allow-open-devtools",
 		"allow-toggle-fullscreen",
+		"allow-get-desktop-language",
+		"allow-get-bundled-images",
 		"core:webview:allow-internal-toggle-devtools",
 		{
 			"identifier": "opener:allow-open-url",

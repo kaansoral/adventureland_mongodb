@@ -64,3 +64,5 @@ agentic/.venv/
 # System
 .DS_Store
 Thumbs.db
+
+/tauri/resources/image-cache.bin

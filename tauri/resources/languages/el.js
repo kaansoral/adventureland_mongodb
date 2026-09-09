@@ -1,0 +1,1 @@
+phrase.load("el",{"desktop.loading":"ΦΟΡΤΩΣΗ","desktop.connection_help":"Το Adventure Land χρειάζεται σύνδεση στο διαδίκτυο. Έλεγξε τη σύνδεσή σου και δοκίμασε να φορτώσεις ξανά. Αν συνεχίζει να μη φορτώνει, στείλε email στο hello@adventure.land.","desktop.apology":"Συγγνώμη για την αναμονή :)"});

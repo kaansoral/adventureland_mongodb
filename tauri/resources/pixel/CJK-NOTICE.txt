@@ -1,0 +1,16 @@
+Adventure Pixel CJK — fourteen rows
+
+These CJK fonts are native-grid derivatives of GNU Unifont 17.0.05.
+Source cells are retained where they fit the fourteen-row writing box;
+taller glyphs use recorded discrete-row reconstruction. Punctuation and
+small kana retain their relative vertical placement. New outlines, font
+tables, composition rules and Unicode subsets are built for Adventure Land.
+Original m5x7 and the other script fonts are unchanged.
+
+Copyright (C) 1998-2026 Roman Czyborra, Paul Hardy, Qianqian Fang,
+Andrew Miller, Johnnie Weaver, David Corbett, Ælla Chiana Moskopp,
+Rebecca Bettencourt, Minseo Lee, Ho-Seok Ee, et al.
+
+Distributed under the SIL Open Font License, Version 1.1.
+See OFL-1.1.txt and NOTICE.txt for the retained license and notices.
+The upstream reserved font names are not used as family names.

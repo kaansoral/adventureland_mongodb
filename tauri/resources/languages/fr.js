@@ -1,0 +1,1 @@
+phrase.load("fr",{"desktop.loading":"CHARGEMENT","desktop.connection_help":"Adventure Land nécessite une connexion Internet. Vérifie ta connexion et essaie de recharger. Si le jeu ne se charge toujours pas, écris à hello@adventure.land.","desktop.apology":"Désolé pour l’attente :)"});

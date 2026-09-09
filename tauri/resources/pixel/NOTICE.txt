@@ -1,0 +1,12 @@
+Pixel fonts
+
+m5x7 by Daniel Linssen (managore). The original m5x7 glyphs are unchanged.
+
+Unicode extensions derived from GNU Unifont 17.0.05:
+Copyright (C) 1998-2026 Roman Czyborra, Paul Hardy, Qianqian Fang, Andrew Miller,
+Johnnie Weaver, David Corbett, Ælla Chiana Moskopp, Rebecca Bettencourt,
+Minseo Lee, Ho-Seok Ee, et al.
+Distributed under the SIL Open Font License, Version 1.1. See OFL-1.1.txt.
+
+Additional Arabic and Thai pixel glyphs and OpenType substitutions are
+distributed under the SIL Open Font License, Version 1.1.

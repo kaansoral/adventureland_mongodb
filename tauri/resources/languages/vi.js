@@ -1,0 +1,1 @@
+phrase.load("vi",{"desktop.loading":"ĐANG TẢI","desktop.connection_help":"Adventure Land cần kết nối internet. Hãy kiểm tra kết nối và thử tải lại. Nếu vẫn không tải được, hãy gửi email đến hello@adventure.land.","desktop.apology":"Xin lỗi vì để bạn chờ :)"});

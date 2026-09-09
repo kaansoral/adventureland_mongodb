@@ -1,0 +1,1 @@
+phrase.load("ar",{"desktop.loading":"يجري التحميل","desktop.connection_help":"تحتاج Adventure Land إلى اتصال بالإنترنت. تحقق من اتصالك وحاول إعادة التحميل. إذا استمر تعذر التحميل، راسل hello@adventure.land.","desktop.apology":"نعتذر عن الانتظار :)"});

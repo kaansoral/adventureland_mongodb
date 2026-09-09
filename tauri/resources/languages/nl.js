@@ -1,0 +1,1 @@
+phrase.load("nl",{"desktop.loading":"LADEN","desktop.connection_help":"Adventure Land heeft een internetverbinding nodig. Controleer je verbinding en probeer opnieuw te laden. Lukt het nog steeds niet, mail dan naar hello@adventure.land.","desktop.apology":"Sorry voor het wachten :)"});

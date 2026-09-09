@@ -1,0 +1,1 @@
+phrase.load("cs",{"desktop.loading":"NAČÍTÁNÍ","desktop.connection_help":"Adventure Land potřebuje připojení k internetu. Zkontroluj připojení a zkus stránku načíst znovu. Pokud se stále nenačítá, napiš na hello@adventure.land.","desktop.apology":"Promiň to čekání :)"});

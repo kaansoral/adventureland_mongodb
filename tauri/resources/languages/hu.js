@@ -1,0 +1,1 @@
+phrase.load("hu",{"desktop.loading":"BETÖLTÉS","desktop.connection_help":"Az Adventure Land használatához internetkapcsolat szükséges. Ellenőrizd a kapcsolatot, és próbáld újratölteni. Ha továbbra sem tölt be, írj a hello@adventure.land címre.","desktop.apology":"Bocs a várakozásért :)"});

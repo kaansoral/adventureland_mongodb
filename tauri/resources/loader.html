@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="pixel/fontfaces.14c8ea8731e8.css">
+		<script src="phrases.js"></script>
+		<script src="desktop.js"></script>
 		<style>
-			@font-face {
-				font-family: pixel;
-				src: url(m5x7.ttf);
-				font-weight: normal;
-				font-style: normal;
-			}
 			html,body{
 				background:black;
 				color:white;
@@ -16,7 +14,7 @@
 				width:100%;
 				height:100%;
 				overflow:hidden;
-				font-family:pixel;
+				font-family:var(--pixel-font, pixel);
 				color:white;
 				word-wrap:break-word;
 				-webkit-font-smoothing:subpixel-antialiased;
@@ -27,15 +25,33 @@
 		<table width=100% height="100%">
 			<tr>
 				<td align="center">
-					<div style='border: 5px solid gray;font-size: 24px;line-height: 24px;padding: 12px; display: inline-block;text-align: center; overflow-wrap: break-word; max-width: 400px'><div id='thecolor' style='color:#85C76B'>LOADING</div> <span id="percentage">0</span>%</div>
+					<div style='border: 5px solid gray;font-size: 24px;line-height: 24px;padding: 12px; display: inline-block;text-align: center; overflow-wrap: break-word; max-width: 400px'><div id='thecolor' style='color:#85C76B'>...</div> <span id="percentage">0</span>%</div>
 					<div style='border: 5px solid gray; font-size: 24px; line-height: 24px; padding: 20px; margin-top: 10px; display: none; width: 380px' id="notloading">
-						At this point, it's probably not loading. Adventure Land requires an internet connection. Make sure you are connected! Try reloading once to see if it works. If the issue persists: You can always email hello@adventure.land
-						<div style='color:#85C76B; display: none' id='apologies'>Apologies :)</div>
+						<span id="connection-help"></span>
+						<div style='color:#85C76B; display: none' id='apologies'></div>
 					</div>
 				</td>
 			</tr>
 		</table>
 		<script>
+			var language=phrase.detect(navigator.languages || [navigator.language]);
+			function show_language(language){
+				document.documentElement.lang=language;
+				var language_script=document.createElement('script');
+				language_script.src='languages/'+language+'.js';
+				language_script.onload=function(){
+					document.getElementById('thecolor').textContent=phrase('desktop.loading');
+					document.getElementById('connection-help').textContent=phrase('desktop.connection_help');
+					document.getElementById('apologies').textContent=phrase('desktop.apology');
+				};
+				document.head.appendChild(language_script);
+				return new Promise(function(resolve){language_script.addEventListener('load',resolve);language_script.addEventListener('error',resolve);});
+			}
+			// Start in the system language immediately. Steam/cache resolution is optional.
+			var initial_language=show_language(language);
+			desktop.language().then(function(selected){
+				if(selected && selected!==language) initial_language.then(function(){show_language(selected);});
+			});
 			var progress=0,s9=0,percent=0;
 			setInterval(function(){
 				progress+=1;

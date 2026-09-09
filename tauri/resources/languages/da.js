@@ -1,0 +1,1 @@
+phrase.load("da",{"desktop.loading":"INDLÆSER","desktop.connection_help":"Adventure Land kræver en internetforbindelse. Tjek din forbindelse, og prøv at genindlæse. Hvis spillet stadig ikke indlæses, så skriv til hello@adventure.land.","desktop.apology":"Undskyld ventetiden :)"});

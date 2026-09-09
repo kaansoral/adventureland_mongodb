@@ -1,0 +1,1 @@
+phrase.load("ru",{"desktop.loading":"ЗАГРУЗКА","desktop.connection_help":"Для Adventure Land нужен интернет. Проверьте подключение и повторите загрузку. Если игра по-прежнему не загружается, напишите на hello@adventure.land.","desktop.apology":"Простите за ожидание :)"});

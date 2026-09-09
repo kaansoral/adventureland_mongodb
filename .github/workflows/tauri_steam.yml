@@ -69,7 +69,22 @@ jobs:
           cd tauri/dist/linux
           "$OLDPWD/$appimage" --appimage-extract
           mv squashfs-root runtime
-          rm -f runtime/usr/lib/libwayland-client.so* runtime/usr/lib/libwayland-cursor.so* runtime/usr/lib/libwayland-egl.so* runtime/usr/lib/libwayland-server.so*
+          for runtime_soname in \
+            libglib-2.0.so.0 \
+            libharfbuzz.so.0 \
+            libfribidi.so.0 \
+            libfreetype.so.6 \
+            libfontconfig.so.1 \
+            libexpat.so.1; do
+            runtime_source="$(ldconfig -p | awk -v soname="$runtime_soname" '$1 == soname && !found { source = $NF; found = 1 } END { print source }')"
+            test -n "$runtime_source"
+            cp -L "$runtime_source" "runtime/usr/lib/$runtime_soname"
+          done
+          rm -f \
+            runtime/usr/lib/libwayland-client.so* \
+            runtime/usr/lib/libwayland-cursor.so* \
+            runtime/usr/lib/libwayland-egl.so* \
+            runtime/usr/lib/libwayland-server.so*
           cp "$OLDPWD/tauri/src-tauri/target/release/adventure-land" adventure-land-native
           cp "$OLDPWD/tauri/src-tauri/binaries/libsteam_api.so" libsteam_api.so
           cp "$OLDPWD/tauri/linux/Adventure Land" "Adventure Land"
@@ -78,10 +93,37 @@ jobs:
           patchelf --set-rpath '$ORIGIN' adventure-land-native
           ldd adventure-land-native | grep -F 'libsteam_api.so'
           test -x runtime/AppRun
-          test -z "$(find runtime/usr/lib -maxdepth 1 \( -type f -o -type l \) -name 'libwayland-*.so*' -print -quit)"
+          test -z "$(find runtime/usr/lib -maxdepth 1 \( -type f -o -type l \) \( \
+            -name 'libwayland-*.so*' \
+          \) -print -quit)"
+          find runtime -name 'libglib-2.0.so*' -print -quit | grep -q .
+          find runtime -name 'libharfbuzz.so*' -print -quit | grep -q .
+          find runtime -name 'libfribidi.so*' -print -quit | grep -q .
+          find runtime -name 'libfreetype.so*' -print -quit | grep -q .
+          find runtime -name 'libfontconfig.so*' -print -quit | grep -q .
+          find runtime -name 'libexpat.so*' -print -quit | grep -q .
           find runtime -name 'libwebkit2gtk-4.1.so*' -print -quit | grep -q .
           find runtime -name 'WebKitNetworkProcess' -print -quit | grep -q .
           find runtime -name 'libsteam_api.so' -print -quit | grep -q .
+          bundle_library_path="$PWD/runtime/usr/lib:$PWD/runtime/usr/lib/x86_64-linux-gnu"
+          for bundled_library in \
+            runtime/usr/lib/libpango-1.0.so.0 \
+            runtime/usr/lib/libjavascriptcoregtk-4.1.so.0 \
+            runtime/usr/lib/libwebkit2gtk-4.1.so.0; do
+            resolution="$(LD_LIBRARY_PATH="$bundle_library_path" ldd -r "$bundled_library" 2>&1)"
+            printf '%s\n' "$resolution"
+            ! printf '%s\n' "$resolution" | grep -E 'not found|undefined symbol'
+            if [ "$bundled_library" = runtime/usr/lib/libpango-1.0.so.0 ]; then
+              for runtime_soname in libglib-2.0.so.0 libharfbuzz.so.0 libfribidi.so.0 libfreetype.so.6; do
+                printf '%s\n' "$resolution" | grep -F "$runtime_soname => $PWD/runtime/usr/lib/$runtime_soname"
+              done
+            fi
+            if [ "$bundled_library" = runtime/usr/lib/libwebkit2gtk-4.1.so.0 ]; then
+              for runtime_soname in libfreetype.so.6 libfontconfig.so.1 libexpat.so.1; do
+                printf '%s\n' "$resolution" | grep -F "$runtime_soname => $PWD/runtime/usr/lib/$runtime_soname"
+              done
+            fi
+          done
           cd ../../..
           tar -czf tauri/dist/adventure-land-linux-x86_64.tar.gz -C tauri/dist/linux .
 

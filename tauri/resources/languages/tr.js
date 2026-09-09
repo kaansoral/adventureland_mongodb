@@ -1,0 +1,1 @@
+phrase.load("tr",{"desktop.loading":"YÜKLENİYOR","desktop.connection_help":"Adventure Land için internet bağlantısı gerekir. Bağlantınızı kontrol edip yeniden yüklemeyi deneyin. Hâlâ yüklenmiyorsa hello@adventure.land adresine yazın.","desktop.apology":"Beklettiğimiz için kusura bakmayın :)"});

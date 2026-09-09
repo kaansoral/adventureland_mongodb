@@ -1,0 +1,1 @@
+phrase.load("ms",{"desktop.loading":"MEMUATKAN","desktop.connection_help":"Adventure Land memerlukan sambungan internet. Semak sambungan anda dan cuba muat semula. Jika masih tidak dapat dimuatkan, e-mel hello@adventure.land.","desktop.apology":"Maaf kerana terpaksa menunggu :)"});

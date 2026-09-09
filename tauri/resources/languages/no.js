@@ -1,0 +1,1 @@
+phrase.load("no",{"desktop.loading":"LASTER","desktop.connection_help":"Adventure Land trenger en internettforbindelse. Sjekk tilkoblingen og prøv å laste inn på nytt. Hvis spillet fortsatt ikke laster, send en e-post til hello@adventure.land.","desktop.apology":"Beklager ventetiden :)"});
