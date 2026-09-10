@@ -1,5 +1,9 @@
 {
 	"desktop.loading": "WCZYTYWANIE",
 	"desktop.connection_help": "Adventure Land wymaga połączenia z internetem. Sprawdź połączenie i spróbuj wczytać ponownie. Jeśli nadal się nie udaje, napisz na hello@adventure.land.",
-	"desktop.apology": "Przepraszamy za czekanie :)"
+	"desktop.apology": "Przepraszamy za czekanie :)",
+	"desktop.close_confirmation": "Czy na pewno chcesz zamknąć Adventure Land?",
+	"desktop.compatibility_help": "Możesz mieć problem z internetem lub dostawcą. Jeśli winny jest dostawca, tryb zgodności może pomóc. Czy chcesz użyć go w tej sesji?",
+	"desktop.compatibility_yes": "Tak",
+	"desktop.compatibility_retry": "Spróbuj ponownie wczytać grę. Sprawdź połączenie i czy dostawca internetu go nie blokuje. Wypróbuj VPN, jeśli masz do niego dostęp, lub napisz na hello@adventure.land."
 }

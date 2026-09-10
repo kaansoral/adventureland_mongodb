@@ -1,5 +1,9 @@
 {
 	"desktop.loading": "CHARGEMENT",
 	"desktop.connection_help": "Adventure Land nécessite une connexion Internet. Vérifie ta connexion et essaie de recharger. Si le jeu ne se charge toujours pas, écris à hello@adventure.land.",
-	"desktop.apology": "Désolé pour l’attente :)"
+	"desktop.apology": "Désolé pour l’attente :)",
+	"desktop.close_confirmation": "Veux-tu vraiment fermer Adventure Land ?",
+	"desktop.compatibility_help": "Il y a peut-être un problème avec ta connexion ou ton fournisseur d’accès. Si le problème vient de ton fournisseur, le mode de compatibilité peut aider. Veux-tu l’utiliser pour cette session ?",
+	"desktop.compatibility_yes": "Oui",
+	"desktop.compatibility_retry": "Essaie de recharger le jeu. Vérifie ta connexion et si ton fournisseur d’accès la bloque. Essaie un VPN si tu en as un, ou écris à hello@adventure.land."
 }

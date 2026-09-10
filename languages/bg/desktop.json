@@ -1,5 +1,9 @@
 {
 	"desktop.loading": "ЗАРЕЖДАНЕ",
 	"desktop.connection_help": "Adventure Land се нуждае от интернет връзка. Провери връзката си и опитай да презаредиш. Ако все още не се зарежда, пиши на hello@adventure.land.",
-	"desktop.apology": "Извинявай за чакането :)"
+	"desktop.apology": "Извинявай за чакането :)",
+	"desktop.close_confirmation": "Наистина ли искаш да затвориш Adventure Land?",
+	"desktop.compatibility_help": "Възможно е да има проблем с интернет връзката или доставчика ти. Ако проблемът е в доставчика, режимът за съвместимост може да помогне. Искаш ли да го използваш за тази сесия?",
+	"desktop.compatibility_yes": "Да",
+	"desktop.compatibility_retry": "Опитай да презаредиш играта. Провери връзката си и дали интернет доставчикът я блокира. Опитай с VPN, ако имаш достъп до такъв, или пиши на hello@adventure.land."
 }

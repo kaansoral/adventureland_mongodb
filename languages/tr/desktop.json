@@ -1,5 +1,9 @@
 {
 	"desktop.loading": "YÜKLENİYOR",
 	"desktop.connection_help": "Adventure Land için internet bağlantısı gerekir. Bağlantınızı kontrol edip yeniden yüklemeyi deneyin. Hâlâ yüklenmiyorsa hello@adventure.land adresine yazın.",
-	"desktop.apology": "Beklettiğimiz için kusura bakmayın :)"
+	"desktop.apology": "Beklettiğimiz için kusura bakmayın :)",
+	"desktop.close_confirmation": "Adventure Land'i kapatmak istediğinizden emin misiniz?",
+	"desktop.compatibility_help": "İnternetinizde veya internet servis sağlayıcınızda bir sorun olabilir. Sorun sağlayıcınızdaysa uyumluluk modu yardımcı olabilir. Bu oturumda kullanmak ister misiniz?",
+	"desktop.compatibility_yes": "Evet",
+	"desktop.compatibility_retry": "Lütfen oyunu yeniden yüklemeyi deneyin. Bağlantınızı ve internet servis sağlayıcınızın bağlantıyı engelleyip engellemediğini kontrol edin. Varsa bir VPN deneyin veya hello@adventure.land adresine yazın."
 }

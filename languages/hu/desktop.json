@@ -1,5 +1,9 @@
 {
 	"desktop.loading": "BETÖLTÉS",
 	"desktop.connection_help": "Az Adventure Land használatához internetkapcsolat szükséges. Ellenőrizd a kapcsolatot, és próbáld újratölteni. Ha továbbra sem tölt be, írj a hello@adventure.land címre.",
-	"desktop.apology": "Bocs a várakozásért :)"
+	"desktop.apology": "Bocs a várakozásért :)",
+	"desktop.close_confirmation": "Biztosan be szeretnéd zárni az Adventure Landet?",
+	"desktop.compatibility_help": "Lehet, hogy az internetkapcsolatoddal vagy a szolgáltatóddal van gond. Ha a szolgáltató okozza, a kompatibilitási mód segíthet. Szeretnéd használni ebben a munkamenetben?",
+	"desktop.compatibility_yes": "Igen",
+	"desktop.compatibility_retry": "Próbáld újratölteni a játékot. Ellenőrizd az internetkapcsolatodat és azt, hogy a szolgáltatód nem blokkolja-e. Próbálj ki egy VPN-t, ha van rá lehetőséged, vagy írj a hello@adventure.land címre."
 }

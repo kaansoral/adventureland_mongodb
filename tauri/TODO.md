@@ -24,6 +24,14 @@ For a no-charge production verification on an admin account, set `window.steam_p
 
 Deploy needs both the updated game JavaScript and native build `b260909a` or later. Older running binaries show an update/restart message. A web deployment alone cannot update a running native client.
 
+## Connection help
+
+The offline startup loader offers compatibility mode after 30 seconds. Nothing switches automatically: the player must press Yes. It uses `https://cloudflare.adventure.land/` until this app process closes. Native reloads, return to selection and new game/character windows keep that route. A new launch starts on the normal hostname.
+
+After 60 seconds total, an active compatibility session shows reload, ISP, VPN and contact advice in the same card. All notice text is bundled in every supported language, so it does not need the game server. Requests are bounded and are not retried automatically. Late loader clicks cannot redirect a game that has already opened.
+
+Each hostname keeps its own localStorage, settings and code-slot selections. Nothing is copied or cleared. Existing `.adventure.land` login cookies remain shared. Login tokens have no age check, but cookies request five years. When 200 tokens have accumulated, the next login clears the old token list. Login persistence is not literally unlimited. This feature does not change authentication.
+
 ## Images
 
 The build embeds PNGs referenced by `design/sprites.js` and `design/animations.js`. It does not crawl folders or include language catalogs in the image cache. Bump the image filename or `?v=` when its pixels change.

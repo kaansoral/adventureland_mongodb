@@ -6,6 +6,7 @@ fn main() {
         "reload_game",
         "create_subwindow",
         "create_character_window",
+        "enable_compatibility_mode",
         "open_external",
         "open_steam_checkout",
         "open_devtools",

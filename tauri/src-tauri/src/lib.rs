@@ -1,5 +1,6 @@
 use serde::Serialize;
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Manager, State, WebviewWindow, WebviewWindowBuilder};
@@ -12,6 +13,7 @@ const STEAM_APP_ID: u32 = 777150;
 const STEAM_IDENTITY: &str = "adventure-land-tauri-v1";
 const STEAM_TICKET_WAIT_ATTEMPTS: usize = 150;
 const BASE_URL: &str = "https://adventure.land/";
+const COMPATIBILITY_BASE_URL: &str = "https://cloudflare.adventure.land/";
 #[cfg(target_os = "macos")]
 const USER_AGENT: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15 AdventureLandTauri/1.3.1";
 #[cfg(target_os = "windows")]
@@ -29,6 +31,10 @@ const WIN_HEIGHT: f64 = 922.0;
 
 struct AppState {
     sub_counter: Mutex<u32>,
+    // Process-local only. Never write the route or copy either host's storage.
+    compatibility_mode: AtomicBool,
+    compatibility_committed: AtomicBool,
+    startup_finished: AtomicBool,
     steam_client: Arc<Mutex<Option<steamworks::Client>>>,
     steam_ticket: Arc<Mutex<String>>,
     steam_error: Arc<Mutex<String>>,
@@ -51,17 +57,47 @@ struct SteamPurchaseAuthorization {
     authorized: bool,
 }
 
-fn game_url() -> String {
-    format!("{BASE_URL}?buildid={BUILD}-{PLATFORM}-tauri")
+fn compatibility_mode(state: &AppState) -> bool {
+    state.compatibility_mode.load(Ordering::Relaxed)
 }
 
-fn reload_game_window(window: &WebviewWindow, selection: bool) -> Result<(), String> {
+fn game_url(compatibility: bool) -> String {
+    let base = if compatibility {
+        COMPATIBILITY_BASE_URL
+    } else {
+        BASE_URL
+    };
+    format!("{base}?buildid={BUILD}-{PLATFORM}-tauri")
+}
+
+fn session_url(mut url: tauri::Url, compatibility: bool) -> tauri::Url {
+    if compatibility && is_game_url(&url) {
+        // A fixed, valid DNS name; the path, query and fragment stay unchanged.
+        let _ = url.set_host(Some("cloudflare.adventure.land"));
+    }
+    url
+}
+
+fn startup_page_finished(url: &tauri::Url, compatibility: bool, committed: bool) -> bool {
+    // A canceled direct load may finish after the player chose Cloudflare.
+    // WebView2 may report that cancellation using the new URL, before its content starts.
+    !compatibility || (committed && url.scheme() == "https" && url.host_str() == Some("cloudflare.adventure.land"))
+}
+
+fn reload_game_window(
+    window: &WebviewWindow,
+    selection: bool,
+    compatibility: bool,
+) -> Result<(), String> {
     let mut url = if selection {
-        game_url()
+        game_url(compatibility)
             .parse::<tauri::Url>()
             .map_err(|error| error.to_string())?
     } else {
-        window.url().map_err(|error| error.to_string())?
+        session_url(
+            window.url().map_err(|error| error.to_string())?,
+            compatibility,
+        )
     };
     let nonce = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -197,6 +233,7 @@ fn init_steam(
 mod tests {
     use super::{
         character_window_url, game_url, is_external_url, is_game_url, is_steam_checkout_url,
+        session_url, startup_page_finished,
         BUILD, PLATFORM, STEAM_APP_ID, STEAM_IDENTITY,
     };
     use std::collections::HashMap;
@@ -208,6 +245,9 @@ mod tests {
         assert!(is_game_url(&"https://adventure.land/".parse().unwrap()));
         assert!(is_game_url(
             &"https://eu.adventure.land/game".parse().unwrap()
+        ));
+        assert!(is_game_url(
+            &"https://cloudflare.adventure.land/".parse().unwrap()
         ));
         assert!(!is_game_url(&"http://adventure.land/".parse().unwrap()));
         assert!(!is_game_url(
@@ -250,14 +290,39 @@ mod tests {
     }
 
     #[test]
+    fn session_route_preserves_direct_urls_and_character_reload_state() {
+        let direct: tauri::Url = "https://adventure.land/character/MacTest/in/EU/I/?code=3#code".parse().unwrap();
+        assert_eq!(session_url(direct.clone(), false), direct);
+        let compatibility = session_url(direct.clone(), true);
+        assert_eq!(compatibility.host_str(), Some("cloudflare.adventure.land"));
+        assert_eq!(compatibility.path(), direct.path());
+        assert_eq!(compatibility.query(), direct.query());
+        assert_eq!(compatibility.fragment(), direct.fragment());
+        assert_eq!(session_url(compatibility.clone(), true), compatibility);
+        assert!(startup_page_finished(&direct, false, false));
+        assert!(!startup_page_finished(&direct, true, true));
+        assert!(!startup_page_finished(&compatibility, true, false));
+        assert!(startup_page_finished(&compatibility, true, true));
+        assert!(!startup_page_finished(&"about:blank".parse().unwrap(), true, true));
+        // External URLs must not gain an Adventure Land origin through rewriting.
+        let foreign = "https://example.com/path".parse().unwrap();
+        assert_eq!(session_url(foreign, true).host_str(), Some("example.com"));
+    }
+
+    #[test]
     fn character_window_keeps_character_realm_and_code() {
-        let url = character_window_url("https://adventure.land/character/MacTest/in/EU/PVP/?code=3").unwrap();
+        let url = character_window_url("https://adventure.land/character/MacTest/in/EU/PVP/?code=3", false).unwrap();
         assert_eq!(url.path(), "/character/MacTest/in/EU/PVP/");
         let query: HashMap<_, _> = url.query_pairs().collect();
         assert_eq!(query.get("code").unwrap(), "3");
         assert_eq!(query.get("buildid").unwrap(), &format!("{BUILD}-{PLATFORM}-tauri"));
-        assert_eq!(tauri::Url::parse(&game_url()).unwrap().path(), "/");
-        assert!(character_window_url("https://www.adventure.land/character/WindowsTest/in/US/II/").is_ok());
+        assert_eq!(tauri::Url::parse(&game_url(false)).unwrap().host_str(), Some("adventure.land"));
+        assert_eq!(tauri::Url::parse(&game_url(true)).unwrap().host_str(), Some("cloudflare.adventure.land"));
+        assert!(character_window_url("https://www.adventure.land/character/WindowsTest/in/US/II/", false).is_ok());
+        let compatibility = character_window_url("https://adventure.land/character/MacTest/in/EU/PVP/?code=3", true).unwrap();
+        assert_eq!(compatibility.host_str(), Some("cloudflare.adventure.land"));
+        assert_eq!(compatibility.path(), "/character/MacTest/in/EU/PVP/");
+        assert_eq!(compatibility.query_pairs().find(|(key, _)| key == "code").unwrap().1, "3");
     }
 
     #[test]
@@ -277,7 +342,9 @@ mod tests {
             "https://adventure.land/character/MacTest/in/EU/",
             "https://adventure.land/character/MacTest/in/EU/I/../../../../docs",
         ] {
-            assert!(character_window_url(value).is_err(), "accepted {value}");
+            for compatibility in [false, true] {
+                assert!(character_window_url(value, compatibility).is_err(), "accepted {value}");
+            }
         }
     }
 
@@ -396,11 +463,15 @@ fn get_steam_purchase_authorization(
 }
 
 #[tauri::command]
-fn reload_game(window: WebviewWindow, selection: bool) -> Result<(), String> {
+fn reload_game(
+    window: WebviewWindow,
+    state: State<'_, AppState>,
+    selection: bool,
+) -> Result<(), String> {
     window
         .set_title("Adventure Land - Reloading")
         .map_err(|error| error.to_string())?;
-    if let Err(error) = reload_game_window(&window, selection) {
+    if let Err(error) = reload_game_window(&window, selection, compatibility_mode(&state)) {
         let _ = window.set_title("Adventure Land");
         return Err(error);
     }
@@ -409,11 +480,13 @@ fn reload_game(window: WebviewWindow, selection: bool) -> Result<(), String> {
 
 #[tauri::command]
 async fn create_subwindow(app: AppHandle, state: State<'_, AppState>) -> Result<(), String> {
-    let url = game_url().parse().map_err(|error: url::ParseError| error.to_string())?;
+    let url = game_url(compatibility_mode(&state))
+        .parse()
+        .map_err(|error: url::ParseError| error.to_string())?;
     open_subwindow(app, &state, url)
 }
 
-fn character_window_url(value: &str) -> Result<tauri::Url, String> {
+fn character_window_url(value: &str, compatibility: bool) -> Result<tauri::Url, String> {
     let mut url = tauri::Url::parse(value).map_err(|_| "Invalid character URL")?;
     let parts: Vec<_> = url.path().trim_end_matches('/').split('/').collect();
     if !is_game_url(&url)
@@ -425,6 +498,7 @@ fn character_window_url(value: &str) -> Result<tauri::Url, String> {
     {
         return Err("Invalid character URL".to_string());
     }
+    url = session_url(url, compatibility);
     url.query_pairs_mut()
         .append_pair("buildid", &format!("{BUILD}-{PLATFORM}-tauri"));
     Ok(url)
@@ -436,7 +510,41 @@ async fn create_character_window(
     state: State<'_, AppState>,
     url: String,
 ) -> Result<(), String> {
-    open_subwindow(app, &state, character_window_url(&url)?)
+    let url = character_window_url(&url, compatibility_mode(&state))?;
+    open_subwindow(app, &state, url)
+}
+
+#[tauri::command]
+fn enable_compatibility_mode(
+    window: WebviewWindow,
+    app: AppHandle,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    // Like page-load callbacks, this short synchronous command runs on the UI
+    // thread. Reject queued clicks once the game is ready, even if closing the
+    // loader has not finished. Duplicate requests must not reload the page.
+    if window.label() != "loader"
+        || state.startup_finished.load(Ordering::Relaxed)
+        || app.get_webview_window("loader").is_none()
+    {
+        return Err("Compatibility mode is only available during startup".to_string());
+    }
+    if compatibility_mode(&state) {
+        return Ok(());
+    }
+    let main = app
+        .get_webview_window("main")
+        .ok_or("Game window unavailable")?;
+    let url = game_url(true)
+        .parse::<tauri::Url>()
+        .map_err(|error| error.to_string())?;
+    state.compatibility_mode.store(true, Ordering::Relaxed);
+    if let Err(error) = main.navigate(url) {
+        state.compatibility_mode.store(false, Ordering::Relaxed);
+        return Err(error.to_string());
+    }
+    println!("[Tauri] Compatibility mode enabled for this session: cloudflare.adventure.land");
+    Ok(())
 }
 
 fn open_subwindow(app: AppHandle, state: &AppState, url: tauri::Url) -> Result<(), String> {
@@ -580,6 +688,9 @@ pub fn run() {
     let steam_purchases = Arc::new(Mutex::new(HashMap::new()));
     let state = AppState {
         sub_counter: Mutex::new(0),
+        compatibility_mode: AtomicBool::new(false),
+        compatibility_committed: AtomicBool::new(false),
+        startup_finished: AtomicBool::new(false),
         steam_client: steam_client.clone(),
         steam_ticket: steam_ticket.clone(),
         steam_error: steam_error.clone(),
@@ -624,7 +735,7 @@ pub fn run() {
             let main = WebviewWindowBuilder::new(
                 app,
                 "main",
-                tauri::WebviewUrl::External(game_url().parse()?),
+                tauri::WebviewUrl::External(game_url(false).parse()?),
             )
             .title("Adventure Land")
             .inner_size(WIN_WIDTH, WIN_HEIGHT)
@@ -634,7 +745,17 @@ pub fn run() {
             .user_agent(USER_AGENT)
             .on_navigation(is_game_url)
             .on_page_load(move |window, payload| {
+                let state = page_load_handle.state::<AppState>();
+                let compatibility = compatibility_mode(&state);
+                if compatibility && payload.event() == tauri::webview::PageLoadEvent::Started
+                    && payload.url().host_str() == Some("cloudflare.adventure.land") {
+                    state.compatibility_committed.store(true, Ordering::Relaxed);
+                }
                 if payload.event() == tauri::webview::PageLoadEvent::Finished {
+                    if !startup_page_finished(payload.url(), compatibility, state.compatibility_committed.load(Ordering::Relaxed)) {
+                        return;
+                    }
+                    state.startup_finished.store(true, Ordering::Relaxed);
                     let _ = window.set_title("Adventure Land");
                     if let Some(loader) = page_load_handle.get_webview_window("loader") {
                         let _ = loader.close();
@@ -655,9 +776,12 @@ pub fn run() {
                 main.on_window_event(move |event| {
                     if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                         api.prevent_close();
+                        let description = handle
+                            .state::<Arc<desktop::DesktopLanguage>>()
+                            .close_confirmation();
                         let confirmed = rfd::MessageDialog::new()
                             .set_title("Adventure Land")
-                            .set_description("Are you sure you want to close Adventure Land?")
+                            .set_description(description)
                             .set_buttons(rfd::MessageButtons::YesNo)
                             .show();
                         if confirmed == rfd::MessageDialogResult::Yes {
@@ -703,6 +827,7 @@ pub fn run() {
             reload_game,
             create_subwindow,
             create_character_window,
+            enable_compatibility_mode,
             open_external,
             open_steam_checkout,
             open_devtools,

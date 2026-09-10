@@ -1,130 +1,162 @@
 [
   {
     "code": "en",
-    "steam": "english"
+    "steam": "english",
+    "close_confirmation": "Are you sure you want to close Adventure Land?"
   },
   {
     "code": "tr",
-    "steam": "turkish"
+    "steam": "turkish",
+    "close_confirmation": "Adventure Land'i kapatmak istediğinizden emin misiniz?"
   },
   {
     "code": "ru",
-    "steam": "russian"
+    "steam": "russian",
+    "close_confirmation": "Вы уверены, что хотите закрыть Adventure Land?"
   },
   {
     "code": "es",
-    "steam": "spanish"
+    "steam": "spanish",
+    "close_confirmation": "¿Seguro que quieres cerrar Adventure Land?"
   },
   {
     "code": "pt-BR",
-    "steam": "brazilian"
+    "steam": "brazilian",
+    "close_confirmation": "Tem certeza de que deseja fechar Adventure Land?"
   },
   {
     "code": "de",
-    "steam": "german"
+    "steam": "german",
+    "close_confirmation": "Möchtest du Adventure Land wirklich schließen?"
   },
   {
     "code": "ja",
-    "steam": "japanese"
+    "steam": "japanese",
+    "close_confirmation": "Adventure Landを終了してもよろしいですか？"
   },
   {
     "code": "fr",
-    "steam": "french"
+    "steam": "french",
+    "close_confirmation": "Veux-tu vraiment fermer Adventure Land ?"
   },
   {
     "code": "pl",
-    "steam": "polish"
+    "steam": "polish",
+    "close_confirmation": "Czy na pewno chcesz zamknąć Adventure Land?"
   },
   {
     "code": "ko",
-    "steam": "koreana"
+    "steam": "koreana",
+    "close_confirmation": "Adventure Land를 종료하시겠어요?"
   },
   {
     "code": "zh-Hans",
-    "steam": "schinese"
+    "steam": "schinese",
+    "close_confirmation": "确定要关闭Adventure Land吗？"
   },
   {
     "code": "zh-Hant",
-    "steam": "tchinese"
+    "steam": "tchinese",
+    "close_confirmation": "確定要關閉Adventure Land嗎？"
   },
   {
     "code": "th",
-    "steam": "thai"
+    "steam": "thai",
+    "close_confirmation": "แน่ใจไหมว่าต้องการปิด Adventure Land?"
   },
   {
     "code": "es-419",
-    "steam": "latam"
+    "steam": "latam",
+    "close_confirmation": "¿Seguro que quieres cerrar Adventure Land?"
   },
   {
     "code": "uk",
-    "steam": "ukrainian"
+    "steam": "ukrainian",
+    "close_confirmation": "Ви впевнені, що хочете закрити Adventure Land?"
   },
   {
     "code": "it",
-    "steam": "italian"
+    "steam": "italian",
+    "close_confirmation": "Vuoi davvero chiudere Adventure Land?"
   },
   {
     "code": "cs",
-    "steam": "czech"
+    "steam": "czech",
+    "close_confirmation": "Opravdu chceš zavřít Adventure Land?"
   },
   {
     "code": "hu",
-    "steam": "hungarian"
+    "steam": "hungarian",
+    "close_confirmation": "Biztosan be szeretnéd zárni az Adventure Landet?"
   },
   {
     "code": "pt-PT",
-    "steam": "portuguese"
+    "steam": "portuguese",
+    "close_confirmation": "Tens a certeza de que queres fechar o Adventure Land?"
   },
   {
     "code": "vi",
-    "steam": "vietnamese"
+    "steam": "vietnamese",
+    "close_confirmation": "Bạn có chắc muốn đóng Adventure Land không?"
   },
   {
     "code": "sv",
-    "steam": "swedish"
+    "steam": "swedish",
+    "close_confirmation": "Är du säker på att du vill stänga Adventure Land?"
   },
   {
     "code": "nl",
-    "steam": "dutch"
+    "steam": "dutch",
+    "close_confirmation": "Weet je zeker dat je Adventure Land wilt sluiten?"
   },
   {
     "code": "da",
-    "steam": "danish"
+    "steam": "danish",
+    "close_confirmation": "Er du sikker på, at du vil lukke Adventure Land?"
   },
   {
     "code": "id",
-    "steam": "indonesian"
+    "steam": "indonesian",
+    "close_confirmation": "Yakin ingin menutup Adventure Land?"
   },
   {
     "code": "fi",
-    "steam": "finnish"
+    "steam": "finnish",
+    "close_confirmation": "Haluatko varmasti sulkea Adventure Landin?"
   },
   {
     "code": "no",
-    "steam": "norwegian"
+    "steam": "norwegian",
+    "close_confirmation": "Er du sikker på at du vil lukke Adventure Land?"
   },
   {
     "code": "ro",
-    "steam": "romanian"
+    "steam": "romanian",
+    "close_confirmation": "Sigur vrei să închizi Adventure Land?"
   },
   {
     "code": "el",
-    "steam": "greek"
+    "steam": "greek",
+    "close_confirmation": "Θέλεις σίγουρα να κλείσεις το Adventure Land;"
   },
   {
     "code": "bg",
-    "steam": "bulgarian"
+    "steam": "bulgarian",
+    "close_confirmation": "Наистина ли искаш да затвориш Adventure Land?"
   },
   {
     "code": "ms",
-    "steam": "malay"
+    "steam": "malay",
+    "close_confirmation": "Adakah anda pasti mahu menutup Adventure Land?"
   },
   {
     "code": "ar",
-    "steam": "arabic"
+    "steam": "arabic",
+    "close_confirmation": "هل أنت متأكد من رغبتك في إغلاق Adventure Land؟"
   },
   {
     "code": "fil",
-    "steam": null
+    "steam": null,
+    "close_confirmation": "Sigurado ka bang gusto mong isara ang Adventure Land?"
   }
 ]

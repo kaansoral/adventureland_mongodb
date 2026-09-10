@@ -1,5 +1,9 @@
 {
 	"desktop.loading": "LADDAR",
 	"desktop.connection_help": "Adventure Land behöver en internetanslutning. Kontrollera anslutningen och försök ladda om. Om det fortfarande inte fungerar kan du mejla hello@adventure.land.",
-	"desktop.apology": "Förlåt att du får vänta :)"
+	"desktop.apology": "Förlåt att du får vänta :)",
+	"desktop.close_confirmation": "Är du säker på att du vill stänga Adventure Land?",
+	"desktop.compatibility_help": "Det kan vara problem med internetanslutningen eller operatören. Om problemet ligger hos operatören kan kompatibilitetsläget hjälpa. Vill du använda det under den här sessionen?",
+	"desktop.compatibility_yes": "Ja",
+	"desktop.compatibility_retry": "Prova att ladda om spelet. Kontrollera anslutningen och om din internetoperatör blockerar den. Prova ett VPN om du har tillgång till ett, eller skriv till hello@adventure.land."
 }

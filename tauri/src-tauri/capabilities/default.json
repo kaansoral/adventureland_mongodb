@@ -13,6 +13,7 @@
 		"allow-reload-game",
 		"allow-create-subwindow",
 		"allow-create-character-window",
+		"allow-enable-compatibility-mode",
 		"allow-open-external",
 		"allow-open-steam-checkout",
 		"allow-open-devtools",

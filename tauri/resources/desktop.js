@@ -128,6 +128,10 @@ var desktop = (function () {
 		timeout: timeout,
 		request: request,
 		language: language,
+		compatibility: function () {
+			console.log("[Tauri] Enabling compatibility mode for this session.");
+			return request("enable_compatibility_mode", {}, 5000);
+		},
 		loadImages: load_images,
 		imageUrl: function (url) { return image_urls[image_key(url)] || url; },
 	};

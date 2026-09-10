@@ -1,5 +1,9 @@
 {
 	"desktop.loading": "ЗАГРУЗКА",
 	"desktop.connection_help": "Для Adventure Land нужен интернет. Проверьте подключение и повторите загрузку. Если игра по-прежнему не загружается, напишите на hello@adventure.land.",
-	"desktop.apology": "Простите за ожидание :)"
+	"desktop.apology": "Простите за ожидание :)",
+	"desktop.close_confirmation": "Вы уверены, что хотите закрыть Adventure Land?",
+	"desktop.compatibility_help": "Возможно, проблема с интернетом или провайдером. Если дело в провайдере, может помочь режим совместимости. Включить его для этого сеанса?",
+	"desktop.compatibility_yes": "Да",
+	"desktop.compatibility_retry": "Попробуйте перезагрузить игру. Проверьте подключение и не блокирует ли его провайдер. Попробуйте VPN, если он у вас есть, или напишите на hello@adventure.land."
 }

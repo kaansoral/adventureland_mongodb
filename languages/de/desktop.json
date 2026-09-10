@@ -1,5 +1,9 @@
 {
 	"desktop.loading": "LÄDT",
 	"desktop.connection_help": "Adventure Land benötigt eine Internetverbindung. Prüfe deine Verbindung und lade erneut. Falls es weiterhin nicht lädt, schreibe an hello@adventure.land.",
-	"desktop.apology": "Entschuldige die Wartezeit :)"
+	"desktop.apology": "Entschuldige die Wartezeit :)",
+	"desktop.close_confirmation": "Möchtest du Adventure Land wirklich schließen?",
+	"desktop.compatibility_help": "Möglicherweise gibt es ein Problem mit deiner Internetverbindung oder deinem Anbieter. Wenn es am Anbieter liegt, kann der Kompatibilitätsmodus helfen. Möchtest du ihn für diese Sitzung verwenden?",
+	"desktop.compatibility_yes": "Ja",
+	"desktop.compatibility_retry": "Versuche bitte, das Spiel neu zu laden. Prüfe deine Verbindung und ob dein Internetanbieter sie blockiert. Probiere ein VPN, falls du eines hast, oder schreibe an hello@adventure.land."
 }

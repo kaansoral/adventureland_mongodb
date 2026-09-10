@@ -1,5 +1,9 @@
 {
 	"desktop.loading": "NAČÍTÁNÍ",
 	"desktop.connection_help": "Adventure Land potřebuje připojení k internetu. Zkontroluj připojení a zkus stránku načíst znovu. Pokud se stále nenačítá, napiš na hello@adventure.land.",
-	"desktop.apology": "Promiň to čekání :)"
+	"desktop.apology": "Promiň to čekání :)",
+	"desktop.close_confirmation": "Opravdu chceš zavřít Adventure Land?",
+	"desktop.compatibility_help": "Možná je problém s internetem nebo poskytovatelem. Pokud je problém u poskytovatele, může pomoci režim kompatibility. Chceš ho použít pro tuto relaci?",
+	"desktop.compatibility_yes": "Ano",
+	"desktop.compatibility_retry": "Zkus hru znovu načíst. Zkontroluj připojení a zda ho neblokuje poskytovatel internetu. Zkus VPN, pokud ji máš k dispozici, nebo napiš na hello@adventure.land."
 }

@@ -19,12 +19,18 @@ const steam = {
 	fi: "finnish", no: "norwegian", ro: "romanian", el: "greek", bg: "bulgarian",
 	ms: "malay", ar: "arabic",
 };
+const catalogs = {};
+for (const language of languages.languages) {
+	catalogs[language.code] = language.code === "en" ? require("../languages/en/desktop.js") :
+		JSON.parse(fs.readFileSync(path.join(root, "languages", language.code, "desktop.json"), "utf8"));
+}
 fs.writeFileSync(path.join(output, "desktop-languages.json"), JSON.stringify(languages.languages.map(language => ({
-	code: language.code, steam: steam[language.code] || null,
+	code: language.code,
+	steam: steam[language.code] || null,
+	close_confirmation: catalogs[language.code]["desktop.close_confirmation"],
 })), null, 2) + "\n");
 for (const language of languages.languages) {
-	const catalog = language.code === "en" ? require("../languages/en/desktop.js") :
-		JSON.parse(fs.readFileSync(path.join(root, "languages", language.code, "desktop.json"), "utf8")),
+	const catalog = catalogs[language.code],
 		phrases = {};
 	for (const key of Object.keys(catalog)) if (key.startsWith("desktop.")) phrases[key] = catalog[key];
 	fs.writeFileSync(path.join(output, "languages", language.code + ".js"), "phrase.load(" + JSON.stringify(language.code) + "," + JSON.stringify(phrases) + ");\n");

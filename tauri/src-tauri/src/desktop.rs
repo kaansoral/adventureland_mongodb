@@ -9,6 +9,7 @@ use tokio::sync::watch;
 struct Language {
     code: String,
     steam: Option<String>,
+    close_confirmation: String,
 }
 
 fn languages() -> &'static [Language] {
@@ -46,6 +47,16 @@ impl DesktopLanguage {
 
     pub fn cached(&self) -> Option<String> {
         self.choice.lock().ok().and_then(|choice| choice.clone())
+    }
+
+    pub fn close_confirmation(&self) -> String {
+        let code = self.cached().unwrap_or_else(|| "en".into());
+        languages()
+            .iter()
+            .find(|language| language.code == code)
+            .or_else(|| languages().iter().find(|language| language.code == "en"))
+            .map(|language| language.close_confirmation.clone())
+            .unwrap_or_else(|| "Are you sure you want to close Adventure Land?".into())
     }
 
     pub fn steam_ready(&self, value: &str) {
@@ -145,6 +156,7 @@ mod tests {
         assert_eq!(manifest["version"], 1);
         assert!(manifest["images"].as_object().unwrap().len() > 200);
         for language in languages() {
+            assert!(!language.close_confirmation.is_empty());
             let key = format!("languages/{}.js", language.code);
             let phrases = assets.get(&key.into()).expect("missing desktop translation");
             assert!(std::str::from_utf8(&phrases).unwrap().contains("desktop.loading"));
@@ -169,6 +181,22 @@ mod tests {
             assert_eq!(fallback.resolve("fil".into(), None).await, "fil");
             fallback.steam_ready("english");
             assert_eq!(fallback.resolve("en".into(), None).await, "fil");
+        });
+    }
+
+    #[test]
+    fn close_confirmation_uses_the_cached_language() {
+        tauri::async_runtime::block_on(async {
+            let state = Arc::new(DesktopLanguage::new(None));
+            assert_eq!(
+                state.close_confirmation(),
+                "Are you sure you want to close Adventure Land?"
+            );
+            assert_eq!(state.resolve("en".into(), Some("tr".into())).await, "tr");
+            assert_eq!(
+                state.close_confirmation(),
+                "Adventure Land'i kapatmak istediğinizden emin misiniz?"
+            );
         });
     }
 
