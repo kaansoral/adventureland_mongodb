@@ -7,7 +7,8 @@ import sqlite3, pickle, struct, io, datetime, sys, os
 
 from pymongo import MongoClient, ReplaceOne
 
-RDBMS_PATH = "/Users/kaan/PROJECTS/thegame/storage/db.rdbms"
+RDBMS_PATH = os.environ.get("RDBMS_PATH", "/Users/kaan/PROJECTS/thegame/storage/db.rdbms")
+MIGRATION_ID = os.environ.get("MIGRATION_ID", "appengine-db-rdbms-v1")
 from mongo_config import MONGO_URI, MONGO_DB
 
 # Kind → (prefix, collection_name)
@@ -223,6 +224,15 @@ def log(msg):
     print(msg, flush=True)
 
 def main():
+    log(f"Connecting to MongoDB: {MONGO_DB}...")
+    mongo = MongoClient(MONGO_URI)
+    db = mongo[MONGO_DB]
+
+    if MIGRATION_ID and db["_migrations"].find_one({"_id": MIGRATION_ID}):
+        log(f"Migration {MIGRATION_ID} already completed; skipping")
+        mongo.close()
+        return
+
     log(f"Opening {RDBMS_PATH}...")
     conn = sqlite3.connect(RDBMS_PATH)
     cursor = conn.cursor()
@@ -232,10 +242,6 @@ def main():
     ).fetchall()
     log(f"Found {len(rows)} entities total")
 
-    log(f"\nConnecting to MongoDB: {MONGO_DB}...")
-    mongo = MongoClient(MONGO_URI)
-    db = mongo[MONGO_DB]
-
     by_kind = {}
     for kind, entity_blob in rows:
         if kind.startswith("__"): continue
@@ -244,6 +250,7 @@ def main():
         by_kind.setdefault(kind, []).append(entity_blob)
 
     total_upserted = 0
+    write_errors = 0
 
     for kind, blobs in sorted(by_kind.items()):
         collection_name = KIND_MAP[kind][1]
@@ -276,6 +283,19 @@ def main():
             total_upserted += inserted + modified
         except Exception as e:
             log(f"  ERROR upserting {kind}: {e}")
+            write_errors += 1
+
+    if write_errors:
+        conn.close()
+        mongo.close()
+        raise RuntimeError(f"Migration failed for {write_errors} collection(s)")
+
+    if MIGRATION_ID:
+        db["_migrations"].update_one(
+            {"_id": MIGRATION_ID},
+            {"$set": {"completed_at": datetime.datetime.now(datetime.timezone.utc)}},
+            upsert=True,
+        )
 
     log(f"\nDone! {total_upserted} total upserted")
     conn.close()
