@@ -54,8 +54,8 @@ async function load_geometry() {
 	for (var name in maps) {
 		var key = maps[name].key;
 		if (maps[name].ignore) continue;
-		var map = await get("MP_" + key);
-		if (map) geometry[name] = map.info.data;
+		var data = await load_map_geometry_or_import(key);
+		if (data) geometry[name] = data;
 	}
 	return geometry;
 }
