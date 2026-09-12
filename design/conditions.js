@@ -770,58 +770,23 @@ var conditions = {
 // Cleansing Light removes short-lived combat afflictions only. Persistent,
 // account, travel, economy, cooldown, and target-stack states stay untouched.
 for (var cleansable of [
-	"tangled","weakness","woven","eburn","stunned","deepfreezed","frozen",
-	"burned","shocked","fingered","stoned","slowness","poisoned","cursed",
-	"dampened","charmed","marked","sleeping",
-]) conditions[cleansable].cleansable=true;
-
-// The tarot card condition generation block below was disabled in the original Python (if 0:)
-// It is preserved here as a comment for reference.
-//
-// if(false){
-// 	for(var name in games["tarot"]["cards"]){
-// 		conditions["tarot_"+name]={"skin":"tarot","name":"Tarot Card","type":"tarot","ui":true};
-// 		var num_vals=[["2",2],["3",3],["4",4],["5",5],["6",6],["7",7],["8",8],["9",9],["10",10],["ace",20],["king",15],["knight",17],["page",12],["queen",14]];
-// 		for(var i=0;i<num_vals.length;i++){
-// 			var num=num_vals[i][0], val=num_vals[i][1];
-// 			var color="";
-// 			if(name.indexOf(num)!==-1 && name.indexOf("swords")!==-1){
-// 				conditions["tarot_"+name]["str"]=val; color="swords";
-// 			}
-// 			if(name.indexOf(num)!==-1 && name.indexOf("wands")!==-1){
-// 				conditions["tarot_"+name]["int"]=val; color="wands";
-// 			}
-// 			if(name.indexOf(num)!==-1 && name.indexOf("cups")!==-1){
-// 				conditions["tarot_"+name]["dex"]=val; color="cups";
-// 			}
-// 			if(name.indexOf(num)!==-1 && name.indexOf("pentacles")!==-1){
-// 				conditions["tarot_"+name]["vit"]=-val; color="pentacles";
-// 			}
-// 			if(color){
-// 				conditions["tarot_"+name]["minor"]=num+"_"+color;
-// 				conditions["tarot_"+name]["card"]=color.charAt(0).toUpperCase()+color.slice(1)+" of "+num.charAt(0).toUpperCase()+num.slice(1);
-// 			}
-// 		}
-// 		if(name==="fool"){
-// 			conditions["tarot_"+name]["miss"]=50;
-// 		}
-// 		if(name==="chariot"){
-// 			conditions["tarot_"+name]["speed"]=16;
-// 		}
-// 		if(name==="death"){
-// 			conditions["tarot_"+name]["vit"]=-30;
-// 			conditions["tarot_"+name]["frequency"]=-30;
-// 			conditions["tarot_"+name]["speed"]=-20;
-// 		}
-// 		if(name==="devil"){
-// 			conditions["tarot_"+name]["xp"]=-99;
-// 			conditions["tarot_"+name]["luck"]=-99;
-// 			conditions["tarot_"+name]["vit"]=10;
-// 			conditions["tarot_"+name]["str"]=10;
-// 		}
-// 		if(!conditions["tarot_"+name]["minor"]){
-// 			conditions["tarot_"+name]["card"]=name.charAt(0).toUpperCase()+name.slice(1);
-// 			conditions["tarot_"+name]["major"]=name;
-// 		}
-// 	}
-// }
+	"tangled",
+	"weakness",
+	"woven",
+	"eburn",
+	"stunned",
+	"deepfreezed",
+	"frozen",
+	"burned",
+	"shocked",
+	"fingered",
+	"stoned",
+	"slowness",
+	"poisoned",
+	"cursed",
+	"dampened",
+	"charmed",
+	"marked",
+	"sleeping",
+])
+	conditions[cleansable].cleansable = true;
