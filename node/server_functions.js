@@ -2104,7 +2104,7 @@ function anniversary_deliver(player, names) {
 		message: "Anniversary gift: " + names.map((name) => G.items[name].name).join(" + "),
 		color: "#E6AE3F",
 	});
-	resend(player, "reopen+nc+inv");
+	resend(player, "reopen+nc");
 }
 
 function anniversary_tick() {
@@ -2177,7 +2177,7 @@ function anniversary_craft(player, name) {
 	player.gold -= plan.cost;
 	for (const [index, count] of plan.take) consume(player, index, count);
 	const num = add_item(player, output);
-	resend(player, "reopen+nc+inv");
+	resend(player, "reopen+nc");
 	success_response("craft", "craft", { num: num, name: output.name, cevent: true });
 }
 
