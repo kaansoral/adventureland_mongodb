@@ -3160,11 +3160,11 @@ function _coerce_response_args(response, place, data) {
 }
 
 function fail_response(response, place, data) {
-	respond_fail(_coerce_response_args(response, place, data));
+	return respond_fail(_coerce_response_args(response, place, data));
 }
 
 function success_response(response, place, data) {
-	respond_success(_coerce_response_args(response, place, data));
+	return respond_success(_coerce_response_args(response, place, data));
 }
 
 // Traditionally sockets with no player errors were ignored
