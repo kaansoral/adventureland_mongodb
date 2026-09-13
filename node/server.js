@@ -6324,7 +6324,7 @@ function init_socket_io(socket_server) {
 			if (data.operation == "unlock") {
 				if (!item.l) {
 					resend(player, "reopen+nc");
-					return fail_response("locksmith_aunlocked", "locksmith", "already_unlocked");
+					return fail_response("locksmith_aunlocked", "locksmith", { reason: "already_unlocked" });
 				}
 				if (item.l == "s") {
 					if (player.gold < 250000) {
@@ -6354,7 +6354,7 @@ function init_socket_io(socket_server) {
 			} else if (data.operation == "lock") {
 				if (item.l) {
 					resend(player, "reopen+nc");
-					return fail_response("locksmith_alocked", "locksmith", "already_locked");
+					return fail_response("locksmith_alocked", "locksmith", { reason: "already_locked" });
 				}
 				if (player.gold < 250000) {
 					return fail_response("gold_not_enough");
@@ -6394,7 +6394,7 @@ function init_socket_io(socket_server) {
 				}
 				G.maps.main.compound.name = player.name;
 				if (player.q.compound) {
-					return fail_response("compound_in_progress", "compound", "in_progress");
+					return fail_response("compound_in_progress", "compound", { reason: "in_progress" });
 				}
 				var offering = player.items[data.offering_num];
 				if (offering && G.items[offering.name].type != "offering") {

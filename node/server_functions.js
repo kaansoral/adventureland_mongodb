@@ -3110,9 +3110,6 @@ function consume_mp(player, mp, target) {
 }
 
 function fail_response(response, place, data) {
-	if (data && is_string(data)) {
-		data = { reason: data };
-	}
 	if (!response) {
 		response = "data";
 	}
