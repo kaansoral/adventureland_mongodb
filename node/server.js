@@ -4988,10 +4988,10 @@ function init_socket_io(socket_server) {
 			exchange(player, G.classes[player.type].rewards[data.name].reward, { name: "reward_" + data.name });
 			socket.emit("game_response", { response: "reward_received", rewards: player.p.rewards });
 		});
-		socket.on("cx", function (data) {
+		socket.on("cx", function (data, ack) {
 			var player = players[socket.id];
 			if (!player) {
-				return;
+				return fail_no_player(ack);
 			}
 			// if(player.role!="gm") return socket.emit('game_log',"Cosmetics system is out of the test phase for now");
 			// console.log(data);
@@ -5008,7 +5008,7 @@ function init_socket_io(socket_server) {
 				delete cx[data.slot];
 			} else {
 				if (!T[data.name] || (!cxl[data.name] && player.role != "cx")) {
-					return fail_response("cx_not_found");
+					return respond_fail({ response: "cx_not_found", ack: ack });
 				}
 				if ((T[data.name] == "body" || T[data.name] == "armor" || T[data.name] == "character") && data.slot == "skin") {
 					player.skin = data.name;
@@ -5020,7 +5020,7 @@ function init_socket_io(socket_server) {
 			}
 			prune_cx(player.cx, player.skin);
 			resend(player, "u+cid");
-			success_response({});
+			respond_success({ ack: ack });
 		});
 		socket.on("gm", function (data) {
 			var player = players[socket.id];
@@ -5106,13 +5106,13 @@ function init_socket_io(socket_server) {
 				//socket.emit("gm",{action:"server_info",info:info});
 			}
 		});
-		socket.on("monsterhunt", function (data) {
+		socket.on("monsterhunt", function (data, ack) {
 			var player = players[socket.id];
 			if (!player) {
-				return;
+				return fail_no_player(ack);
 			}
 			if (simple_distance(G.maps.main.ref.monsterhunter, player, true) > B.sell_dist) {
-				return fail_response("distance");
+				return respond_fail({ response: "distance", ack: ack });
 			}
 			var hunted = [];
 			for (var id in server.s) {
@@ -5121,16 +5121,16 @@ function init_socket_io(socket_server) {
 				}
 			}
 			if (player.s.monsterhunt && player.s.monsterhunt.c) {
-				return fail_response("monsterhunt_already");
+				return respond_fail({ response: "monsterhunt_already", ack: ack });
 			} else if (player.s.monsterhunt) {
 				delete server.s["monsterhunt_" + player.s.monsterhunt.id];
 				delete player.s.monsterhunt;
 				add_item(player, "monstertoken", { log: true, q: (gameplay == "hardcore" && 100) || 1 });
 				resend(player, "u+cid+reopen");
-				return success_response({ completed: true });
+				return respond_success({ data: { completed: true }, ack: ack });
 			}
 			if (player.type == "merchant") {
-				return socket.emit("game_response", "monsterhunt_merchant");
+				return respond_fail({ response: "monsterhunt_merchant", ack: ack });
 			}
 			var mmax = -1;
 			var name = "goo";
@@ -5170,7 +5170,7 @@ function init_socket_io(socket_server) {
 			server.s["monsterhunt_" + name] = { name: player.name, id: name, ms: 20 * 60 * 1000, type: "monsterhunt" };
 			player.hitchhikers.push(["game_response", "monsterhunt_started"]);
 			resend(player, "u+cid");
-			success_response({ started: true });
+			respond_success({ data: { started: true }, ack: ack });
 		});
 		socket.on("ccreport", function () {
 			socket.emit("ccreport", { calls: socket.calls, climit: limits.calls, total: socket.total_calls });
@@ -5240,18 +5240,18 @@ function init_socket_io(socket_server) {
 			}
 			socket.emit("tracker", data);
 		});
-		socket.on("set_home", function (data) {
+		socket.on("set_home", function (data, ack) {
 			var player = players[socket.id];
 			if (!player) {
-				return;
+				return fail_no_player(ack);
 			}
 			if (player.p.dt.last_homeset && hsince(player.p.dt.last_homeset) < 36) {
-				return fail_response("sh_time", { hours: 36 - hsince(player.p.dt.last_homeset) });
+				return respond_fail({ response: "sh_time", data: { hours: 36 - hsince(player.p.dt.last_homeset) }, ack: ack });
 			}
 			player.p.dt.last_homeset = new Date();
 			player.p.home = region + server_name;
 			delete player.s.hopsickness;
-			success_response("home_set", { home: player.p.home });
+			respond_success({ response: "home_set", data: { home: player.p.home }, ack: ack });
 		});
 		socket.on("code", function (data) {
 			var player = players[socket.id];
@@ -5292,14 +5292,14 @@ function init_socket_io(socket_server) {
 				}
 			}
 		});
-		socket.on("cruise", function (speed) {
+		socket.on("cruise", function (speed, ack) {
 			var player = players[socket.id];
 			if (!player) {
-				return;
+				return fail_no_player(ack);
 			}
 			player.cruise = parseInt(speed);
 			resend(player, "u+cid");
-			success_response("cruise", { speed: player.cruise });
+			respond_success({ response: "cruise", data: { speed: player.cruise }, ack: ack });
 		});
 		socket.on("test", function (data) {
 			if (Dev) {
@@ -11499,23 +11499,23 @@ function init_socket_io(socket_server) {
 			}
 			success_response({});
 		});
-		socket.on("magiport", function (data) {
+		socket.on("magiport", function (data, ack) {
 			var player = players[socket.id];
 			if (!player) {
-				return;
+				return fail_no_player(ack);
 			}
 			if (magiportations[data.name] && magiportations[data.name][player.name] && get_player(data.name)) {
 				delete magiportations[data.name][player.name];
 				if (instances[get_player(data.name).in].mount != instances[player.in].mount) {
-					return fail_response("cant_in_bank");
+					return respond_fail({ response: "cant_in_bank", ack: ack });
 				}
 				if (!magiport_someone(player, get_player(data.name))) {
-					return fail_response("invalid");
+					return respond_fail({ response: "invalid", ack: ack });
 				}
-				return success_response({});
+				return respond_success({ ack: ack });
 			} else {
 				player.socket.emit("game_response", { response: "magiport_gone", name: data.name });
-				return fail_response("inviter_gone");
+				return respond_fail({ response: "inviter_gone", data: { name: data.name }, ack: ack });
 			}
 		});
 		socket.on("trade", function (data) {
