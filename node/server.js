@@ -4468,7 +4468,7 @@ function init_socket_io(socket_server) {
 		var original_on = socket.on;
 		socket.on = function (method, f) {
 			// takes the "f" function, the function thats sent to socket.on, wraps it into a "g" function
-			var g = function (data) {
+			var g = function (data, ack) {
 				ls_method = method;
 				if (mode.log_all) {
 					console.log("'" + method + "': " + JSON.stringify(data));
@@ -4482,6 +4482,7 @@ function init_socket_io(socket_server) {
 					socket.total_calls++;
 					add_call_cost(-1);
 					current_socket = socket;
+					var valid_ack = typeof ack === "function" ? ack : undefined; // local to this dispatch only, never shared
 					call_modifier = { open_chest: 0.1, skill: 0.05, target: 0.5 }[method] || 1;
 					if (players[socket.id]) {
 						name = players[socket.id].name;
@@ -4529,7 +4530,7 @@ function init_socket_io(socket_server) {
 						socket.emit("disconnect_reason", "limitdc");
 						socket.disconnect();
 					} else {
-						f(data);
+						f(data, valid_ack);
 					}
 				} catch (e) {
 					try {
