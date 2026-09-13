@@ -3109,7 +3109,35 @@ function consume_mp(player, mp, target) {
 	player.mp = min(player.mp, player.max_mp);
 }
 
-function fail_response(response, place, data) {
+// New, ack-enabled responder functions
+function respond_fail({ response, place, data, ack } = {}) {
+	data = data || {};
+	data.response = response || "data";
+	data.place = place || ls_method;
+	data.failed = true;
+	if (ack) {
+		return ack(data);
+	} else {
+		return current_socket.emit("game_response", data);
+	}
+}
+
+function respond_success({ response, place, data, ack } = {}) {
+	data = data || {};
+	if (data.success !== false) {
+		data.success = true;
+	}
+	data.response = response || "data";
+	data.place = place || ls_method;
+	if (ack) {
+		return ack(data);
+	} else {
+		return current_socket.emit("game_response", data);
+	}
+}
+
+//Old non-ack responder functions
+function _coerce_response_args(response, place, data) {
 	if (!response) {
 		response = "data";
 	}
@@ -3128,37 +3156,23 @@ function fail_response(response, place, data) {
 	if (!place) {
 		place = ls_method;
 	}
-	data.response = response;
-	data.place = place;
-	data.failed = true;
-	current_socket.emit("game_response", data);
+	return { response, place, data };
+}
+
+function fail_response(response, place, data) {
+	respond_fail(_coerce_response_args(response, place, data));
 }
 
 function success_response(response, place, data) {
-	if (!response) {
-		response = "data";
+	respond_success(_coerce_response_args(response, place, data));
+}
+
+// Traditionally sockets with no player errors were ignored
+// when a caller expects an ack we now give one though
+function fail_no_player(ack) {
+	if (ack) {
+		return respond_fail({ response: "no_player", ack: ack });
 	}
-	if (is_object(response)) {
-		data = response;
-		response = "data";
-		place = ls_method;
-	}
-	if (place && is_object(place)) {
-		data = place;
-		place = ls_method;
-	}
-	if (!data) {
-		data = {};
-	}
-	if (!place) {
-		place = ls_method;
-	}
-	if (data.success !== false) {
-		data.success = true;
-	}
-	data.response = response;
-	data.place = place;
-	current_socket.emit("game_response", data);
 }
 
 function consume_skill(player, name, reuse) {
