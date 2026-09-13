@@ -7740,7 +7740,7 @@ function init_socket_io(socket_server) {
 			}
 			if (!player || player.user) {
 				if (data.request_id) return fail_response("cant_in_bank", ev, { request_id: data.request_id, rid: data.rid });
-				return game_response("cant_in_bank");
+				return fail_response("cant_in_bank");
 			}
 			if (data.request_id && data.f && !player.donation) {
 				return fail_response("lostandfound_donate", ev, {
@@ -8025,7 +8025,7 @@ function init_socket_io(socket_server) {
 			var response;
 			if (!player || player.user) {
 				if (data.request_id) return fail_response("cant_in_bank", "donate", { request_id: data.request_id });
-				return game_response("cant_in_bank");
+				return fail_response("cant_in_bank");
 			}
 			if (data.request_id && simple_distance(G.maps.woffice.ref.lostandfound, player) > 500) {
 				return fail_response("distance", "donate", { request_id: data.request_id });

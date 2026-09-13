@@ -3109,14 +3109,6 @@ function consume_mp(player, mp, target) {
 	player.mp = min(player.mp, player.max_mp);
 }
 
-function game_response(response, data) {
-	if (!data) {
-		data = {};
-	}
-	data.response = response;
-	current_socket.emit("game_response", data);
-}
-
 function fail_response(response, place, data) {
 	if (data && is_string(data)) {
 		data = { reason: data };
