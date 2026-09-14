@@ -1,3 +1,5 @@
+mod http_scripts;
+
 use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -388,6 +390,7 @@ async fn create_subwindow(app: AppHandle, state: State<'_, AppState>) -> Result<
         // Native file drops block the game's HTML5 item drops on Windows.
         .disable_drag_drop_handler()
         .user_agent(USER_AGENT)
+        .initialization_script_for_all_frames(include_str!("http_scripts.js"))
         .on_navigation(is_game_url)
         .build()
         .map_err(|error| error.to_string())?;
@@ -552,6 +555,7 @@ pub fn run() {
             // Native file drops block the game's HTML5 item drops on Windows.
             .disable_drag_drop_handler()
             .user_agent(USER_AGENT)
+            .initialization_script_for_all_frames(include_str!("http_scripts.js"))
             .on_navigation(is_game_url)
             .on_page_load(move |window, payload| {
                 if payload.event() == tauri::webview::PageLoadEvent::Finished {
@@ -612,6 +616,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            http_scripts::fetch_http_script,
             get_steam_auth,
             refresh_steam_auth,
             get_steam_purchase_authorization,

@@ -40,6 +40,16 @@ jobs:
         working-directory: tauri
         run: npm install
 
+      - name: Test script transport
+        working-directory: tauri
+        run: npm test
+
+      - name: Test native client
+        working-directory: tauri/src-tauri
+        run: cargo test --lib
+        env:
+          LD_LIBRARY_PATH: ${{ github.workspace }}/tauri/src-tauri/binaries
+
       - name: Build Windows executable
         if: matrix.platform == 'windows'
         working-directory: tauri
