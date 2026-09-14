@@ -8,5 +8,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: npm install
         working-directory: node
+      - run: npm test
+        working-directory: node
       - run: npx prettier --check .
         working-directory: node
