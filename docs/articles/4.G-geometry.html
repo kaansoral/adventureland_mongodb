@@ -1,5 +1,7 @@
 <p><span class="dlabel">Practical geometry</span></p>
 
+<p>For recognized monsters, distance uses the server combat bounds: the monster type's dimensions (24 by 24 when unspecified), multiplied by its size and rounded. Sprite dimensions and skin aliases do not determine monster attack range. This also applies to is_in_range and can_attack; visual sizing and movement collision bounds are unchanged.</p>
+
 <p>Use <span class="dlabel">distance(a, b)</span> for gameplay range checks. It understands entity dimensions and returns edge-to-edge distance rather than blindly measuring sprite centers.</p>
 
 <div class="code">async function attack_nearest_in_range() {

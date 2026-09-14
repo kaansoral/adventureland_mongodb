@@ -636,6 +636,22 @@ function within_xy_range(observer,entity)
 	return false;
 }
 
+// Combat bounds use the monster type, not its visual skin or sprite dimensions.
+function get_monster_dimensions(type) {
+	var dimensions = G.dimensions[type] || [24, 24];
+	var width = dimensions[0], height = dimensions[1];
+	if (G.monsters[type].size) {
+		width = Math.round(width * G.monsters[type].size);
+		height = Math.round(height * G.monsters[type].size);
+	}
+	return [width, height];
+}
+
+function get_combat_dimensions(entity) {
+	if (entity.type === "monster" && typeof entity.mtype === "string" && Object.prototype.hasOwnProperty.call(G.monsters, entity.mtype)) return get_monster_dimensions(entity.mtype);
+	return [get_width(entity), get_height(entity)];
+}
+
 function distance(a, b) {
 	// https://discord.com/channels/238332476743745536/1025784763958693958
 	if (!a || !b) return 99999999;
@@ -647,10 +663,12 @@ function distance(a, b) {
 	const b_x = get_x(b);
 	const b_y = get_y(b);
 
-	const aHalfWidth = get_width(a) / 2;
-	const aHeight = get_height(a);
-	const bHalfWidth = get_width(b) / 2;
-	const bHeight = get_height(b);
+	const aDimensions = get_combat_dimensions(a);
+	const bDimensions = get_combat_dimensions(b);
+	const aHalfWidth = aDimensions[0] / 2;
+	const aHeight = aDimensions[1];
+	const bHalfWidth = bDimensions[0] / 2;
+	const bHeight = bDimensions[1];
 
 	// Compute bounds of each rectangle
 	const aLeft = a_x - aHalfWidth;

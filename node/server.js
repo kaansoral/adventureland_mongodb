@@ -12574,16 +12574,9 @@ function new_monster(instance, map_def, args) {
 
 	monster.gold = map_def.gold;
 
-	if (G.dimensions[name]) {
-		monster.width = G.dimensions[name][0];
-		monster.height = G.dimensions[name][1];
-	} else {
-		monster.width = monster.height = 24;
-	}
-	if (G.monsters[monster.type].size) {
-		monster.width = Math.round(monster.width * G.monsters[monster.type].size);
-		monster.height = Math.round(monster.height * G.monsters[monster.type].size);
-	}
+	var dimensions = get_monster_dimensions(monster.type);
+	monster.width = dimensions[0];
+	monster.height = dimensions[1];
 	set_base(monster);
 
 	if (map_def.random) {

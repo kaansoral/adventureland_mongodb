@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "build:msgpack-parser": "esbuild msgpack_parser.js --bundle --minify --platform=browser --format=iife --global-name=ALMsgpackParser --footer:js=\"if(typeof module!='undefined'&&module.exports)module.exports=ALMsgpackParser;\" --outfile=../js/socket.io-msgpack-parser.min.js",
-    "test": "node --test test/msgpack_parser.test.js test/msgpack_socket_integration.test.js",
+    "test": "node --test test/msgpack_parser.test.js test/msgpack_socket_integration.test.js test/monster_combat_distance.test.js",
     "start": "node server.js EU I 8120"
   },
   "author": "",
