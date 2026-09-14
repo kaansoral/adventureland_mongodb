@@ -1,0 +1,17 @@
+{
+  "identifier": "http-scripts",
+  "description": "Fetch scripts for trusted game windows without WebKit mixed-content requests",
+  "windows": [
+    "main",
+    "sub-*"
+  ],
+  "remote": {
+    "urls": [
+      "https://adventure.land/*",
+      "https://*.adventure.land/*"
+    ]
+  },
+  "permissions": [
+    "allow-fetch-http-script"
+  ]
+}

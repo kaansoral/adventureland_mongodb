@@ -1,5 +1,6 @@
 fn main() {
     const COMMANDS: &[&str] = &[
+        "fetch_http_script",
         "get_steam_auth",
         "refresh_steam_auth",
         "get_steam_purchase_authorization",
