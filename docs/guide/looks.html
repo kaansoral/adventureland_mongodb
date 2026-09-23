@@ -1,46 +1,58 @@
-<div class="guide-kicker">YOUR LOOK, YOUR COLLECTION</div>
-<div class="guide-title">Cosmetics</div>
-<p>Cosmetics change how your character looks. They do not take an equipment slot.</p>
+<div class="guide-kicker">{{ phrase("docs.guide.looks.your-look-your-collection") }}</div>
+<div class="guide-title">{{ phrase("docs.guide.looks.cosmetics") }}</div>
+<p>{{ phrase("docs.guide.looks.cosmetics-change-how-your-character-looks-they-do") }}</p>
 
 <div class="guide-faces">
-	<div><span class="sphaila"></span><b>Haila</b><br />Exchanges a New Armor token for a random permanent look.</div>
-	<div><span class="spdworf"></span><b>Mr. Dworf</b><br />Runs the cosmetic shop in upper Mainland.</div>
+	<div>{{ phrase_html("docs.guide.looks.haila-exchanges-a-new-armor-token-for-a") }}</div>
+	<div>{{ phrase_html("docs.guide.looks.mr-dworf-runs-the-cosmetic-shop-in-upper") }}</div>
 </div>
 
 <div class="divider"></div>
-<div class="title">Open the Wardrobe</div>
+<div class="title">{{ phrase("docs.guide.looks.open-the-wardrobe") }}</div>
 
-<p>Click your character, then <span class="hlabel">COSMETICS</span>. Pick a slot such as Hair, Hat, Face, Attire, Back, Special, or RIP. Owned choices appear first; gray choices show what is still out there.</p>
+<p>{{ phrase_html("docs.guide.looks.click-your-character-then-cosmetics-pick-a-slot") }}</p>
 
-<p>Click an owned look to equip it. Choose the red empty tile to clear that slot. The complete gallery is under <span class="hlabel">GUIDE</span> → <span class="hlabel">All Cosmetics</span>.</p>
+<p>{{ phrase_html("docs.guide.looks.click-an-owned-look-to-equip-it-choose") }}</p>
 
 <div class="divider"></div>
-<div class="title">Finding Looks</div>
+<div class="title">{{ phrase("docs.guide.looks.finding-looks") }}</div>
 
-<p>Looks can come from cosmetic shops, exchanges, monsters, achievements, classes, equipment, events, and Cosmetic Jars. The gallery marks exchange, monster, class, and item sources with small letters.</p>
+<p>{{ phrase("docs.guide.looks.looks-can-come-from-cosmetic-shops-exchanges-monsters") }}</p>
 
-<p>Some looks have limited copies. Equipping one does not consume it. Sending one to another character does.</p>
+<p>{{ phrase("docs.guide.looks.some-looks-have-limited-copies-equipping-one-does") }}</p>
+
+<p>{{ phrase("docs.guide.looks.head-box") }}</p>
+<p>{{ phrase("docs.guide.looks.accessory-box") }}</p>
+<p>{{ phrase("docs.guide.looks.misc-box") }}</p>
+<div class="ecosmo5drops"></div>
 
 <div class="guide-items">
-	<div><span class="ecosmo0"></span><b>New Armor</b><br />Give it to Haila for one random look.</div>
-	<div><span class="ecxjar"></span><b>CX Jar</b><br />Use it to unlock the appearance stored inside.</div>
+	<div>{{ phrase_html("docs.guide.looks.new-armor-give-it-to-haila-for-one") }}</div>
+	<div>{{ phrase_html("docs.guide.looks.cx-jar-use-it-to-unlock-the-appearance") }}</div>
 </div>
 
 <div class="divider"></div>
-<div class="title">Sharing Between Characters</div>
+<div class="title">{{ phrase("docs.guide.looks.sharing-between-characters") }}</div>
 
-<p>Open the Cosmetics panel of another character on your account. Choose a look you own to send one copy to that character. Cosmetics cannot be sent to a different account.</p>
+<p>{{ phrase("docs.guide.looks.open-the-cosmetics-panel-of-another-character-on") }}</p>
 
 <div class="divider"></div>
-<div class="title">With CODE</div>
+<div class="title">{{ phrase("docs.guide.looks.with-code") }}</div>
 
-<p><span class="rlabel" onclick="render_function_reference($(this).html())">equip_cx</span> equips or clears a cosmetic slot. <span class="rlabel" onclick="render_function_reference($(this).html())">send_cx</span> moves one owned copy to another character on your account.</p>
+<p>{{ phrase_html("docs.guide.looks.equip-cx-equips-or-clears-a-cosmetic-slot") }}</p>
 
 <div class="code">show_json(character.cx);  // currently equipped
 show_json(character.acx); // owned copies
 
 await equip_cx("hat", "bwhat");
 await equip_cx("hat"); // clear the hat slot
+
+await equip_cx("head", "slimehead0");
+await equip_cx("head", "lavaglasshead0");
+await equip_cx("head", "stormhead0");
+await equip_cx("back", "backpacks00");
+await equip_cx("hair", "hairdo600");
+await equip_cx("hat", "halo");
 
 await send_cx("YourOtherCharacter", "bwhat");</div>
 
@@ -49,6 +61,8 @@ await send_cx("YourOtherCharacter", "bwhat");</div>
 	$(".spdworf").html(sprite(G.npcs.antip2w.skin, { height: 62 }));
 	$(".ecosmo0").html(item_container({ skin: G.items.cosmo0.skin }, { name: "cosmo0" }));
 	$(".ecxjar").html(item_container({ skin: G.items.cxjar.skin }, { name: "cxjar" }));
+	var total = G.drops.cosmo5.reduce(function(sum, drop) { return sum + drop[0]; }, 0);
+	$(".ecosmo5drops").html(G.drops.cosmo5.map(function(drop) { return render_drop(drop, 1 / total, null, "percent"); }).join(""));
 </script>
 
 <style>

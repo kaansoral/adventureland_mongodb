@@ -125,6 +125,59 @@ test("anniversary emotes return before fake PIXI, sprites, audio or entity acces
 	context.clear_cosmetic_emote(player);
 });
 
+test("the emote socket logs kisses like Poke for nearby players and the recipient, including headless clients", () => {
+	for (const noGraphics of [false, true]) {
+		for (const viewer of ["Visitor", "Guest", "Observer"]) {
+			const { context, player, players } = harness();
+			player("Visitor");
+			player("Guest", 50);
+			context.character = players.get(viewer) || player(viewer);
+			context.no_graphics = noGraphics;
+			if (noGraphics) {
+				vm.runInContext(fs.readFileSync(path.join(root, "js/pixi/fake/pixi.min.js"), "utf8"), context);
+				context.PIXI = new Proxy(context.PIXI, {
+					get() {
+						throw Error("PIXI touched in headless mode");
+					},
+				});
+			}
+			context.G.skills = { ikissyou: { emote: "ikissyou" }, makeawish: { emote: "makeawish" } };
+			const chats = [],
+				logs = [],
+				draws = [];
+			let receive;
+			context.socket = {
+				on: (name, callback) => {
+					assert.equal(name, "emote");
+					receive = callback;
+				},
+			};
+			context.draw_trigger = (callback) => draws.push(callback);
+			context.add_chat = (...args) => chats.push(args);
+			context.add_log = (...args) => logs.push(args);
+			context.citizen_echo_emote = () => {};
+			const start = game.indexOf('socket.on("emote",');
+			vm.runInContext(game.slice(start, game.indexOf('socket.on("citizen",', start)), context);
+			const kiss = { name: "ikissyou", player: "Visitor", target: "Guest" };
+			receive(kiss);
+			assert.equal(chats.length, 0, "use the existing queued event path");
+			draws.shift()();
+			assert.deepEqual(chats, [["", "Visitor kissed Guest", "gray"]]);
+			assert.deepEqual(logs, viewer === "Guest" ? [["Visitor kissed you", "gray"]] : []);
+			for (const data of [
+				{ ...kiss, name: "makeawish" },
+				{ ...kiss, player: "Missing" },
+				{ ...kiss, target: "Missing" },
+			]) {
+				receive(data);
+				draws.shift()();
+			}
+			assert.equal(chats.length, 1, "other emotes and absent players do not produce kiss logs");
+			assert.equal(logs.length, viewer === "Guest" ? 1 : 0);
+		}
+	}
+});
+
 test("Make a Wish preserves its native sheet and expires at 2800 ms", () => {
 	const { context, player, advance } = harness();
 	const caster = player("wisher");
@@ -220,54 +273,98 @@ test("missing, dead or disconnected targets are harmless and do not leave kiss v
 	assert.equal(target.cosmetic_kiss_casters, undefined);
 });
 
-test("Wish chime respects SFX off, literal zero volume, headless mode and configured gain", () => {
-	const { context } = harness();
-	let audioCalls = 0;
-	const tones = [],
-		outputs = [],
-		timers = [];
-	context.cosmetic_emote_audio = () => {
-		audioCalls++;
-		return {
-			currentTime: 0,
-			destination: {},
-			createGain() {
-				const output = {
-					gain: {},
-					connect() {},
-					disconnect() {
-						this.disconnected = true;
-					},
-				};
-				outputs.push(output);
-				return output;
-			},
-		};
-	};
-	context.cosmetic_emote_tone = (...args) => tones.push(args);
-	context.setTimeout = (callback, ms) => timers.push({ callback, ms });
-	context.sfx_volume = 0;
-	context.play_cosmetic_emote_sound("makeawish", 1);
-	context.sfx_volume = 100;
-	context.sound_sfx = false;
-	context.play_cosmetic_emote_sound("makeawish", 1);
-	context.sound_sfx = true;
-	context.no_graphics = true;
-	context.play_cosmetic_emote_sound("makeawish", 1);
-	assert.equal(audioCalls, 0);
-	assert.equal(tones.length, 0);
-	context.no_graphics = false;
-	context.sfx_volume = 20;
-	context.play_cosmetic_emote_sound("makeawish", 1);
-	assert.equal(audioCalls, 1);
-	assert.equal(tones.length, 4);
-	assert.equal(outputs[0].gain.value, 0.11);
-	assert.equal(tones[3][2], 0.552);
-	assert.equal(tones[3][3], 0.42);
-	assert.equal(timers[0].ms, 3300);
-	timers[0].callback();
-	assert.equal(outputs[0].disconnected, true);
+test("kiss playback sounds once per visible kiss and respects silent and crowd-suppressed emotes", () => {
+	const { context, player } = harness(),
+		target = player("guest", 100);
+	const sounds = [];
+	context.play_cosmetic_emote_sound = (...args) => sounds.push(args);
+	const caster = player("visitor");
+	context.play_cosmetic_emote(caster, "ikissyou", target);
+	assert.deepEqual(sounds, [["ikissyou", 1]]);
+	context.clear_cosmetic_emote(caster);
+	context.play_cosmetic_emote(caster, "ikissyou", target, { silent: true });
+	assert.equal(caster.cosmetic_emote.name, "ikissyou");
+	assert.equal(sounds.length, 1);
+	context.clear_cosmetic_emote(caster);
+	context.play_cosmetic_emote(caster, "ikissyou");
+	context.play_cosmetic_emote(caster, "ikissyou", caster);
+	assert.equal(sounds.length, 1);
+	for (let i = 0; i < 5; i++) context.play_cosmetic_emote(player("crowd" + i), "ikissyou", target);
+	assert.equal(target.cosmetic_kiss_casters.length, 4);
+	assert.equal(sounds.length, 5, "suppressed kisses must not pile up sounds");
+	context.play_cosmetic_emote(caster, "makeawish");
+	assert.deepEqual(sounds[5], ["makeawish", 1]);
 });
+
+for (const name of ["makeawish", "ikissyou"]) {
+	test(`${name} sound respects SFX off, zero volume, headless mode and configured gain`, () => {
+		const { context } = harness();
+		let audioCalls = 0;
+		const tones = [],
+			noises = [],
+			outputs = [],
+			timers = [];
+		context.cosmetic_emote_audio = () => {
+			audioCalls++;
+			return {
+				currentTime: 0,
+				destination: {},
+				createGain() {
+					const output = {
+						gain: {},
+						connect() {},
+						disconnect() {
+							this.disconnected = true;
+						},
+					};
+					outputs.push(output);
+					return output;
+				},
+			};
+		};
+		context.cosmetic_emote_tone = (...args) => tones.push(args);
+		context.cosmetic_emote_noise = (...args) => noises.push(args);
+		context.setTimeout = (callback, ms) => timers.push({ callback, ms });
+		context.sfx_volume = 0;
+		context.play_cosmetic_emote_sound(name, 1);
+		context.sfx_volume = 100;
+		context.sound_sfx = false;
+		context.play_cosmetic_emote_sound(name, 1);
+		context.sound_sfx = true;
+		context.no_graphics = true;
+		context.play_cosmetic_emote_sound(name, 1);
+		context.no_graphics = false;
+		context.no_html = true;
+		context.play_cosmetic_emote_sound(name, 1);
+		assert.equal(audioCalls, 0);
+		assert.equal(tones.length, 0);
+		assert.equal(noises.length, 0);
+		context.no_html = false;
+		context.sfx_volume = 20;
+		context.play_cosmetic_emote_sound(name, 1);
+		assert.equal(audioCalls, 1);
+		assert.equal(outputs[0].gain.value, 0.11);
+		if (name == "makeawish") {
+			assert.equal(tones.length, 4);
+			assert.equal(noises.length, 0);
+			assert.equal(tones[3][2], 0.552);
+			assert.equal(tones[3][3], 0.42);
+			assert.equal(timers[0].ms, 3300);
+		} else {
+			assert.equal(tones.length, 2);
+			assert.equal(noises.length, 2);
+			assert.equal(tones[0][2], 0.372);
+			assert.equal(noises[0][2], tones[0][2]);
+			assert.equal(tones[1][2], 0.492, "lip smack follows the 480 ms arrival plus audio scheduling lead");
+			assert.equal(noises[1][2], tones[1][2]);
+			assert.ok(tones[1][4] > tones[1][5], "short downward pop, not a melody");
+			for (const sound of [...tones, ...noises]) assert.ok(sound[3] <= 0.1);
+			assert.equal(timers[0].ms, 1700);
+		}
+		timers[0].callback();
+		assert.equal(outputs[0].disconnected, true);
+	});
+}
 
 test("Reunion Bow and both emotes resolve complete native animation sheets", () => {
 	assert.deepEqual(JSON.parse(JSON.stringify(projectiles.reunionarrow)), {

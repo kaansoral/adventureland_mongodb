@@ -1,16 +1,16 @@
 <div id="boosterguide" style="display:none">
 	<!-- <div class="gamebutton gamebutton-small" style="position: absolute; top: 5px; right: 5px">Updated December 16th</div> -->
 	<div style="font-size: 24px; color: #F4F4F4">
-		<div class="gamebutton gamebutton-large" style="border-color: #E56369">Boosters</div> <div class="mb5"></div>
-		<div class="gamebutton gamebutton-small mr5 mt5 mb5">Activation and Usage</div>
-		<div class="gray"><span style="color: #F4F4F4">&gt;</span> After pressing the "ACTIVATE" button. The booster item lasts 30 days. The booster item works from a character's inventory, it is not equipped or consumed. The effect can be observed from the "STATS" interface. The item can be transfered between characters or sold through merchanting.</div>
+		<div class="gamebutton gamebutton-large" style="border-color: #E56369">{{ phrase("pages.contents.booster_howto.boosters") }}</div> <div class="mb5"></div>
+		<div class="gamebutton gamebutton-small mr5 mt5 mb5">{{ phrase("pages.contents.booster_howto.activation-and-usage") }}</div>
+		<div class="gray">{{ phrase_html("pages.contents.booster_howto.after-pressing-the-activate-button-the-booster-item") }}</div>
 		<!-- <div class="gamebutton gamebutton-small mr5 mt10 mb5">Increased Limits</div>
 		<div class="gray"><span style="color: #F4F4F4">&gt;</span> While the free character limit is 1, characters with an active booster item are able to exceed this limit. Even with booster items, the upper limit for multi-characters is 3. So minimally, with 2 stones, you can play the game with a 3-character party.</div> -->
-		<div class="gamebutton gamebutton-small mr5 mt10 mb5">Optimal Strategy</div>
-		<div class="gray"><span style="color: #F4F4F4">&gt;</span> Don't loot chests, keep the Booster in XP mode.</div>
-		<div class="gray"><span style="color: #F4F4F4">&gt;</span> While battling a boss, shift the Booster to Luck mode.</div>
-		<div class="gray"><span style="color: #F4F4F4">&gt;</span> When there are enough chests around, shift the Booster to Gold mode and loot.</div>
-		<div class="gray"><span style="color: #F4F4F4">&gt;</span> This way, you can benefit from all 3 bonuses with 1 stone.</div>
+		<div class="gamebutton gamebutton-small mr5 mt10 mb5">{{ phrase("pages.contents.booster_howto.optimal-strategy") }}</div>
+		<div class="gray">{{ phrase_html("pages.contents.booster_howto.don-t-loot-chests-keep-the-booster-in") }}</div>
+		<div class="gray">{{ phrase_html("pages.contents.booster_howto.while-battling-a-boss-shift-the-booster-to") }}</div>
+		<div class="gray">{{ phrase_html("pages.contents.booster_howto.when-there-are-enough-chests-around-shift-the") }}</div>
+		<div class="gray">{{ phrase_html("pages.contents.booster_howto.this-way-you-can-benefit-from-all-3") }}</div>
 		<div class="mr5 mt10 mb5" style="border-color: #32A3B0; font-size: 0px">
 			<span class='bitems'></span>
 			<span class='bitem1'></span>
@@ -20,15 +20,15 @@
 			<span class='bitem5'></span>
 			<span class='bitemo'></span>
 		</div>
-		<div class="gray"><span style="color: #F4F4F4">&gt;</span> You can combine boosters as you combine accessories. The combination succeeds 100%, however, if you use a "Primordial Essence" for the combination, It triggers a proc-chance routine.</div>
-		<div class="gray"><span style="color: #F4F4F4">&gt;</span> You start with a 12% chance, as you succeed, your booster becomes a higher level booster, and the routine internally repeats with half the chance. So you can even receive an +5 booster, instead of an +1!</div>
+		<div class="gray">{{ phrase_html("pages.contents.booster_howto.you-can-combine-boosters-as-you-combine-accessories") }}</div>
+		<div class="gray">{{ phrase_html("pages.contents.booster_howto.you-start-with-a-12-chance-as-you") }}</div>
 		<div class="gamebutton gamebutton-small mr5 mt10 mb5" style="border-color: #32A3B0">CODE</div>
-		<div class="gray mb5"><span style="color: #F4F4F4">&gt;</span> You can use the activate and shift functions in CODE.</div>
-		<div class="gray mb5"><span class='label'>shift(0,'xpbooster')</span></div>
-		<div class="gray mb5"><span class='label'>shift(0,'luckbooster')</span></div>
-		<div class="gray mb5"><span class='label'>shift(0,'goldbooster')</span></div>
-		<div class="gray mb5"><span style="color: #F4F4F4">&gt;</span> Above calls be used to shift a booster in 0th inventory slot.</div>
-		<div class="gray mb5"><span style="color: #F4F4F4">&gt;</span> Implementing the optimal strategy is left as an exercise to the reader.</div>
+		<div class="gray mb5">{{ phrase_html("pages.contents.booster_howto.you-can-use-the-activate-and-shift-functions") }}</div>
+		<div class="gray mb5">{{ phrase_html("pages.contents.booster_howto.shift-0-xpbooster") }}</div>
+		<div class="gray mb5">{{ phrase_html("pages.contents.booster_howto.shift-0-luckbooster") }}</div>
+		<div class="gray mb5">{{ phrase_html("pages.contents.booster_howto.shift-0-goldbooster") }}</div>
+		<div class="gray mb5">{{ phrase_html("pages.contents.booster_howto.above-calls-be-used-to-shift-a-booster") }}</div>
+		<div class="gray mb5">{{ phrase_html("pages.contents.booster_howto.implementing-the-optimal-strategy-is-left-as-an") }}</div>
 	</div>
 	<div class="oncreate" onclick="booster_modal_logic();"></div>
 </div>

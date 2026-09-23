@@ -77,7 +77,8 @@ function client() {
 	const c = {
 		no_graphics: false,
 		no_html: false,
-		character: { stand: "stand0" },
+		proximity_guides: true,
+		character: { stand: "stand0", map: "main" },
 		html_escape: (s) => s.replaceAll("<", "&lt;").replaceAll(">", "&gt;"),
 		clearTimeout() {},
 		setTimeout(fn, ms) {
@@ -133,4 +134,39 @@ test("normal waits, missing stock, headless clients and closed stands do not sho
 	c.character.stand = false;
 	c.show_merrit_stand_notice({ reasons: [{ code: "area" }] });
 	assert.equal(rendered.length, 0);
+});
+
+test("dismissal lasts through status changes until the stand is reopened", () => {
+	const { c, rendered, removed } = client();
+	const reasons = [{ code: "area" }];
+	c.show_merrit_stand_notice({ stand_opened: true, reasons });
+	assert.match(rendered[0], /aria-label='Dismiss Merrit notice'/);
+	c.dismiss_merrit_stand_notice();
+	assert.equal(removed.at(-1), "#merrit-stand-notice");
+	c.show_merrit_stand_notice({ reasons });
+	c.show_merrit_stand_notice({ reasons: [{ code: "npc", name: "Shopkeeper" }] });
+	c.show_merrit_stand_notice({ reasons: [] });
+	c.show_merrit_stand_notice({ reasons });
+	assert.equal(rendered.length, 1);
+	c.show_merrit_stand_notice({ stand_opened: false });
+	c.show_merrit_stand_notice({ stand_opened: true, reasons });
+	assert.equal(rendered.length, 2);
+});
+
+test("placement notices are removed outside Mainland and when Guides are disabled", () => {
+	for (const setting of [{ map: "winterland" }, { guides: false }]) {
+		const { c, rendered, removed } = client();
+		const reasons = [{ code: "area" }];
+		c.show_merrit_stand_notice({ stand_opened: true, reasons });
+		if (setting.map) c.character.map = setting.map;
+		if (setting.guides === false) c.proximity_guides = false;
+		c.show_merrit_stand_notice({ reasons });
+		assert.equal(removed.at(-1), "#merrit-stand-notice");
+		c.show_merrit_stand_notice({ stand_opened: true, reasons });
+		assert.equal(rendered.length, 1);
+		c.character.map = "main";
+		c.proximity_guides = true;
+		c.show_merrit_stand_notice({ reasons });
+		assert.equal(rendered.length, 2);
+	}
 });

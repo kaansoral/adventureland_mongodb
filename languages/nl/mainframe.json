@@ -1,0 +1,21 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe heeft dit personage in de wachtrij gezet.",
+	"mainframe.event.included_worker_queued": "Mainframe heeft deze inbegrepen Worker in de wachtrij gezet.",
+	"mainframe.event.shared_with": "Gedeeld met {character}",
+	"mainframe.event.shared_with_root": "Gedeeld met het hoofdpersonage",
+	"mainframe.event.explicit_disconnect": "Verbinding verbroken door de accounteigenaar.",
+	"mainframe.event.renewed_free": "1 gratis Mainframe-uur gebruikt voor {minutes} min.",
+	"mainframe.event.renewed_shell": "1 schelp in rekening gebracht voor {minutes} min.",
+	"mainframe.event.renewal_one": "{count} personage actief · Volgende verlenging {date}",
+	"mainframe.event.renewal_many": "{count} personages actief · Volgende verlenging {date}",
+	"mainframe.event.renewal_failed": "Mainframe heeft dit personage gestopt omdat er geen tijd meer over was.",
+	"mainframe.event.worker_failure": "Mainframe heeft een Worker-storing gedetecteerd en zal het opnieuw proberen.",
+	"mainframe.event.server_change": "Mainframe verbindt dit personage opnieuw op een andere server.",
+	"mainframe.level.info": "INFO",
+	"mainframe.level.warn": "WAARSCHUWING",
+	"mainframe.level.error": "FOUT",
+	"mainframe.event.renewal_many.one": "{count} personage actief · Volgende verlenging {date}",
+	"mainframe.event.renewal_many.other": "{count} personages actief · Volgende verlenging {date}",
+	"mainframe.event.renewal_one.one": "{count} personage actief · Volgende verlenging {date}",
+	"mainframe.event.renewal_one.other": "{count} personages actief · Volgende verlenging {date}"
+}

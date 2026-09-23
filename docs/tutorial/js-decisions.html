@@ -1,0 +1,64 @@
+<p>{{ phrase_html("docs.tutorial.js-decisions.idea") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.task") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-decisions.task") }}</p>
+
+<p>{{ phrase("docs.tutorial.javascript.practice") }}</p>
+
+<div class="tutorial-code" data-lesson="decisions">
+	<!-- prettier-ignore -->
+	<div class="code executeb">let status = "Ready";
+if (character.hp &lt; 50) {
+  status = "Heal";
+}
+game_log(status);</div>
+
+	<div class="tutorial-code-result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.hint") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-decisions.hint") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.solution") }}</div>
+
+<!-- prettier-ignore -->
+<div class="code readonly">let status = "Ready";
+if (character.hp &lt; character.max_hp / 2) {
+  status = "Heal";
+}
+game_log(status);</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.variation") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-decisions.variation") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.transfer") }}</div>
+
+<p>{{ phrase("docs.tutorial.javascript.copy") }}</p>
+
+<p>{{ phrase_html("docs.tutorial.js-decisions.transfer") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.js-decisions.reading_title") }}</div>
+
+{{ phrase_html("docs.tutorial.js-decisions.reading_before") }}
+
+<!-- prettier-ignore -->
+<div class="code readonly">const low = character.hp &lt; character.max_hp / 2;
+if (low) {
+  game_log("Heal");
+} else {
+  game_log("Ready");
+}</div>
+
+{{ phrase_html("docs.tutorial.js-decisions.reading_after") }}
+
+<p>
+	<span class="rlabel clickable" onclick="open_article('data-character', '/docs/code/character/reference')">character</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('game_log')">game_log</span>
+</p>

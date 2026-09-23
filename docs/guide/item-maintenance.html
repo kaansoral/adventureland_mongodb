@@ -1,39 +1,39 @@
-<div class="guide-kicker">PROTECT YOUR GEAR</div>
-<div class="guide-title">Item Maintenance</div>
-<p>Smith protects valuable items from ordinary destructive actions. Sir Bob removes an applied stat while preserving the item's upgrade or compound level.</p>
+<div class="guide-kicker">{{ phrase("docs.guide.item-maintenance.protect-your-gear") }}</div>
+<div class="guide-title">{{ phrase("docs.guide.item-maintenance.item-maintenance") }}</div>
+<p>{{ phrase("docs.guide.item-maintenance.smith-protects-valuable-items-from-ordinary-destructive-actions") }}</p>
 
 <div class="guide-card-grid">
-	<div class="guide-card"><span class="guide-card-icon maintenance-smith"></span><b>Smith · Desertland</b>Lock instantly, seal for stronger protection, or begin and finish an unlock.</div>
-	<div class="guide-card"><span class="guide-card-icon maintenance-bob"></span><b>Sir Bob · Desertland</b>Remove a STR, INT, DEX, or other applied stat and return the appropriate scrolls.</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.item-maintenance.smith-desertland-lock-instantly-seal-for-stronger-protection") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.item-maintenance.sir-bob-desertland-remove-a-str-int-dex") }}</div>
 </div>
 
 <div class="guide-flow" style="border-color:#607F98" data-guide-visual="item-protection">
-	<div class="guide-flow-node"><span class="guide-flow-icon maintenance-coat"></span><span class="guide-flow-label">Unprotected</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.item-maintenance.unprotected") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon maintenance-locked"></span><span class="guide-flow-label">Locked</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.item-maintenance.locked") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon maintenance-sealed"></span><span class="guide-flow-label">Sealed</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.item-maintenance.sealed") }}</div>
 </div>
 
 <div class="divider"></div>
-<div class="title mt15">Lock, Seal, Unlock</div>
+<div class="title mt15">{{ phrase("docs.guide.item-maintenance.lock-seal-unlock") }}</div>
 <div class="guide-card-grid">
-	<div class="guide-card"><b>Lock</b>Blocks selling, upgrading, compounding, dismantling, destroying, and other ordinary destructive item actions. Smith can remove it immediately for the shown price.</div>
-	<div class="guide-card"><b>Seal</b>Uses stronger protection. The first unlock visit begins an unsealing wait; return to Smith after the timer ends to finish.</div>
-	<div class="guide-card"><b>Unsealing</b>The item remains protected while its marker shows that unsealing is in progress. Calling unlock again reports the remaining time.</div>
-	<div class="guide-card"><b>Verify the slot</b>Every routine works on an inventory position. Re-read <span class="dlabel">character.items[slot]</span> immediately before changing it.</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.item-maintenance.lock-blocks-selling-upgrading-compounding-dismantling-destroying-and") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.item-maintenance.seal-uses-stronger-protection-the-first-unlock-visit") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.item-maintenance.unsealing-the-item-remains-protected-while-its-marker") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.item-maintenance.verify-the-slot-every-routine-works-on-an") }}</div>
 </div>
 
 <div class="divider"></div>
-<div class="title mt15">Remove an Applied Stat</div>
+<div class="title mt15">{{ phrase("docs.guide.item-maintenance.remove-an-applied-stat") }}</div>
 <div class="guide-flow" style="border-color:#7E63A4" data-guide-visual="destat">
-	<div class="guide-flow-node"><span class="guide-flow-icon maintenance-statted"></span><span class="guide-flow-label">STR Coat +4</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.item-maintenance.str-coat-4") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon maintenance-plain4"></span><span class="guide-flow-label">Coat +4</span></div>
-	<div class="guide-flow-node"><span class="guide-flow-icon maintenance-scroll"></span><span class="guide-flow-label">Stat Scrolls Returned</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.item-maintenance.coat-4") }}</div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.item-maintenance.stat-scrolls-returned") }}</div>
 </div>
-<p>Sir Bob's preview names the scroll and quantity returned and shows the gold cost. De-statting removes only the applied stat: the item's +4 level in this example remains +4. Keep enough inventory space for the returned scroll stack.</p>
-<div class="guide-note">Locking protects an item; it does not make risky attempts safe. Unlock only when you are ready to perform the intended action, then protect the item again.</div>
+<p>{{ phrase("docs.guide.item-maintenance.sir-bob-s-preview-names-the-scroll-and") }}</p>
+<div class="guide-note">{{ phrase("docs.guide.item-maintenance.locking-protects-an-item-it-does-not-make") }}</div>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
@@ -62,9 +62,9 @@ async function remove_applied_stat(slot) {
 	var result = await destat_item(slot); // Stand beside Sir Bob.
 	game_log("Returned " + result.quantity + " " + result.scroll);
 }</div>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">lock_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">seal_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">unlock_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">destat_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>.</p>
+<p>{{ phrase_html("docs.guide.item-maintenance.references-lock-item-seal-item-unlock-item-destat") }}</p>
 
-<div class="guide-related">See also: <span onclick="hide_modal(); open_guide('upgrading',get_guide_url('upgrading'))">Upgrading</span> · <span onclick="hide_modal(); open_guide('compounding',get_guide_url('compounding'))">Compounding</span></div>
+<div class="guide-related">{{ phrase_html("docs.guide.item-maintenance.see-also-upgrading-compounding") }}</div>
 
 <script>
 	$(".maintenance-smith").html(sprite(G.npcs.locksmith.skin, { height: 58 }));

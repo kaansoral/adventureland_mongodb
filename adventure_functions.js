@@ -264,8 +264,10 @@ async function send_email(domain, email, args) {
 	var title = args.title || "Default Title";
 	var html = args.html || "Default HTML";
 	var text = args.text || "An email from the game";
-	console.log("send_email " + email + " - " + title);
 	try {
+		var recipient = await get_user_by_email(purify_email(email));
+		if (recipient && recipient.ses_bounce) return { skipped: true, reason: "ses_bounce" };
+		console.log("send_email " + email + " - " + title);
 		var { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
 		var client = new SESClient({
 			region: "us-east-1",
@@ -279,10 +281,10 @@ async function send_email(domain, email, args) {
 				Source: "hello@adventure.land",
 				Destination: { ToAddresses: [email] },
 				Message: {
-					Subject: { Data: title },
+					Subject: { Data: title, Charset: "UTF-8" },
 					Body: {
-						Html: { Data: html },
-						Text: { Data: text },
+						Html: { Data: html, Charset: "UTF-8" },
+						Text: { Data: text, Charset: "UTF-8" },
 					},
 				},
 			}),
@@ -294,14 +296,18 @@ async function send_email(domain, email, args) {
 
 function send_verification_email(domain, user) {
 	var url = domain.base_url + "/ev/" + get_id(user) + "/" + user.info.everification;
+	var language = localization.normalize(user.language) || domain.language;
+	domain = Object.assign({}, domain, { language: language });
 	var html = nunjucks.render("htmls/email.html", { purpose: "verification", url: url, domain: domain, user: user });
-	send_email(domain, user.info.email, { html: html, title: "Welcome to Adventure Land! Verification Link + Early Game Suggestions Inside", text: "To Verify Your Email: " + url });
+	return send_email(domain, user.info.email, { html: html, title: phrase("server.email.verification_subject", {}, language), text: phrase("server.email.verification_text", { url: url }, language) });
 }
 
 function send_password_reminder_email(domain, user) {
 	var url = domain.base_url + "/reset/" + get_id(user) + "/" + user.info.password_key;
+	var language = localization.normalize(user.language) || domain.language;
+	domain = Object.assign({}, domain, { language: language });
 	var html = nunjucks.render("htmls/email.html", { purpose: "password", domain: domain, url: url });
-	send_email(domain, user.info.email, { html: html, title: "Password Reminder from Adventure Land", text: "To reset your password, please visit: " + url });
+	return send_email(domain, user.info.email, { html: html, title: phrase("server.email.reset_subject", {}, language), text: phrase("server.email.reset_text", { url: url }, language) });
 }
 
 // ==================== PASSWORD ====================
@@ -328,6 +334,8 @@ function normalize_user_id(id) {
 }
 
 async function get_user(req) {
+	if (!req) return null;
+	if (Object.prototype.hasOwnProperty.call(req, "_language_user")) return req._language_user;
 	var ck = options.cookie_key;
 	if (!req.cookies || !req.cookies[ck]) return null;
 	try {
@@ -335,11 +343,24 @@ async function get_user(req) {
 		var id = normalize_user_id(parts[0]),
 			auth = parts[1];
 		var user = await get(id);
-		if (user && user.info.auths && user.info.auths.includes(auth)) return user;
+		if (user && user.info.auths && user.info.auths.includes(auth)) {
+			await initialize_user_language(req, user);
+			return user;
+		}
 	} catch (e) {
 		console.error("get_user error", e);
 	}
 	return null;
+}
+
+async function initialize_user_language(req, user) {
+	try {
+		await localization.initialize_user(db.collection("user"), req, user);
+	} catch (e) {
+		console.error("Account language initialization failed");
+	}
+	localization.bind_user(req, user);
+	return user;
 }
 
 async function get_user_by_email(email) {
@@ -354,7 +375,10 @@ async function get_user_with_override(req, api_override, auth_override) {
 		var id = normalize_user_id(parts[0]),
 			auth = parts[1];
 		var user = await get(id);
-		if (user && (api_override || (user.info.auths && user.info.auths.includes(auth)))) return user;
+		if (user && (api_override || (user.info.auths && user.info.auths.includes(auth)))) {
+			await initialize_user_language(req, user);
+			return user;
+		}
 	} catch (e) {
 		console.error("get_user_with_override error", e);
 	}
@@ -393,13 +417,13 @@ region_coords = { EU: [50, 8], US: [37, -100], ASIA: [1.3, 103.8] };
 allowed_name_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 SEO_ORIGIN = "https://adventure.land";
 SEO_IMAGE_URL = SEO_ORIGIN + "/images/first_logo.png";
-SEO_DESCRIPTION = "Adventure Land is a persistent code MMORPG where you control up to four characters with JavaScript, explore, trade, craft, and fight alongside other players.";
+SEO_DESCRIPTION = phrase("server.page.description", {}, "en");
 
 function set_default_seo(domain, req) {
 	var request_path = (req && req.path) || "/";
 	domain.canonical_url = SEO_ORIGIN + request_path;
-	domain.seo_description = SEO_DESCRIPTION;
-	domain.seo_image_alt = "Adventure Land game world and logo";
+	domain.seo_description = phrase("server.page.description", {}, domain.language);
+	domain.seo_image_alt = phrase("server.page.adventure_land_game_world_and_logo");
 	domain.seo_image_url = SEO_IMAGE_URL;
 }
 
@@ -426,27 +450,27 @@ function set_docs_seo(domain, path_parts) {
 
 	var name = docs_seo_name(parts[parts.length - 1]);
 	if (parts[0] === "code" && parts[1] === "functions" && parts[2]) {
-		domain.title = parts[2] + "() — Adventure Land CODE Docs";
-		domain.seo_description = "CODE reference for " + parts[2] + "() in Adventure Land.";
+		domain.title = phrase("server.page.adventure_land_code_docs", { value: String(parts[2]) });
+		domain.seo_description = phrase("server.page.code_reference_for_in_adventure_land", { value: String(parts[2]) });
 	} else if (parts[0] === "guide" && parts[1] === "all" && parts[2] === "items" && parts[3]) {
-		domain.title = name + " — Adventure Land Item Guide";
-		domain.seo_description = "Adventure Land item reference for " + name + ".";
+		domain.title = phrase("server.page.adventure_land_item_guide", { name: String(name) });
+		domain.seo_description = phrase("server.page.adventure_land_item_reference_for", { name: String(name) });
 	} else if (parts[0] === "guide" && parts[1] === "all" && parts[2] === "monsters" && parts[3]) {
-		domain.title = name + " — Adventure Land Monster Guide";
-		domain.seo_description = "Adventure Land monster reference for " + name + ".";
+		domain.title = phrase("server.page.adventure_land_monster_guide", { name: String(name) });
+		domain.seo_description = phrase("server.page.adventure_land_monster_reference_for", { name: String(name) });
 	} else if (parts.length) {
-		domain.title = name + " — Adventure Land Docs";
-		domain.seo_description = "Adventure Land guides, CODE references, game data, items, monsters, skills, and systems.";
+		domain.title = phrase("server.page.adventure_land_docs", { name: String(name) });
+		domain.seo_description = phrase("server.page.adventure_land_guides_code_references_game_data_items_monsters_skills_and_systems");
 	} else {
-		domain.title = "Adventure Land Docs";
-		domain.seo_description = "Adventure Land guides, CODE references, game data, items, monsters, skills, and systems.";
+		domain.title = phrase("server.page.adventure_land_docs_2");
+		domain.seo_description = phrase("server.page.adventure_land_guides_code_references_game_data_items_monsters_skills_and_systems");
 	}
 	domain.canonical_url =
 		SEO_ORIGIN +
 		"/docs" +
 		(canonical_parts.length
 			? "/" +
-			  canonical_parts
+				canonical_parts
 					.map(function (part) {
 						return encodeURIComponent(part);
 					})
@@ -456,6 +480,7 @@ function set_docs_seo(domain, path_parts) {
 
 async function get_domain(req, user) {
 	var domain = await get_domain_common(req);
+	Object.assign(domain, localization.domain_fields(req, user));
 	domain.v = domain.Version = Version;
 	domain.electron = false;
 	domain.tauri = false;
@@ -471,7 +496,7 @@ async function get_domain(req, user) {
 		pixi_lights: "2.0.3",
 		interact: "1.2.6",
 	};
-	domain.title = "Adventure Land — The Code MMORPG";
+	domain.title = phrase("server.page.adventure_land_the_code_mmorpg");
 	domain.name = game_name;
 	domain.scale = 2;
 	domain.perfect_pixels = true;
@@ -539,13 +564,14 @@ async function get_domain(req, user) {
 	domain.purchase_mode = true;
 	domain.tutorial = true;
 	domain.proximity_guides = true;
+	domain.close_buttons = true;
 	domain.boost = 0;
 	if (user && is_admin(user)) {
 		domain.access_master = keys.ACCESS_MASTER;
 	}
 	domain.servers = [];
 	domain.characters = [];
-	domain.update_notes = update_notes.slice(0, 20);
+	domain.update_notes = localization.translate_notes(update_notes.slice(0, 20), domain.language);
 	domain.update_notes_more = update_notes.length > domain.update_notes.length;
 	domain.last_deploy = LastDeploy;
 
@@ -590,6 +616,7 @@ async function get_domain(req, user) {
 		if (req.cookies.d_lines_off) domain.d_lines = false;
 		if (req.cookies.no_tutorial) domain.tutorial = false;
 		if (req.cookies.no_proximity_guides) domain.proximity_guides = false;
+		if (req.cookies.no_close_buttons) domain.close_buttons = false;
 		if (req.cookies.no_fast_mode) domain.fast_mode = false;
 		if (req.query.engine || req.cookies.engine_mode) domain.engine_mode = req.query.engine || req.cookies.engine_mode;
 		if (req.cookies.sd_lines_off) domain.sd_lines = false;
@@ -609,7 +636,11 @@ async function get_domain(req, user) {
 
 var cached_servers = null;
 async function get_servers(no_cache) {
-	var servers = await db.collection("server").find({ online: true }).limit(500).toArray();
+	var servers = await db
+		.collection("server")
+		.find({ online: true }, { projection: { "info.recent_characters": 0 } })
+		.limit(500)
+		.toArray();
 	post_process_query_results(servers);
 	servers.sort(function (a, b) {
 		var ra = (a.region === "EU" ? "1" : a.region === "US" ? "2" : "3") + a.name;
@@ -618,30 +649,49 @@ async function get_servers(no_cache) {
 	});
 	var result = [];
 	servers.forEach(function (s) {
-		if (options.servers[s.key]) result.push(s);
+		if (options.servers[s.key] && !options.servers[s.key].inactive) result.push(s);
 	});
 	return result;
 }
 
-function select_server(req, user, servers) {
+function redirect_inactive_server(req, res) {
+	var definitions = Object.values(options.servers);
+	var definition = definitions.find((s) => s.region === req.params.region && s.name === req.params.sname);
+	if (!definition || !definition.inactive) return false;
+	var redirect = definition.redirect;
+	var destination = Array.isArray(redirect) && definitions.find((s) => !s.inactive && s.region === redirect[0] && s.name === redirect[1]);
+	var url = "/";
+	if (destination) {
+		url = req.path.replace(/\/[^/]+\/[^/]+\/?$/, "/" + encodeURIComponent(destination.region) + "/" + encodeURIComponent(destination.name) + "/");
+		var query = req.originalUrl.indexOf("?");
+		if (query !== -1) url += req.originalUrl.slice(query);
+	}
+	res.redirect(url);
+	return true;
+}
+
+async function get_browser_servers(req) {
+	var servers = await get_servers();
+	var host = (req.get("host") || "").toLowerCase().split(":")[0];
+	if (host !== "cloudflare.adventure.land") return servers;
+	return servers.filter((s) => s.address === "de.adventure.land").map((s) => Object.assign({}, s, { address: "cloudflare.adventure.land" }));
+}
+
+function select_server(req, user, servers, characters) {
 	if (!servers || !servers.length) return null;
 	if (Dev) return servers[0];
+	// Fresh character records are authoritative; the account's character list can contain old homes.
+	var chars = characters || gf(user, "characters", []);
+	for (var i = 0; i < chars.length; i++) {
+		var home = characters ? chars[i].info && chars[i].info.p && chars[i].info.p.home : chars[i].home;
+		var home_server = servers.find((server) => server.region + server.name === home);
+		if (home_server) return home_server;
+	}
 	try {
 		var geoip = require("geoip-lite");
 		var ip = get_ip(req);
 		var geo = geoip.lookup(ip);
 		var latlon = (geo && geo.ll) || [0, 0];
-
-		var u_server = "";
-		var chars = gf(user, "characters", []);
-		if (user && chars && chars.length) {
-			for (var i = 0; i < chars.length; i++) {
-				if (chars[i].home) {
-					u_server = chars[i].home;
-					break;
-				}
-			}
-		}
 
 		var min_dist = 99999999999,
 			the_server = null,
@@ -659,10 +709,6 @@ function select_server(req, user, servers) {
 			if (server.gameplay === "test") {
 				rank = -1000;
 				dist += 29999999999;
-			}
-			if (server.region + server.name === u_server) {
-				dist = -1;
-				rank = 99999999;
 			}
 			if (dist < min_dist || (dist === min_dist && rank > max_rank)) {
 				min_dist = dist;
@@ -918,7 +964,8 @@ function user_to_server(user) {
 }
 
 function is_in_game(character) {
-	return character.server && hsince(character.last_sync) <= 4;
+	// A stale save can still belong to a live character or an unfinished logout.
+	return !!(character && character.server);
 }
 
 function arr_arr_same(ar1, ar2) {
@@ -934,6 +981,57 @@ function arr_arr_same(ar1, ar2) {
 
 // ==================== USER DATA (InfoElement) ====================
 
+async function send_tracktrix_mail(user, name) {
+	var owner_id = user._id || user;
+	var result = await tx(
+		async () => {
+			R.sent = false;
+			var owner = await tx_get(A.owner);
+			if (!owner) ex("user_not_found");
+			if (gf(owner, "tracktrix_mail_sent", false)) return;
+			var mail_id = "ML_tracktrix:" + A.owner;
+			// Keep an existing letter's read/claimed state if the account flag was lost.
+			if (!(await tx_get(mail_id))) {
+				await tx_save({
+					_id: mail_id,
+					type: "mail",
+					created: new Date(),
+					read: false,
+					item: true,
+					taken: false,
+					fro: "Daisy",
+					to: A.name,
+					owner: [A.owner],
+					tracktrix_gift: true,
+					info: {
+						sender: A.owner,
+						receiver: A.owner,
+						subject: localization.phrase("server.tracktrix.mail_subject", {}, "en"),
+						message: localization.phrase("server.tracktrix.mail_body", {}, "en"),
+						item: JSON.stringify({ name: "tracker", gift: 1 }),
+					},
+					blobs: ["info"],
+				});
+				R.sent = true;
+			}
+			owner.info.tracktrix_mail_sent = true;
+			await tx_save(owner);
+		},
+		{ owner: owner_id, name: name },
+		3,
+	);
+	if (result.failed) throw new Error("Tracktrix mail: " + result.reason);
+	if (result.sent) return await update_mail_count(owner_id);
+}
+
+async function update_mail_count(user) {
+	var owner = user._id || user;
+	var unread = await db.collection("mail").find({ owner: owner, "info.receiver": owner, read: false }).project({ _id: 1 }).limit(100).toArray();
+	// Do not replace userdata: another request may be saving CODE or tutorial progress.
+	await db.collection("infoelement").updateOne({ _id: "IE_userdata-" + owner }, { $set: { "info.mail": unread.length }, $setOnInsert: { created: new Date() } }, { upsert: true });
+	return unread.length;
+}
+
 async function get_user_data(user_id) {
 	if (user_id && user_id._id) user_id = user_id._id;
 	var data = await get("IE_userdata-" + user_id);
@@ -947,7 +1045,7 @@ function process_user_data(user_id, data) {
 		data = {
 			_id: "IE_userdata-" + user_id,
 			created: new Date(),
-			info: { completed_tasks: [], tutorial_step: 0, tutorial_version: 2 },
+			info: { completed_tasks: [], tutorial_step: 0, tutorial_key: docs.tutorial[0].key, tutorial_version: 4 },
 		};
 	}
 	if (!data.info.completed_tasks) data.info.completed_tasks = [];
@@ -958,7 +1056,13 @@ function process_user_data(user_id, data) {
 }
 
 function migrate_tutorial_data(user_data) {
-	if (user_data.info.tutorial_version) return;
+	if (user_data.info.tutorial_version >= 4) return;
+	if (user_data.info.tutorial_version >= 3) {
+		// A new mailbox lesson must not reopen completed onboarding.
+		if (user_data.info.completed_tasks.indexOf("read_theend") !== -1 && user_data.info.completed_tasks.indexOf("mail") === -1) user_data.info.completed_tasks.push("mail");
+		user_data.info.tutorial_version = 4;
+		return;
+	}
 	var legacy_step = Math.max(0, Math.min(parseInt(user_data.info.tutorial_step) || 0, 8));
 	var step_map = [0, 1, 2, 5, 6, 7, 11, 14, 15];
 	function complete_new_tasks(tasks) {
@@ -966,49 +1070,130 @@ function migrate_tutorial_data(user_data) {
 			if (user_data.info.completed_tasks.indexOf(tasks[i]) === -1) user_data.info.completed_tasks.push(tasks[i]);
 		}
 	}
-	if (legacy_step >= 3) complete_new_tasks(["equip", "usepotion", "useskill", "visitshop", "buyitem"]);
-	if (legacy_step >= 6) complete_new_tasks(["visitnpc", "recipes", "craftsman", "exchanger"]);
-	if (legacy_step >= 7) complete_new_tasks(["characters", "events"]);
-	user_data.info.tutorial_step = step_map[legacy_step];
-	user_data.info.tutorial_version = 2;
+	if (!user_data.info.tutorial_version) {
+		if (legacy_step >= 3) complete_new_tasks(["equip", "usepotion", "useskill", "visitshop", "buyitem"]);
+		if (legacy_step >= 6) complete_new_tasks(["visitnpc", "recipes", "craftsman", "exchanger"]);
+		if (legacy_step >= 7) complete_new_tasks(["characters", "events"]);
+		user_data.info.tutorial_step = step_map[legacy_step];
+	}
+	// Frozen version-2 order: new lessons must never receive credit from an old numeric position.
+	var previous_keys = [
+		"helloworld",
+		"learntofight",
+		"interface",
+		"skills-recovery",
+		"shops",
+		"upgrade",
+		"compound",
+		"bank",
+		"move",
+		"crafting-exchanges",
+		"parties-friends",
+		"hellocode",
+		"multiple-characters",
+		"events-status",
+		"theend",
+	];
+	var previous_step = Math.max(0, Math.min(parseInt(user_data.info.tutorial_step) || 0, previous_keys.length));
+	for (var i = 0; i < previous_step; i++) {
+		if (["helloworld", "hellocode", "theend"].indexOf(previous_keys[i]) !== -1) complete_new_tasks(["read_" + previous_keys[i]]);
+	}
+	user_data.info.tutorial_key = previous_keys[previous_step] || null;
+	user_data.info.tutorial_version = 3;
+	migrate_tutorial_data(user_data);
 }
 
-function calculate_tutorial_step(user_data) {
+function tutorial_lesson_complete(user_data, lesson, continuing) {
+	return lesson.tasks.every(function (task) {
+		return (continuing && (task === lesson.continue_task || (lesson.optional_tasks || []).indexOf(task) !== -1)) || user_data.info.completed_tasks.indexOf(task) !== -1;
+	});
+}
+
+function get_tutorial_track(user_data, track) {
+	if (track !== "merchant") return user_data;
+	if (!user_data.info.merchant_tutorial) user_data.info.merchant_tutorial = { completed_tasks: [], tutorial_step: 0, tutorial_key: docs.merchant_tutorial[0].key };
+	return { info: user_data.info.merchant_tutorial };
+}
+
+function calculate_tutorial_step(user_data, lessons) {
+	lessons = lessons || docs.tutorial;
 	user_data.info.tutorial_step = parseInt(user_data.info.tutorial_step) || 0;
-	user_data.info.tutorial_step = Math.max(0, Math.min(user_data.info.tutorial_step, docs.tutorial.length));
-	var marked = {};
-	for (var i = 0; i < user_data.info.completed_tasks.length; i++) {
-		marked[user_data.info.completed_tasks[i]] = true;
+	user_data.info.tutorial_step = Math.max(0, Math.min(user_data.info.tutorial_step, lessons.length));
+	if (user_data.info.tutorial_key !== undefined) {
+		var position = lessons.findIndex(function (lesson) {
+			return lesson.key === user_data.info.tutorial_key;
+		});
+		user_data.info.tutorial_step = position === -1 ? lessons.length : position;
 	}
-	for (var i = 0; i < docs.tutorial.length; i++) {
-		var done = true;
-		for (var j = 0; j < docs.tutorial[i].tasks.length; j++) {
-			if (!marked[docs.tutorial[i].tasks[j]]) done = false;
-		}
-		if (!done && user_data.info.tutorial_step > i) {
+	for (var i = 0; i < user_data.info.tutorial_step; i++) {
+		if (!tutorial_lesson_complete(user_data, lessons[i])) {
 			user_data.info.tutorial_step = i;
 			break;
 		}
 	}
+	user_data.info.tutorial_key = lessons[user_data.info.tutorial_step] ? lessons[user_data.info.tutorial_step].key : null;
 }
 
-function data_to_tutorial(user_data) {
+function tutorial_onboarding_complete(user_data) {
+	var end = docs.tutorial.findIndex(function (lesson) {
+		return lesson.key === "theend";
+	});
+	return (
+		end !== -1 &&
+		docs.tutorial.slice(0, end + 1).every(function (lesson) {
+			return tutorial_lesson_complete(user_data, lesson);
+		})
+	);
+}
+
+function data_to_tutorial(user_data, track) {
 	try {
 		if (user_data) {
-			if (user_data.info.tutorial_step >= docs.tutorial.length)
-				return { step: docs.tutorial.length, completed: [], pending: [], finished: true, task: false, progress: 100 };
+			var onboarding_finished = track !== "merchant" && tutorial_onboarding_complete(user_data);
+			var lessons = track === "merchant" ? docs.merchant_tutorial : docs.tutorial;
+			user_data = get_tutorial_track(user_data, track);
+			if (track === "merchant") calculate_tutorial_step(user_data, lessons);
+			var completed_lessons = lessons
+				.filter(function (lesson) {
+					return tutorial_lesson_complete(user_data, lesson);
+				})
+				.map(function (lesson) {
+					return lesson.key;
+				});
+			if (user_data.info.tutorial_step >= lessons.length)
+				return {
+					step: lessons.length,
+					completed: [],
+					completed_tasks: user_data.info.completed_tasks.slice(),
+					pending: [],
+					completed_lessons: completed_lessons,
+					onboarding_finished: onboarding_finished,
+					finished: true,
+					task: false,
+					progress: 100,
+				};
 			var arr = [],
 				pending = [],
 				task = false,
 				percent = 100;
-			var tasks = docs.tutorial[user_data.info.tutorial_step].tasks;
+			var tasks = lessons[user_data.info.tutorial_step].tasks;
 			for (var i = 0; i < tasks.length; i++) {
 				if (user_data.info.completed_tasks.indexOf(tasks[i]) !== -1) arr.push(tasks[i]);
 				else pending.push(tasks[i]);
 			}
 			task = pending[0] || false; // Kept for older clients; new clients can complete pending tasks in any order.
 			if (task) percent = Math.round((100 * arr.length) / tasks.length);
-			return { step: user_data.info.tutorial_step, task: task, completed: arr, pending: pending, progress: percent };
+			return {
+				step: user_data.info.tutorial_step,
+				task: task,
+				completed: arr,
+				completed_tasks: user_data.info.completed_tasks.slice(),
+				pending: pending,
+				progress: percent,
+				onboarding_finished: onboarding_finished,
+				can_continue: tutorial_lesson_complete(user_data, lessons[user_data.info.tutorial_step], true),
+				completed_lessons: completed_lessons,
+			};
 		}
 	} catch (e) {
 		console.error("data_to_tutorial error", e);
@@ -1149,8 +1334,8 @@ async function reward_referrer_logic(user) {
 			type: "system",
 			owner: [get_id(referrer)],
 			info: {
-				subject: "A Friend Token!",
-				message: "For inviting " + referred_name + " to Adventure Land!",
+				subject: phrase("server.mail.friend_token_subject", {}, localization.normalize(referrer.language) || "en"),
+				message: phrase("server.mail.friend_token_message", { name: referred_name }, localization.normalize(referrer.language) || "en"),
 				sender: "!",
 				receiver: get_id(referrer),
 				item: JSON.stringify({ name: "friendtoken", q: 1 }),
@@ -1159,14 +1344,7 @@ async function reward_referrer_logic(user) {
 		});
 		// Update referrer's unread mail count
 		try {
-			var ud = await get_user_data(referrer);
-			var unread = await db
-				.collection("mail")
-				.find({ owner: get_id(referrer), read: false })
-				.limit(100)
-				.toArray();
-			ud.info.mail = unread.length;
-			await safe_save(ud);
+			await update_mail_count(referrer);
 		} catch (e) {
 			console.error("reward_referrer mail ud error", e);
 		}
@@ -1229,15 +1407,18 @@ async function add_event(element, type, tags, args) {
 // ==================== SERVER COMMUNICATION ====================
 
 function server_url(server, api_method) {
+	var definition = options.servers[server.key];
+	if (!definition || definition.inactive) throw new Error("Server unavailable: " + server.key);
 	var protocol = options.base_url.startsWith("https") ? "https" : "http";
-	return protocol + "://" + server.address + options.servers[server.key].api_path + api_method;
+	return protocol + "://" + server.address + definition.api_path + api_method;
 }
 
-async function server_eval(server, code, data) {
+async function server_eval(server, code, data, timeout) {
 	if (!data) data = {};
 	try {
 		//console.log(server_url(server, "eval"));
 		var response = await fetch(server_url(server, "eval"), {
+			signal: timeout ? AbortSignal.timeout(timeout) : undefined,
 			method: "POST",
 			headers: { "Content-Type": "application/x-www-form-urlencoded" },
 			body: new URLSearchParams({
@@ -1267,7 +1448,7 @@ async function server_eval_safe(server, code, data) {
 async function servers_eval(code, data) {
 	var servers = await get_servers();
 	for (var i = 0; i < servers.length; i++) {
-		if (options.servers[servers[i].key]) await server_eval_safe(servers[i], code, data);
+		await server_eval_safe(servers[i], code, data);
 	}
 }
 
@@ -1373,13 +1554,16 @@ async function block_account(name, days, reason, toggle) {
 
 function shtml(path, vars) {
 	if (path.includes("..")) throw new Error("shtml: invalid path");
-	return nunjucks.render(path, vars || {});
+	vars = Object.assign({}, vars);
+	if (!vars.domain) vars.domain = { language: localization.current_language() };
+	return nunjucks.render(path, vars);
 }
 
 async function render_selection(req, res, user, domain, level, server) {
 	domain.canonical_url = SEO_ORIGIN + "/";
-	var servers = await get_servers();
-	if (!server) server = select_server(req, user, servers);
+	var servers = await get_browser_servers(req);
+	domain.server_explicit = !!(server || domain.url_address);
+	if (!server && domain.url_address) server = servers.find((s) => s.address === domain.url_address && s.path === domain.url_path);
 	var total = 0,
 		characters = [],
 		data = null;
@@ -1390,6 +1574,7 @@ async function render_selection(req, res, user, domain, level, server) {
 		data = await get_user_data(user);
 	}
 	domain.servers = servers_to_client(domain, servers);
+	if (!server) server = select_server(req, user, servers, characters);
 	res.status(200).send(
 		nunjucks.render("htmls/index.html", {
 			domain: domain,
@@ -1404,9 +1589,11 @@ async function render_selection(req, res, user, domain, level, server) {
 }
 
 async function selection_info(req, user, domain) {
-	var servers = await get_servers();
-	var server = select_server(req, user, servers);
+	var servers = await get_browser_servers(req);
 	var characters = await get_characters(user);
+	var server = select_server(req, user, servers, characters);
+	domain.characters = characters_to_client(characters);
+	domain.servers = servers_to_client(domain, servers);
 	return {
 		type: "content",
 		html: nunjucks.render("htmls/contents/selection.html", {
@@ -1432,6 +1619,15 @@ function set_cookie(res, name, value, domain_host) {
 
 function delete_cookie(res, name, domain_host) {
 	res.clearCookie(name, { path: "/", domain: "." + domain_host });
+}
+
+async function delete_auth_cookies(req, res) {
+	var domain = await get_domain(req);
+	var host = req.get("host").split(":")[0];
+	delete_cookie(res, options.cookie_key, domain.domain);
+	// Older bot pages also created auth cookies on the current host.
+	res.clearCookie(options.cookie_key, { path: "/" });
+	if (host !== domain.domain) delete_cookie(res, options.cookie_key, host);
 }
 
 // ==================== POST GET INIT ====================
@@ -1609,8 +1805,8 @@ function process_map(map) {
 		max_y = -900;
 	var x_lines = [],
 		y_lines = [];
-	if (data.x_lines) data.x_lines.sort();
-	if (data.y_lines) data.y_lines.sort();
+	if (data.x_lines) data.x_lines.sort((a, b) => a[0] - b[0]);
+	if (data.y_lines) data.y_lines.sort((a, b) => a[0] - b[0]);
 	if (data.default !== undefined) marked[data.default] = true;
 	(data.animations || []).forEach(function (a) {
 		marked[a[0]] = true;

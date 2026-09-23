@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe đã đưa nhân vật này vào hàng chờ.",
+	"mainframe.event.included_worker_queued": "Mainframe đã đưa nhân vật đi kèm này vào hàng chờ.",
+	"mainframe.event.shared_with": "Dùng chung với {character}",
+	"mainframe.event.shared_with_root": "Dùng chung với nhân vật gốc",
+	"mainframe.event.explicit_disconnect": "Chủ tài khoản đã ngắt kết nối.",
+	"mainframe.event.renewed_free": "Đã dùng 1 giờ Mainframe miễn phí cho {minutes} phút.",
+	"mainframe.event.renewed_shell": "Đã tính 1 vỏ sò cho {minutes} phút.",
+	"mainframe.event.renewal_one": "{count} nhân vật đang hoạt động · Gia hạn tiếp theo: {date}",
+	"mainframe.event.renewal_many": "{count} nhân vật đang hoạt động · Gia hạn tiếp theo: {date}",
+	"mainframe.event.renewal_failed": "Mainframe đã dừng nhân vật này vì hết thời gian.",
+	"mainframe.event.worker_failure": "Mainframe phát hiện lỗi ở môi trường chạy CODE và sẽ thử chạy lại.",
+	"mainframe.event.server_change": "Mainframe đang kết nối lại nhân vật này trên máy chủ khác.",
+	"mainframe.level.info": "THÔNG TIN",
+	"mainframe.level.warn": "CẢNH BÁO",
+	"mainframe.level.error": "LỖI"
+}

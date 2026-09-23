@@ -109,102 +109,107 @@
 </style>
 
 <div class="api-guide">
-<p><span class="dlabel">Adventure Land JSON API</span></p>
+<p>{{ phrase_html("docs.articles.adventure-api.adventure-land-json-api") }}</p>
 
-<p>The JSON API gives your programs structured access to Adventure Land game definitions, public CODE references, owned items, progression context, saved CODE slots, and Mainframe characters. It does not expose unrestricted character socket commands; run those through contained CODE on Mainframe.</p>
+<p>{{ phrase("docs.articles.adventure-api.the-json-api-gives-your-programs-structured-access") }}</p>
 
-<p><span class="dlabel">Create a token</span></p>
+<p>{{ phrase_html("docs.articles.adventure-api.create-a-token") }}</p>
 
 <ol>
-<li>Sign in at <a href="https://adventure.land/">Adventure Land</a>.</li>
-<li>Open <a href="/mainframe">Mainframe</a>.</li>
-<li>Find <strong>Connect an AI</strong>.</li>
-<li>Press <strong>Create token</strong>. Later, press <strong>Reveal token</strong> whenever you need its connection details.</li>
-<li>Creating another token rotates it and invalidates the previous token immediately.</li>
+<li>{{ phrase_html("docs.articles.adventure-api.sign-in-at-adventure-land") }}</li>
+<li>{{ phrase_html("docs.articles.adventure-api.open-mainframe") }}</li>
+<li>{{ phrase_html("docs.articles.adventure-api.find-connect-an-ai") }}</li>
+<li>{{ phrase_html("docs.articles.adventure-api.press-create-token-later-press-reveal-token-whenever") }}</li>
+<li>{{ phrase("docs.articles.adventure-api.creating-another-token-rotates-it-and-invalidates-the") }}</li>
 </ol>
 
-<p>Treat the token like a password: it controls the account's saved CODE and Mainframe characters. Adventure Land encrypts it at rest and returns it only to the signed-in account. The same token works for the JSON API and MCP.</p>
+<p>{{ phrase("docs.articles.adventure-api.treat-the-token-like-a-password-it-controls") }}</p>
 
-<p><span class="dlabel">Call a method</span></p>
+<p>{{ phrase_html("docs.articles.adventure-api.call-a-method") }}</p>
 
-<p>Send JSON with a POST request to <a href="https://adventure.land/mcp_api">https://adventure.land/mcp_api/METHOD</a>. Put the token beside the method arguments:</p>
+<p>{{ phrase_html("docs.articles.adventure-api.send-json-with-a-post-request-to-https") }}</p>
 
 <pre class="api-example">curl https://adventure.land/mcp_api/get_servers \
   -H 'Content-Type: application/json' \
   -d '{"token":"YOUR_TOKEN"}'</pre>
 
-<p>Open <a href="https://adventure.land/mcp_api">GET https://adventure.land/mcp_api</a> for the live method directory, descriptions, and input schemas. Discovery does not require a token.</p>
+<p>{{ phrase_html("docs.articles.adventure-api.open-get-https-adventure-land-mcp-api-for") }}</p>
 
-<p><span class="dlabel">Game and documentation</span></p>
+<p>{{ phrase_html("docs.articles.adventure-api.game-and-documentation") }}</p>
 
 <table style="width:100%; text-align:left; border-spacing:12px 7px">
-<tr><th>Method</th><th>Arguments</th><th>Result</th></tr>
-<tr><td>get_api_info</td><td>None</td><td>Endpoints, versions, methods, and schemas.</td></tr>
-<tr><td>get_servers</td><td>None</td><td>Live realms, population, paths, and status.</td></tr>
-<tr><td>get_game_data</td><td>section?, name?</td><td>Sections, a complete section, or one exact definition.</td></tr>
-<tr><td>search_game_data</td><td>query, section?, limit?</td><td>Ranked matches across keys, descriptions, stats, ingredients, drops, map fields, and other nested definitions, with the fields that matched.</td></tr>
-<tr><td>list_docs</td><td>query?</td><td>Guide article names, titles, sections, and keywords.</td></tr>
-<tr><td>get_doc</td><td>name</td><td>One exact guide article as plain text.</td></tr>
-<tr><td>list_code_methods</td><td>query?, limit?</td><td>The public CODE method directory, or a semantic search across method documentation.</td></tr>
-<tr><td>get_code_method</td><td>name</td><td>One exact CODE contract, examples, failures, and shipped source location.</td></tr>
+<tr><th>{{ phrase("docs.articles.adventure-api.method") }}</th><th>{{ phrase("docs.articles.adventure-api.arguments") }}</th><th>{{ phrase("docs.articles.adventure-api.result") }}</th></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.get-api-info") }}</td><td>{{ phrase("docs.articles.adventure-api.none") }}</td><td>{{ phrase("docs.articles.adventure-api.endpoints-versions-methods-and-schemas") }}</td></tr>
+<tr><td>get_servers</td><td>{{ phrase("docs.articles.adventure-api.none") }}</td><td>{{ phrase("docs.articles.adventure-api.live-realms-population-paths-and-status") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.get-game-data") }}</td><td>{{ phrase("docs.articles.adventure-api.section-name") }}</td><td>{{ phrase("docs.articles.adventure-api.sections-a-complete-section-or-one-exact-definition") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.search-game-data") }}</td><td>{{ phrase("docs.articles.adventure-api.query-match-section-limit") }}</td><td>{{ phrase("docs.articles.adventure-api.ranked-matches-across-keys-descriptions-stats-ingredients-drops") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.list-docs") }}</td><td>{{ phrase("docs.articles.adventure-api.query") }}</td><td>{{ phrase("docs.articles.adventure-api.guide-article-names-titles-sections-and-keywords") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.get-doc") }}</td><td>{{ phrase("docs.articles.adventure-api.name") }}</td><td>{{ phrase("docs.articles.adventure-api.one-exact-guide-article-as-plain-text") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.list-code-methods") }}</td><td>{{ phrase("docs.articles.adventure-api.query-limit") }}</td><td>{{ phrase("docs.articles.adventure-api.the-public-code-method-directory-or-a-semantic") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.get-code-method") }}</td><td>{{ phrase("docs.articles.adventure-api.name") }}</td><td>{{ phrase("docs.articles.adventure-api.one-exact-code-contract-examples-failures-and-shipped") }}</td></tr>
 </table>
 
-<p>Use <span class="dlabel">search_game_data</span> to find a record, then <span class="dlabel">get_game_data</span> with its section and exact name to retrieve the complete definition.</p>
+<p>{{ phrase_html("docs.articles.adventure-api.use-search-game-data-to-find-a-record") }}</p>
+
+<p>{{ phrase_html("docs.articles.adventure-api.search-accepts-up-to-500-characters-and-32") }}</p>
 
 <pre class="api-example">POST /mcp_api/search_game_data
 {"token":"YOUR_TOKEN","query":"fire resistance","limit":10}
 
+POST /mcp_api/search_game_data
+{"token":"YOUR_TOKEN","query":"ikissyou anniversary_visit paladin_aura","match":"any"}
+
 POST /mcp_api/get_game_data
 {"token":"YOUR_TOKEN","section":"items","name":"fireblade"}</pre>
 
-<p><span class="dlabel">Owned items and progression</span></p>
+<p>{{ phrase_html("docs.articles.adventure-api.owned-items-and-progression") }}</p>
 
 <table style="width:100%; text-align:left; border-spacing:12px 7px">
-<tr><th>Method</th><th>Arguments</th><th>Result</th></tr>
-<tr><td>get_bank</td><td>None</td><td>Every owned bank pack and the shared bank gold from the saved account snapshot. A mounted bank is marked stale.</td></tr>
-<tr><td>plan_character_progression</td><td>character, objective?</td><td>The character's current progression context, enduring objectives, game model, evidence sources, and optional Samaritan CODE starting point.</td></tr>
+<tr><th>{{ phrase("docs.articles.adventure-api.method") }}</th><th>{{ phrase("docs.articles.adventure-api.arguments") }}</th><th>{{ phrase("docs.articles.adventure-api.result") }}</th></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.get-bank") }}</td><td>{{ phrase("docs.articles.adventure-api.none") }}</td><td>{{ phrase("docs.articles.adventure-api.every-owned-bank-pack-and-the-shared-bank") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.plan-character-progression") }}</td><td>{{ phrase("docs.articles.adventure-api.character-objective") }}</td><td>{{ phrase("docs.articles.adventure-api.the-character-s-current-progression-context-enduring-objectives") }}</td></tr>
 </table>
 
-<p>The progression focus can be <span class="dlabel">balanced_farming</span>, <span class="dlabel">damage</span>, <span class="dlabel">survival</span>, <span class="dlabel">support</span>, <span class="dlabel">gold</span>, <span class="dlabel">luck</span>, or <span class="dlabel">xp</span>. The response explains how character growth, items, acquisition, economy, and CODE fit together. It does not rank owned items, choose actions, or replace the caller's judgment.</p>
+<p>{{ phrase_html("docs.articles.adventure-api.the-progression-focus-can-be-balanced-farming-damage") }}</p>
 
 <pre class="api-example">POST /mcp_api/plan_character_progression
 {"token":"YOUR_TOKEN","character":"Merlin","objective":"balanced_farming"}</pre>
 
-<p><span class="dlabel">Saved CODE</span></p>
+<p>{{ phrase_html("docs.articles.adventure-api.saved-code") }}</p>
 
 <table style="width:100%; text-align:left; border-spacing:12px 7px">
-<tr><th>Method</th><th>Arguments</th><th>Result</th></tr>
-<tr><td>list_codes</td><td>None</td><td>Slot, name, and version without source.</td></tr>
-<tr><td>get_code</td><td>slot</td><td>One owned CODE slot with source.</td></tr>
-<tr><td>save_code</td><td>slot, code, name?</td><td>Creates or replaces one owned slot.</td></tr>
-<tr><td>delete_code</td><td>slot</td><td>Deletes one owned slot.</td></tr>
+<tr><th>{{ phrase("docs.articles.adventure-api.method") }}</th><th>{{ phrase("docs.articles.adventure-api.arguments") }}</th><th>{{ phrase("docs.articles.adventure-api.result") }}</th></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.list-codes") }}</td><td>{{ phrase("docs.articles.adventure-api.none") }}</td><td>{{ phrase("docs.articles.adventure-api.slot-name-and-version-without-source") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.get-code") }}</td><td>{{ phrase("docs.articles.adventure-api.slot") }}</td><td>{{ phrase("docs.articles.adventure-api.one-owned-code-slot-with-source") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.save-code") }}</td><td>{{ phrase("docs.articles.adventure-api.slot-code-name") }}</td><td>{{ phrase("docs.articles.adventure-api.creates-or-replaces-one-owned-slot") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.delete-code") }}</td><td>{{ phrase("docs.articles.adventure-api.slot") }}</td><td>{{ phrase("docs.articles.adventure-api.deletes-one-owned-slot") }}</td></tr>
 </table>
 
 <p><span class="dlabel">Mainframe</span></p>
 
 <table style="width:100%; text-align:left; border-spacing:12px 7px">
-<tr><th>Method</th><th>Arguments</th><th>Result</th></tr>
-<tr><td>mainframe_get_dashboard</td><td>None</td><td>Characters, access windows, runtime state, CODE slots, and live server choices.</td></tr>
-<tr><td>mainframe_list_characters</td><td>None</td><td>Owned characters, access, assignments, and runtime state.</td></tr>
-<tr><td>mainframe_get_character</td><td>character</td><td>One owned character's saved profile plus live party roster, equipment, inventory summary, shop listings, observations, limits, and performance.</td></tr>
-<tr><td>mainframe_link_character</td><td>character, request_id, code_slot, server?</td><td>Prepays when needed, queues one dedicated durable assignment, and enables automatic renewal. CODE can add up to three included workers with <span class="dlabel">start_character</span>.</td></tr>
-<tr><td>mainframe_disconnect_character</td><td>character</td><td>Explicitly stops the assignment and future renewals without refunding remaining paid time.</td></tr>
-<tr><td>mainframe_get_logs</td><td>character, limit?</td><td>Up to 100 recent CODE log records, retained for 30 days after the worker stops.</td></tr>
-<tr><td>mainframe_get_events</td><td>character, limit?</td><td>Up to 100 starts, renewals, server changes, stops, recovery, and restart records, retained for 30 days.</td></tr>
+<tr><th>{{ phrase("docs.articles.adventure-api.method") }}</th><th>{{ phrase("docs.articles.adventure-api.arguments") }}</th><th>{{ phrase("docs.articles.adventure-api.result") }}</th></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.mainframe-get-dashboard") }}</td><td>{{ phrase("docs.articles.adventure-api.none") }}</td><td>{{ phrase("docs.articles.adventure-api.characters-access-windows-runtime-state-code-slots-and") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.mainframe-list-characters") }}</td><td>{{ phrase("docs.articles.adventure-api.none") }}</td><td>{{ phrase("docs.articles.adventure-api.owned-characters-access-assignments-and-runtime-state") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.mainframe-get-character") }}</td><td>{{ phrase("docs.articles.adventure-api.character") }}</td><td>{{ phrase("docs.articles.adventure-api.one-owned-character-s-saved-profile-plus-live") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.mainframe-link-character") }}</td><td>{{ phrase("docs.articles.adventure-api.character-request-id-code-slot-server") }}</td><td>{{ phrase_html("docs.articles.adventure-api.prepays-when-needed-queues-one-dedicated-durable-assignment") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.mainframe-disconnect-character") }}</td><td>{{ phrase("docs.articles.adventure-api.character") }}</td><td>{{ phrase("docs.articles.adventure-api.explicitly-stops-the-assignment-and-future-renewals-without") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.mainframe-get-logs") }}</td><td>{{ phrase("docs.articles.adventure-api.character-limit") }}</td><td>{{ phrase("docs.articles.adventure-api.up-to-100-recent-code-log-records-retained") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-api.mainframe-get-events") }}</td><td>{{ phrase("docs.articles.adventure-api.character-limit") }}</td><td>{{ phrase("docs.articles.adventure-api.up-to-100-starts-renewals-server-changes-stops") }}</td></tr>
 </table>
 
-<p>Direct links use separate machines and prepaid windows. A running character's CODE can call <span class="dlabel">start_character</span> to add up to three owned characters inside its shared machine. At renewal, one Shell or free Steam hour buys 60, 50, 45, or 40 minutes for 1, 2, 3, or 4 active characters. The count is checked only at renewal. Stopping one included child leaves the others running; disconnecting the root stops all included characters.</p>
+<p>{{ phrase_html("docs.articles.adventure-api.direct-links-use-separate-machines-and-prepaid-windows") }}</p>
 
-<p><span class="dlabel">Results and errors</span></p>
+<p>{{ phrase_html("docs.articles.adventure-api.results-and-errors") }}</p>
 
-<p>Successful results contain <span class="dlabel">success: true</span>. Method failures use a structured result with <span class="dlabel">failed: true</span> and a stable <span class="dlabel">reason</span>. The JSON method endpoint returns the structured result as JSON even for an application-level failure, so check the body rather than relying only on the HTTP status.</p>
+<p>{{ phrase_html("docs.articles.adventure-api.successful-results-contain-success-true-method-failures-use") }}</p>
 
 <pre class="api-example">{
   "failed": true,
   "reason": "not_enough_shells"
 }</pre>
 
-<p>Unknown and missing arguments fail closed. A token can only read or change CODE and characters owned by its account. Keep polling measured; the account API is not a combat loop.</p>
+<p>{{ phrase("docs.articles.adventure-api.unknown-and-missing-arguments-fail-closed-a-token") }}</p>
 
-<p>The live discovery response lists the current request limits. Standard reads, bulk bank and game-data reads, progression context, and writes have separate token buckets. A throttled request uses HTTP 429, returns <span class="dlabel">reason: "rate_limited"</span>, and includes both <span class="dlabel">Retry-After</span> and <span class="dlabel">retry_after_ms</span>.</p>
+<p>{{ phrase_html("docs.articles.adventure-api.the-live-discovery-response-lists-the-current-request") }}</p>
 </div>

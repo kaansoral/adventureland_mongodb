@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframeがこのキャラクターを待機列に追加しました。",
+	"mainframe.event.included_worker_queued": "Mainframeがこの付属ワーカーを待機列に追加しました。",
+	"mainframe.event.shared_with": "{character}と共有",
+	"mainframe.event.shared_with_root": "親キャラクターと共有",
+	"mainframe.event.explicit_disconnect": "アカウント所有者が切断しました。",
+	"mainframe.event.renewed_free": "無料のMainframe利用時間1時間分を使い、{minutes}分延長しました。",
+	"mainframe.event.renewed_shell": "1シェルを使い、{minutes}分延長しました。",
+	"mainframe.event.renewal_one": "{count}体稼働中 · 次回更新 {date}",
+	"mainframe.event.renewal_many": "{count}体稼働中 · 次回更新 {date}",
+	"mainframe.event.renewal_failed": "利用時間がなくなったため、Mainframeがこのキャラクターを停止しました。",
+	"mainframe.event.worker_failure": "Mainframeがワーカーの障害を検出しました。再試行します。",
+	"mainframe.event.server_change": "Mainframeがこのキャラクターを別のサーバーに再接続しています。",
+	"mainframe.level.info": "情報",
+	"mainframe.level.warn": "警告",
+	"mainframe.level.error": "エラー"
+}

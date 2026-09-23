@@ -1,19 +1,19 @@
-<p><span class="dlabel">Server Status</span></p>
+<p>{{ phrase_html("docs.articles.data-server-status.server-status") }}</p>
 
-<p><span class="dlabel">server.status</span> is the live, read-only view of server-wide events, special monsters, schedules, and temporary server effects.</p>
+<p>{{ phrase_html("docs.articles.data-server-status.server-status-is-the-live-read-only-view") }}</p>
 
 <div class="code">show_json(server.status);</div>
 
-<p>The object is updated for the server you are currently connected to. Entries appear and disappear as events start, change, and finish. A missing entry normally means that status is inactive.</p>
+<p>{{ phrase("docs.articles.data-server-status.the-object-is-updated-for-the-server-you") }}</p>
 
-<p><span class="dlabel">Static definitions and live state</span></p>
+<p>{{ phrase_html("docs.articles.data-server-status.static-definitions-and-live-state") }}</p>
 
 <div class="code">G.events.franky       // Static event definition
 server.status.franky  // Franky's current state on this server</div>
 
-<p><span class="dlabel">G.events</span> describes how an event is configured. <span class="dlabel">server.status</span> tells you what is happening now. The server makes the final validation decision.</p>
+<p>{{ phrase_html("docs.articles.data-server-status.g-events-describes-how-an-event-is-configured") }}</p>
 
-<p><span class="dlabel">Reading an event</span></p>
+<p>{{ phrase_html("docs.articles.data-server-status.reading-an-event") }}</p>
 
 <div class="code">var franky = server.status.franky;
 
@@ -21,16 +21,16 @@ if (franky && !get_nearest_monster({ type: "franky" })) {
 	join("franky");
 }</div>
 
-<p>Read <span class="dlabel">server.status</span> again after waiting or completing an asynchronous action. The game can replace the underlying data whenever a server update arrives, while <span class="dlabel">server.status</span> always returns the newest version.</p>
+<p>{{ phrase_html("docs.articles.data-server-status.read-server-status-again-after-waiting-or-completing") }}</p>
 
 <div class="code">var franky = await wait_for(function () {
 	// This reads the newest status on every poll.
 	return server.status.franky;
 }, 60000);</div>
 
-<p><span class="dlabel">Special monster entries</span></p>
+<p>{{ phrase_html("docs.articles.data-server-status.special-monster-entries") }}</p>
 
-<p>Live bosses commonly expose the following fields. Event-specific entries can contain fewer fields or add their own.</p>
+<p>{{ phrase("docs.articles.data-server-status.live-bosses-commonly-expose-the-following-fields-event") }}</p>
 
 <div class="code">{
 	<span data-status-field="live">live</span>: true,
@@ -43,11 +43,11 @@ if (franky && !get_nearest_monster({ type: "franky" })) {
 	<span data-status-field="end">end</span>: new Date()
 }</div>
 
-<p><span class="dlabel">live</span> reports whether the monster is currently present. <span class="dlabel">map</span>, <span class="dlabel">x</span>, and <span class="dlabel">y</span> locate it when the event publishes exact coordinates. <span class="dlabel">hp</span>, <span class="dlabel">max_hp</span>, and <span class="dlabel">target</span> describe its latest broadcast combat state. <span class="dlabel">end</span> is the scheduled event end.</p>
+<p>{{ phrase_html("docs.articles.data-server-status.live-reports-whether-the-monster-is-currently-present") }}</p>
 
-<p>A scheduled special monster can instead publish <span class="dlabel" data-status-field="spawn">spawn</span> with <span class="dlabel">live: false</span>. Some roaming or hidden encounters intentionally omit coordinates.</p>
+<p>{{ phrase_html("docs.articles.data-server-status.a-scheduled-special-monster-can-instead-publish-spawn") }}</p>
 
-<p><span class="dlabel">Event-specific entries</span></p>
+<p>{{ phrase_html("docs.articles.data-server-status.event-specific-entries") }}</p>
 
 <div class="code">server.status.goobrawl.end
 
@@ -55,18 +55,18 @@ server.status.abtesting.<span data-status-field="signup_end">signup_end</span>
 server.status.abtesting.<span data-status-field="A">A</span>
 server.status.abtesting.<span data-status-field="B">B</span></div>
 
-<p>Event objects can expose timers, signup windows, scores, routes, choices, or other event-specific fields. Read the active entry and its event guide instead of assuming every event looks like a boss.</p>
+<p>{{ phrase("docs.articles.data-server-status.event-objects-can-expose-timers-signup-windows-scores") }}</p>
 
-<p><span class="dlabel">Anniversary visits</span></p>
+<p>{{ phrase_html("docs.articles.data-server-status.anniversary-visits") }}</p>
 <div class="code">show_json(server.status.anniversary);
 // active: the celebration is running
 // live: a player is currently featured
 // round, expires: round ID and deadline (Unix milliseconds)
 // id, target, map, x, y: featured player's ID, name and location
 // next: the next scheduled selection (Unix milliseconds)</div>
-<p>Participation requires a matching, unexpired <span class="dlabel">character.s.anniversary_visit</span>. See <span class="rlabel" onclick="open_guide('event-anniversary',get_guide_url('event-anniversary'))">Ten Years &amp; Mira's Cakes</span> for CODE examples covering visits, crafting, and exchanges.</p>
+<p>{{ phrase_html("docs.articles.data-server-status.participation-requires-a-matching-unexpired-character-s-anniversary") }}</p>
 
-<p><span class="dlabel">Schedule</span></p>
+<p>{{ phrase_html("docs.articles.data-server-status.schedule") }}</p>
 
 <div class="code">server.status.<span data-status-field="schedule">schedule</span> = {
 	<span data-status-field="time_offset">time_offset</span>: 0,
@@ -75,9 +75,9 @@ server.status.abtesting.<span data-status-field="B">B</span></div>
 	<span data-status-field="night">night</span>: false
 };</div>
 
-<p><span class="dlabel">schedule</span> contains server clock information used by daily and nightly systems. Values can differ by server region.</p>
+<p>{{ phrase_html("docs.articles.data-server-status.schedule-contains-server-clock-information-used-by-daily") }}</p>
 
-<p><span class="dlabel">Seasonal and temporary state</span></p>
+<p>{{ phrase_html("docs.articles.data-server-status.seasonal-and-temporary-state") }}</p>
 
 <div class="code">server.status.holidayseason
 server.status.halloween
@@ -88,13 +88,13 @@ server.status.egghunt
 server.status.<span data-status-field="blessed_by">blessed_by</span>
 server.status.<span data-status-field="blessed_minutes">blessed_minutes</span></div>
 
-<p>Seasonal entries are usually truthy while their season is active. Temporary server effects can expose their source and remaining duration.</p>
+<p>{{ phrase("docs.articles.data-server-status.seasonal-entries-are-usually-truthy-while-their-season") }}</p>
 
-<p><span class="dlabel">Compatibility</span></p>
+<p>{{ phrase_html("docs.articles.data-server-status.compatibility") }}</p>
 
-<p><span class="dlabel">parent.S</span> is the existing low-level form and remains supported. Prefer <span class="dlabel">server.status</span>: it has a clearer name and avoids holding an old status object by accident.</p>
+<p>{{ phrase_html("docs.articles.data-server-status.parent-s-is-the-existing-low-level-form") }}</p>
 
 <div class="code">server.status.franky // Preferred
 parent.S.franky       // Compatible legacy access</div>
 
-<p>Do not add, remove, or modify status fields. Client-side changes do not affect the server and can mislead your own CODE until the next update.</p>
+<p>{{ phrase("docs.articles.data-server-status.do-not-add-remove-or-modify-status-fields") }}</p>

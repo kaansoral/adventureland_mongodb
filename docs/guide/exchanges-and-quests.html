@@ -1,37 +1,37 @@
-<div class="guide-kicker">TURN IN YOUR TREASURES</div>
-<div class="guide-title">Exchanges &amp; Quests</div>
-<p>Some loot is meant to be turned in rather than equipped or sold. Its tooltip names an exchange quantity, token shop, quest, or specialist.</p>
+<div class="guide-kicker">{{ phrase("docs.guide.exchanges-and-quests.turn-in-your-treasures") }}</div>
+<div class="guide-title">{{ phrase("docs.guide.exchanges-and-quests.exchanges-quests") }}</div>
+<p>{{ phrase("docs.guide.exchanges-and-quests.some-loot-is-meant-to-be-turned-in") }}</p>
 
 <div class="guide-showcase" style="border-color:#779C55">
 	<div class="guide-showcase-art"><span class="exchange-xyn"></span><span class="exchange-box"></span></div>
-	<div class="guide-showcase-copy"><b>Xyn handles boxes and bundles</b>Place the full required stack in the exchange slot, keep inventory space free, and wait for the timed exchange to finish.</div>
+	<div class="guide-showcase-copy">{{ phrase_html("docs.guide.exchanges-and-quests.xyn-handles-boxes-and-bundles-place-the-full") }}</div>
 </div>
 
 <div class="guide-flow" style="border-color:#779C55" data-guide-visual="exchange-box">
 	<div class="guide-flow-node"><span class="guide-flow-icon exchange-box"></span><span class="guide-flow-label">Armor Box</span></div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon exchange-random">?</span><span class="guide-flow-label">Random Rare Armor</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.exchanges-and-quests.random-rare-armor") }}</div>
 </div>
 
 <div class="guide-flow" style="border-color:#9B7A2E" data-guide-visual="token-shop">
-	<div class="guide-flow-node"><span class="guide-flow-icon exchange-funtoken"></span><span class="guide-flow-label">Fun Tokens</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.exchanges-and-quests.fun-tokens") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon exchange-confetti"></span><span class="guide-flow-label">Confetti</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.exchanges-and-quests.confetti") }}</div>
 </div>
 
 <div class="divider"></div>
-<div class="title mt15">Read the Tooltip First</div>
+<div class="title mt15">{{ phrase("docs.guide.exchanges-and-quests.read-the-tooltip-first") }}</div>
 <div class="guide-card-grid">
-	<div class="guide-card"><b>Exchange item</b>The tooltip shows the required stack. The result may be fixed or drawn from a reward pool.</div>
-	<div class="guide-card"><b>Token shop</b>The NPC shows each named reward and exact token cost. You choose the result before paying.</div>
-	<div class="guide-card"><b>Quest material</b>A named collector may require several kinds of material or a particular item level.</div>
-	<div class="guide-card"><b>Seasonal turn-in</b>The NPC may exist only while its event is active. Keep the item if its collector is away.</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.exchanges-and-quests.exchange-item-the-tooltip-shows-the-required-stack") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.exchanges-and-quests.token-shop-the-npc-shows-each-named-reward") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.exchanges-and-quests.quest-material-a-named-collector-may-require-several") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.exchanges-and-quests.seasonal-turn-in-the-npc-may-exist-only") }}</div>
 </div>
-<p>Recipes, exchanges, and quests are different systems even when they use similar materials. A recipe appears in <span class="dlabel">G.craft</span>; an exchange item carries its exchange requirement; a quest follows its NPC's own panel.</p>
-<div class="guide-note">The exchange begins only with a complete eligible stack and enough free inventory space. Do not move the item or start another exchange while its progress bar is running.</div>
+<p>{{ phrase_html("docs.guide.exchanges-and-quests.recipes-exchanges-and-quests-are-different-systems-even") }}</p>
+<div class="guide-note">{{ phrase("docs.guide.exchanges-and-quests.the-exchange-begins-only-with-a-complete-eligible") }}</div>
 
 <div class="divider"></div>
-<div class="title mt15">CODE: Exchange an Item</div>
+<div class="title mt15">{{ phrase("docs.guide.exchanges-and-quests.code-exchange-an-item") }}</div>
 <div class="code">async function exchange_armor_box() {
 	var slot = locate_item("armorbox");
 	if (slot === -1) return game_log("No Armor Box found");
@@ -48,7 +48,7 @@
 
 exchange_armor_box().catch(show_json);</div>
 
-<div class="title mt15">CODE: Buy with Tokens</div>
+<div class="title mt15">{{ phrase("docs.guide.exchanges-and-quests.code-buy-with-tokens") }}</div>
 <div class="code">async function buy_confetti() {
 	var price = G.tokens.funtoken.confetti;
 	game_log("Confetti token price: " + price);
@@ -57,9 +57,9 @@ exchange_armor_box().catch(show_json);</div>
 }
 
 buy_confetti().catch(show_json);</div>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">exchange</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">exchange_buy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">quantity</span>.</p>
+<p>{{ phrase_html("docs.guide.exchanges-and-quests.references-exchange-exchange-buy-locate-item-quantity") }}</p>
 
-<div class="guide-related">See also: <span onclick="hide_modal(); open_guide('crafting',get_guide_url('crafting'))">Crafting and Dismantling</span> · <span onclick="hide_modal(); open_guide('monster-hunts',get_guide_url('monster-hunts'))">Monster Hunts</span></div>
+<div class="guide-related">{{ phrase_html("docs.guide.exchanges-and-quests.see-also-crafting-and-dismantling-monster-hunts") }}</div>
 
 <script>
 	$(".exchange-xyn").html(sprite(G.npcs.exchange.skin, { height: 62 }));
@@ -72,4 +72,4 @@ buy_confetti().catch(show_json);</div>
 	.guide-kicker{color:#94752C;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#4D7040;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#4D7040;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #94752C;background:#F0E9D0;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#537541;cursor:pointer;text-decoration:underline}.exchange-random{font-size:42px;color:#9FCB7B}
 </style>
 
-<p><b>Merrit’s visits:</b> Keep an open, stocked stand in the same place for two minutes. Your account can receive one parcel per hour. No parcels within 40px of a stationary NPC or within 10px of another open stand. A stand directly in front of another, up to 15px south and 10px sideways, also receives no parcel. <span class="rlabel" onclick="render_merrit_info()">Merrit: full rules and exchange chances</span>.</p>
+<p>{{ phrase_html("docs.guide.exchanges-and-quests.merrit-s-visits-keep-an-open-stocked-stand") }}</p>

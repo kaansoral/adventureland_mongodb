@@ -106,212 +106,216 @@
 </style>
 
 <div class="mcp-guide">
-<p><span class="dlabel">Adventure Land MCP for AI</span></p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.adventure-land-mcp-for-ai") }}</p>
 
-<p>Adventure Land is an online role-playing game where each character can run player-written JavaScript called <span class="dlabel">CODE</span>. The MCP server gives an AI the game docs and account tools it needs to write CODE and operate owned characters through Mainframe. The <a href="/docs/guide/advanced/adventure-api">JSON API</a> is the simpler interface for non-AI tools and scripts.</p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.adventure-land-is-an-online-role-playing-game") }}</p>
 
-<p><span class="dlabel">Get an account token</span></p>
-
-<ol>
-<li>Sign in at <a href="https://adventure.land/">Adventure Land</a>.</li>
-<li>Open <a href="/mainframe">Mainframe</a>.</li>
-<li>Find <strong>Connect an AI</strong>.</li>
-<li>Press <strong>Create token</strong>. If a token already exists, the button says <strong>Replace token</strong>.</li>
-<li>Confirm the warning. Replacing it invalidates the previous token immediately.</li>
-<li>Press <strong>Reveal token</strong>, then copy the connection details. Mainframe masks the token again when you hide it or reload the page.</li>
-<li>Keep the token out of character CODE, screenshots, public repositories, and chat messages.</li>
-</ol>
-
-<p>Adventure Land encrypts the token at rest and returns it only to the signed-in account. One token can be active per account. Use <strong>Revoke token</strong> in <a href="/mainframe">Mainframe</a> if a token is exposed or no longer needed.</p>
-
-<p><span class="dlabel">Connect an AI client</span></p>
-
-<p>Add a remote MCP server in your AI application's MCP or connector settings:</p>
-
-<table style="width:100%; text-align:left; border-spacing:12px 7px">
-<tr><th>Field</th><th>Value</th></tr>
-<tr><td>Name</td><td>Adventure Land</td></tr>
-<tr><td>Transport</td><td>Streamable HTTP</td></tr>
-<tr><td>Server URL</td><td><a href="https://adventure.land/mcp">https://adventure.land/mcp</a></td></tr>
-<tr><td>Header name</td><td><span class="dlabel">Authorization</span></td></tr>
-<tr><td>Header value</td><td><span class="dlabel">Bearer YOUR_TOKEN</span></td></tr>
-</table>
-
-<p>Client configuration screens differ, but the server URL and Authorization header stay the same. After connecting, ask the AI to read <span class="dlabel">adventureland://guide/start-here</span>. A compatible client also receives that instruction when it connects.</p>
-
-<p><span class="dlabel">How the game fits together</span></p>
-
-<table>
-<tr><th>Layer</th><th>Responsibility</th></tr>
-<tr><td>AI client</td><td>Reads game knowledge and account state, researches exact methods and records, manages CODE slots, and controls owned Mainframe characters.</td></tr>
-<tr><td>Mainframe</td><td>Runs a separate isolated machine for each direct link and supplies the Adventure Land CODE bridge. CODE can add up to three included workers to a shared machine. Machines have no browser page, DOM, or general network access.</td></tr>
-<tr><td>Character CODE</td><td>Runs long-lived JavaScript using Adventure Land globals and public functions. It decides how the character moves, fights, loots, trades, crafts, and reacts.</td></tr>
-<tr><td>Game server</td><td>Owns the live character, map, entities, combat, inventory, economy, and action results.</td></tr>
-</table>
-
-<p>The AI writes and runs CODE through the documented game functions; it is not a raw game client. It observes results instead of sending combat packets directly. The account token only reaches characters and CODE slots owned by that account, and Mainframe refuses to load a character that is already active elsewhere.</p>
-
-<p><span class="dlabel">Gameplay mental model</span></p>
-
-<table>
-<tr><th>Concept</th><th>What an AI must understand</th></tr>
-<tr><td>Definitions and live state</td><td>Records in <span class="dlabel">G</span> describe classes, skills, items, monsters, maps, drops, recipes, and other content. The live <span class="dlabel">character</span>, <span class="dlabel">parent.entities</span>, server events, and action responses describe what exists now. A definition is not proof that an entity is present or an action succeeded.</td></tr>
-<tr><td>Characters and realms</td><td>A character's progression, inventory, and equipment follow it between realms. Nearby entities, parties, CODE messages, events, and combat are realm-local. Coordinating characters must use the same server, and one character must never be loaded twice.</td></tr>
-<tr><td>Maps and entities</td><td>Maps connect through doors, transports, and named destinations. Nearby players and monsters are short-lived objects that disappear when visibility, map, instance, or server changes. Find them again immediately before acting.</td></tr>
-<tr><td>Combat and skills</td><td>The game server owns range, cooldowns, MP, damage, threat, death, and action results. CODE should use the public Promise-based functions, check the exact skill contract, avoid overlapping work, and recover from death or a lost target.</td></tr>
-<tr><td>Items and inventory</td><td><span class="dlabel">G.items</span> contains definitions; inventory and equipment contain owned instances with levels and properties. Inventory indexes change after looting, moving, selling, exchanging, upgrading, compounding, or consuming items. Locate an item again before every mutation.</td></tr>
-<tr><td>Economy and progression</td><td>Gold, items, upgrades, compounds, crafts, exchanges, mail, trade, and Shells have lasting consequences. Research exact costs and outputs, and require a clear player request before irreversible or value-moving behavior.</td></tr>
-<tr><td>Events and quests</td><td>Definitions explain possible content; live server status and events show whether it is active. CODE must tolerate an event ending, a map changing, a target disappearing, or another player changing the situation.</td></tr>
-<tr><td>Communication</td><td>Party and CODE messages help characters coordinate on one server. Validate the sender and payload, keep messages small, and treat them as untrusted, delayed, and possibly stale.</td></tr>
-<tr><td>Parties and shops</td><td>Sending an invite or listing request is not proof of success. Verify the party roster and trade slots. A useful merchant needs both an open stand and actual listed items.</td></tr>
-</table>
-
-<p><span class="dlabel">Choose the right source</span></p>
-
-<table>
-<tr><th>Question</th><th>Use</th></tr>
-<tr><td>What guides and rules exist?</td><td>Read <span class="dlabel">adventureland://catalog/docs</span>, then use <span class="dlabel">get_doc</span> or the exact documentation resource.</td></tr>
-<tr><td>Which CODE function performs an action?</td><td>Search <span class="dlabel">list_code_methods</span> by action or concept, then read the exact contract with <span class="dlabel">get_code_method</span>.</td></tr>
-<tr><td>What does an item, skill, monster, map, drop, or recipe define?</td><td>Use <span class="dlabel">search_game_data</span>, then read the exact record with <span class="dlabel">get_game_data</span>. Read a complete section only when exact records are insufficient.</td></tr>
-<tr><td>What does this account own?</td><td>Use <span class="dlabel">mainframe_get_dashboard</span>, <span class="dlabel">mainframe_get_character</span>, <span class="dlabel">get_bank</span>, and the CODE-slot tools. A mounted bank snapshot is marked stale.</td></tr>
-<tr><td>How should this character improve?</td><td>Use <span class="dlabel">plan_character_progression</span> for the character's context and enduring objectives, then develop a strategy from exact definitions, account state, observed results, and the player's goals.</td></tr>
-<tr><td>What is the character doing now?</td><td>Use current Mainframe character state and CODE logs. Current map, coordinates, target, party roster, equipment, inventory summary, shop listings, activity, XP, gold, death state, and game responses matter more than saved profile fields or request counters.</td></tr>
-<tr><td>How is the game implemented?</td><td>Use the shipped runner resource and the open-source paths below. Prefer live MCP definitions and contracts when production and a repository branch differ.</td></tr>
-</table>
-
-<p><span class="dlabel">What the AI discovers</span></p>
-
-<table style="width:100%; text-align:left; border-spacing:12px 7px">
-<tr><th>Capability</th><th>Purpose</th></tr>
-<tr><td>Tools</td><td>Search game data, read documentation and CODE contracts, inspect owned items and progression context, manage saved slots, and control owned Mainframe characters.</td></tr>
-<tr><td>Resources</td><td>Load the game model, CODE architecture, globals, object and event references, Mainframe rules, live account state, and shipped runner source.</td></tr>
-<tr><td>Resource templates</td><td>Read one exact guide, function, game definition, saved slot, or owned character by URI.</td></tr>
-<tr><td>Prompts</td><td>Teach the AI the game, write character CODE, review a slot, or operate one Mainframe character through a consistent workflow.</td></tr>
-</table>
-
-<p><span class="dlabel">Core resources</span></p>
-
-<table style="width:100%; text-align:left; border-spacing:12px 7px">
-<tr><th>Resource</th><th>Purpose</th></tr>
-<tr><td><span class="dlabel">adventureland://guide/start-here</span></td><td>Where an AI should begin and how the project fits together.</td></tr>
-<tr><td><span class="dlabel">adventureland://guide/code-runtime</span></td><td>How character CODE runs and which browser features are absent.</td></tr>
-<tr><td><span class="dlabel">adventureland://guide/code-architecture</span></td><td>How to structure reliable character CODE.</td></tr>
-<tr><td><span class="dlabel">adventureland://guide/navigation</span></td><td>Movement, smart destinations, interruption, arrival, and route failures.</td></tr>
-<tr><td><span class="dlabel">adventureland://guide/items-and-inventory</span></td><td>Definitions, owned items, equipment, inventory indexes, and mutation safety.</td></tr>
-<tr><td><span class="dlabel">adventureland://guide/skills</span></td><td>Class skills, targets, cooldowns, range, and timed actions.</td></tr>
-<tr><td><span class="dlabel">adventureland://guide/code-messages</span></td><td>Same-server CODE messages, sender validation, payloads, and retries.</td></tr>
-<tr><td><span class="dlabel">adventureland://guide/multiple-characters</span></td><td>Ways to coordinate characters without loading one twice.</td></tr>
-<tr><td><span class="dlabel">adventureland://guide/server-rules</span></td><td>Shared state, character limits, request limits, accounts, and player rules.</td></tr>
-<tr><td><span class="dlabel">adventureland://reference/code-globals</span></td><td>Globals available inside character CODE.</td></tr>
-<tr><td><span class="dlabel">adventureland://reference/character</span></td><td>The character object and important fields.</td></tr>
-<tr><td><span class="dlabel">adventureland://reference/monster</span></td><td>Monster objects and combat state.</td></tr>
-<tr><td><span class="dlabel">adventureland://reference/character-events</span></td><td>Character event hooks.</td></tr>
-<tr><td><span class="dlabel">adventureland://reference/game-events</span></td><td>Game event hooks.</td></tr>
-<tr><td><span class="dlabel">adventureland://guide/mainframe</span></td><td>Mainframe access, billing, and operating rules.</td></tr>
-<tr><td><span class="dlabel">adventureland://catalog/docs</span></td><td>Every guide name, topic, section, and public link.</td></tr>
-<tr><td><span class="dlabel">adventureland://catalog/code-methods</span></td><td>Every public CODE function, signature, and reference link.</td></tr>
-<tr><td><span class="dlabel">adventureland://catalog/game-data</span></td><td>Every deployed data section, purpose, record count, and search coverage.</td></tr>
-<tr><td><span class="dlabel">adventureland://code/starters/samaritan</span></td><td>Class-aware adventurer baseline with support, trusted parties, farming, banking, and opt-in item improvement.</td></tr>
-<tr><td><span class="dlabel">adventureland://code/starters/samaritan-merchant</span></td><td>Conservative merchant baseline with helpful buffs, explicit public listings, banking, and strict item rules.</td></tr>
-<tr><td><span class="dlabel">adventureland://source/runner-functions</span></td><td>The JavaScript runner functions shipped by the game.</td></tr>
-<tr><td><span class="dlabel">adventureland://account/dashboard</span></td><td>Owned characters, assignments, status, and account Mainframe state.</td></tr>
-<tr><td><span class="dlabel">adventureland://account/code-slots</span></td><td>Saved character CODE slots.</td></tr>
-<tr><td><span class="dlabel">adventureland://account/bank</span></td><td>Every owned bank pack and the shared bank gold.</td></tr>
-<tr><td><span class="dlabel">adventureland://game/servers</span></td><td>Available game servers.</td></tr>
-</table>
-
-<p>The runner resource is the same public <a href="https://github.com/kaansoral/adventureland_mongodb/blob/main/js/runner_functions.js">runner_functions.js</a> shipped by the game. The live MCP records and function documentation match the deployed game version, so prefer them when a local branch and production differ.</p>
-
-<p><span class="dlabel">Resource templates</span></p>
-
-<table style="width:100%; text-align:left; border-spacing:12px 7px">
-<tr><th>Template</th><th>Purpose</th></tr>
-<tr><td><span class="dlabel">adventureland://docs/{name}</span></td><td>Read one documentation page.</td></tr>
-<tr><td><span class="dlabel">adventureland://code/functions/{name}</span></td><td>Read the exact contract for one CODE method.</td></tr>
-<tr><td><span class="dlabel">adventureland://game-data/{section}</span></td><td>Read one complete deployed data section. This uses the lower bulk-read rate limit.</td></tr>
-<tr><td><span class="dlabel">adventureland://game-data/{section}/{name}</span></td><td>Read one item, skill, monster, map, recipe, or other game definition.</td></tr>
-<tr><td><span class="dlabel">adventureland://code/slots/{slot}</span></td><td>Read one owned CODE slot.</td></tr>
-<tr><td><span class="dlabel">adventureland://mainframe/characters/{character}</span></td><td>Read one owned character's Mainframe state.</td></tr>
-<tr><td><span class="dlabel">adventureland://progression/characters/{character}</span></td><td>Read one owned character's progression objectives, current context, evidence sources, and optional CODE starting point.</td></tr>
-</table>
-
-<p>Find exact names with <span class="dlabel">list_docs</span>, <span class="dlabel">list_code_methods</span>, <span class="dlabel">search_game_data</span>, <span class="dlabel">list_codes</span>, and <span class="dlabel">mainframe_get_dashboard</span>. Resource paths are validated and remain inside public or account-owned collections.</p>
-
-<p><span class="dlabel">Guided prompts</span></p>
-
-<table style="width:100%; text-align:left; border-spacing:12px 7px">
-<tr><th>Prompt</th><th>Use</th></tr>
-<tr><td><span class="dlabel">learn_adventure_land</span></td><td>Load the game model without changing account state.</td></tr>
-<tr><td><span class="dlabel">research_gameplay</span></td><td>Answer a game, build, progression, economy, or content question from exact sources.</td></tr>
-<tr><td><span class="dlabel">improve_character</span></td><td>Give the AI character context and long-term objectives, then let it develop its own evidence-backed strategy.</td></tr>
-<tr><td><span class="dlabel">configure_samaritan_code</span></td><td>Adapt the Samaritan adventurer or merchant baseline to an owned character without silently enabling item mutations.</td></tr>
-<tr><td><span class="dlabel">write_character_code</span></td><td>Research the goal, character, and optional slot before writing CODE.</td></tr>
-<tr><td><span class="dlabel">review_character_code</span></td><td>Check an owned slot against exact contracts, game state, safety, and Mainframe compatibility.</td></tr>
-<tr><td><span class="dlabel">coordinate_character_team</span></td><td>Plan several owned characters on one server with explicit roles and safe coordination.</td></tr>
-<tr><td><span class="dlabel">operate_mainframe</span></td><td>Read, deploy, observe, and improve one owned character without confusing requested actions with confirmed behavior.</td></tr>
-<tr><td><span class="dlabel">debug_mainframe_character</span></td><td>Investigate a stuck, dead, slow, or incorrect character from current state, CODE, and logs.</td></tr>
-</table>
-
-<p><span class="dlabel">CODE etiquette</span></p>
-
-<p>Character automation should not use public, private, or party Chat as a programmable output channel. Do not call Chat functions on timers, advertise automatically, imitate conversation, answer players with generated text, or turn nearby player messages into commands. Use local CODE logs for diagnostics. Use <span class="dlabel">send_cm</span> only for small structured messages between explicitly trusted characters, validate the sender and payload, and rate-limit retries.</p>
-
-<p>Respect other players' fights and space. Do not attack a monster already targeting an unrelated player, repeatedly invite strangers, follow someone without consent, block a spawn, or create avoidable visual and request spam. Rate-limit helpful healing and buffs, and never let them move another player's gold or items. PvP actions, trading, mail, giveaways, NPC sales, public listings, bank movement, upgrades, compounds, exchanges, and purchases require clear rules and conservative limits.</p>
-
-<p><span class="dlabel">Character progression</span></p>
-
-<p>The enduring objective is to help a character become stronger and more capable over time. That includes coherent equipment, useful item levels, suitable stats, acquisition, gold and material supply, farming, combat, and effective CODE. These are goals, not a fixed sequence or an item checklist.</p>
-
-<p><span class="dlabel">plan_character_progression</span> supplies current context, explains the game's item and progression systems, points to exact evidence, and keeps those objectives visible. It does not rank owned items or prescribe actions. The AI should learn the class and game, inspect exact definitions and account state, observe results, and develop its own strategy with the player.</p>
-
-<p><span class="dlabel">Samaritan starter CODE</span></p>
-
-<p>The two Samaritan resources are optional advanced starting points, not a required workflow, a finished answer, or account-wide defaults. They do not modify the normal editor starter or the game's default CODE. An AI can read and adapt one when it helps the player's goal, or build a different approach from the documented game model.</p>
-
-<table>
-<tr><th>Starter</th><th>Behavior</th></tr>
-<tr><td>Samaritan adventurer</td><td>Chooses only monsters allowed by its configured safety limits, avoids tagged monsters, moves and kites by class, uses conservative class skills, heals or buffs when appropriate, and accepts only trusted parties. It restocks basic potions while preserving gold, banks gold above its carry reserve, and banks items only through exact keep-and-value rules. Upgrades and compounds remain disabled until configured.</td></tr>
-<tr><td>Samaritan Merchant</td><td>Buffs nearby players, joins only trusted parties, lists only explicitly allowed surplus items, preserves configured quantities, and can retrieve listed stock from the bank. A configured basic-stand purchase may withdraw only the missing amount, up to its configured limit, from the shared bank. NPC sales, listings, stand purchases, upgrades, compounds, scroll purchases, and item deposits remain independently disabled until configured.</td></tr>
-</table>
-
-<p>Every item rule requires an exact item key and a positive <span class="dlabel">maxItemValue</span>. Upgrade and compound rules also require a maximum level and have per-session attempt caps. Listing rules require an exact level, keep quantity, trade slot, price, quantity, and value ceiling. Locked, special-property, and stat-modified items are excluded. The code locates inventory entries again immediately before a mutation because inventory indexes can change.</p>
-
-<p><span class="dlabel">How an AI should build a character</span></p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.get-an-account-token") }}</p>
 
 <ol>
-<li>Read <span class="dlabel">adventureland://guide/start-here</span>.</li>
-<li>Call <span class="dlabel">mainframe_get_dashboard</span>.</li>
-<li>Inspect the character's saved profile, class, equipment, inventory, live observations, server choices, existing assignment, and available CODE slots.</li>
-<li>Read an existing target slot before replacing it.</li>
-<li>Find exact CODE methods with <span class="dlabel">list_code_methods</span>, then read each contract with <span class="dlabel">get_code_method</span>.</li>
-<li>Find exact items, skills, monsters, maps, and recipes with <span class="dlabel">search_game_data</span>, then read their definitions with <span class="dlabel">get_game_data</span>.</li>
-<li>Save the complete JavaScript slot with <span class="dlabel">save_code</span>.</li>
-<li>Explain that starting without paid time charges 1 Shell for 60 minutes. At each later renewal, 1 Shell or free Steam hour buys 60, 50, 45, or 40 minutes when 1, 2, 3, or 4 characters are active in the shared machine.</li>
-<li>Link the character with one stable <span class="dlabel">request_id</span>.</li>
-<li>Verify connection, position, activity, deaths, performance, CODE logs, and the separate Mainframe event journal.</li>
+<li>{{ phrase_html("docs.articles.adventure-mcp.sign-in-at-adventure-land") }}</li>
+<li>{{ phrase_html("docs.articles.adventure-mcp.open-mainframe") }}</li>
+<li>{{ phrase_html("docs.articles.adventure-mcp.find-connect-an-ai") }}</li>
+<li>{{ phrase_html("docs.articles.adventure-mcp.press-create-token-if-a-token-already-exists") }}</li>
+<li>{{ phrase("docs.articles.adventure-mcp.confirm-the-warning-replacing-it-invalidates-the-previous") }}</li>
+<li>{{ phrase_html("docs.articles.adventure-mcp.press-reveal-token-then-copy-the-connection-details") }}</li>
+<li>{{ phrase("docs.articles.adventure-mcp.keep-the-token-out-of-character-code-screenshots") }}</li>
 </ol>
 
-<p><span class="dlabel">Live CODE controls</span></p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.adventure-land-encrypts-the-token-at-rest-and") }}</p>
 
-<p>Saving a CODE slot does not replace CODE that is already running. Browser controls require the character to be connected in an open browser. Mainframe controls require a running Mainframe assignment.</p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.connect-an-ai-client") }}</p>
 
-<table>
-<tr><th>Tool</th><th>Use</th></tr>
-<tr><td><span class="dlabel">browser_code_status</span></td><td>Check whether the browser character is online and whether CODE is running.</td></tr>
-<tr><td><span class="dlabel">browser_code_start</span></td><td>Start a saved slot only when browser CODE is stopped.</td></tr>
-<tr><td><span class="dlabel">browser_code_stop</span></td><td>Stop the current browser CODE runner.</td></tr>
-<tr><td><span class="dlabel">browser_code_reload</span></td><td>Replace the current browser CODE runner with a saved slot.</td></tr>
-<tr><td><span class="dlabel">browser_code_eval</span></td><td>Evaluate a requested JavaScript snippet in browser CODE.</td></tr>
-<tr><td><span class="dlabel">mainframe_code_eval</span></td><td>Evaluate a requested JavaScript snippet in running Mainframe CODE.</td></tr>
+<p>{{ phrase("docs.articles.adventure-mcp.add-a-remote-mcp-server-in-your-ai") }}</p>
+
+<table style="width:100%; text-align:left; border-spacing:12px 7px">
+<tr><th>{{ phrase("docs.articles.adventure-mcp.field") }}</th><th>{{ phrase("docs.articles.adventure-mcp.value") }}</th></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.name") }}</td><td>Adventure Land</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.transport") }}</td><td>{{ phrase("docs.articles.adventure-mcp.streamable-http") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.server-url") }}</td><td><a href="https://adventure.land/mcp">https://adventure.land/mcp</a></td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.header-name") }}</td><td><span class="dlabel">Authorization</span></td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.header-value") }}</td><td>{{ phrase_html("docs.articles.adventure-mcp.bearer-your-token") }}</td></tr>
 </table>
 
-<p>The two eval tools can perform any game action available to that character. Use them only for the exact behavior the player requested. A successful relay means the command was queued; it does not prove that the snippet completed or that the game accepted its actions. Verify the result through browser status or Mainframe observations and logs.</p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.client-configuration-screens-differ-but-the-server-url") }}</p>
 
-<p>Combat loops belong inside character CODE. MCP should plan, save CODE, observe, and correct. It should not poll fast enough to become the combat loop.</p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.how-the-game-fits-together") }}</p>
 
-<p><span class="dlabel">How to write character CODE</span></p>
+<table>
+<tr><th>{{ phrase("docs.articles.adventure-mcp.layer") }}</th><th>{{ phrase("docs.articles.adventure-mcp.responsibility") }}</th></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.ai-client") }}</td><td>{{ phrase("docs.articles.adventure-mcp.reads-game-knowledge-and-account-state-researches-exact") }}</td></tr>
+<tr><td>Mainframe</td><td>{{ phrase("docs.articles.adventure-mcp.runs-a-separate-isolated-machine-for-each-direct") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.character-code") }}</td><td>{{ phrase("docs.articles.adventure-mcp.runs-long-lived-javascript-using-adventure-land-globals") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.game-server") }}</td><td>{{ phrase("docs.articles.adventure-mcp.owns-the-live-character-map-entities-combat-inventory") }}</td></tr>
+</table>
 
-<p>CODE is long-running JavaScript. Schedule small pieces of work, await action Promises, and return control to the runtime. Never use an infinite synchronous loop. Nearby entities are live only while visible, so find a target again before acting.</p>
+<p>{{ phrase("docs.articles.adventure-mcp.the-ai-writes-and-runs-code-through-the") }}</p>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.gameplay-mental-model") }}</p>
+
+<table>
+<tr><th>{{ phrase("docs.articles.adventure-mcp.concept") }}</th><th>{{ phrase("docs.articles.adventure-mcp.what-an-ai-must-understand") }}</th></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.definitions-and-live-state") }}</td><td>{{ phrase_html("docs.articles.adventure-mcp.records-in-g-describe-classes-skills-items-monsters") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.characters-and-realms") }}</td><td>{{ phrase("docs.articles.adventure-mcp.a-character-s-progression-inventory-and-equipment-follow") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.maps-and-entities") }}</td><td>{{ phrase("docs.articles.adventure-mcp.maps-connect-through-doors-transports-and-named-destinations") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.combat-and-skills") }}</td><td>{{ phrase("docs.articles.adventure-mcp.the-game-server-owns-range-cooldowns-mp-damage") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.items-and-inventory") }}</td><td>{{ phrase_html("docs.articles.adventure-mcp.g-items-contains-definitions-inventory-and-equipment-contain") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.economy-and-progression") }}</td><td>{{ phrase("docs.articles.adventure-mcp.gold-items-upgrades-compounds-crafts-exchanges-mail-trade") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.events-and-quests") }}</td><td>{{ phrase("docs.articles.adventure-mcp.definitions-explain-possible-content-live-server-status-and") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.communication") }}</td><td>{{ phrase("docs.articles.adventure-mcp.party-and-code-messages-help-characters-coordinate-on") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.parties-and-shops") }}</td><td>{{ phrase("docs.articles.adventure-mcp.sending-an-invite-or-listing-request-is-not") }}</td></tr>
+</table>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.choose-the-right-source") }}</p>
+
+<table>
+<tr><th>{{ phrase("docs.articles.adventure-mcp.question") }}</th><th>{{ phrase("docs.articles.adventure-mcp.use") }}</th></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.what-guides-and-rules-exist") }}</td><td>{{ phrase_html("docs.articles.adventure-mcp.read-adventureland-catalog-docs-then-use-get-doc") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.which-code-function-performs-an-action") }}</td><td>{{ phrase_html("docs.articles.adventure-mcp.search-list-code-methods-by-action-or-concept") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.what-does-an-item-skill-monster-map-drop") }}</td><td>{{ phrase_html("docs.articles.adventure-mcp.use-search-game-data-then-read-the-exact") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.what-does-this-account-own") }}</td><td>{{ phrase_html("docs.articles.adventure-mcp.use-mainframe-get-dashboard-mainframe-get-character-get") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.how-should-this-character-improve") }}</td><td>{{ phrase_html("docs.articles.adventure-mcp.use-plan-character-progression-for-the-character-s") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.what-is-the-character-doing-now") }}</td><td>{{ phrase("docs.articles.adventure-mcp.use-current-mainframe-character-state-and-code-logs") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.how-is-the-game-implemented") }}</td><td>{{ phrase("docs.articles.adventure-mcp.use-the-shipped-runner-resource-and-the-open") }}</td></tr>
+</table>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.what-the-ai-discovers") }}</p>
+
+<table style="width:100%; text-align:left; border-spacing:12px 7px">
+<tr><th>{{ phrase("docs.articles.adventure-mcp.capability") }}</th><th>{{ phrase("docs.articles.adventure-mcp.purpose") }}</th></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.tools") }}</td><td>{{ phrase("docs.articles.adventure-mcp.search-game-data-read-documentation-and-code-contracts") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.resources") }}</td><td>{{ phrase("docs.articles.adventure-mcp.load-the-game-model-code-architecture-globals-object") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.resource-templates") }}</td><td>{{ phrase("docs.articles.adventure-mcp.read-one-exact-guide-function-game-definition-saved") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.prompts") }}</td><td>{{ phrase("docs.articles.adventure-mcp.teach-the-ai-the-game-write-character-code") }}</td></tr>
+</table>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.core-resources") }}</p>
+
+<table style="width:100%; text-align:left; border-spacing:12px 7px">
+<tr><th>{{ phrase("docs.articles.adventure-mcp.resource") }}</th><th>{{ phrase("docs.articles.adventure-mcp.purpose") }}</th></tr>
+<tr><td><span class="dlabel">adventureland://guide/start-here</span></td><td>{{ phrase("docs.articles.adventure-mcp.where-an-ai-should-begin-and-how-the") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/code-runtime</span></td><td>{{ phrase("docs.articles.adventure-mcp.how-character-code-runs-and-which-browser-features") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/code-architecture</span></td><td>{{ phrase("docs.articles.adventure-mcp.how-to-structure-reliable-character-code") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/navigation</span></td><td>{{ phrase("docs.articles.adventure-mcp.movement-smart-destinations-interruption-arrival-and-route-failures") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/items-and-inventory</span></td><td>{{ phrase("docs.articles.adventure-mcp.definitions-owned-items-equipment-inventory-indexes-and-mutation") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/skills</span></td><td>{{ phrase("docs.articles.adventure-mcp.class-skills-targets-cooldowns-range-and-timed-actions") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/code-messages</span></td><td>{{ phrase("docs.articles.adventure-mcp.same-server-code-messages-sender-validation-payloads-and") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/multiple-characters</span></td><td>{{ phrase("docs.articles.adventure-mcp.ways-to-coordinate-characters-without-loading-one-twice") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/server-rules</span></td><td>{{ phrase("docs.articles.adventure-mcp.shared-state-character-limits-request-limits-accounts-and") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://reference/code-globals</span></td><td>{{ phrase("docs.articles.adventure-mcp.globals-available-inside-character-code") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://reference/character</span></td><td>{{ phrase("docs.articles.adventure-mcp.the-character-object-and-important-fields") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://reference/monster</span></td><td>{{ phrase("docs.articles.adventure-mcp.monster-objects-and-combat-state") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://reference/character-events</span></td><td>{{ phrase("docs.articles.adventure-mcp.character-event-hooks") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://reference/game-events</span></td><td>{{ phrase("docs.articles.adventure-mcp.game-event-hooks") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://guide/mainframe</span></td><td>{{ phrase("docs.articles.adventure-mcp.mainframe-access-billing-and-operating-rules") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://catalog/docs</span></td><td>{{ phrase("docs.articles.adventure-mcp.every-guide-name-topic-section-and-public-link") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://catalog/code-methods</span></td><td>{{ phrase("docs.articles.adventure-mcp.every-public-code-function-signature-and-reference-link") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://catalog/game-data</span></td><td>{{ phrase("docs.articles.adventure-mcp.every-deployed-data-section-purpose-record-count-and") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://code/starters/samaritan</span></td><td>{{ phrase("docs.articles.adventure-mcp.class-aware-adventurer-baseline-with-support-trusted-parties") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://code/starters/samaritan-merchant</span></td><td>{{ phrase("docs.articles.adventure-mcp.conservative-merchant-baseline-with-helpful-buffs-explicit-public") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://source/runner-functions</span></td><td>{{ phrase("docs.articles.adventure-mcp.the-javascript-runner-functions-shipped-by-the-game") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://account/dashboard</span></td><td>{{ phrase("docs.articles.adventure-mcp.owned-characters-assignments-status-and-account-mainframe-state") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://account/code-slots</span></td><td>{{ phrase("docs.articles.adventure-mcp.saved-character-code-slots") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://account/bank</span></td><td>{{ phrase("docs.articles.adventure-mcp.every-owned-bank-pack-and-the-shared-bank") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://game/servers</span></td><td>{{ phrase("docs.articles.adventure-mcp.available-game-servers") }}</td></tr>
+</table>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.the-runner-resource-is-the-same-public-runner") }}</p>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.resource-templates-2") }}</p>
+
+<table style="width:100%; text-align:left; border-spacing:12px 7px">
+<tr><th>{{ phrase("docs.articles.adventure-mcp.template") }}</th><th>{{ phrase("docs.articles.adventure-mcp.purpose") }}</th></tr>
+<tr><td><span class="dlabel">adventureland://docs/{name}</span></td><td>{{ phrase("docs.articles.adventure-mcp.read-one-documentation-page") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://code/functions/{name}</span></td><td>{{ phrase("docs.articles.adventure-mcp.read-the-exact-contract-for-one-code-method") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://game-data/{section}</span></td><td>{{ phrase("docs.articles.adventure-mcp.read-one-complete-deployed-data-section-this-uses") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://game-data/{section}/{name}</span></td><td>{{ phrase("docs.articles.adventure-mcp.read-one-item-skill-monster-map-recipe-or") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://code/slots/{slot}</span></td><td>{{ phrase("docs.articles.adventure-mcp.read-one-owned-code-slot") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://mainframe/characters/{character}</span></td><td>{{ phrase("docs.articles.adventure-mcp.read-one-owned-character-s-mainframe-state") }}</td></tr>
+<tr><td><span class="dlabel">adventureland://progression/characters/{character}</span></td><td>{{ phrase("docs.articles.adventure-mcp.read-one-owned-character-s-progression-objectives-current") }}</td></tr>
+</table>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.find-exact-names-with-list-docs-list-code") }}</p>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.search-game-data-accepts-up-to-500-characters") }}</p>
+
+<p>{{ phrase("docs.articles.adventure-api.every-owned-bank-pack-and-the-shared-bank") }}</p>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.guided-prompts") }}</p>
+
+<table style="width:100%; text-align:left; border-spacing:12px 7px">
+<tr><th>{{ phrase("docs.articles.adventure-mcp.prompt") }}</th><th>{{ phrase("docs.articles.adventure-mcp.use") }}</th></tr>
+<tr><td><span class="dlabel">learn_adventure_land</span></td><td>{{ phrase("docs.articles.adventure-mcp.load-the-game-model-without-changing-account-state") }}</td></tr>
+<tr><td><span class="dlabel">research_gameplay</span></td><td>{{ phrase("docs.articles.adventure-mcp.answer-a-game-build-progression-economy-or-content") }}</td></tr>
+<tr><td><span class="dlabel">improve_character</span></td><td>{{ phrase("docs.articles.adventure-mcp.give-the-ai-character-context-and-long-term") }}</td></tr>
+<tr><td><span class="dlabel">configure_samaritan_code</span></td><td>{{ phrase("docs.articles.adventure-mcp.adapt-the-samaritan-adventurer-or-merchant-baseline-to") }}</td></tr>
+<tr><td><span class="dlabel">write_character_code</span></td><td>{{ phrase("docs.articles.adventure-mcp.research-the-goal-character-and-optional-slot-before") }}</td></tr>
+<tr><td><span class="dlabel">review_character_code</span></td><td>{{ phrase("docs.articles.adventure-mcp.check-an-owned-slot-against-exact-contracts-game") }}</td></tr>
+<tr><td><span class="dlabel">coordinate_character_team</span></td><td>{{ phrase("docs.articles.adventure-mcp.plan-several-owned-characters-on-one-server-with") }}</td></tr>
+<tr><td><span class="dlabel">operate_mainframe</span></td><td>{{ phrase("docs.articles.adventure-mcp.read-deploy-observe-and-improve-one-owned-character") }}</td></tr>
+<tr><td><span class="dlabel">debug_mainframe_character</span></td><td>{{ phrase("docs.articles.adventure-mcp.investigate-a-stuck-dead-slow-or-incorrect-character") }}</td></tr>
+</table>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.code-etiquette") }}</p>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.character-automation-should-not-use-public-private-or") }}</p>
+
+<p>{{ phrase("docs.articles.adventure-mcp.respect-other-players-fights-and-space-do-not") }}</p>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.character-progression") }}</p>
+
+<p>{{ phrase("docs.articles.adventure-mcp.the-enduring-objective-is-to-help-a-character") }}</p>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.plan-character-progression-supplies-current-context-explains-the") }}</p>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.samaritan-starter-code") }}</p>
+
+<p>{{ phrase("docs.articles.adventure-mcp.the-two-samaritan-resources-are-optional-advanced-starting") }}</p>
+
+<table>
+<tr><th>{{ phrase("docs.articles.adventure-mcp.starter") }}</th><th>{{ phrase("docs.articles.adventure-mcp.behavior") }}</th></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.samaritan-adventurer") }}</td><td>{{ phrase("docs.articles.adventure-mcp.chooses-only-monsters-allowed-by-its-configured-safety") }}</td></tr>
+<tr><td>{{ phrase("docs.articles.adventure-mcp.samaritan-merchant") }}</td><td>{{ phrase("docs.articles.adventure-mcp.buffs-nearby-players-joins-only-trusted-parties-lists") }}</td></tr>
+</table>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.every-item-rule-requires-an-exact-item-key") }}</p>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.how-an-ai-should-build-a-character") }}</p>
+
+<ol>
+<li>{{ phrase_html("docs.articles.adventure-mcp.read-adventureland-guide-start-here") }}</li>
+<li>{{ phrase_html("docs.articles.adventure-mcp.call-mainframe-get-dashboard") }}</li>
+<li>{{ phrase("docs.articles.adventure-mcp.inspect-the-character-s-saved-profile-class-equipment") }}</li>
+<li>{{ phrase("docs.articles.adventure-mcp.read-an-existing-target-slot-before-replacing-it") }}</li>
+<li>{{ phrase_html("docs.articles.adventure-mcp.find-exact-code-methods-with-list-code-methods") }}</li>
+<li>{{ phrase_html("docs.articles.adventure-mcp.find-exact-items-skills-monsters-maps-and-recipes") }}</li>
+<li>{{ phrase_html("docs.articles.adventure-mcp.save-the-complete-javascript-slot-with-save-code") }}</li>
+<li>{{ phrase("docs.articles.adventure-mcp.explain-that-starting-without-paid-time-charges-1") }}</li>
+<li>{{ phrase_html("docs.articles.adventure-mcp.link-the-character-with-one-stable-request-id") }}</li>
+<li>{{ phrase("docs.articles.adventure-mcp.verify-connection-position-activity-deaths-performance-code-logs") }}</li>
+</ol>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.live-code-controls") }}</p>
+
+<p>{{ phrase("docs.articles.adventure-mcp.saving-a-code-slot-does-not-replace-code") }}</p>
+
+<table>
+<tr><th>{{ phrase("docs.articles.adventure-mcp.tool") }}</th><th>{{ phrase("docs.articles.adventure-mcp.use") }}</th></tr>
+<tr><td><span class="dlabel">browser_code_status</span></td><td>{{ phrase("docs.articles.adventure-mcp.check-whether-the-browser-character-is-online-and") }}</td></tr>
+<tr><td><span class="dlabel">browser_code_start</span></td><td>{{ phrase("docs.articles.adventure-mcp.start-a-saved-slot-only-when-browser-code") }}</td></tr>
+<tr><td><span class="dlabel">browser_code_stop</span></td><td>{{ phrase("docs.articles.adventure-mcp.stop-the-current-browser-code-runner") }}</td></tr>
+<tr><td><span class="dlabel">browser_code_reload</span></td><td>{{ phrase("docs.articles.adventure-mcp.replace-the-current-browser-code-runner-with-a") }}</td></tr>
+<tr><td><span class="dlabel">browser_code_eval</span></td><td>{{ phrase("docs.articles.adventure-mcp.evaluate-a-requested-javascript-snippet-in-browser-code") }}</td></tr>
+<tr><td><span class="dlabel">mainframe_code_eval</span></td><td>{{ phrase("docs.articles.adventure-mcp.evaluate-a-requested-javascript-snippet-in-running-mainframe") }}</td></tr>
+</table>
+
+<p>{{ phrase("docs.articles.adventure-mcp.the-two-eval-tools-can-perform-any-game") }}</p>
+
+<p>{{ phrase("docs.articles.adventure-mcp.combat-loops-belong-inside-character-code-mcp-should") }}</p>
+
+<p>{{ phrase_html("docs.articles.adventure-mcp.how-to-write-character-code") }}</p>
+
+<p>{{ phrase("docs.articles.adventure-mcp.code-is-long-running-javascript-schedule-small-pieces") }}</p>
 
 <pre class="mcp-example">var working = false;
 
@@ -333,50 +337,50 @@ setInterval(async function () {
 	}
 }, 250);</pre>
 
-<p>This is a structure, not a universal farming strategy. Inspect the character's class and skills, the monster's range and damage, map geometry, equipment, potion supply, party role, and exact function contracts before choosing movement or combat logic.</p>
+<p>{{ phrase("docs.articles.adventure-mcp.this-is-a-structure-not-a-universal-farming") }}</p>
 
-<p>Use public functions such as <span class="dlabel">attack</span>, <span class="dlabel">use_skill</span>, <span class="dlabel">move</span>, <span class="dlabel">smart_move</span>, <span class="dlabel">equip</span>, and <span class="dlabel">send_cm</span>. They preserve request ordering, Promise responses, and compatibility safeguards. Handle rejected Promises and cooldowns, do not overlap the same async loop, and do not retain entity references after they disappear or the map changes.</p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.use-public-functions-such-as-attack-use-skill") }}</p>
 
-<p>Read from <span class="dlabel">character</span>, <span class="dlabel">G</span>, <span class="dlabel">server</span>, <span class="dlabel">game</span>, and <span class="dlabel">smart</span>. UI drawing and button functions do not provide useful output on Mainframe. General network calls, Node internals, process execution, and filesystem access are unavailable. <span class="dlabel">smart_move</span> keeps its public interface but uses Mainframe navigation.</p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.read-from-character-g-server-game-and-smart") }}</p>
 
-<p><span class="dlabel">Billing safety</span></p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.billing-safety") }}</p>
 
-<p><span class="dlabel">mainframe_link_character</span> directly starts one character in a dedicated machine and prepays one 60-minute window. When <span class="dlabel">mainframe_get_dashboard</span> includes <span class="dlabel">free_time</span>, Mainframe uses those shared Steam hours before charging Shells. Each direct link consumes time separately. The assignment renews automatically, survives Adventure Land HTTP restarts, Mainframe controller restarts, host maintenance, and machine replacement, and stops only after <span class="dlabel">mainframe_disconnect_character</span> or when the account cannot pay the next renewal.</p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.mainframe-link-character-directly-starts-one-character-in") }}</p>
 
-<p>Inside running CODE, <span class="dlabel">start_character</span> can add up to three owned characters as included workers in the caller's shared machine, for four characters total. Each uses a separate CODE slot, game session, Worker identity, memory limit, and realm-limit authentication, but all share the root character's prepaid window and fixed machine CPU budget. The first child start reconnects the root once while Mainframe changes machine type. Later workers can start without replacing that shared machine. <span class="dlabel">stop_character</span> stops only that child; disconnecting the root stops every included character. Direct Mainframe links remain separate machines and separate charges.</p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.inside-running-code-start-character-can-add-up") }}</p>
 
-<p>At each renewal boundary, Mainframe counts the characters then running in the shared machine. One Shell or one free Steam hour buys <span class="dlabel">60 minutes for 1</span>, <span class="dlabel">50 minutes for 2</span>, <span class="dlabel">45 minutes for 3</span>, or <span class="dlabel">40 minutes for 4</span>. Starting or stopping a child does not reprice time already paid for. A shared machine exposes up to 192 MiB of guest memory. Its host memory cap rises from 192 MiB to at most 256 MiB as workers are added, while its CPU limit remains fixed at 10%.</p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.at-each-renewal-boundary-mainframe-counts-the-characters") }}</p>
 
-<p>If a link response is lost, retry the same character, CODE slot, server, and <span class="dlabel">request_id</span>. Do not invent a new request ID for a network retry. Disconnecting disables renewal but does not refund or pause remaining paid time.</p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.if-a-link-response-is-lost-retry-the") }}</p>
 
-<p>Reading state, logs, game data, documentation, CODE, resources, and prompts does not consume Mainframe time or Shells. Disconnecting does not refund or pause active time.</p>
+<p>{{ phrase("docs.articles.adventure-mcp.reading-state-logs-game-data-documentation-code-resources") }}</p>
 
-<p><span class="dlabel">Results and retries</span></p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.results-and-retries") }}</p>
 
-<p>Tool calls return JSON text in <span class="dlabel">content</span> and the same object in <span class="dlabel">structuredContent</span>. An application failure sets <span class="dlabel">isError: true</span> and includes a stable <span class="dlabel">reason</span>. HTTP 429 includes <span class="dlabel">Retry-After</span>; wait before retrying.</p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.tool-calls-return-json-text-in-content-and") }}</p>
 
-<p>Read before changing things. Fetch a CODE slot before replacing it, fetch the dashboard before linking or disconnecting, and use Mainframe observations as evidence. A request counter records an attempt, not a completed game action.</p>
+<p>{{ phrase("docs.articles.adventure-mcp.read-before-changing-things-fetch-a-code-slot") }}</p>
 
-<p><span class="dlabel">How to verify behavior</span></p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.how-to-verify-behavior") }}</p>
 
-<p>Requested action counts show what CODE attempted, not what the game accepted. Confirm behavior through observations: connection state, disconnect reason, map, coordinates, movement, target, activity, death state, experience, gold, DPS, gold per second, and CODE logs. Use <span class="dlabel">mainframe_get_events</span> to distinguish Mainframe starts, renewal, recovery, restarts, server changes, and explicit stops from character CODE output. Both journals remain readable for 30 days after the worker stops. Poll slowly; combat timing belongs inside CODE.</p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.requested-action-counts-show-what-code-attempted-not") }}</p>
 
-<p><span class="dlabel">Open-source map</span></p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.open-source-map") }}</p>
 
-<p>The complete game is available in the <a href="https://github.com/kaansoral/adventureland_mongodb">Adventure Land repository</a>.</p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.the-complete-game-is-available-in-the-adventure") }}</p>
 
 <table>
-<tr><th>Path</th><th>What it explains</th></tr>
-<tr><td><a href="https://github.com/kaansoral/adventureland_mongodb/blob/main/js/runner_functions.js">js/runner_functions.js</a></td><td>Public functions loaded into character CODE.</td></tr>
-<tr><td><a href="https://github.com/kaansoral/adventureland_mongodb/tree/main/docs/functions">docs/functions/</a></td><td>Per-function contracts, examples, and failure shapes.</td></tr>
-<tr><td><a href="https://github.com/kaansoral/adventureland_mongodb/tree/main/docs/articles">docs/articles/</a></td><td>CODE concepts, object references, events, and guides.</td></tr>
-<tr><td><a href="https://github.com/kaansoral/adventureland_mongodb/tree/main/design">design/</a></td><td>Items, skills, classes, monsters, maps, NPCs, events, drops, and recipes.</td></tr>
-<tr><td><a href="https://github.com/kaansoral/adventureland_mongodb/blob/main/js/game.js">js/game.js</a> and <a href="https://github.com/kaansoral/adventureland_mongodb/blob/main/js/functions.js">js/functions.js</a></td><td>Browser state, socket handling, public functions, and CODE integration.</td></tr>
-<tr><td><a href="https://github.com/kaansoral/adventureland_mongodb/blob/main/node/server.js">node/server.js</a></td><td>Actual game-server behavior.</td></tr>
-<tr><td><a href="https://github.com/kaansoral/adventureland_mongodb/blob/main/mainframe.js">mainframe.js</a> and <a href="https://github.com/kaansoral/adventureland_mongodb/blob/main/mcp_api.js">mcp_api.js</a></td><td>Mainframe account lifecycle and the public API and MCP surfaces.</td></tr>
+<tr><th>{{ phrase("docs.articles.adventure-mcp.path") }}</th><th>{{ phrase("docs.articles.adventure-mcp.what-it-explains") }}</th></tr>
+<tr><td>{{ phrase_html("docs.articles.adventure-mcp.js-runner-functions-js") }}</td><td>{{ phrase("docs.articles.adventure-mcp.public-functions-loaded-into-character-code") }}</td></tr>
+<tr><td>{{ phrase_html("docs.articles.adventure-mcp.docs-functions") }}</td><td>{{ phrase("docs.articles.adventure-mcp.per-function-contracts-examples-and-failure-shapes") }}</td></tr>
+<tr><td>{{ phrase_html("docs.articles.adventure-mcp.docs-articles") }}</td><td>{{ phrase("docs.articles.adventure-mcp.code-concepts-object-references-events-and-guides") }}</td></tr>
+<tr><td>{{ phrase_html("docs.articles.adventure-mcp.design") }}</td><td>{{ phrase("docs.articles.adventure-mcp.items-skills-classes-monsters-maps-npcs-events-drops") }}</td></tr>
+<tr><td>{{ phrase_html("docs.articles.adventure-mcp.js-game-js-and-js-functions-js") }}</td><td>{{ phrase("docs.articles.adventure-mcp.browser-state-socket-handling-public-functions-and-code") }}</td></tr>
+<tr><td>{{ phrase_html("docs.articles.adventure-mcp.node-server-js") }}</td><td>{{ phrase("docs.articles.adventure-mcp.actual-game-server-behavior") }}</td></tr>
+<tr><td>{{ phrase_html("docs.articles.adventure-mcp.mainframe-js-and-mcp-api-js") }}</td><td>{{ phrase("docs.articles.adventure-mcp.mainframe-account-lifecycle-and-the-public-api-and") }}</td></tr>
 </table>
 
-<p><span class="dlabel">Rotate or revoke</span></p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.rotate-or-revoke") }}</p>
 
-<p>Return to <a href="/mainframe">Mainframe's Connect an AI panel</a>. <strong>Rotate token</strong> creates a new secret and invalidates the old one in the same transaction. Update the AI client's Authorization header. <strong>Revoke token</strong> disables MCP and JSON API access for that token without changing game login sessions or running characters.</p>
+<p>{{ phrase_html("docs.articles.adventure-mcp.return-to-mainframe-s-connect-an-ai-panel") }}</p>
 </div>

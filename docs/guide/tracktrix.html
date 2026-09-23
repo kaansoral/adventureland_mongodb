@@ -1,25 +1,34 @@
 <h4 style='color: #5461C3; margin-bottom: -25px; margin-top: 10px'>Tracktrix</h4>
-<p>Get your tracktrix by completing 4 Monster Hunt Quest's from the NPC Daisy on Mainland, you can get the Tracktrix in exchange for 4 Monster Token's.</p>
+<p>{{ phrase("docs.tutorial.tracktrix.intro") }}</p>
+<span class="tutorial-item" data-item="tracker"></span>
+<script>render_tutorial_items();</script>
+<p>{{ phrase("docs.tutorial.tracktrix.manual") }}</p>
+<p>{{ phrase("docs.tutorial.tracktrix.achievements") }}</p>
+<p>{{ phrase("docs.tutorial.tracktrix.goo_rewards") }}</p>
 
-<h4 style='color: #D99A2C; margin-bottom: -25px'>Scoring</h4>
+<h4 style='color: #D99A2C; margin-bottom: -25px'>{{ phrase("docs.guide.tracktrix.scoring") }}</h4>
 <p>
-	<span style='color:#359CA3'>+1.0</span> For each monster your character or your party kills<br />
-	<span style='color:#5BA652'>+0.3</span> Per each one of your characters in your party or within 600px of you<br />
-	<span style='color:#AC3029'>-0.3</span> If you are not within 600px of the kill and your last kill was a different monster<br />
-	<span style='color:#AC3029'>-0.1</span> If an allied merchant is within 600px of the kill<br />
+	{{ phrase_html("docs.guide.tracktrix.1-0-for-each-monster-your-character-or") }}
 </p>
 
-<h4 style='color: #4FD0A9; margin-bottom: -25px'>Co-op</h4>
+<h4 style='color: #4FD0A9; margin-bottom: -25px'>{{ phrase("docs.guide.tracktrix.co-op") }}</h4>
 <p>
-	Co-op monster scores and kills aren't shared within a party<br />
-	All score modifications are halved for co-op monsters
+	{{ phrase_html("docs.guide.tracktrix.co-op-monster-scores-and-kills-aren-t") }}
 </p>
 
-<h4 style='color: #3696CE; margin-bottom: -25px'>Misc</h4>
+<h4 style='color: #3696CE; margin-bottom: -25px'>{{ phrase("docs.guide.tracktrix.misc") }}</h4>
 <p>
-	Merchants in a party only get half the points<br />
-	If you've contributed more than 2% in Co-Op fights, you can't lose points from distance<br />
+	{{ phrase_html("docs.guide.tracktrix.merchants-in-a-party-only-get-half-the") }}
 </p>
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<p><span class="clickable dlabel" onclick="open_guide('cavalry', get_guide_url('cavalry'))">{{ phrase("interface.cavalry.call") }}</span></p>
+<p>{{ phrase("docs.cavalry.manual", {action: phrase("interface.cavalry.call")}) }}</p>
+<div class="code">interact("cavalry");</div>
+<p><span class="rref clickable" onclick="render_function_reference('interact')">interact</span></p>
+<p>{{ phrase("docs.tutorial.tracktrix.code") }}</p>
+<div class="code">show_json(G.monsters.goo.achievements);</div>
+<p><span class="rref clickable" onclick="render_function_reference('show_json')">show_json</span> · <span class="clickable dlabel" onclick="load_documentation('G')">G</span></p>
 <!--
 <h4 style='color: #37BAC3; margin-bottom: -25px'>Alone</h4>
 <p>

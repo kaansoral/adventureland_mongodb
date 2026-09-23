@@ -4,6 +4,7 @@ const vm = require("node:vm");
 const { load, socketHandler, transactions } = require("./helpers/server_vm");
 
 function setup({ locked = false, missingOwner = false, beforeCommit } = {}) {
+	let operation = 0;
 	const events = [],
 		mounted = [];
 	const owner = {
@@ -17,6 +18,7 @@ function setup({ locked = false, missingOwner = false, beforeCommit } = {}) {
 		real_id: "CH_" + name,
 		name,
 		owner: owner._id,
+		secret: "fixture-session-" + name,
 		gold: 100,
 		items: [{ name: "sword", level: 8 }],
 		s: {},
@@ -40,7 +42,7 @@ function setup({ locked = false, missingOwner = false, beforeCommit } = {}) {
 		_id: p.real_id,
 		owner: p.owner,
 		server: "SR_here",
-		info: { gold: p.gold, items: structuredClone(p.items) },
+		info: { secret: p.secret, gold: p.gold, items: structuredClone(p.items) },
 	}));
 	if (!missingOwner) docs.push(owner);
 	const context = vm.createContext({
@@ -54,8 +56,10 @@ function setup({ locked = false, missingOwner = false, beforeCommit } = {}) {
 		resend() {},
 		update_pids() {},
 		player_to_server: (p) => p,
+		randomStr: () => "fixture-bank-operation-" + ++operation,
 	});
 	const store = transactions(context, docs, beforeCommit);
+	load(context, "node/logic/character_sessions.js", ["owns_character_session", "character_save_tx"]);
 	load(context, "node/server.js", ["sync_entity", "mount_call", "unmount_call"]);
 	return { context, a, b, events, mounted, ...store };
 }

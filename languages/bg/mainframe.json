@@ -1,0 +1,19 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe постави този герой на опашката.",
+	"mainframe.event.included_worker_queued": "Mainframe постави този включен работен процес на опашката.",
+	"mainframe.event.shared_with": "Споделено с {character}",
+	"mainframe.event.shared_with_root": "Споделено с главния герой",
+	"mainframe.event.explicit_disconnect": "Връзката е прекъсната от собственика на акаунта.",
+	"mainframe.event.renewed_free": "Използван е 1 безплатен час в Mainframe за {minutes} минути.",
+	"mainframe.event.renewed_shell": "Удържана е 1 раковина за {minutes} минути.",
+	"mainframe.event.renewal_one": "{count} активен герой · Следващо подновяване: {date}",
+	"mainframe.event.renewal_many": "{count} активни герои · Следващо подновяване: {date}",
+	"mainframe.event.renewal_failed": "Mainframe спря този герой, защото времето свърши.",
+	"mainframe.event.worker_failure": "Mainframe откри неизправност в работен процес и ще опита отново.",
+	"mainframe.event.server_change": "Mainframe свързва този герой с друг сървър.",
+	"mainframe.level.info": "ИНФО",
+	"mainframe.level.warn": "ПРЕДУПРЕЖДЕНИЕ",
+	"mainframe.level.error": "ГРЕШКА",
+	"mainframe.event.renewal_many.one": "{count} активен герой · Следващо подновяване: {date}",
+	"mainframe.event.renewal_one.other": "{count} активни герои · Следващо подновяване: {date}"
+}

@@ -1,11 +1,11 @@
 <p><span class='dlabel'>reduce_cooldown(name, ms)</span></p>
-<p>Moves a local next-skill timestamp earlier by a number of milliseconds, commonly to compensate for measured network latency.</p>
-<p><b>Returns:</b> Nothing.</p>
-<p><b>Notes:</b> This changes local scheduling only; it cannot bypass the server cooldown.</p>
-<p><b>Example:</b></p>
+<p>{{ phrase("docs.functions.reduce_cooldown.moves-a-local-next-skill-timestamp-earlier-by") }}</p>
+<p>{{ phrase_html("docs.functions.reduce_cooldown.returns-nothing") }}</p>
+<p>{{ phrase_html("docs.functions.reduce_cooldown.notes-this-changes-local-scheduling-only-it-cannot") }}</p>
+<p>{{ phrase_html("docs.functions.reduce_cooldown.example") }}</p>
 <div class='code'>attack(target).then(function () {
 	reduce_cooldown("attack", character.ping * 0.95);
 });</div>
 
 <p></p>
-<span class='redlabel'>"source"</span>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>

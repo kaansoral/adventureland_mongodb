@@ -1,0 +1,9 @@
+{
+  "navigation.hub": "Hub",
+  "navigation.github": "GitHub",
+	"language.choose": "Nyelv",
+	"language.select": "Nyelv kiválasztása: {language}",
+	"language.save_failed": "Nem sikerült menteni a nyelvi beállítást. Próbáld újra.",
+	"language.saving": "Mentés…",
+	"navigation.communicator_short": "KOM"
+}

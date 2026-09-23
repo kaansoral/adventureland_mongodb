@@ -1,14 +1,22 @@
+env.addGlobal("phrase", function (id, params, language) {
+	return localization.phrase(id, params, language || (this && this.ctx && this.ctx.domain && this.ctx.domain.language));
+});
+
+env.addGlobal("phrase_html", function (id, params, language) {
+	return nunjucks.runtime.markSafe(localization.phrase_html(id, params, language || (this && this.ctx && this.ctx.domain && this.ctx.domain.language)));
+});
+
 env.addFilter("to_json", function (obj) {
 	try {
-		return JSON.stringify(obj);
+		return JSON.stringify(obj).replace(/</g, "\\u003c");
 	} catch (e) {
 		return "{}";
 	}
 });
 
-env.addFilter("to_tutorial", function (user_data) {
+env.addFilter("to_tutorial", function (user_data, track) {
 	try {
-		return JSON.stringify(data_to_tutorial(user_data));
+		return JSON.stringify(data_to_tutorial(user_data, track));
 	} catch (e) {
 		return "{}";
 	}
@@ -72,11 +80,16 @@ env.addFilter("sales_percent", function (domain) {
 env.addFilter("to_pretty_num", to_pretty_num);
 
 env.addGlobal("tutorial_data", function (key) {
-	for (var i = 0; i < docs.tutorial.length; i++) {
-		if (docs.tutorial[i].key === key) return docs.tutorial[i];
+	var lessons = docs.tutorial.concat(docs.merchant_tutorial || []);
+	for (var i = 0; i < lessons.length; i++) {
+		if (lessons[i].key === key)
+			return Object.assign({}, lessons[i], { title: localization.phrase("tutorial." + key + ".title", {}, this && this.ctx && this.ctx.domain && this.ctx.domain.language) });
 	}
 });
 
+// Checked against calculate_player_stats by the tutorial content tests.
+env.addGlobal("tutorial_comparisons", function () { return require("./docs/tutorial/comparisons.json"); });
+
 env.addGlobal("task_name", function (key) {
-	return (docs.tasks && docs.tasks[key]) || key.charAt(0).toUpperCase() + key.slice(1);
+	return docs.tasks && docs.tasks[key] ? localization.phrase("tutorial.task." + key, {}, this && this.ctx && this.ctx.domain && this.ctx.domain.language) : key.charAt(0).toUpperCase() + key.slice(1);
 });

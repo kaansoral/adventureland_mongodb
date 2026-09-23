@@ -1,5 +1,6 @@
 (function () {
 	"use strict";
+	if (typeof no_graphics !== "undefined" && no_graphics) return;
 
 	var mapEntries = Object.keys(G.maps)
 		.filter(function (id) {
@@ -39,17 +40,17 @@
 	};
 
 	var specialAccess = {
-		main: "Starting realm",
-		abtesting: "Join the A/B Testing event with join('abtesting')",
-		cgallery: "GM-only cosmetics instance",
-		d_e: "Dungeon-realm entrance or an enabled Transporter destination",
-		duelland: "Accept a duel challenge",
-		dungeon0: "GM-only dungeon instance",
-		goobrawl: "Join the Goo Brawl event with join('goobrawl')",
-		jail: "Reached through a jail action; normal exits are blocked",
-		resort: "Activate the lever in Holo Resort",
-		shellsisland: "Client loading scene; not entered during normal play",
-		ship0: "Available during the Pirate Ship event",
+		main: phrase("services.realm.starting-realm"),
+		abtesting: phrase("services.realm.join-the-a-b-testing-event-with-join-abtesting"),
+		cgallery: phrase("services.realm.gm-only-cosmetics-instance"),
+		d_e: phrase("services.realm.dungeon-realm-entrance-or-an-enabled-transporter-destination"),
+		duelland: phrase("services.realm.accept-a-duel-challenge"),
+		dungeon0: phrase("services.realm.gm-only-dungeon-instance"),
+		goobrawl: phrase("services.realm.join-the-goo-brawl-event-with-join-goobrawl"),
+		jail: phrase("services.realm.reached-through-a-jail-action-normal-exits-are-blocked"),
+		resort: phrase("services.realm.activate-the-lever-in-holo-resort"),
+		shellsisland: phrase("services.realm.client-loading-scene-not-entered-during-normal-play"),
+		ship0: phrase("services.realm.available-during-the-pirate-ship-event"),
 	};
 
 	function mapIdFromPath() {
@@ -165,30 +166,20 @@
 		var keyed = inboundByMap[mapId].filter(function (link) {
 			return link.door[7] === "key";
 		});
-		if (keyed.length) {
-			return (
-				"Use " +
-				itemName(keyed[0].door[8]) +
-				" at " +
-				uniqueNames(
-					keyed.map(function (link) {
-						return link.from;
-					}),
-				).join(" or ")
-			);
-		}
+		if (keyed.length) return phrase("services.realm.use-key-at", { item: itemName(keyed[0].door[8]), maps: uniqueNames(keyed.map(linkFrom)).join(phrase("services.realm.or-separator")) });
 		var accountLocked = inboundByMap[mapId].filter(function (link) {
 			return link.door[7] === "ulocked";
 		});
 		if (accountLocked.length) {
-			var keyName = unlockItemFor(mapId);
-			return (keyName ? "Unlock with " + keyName + "; " : "Account unlock; ") + "enter from " + uniqueNames(accountLocked.map(linkFrom)).join(" or ");
+			var keyName = unlockItemFor(mapId),
+				maps = uniqueNames(accountLocked.map(linkFrom)).join(phrase("services.realm.or-separator"));
+			return keyName ? phrase("services.realm.unlock-enter", { item: keyName, maps: maps }) : phrase("services.realm.account-unlock-enter", { maps: maps });
 		}
-		if (G.npcs.transporter && G.npcs.transporter.places && G.npcs.transporter.places[mapId] !== undefined) return "Travel with Alia the Transporter";
-		if (map.event) return "Available during the " + map.event + " event";
-		if (inboundByMap[mapId].length) return "Enter from " + uniqueNames(inboundByMap[mapId].map(linkFrom)).join(", ");
-		if (map.instance) return "Created as an instance";
-		return "No normal entrance is defined";
+		if (G.npcs.transporter && G.npcs.transporter.places && G.npcs.transporter.places[mapId] !== undefined) return phrase("services.realm.travel-transporter");
+		if (map.event) return phrase("services.realm.event-access", { event: map.event });
+		if (inboundByMap[mapId].length) return phrase("services.realm.enter-from", { maps: uniqueNames(inboundByMap[mapId].map(linkFrom)).join(", ") });
+		if (map.instance) return phrase("services.realm.instance-created");
+		return phrase("services.realm.no-entrance");
 	}
 
 	function linkFrom(link) {
@@ -204,19 +195,19 @@
 	}
 
 	function npcRole(npc) {
-		if (npc.category === "transporter") return "Transporter";
-		if (npc.category === "citizen") return "Citizen";
-		return titleCase(npc.role);
+		if (npc.category === "transporter") return phrase("services.realm.transporter");
+		if (npc.category === "citizen") return phrase("services.realm.citizen");
+		return phrase.has("services.realm.role-" + npc.role) ? phrase("services.realm.role-" + npc.role) : titleCase(npc.role);
 	}
 
 	function doorRequirement(door) {
-		if (door[7] === "key") return "Consumes " + itemName(door[8]);
+		if (door[7] === "key") return phrase("services.realm.consumes-item", { item: itemName(door[8]) });
 		if (door[7] === "ulocked") {
 			var unlockName = unlockItemFor(door[4]);
-			return unlockName ? "Unlock with " + unlockName : "Requires the account unlock";
+			return unlockName ? phrase("services.realm.unlock-with", { item: unlockName }) : phrase("services.realm.requires-the-account-unlock");
 		}
-		if (door[7] === "protected") return "Protected passage";
-		return mapById[door[4]] && mapById[door[4]].instance ? "Creates or joins an instance" : "Direct passage";
+		if (door[7] === "protected") return phrase("services.realm.protected-passage");
+		return mapById[door[4]] && mapById[door[4]].instance ? phrase("services.realm.creates-or-joins-an-instance") : phrase("services.realm.direct-passage");
 	}
 
 	function arrivalsForMap(mapId) {
@@ -237,10 +228,10 @@
 		return Object.keys(grouped).map(function (key) {
 			var group = grouped[key];
 			var names = group.sources.map(function (source) {
-				return source === "transporter" ? "Transporter" : (mapById[source] && mapById[source].name) || source;
+				return source === "transporter" ? phrase("services.realm.transporter") : (mapById[source] && mapById[source].name) || source;
 			});
 			return {
-				label: "From " + names.join(", "),
+				label: phrase("services.realm.arrival-from", { maps: names.join(", ") }),
 				sources: group.sources,
 				spawn: group.spawn,
 				spawnIndex: group.spawnIndex,
@@ -600,7 +591,7 @@
 
 	function drawCanvasLabel(context, value, anchorX, anchorY, color, occupied) {
 		var label = shortLabel(value);
-		context.font = "14px pixel, monospace";
+		context.font = "14px " + getComputedStyle(context.canvas).fontFamily;
 		context.textAlign = "center";
 		context.textBaseline = "middle";
 		var width = context.measureText(label).width + 10;
@@ -695,7 +686,15 @@
 			context.fillRect(point[0] - width / 2, point[1] - height, width, height);
 			context.strokeRect(point[0] - width / 2, point[1] - height, width, height);
 			var labelBox = null;
-			if (labels) labelBox = drawCanvasLabel(context, "To " + ((mapById[door[4]] && mapById[door[4]].name) || door[4]), point[0], point[1] - height / 2, annotationColors.doorway, occupied);
+			if (labels)
+				labelBox = drawCanvasLabel(
+					context,
+					phrase("services.realm.door-to", { map: (mapById[door[4]] && mapById[door[4]].name) || door[4] }),
+					point[0],
+					point[1] - height / 2,
+					annotationColors.doorway,
+					occupied,
+				);
 			if (doorTargets && mapById[door[4]]) {
 				doorTargets.push({
 					h: Math.max(32, height),
@@ -851,37 +850,39 @@
 		var list = document.getElementById("focus-connection-list");
 		var rows = (mapById[mapId].doors || []).map(function (door) {
 			var destination = (mapById[door[4]] && mapById[door[4]].name) || door[4];
-			return annotationRow("doorway", "To " + destination, doorRequirement(door), "door", mapById[door[4]] ? door[4] : null);
+			return annotationRow("doorway", phrase("services.realm.door-to", { map: destination }), doorRequirement(door), phrase("services.realm.door-label"), mapById[door[4]] ? door[4] : null);
 		});
 		arrivalsForMap(mapId).forEach(function (arrival) {
-			var detail = (arrival.type === "transport" ? "Transporter arrival" : "Passage arrival") + " · spawn " + arrival.spawnIndex;
-			rows.push(annotationRow("arrival", arrival.label, detail, "entry"));
+			var detail =
+				(arrival.type === "transport" ? phrase("services.realm.transporter-arrival") : phrase("services.realm.passage-arrival")) +
+				phrase("services.realm.spawn-number", { number: arrival.spawnIndex });
+			rows.push(annotationRow("arrival", arrival.label, detail, phrase("services.realm.entry-label")));
 		});
-		list.innerHTML = rows.length ? rows.join("") : '<p class="zone-empty">No doorway or arrival is defined.</p>';
+		list.innerHTML = rows.length ? rows.join("") : '<p class="zone-empty">' + phrase.html("services.realm.no-doorway-or-arrival-is-defined") + "</p>";
 	}
 
 	function renderNpcList(mapId) {
 		var list = document.getElementById("focus-npc-list");
 		var rows = (npcsByMap[mapId] || []).map(function (npc) {
 			var detail = npcRole(npc) + " · " + npc.id;
-			if (npc.points.length > 1) detail += " · " + npc.points.length + " route points";
-			if (npc.boundary) detail += " · roaming area";
-			return annotationRow(npc.category, npc.name, detail, "NPC");
+			if (npc.points.length > 1) detail += " · " + phrase("services.realm.route-points", { count: npc.points.length });
+			if (npc.boundary) detail += " · " + phrase("services.realm.roaming-area");
+			return annotationRow(npc.category, npc.name, detail, phrase("services.realm.npc-label"));
 		});
-		list.innerHTML = rows.length ? rows.join("") : '<p class="zone-empty">No NPC placement is defined.</p>';
+		list.innerHTML = rows.length ? rows.join("") : '<p class="zone-empty">' + phrase.html("services.realm.no-npc-placement-is-defined") + "</p>";
 	}
 
 	function renderZoneList(mapId) {
 		var list = document.getElementById("focus-zone-list");
 		var zones = zonesByMap[mapId] || [];
 		if (!zones.length) {
-			list.innerHTML = '<p class="zone-empty">No fixed monster territory.</p>';
+			list.innerHTML = '<p class="zone-empty">' + phrase.html("services.realm.no-fixed-monster-territory") + "</p>";
 			return;
 		}
 		list.innerHTML = zones
 			.map(function (zone) {
 				var monster = G.monsters[zone.monster] || { name: zone.monster };
-				var count = zone.count === undefined ? "dynamic" : "×" + zone.count;
+				var count = zone.count === undefined ? phrase("services.realm.dynamic-count") : "×" + zone.count;
 				return (
 					'<div class="zone-row"><i class="zone-swatch" style="background:' +
 					zoneColor(zone.monster) +
@@ -934,7 +935,7 @@
 			focusDoorTargets = doorTargets;
 			canvas.setAttribute(
 				"aria-label",
-				map.name + " at " + scaleLabel(result.scale) + " scale with " + zonesByMap[mapId].length + " monster zones, " + (map.doors || []).length + " doors, and " + npcsByMap[mapId].length + " NPCs",
+				phrase("services.realm.map-accessibility", { map: map.name, scale: scaleLabel(result.scale), zones: zonesByMap[mapId].length, doors: (map.doors || []).length, npcs: npcsByMap[mapId].length }),
 			);
 		});
 	}
@@ -983,23 +984,17 @@
 		card.setAttribute("data-search", [mapId, map.name, accessText(mapId)].concat(monsters, npcNames).join(" ").toLowerCase());
 		card.innerHTML =
 			'<span class="map-card-canvas"><canvas width="330" height="220" aria-label="' +
-			escapeHtml(map.name) +
-			' map preview"></canvas></span><span class="map-card-copy"><span class="map-card-title"><strong>' +
+			phrase.html("services.realm.map-preview", { map: map.name }) +
+			'"></canvas></span><span class="map-card-copy"><span class="map-card-title"><strong>' +
 			escapeHtml(map.name) +
 			"</strong><code>" +
 			escapeHtml(mapId) +
 			'</code></span><span class="map-card-meta">' +
-			monsters.length +
-			" monster" +
-			(monsters.length === 1 ? "" : "s") +
+			phrase.html("services.realm.monster-count", { count: monsters.length }) +
 			" · " +
-			npcsByMap[mapId].length +
-			" NPC" +
-			(npcsByMap[mapId].length === 1 ? "" : "s") +
+			phrase.html("services.realm.npc-count", { count: npcsByMap[mapId].length }) +
 			" · " +
-			(map.doors || []).length +
-			" exit" +
-			((map.doors || []).length === 1 ? "" : "s") +
+			phrase.html("services.realm.exit-count", { count: (map.doors || []).length }) +
 			'</span><span class="map-card-access">' +
 			escapeHtml(accessText(mapId)) +
 			"</span></span>";
@@ -1021,9 +1016,9 @@
 			context.fillStyle = "#080b0d";
 			context.fillRect(0, 0, canvas.width, canvas.height);
 			context.fillStyle = "#9aabb0";
-			context.font = "16px pixel, monospace";
+			context.font = "16px " + getComputedStyle(canvas).fontFamily;
 			context.textAlign = "center";
-			context.fillText("Geometry unavailable", canvas.width / 2, canvas.height / 2);
+			context.fillText(phrase("services.realm.geometry-unavailable"), canvas.width / 2, canvas.height / 2);
 		});
 	}
 
@@ -1113,7 +1108,7 @@
 		context.clearRect(0, 0, canvas.width, canvas.height);
 		if (!frame) {
 			context.fillStyle = "#9aabb0";
-			context.font = "18px pixel, monospace";
+			context.font = "18px " + getComputedStyle(canvas).fontFamily;
 			context.textAlign = "center";
 			context.fillText("?", canvas.width / 2, canvas.height / 2 + 6);
 			return;
@@ -1141,9 +1136,9 @@
 	function monsterLocationText(monsterId, monster) {
 		var ids = Object.keys(monsterMaps[monsterId] || {});
 		if (ids.length) return uniqueNames(ids).join(", ");
-		if (monster.explanation) return monster.explanation;
-		if (monster.respawn === -1 || monster.global || monster.announce) return "Dynamic or event spawn; no fixed territory";
-		return "No fixed map territory";
+		if (monster.explanation) return phrase.definition("monsters", monsterId, "explanation", monster.explanation);
+		if (monster.respawn === -1 || monster.global || monster.announce) return phrase("services.realm.dynamic-or-event-spawn-no-fixed-territory");
+		return phrase("services.realm.no-fixed-map-territory");
 	}
 
 	function renderMonsterCard(monsterId, monster) {
@@ -1153,14 +1148,14 @@
 		card.setAttribute("data-search", [monsterId, monster.name, locations].join(" ").toLowerCase());
 		card.innerHTML =
 			'<div class="monster-sprite"><canvas width="86" height="112" aria-label="' +
-			escapeHtml(monster.name) +
-			' sprite"></canvas></div><div class="monster-copy"><div class="monster-name"><strong>' +
+			phrase.html("services.realm.monster-sprite", { monster: monster.name }) +
+			'"></canvas></div><div class="monster-copy"><div class="monster-name"><strong>' +
 			escapeHtml(monster.name) +
 			"</strong><code>" +
 			escapeHtml(monsterId) +
-			'</code></div><div class="monster-stats"><span>HP<strong>' +
+			('</code></div><div class="monster-stats"><span>' + phrase.html("services.realm.hp") + "<strong>") +
 			formatNumber(monster.hp) +
-			"</strong></span><span>Attack<strong>" +
+			("</strong></span><span>" + phrase.html("services.realm.attack") + "<strong>") +
 			formatNumber(monster.attack) +
 			'</strong></span></div><p class="monster-locations">' +
 			escapeHtml(locations) +
@@ -1193,7 +1188,7 @@
 				child.hidden = !visible;
 				if (visible) shown++;
 			});
-			count.textContent = shown + " " + noun + (shown === 1 ? "" : "s");
+			count.textContent = phrase("services.realm.search-" + noun, { count: shown });
 		}
 		input.addEventListener("input", filter);
 		filter();

@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe hat diesen Charakter in die Warteschlange gestellt.",
+	"mainframe.event.included_worker_queued": "Mainframe hat diesen enthaltenen Worker in die Warteschlange gestellt.",
+	"mainframe.event.shared_with": "Mit {character} geteilt",
+	"mainframe.event.shared_with_root": "Mit dem Hauptcharakter geteilt",
+	"mainframe.event.explicit_disconnect": "Vom Kontoinhaber getrennt.",
+	"mainframe.event.renewed_free": "1 kostenlose Mainframe-Stunde für {minutes} Min. verwendet.",
+	"mainframe.event.renewed_shell": "1 Muschel für {minutes} Min. berechnet.",
+	"mainframe.event.renewal_one": "{count} Charakter aktiv · Nächste Verlängerung {date}",
+	"mainframe.event.renewal_many": "{count} Charaktere aktiv · Nächste Verlängerung {date}",
+	"mainframe.event.renewal_failed": "Mainframe hat diesen Charakter angehalten, weil keine Zeit mehr übrig war.",
+	"mainframe.event.worker_failure": "Mainframe hat einen Worker-Ausfall erkannt und versucht es erneut.",
+	"mainframe.event.server_change": "Mainframe verbindet diesen Charakter auf einem anderen Server erneut.",
+	"mainframe.level.info": "INFO",
+	"mainframe.level.warn": "WARNUNG",
+	"mainframe.level.error": "FEHLER"
+}

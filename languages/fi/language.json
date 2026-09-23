@@ -1,0 +1,9 @@
+{
+  "navigation.hub": "Hub",
+  "navigation.github": "GitHub",
+	"language.choose": "Kieli",
+	"language.select": "Valitse kieleksi {language}",
+	"language.save_failed": "Kielivalintaasi ei voitu tallentaa. Yritä uudelleen.",
+	"language.saving": "Tallennetaan…",
+	"navigation.communicator_short": "YHT"
+}

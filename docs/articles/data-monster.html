@@ -1,6 +1,6 @@
-<p><span class="dlabel">Monster entities</span></p>
+<p>{{ phrase_html("docs.articles.data-monster.monster-entities") }}</p>
 
-<p>Visible monsters live in <span class="clabel">parent.entities</span>. Use <span class="dlabel">get_monster(id)</span>, <span class="dlabel">get_entity(id)</span>, or <span class="dlabel">get_nearest_monster(filters)</span> to obtain a current entity reference. <span class="clabel">G.monsters</span> contains base monster definitions, not live HP, targets, conditions, or coordinates.</p>
+<p>{{ phrase_html("docs.articles.data-monster.visible-monsters-live-in-parent-entities-use-get") }}</p>
 
 <div class="code">var target = get_nearest_monster({
 	type: "goo",
@@ -10,9 +10,9 @@
 
 if (target && target.visible && !target.dead) attack(target);</div>
 
-<p>When an entity leaves view, an old object reference stops receiving updates and its <span class="dlabel">visible</span> value becomes false. Resolve a fresh entity before acting.</p>
+<p>{{ phrase_html("docs.articles.data-monster.when-an-entity-leaves-view-an-old-object") }}</p>
 
-<p><span class="dlabel">Identity and location</span></p>
+<p>{{ phrase_html("docs.articles.data-monster.identity-and-location") }}</p>
 
 <div class="code">{
 	<span data-field="id">id</span>: "376",
@@ -30,9 +30,9 @@ if (target && target.visible && !target.dead) attack(target);</div>
 	<span data-field="dead">dead</span>: false,
 }</div>
 
-<p><span class="dlabel">dead</span> can also contain a reason such as <span class="dlabel">map</span> or <span class="dlabel">vision</span> when the entity is no longer actionable.</p>
+<p>{{ phrase_html("docs.articles.data-monster.dead-can-also-contain-a-reason-such-as") }}</p>
 
-<p><span class="dlabel">Vitals and combat</span></p>
+<p>{{ phrase_html("docs.articles.data-monster.vitals-and-combat") }}</p>
 
 <div class="code">{
 	<span data-field="hp">hp</span>: 20000,
@@ -56,9 +56,9 @@ if (target && target.visible && !target.dead) attack(target);</div>
 	<span data-field="target">target</span>: "CharacterName",
 }</div>
 
-<p>Live monster stats can differ from <span class="dlabel">G.monsters[mtype]</span> because of level, map, server mode, conditions, and runtime scaling.</p>
+<p>{{ phrase_html("docs.articles.data-monster.live-monster-stats-can-differ-from-g-monsters") }}</p>
 
-<p><span class="dlabel">Movement and conditions</span></p>
+<p>{{ phrase_html("docs.articles.data-monster.movement-and-conditions") }}</p>
 
 <div class="code">{
 	<span data-field="moving">moving</span>: true,
@@ -73,9 +73,9 @@ if (target && target.visible && !target.dead) attack(target);</div>
 	},
 }</div>
 
-<p><span class="dlabel">s</span> contains active monster conditions. Movement vectors and endpoints are meaningful while <span class="dlabel">moving</span> is true.</p>
+<p>{{ phrase_html("docs.articles.data-monster.s-contains-active-monster-conditions-movement-vectors-and") }}</p>
 
-<p><span class="dlabel">Optional monster traits</span></p>
+<p>{{ phrase_html("docs.articles.data-monster.optional-monster-traits") }}</p>
 
 <div class="code">{
 	<span data-field="aggro">aggro</span>: 0.5,
@@ -94,11 +94,11 @@ if (target && target.visible && !target.dead) attack(target);</div>
 	],
 }</div>
 
-<p>Traits are monster-specific and often absent. Inspect <span class="dlabel">G.monsters[target.mtype]</span> and the live entity instead of assuming every field exists.</p>
+<p>{{ phrase_html("docs.articles.data-monster.traits-are-monster-specific-and-often-absent-inspect") }}</p>
 
-<p><span class="dlabel">Definitions and spawn packs</span></p>
+<p>{{ phrase_html("docs.articles.data-monster.definitions-and-spawn-packs") }}</p>
 
 <div class="code">show_json(G.monsters.goo);
 show_json(G.maps.main.monsters);</div>
 
-<p><span class="dlabel">G.maps[map].monsters</span> describes spawn packs and boundaries. A definition or pack is not proof that a particular monster is currently alive or visible; use live entity helpers for action code.</p>
+<p>{{ phrase_html("docs.articles.data-monster.g-maps-map-monsters-describes-spawn-packs-and") }}</p>

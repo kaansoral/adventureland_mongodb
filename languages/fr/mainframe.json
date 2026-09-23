@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe a placé ce personnage en attente.",
+	"mainframe.event.included_worker_queued": "Mainframe a placé ce personnage inclus en attente.",
+	"mainframe.event.shared_with": "Partagé avec {character}",
+	"mainframe.event.shared_with_root": "Partagé avec le personnage principal",
+	"mainframe.event.explicit_disconnect": "Déconnexion par le propriétaire du compte.",
+	"mainframe.event.renewed_free": "1 heure Mainframe gratuite utilisée pour {minutes} min.",
+	"mainframe.event.renewed_shell": "1 coquillage débité pour {minutes} min.",
+	"mainframe.event.renewal_one": "{count} personnage actif · Prochain renouvellement : {date}",
+	"mainframe.event.renewal_many": "{count} personnages actifs · Prochain renouvellement : {date}",
+	"mainframe.event.renewal_failed": "Mainframe a arrêté ce personnage car il ne restait plus de temps.",
+	"mainframe.event.worker_failure": "Mainframe a détecté un échec du processus de travail et va réessayer.",
+	"mainframe.event.server_change": "Mainframe reconnecte ce personnage sur un autre serveur.",
+	"mainframe.level.info": "INFO",
+	"mainframe.level.warn": "AVERT.",
+	"mainframe.level.error": "ERREUR"
+}

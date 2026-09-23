@@ -1,12 +1,12 @@
-<p><span class="dlabel">NPC Objects</span></p>
+<p>{{ phrase_html("docs.articles.data-npc.npc-objects") }}</p>
 
-<p>Adventure Land has two useful NPC data layers. <span class="dlabel">G.npcs</span> describes every NPC type, while a nearby NPC entity describes the copy currently visible on your map.</p>
+<p>{{ phrase_html("docs.articles.data-npc.adventure-land-has-two-useful-npc-data-layers") }}</p>
 
 <div class="code">show_json(G.npcs.newupgrade);
 show_json(find_npc("newupgrade"));
 show_json(get_nearest_npc());</div>
 
-<p><span class="dlabel">G.npcs</span> is indexed by stable NPC IDs such as <span class="dlabel">newupgrade</span>, <span class="dlabel">craftsman</span>, and <span class="dlabel">transporter</span>. Display names can change; use the ID in CODE.</p>
+<p>{{ phrase_html("docs.articles.data-npc.g-npcs-is-indexed-by-stable-npc-ids") }}</p>
 
 <div class="code">{
     name: "Cue",
@@ -15,31 +15,31 @@ show_json(get_nearest_npc());</div>
     says: "+1"
 }</div>
 
-<p>Common definition fields:</p>
+<p>{{ phrase("docs.articles.data-npc.common-definition-fields") }}</p>
 
-<div data-npc-field="name"><span class="dlabel">name</span> — player-facing name.</div>
-<div data-npc-field="role"><span class="dlabel">role</span> — the service or interaction family used by the game client.</div>
-<div data-npc-field="skin"><span class="dlabel">skin</span> — sprite or appearance key.</div>
-<div data-npc-field="says"><span class="dlabel">says</span> — short overhead line, sometimes selected from an array.</div>
-<div data-npc-field="interaction"><span class="dlabel">interaction</span> — longer dialogue shown when the NPC has no specialist panel.</div>
-<div data-npc-field="items"><span class="dlabel">items</span> — item IDs sold by a merchant.</div>
-<div data-npc-field="quest"><span class="dlabel">quest</span> — collection or quest interaction key.</div>
-<div data-npc-field="side_interaction"><span class="dlabel">side_interaction</span> — contextual dialogue displayed beside a specialist grid.</div>
+<div data-npc-field="name">{{ phrase_html("docs.articles.data-npc.name-player-facing-name") }}</div>
+<div data-npc-field="role">{{ phrase_html("docs.articles.data-npc.role-the-service-or-interaction-family-used-by") }}</div>
+<div data-npc-field="skin">{{ phrase_html("docs.articles.data-npc.skin-sprite-or-appearance-key") }}</div>
+<div data-npc-field="says">{{ phrase_html("docs.articles.data-npc.says-short-overhead-line-sometimes-selected-from-an") }}</div>
+<div data-npc-field="interaction">{{ phrase_html("docs.articles.data-npc.interaction-longer-dialogue-shown-when-the-npc-has") }}</div>
+<div data-npc-field="items">{{ phrase_html("docs.articles.data-npc.items-item-ids-sold-by-a-merchant") }}</div>
+<div data-npc-field="quest">{{ phrase_html("docs.articles.data-npc.quest-collection-or-quest-interaction-key") }}</div>
+<div data-npc-field="side_interaction">{{ phrase_html("docs.articles.data-npc.side-interaction-contextual-dialogue-displayed-beside-a-specialist") }}</div>
 
-<p>Map placement lives in <span class="dlabel">G.maps[map].npcs</span>. A placement contains an NPC <span class="dlabel">id</span> and either one <span class="dlabel">position</span> or a movement path in <span class="dlabel">positions</span>.</p>
+<p>{{ phrase_html("docs.articles.data-npc.map-placement-lives-in-g-maps-map-npcs") }}</p>
 
 <div class="code">var cue = find_npc("newupgrade");
 if (cue) await smart_move(cue);</div>
 
-<p><span class="dlabel">find_npc(id)</span> searches static map placements and returns smart-moveable coordinates. Seasonal or server-created NPCs may not be placed in the static map data.</p>
+<p>{{ phrase_html("docs.articles.data-npc.find-npc-id-searches-static-map-placements-and") }}</p>
 
-<p>A visible NPC entity is a PIXI-backed world object. Useful live fields include:</p>
+<p>{{ phrase("docs.articles.data-npc.a-visible-npc-entity-is-a-pixi-backed") }}</p>
 
-<div data-npc-field="id"><span class="dlabel">id</span> — live entity ID.</div>
-<div data-npc-field="npc"><span class="dlabel">npc</span> — stable key into <span class="dlabel">G.npcs</span>.</div>
-<div data-npc-field="type"><span class="dlabel">type</span> — normally <span class="dlabel">"npc"</span>.</div>
-<div data-npc-field="map"><span class="dlabel">map</span> — current map.</div>
-<div data-npc-field="x"><span class="dlabel">x</span> and <span class="dlabel">y</span> — current coordinates.</div>
+<div data-npc-field="id">{{ phrase_html("docs.articles.data-npc.id-live-entity-id") }}</div>
+<div data-npc-field="npc">{{ phrase_html("docs.articles.data-npc.npc-stable-key-into-g-npcs") }}</div>
+<div data-npc-field="type">{{ phrase_html("docs.articles.data-npc.type-normally-npc") }}</div>
+<div data-npc-field="map">{{ phrase_html("docs.articles.data-npc.map-current-map") }}</div>
+<div data-npc-field="x">{{ phrase_html("docs.articles.data-npc.x-and-y-current-coordinates") }}</div>
 
 <div class="code">var npc = get_nearest_npc();
 if (npc) {
@@ -47,8 +47,8 @@ if (npc) {
     game_log("Distance: " + distance(character, npc));
 }</div>
 
-<p><span class="dlabel">get_nearest_npc()</span> only searches NPCs currently rendered around the character. It returns the closest entity or <span class="dlabel">null</span>.</p>
+<p>{{ phrase_html("docs.articles.data-npc.get-nearest-npc-only-searches-npcs-currently-rendered") }}</p>
 
-<p>NPC services still enforce distance, inventory, currency, and item rules on the server. Travel close to the NPC, then call the documented CODE function for the service, such as <span class="rlabel" onclick="render_function_reference($(this).html())">upgrade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">craft</span>, or <span class="rlabel" onclick="render_function_reference($(this).html())">exchange_buy</span>. Do not emit raw socket messages when a public function exists.</p>
+<p>{{ phrase_html("docs.articles.data-npc.npc-services-still-enforce-distance-inventory-currency-and") }}</p>
 
-<p><b>Merrit’s visits:</b> Keep an open, stocked stand in the same place for two minutes. Your account can receive one parcel per hour. No parcels within 40px of a stationary NPC or within 10px of another open stand. A stand directly in front of another, up to 15px south and 10px sideways, also receives no parcel. <span class="rlabel" onclick="render_merrit_info()">Merrit: full rules and exchange chances</span>.</p>
+<p>{{ phrase_html("docs.articles.data-npc.merrit-s-visits-keep-an-open-stocked-stand") }}</p>

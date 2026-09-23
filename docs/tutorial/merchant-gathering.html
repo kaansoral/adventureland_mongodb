@@ -1,0 +1,30 @@
+<p>{{ phrase("docs.tutorial.new.gather_manual") }}</p>
+<div><span class="tutorial-travel" data-type="npc" data-target="basics"></span> <span class="tutorial-travel" data-type="monster" data-target="spider"></span></div>
+<p style="display:flex;align-items:center;gap:16px"><span class="tutorial-npc" data-npc="craftsman"></span><span>Leo · Mainland<br>(92, 670)</span></p>
+<div><span class="tutorial-travel" data-type="npc" data-target="craftsman"></span></div>
+<p style="display:flex;align-items:center;gap:8px;direction:ltr"><span class="tutorial-item" data-item="staff"></span> + <span class="tutorial-item" data-item="spidersilk"></span> → <span class="tutorial-item" data-item="rod"></span></p>
+<p style="display:flex;align-items:center;gap:8px;direction:ltr"><span class="tutorial-item" data-item="staff"></span> + <span class="tutorial-item" data-item="spidersilk"></span> + <span class="tutorial-item" data-item="blade"></span> → <span class="tutorial-item" data-item="pickaxe"></span></p>
+<p>{{ phrase("docs.tutorial.new.gather_start") }}</p>
+<div><span class="tutorial-travel" data-type="npc" data-target="fisherman"></span> <span class="tutorial-travel" data-type="map" data-target="tunnel"></span></div>
+<span class="clickable dlabel" onclick="open_guide('gathering', get_guide_url('gathering'))">{{ phrase("directory.guide.gathering.title") }}</span>
+<p>{{ phrase("docs.tutorial.new.delivery_manual") }}</p>
+<p><span class="tutorial-item" data-item="marketparcel"></span></p>
+<span class="clickable dlabel" onclick="open_guide('npc-merrit', get_guide_url('npc-merrit'))">{{ phrase("directory.guide.npc-merrit.title") }}</span>
+<p>{{ phrase("docs.tutorial.new.merchant_finish") }}</p>
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<!-- prettier-ignore -->
+<div class="code">async function gather_once(kind) {
+	if (kind !== "fishing" &amp;&amp; kind !== "mining") return;
+	if (character.ctype !== "merchant" || character.level &lt; 16) return;
+	if (character.moving || character.mp &lt; G.skills[kind].mp || character.esize &lt; 1 || is_on_cooldown(kind)) return;
+	var tool = character.slots.mainhand;
+	var required = kind === "mining" ? "pickaxe" : "rod";
+	if (!tool || G.items[tool.name].wtype !== required) return;
+	return await use_skill(kind);
+}</div>
+<p>
+	{{ phrase("docs.tutorial.new.references") }}: <span class="rlabel clickable" onclick="load_documentation('use_skill')">use_skill</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('equip')">equip</span> · <span class="rlabel clickable" onclick="load_documentation('exchange')">exchange</span>
+</p>
+<script>render_tutorial_items();</script>

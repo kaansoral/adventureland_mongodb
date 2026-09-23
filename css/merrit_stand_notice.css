@@ -1,16 +1,26 @@
 #merrit-stand-notice {
 	pointer-events: none;
+	position: relative;
+	display: inline-block;
 }
 #merrit-stand-notice button {
-	max-width: min(440px, calc(100vw - 24px));
-	padding: 8px 12px;
+	pointer-events: auto;
+	max-width: min(440px, calc(100vw * var(--browser-zoom-inverse, 1) - 24px));
+	padding: 8px 44px 8px 12px;
 	font:
-		24px/24px pixel,
+		24px/24px var(--pixel-font, pixel),
 		monospace;
 	border: 4px solid gray;
 	background: black;
 	color: white;
 	animation: merrit-stand-warning 2.4s ease-in-out 3;
+}
+#merrit-stand-notice .merrit-notice-close {
+	position: absolute;
+	top: 0;
+	right: 0;
+	padding: 0 4px;
+	animation: none;
 }
 #merrit-stand-notice span {
 	display: block;

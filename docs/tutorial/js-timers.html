@@ -1,0 +1,71 @@
+<p>{{ phrase_html("docs.tutorial.js-timers.idea") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.task") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-timers.task") }}</p>
+
+<p>{{ phrase("docs.tutorial.javascript.practice") }}</p>
+
+<div class="tutorial-code" data-lesson="timers">
+	<!-- prettier-ignore -->
+	<div class="code executeb">let count = 0;
+let timer;
+const hp = character.hp;
+function report() {
+  game_log("HP: " + hp);
+  count++;
+  if (count &lt; 3) timer = setTimeout(report, 1000);
+}
+function stopReports() { clearTimeout(timer); }
+report();</div>
+
+	<div class="tutorial-code-result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.hint") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-timers.hint") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.solution") }}</div>
+
+<!-- prettier-ignore -->
+<div class="code readonly">let count = 0;
+let timer;
+function report() {
+  game_log("HP: " + character.hp);
+  count++;
+  if (count &lt; 3) timer = setTimeout(report, 1000);
+}
+function stopReports() { clearTimeout(timer); }
+report();</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.variation") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-timers.variation") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.transfer") }}</div>
+
+<p>{{ phrase("docs.tutorial.javascript.copy") }}</p>
+
+<p>{{ phrase_html("docs.tutorial.js-timers.transfer") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.js-timers.reading_title") }}</div>
+
+{{ phrase_html("docs.tutorial.js-timers.reading_before") }}
+
+<!-- prettier-ignore -->
+<div class="code readonly">function later() { game_log("Later"); }
+const timer = setTimeout(later, 1000);
+game_log("Now");
+// {{ phrase("docs.tutorial.js-timers.reading.comment_1") }}</div>
+
+{{ phrase_html("docs.tutorial.js-timers.reading_after") }}
+
+<p>
+	<span class="rlabel clickable" onclick="open_article('data-character', '/docs/code/character/reference')">character</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('game_log')">game_log</span>
+</p>

@@ -1,11 +1,12 @@
 "use strict";
+const { localize, socketHandler } = require("./helpers/server_vm");
 const test = require("node:test"),
 	assert = require("node:assert/strict"),
 	fs = require("node:fs"),
 	vm = require("node:vm"),
 	path = require("node:path");
 const shared = {};
-vm.createContext(shared);
+localize(vm.createContext(shared));
 vm.runInContext(fs.readFileSync(path.join(__dirname, "../../js/old_common_functions.js"), "utf8"), shared);
 const serverSource = fs.readFileSync(path.join(__dirname, "../server.js"), "utf8");
 const rules = require("../logic/market_patron")(shared.simple_distance),
@@ -42,7 +43,7 @@ test("all spacing boundaries and mobility use world positions", () => {
 	o.x = 0;
 	o.y = -15;
 	assert.equal(rules.blockers(p, [o], [], config)[0].code, "stand_front");
-	assert.equal(rules.blockers(o, [p], [], config).length, 0);
+	assert.equal(rules.blockers(o, [p], [], config)[0].code, "stand_front");
 	o.y = -15.001;
 	assert.equal(rules.blockers(p, [o], [], config).length, 0);
 	o.y = -14;
@@ -92,7 +93,7 @@ test("shell curve diminishes to the fixed floor", () => {
 });
 test("patrol routes respect the radius with the server path constant in scope", () => {
 	const c = { server_log() {}, mssince: () => 0, node_path: path };
-	vm.createContext(c);
+	localize(vm.createContext(c));
 	// Match server.js: helpers are evaluated in the scope of its Node path import.
 	vm.runInContext("const path = node_path;", c);
 	vm.runInContext(fs.readFileSync(path.join(__dirname, "../../js/old_common_functions.js"), "utf8"), c);
@@ -187,6 +188,7 @@ function harness(options = {}) {
 			A,
 			R,
 			Date,
+			phrase: context.phrase,
 			tx_get: async (id) => staged[id],
 			tx_save: async (e) => {
 				staged[e._id] = e;
@@ -204,7 +206,7 @@ function harness(options = {}) {
 			return { failed: true, reason };
 		}
 	};
-	vm.createContext(context);
+	localize(vm.createContext(context));
 	Object.assign(shared, { G: context.G, is_array: Array.isArray });
 	vm.runInContext(
 		serverSource.slice(
@@ -241,6 +243,88 @@ function harness(options = {}) {
 		},
 	};
 }
+test("a newcomer cannot reset an older shop from either side or by reopening", () => {
+	for (const [x, y, reason] of [
+		[0, -13, "stand_front"],
+		[0, 13, "stand_front"],
+		[10, 0, "stand_close"],
+	]) {
+		const h = harness(),
+			now = Date.now(),
+			c = h.context;
+		const initial = c.market_patron_status(h.p, now);
+		const newcomer = Object.assign(merchant(x, y), { id: "New", owner: "US_new", socket: { emit() {} } });
+		c.instances.main.players.newcomer = newcomer;
+		for (let i = 0; i < 3; i++) {
+			c.market_patron_reset(newcomer);
+			const members = [newcomer, h.p, h.npc];
+			assert.equal(c.market_patron_status(newcomer, now + i, members).reasons[0].code, reason);
+			const status = c.market_patron_status(h.p, now + i, members);
+			assert.equal(status.reasons.length, 0);
+			assert.equal(status.ready_at, initial.ready_at);
+		}
+		// Moving forfeits the old place; arriving back cannot take it from the new shop.
+		h.p.moving = true;
+		c.market_patron_observe(h.p);
+		assert.equal(c.market_patron_status(newcomer, now + 4).reasons[0].code, "warming");
+		h.p.moving = false;
+		assert.equal(c.market_patron_status(h.p, now + 5).reasons[0].code, reason);
+	}
+});
+
+test("a parcel resets settling time but does not forfeit a shop's place", async () => {
+	const h = harness(),
+		c = h.context;
+	c.market_patron_status(h.p, Date.now());
+	const order = c.market_patron_placements.get(h.p).order;
+	await c.market_patron_grant(h.npc, h.p);
+	assert.equal(h.additions(), 1);
+	assert.equal(c.market_patron_placements.get(h.p).order, order);
+	assert.equal(c.market_patron_status(h.p, Date.now()).reasons[0].code, "warming");
+});
+
+test("the real merchant handler keeps repeated opens unchanged and validates before resetting", () => {
+	const h = harness(),
+		c = h.context,
+		responses = [];
+	c.socket = h.p.socket;
+	c.G.items.stand0 = { stand: "stand0" };
+	h.p.items[0] = { name: "stand0", b: "stand" };
+	c.server_log = () => {};
+	c.reslot_player = () => {};
+	c.resend = (player) => c.market_patron_observe(player);
+	c.success_response = (value) => responses.push({ success: value });
+	c.fail_response = (reason) => responses.push({ failed: reason });
+	const handler = socketHandler(c, "merchant");
+	c.market_patron_status(h.p, Date.now());
+	const session = c.market_patron_sessions.get(h.p),
+		placement = c.market_patron_placements.get(h.p);
+	for (let i = 0; i < 10; i++) handler({ num: 0 });
+	assert.equal(c.market_patron_sessions.get(h.p), session);
+	assert.equal(c.market_patron_placements.get(h.p), placement);
+	assert.equal(responses.length, 10);
+	assert(responses.every((response) => response.success));
+	handler({ num: 42 });
+	assert.equal(responses.at(-1).failed, "invalid");
+	assert.equal(c.market_patron_sessions.get(h.p), session);
+	assert.equal(h.p.p.stand, "stand0");
+	handler({ close: 1 });
+	assert.equal(h.p.p.stand, false);
+	assert.equal(h.p.items[0].b, undefined);
+	assert.equal(c.market_patron_placements.has(h.p), false);
+	handler({ num: 0 });
+	assert.equal(h.p.p.stand, "stand0");
+	assert(c.market_patron_placements.get(h.p).order > placement.order);
+	assert(c.market_patron_sessions.get(h.p).since > session.since);
+	// A different inventory copy is a real stand change, even with the same appearance.
+	h.p.items[1] = { name: "stand0" };
+	const reopened = c.market_patron_placements.get(h.p).order;
+	handler({ num: 1 });
+	assert.equal(h.p.items[0].b, undefined);
+	assert.equal(h.p.items[1].b, "stand");
+	assert(c.market_patron_placements.get(h.p).order > reopened);
+});
+
 test("parcel, shell and account receipt commit once; a second claim cannot pay", async () => {
 	const h = harness();
 	await h.context.market_patron_grant(h.npc, h.p);
@@ -317,7 +401,7 @@ test("gift feedback preserves CODE events headlessly and queues no coin visuals"
 		start_animation: (...args) => animations.push(args),
 		sfx: (...args) => sounds.push(args),
 	};
-	vm.createContext(c);
+	localize(vm.createContext(c));
 	vm.runInContext(fs.readFileSync(path.join(__dirname, "../../js/pixi/fake/pixi.min.js"), "utf8"), c);
 	const source = fs.readFileSync(path.join(__dirname, "../../js/game.js"), "utf8");
 	vm.runInContext(source.slice(source.indexOf("var merrit_seen_gifts")), c);
@@ -340,7 +424,7 @@ test("gift feedback preserves CODE events headlessly and queues no coin visuals"
 
 test("public INFO and server exchange share odds; parcels stay out of Glitch pools", () => {
 	const c = { console: { log() {}, error() {} }, require };
-	vm.createContext(c);
+	localize(vm.createContext(c));
 	for (const file of ["multipliers", "items", "npcs", "drops"])
 		vm.runInContext(fs.readFileSync(path.join(__dirname, "../../design/" + file + ".js"), "utf8"), c);
 	assert.equal(c.drops.marketparcel, c.npcs.citizen22.market.exchange);
@@ -393,7 +477,11 @@ test("public INFO and server exchange share odds; parcels stay out of Glitch poo
 	const html = fs.readFileSync(path.join(__dirname, "../../js/html.js"), "utf8");
 	vm.runInContext(html.slice(html.indexOf("function merrit_reason_text(")), c);
 	vm.runInContext(html.slice(html.indexOf("function render_drop("), html.indexOf("function smart_smart_move(")), c);
-	const info = fs.readFileSync(path.join(__dirname, "../../docs/guide/npc-merrit.html"), "utf8");
+	const nunjucks = require("nunjucks"),
+		env = new nunjucks.Environment();
+	env.addGlobal("phrase", c.phrase);
+	env.addGlobal("phrase_html", (id, parameters) => nunjucks.runtime.markSafe(c.phrase.html(id, parameters)));
+	const info = env.renderString(fs.readFileSync(path.join(__dirname, "../../docs/guide/npc-merrit.html"), "utf8"));
 	for (const expected of ["40px", "10px", "15px", "32px", "600px", "0.5%", "0.001%", "1 in 900"])
 		assert.ok(info.includes(expected), expected);
 	const rewards = c.render_drop([1, "open", "marketparcel"], 1, "#858B8E");
@@ -406,7 +494,7 @@ test("public INFO and server exchange share odds; parcels stay out of Glitch poo
 
 test("Merrit has separate proximity INFO and portrait dialogue; late replies cannot reopen it", () => {
 	const c = { no_html: false, character: { name: "Shop" }, clone: (v) => ({ ...v }), html_escape: (v) => v };
-	vm.createContext(c);
+	localize(vm.createContext(c));
 	vm.runInContext(fs.readFileSync(path.join(__dirname, "../../docs/directory.js"), "utf8"), c);
 	c.G = { npcs: require("../../design/npcs").npcs, docs: c.docs };
 	const game = fs.readFileSync(path.join(__dirname, "../../js/game.js"), "utf8");
@@ -447,8 +535,13 @@ test("Merrit has separate proximity INFO and portrait dialogue; late replies can
 		last: { name: "Shop", at: Date.now(), shells: 1, reason: "Your shop stayed stocked and left the neighbors room." },
 	});
 	c.rendered_interaction.onclick();
-	assert.ok(c.rendered_interaction.message.includes("1 SHELL"));
-	assert.ok(c.rendered_interaction.message.includes("Your shop stayed stocked"));
+	assert.ok(c.rendered_interaction.message.includes("I left you a Market Parcel just now."));
+	assert.ok(c.rendered_interaction.message.includes("a SHELL for luck"));
+	c.merrit_status_received({
+		last: { name: "MERC", at: Date.now() - 2 * 86400000, shells: 0 },
+	});
+	assert.ok(c.rendered_interaction.message.includes("I left MERC a Market Parcel the other day."));
+	assert.ok(!c.rendered_interaction.message.includes("SHELL"));
 	dialogueVisible = false;
 	const previous = conversations;
 	c.merrit_status_received({ reasons: [] });

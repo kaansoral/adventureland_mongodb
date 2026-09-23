@@ -1,4 +1,71 @@
 var craft={
+	"djinncrown":{
+		"items": [
+			[
+				80,
+				"rimeglass"
+			],
+			[
+				8,
+				"lspores"
+			],
+			[
+				2,
+				"essenceoffrost"
+			],
+			[
+				1,
+				"helmet",
+				0
+			]
+		],
+		"cost": 400000
+	},
+	"covemantle":{
+		"items": [
+			[
+				120,
+				"rimeglass"
+			],
+			[
+				12,
+				"spidersilk"
+			],
+			[
+				4,
+				"feather1"
+			],
+			[
+				1,
+				"cape",
+				0
+			]
+		],
+		"cost": 400000
+	},
+	"stillwaterlens":{
+		"items": [
+			[
+				240,
+				"rimeglass"
+			],
+			[
+				6,
+				"gemfragment"
+			],
+			[
+				8,
+				"seashell"
+			],
+			[
+				1,
+				"orbofint",
+				0
+			]
+		],
+		"cost": 800000
+	},
+
 	"sixcake":{
 		"items":[[1,"slice_strawberry"],[1,"slice_citrus"],[1,"slice_honey"],[1,"slice_mint"],[1,"slice_blueberry"],[1,"slice_nightberry"]],
 		"cost":100000,
@@ -547,6 +614,14 @@ var craft={
 		],
 		"cost":24000,
 	},
+	"bataxe":{
+		"items":[
+			[1,"cryptkey"],
+			[1,"wbasher",7],
+			[1,"essenceoflife"],
+		],
+		"cost":120000,
+	},
 	"maceofthedead":{
 		"items":[
 			[1,"mbones"],
@@ -1057,3 +1132,162 @@ var dismantle={
 	// 	"cost":20,
 	// },
 };
+
+Object.assign(craft, {
+  "cave_locktooth": {
+    "cost": 8000,
+    "items": [
+      [
+        6,
+        "cave_amber"
+      ],
+      [
+        1,
+        "blade",
+        0
+      ],
+      [
+        2,
+        "reefglass"
+      ]
+    ]
+  },
+  "cave_counterweight": {
+    "cost": 12000,
+    "items": [
+      [
+        8,
+        "cave_amber"
+      ],
+      [
+        1,
+        "wshield",
+        0
+      ],
+      [
+        1,
+        "dstones"
+      ]
+    ]
+  },
+  "cave_mothsteps": {
+    "cost": 12000,
+    "items": [
+      [
+        6,
+        "cave_amber"
+      ],
+      [
+        1,
+        "shoes",
+        0
+      ],
+      [
+        2,
+        "beewings"
+      ]
+    ]
+  },
+  "cave_loaded_die": {
+    "cost": 16000,
+    "items": [
+      [
+        10,
+        "cave_amber"
+      ],
+      [
+        8,
+        "seashell"
+      ],
+      [
+        2,
+        "reefglass"
+      ]
+    ]
+  }
+});
+
+Object.assign(craft, {
+  "cave_tunnelaxe": {
+    "cost": 12000,
+    "items": [
+      [
+        8,
+        "cave_amber"
+      ],
+      [
+        1,
+        "blade",
+        0
+      ],
+      [
+        1,
+        "wbasher",
+        0
+      ]
+    ]
+  },
+  "cave_reedscythe": {
+    "cost": 500,
+    "items": [
+      [
+        1,
+        "wbasher",
+        0
+      ],
+      [
+        1,
+        "blade",
+        0
+      ],
+      [
+        1,
+        "spidersilk"
+      ]
+    ]
+  },
+  "cave_deepaxe": {
+    "cost": 480000,
+    "items": [
+      [
+        400,
+        "cave_amber"
+      ],
+      [
+        1,
+        "cave_tunnelaxe",
+        0
+      ],
+      [
+        10,
+        "gemfragment"
+      ],
+      [
+        20,
+        "leather"
+      ]
+    ]
+  },
+  "cave_ambercoat": {
+    "cost": 360000,
+    "items": [
+      [
+        300,
+        "cave_amber"
+      ],
+      [
+        1,
+        "coat",
+        0
+      ],
+      [
+        30,
+        "spidersilk"
+      ],
+      [
+        20,
+        "cscale"
+      ]
+    ]
+  }
+});

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{domain.language or 'en'}}">
 	<head>
+		{% include "htmls/language.html" %}
 		<title>{{domain.title}}</title>
 		{% include "htmls/seo.html" %}
 		<link rel="apple-touch-icon-precomposed" href="{{favicon or '/images/favicon.png'}}" /> <!-- 152 -->
@@ -22,14 +23,15 @@
 		<script src="/js/old_common_functions.js?v={{domain.v}}"></script>
 		<script src="/js/functions.js?v={{domain.v}}"></script>
 		<script src="/js/html.js?v={{domain.v}}"></script>
+		<script src="/js/progression/sources.js?v={{domain.v}}"></script>
 		<link href="/css/common.css?v={{domain.v}}" rel="stylesheet" type="text/css"/>
 		<link href="/css/index.css?v={{domain.v}}" rel="stylesheet" type="text/css"/>
-		<script src="/data.js?v={{domain.v}}"></script>
+		<script src="/data.js?v={{domain.v}}&amp;cache=1"></script>
 		<style>
 			html, body{
 				background: black;
 				color: white;
-				font-family: pixel;
+				font-family: var(--pixel-font, pixel);
 				font-size: 32px;
 				overflow: auto;
 			}

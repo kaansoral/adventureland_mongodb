@@ -1,13 +1,13 @@
 <p>
-	Arguments:
-	<div>&nbsp;<b>*</b> Object - Character or Monster</div>
+	{{ phrase("docs.functions.attack.arguments") }}
+	<div>{{ phrase_html("docs.functions.attack.object-character-or-monster") }}</div>
 </p>
 <p>
-	Returns:
-	<div>&nbsp; <b>*</b> Promise</div>
+	{{ phrase("docs.functions.attack.returns") }}
+	<div>{{ phrase_html("docs.functions.attack.promise") }}</div>
 </p>
 
-<p>Example usages:</p>
+<p>{{ phrase("docs.functions.attack.example-usages") }}</p>
 
 <div class='code'>
 attack(target);
@@ -24,9 +24,9 @@ attack(target).then(
 );
 </div>
 
-<p>Promise Reference:</p>
+<p>{{ phrase("docs.functions.attack.promise-reference") }}</p>
 
-<span class='dlabel'>"resolve"</span>
+<span class='dlabel'>{{ phrase("docs.reference.fulfilled") }}</span>
 <div class='code'>
 {
 	source: "attack",
@@ -40,7 +40,7 @@ attack(target).then(
 </div>
 <div style='margin-bottom: 10px'></div>
 
-<span class='dlabel'>"reject"</span>
+<span class='dlabel'>{{ phrase("docs.reference.rejected") }}</span>
 <div class='code'>
 {
 	reason: "not_found", // Target not found
@@ -97,4 +97,4 @@ attack(target).then(
 </div>
 
 <p></p>
-<span class='redlabel'>"source"</span>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>

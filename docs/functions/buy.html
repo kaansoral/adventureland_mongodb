@@ -1,16 +1,16 @@
 <p>
-	Arguments:
-	<div>&nbsp;<b>*</b> String - An item key name from G.items</div>
-	<div>&nbsp;<b>*</b> Integer - (Optional) Quantity</div>
+	{{ phrase("docs.functions.buy.arguments") }}
+	<div>{{ phrase_html("docs.functions.buy.string-an-item-key-name-from-g-items") }}</div>
+	<div>{{ phrase_html("docs.functions.buy.integer-optional-quantity") }}</div>
 </p>
 <p>
-	Returns:
-	<div>&nbsp; <b>*</b> Promise</div>
+	{{ phrase("docs.functions.buy.returns") }}
+	<div>{{ phrase_html("docs.functions.buy.promise") }}</div>
 </p>
 
-<p>List of available key names: <span class="xlabel" onclick="code_eval($(this).html())">show_json(Object.keys(G.items))</span></p>
+<p>{{ phrase_html("docs.functions.buy.list-of-available-key-names-show-json-object") }}</p>
 
-<p>Example usages:</p>
+<p>{{ phrase("docs.functions.buy.example-usages") }}</p>
 
 <div class='code'>
 buy("shoes");
@@ -31,9 +31,12 @@ buy("shoes").then(
 );
 </div>
 
-<p>Promise Reference:</p>
+<p>{{ phrase("docs.functions.buy.wooden_axe") }}</p>
+<div class='code' id='buy-wooden-axe-code'>buy("waxe").then(show_json).catch(show_json);</div>
 
-<span class='dlabel'>"resolve"</span>
+<p>{{ phrase("docs.functions.buy.promise-reference") }}</p>
+
+<span class='dlabel'>{{ phrase("docs.reference.fulfilled") }}</span>
 <div class='code'>
 {
 	name: "coat",
@@ -44,7 +47,7 @@ buy("shoes").then(
 </div>
 <div style='margin-bottom: 10px'></div>
 
-<span class='dlabel'>"reject"</span>
+<span class='dlabel'>{{ phrase("docs.reference.rejected") }}</span>
 <div class='code'>
 {
 	reason: "distance", // Too far away from an NPC
@@ -76,4 +79,4 @@ buy("shoes").then(
 </div>
 
 <p></p>
-<span class='redlabel'>"source"</span>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>

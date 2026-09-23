@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{domain.language or 'en'}}">
 	<head>
+		<meta charset="utf-8">
+		{% include "htmls/language.html" %}
 		<script src="/js/jquery/jquery-{{domain.jquery_version}}.min.js"></script>
 		<script src="/js/codemirror/{{domain.cm_version}}/codemirror.js"></script>
 		<link href="/js/codemirror/{{domain.cm_version}}/codemirror.css" rel="stylesheet" type="text/css"/>
@@ -13,6 +15,7 @@
 		<script src="/js/common_functions.js?v={{domain.v}}"></script>
 		<script src="/js/old_common_functions.js?v={{domain.v}}"></script>
 		<script src="/js/functions.js?v={{domain.v}}"></script>
+		<script src="/js/html.js?v={{domain.v}}"></script>
 		<link href="/css/common.css?v={{domain.v}}" rel="stylesheet" type="text/css"/>
 		<style>
 			#render{

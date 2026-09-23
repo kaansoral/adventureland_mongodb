@@ -1,17 +1,17 @@
-<p class="tutlead">The road is yours now.</p>
+<p class="tutlead">{{ phrase("docs.tutorial.theend.the-road-is-yours-now") }}</p>
 
-<p>You can fight by hand, automate a loop, build a party, raise several characters, chase a live event, craft something rare, or simply wander until the map surprises you.</p>
+<p>{{ phrase("docs.tutorial.theend.you-can-fight-by-hand-automate-a-loop") }}</p>
 
 <div class="tutpath manual">
-	<div class="tutpath-title">KEEP EXPLORING</div>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.theend.keep-exploring") }}</div>
 	<p>
-		Nearby <span class="gamebutton gamebutton-small">INFO</span> buttons explain local systems. The <span class="gamebutton gamebutton-small">GUIDE</span> keeps every discovered path in one place.
+		{{ phrase_html("docs.tutorial.theend.nearby-info-buttons-explain-local-systems-the-guide") }}
 	</p>
 </div>
 
 <div class="tutpath codepath">
-	<div class="tutpath-title">KEEP BUILDING</div>
-	<p>CODE Docs cover every supported function. Start small, read failures, and let your code grow with your character.</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.theend.keep-building") }}</div>
+	<p>{{ phrase("docs.tutorial.theend.code-docs-cover-every-supported-function-start-small") }}</p>
 </div>
 
 <div class="tutlinks">
@@ -22,7 +22,7 @@
 			render_guide();
 		"
 	>
-		OPEN THE GUIDE
+		{{ phrase("docs.tutorial.theend.open-the-guide") }}
 	</div>
 	<div
 		class="gamebutton gamebutton-small"
@@ -31,11 +31,11 @@
 			render_code_docs();
 		"
 	>
-		OPEN CODE DOCS
+		{{ phrase("docs.tutorial.theend.open-code-docs") }}
 	</div>
 </div>
 
-<p class="tutfinal">Good luck, adventurer.</p>
+<p class="tutfinal">{{ phrase("docs.tutorial.theend.javascript_next") }}</p>
 
 <style>
 	.tutlead {

@@ -1,35 +1,35 @@
-<div class="guide-kicker">PATIENT WORK</div>
-<div class="guide-title">Fishing &amp; Mining</div>
-<p>Gathering is a Merchant specialty. A level 16 Merchant can equip the matching tool, stand inside a gathering zone, and spend time searching its local drop table.</p>
+<div class="guide-kicker">{{ phrase("docs.guide.gathering.patient-work") }}</div>
+<div class="guide-title">{{ phrase("docs.guide.gathering.fishing-mining") }}</div>
+<p>{{ phrase("docs.guide.gathering.gathering-is-a-merchant-specialty-a-level-16") }}</p>
 
 <div class="guide-card-grid">
-	<div class="guide-card"><span class="guide-card-icon gather-rod"></span><b>Fishing</b>Equip a rod in the main hand and stand at the edge of a fishing zone.</div>
-	<div class="guide-card"><span class="guide-card-icon gather-pickaxe"></span><b>Mining</b>Equip a pickaxe in the main hand and stand inside a mining zone.</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.gathering.fishing-equip-a-rod-in-the-main-hand") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.gathering.mining-equip-a-pickaxe-in-the-main-hand") }}</div>
 </div>
 
 <div class="guide-flow" style="border-color:#368D79" data-guide-visual="gathering">
-	<div class="guide-flow-node"><span class="guide-flow-icon gather-tool"></span><span class="guide-flow-label">Equip Tool</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.gathering.equip-tool") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon gather-zone">◎</span><span class="guide-flow-label">Stand Still in Zone</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.gathering.stand-still-in-zone") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon gather-result"></span><span class="guide-flow-label">Find Something—or Nothing</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.gathering.find-something-or-nothing") }}</div>
 </div>
 
 <div class="divider"></div>
-<div class="title mt15">Before Each Attempt</div>
+<div class="title mt15">{{ phrase("docs.guide.gathering.before-each-attempt") }}</div>
 <div class="guide-card-grid">
-	<div class="guide-card"><b>Merchant · Level 16</b>Other classes and lower-level Merchants cannot start these gathering skills.</div>
-	<div class="guide-card"><b>Correct main-hand tool</b>A rod starts fishing; a pickaxe starts mining. Having the tool only in inventory is not enough.</div>
-	<div class="guide-card"><b>120 MP and one space</b>Keep enough mana and at least one empty inventory position for a possible find.</div>
-	<div class="guide-card"><b>Stopped inside the zone</b>Movement or standing outside the matching zone prevents the attempt from starting.</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.gathering.merchant-level-16-other-classes-and-lower-level") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.gathering.correct-main-hand-tool-a-rod-starts-fishing") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.gathering.120-mp-and-one-space-keep-enough-mana") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.gathering.stopped-inside-the-zone-movement-or-standing-outside") }}</div>
 </div>
-<p>The action takes a few moments. A valid attempt can finish with nothing. On a find, the reward comes from that zone's own drop table; different fishing or mining places can produce different things.</p>
+<p>{{ phrase("docs.guide.gathering.the-action-takes-a-few-moments-a-valid") }}</p>
 <div class="guide-flow" style="border-color:#987B45" data-guide-visual="gathering-results">
-	<div class="guide-flow-node"><span class="guide-flow-icon gather-coat"></span><span class="guide-flow-label">Mainland Fishing Example</span></div>
-	<div class="guide-flow-node"><span class="guide-flow-icon gather-bronze"></span><span class="guide-flow-label">Tunnel Mining Example</span></div>
-	<div class="guide-flow-node"><span class="guide-flow-icon gather-empty">∅</span><span class="guide-flow-label">Valid Attempt, No Find</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.gathering.mainland-fishing-example") }}</div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.gathering.tunnel-mining-example") }}</div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.gathering.valid-attempt-no-find") }}</div>
 </div>
-<div class="guide-note">Some tools carry a break chance. A successful find can wear out the equipped tool, so inspect its properties and keep a replacement plan.</div>
+<div class="guide-note">{{ phrase("docs.guide.gathering.some-tools-carry-a-break-chance-a-successful") }}</div>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
@@ -49,10 +49,10 @@
 }
 
 gather("fishing").catch(show_json); // or "mining"</div>
-<p><span class="rlabel" onclick="render_function_reference($(this).html())">use_skill</span> waits for the gathering animation and tells you whether the completed attempt found something. A rejected Promise means a prerequisite failed before completion.</p>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">use_skill</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">is_on_cooldown</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">equip</span>.</p>
+<p>{{ phrase_html("docs.guide.gathering.use-skill-waits-for-the-gathering-animation-and") }}</p>
+<p>{{ phrase_html("docs.guide.gathering.references-use-skill-is-on-cooldown-equip") }}</p>
 
-<div class="guide-related">Gathered materials often continue into <span onclick="hide_modal(); open_guide('crafting',get_guide_url('crafting'))">Crafting and Dismantling</span>.</div>
+<div class="guide-related">{{ phrase_html("docs.guide.gathering.gathered-materials-often-continue-into-crafting-and-dismantling") }}</div>
 
 <script>
 	$(".gather-rod").html(item_container({ skin: G.items.rod.skin }, { name: "rod" }));

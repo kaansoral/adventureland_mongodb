@@ -1,0 +1,20 @@
+<p>{{ phrase("docs.tutorial.mail.open", {com: phrase("navigation.communicator_short")}) }}</p>
+<div class="divider"></div>
+<p>{{ phrase("docs.tutorial.tracktrix.intro") }}</p>
+<span class="tutorial-item" data-item="tracker"></span>
+<p>{{ phrase("docs.tutorial.mail.take", {take: phrase("interface.mail.take")}) }}</p>
+<div class="divider"></div>
+<div class="title mt15">{{ phrase("interface.cavalry.call") }}</div>
+<p>{{ phrase("interaction.cavalry.summary") }}</p>
+<p>{{ phrase("docs.cavalry.manual", {action: phrase("interface.cavalry.call")}) }}</p>
+<p><span class="clickable dlabel" onclick="open_guide('cavalry', get_guide_url('cavalry'))">{{ phrase("directory.guide.cavalry.title") }}</span> · <span class="clickable dlabel" onclick="open_guide('tracktrix', get_guide_url('tracktrix'))">Tracktrix</span></p>
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<p>{{ phrase("docs.cavalry.code") }}</p>
+<!-- prettier-ignore -->
+<div class="code">async function call_for_help() {
+	return await interact("cavalry");
+}
+call_for_help().catch(show_json);</div>
+<p><span class="rlabel clickable" onclick="load_documentation('interact')">interact</span> · <span class="rlabel clickable" onclick="load_documentation('show_json')">show_json</span></p>
+<script>render_tutorial_items();</script>

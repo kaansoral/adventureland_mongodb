@@ -1,0 +1,9 @@
+{
+  "navigation.hub": "Hub",
+  "navigation.github": "GitHub",
+	"language.choose": "Език",
+	"language.select": "Използвай {language}",
+	"language.save_failed": "Езикът ти не можа да бъде запазен. Опитай отново.",
+	"language.saving": "Запазване…",
+	"navigation.communicator_short": "КОМ"
+}

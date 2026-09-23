@@ -1,0 +1,9 @@
+{
+  "navigation.hub": "Hub",
+  "navigation.github": "GitHub",
+	"language.choose": "Wika",
+	"language.select": "Gamitin ang {language}",
+	"language.save_failed": "Hindi na-save ang iyong wika. Pakisubukan muli.",
+	"language.saving": "Sine-save…",
+	"navigation.communicator_short": "KOM"
+}

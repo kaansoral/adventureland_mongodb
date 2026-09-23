@@ -1,0 +1,74 @@
+<div class="title">{{ phrase("docs.guide.encouragement.encouragement-bonuses") }}</div>
+<p>{{ phrase("docs.guide.encouragement.adventure-land-keeps-going-if-you-are-just") }}</p>
+<p>{{ phrase("docs.guide.encouragement.bonuses-activate-automatically-and-multiply-together-select-your") }}</p>
+<div id="encouragement-personal"></div>
+
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.encouragement.new-players") }}</div>
+<p>{{ phrase("docs.guide.encouragement.everyone-whose-oldest-character-is-less-than-40") }}</p>
+<table>
+	<tr><th>{{ phrase("docs.guide.encouragement.age-of-your-oldest-character") }}</th><th>{{ phrase("docs.guide.encouragement.gold") }}</th><th>{{ phrase("docs.guide.encouragement.xp") }}</th><th>{{ phrase("docs.guide.encouragement.luck") }}</th></tr>
+	<tr><td>{{ phrase("docs.guide.encouragement.under-10-days") }}</td><td>5×</td><td>5×</td><td>5×</td></tr>
+	<tr><td>{{ phrase("docs.guide.encouragement.10-20-days") }}</td><td>2×</td><td>4×</td><td>4×</td></tr>
+	<tr><td>{{ phrase("docs.guide.encouragement.20-30-days") }}</td><td>2×</td><td>2×</td><td>3×</td></tr>
+	<tr><td>{{ phrase("docs.guide.encouragement.30-40-days") }}</td><td>1.5×</td><td>1.5×</td><td>1.5×</td></tr>
+</table>
+<p>{{ phrase("docs.guide.encouragement.new-player-xp-ends-when-that-character-reaches") }}</p>
+
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.encouragement.lone-wolf") }}</div>
+<p>{{ phrase_html("docs.guide.encouragement.3-gold-3-xp-3-luck") }}</p>
+<p>{{ phrase("docs.guide.encouragement.for-those-who-bond-with-one-adventurer-lone") }}</p>
+<p>{{ phrase("docs.guide.encouragement.another-non-merchant-on-any-linked-account-pauses") }}</p>
+<p>{{ phrase("docs.guide.encouragement.on-the-same-realm-lone-wolf-returns-at") }}</p>
+
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.encouragement.returning-players") }}</div>
+<p>{{ phrase("docs.guide.encouragement.after-more-than-60-days-away-welcome-back") }}</p>
+<p>{{ phrase_html("docs.guide.encouragement.below-level-80-3-gold-xp-and-luck") }}</p>
+<p>{{ phrase("docs.guide.encouragement.for-example-120-days-away-gives-60-days") }}</p>
+
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.encouragement.extra-rewards") }}</div>
+<p>{{ phrase("docs.guide.encouragement.a-new-lone-wolf-starts-with-15-gold") }}</p>
+<p>{{ phrase("docs.guide.encouragement.if-you-receive-100-000-gold-from-a") }}</p>
+<p>{{ phrase_html("docs.guide.encouragement.100-000-2-20-5-1-40-000") }}</p>
+<p>{{ phrase("docs.guide.encouragement.luck-runs-the-eligible-drop-tables-once-more") }}</p>
+<p>{{ phrase("docs.guide.encouragement.loot-normally-extra-items-and-gold-go-to") }}</p>
+<p>{{ phrase("docs.functions.loot.gold_total") }}</p>
+<p>{{ phrase("docs.guide.encouragement.encouragement-does-not-change-the-displayed-xp-gold") }}</p>
+
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.encouragement.fair-play") }}</div>
+<p>{{ phrase("docs.guide.encouragement.linked-accounts-count-together-another-account-on-the") }}</p>
+<p>{{ phrase("docs.guide.encouragement.last-hits-chest-openers-and-party-changes-cannot") }}</p>
+<p>{{ phrase("docs.guide.encouragement.the-highest-xp-multiplier-used-at-your-level") }}</p>
+
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.encouragement.code-read-your-bonuses") }}</div>
+<p>{{ phrase("docs.guide.encouragement.bonuses-work-automatically-in-code-and-mainframe-once") }}</p>
+<!-- prettier-ignore -->
+<div class="code" id="encouragement-code">var encouragement = { gold: 1, xp: 1, luck: 1 };
+var bonus_names = [
+    "encouragement_new",
+    "encouragement_lonewolf",
+    "encouragement_returning"
+];
+bonus_names.forEach(function (name) {
+    var bonus = character.s[name];
+    if (!bonus) return;
+    encouragement.gold *= bonus.gold_multiplier;
+    encouragement.xp *= bonus.xp_multiplier;
+    encouragement.luck *= bonus.luck_multiplier;
+});
+game_log("Encouragement: " + encouragement.gold + "x Gold, " +
+    encouragement.xp + "x XP, " + encouragement.luck + "x Luck");
+show_json(character.encouragement);</div>
+<p>{{ phrase_html("docs.guide.encouragement.these-are-encouragement-factors-before-contribution-is-applied") }}</p>
+<p>{{ phrase_html("docs.guide.encouragement.references-game-log-show-json-character") }}</p>
+<style>
+	.title { color: #467956; font-size: 36px; margin-top: 15px; }
+	.divider { margin: 15px -26px 0; height: 5px; background-color: #a2a2a2; }
+	table { border-collapse: collapse; width: 100%; text-align: left; }
+	th, td { padding: 6px 12px 6px 0; border-bottom: 1px solid #b8b8b8; }
+</style>

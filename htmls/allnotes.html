@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{domain.language or 'en'}}">
 	<head>
-		<title>Adventure Land - Update Notes</title>
+		{% include "htmls/language.html" %}
+		<title>{{ phrase("pages.allnotes.adventure-land-update-notes") }}</title>
 		<link rel="apple-touch-icon-precomposed" href="/images/favicon.png" /> <!-- 152 -->
 		<link rel="icon" href="/images/favicon.png" /> <!-- 32 -->
 		<!--[if IE]><link rel="shortcut icon" href="/images/favicon.png"><![endif]--> <!-- .ico -->
@@ -17,7 +18,7 @@
 				background: black;
 			}
 			html,pre,body{
-				font-family: Pixel;
+				font-family: var(--pixel-font, pixel);
 				color: #CECECE;
 				font-size: 24px;
 				/*text-shadow: 0 0 1px rgba(0, 0, 0, 0.4);*/
@@ -77,10 +78,10 @@
 	</head>
 	<body>
 		<div id="devlogs" class="update-notes">
-			<div class="update-notes-title">Update Notes</div>
-			<div class="update-notes-subtitle">Last Update {{ domain.last_deploy|escape }}</div>
+			<div class="update-notes-title">{{ phrase("pages.allnotes.update-notes") }}</div>
+			<div class="update-notes-subtitle">{{ phrase("pages.allnotes.last-update", {"last_deploy": domain.last_deploy|escape}) }}</div>
 			{% for entry in update_notes %}
-				<div class="update-notes-entry"><span class="update-notes-date">{{ entry.date|escape }}</span><span>{{ entry.note|escape }}</span></div>
+				<div class="update-notes-entry"><span class="update-notes-date">{{ entry.date|escape }}</span><span>{{ phrase(entry.phrase) if entry.phrase else entry.note }}</span></div>
 			{% endfor %}
 		</div>
 	</body>

@@ -1,18 +1,18 @@
 <div style='width: 600px'>
-	<p style='font-size: 32px; color: #8A203A; text-decoration: underline dotted #B30B1A'>Goo Brawl Event</p>
+	<p style='font-size: 32px; color: #8A203A; text-decoration: underline dotted #B30B1A'>{{ phrase("docs.guide.event-goobrawl.goo-brawl-event") }}</p>
 
 	<p>
-		<span class='spgoo'></span> Goo Brawl features a Zen island where you can smash funky cooperative Goo's in peace and Goo's have a chance to drop Fun Token's!
+		{{ phrase_html("docs.guide.event-goobrawl.goo-brawl-features-a-zen-island-where-you") }}
 	</p>
 
 	<p>
-		<span class='sprgoo'></span> A very rare Rainbow Goo occasionally spawns too! Has different drops and achievements!
+		{{ phrase_html("docs.guide.event-goobrawl.a-very-rare-rainbow-goo-occasionally-spawns-too") }}
 	</p>
 
 
 	<div style='margin-bottom: 24x'></div>
 
-	<div class='gamebutton' onclick="btc(event); join('goobrawl'); hide_modal();">Join the Event!</div>
+	<div class='gamebutton' onclick="btc(event); join('goobrawl'); hide_modal();">{{ phrase("docs.guide.event-goobrawl.join-the-event") }}</div>
 
 
 	<script>
@@ -21,7 +21,7 @@
 	</script>
 
 
-<p style='font-size: 32px; color: #216D25; text-decoration: underline dotted #B30B1A; margin-bottom: 10px'>Snippets</p>
+<p style='font-size: 32px; color: #216D25; text-decoration: underline dotted #B30B1A; margin-bottom: 10px'>{{ phrase("docs.guide.event-goobrawl.snippets") }}</p>
 
 <div class='code'>
 	if(server.status.goobrawl && character.map!="goobrawl")

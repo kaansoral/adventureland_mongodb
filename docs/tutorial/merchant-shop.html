@@ -1,0 +1,23 @@
+<p>{{ phrase("docs.tutorial.new.shop_manual") }}</p>
+<p style="display:flex;align-items:center;gap:16px"><span class="tutorial-npc" data-npc="standmerchant"></span><span>Divian · Mainland<br>(-193, 680)</span><span class="tutorial-item" data-item="stand0"></span></p>
+<div><span class="tutorial-travel" data-type="npc" data-target="standmerchant"></span></div>
+<hr class="mb15 mt15" />
+<p>{{ phrase("docs.tutorial.new.shop_open") }}</p>
+<p>{{ phrase("docs.tutorial.new.shop_listing") }}</p>
+<p>{{ phrase("docs.tutorial.new.shop_code") }}</p>
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<!-- prettier-ignore -->
+<div class="code">async function open_shop() {
+	if (character.ctype !== "merchant") return;
+	var slot = locate_item("stand0");
+	if (slot !== -1) return await open_stand(slot);
+}
+open_shop().catch(show_json);</div>
+<p>
+	{{ phrase("docs.tutorial.new.references") }}: <span class="rlabel clickable" onclick="load_documentation('open_stand')">open_stand</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('close_stand')">close_stand</span> · <span class="rlabel clickable" onclick="load_documentation('trade')">trade</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('wishlist')">wishlist</span>
+</p>
+<span class="clickable dlabel" onclick="open_guide('markets-and-trading', get_guide_url('markets-and-trading'))">{{ phrase("directory.guide.markets-and-trading.title") }}</span>
+<script>render_tutorial_items();</script>

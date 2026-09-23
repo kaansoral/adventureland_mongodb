@@ -1,0 +1,9 @@
+{
+  "navigation.hub": "Hub",
+  "navigation.github": "GitHub",
+	"language.choose": "Limbă",
+	"language.select": "Folosește {language}",
+	"language.save_failed": "Nu am putut salva limba. Încearcă din nou.",
+	"language.saving": "Se salvează…",
+	"navigation.communicator_short": "COM"
+}

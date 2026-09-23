@@ -4,7 +4,7 @@
 	"version": "1.3.1",
 	"identifier": "land.adventure.rpg",
 	"build": {
-		"beforeBuildCommand": "",
+		"beforeBuildCommand": "node ../scripts/build_desktop_languages.js && node ../scripts/build_desktop_images.js",
 		"beforeDevCommand": "",
 		"frontendDist": "../resources"
 	},

@@ -1,0 +1,11 @@
+<p><span class="dlabel">poker_leave(timeout_ms)</span></p>
+<p>{{ phrase("docs.functions.poker_leave.leaves-the-hold-em-table-at-once-between") }}</p>
+<p>{{ phrase_html("docs.functions.poker_leave.returns-promise-resolving-with-leaving-true-while") }}</p>
+<p>{{ phrase_html("docs.functions.poker_leave.promise-failures-unless-a-function-specific-note-says") }}</p>
+<p>{{ phrase("docs.poker.waiting") }}</p>
+<p>{{ phrase_html("docs.functions.poker_leave.notes-walking-away-from-your-stool-using") }}</p>
+<p>{{ phrase_html("docs.functions.poker_leave.example") }}</p>
+<div class="code">async function example() { var left = await poker_leave(); game_log(left.leaving ? "Leaving after this hand" : "Back in the purse: " + left.gold); } example();</div>
+
+<p></p>
+<span class="redlabel">{{ phrase("docs.reference.source_code") }}</span>

@@ -1,0 +1,9 @@
+{
+  "navigation.hub": "Hub",
+  "navigation.github": "GitHub",
+	"language.choose": "Dil",
+	"language.select": "{language} kullan",
+	"language.save_failed": "Dil tercihiniz kaydedilemedi. Lütfen tekrar deneyin.",
+	"language.saving": "Kaydediliyor…",
+	"navigation.communicator_short": "İLT"
+}

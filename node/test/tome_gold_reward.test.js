@@ -96,7 +96,9 @@ test("a PvP tome pays the victor once, consumes one copy, and preserves normal g
 		assert.equal(s.target.items[0].q, 1);
 		assert.equal(s.target.xp, 100000 - Math.floor((100000 - baseline.target.xp) / 50));
 		assert.equal(
-			s.messages.filter((m) => typeof m.data === "string" && m.data.includes("gold from the tome")).length,
+			s.messages.filter((m) =>
+				(typeof m.data === "string" ? m.data : m.data.message || "").includes("gold from the tome"),
+			).length,
 			1,
 		);
 	}
@@ -107,7 +109,12 @@ test("the last tome cannot pay a second bounty after being consumed", () => {
 	s.context.issue_player_award(s.attacker, s.target);
 	assert.equal(s.target.items[0], null);
 	s.context.issue_player_award(s.attacker, s.target);
-	assert.equal(s.messages.filter((m) => typeof m.data === "string" && m.data.includes("gold from the tome")).length, 1);
+	assert.equal(
+		s.messages.filter((m) =>
+			(typeof m.data === "string" ? m.data : m.data.message || "").includes("gold from the tome"),
+		).length,
+		1,
+	);
 });
 
 test("no tome bounty is created for same-account, merchant, zero-XP, safe-zone, duel, or non-normal deaths", () => {
@@ -126,7 +133,9 @@ test("no tome bounty is created for same-account, merchant, zero-XP, safe-zone, 
 		baseline.context.issue_player_award(baseline.attacker, baseline.target);
 		assert.equal(s.attacker.gold, baseline.attacker.gold, JSON.stringify(config));
 		assert.equal(
-			s.messages.filter((m) => typeof m.data === "string" && m.data.includes("gold from the tome")).length,
+			s.messages.filter((m) =>
+				(typeof m.data === "string" ? m.data : m.data.message || "").includes("gold from the tome"),
+			).length,
 			0,
 		);
 	}

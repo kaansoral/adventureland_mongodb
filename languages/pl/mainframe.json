@@ -1,0 +1,21 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe dodał tę postać do kolejki.",
+	"mainframe.event.included_worker_queued": "Mainframe dodał tego dołączonego Workera do kolejki.",
+	"mainframe.event.shared_with": "Współdzielone z {character}",
+	"mainframe.event.shared_with_root": "Współdzielone z postacią główną",
+	"mainframe.event.explicit_disconnect": "Rozłączenie przez właściciela konta.",
+	"mainframe.event.renewed_free": "Wykorzystano 1 bezpłatną godzinę Mainframe na {minutes} min.",
+	"mainframe.event.renewed_shell": "Pobrano 1 muszlę za {minutes} min.",
+	"mainframe.event.renewal_one": "{count} aktywna postać · Kolejne odnowienie {date}",
+	"mainframe.event.renewal_many": "Aktywne postacie: {count} · Kolejne odnowienie {date}",
+	"mainframe.event.renewal_failed": "Mainframe zatrzymał tę postać, ponieważ skończył się czas.",
+	"mainframe.event.worker_failure": "Mainframe wykrył awarię Workera i ponowi próbę.",
+	"mainframe.event.server_change": "Mainframe ponownie łączy tę postać na innym serwerze.",
+	"mainframe.level.info": "INFO",
+	"mainframe.level.warn": "UWAGA",
+	"mainframe.level.error": "BŁĄD",
+	"mainframe.event.renewal_many.few": "{count} aktywne postacie · Kolejne odnowienie {date}",
+	"mainframe.event.renewal_many.many": "{count} aktywnych postaci · Kolejne odnowienie {date}",
+	"mainframe.event.renewal_many.one": "{count} aktywna postać · Kolejne odnowienie {date}",
+	"mainframe.event.renewal_many.other": "Aktywne postacie: {count} · Kolejne odnowienie {date}"
+}

@@ -1,0 +1,184 @@
+<div class="cave-guide">
+	<div class="cave-guide-title"><span class="cave-guide-icon"></span>Cave of Many Dreams</div>
+	<div class="cave-guide-facts">{{ phrase("docs.cave.facts") }}</div>
+	<div id="cave-information"></div>
+	<hr />
+	<h3>{{ phrase("docs.cave.entry_heading") }}</h3>
+	<p>{{ phrase("docs.cave.intro") }}</p>
+	<p>{{ phrase("docs.cave.visit") }}</p>
+	<p>{{ phrase("docs.cave.restart") }}</p>
+	<h3>{{ phrase("docs.cave.explore_heading") }}</h3>
+	<p>{{ phrase("docs.cave.travel") }}</p>
+	<p>{{ phrase("docs.cave.hunts") }}</p>
+	<p>{{ phrase("docs.cave.death") }}</p>
+	<hr />
+	<h3>{{ phrase("docs.cave.choices_heading") }}</h3>
+	<p>{{ phrase("docs.cave.choices") }}</p>
+	<p>{{ phrase("docs.cave.time") }}</p>
+	<p>{{ phrase("docs.cave.votes") }}</p>
+	<div class="slimbutton" onclick="open_guide('cave-story', '/docs/ref/cave-story')">{{ phrase("docs.cave.story") }}</div>
+	<hr />
+	<h3>{{ phrase("docs.cave.loot_heading") }}</h3>
+	<p>{{ phrase("docs.cave.loot") }}</p>
+	<p>{{ phrase("docs.cave.purse") }}</p>
+	<p>{{ phrase("docs.cave.disconnect_purse") }}</p>
+	<p id="cave-currency-limits"></p>
+	<p>{{ phrase("docs.cave.drop_chances") }}</p>
+	<h3>{{ phrase("docs.cave.drops") }}</h3>
+	<p>{{ phrase("docs.cave.parcel_source") }}</p>
+	<div data-cave-drops="cave_parcel"></div>
+	<hr />
+	<h3>{{ phrase("docs.cave.rescue_rewards") }}</h3>
+	<p>{{ phrase("docs.cave.rescue_source") }}</p>
+	<div data-cave-drops="cave_rescue"></div>
+	<hr />
+	<h3>{{ phrase("docs.cave.camp_rewards") }}</h3>
+	<p>{{ phrase("docs.cave.camp_source") }}</p>
+	<div data-cave-drops="cave_farm"></div>
+	<hr />
+	<h3>{{ phrase("docs.cave.keeper_rewards") }}</h3>
+	<p>{{ phrase("docs.cave.keeper_source") }}</p>
+	<div data-cave-drops="cave_boss"></div>
+	<hr />
+	<h3>{{ phrase("docs.cave.rewards") }}</h3>
+	<p>{{ phrase("docs.cave.finish_source") }}</p>
+	<div data-cave-drops="cave_finish"></div>
+	<hr />
+	<h3>{{ phrase("docs.cave.rare_crafts_heading") }}</h3>
+	<p>{{ phrase("docs.cave.rare_crafts") }}</p>
+	<div class="cave-guide-finish-bonus"></div>
+	<hr />
+	<h3>{{ phrase("docs.cave.danger_heading") }}</h3>
+	<div class="cave-guide-rares"></div>
+	<p>{{ phrase("docs.cave.danger") }}</p>
+	<p>{{ phrase("docs.cave.rogue") }}</p>
+	<hr />
+	<p>{{ phrase("docs.cave.common_weapons") }}</p>
+	<p>{{ phrase("docs.cave.equipment_roles") }}</p>
+	<p>{{ phrase("docs.cave.craft") }}</p>
+	<div class="cave-guide-crafts"></div>
+	<hr />
+	<p>{{ phrase("docs.cave.exit") }}</p>
+	<hr />
+	<h3>{{ phrase("docs.cave.code_heading") }}</h3>
+	<p>{{ phrase("docs.cave.return_code") }}</p>
+	<!-- prettier-ignore -->
+	<div class="code">var visit = await cave_info();
+if (visit.resume &amp;&amp; visit.resume.server === server.region + server.id) {
+    var result = await cave_enter();
+    show_json(result);
+}</div>
+	<hr />
+	<p>{{ phrase("docs.cave.code") }}</p>
+	<!-- prettier-ignore -->
+	<div class="code">var last_choice = null;
+var reply_id = null;
+character.on("cave", async function(state) {
+    var choice = state &amp;&amp; state.choice;
+    if (!choice || choice.resolved) return;
+    if (choice.id === last_choice) return;
+    show_json(choice.options);
+    var offered = choice.options.some(function(o) {
+        return o.id === reply_id &amp;&amp; !o.unavailable;
+    });
+    if (!reply_id || !offered) return;
+    last_choice = choice.id;
+    try {
+        var receipt = await cave_reply(choice.id, reply_id);
+        show_json(receipt);
+    } catch (error) {
+        show_json(error);
+    }
+});</div>
+	<p>{{ phrase("docs.cave.pause_code") }}</p>
+	<!-- prettier-ignore -->
+	<div class="code">var visit = await cave_info();
+show_json(visit);
+
+setInterval(function() {
+    if (character.cave &amp;&amp; character.cave.paused) return;
+    // {{ phrase("docs.cave.routine_comment") }}
+}, 250);</div>
+	<p>
+		<a href="/docs/code/functions/cave_info">cave_info</a> · <a href="/docs/code/functions/cave_enter">cave_enter</a> · <a href="/docs/code/functions/cave_reply">cave_reply</a> ·
+		<a href="/docs/code/functions/cave_buy">cave_buy</a> · <a href="/docs/code/functions/cave_exit">cave_exit</a>
+	</p>
+	<hr />
+	<p>{{ phrase("docs.cave.travelers") }}</p>
+	<!-- prettier-ignore -->
+	<div class="code">var traveler = Object.values(parent.entities).find(function(npc) {
+    return npc.cave &amp;&amp; npc.cave.citizen
+        &amp;&amp; distance(character, npc) &lt; 160;
+});
+if (traveler) {
+    var reply = await cave_talk(traveler.cave.room, traveler.id);
+    if (reply.chat) game_log(reply.chat.name + ": " + reply.chat.text);
+}</div>
+	<p><a href="/docs/code/functions/cave_talk">cave_talk</a></p>
+	<hr />
+	<p>{{ phrase("docs.cave.chest_code") }}</p>
+	<!-- prettier-ignore -->
+	<div class="code">// {{ phrase("docs.cave.loot_comment") }}
+if (character.cave &amp;&amp; !character.cave.paused &amp;&amp; !character.rip) {
+    for (var id in parent.chests) {
+        var chest = parent.chests[id];
+        if (chest.map === character.map &amp;&amp; distance(character, chest) &lt;= 400) {
+            var reward = await loot(id);
+            show_json(reward.cave || reward);
+        }
+    }
+}</div>
+	<p><a href="/docs/code/functions/loot">loot</a></p>
+	<hr />
+	<p>{{ phrase("docs.cave.craft_code") }}</p>
+	<!-- prettier-ignore -->
+	<div class="code">var crafted = await auto_craft("cave_tunnelaxe");
+show_json(crafted);</div>
+	<p>{{ phrase("docs.cave.boots_code") }}</p>
+	<!-- prettier-ignore -->
+	<div class="code">var crafted = await auto_craft("cave_mothsteps");
+show_json(crafted);</div>
+	<p><a href="/docs/code/functions/auto_craft">auto_craft</a> · <a href="/docs/code/functions/craft">craft</a></p>
+</div>
+<script>
+	$(function () {
+		if (typeof update_cave_info === "function") {
+			update_cave_info();
+			cave_load_visit();
+		}
+		$("#cave-currency-limits").text(phrase("cave.currency_limits", { gold: G.events.dreams.gold_limit, amber: G.events.dreams.amber_limit }));
+		$("[data-cave-drops]").each(function () {
+			$(this).html(render_drop([1, "open", $(this).attr("data-cave-drops")], 1, "#858B8E", "percent"));
+		});
+		$(".cave-guide-icon").html(item_container({ skin: "cave_info", draggable: false }, null, { r: 3 }));
+		$(".cave-guide-rares").html(
+			["cave_darkmage", "cave_rogue_weapon"]
+				.map(function (table) {
+					return render_drop([1, "open", table], 1, "#858B8E");
+				})
+				.join(" "),
+		);
+		$(".cave-guide-finish-bonus").html(
+			G.drops.cave_finish_bonus
+				.map(function (drop) {
+					return render_drop(drop, 1, "#858B8E", "percent");
+				})
+				.join(" "),
+		);
+		$(".cave-guide-crafts").html(
+			["cave_tunnelaxe", "cave_reedscythe", "cave_deepaxe", "cave_ambercoat", "cave_locktooth", "cave_counterweight", "cave_mothsteps", "cave_loaded_die"]
+				.map(function (name) {
+					return (
+						"<div class='clickable' onclick='render_recipe(null,\"\",\"" +
+						name +
+						"\")'>" +
+						item_container({ skin: G.items[name].skin, def: G.items[name], draggable: false }, { name: name, level: 0 }) +
+						" " +
+						G.items[name].name +
+						"</div>"
+					);
+				})
+				.join(""),
+		);
+	});
+</script>

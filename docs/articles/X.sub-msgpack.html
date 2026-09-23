@@ -1,25 +1,25 @@
-<p><span class="dlabel">MessagePack socket transport</span></p>
+<p>{{ phrase_html("docs.articles.x.sub-msgpack.messagepack-socket-transport") }}</p>
 
-<p>Custom clients can use an optional MessagePack Socket.IO connection. It carries the same game events and JSON-compatible values with smaller binary frames. The ordinary client and existing custom clients continue to use the normal socket path; no migration is required.</p>
+<p>{{ phrase("docs.articles.x.sub-msgpack.custom-clients-can-use-an-optional-messagepack-socket") }}</p>
 
-<p>This transport is for standalone clients and integrations outside character CODE. Character CODE already uses the game's active connection and cannot replace its parser.</p>
+<p>{{ phrase("docs.articles.x.sub-msgpack.this-transport-is-for-standalone-clients-and-integrations") }}</p>
 
-<p>Each server directory entry provides two paths:</p>
+<p>{{ phrase("docs.articles.x.sub-msgpack.each-server-directory-entry-provides-two-paths") }}</p>
 
 <div class="code">server.path          // Normal Socket.IO transport
 server.msgpack_path  // Optional MessagePack transport</div>
 
-<p>External clients can retrieve the current server directory from the API. Browser-only clients should have their host supply the selected entry:</p>
+<p>{{ phrase("docs.articles.x.sub-msgpack.external-clients-can-retrieve-the-current-server-directory") }}</p>
 
 <div class="code">https://adventure.land/api/get_servers</div>
 
-<p>Select one response entry and use it as <span class="dlabel">server</span> in the examples below. The official game page keeps its server directory in <span class="dlabel">X.servers</span>; external clients should use the API instead.</p>
+<p>{{ phrase_html("docs.articles.x.sub-msgpack.select-one-response-entry-and-use-it-as") }}</p>
 
-<p>The MessagePack path is a separate endpoint. A connection must use its matching parser from the first packet onward. Do not connect a normal Socket.IO parser to <span class="dlabel">msgpack_path</span>, and do not use the MessagePack parser with <span class="dlabel">path</span>.</p>
+<p>{{ phrase_html("docs.articles.x.sub-msgpack.the-messagepack-path-is-a-separate-endpoint-a") }}</p>
 
-<p><span class="dlabel">Browser client</span></p>
+<p>{{ phrase_html("docs.articles.x.sub-msgpack.browser-client") }}</p>
 
-<p>The parser is specific to Adventure Land's positional format. Generic Socket.IO MessagePack parsers are not compatible. <a href="https://adventure.land/js/socket.io-msgpack-parser.min.js">Download the Adventure Land parser</a>, or load it directly after Socket.IO:</p>
+<p>{{ phrase_html("docs.articles.x.sub-msgpack.the-parser-is-specific-to-adventure-land-s") }}</p>
 
 <div class="code">&lt;script src="https://adventure.land/js/socket.io/4.2.0/socket.io.min.js"&gt;&lt;/script&gt;
 &lt;script src="https://adventure.land/js/socket.io-msgpack-parser.min.js"&gt;&lt;/script&gt;
@@ -38,11 +38,11 @@ if (server.msgpack_path) {
 var socket = io("https://" + server.address, options);
 &lt;/script&gt;</div>
 
-<p>The fallback is intentional: a custom client can still connect to a server that does not advertise the optional endpoint.</p>
+<p>{{ phrase("docs.articles.x.sub-msgpack.the-fallback-is-intentional-a-custom-client-can") }}</p>
 
-<p><span class="dlabel">Node.js client</span></p>
+<p>{{ phrase_html("docs.articles.x.sub-msgpack.node-js-client") }}</p>
 
-<p>Download the same parser beside your external client. It also exports a CommonJS module:</p>
+<p>{{ phrase("docs.articles.x.sub-msgpack.download-the-same-parser-beside-your-external-client") }}</p>
 
 <div class="code">curl -fsSLo socket.io-msgpack-parser.min.js https://adventure.land/js/socket.io-msgpack-parser.min.js</div>
 
@@ -63,11 +63,11 @@ function connectToServer(server) {
 	return io("https://" + server.address, options);
 }</div>
 
-<p>Use the parser file shipped by Adventure Land so the wire format stays exact. Authentication, acknowledgements, event names, and event payloads are otherwise unchanged.</p>
+<p>{{ phrase("docs.articles.x.sub-msgpack.use-the-parser-file-shipped-by-adventure-land") }}</p>
 
-<p><span class="dlabel">Format and limits</span></p>
+<p>{{ phrase_html("docs.articles.x.sub-msgpack.format-and-limits") }}</p>
 
-<p>Each Socket.IO packet is one positional MessagePack array:</p>
+<p>{{ phrase("docs.articles.x.sub-msgpack.each-socket-io-packet-is-one-positional-messagepack") }}</p>
 
 <div class="code">[0] or [0, data]  // Connect
 [1]               // Disconnect
@@ -76,12 +76,12 @@ function connectToServer(server) {
 [3, id, data]     // Acknowledgement
 [4, data]         // Connection error</div>
 
-<p>The root namespace is implicit, and packet field names are not sent. For example, <span class="dlabel">socket.emit("hello", "you")</span> becomes <span class="dlabel">[2, ["hello", "you"]]</span>: 13 bytes instead of 17 with the normal JSON frame or 29 with a generic MessagePack packet map.</p>
+<p>{{ phrase_html("docs.articles.x.sub-msgpack.the-root-namespace-is-implicit-and-packet-field") }}</p>
 
-<p>Most game events use less bandwidth because MessagePack stores numbers and collections compactly while the positional envelope stays small. Exact savings depend on the payload; WebSocket and TLS framing are unchanged.</p>
+<p>{{ phrase("docs.articles.x.sub-msgpack.most-game-events-use-less-bandwidth-because-messagepack") }}</p>
 
-<p>Payloads follow JSON behavior: use strings, finite numbers, booleans, null, arrays, and ordinary objects. Dates become ISO strings; undefined object properties are omitted; undefined array entries and non-finite numbers become null. Binary values, MessagePack extensions, BigInt, circular objects, custom namespaces, and reserved Socket.IO event names are rejected.</p>
+<p>{{ phrase("docs.articles.x.sub-msgpack.payloads-follow-json-behavior-use-strings-finite-numbers") }}</p>
 
-<p>The optional endpoint is WebSocket-only and accepts at most 64 KiB in a client packet. Keep messages small and use the normal game event flow. A parser error closes only that connection; reconnect with the same parser and path rather than changing parsers on an open socket.</p>
+<p>{{ phrase("docs.articles.x.sub-msgpack.the-optional-endpoint-is-websocket-only-and-accepts") }}</p>
 
-<p>Thanks to <span class="dlabel">AriaHarper</span> for the analysis, suggestion, and nudge that inspired this transport.</p>
+<p>{{ phrase_html("docs.articles.x.sub-msgpack.thanks-to-ariaharper-for-the-analysis-suggestion-and") }}</p>

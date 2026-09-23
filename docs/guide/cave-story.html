@@ -1,0 +1,6 @@
+<div style="width:480px;font-size:24px">
+	<p>Cave of Many Dreams</p>
+	{% for page in [1,2,3,4,5] %}
+	<p><img src="/images/comics/cave/{% if domain.language != 'en' %}{{domain.language}}/{% endif %}{{page}}.png?v=2" width="480" height="270" style="image-rendering:crisp-edges;image-rendering:pixelated" alt="{{ phrase('docs.cave.comic.page' + page + '.alt')|e }}"></p>
+	{% endfor %}
+</div>

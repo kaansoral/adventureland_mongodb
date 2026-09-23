@@ -2,85 +2,96 @@
 	<div id="pagewrapped" class="loginorselection hidewithmodals">
 		{% if domain.purchase_mode and not domain.electron and not domain.tauri %}
 			<div id="loginbuttons">
-				<div class="whiteheader mb4"><a class='cancela' href="https://store.steampowered.com/app/777150/Adventure_Land__The_Code_MMORPG/" target="_blank">&gt; Purchase on Steam <span style='color: #85C76B'>[Live!]</span></a></div>
-				<div class="whiteheader mb4"><a class='cancela' href="https://itunes.apple.com/app/adventure-land-code-mmorpg/id1442098247?mt=12" target="_blank">&gt; Purchase on Mac App Store <span style='color: #85C76B'>[Live!]</span></a></div>
+				<a class="textbutton block mb4" href="/steam-signup">{{ phrase("pages.steam_signup.title") }}</a>
+				<div class="whiteheader mb4">{{ phrase_html("pages.contents.login.purchase-on-steam-live") }}</div>
+				<div class="whiteheader mb4">{{ phrase_html("pages.contents.login.purchase-on-mac-app-store-live") }}</div>
 				{% if domain.Dev %}
-					<div class="whiteheader mb4 clickable" onclick="$('#loginbuttons').hide(); $('#edusignup').show(); on_resize()">&gt; Signup <span style='color: #2FA6C8'>[Development Use]</span></div>
+					<div class="whiteheader mb4 clickable" onclick="$('#loginbuttons').hide(); $('#edusignup').show(); on_resize()">{{ phrase_html("pages.contents.login.signup-development-use") }}</div>
 				{% endif %}
 				<!--
 					<div class="whiteheader mb4 clickable" onclick="$('#loginbuttons').hide(); $('#edusignup').show(); on_resize()">&gt; Free Signup <span style='color: #2FA6C8'>[Educational Use]</span></div>
 				-->
-				<div class="whiteheader mb4 clickable" onclick="$('#loginbuttons').hide(); $('#loginlogin').show(); on_resize()">&gt; Login to the Game</div>
-				<div class="whiteheader mb4">Note: <span class='gray'>Signup requires a purchased copy</span></div>
+				<div class="whiteheader mb4 clickable" onclick="$('#loginbuttons').hide(); $('#loginlogin').show(); on_resize()">{{ phrase("pages.contents.login.login-to-the-game") }}</div>
+				<div class="whiteheader mb4">{{ phrase_html("pages.contents.login.note-signup-requires-a-purchased-copy") }}</div>
 			</div>
 			<div id="edusignup" style="display:none">
 				<div style='border-bottom: 5px solid gray; margin-left: -10px; margin-right: -10px; font-size: 24px; padding: 16px; text-align: left; margin-bottom: 5px; background-color: #E5E5E5; color: #010805; margin-top: -10px; text-shadow:none'>
-					<p>Adventure Land aims to generate revenue from digital copy sales, while regular MMORPG's ban automators, we embrace them, and go further to let anyone have 4 characters online, 24/7, freely. We have a lot of costs, so if you can afford it, please consider purchasing the game.</p>
-					<p>However, if you are going to use the game with the intention of learning how to Code, improve yourself, you can freely signup, and play to your hearts desire, without any restrictions! :]</p>
-					<p>Have fun - and thank you for joining!</p>
+					<p>{{ phrase("pages.contents.login.adventure-land-aims-to-generate-revenue-from-digital") }}</p>
+					<p>{{ phrase("pages.contents.login.however-if-you-are-going-to-use-the") }}</p>
+					<p>{{ phrase("pages.contents.login.have-fun-and-thank-you-for-joining") }}</p>
 					<!--
 						I really wanted to let anyone play freely, but the realities proved it impossible, even if the condition is to learn coding, it makes the game free to play in the eyes of a regular player, a high percentage of early players expected something extra after they purchased the game, I predicted a larger backlash once the game is fully released, and had to disable this feature [02/01/19]
 					-->
 				</div>
-				<div class="whiteheader mb4">&gt; Email</div>
+				<div class="whiteheader mb4">{{ phrase("pages.contents.login.email") }}</div>
 				<input class="selectioninput" id="email1" type="text"></input>
-				<div class="whiteheader mt5 mb4">&gt; Password</div>
+				<div class="whiteheader mt5 mb4">{{ phrase("pages.contents.login.password") }}</div>
 				<input class="selectioninput" id="password1" type="password" onkeydown="if(event.keyCode==13) $('.subutton')[0].onclick()"></input>
-				<div class="textbutton mt5 subutton" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email1').val(),password:$('#password1').val(),only_signup:true},{disable:$(this)})">&gt; Signup</div>
-				<div class="textbutton mt5" onclick="$('#edusignup').hide(); $('#loginbuttons').show(); on_resize()">&lt; Back</div>
+				<div class="textbutton mt5 subutton" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email1').val(),password:$('#password1').val(),only_signup:true},{disable:$(this)})">{{ phrase("pages.contents.login.signup") }}</div>
+				<div class="textbutton mt5" onclick="$('#edusignup').hide(); $('#loginbuttons').show(); on_resize()">{{ phrase("pages.contents.login.back") }}</div>
 			</div>
 			<div id="loginlogin" style="display:none">
-				<div class="whiteheader mb4">&gt; Email</div>
+				<div class="whiteheader mb4">{{ phrase("pages.contents.login.email") }}</div>
 				<input class="selectioninput" id="email2" type="text"></input>
-				<div class="whiteheader mt5 mb4">&gt; Password</div>
+				<div class="whiteheader mt5 mb4">{{ phrase("pages.contents.login.password") }}</div>
 				<input class="selectioninput" id="password2" type="password" onkeydown="if(event.keyCode==13) $('.lbutton')[0].onclick()"></input>
-				<div class="textbutton mt5 lbutton" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email2').val(),password:$('#password2').val(),only_login:true},{disable:$(this)})">&gt; Login</div>
-				<div class="textbutton mt5 passwordui hiddenx" onclick="if(bc(this)) return; api_call_l('password_reminder',{email:$('#email2').val()},{disable:$(this)})">&gt; Forgot My Password</div>
-				<div class="textbutton mt5" onclick="$('#loginlogin').hide(); $('#loginbuttons').show(); on_resize()">&lt; Back</div>
+				<div class="textbutton mt5 lbutton" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email2').val(),password:$('#password2').val(),only_login:true},{disable:$(this)})">{{ phrase("pages.contents.login.login") }}</div>
+				<div class="textbutton mt5 passwordui hiddenx" onclick="if(bc(this)) return; api_call_l('password_reminder',{email:$('#email2').val()},{disable:$(this)})">{{ phrase("pages.contents.login.forgot-my-password") }}</div>
+				<div class="textbutton mt5" onclick="$('#loginlogin').hide(); $('#loginbuttons').show(); on_resize()">{{ phrase("pages.contents.login.back") }}</div>
 			</div>
 		{% elif 0 %}
-			<input type="text" class="input block" id="email" placeholder="Email" />
-			<input type="text" class="input block" id="password" placeholder="Password" />
-			<button class="button block" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email').val(),password:$('#password').val()},{disable:$(this)})">Start Playing!</button>
+			<input type="text" class="input block" id="email" placeholder="{{ phrase("pages.contents.login.label-email") }}" />
+			<input type="text" class="input block" id="password" placeholder="{{ phrase("pages.contents.login.label-password") }}" />
+			<button class="button block" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email').val(),password:$('#password').val()},{disable:$(this)})">{{ phrase("pages.contents.login.start-playing") }}</button>
 		{% else %}
-			<div class="whiteheader mb4">&gt; Email</div>
+			<div class="whiteheader mb4">{{ phrase("pages.contents.login.email") }}</div>
 			<input class="selectioninput" id="email" type="text"></input>
-			<div class="whiteheader mt5 mb4">&gt; Password</div>
+			<div class="whiteheader mt5 mb4">{{ phrase("pages.contents.login.password") }}</div>
 			<input class="selectioninput" id="password" type="password" onkeydown="if(event.keyCode==13) $('.slbutton')[0].onclick()"></input>
-			<div class="textbutton mt5 slbutton" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email').val(),password:$('#password').val()},{disable:$(this)})">&gt; Signup or Login</div>
-			<div class="textbutton mt5 passwordui hidden" onclick="if(bc(this)) return; api_call_l('password_reminder',{email:$('#email').val()},{disable:$(this)})">&gt; Forgot My Password</div>
+			<div class="textbutton mt5 slbutton" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email').val(),password:$('#password').val()},{disable:$(this)})">{{ phrase("pages.contents.login.signup-or-login") }}</div>
+			<div class="textbutton mt5 passwordui hidden" onclick="if(bc(this)) return; api_call_l('password_reminder',{email:$('#email').val()},{disable:$(this)})">{{ phrase("pages.contents.login.forgot-my-password") }}</div>
 		{% endif %}
 	</div>
 </div>
-<div class="gamebutton menu" style="position: fixed; top: 0px; right: 80px; z-index: 201; text-align: center; border-color: green">{{total}} Online!</div>
-<div id="progressui" class="gamebutton menu loading" style="position: fixed; top: 0px; right: 0px; z-index: 201; width: 40px; text-align: center" onclick='loader_click();'>0%</div>
-<div id="topleftcorner" style="z-index: 201">
-	{% set buttons="essentials"%} {% include "htmls/contents/section_buttons.html" %}
-	{% set buttons="musts"%} {% include "htmls/contents/section_buttons.html" %}
-	{% set buttons="music"%} {% include "htmls/contents/section_buttons.html" %}
+<div class="login-header disableclicks">
+	<div id="topleftcorner" class="login-navigation">
+		<div class="login-links">
+			{% set buttons="essentials"%} {% include "htmls/contents/section_buttons.html" %}
+			{% set buttons="musts"%} {% include "htmls/contents/section_buttons.html" %}
+			{% set buttons="music"%} {% include "htmls/contents/section_buttons.html" %}
+		</div>
+		{% include "htmls/contents/account_help.html" %}
+	</div>
+	<div class="menu login-status">
+		<div class="gamebutton" style="text-align: center; border-color: green">{{ phrase("pages.contents.login.online", {"total": total}) }}</div>
+		<div class="language-controls">
+			{% set buttons="language"%} {% include "htmls/contents/section_buttons.html" %}
+			<div id="progressui" class="gamebutton loading" style="width: 40px; text-align: center" onclick='loader_click();'>0%</div>
+		</div>
+	</div>
 </div>
 {% if domain.electron or domain.tauri %}
 	{% include "htmls/contents/selection_features.html" %}
 {% else %}
 	<div id="features" style="font-size: 24px; max-width: 320px" class="loginfeatures">
-		<div style='border-bottom: 2px dashed gray; color: #E7E7E7; display: inline-block; margin-bottom: 6px'>About Adventure Land</div>
+		<div style='border-bottom: 2px dashed gray; color: #E7E7E7; display: inline-block; margin-bottom: 6px'>{{ phrase("pages.contents.login.about-adventure-land") }}</div>
 		<div class="infop">
-			Adventure Land is an experimental Indie <span class='mw'>MMORPG</span>. Anyone can <span class='mw'>CODE</span> up to <span class='mw'>4!</span> characters, let Javascript do the grinding, while you do something productive!
+			{{ phrase_html("pages.contents.login.adventure-land-is-an-experimental-indie-mmorpg-anyone") }}
 		</div>
 		<div class="infop" style="margin-top: 12px">
-			Gameplay has many aspects to it. It's <span class='mw'>NON-P2W</span>. You can <span class='mw'>UPGRADE</span> weapons, <span class='mw'>COMBINE</span> accessories, <span class='mw'>EXCHANGE</span> rewards, <span class='mw'>CRAFT</span> items, farm <span class='mw'>GOLD</span>.
+			{{ phrase_html("pages.contents.login.gameplay-has-many-aspects-to-it-it-s") }}
 		</div>
 		<div class="infop" style="margin-top: 12px">
-			There are <span class='mw'>PVP</span> maps with increased LUCK, GOLD, XP.
+			{{ phrase_html("pages.contents.login.there-are-pvp-maps-with-increased-luck-gold") }}
 		</div>
 		<div class="infop" style="margin-top: 12px">
-			The ECONOMY is completely <span class='mw'>PEER-TO-PEER</span>. You can keep your <span class='mw'>MERCHANT</span> open 24/7 to <span class='mw'>SELL</span> or <span class='mw'>BUY</span> stuff.
+			{{ phrase_html("pages.contents.login.the-economy-is-completely-peer-to-peer-you") }}
 		</div>
 		<div class="infop" style="margin-top: 12px">
-			There are a lot of planned features like <span class='mw'>GUILDS</span> and <span class='mw'>DAILY EVENTS</span>, they are entirely shaped by our community and their feedback!
+			{{ phrase_html("pages.contents.login.there-are-a-lot-of-planned-features-like") }}
 		</div>
 		<div class="infop" style="margin-top: 12px">
-			Adventure Land is <a class="eexternal" href="https://github.com/kaansoral/adventureland_mongodb" target="_blank" rel="noopener"><span class='mw'>OPEN SOURCE</span></a>. Explore the code, learn from it, or help make the world better!
+			{{ phrase_html("pages.contents.login.adventure-land-is-open-source-explore-the-code") }}
 		</div>
 		{#<div class="infop" style="margin-top: 12px">
 			Ps. If you can't afford to buy the game, you can signup for free

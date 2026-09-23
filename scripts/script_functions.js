@@ -242,7 +242,14 @@ function hsince(t, ref) {
 	return mssince(t, ref) / 3600000.0;
 }
 
+function deployment_exclusions() {
+	var file = require("path").resolve(__dirname, "../.git/info/deploy-excludes");
+	if (!fs.readFileSync(file, "utf8").trim()) throw new Error("Deployment exclusions file is empty");
+	return "--exclude-from='" + file.replace(/'/g, "'\\''") + "'";
+}
+
 module.exports = {
+	deployment_exclusions: deployment_exclusions,
 	util: util,
 	format: util.format,
 	execs: execs,

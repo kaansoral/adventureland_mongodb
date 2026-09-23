@@ -25,18 +25,21 @@ module.exports = function (distance) {
 				(item.b ? p.gold >= item.price : true),
 		);
 	}
-	function blockers(p, characters, npcs, config) {
+	function blockers(p, characters, npcs, config, placement) {
 		const reasons = [];
+		const order = placement && placement(p);
 		for (const n of npcs)
 			if (n.in === p.in && !n.movable && !n.loop && distance(p, n) <= config.npc_clearance)
 				reasons.push({ code: "npc", name: n.name, distance: distance(p, n) });
 		for (const other of characters) {
 			if (other === p || other.npc || other.in !== p.in || !other.p?.stand) continue;
+			const otherOrder = placement && placement(other);
+			if (placement && (!otherOrder || (order && order < otherOrder))) continue;
 			const dx = p.x - other.x,
 				dy = p.y - other.y,
 				d = distance(p, other);
 			if (d <= config.stand_clearance) reasons.push({ code: "stand_close", name: other.name, distance: d });
-			else if (Math.abs(dx) <= config.front_width && dy >= 0 && dy <= config.front_clearance)
+			else if (Math.abs(dx) <= config.front_width && Math.abs(dy) <= config.front_clearance)
 				reasons.push({ code: "stand_front", name: other.name, distance: d });
 		}
 		return reasons;
@@ -45,8 +48,8 @@ module.exports = function (distance) {
 		const s = Math.min(10, Math.max(0, Math.floor(Number(balance) || 0)));
 		return config.shell_floor + (config.shell_zero - config.shell_floor) * ((10 - s) / 10) ** 2;
 	}
-	function qualify(p, characters, npcs, config, items, session, now) {
-		let reasons = blockers(p, characters, npcs, config);
+	function qualify(p, characters, npcs, config, items, session, now, placement) {
+		let reasons = blockers(p, characters, npcs, config, placement);
 		if (!inArea(p, config)) reasons.push({ code: "area" });
 		if (p.rip || p.dc || p.user || p.moving || !p.p?.stand) reasons.push({ code: "closed" });
 		if (!hasListing(p, items)) reasons.push({ code: "listing" });

@@ -1,0 +1,9 @@
+{
+  "navigation.hub": "Hub",
+  "navigation.github": "GitHub",
+	"language.choose": "語言",
+	"language.select": "使用{language}",
+	"language.save_failed": "無法儲存語言設定，請重試。",
+	"language.saving": "儲存中……",
+	"navigation.communicator_short": "通訊"
+}

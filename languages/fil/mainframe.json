@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Inilagay ng Mainframe sa pila ang karakter na ito.",
+	"mainframe.event.included_worker_queued": "Inilagay ng Mainframe sa pila ang kasamang Worker na ito.",
+	"mainframe.event.shared_with": "Ibinahagi kay {character}",
+	"mainframe.event.shared_with_root": "Ibinahagi sa pangunahing karakter",
+	"mainframe.event.explicit_disconnect": "Idiniskonekta ng may-ari ng account.",
+	"mainframe.event.renewed_free": "Gumamit ng 1 libreng oras sa Mainframe para sa {minutes} minuto.",
+	"mainframe.event.renewed_shell": "Naningil ng 1 kabibe para sa {minutes} minuto.",
+	"mainframe.event.renewal_one": "{count} karakter ang aktibo · Susunod na pag-renew {date}",
+	"mainframe.event.renewal_many": "{count} karakter ang aktibo · Susunod na pag-renew {date}",
+	"mainframe.event.renewal_failed": "Inihinto ng Mainframe ang karakter na ito dahil wala nang natitirang oras.",
+	"mainframe.event.worker_failure": "May nakitang pagkabigo ng Worker ang Mainframe at susubukan itong muli.",
+	"mainframe.event.server_change": "Muling ikinokonekta ng Mainframe ang karakter na ito sa ibang server.",
+	"mainframe.level.info": "IMP.",
+	"mainframe.level.warn": "BABALA",
+	"mainframe.level.error": "ERROR"
+}

@@ -38,6 +38,7 @@ function loadMcpApi() {
 		crypto,
 		fs,
 		path,
+		phrase: require("../../languages").phrase,
 		setTimeout,
 		Version: 6000,
 		upgrades: {
@@ -144,8 +145,129 @@ test("saved bank output remains bounded and reports mounted snapshots as stale",
 	});
 	assert.equal(result.success, true);
 	assert.equal(result.stale, true);
+	assert.equal(result.freshness, "possibly_stale");
 	assert.deepEqual(JSON.parse(JSON.stringify(result.packs.items0)), [{ name: "newblade", level: 3, locked: true }]);
 	assert.match(result.warning, /saved account snapshot may be stale/);
+});
+
+test("legacy bank timestamps never certify freshness, even when recent", async () => {
+	const context = loadMcpApi();
+	for (const timestamp of ["2026-01-02T00:00:00.000Z", new Date().toISOString(), "not-a-date", undefined]) {
+		const user = {
+			_id: "US_owner",
+			updated: new Date(),
+			info: { last_sync: timestamp, gold: 3590000, items0: [{ name: "ring", level: 4 }] },
+		};
+		const before = JSON.stringify(user);
+		const started = Date.now();
+		const result = await context.mcp_api_get_bank({ user });
+		assert.equal(result.success, true);
+		assert.equal(result.source, "last_account_snapshot");
+		assert.equal(result.stale, false);
+		assert.equal(result.freshness, "unverified");
+		assert.equal(result.observed_at, null);
+		assert.ok(Date.parse(result.retrieved_at) >= started && Date.parse(result.retrieved_at) <= Date.now());
+		assert.equal(result.gold, 3590000);
+		assert.equal(result.packs.items0[0].name, "ring");
+		assert.equal(result.warning, undefined);
+		assert.match(result.note, /stale flags a mounted bank, not data age/);
+		assert.equal(JSON.stringify(user), before);
+	}
+});
+
+test("either bank ownership marker warns of possible unsaved game state", async () => {
+	const context = loadMcpApi();
+	for (const lock of [{ server: "eu1" }, { mounted_to: "CH_merchant" }]) {
+		const result = await context.mcp_api_get_bank({ user: { ...lock, info: {} } });
+		assert.equal(result.stale, true);
+		assert.equal(result.freshness, "possibly_stale");
+		assert.equal(result.observed_at, null);
+		assert.equal(context.mcp_api_bank_equipment_candidates(result).length, 0);
+	}
+});
+
+test("JSON, MCP tools, and bank resources publish the same account-scoped freshness contract", async () => {
+	const context = loadMcpApi();
+	const user = { _id: "US_owner", info: { last_sync: "2026-01-02T00:00:00.000Z", gold: 3590000, items0: [] } };
+	context.get_mcp_api_user = async (token) => (token === "test-token" ? user : null);
+	function response() {
+		return {
+			status() {
+				return this;
+			},
+			set() {
+				return this;
+			},
+			send(body) {
+				this.body = body;
+				return this;
+			},
+			end() {
+				return this;
+			},
+		};
+	}
+	const json = response();
+	await context.handle_mcp_api_call({ params: { method: "get_bank" }, body: { token: "test-token" } }, json);
+	const tool = response();
+	await context.handle_mcp_transport(
+		{
+			get: (name) => (name === "authorization" ? "Bearer test-token" : ""),
+			body: { jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "get_bank", arguments: {} } },
+		},
+		tool,
+	);
+	const resource = response();
+	await context.handle_mcp_transport(
+		{
+			get: (name) => (name === "authorization" ? "Bearer test-token" : ""),
+			body: { jsonrpc: "2.0", id: 2, method: "resources/read", params: { uri: "adventureland://account/bank" } },
+		},
+		resource,
+	);
+	for (const result of [
+		json.body,
+		tool.body.result.structuredContent,
+		JSON.parse(resource.body.result.contents[0].text),
+	]) {
+		assert.equal(result.success, true);
+		assert.equal(result.gold, 3590000);
+		assert.equal(result.observed_at, null);
+		assert.equal(result.freshness, "unverified");
+		assert.ok(Number.isFinite(Date.parse(result.retrieved_at)));
+	}
+	const rejected = response();
+	await context.handle_mcp_api_call({ params: { method: "get_bank" }, body: { token: "wrong-token" } }, rejected);
+	assert.equal(rejected.body.reason, "invalid_token");
+	assert.equal(rejected.body.gold, undefined);
+	assert.equal(rejected.body.packs, undefined);
+	const description = json.body.note;
+	assert.equal(context.mcp_tools().find((entry) => entry.name === "get_bank").description, description);
+	assert.equal(
+		context.mcp_resources().find((entry) => entry.uri === "adventureland://account/bank").description,
+		description,
+	);
+});
+
+test("bank freshness documentation is translated and shared with both guides", () => {
+	const id = "docs.articles.adventure-api.every-owned-bank-pack-and-the-shared-bank";
+	const languages = require("../../languages");
+	const english = require("../../languages/en/docs")[id];
+	for (const { code } of languages.languages) {
+		const value =
+			code === "en"
+				? english
+				: JSON.parse(fs.readFileSync(path.join(root, "languages", code, "docs.json"), "utf8"))[id];
+		assert.equal(typeof value, "string", code);
+		if (code !== "en") assert.notEqual(value, english, code);
+		for (const field of ["stale", "observed_at", "retrieved_at"]) assert.ok(value.includes(field), code + ": " + field);
+		assert.doesNotMatch(value, /[{}<>]/, code);
+		assert.equal(languages.phrase(id, {}, code), value);
+	}
+	for (const name of ["adventure-api", "adventure-mcp"]) {
+		assert.ok(fs.readFileSync(path.join(root, "docs/articles", name + ".html"), "utf8").includes(id));
+		assert.ok(fs.readFileSync(path.join(root, "seo_paths.js"), "utf8").includes("/docs/guide/" + name));
+	}
 });
 
 test("item approximation follows loaded base, upgrade, breakpoint, and stat-scroll properties", () => {
@@ -258,6 +380,10 @@ test("stale bank data is excluded without blocking the plan", async () => {
 
 	assert.equal(result.success, true);
 	assert.equal(result.bank.stale, true);
+	assert.equal(result.bank.freshness, "possibly_stale");
+	assert.equal(result.bank.observed_at, null);
+	assert.ok(Number.isFinite(Date.parse(result.bank.retrieved_at)));
+	assert.match(result.bank.note, /not data age/);
 	assert.equal(result.bank.candidate_count, 0);
 	assert.match(result.bank.warning, /saved account snapshot may be stale/);
 });

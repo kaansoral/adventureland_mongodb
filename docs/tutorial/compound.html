@@ -1,4 +1,5 @@
-<p class="tutlead">Compounding turns three matching accessories into one stronger accessory.</p>
+<p class="tutlead">{{ phrase("docs.tutorial.compound.compounding-turns-three-matching-accessories-into-one-stronger") }}</p>
+<p>{{ phrase("docs.tutorial.compound.optional_practice") }}</p>
 
 <div class="tutlinks">
 	<div
@@ -8,34 +9,32 @@
 			open_guide('compounding', get_guide_url('compounding'));
 		"
 	>
-		COMPLETE COMPOUNDING GUIDE
-	</div>
-	<div
-		class="gamebutton gamebutton-small"
-		onclick="
-			btc(event);
-			code_eval('smart_move(&quot;scrolls&quot;)');
-		"
-	>
-		GO TO THE SCROLLS
+		{{ phrase("docs.tutorial.compound.complete-compounding-guide") }}
 	</div>
 </div>
 
 {% for task in tutorial_data("compound").tasks %} {% if loop.first %}
 <div class="tutdivider"></div>
 {% endif %}
-<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
+<div class="tuttaskrow">
+	<span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">{{ phrase("docs.tutorial.compound.done") }}</span>
+</div>
 {% endfor %}
 
 <div class="tutpath manual">
-	<div class="tutpath-title">MANUAL</div>
-	<p>Bring Cue three accessories with the same name and level, plus a compatible Compound Scroll. Place all four, read the chance, then decide.</p>
-	<p>A failure consumes all three accessories and the scroll. Every new level needs three of the previous level: a +2 already carries at least nine base copies inside it.</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.compound.manual") }}</div>
+	<p>{{ phrase("docs.tutorial.compound.bring-cue-three-accessories-with-the-same-name") }}</p>
+	<p style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap">
+		<span class="tutorial-npc" data-npc="scrolls"></span><span>Lucas · Mainland<br />(-464, -96)</span><span class="tutorial-item" data-item="ringsj"></span
+		><span class="tutorial-item" data-item="cscroll0"></span><span class="tutorial-npc" data-npc="newupgrade"></span><span>Cue · Mainland<br />(-207, -220)</span>
+	</p>
+	<div><span class="tutorial-travel" data-type="npc" data-target="scrolls"></span> <span class="tutorial-travel" data-type="npc" data-target="newupgrade"></span></div>
+	<p>{{ phrase("docs.tutorial.compound.a-failure-consumes-all-three-accessories-and-the") }}</p>
 </div>
 
 <div class="tutpath codepath">
-	<div class="tutpath-title">OPTIONAL CODE</div>
-	<p>With three +0 Rings of Joy and a Basic Compound Scroll in your bag:</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.compound.optional-code") }}</div>
+	<p>{{ phrase("docs.tutorial.compound.with-three-0-rings-of-joy-and-a") }}</p>
 	<!-- prettier-ignore -->
 	<div class="code">async function compound_once() {
 	await smart_move(find_npc("newupgrade"));
@@ -58,14 +57,11 @@
 compound_once().catch(function (error) {
 	show_json(error);
 });</div>
-	<p>Calculation mode consumes nothing. Read its chance, then change <span class="dlabel">CONFIRM_COMPOUND</span> to <span class="dlabel">true</span> only if you accept the risk.</p>
-	<p>
-		<span class="rlabel" onclick="render_function_reference($(this).html())">compound</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">item_grade</span> ·
-		<span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>
-	</p>
+	<p>{{ phrase_html("docs.tutorial.compound.calculation-mode-consumes-nothing-read-its-chance-then") }}</p>
+	<p>{{ phrase_html("docs.tutorial.compound.compound-item-grade-locate-item") }}</p>
 </div>
 
-<p class="tuttip"><span class="hlabel">Before risking rare pieces:</span> Read the full guide. Scroll grades, offerings, grace, and the value of all three inputs matter.</p>
+<p class="tuttip">{{ phrase_html("docs.tutorial.compound.before-risking-rare-pieces-read-the-full-guide") }}</p>
 
 <style>
 	.tutlead {
@@ -122,3 +118,6 @@ compound_once().catch(function (error) {
 		text-align: center;
 	}
 </style>
+<script>
+	render_tutorial_items();
+</script>

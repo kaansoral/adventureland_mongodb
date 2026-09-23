@@ -1,0 +1,16 @@
+<p>{{ phrase("docs.tutorial.new.xp_trade") }}</p>
+<p>{{ phrase("docs.tutorial.new.xp_donate") }}</p>
+<p style="display:flex;align-items:center;gap:16px"><span class="tutorial-npc" data-npc="lostandfound"></span><span>Ron · Wizard's Crib</span></p>
+<div><span class="tutorial-travel" data-type="npc" data-target="lostandfound"></span></div>
+<p>{{ phrase("docs.tutorial.new.xp_combat") }}</p>
+<p>{{ phrase("docs.tutorial.new.xp_gather") }}</p>
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<!-- prettier-ignore -->
+<div class="code">async function donate_once(gold) {
+	if (character.ctype !== "merchant" || gold &lt;= 0 || gold > character.gold) return;
+	return await donate_gold(gold);
+}</div>
+<p>{{ phrase("docs.tutorial.new.references") }}: <span class="rlabel clickable" onclick="load_documentation('donate_gold')">donate_gold</span></p>
+<span class="clickable dlabel" onclick="open_guide('markets-and-trading', get_guide_url('markets-and-trading'))">{{ phrase("directory.guide.markets-and-trading.title") }}</span>
+<script>render_tutorial_items();</script>

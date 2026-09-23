@@ -1,0 +1,13 @@
+<p><span class="dlabel">get_poker_table(timeout_ms)</span></p>
+<p>{{ phrase("docs.functions.get_poker_table.reads-the-public-state-of-the-tavern-s") }}</p>
+<p>{{ phrase_html("docs.functions.get_poker_table.returns-promise-resolving-with-the-table-object") }}</p>
+<p>{{ phrase_html("docs.functions.get_poker_table.promise-failures-unless-a-function-specific-note-says") }}</p>
+<p>{{ phrase_html("docs.functions.get_poker_table.notes-works-anywhere-the-same-object-arrives") }}</p>
+<p>{{ phrase_html("docs.functions.get_poker_table.example") }}</p>
+<div class="code">
+	async function example() { var table = await get_poker_table(); game_log("Blinds " + table.blinds[0] + " / " + table.blinds[1]); table.seats.forEach(function (seat, i) { if (seat) game_log("Seat " +
+	i + ": " + seat.name + " " + seat.stack); }); } example();
+</div>
+
+<p></p>
+<span class="redlabel">{{ phrase("docs.reference.source_code") }}</span>

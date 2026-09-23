@@ -1,0 +1,9 @@
+{
+  "navigation.hub": "Hub",
+  "navigation.github": "GitHub",
+	"language.choose": "اللغة",
+	"language.select": "استخدام {language}",
+	"language.save_failed": "تعذر حفظ لغتك. يرجى المحاولة مجددا.",
+	"language.saving": "يجري الحفظ…",
+	"navigation.communicator_short": "تواصل"
+}

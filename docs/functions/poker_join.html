@@ -1,0 +1,15 @@
+<p><span class="dlabel">poker_join(gold, seat, timeout_ms)</span></p>
+<p>{{ phrase("docs.functions.poker_join.sits-down-at-the-tavern-s-hold-em-table") }}</p>
+<p>{{ phrase_html("docs.functions.poker_join.returns-promise-resolving-with-seat-stack-buyin-and-blinds") }}</p>
+<p>{{ phrase_html("docs.functions.poker_join.promise-failures-unless-a-function-specific-note-says") }}</p>
+<p>{{ phrase("docs.poker.waiting") }}</p>
+<p>{{ phrase_html("docs.functions.poker_join.notes-stand-near-the-table-in-the-tavern") }}</p>
+<p>{{ phrase_html("docs.functions.poker_join.example") }}</p>
+<div class="code">
+	async function example() { var table = await get_poker_table(); var seat = table.seats.indexOf(null); if (seat == -1) return game_log("The table is full"); await smart_move({ map: "tavern", x:
+	table.x + table.stools[seat][0], y: table.y + table.stools[seat][1] }); var joined = await poker_join(table.buyin[0], seat); game_log("Seat " + joined.seat + " with " + joined.stack + " gold"); }
+	example();
+</div>
+
+<p></p>
+<span class="redlabel">{{ phrase("docs.reference.source_code") }}</span>

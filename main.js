@@ -3,11 +3,22 @@ var fs = require("fs"),
 var keys = require("./secretsandconfig/keys");
 var options = require("./secretsandconfig/options");
 var { get_seo_paths } = require("./seo_paths.js");
+var localization = require("./languages");
+var phrase = localization.phrase,
+	phrase_html = localization.phrase_html;
 
 eval("" + fs.readFileSync(path.resolve(__dirname, "common/init.js")));
 reinit_from_options();
 
+var web_assets = require("./web_assets").create_web_assets({ root: __dirname, read_data: get_browser_data, local: Local });
+app.all("/data.js", web_assets.serve_data);
 app.use("/sounds", express.static("./sounds", { maxAge: "30d" }));
+app.get("/phrases/:language.js", localization.serve);
+app.use(
+	localization.middleware(function (req) {
+		return get_user(req);
+	}),
+);
 
 // Override MongoDB connection from common/init.js with keys.mongodb_uri
 if (keys.mongodb_uri) {
@@ -87,6 +98,25 @@ try {
 
 // ==================== ROUTES ====================
 
+var steam_signup = require("./steam_signup").create_steam_signup({
+	key: () => keys.steam_publisher_web_apikey,
+	get_user,
+	purify_email,
+	local_origin: Local ? options.base_url : null,
+	signup(args, grant) {
+		args.res.infs = [];
+		return signup_or_login_api(args, grant);
+	},
+	async render(req, res, form) {
+		var domain = await get_domain(req);
+		res.send(nunjucks.render("htmls/steam_signup.html", { domain, ...form }));
+	},
+});
+app.get("/steam-signup", steam_signup.page);
+app.post("/steam-signup/start", steam_signup.start);
+app.get("/steam-signup/callback", steam_signup.callback);
+app.post("/steam-signup/complete", steam_signup.complete);
+
 // Main page / Selection
 app.get("/", async (req, res, next) => {
 	var user = await get_user(req),
@@ -94,12 +124,12 @@ app.get("/", async (req, res, next) => {
 	await render_selection(req, res, user, domain);
 });
 
-// Communication page
-app.get("/comm", async (req, res, next) => {
+// External Hub page; the in-game COM panel is separate.
+app.get("/comm", (req, res) => res.redirect(301, "/hub" + req.originalUrl.slice(req.path.length)));
+app.get("/hub", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
-	var servers = await get_servers();
-	var server = select_server(req, user, servers);
+	var servers = await get_browser_servers(req);
 	var total = 0,
 		characters = [],
 		data = null;
@@ -110,6 +140,9 @@ app.get("/comm", async (req, res, next) => {
 		data = await get_user_data(user);
 	}
 	domain.servers = servers_to_client(domain, servers);
+	domain.characters = domain.characters || [];
+	var server = select_server(req, user, servers, characters);
+	res.set("Cache-Control", "no-store");
 	res.status(200).send(
 		nunjucks.render("htmls/comm.html", {
 			domain: domain,
@@ -127,7 +160,7 @@ app.get("/comm", async (req, res, next) => {
 app.get("/mainframe", async (req, res) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
-	domain.title = "Adventure Land Mainframe";
+	domain.title = phrase("server.page.adventure_land_mainframe");
 	return res
 		.status(200)
 		.set("Cache-Control", "no-store")
@@ -172,7 +205,7 @@ app.get("/codes", async (req, res) => {
 app.get("/vscode", async (req, res) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
-	domain.title = "Adventure Land for VS Code";
+	domain.title = phrase("server.page.adventure_land_for_vs_code");
 	return res
 		.status(200)
 		.set("Cache-Control", "no-store")
@@ -190,7 +223,7 @@ app.get("/character/:name", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
 	var character = await get_character(req.params.name);
-	if (!character) return res.status(200).send(nunjucks.render("htmls/simple_message.html", { domain: domain, message: "Not Found" }));
+	if (!character) return res.status(200).send(nunjucks.render("htmls/simple_message.html", { domain: domain, message: phrase("server.page.not_found") }));
 	if (!user) {
 		var ref = character.private ? req.params.name : character.owner;
 		set_cookie(res, "referrer", ref, domain.domain);
@@ -207,7 +240,7 @@ app.get("/characters", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
 	var characters = await db.collection("character").find({}).sort({ level: -1 }).limit(500).toArray();
-	domain.title = "Characters";
+	domain.title = phrase("server.page.characters");
 	res.status(200).send(nunjucks.render("htmls/player.html", { domain: domain, characters: characters }));
 });
 
@@ -216,9 +249,9 @@ app.get("/player/:name", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
 	var character = await get_character(req.params.name);
-	if (!character) return res.status(200).send(nunjucks.render("htmls/simple_message.html", { domain: domain, message: "Not Found" }));
+	if (!character) return res.status(200).send(nunjucks.render("htmls/simple_message.html", { domain: domain, message: phrase("server.page.not_found") }));
 	var player = await get(character.owner);
-	if (!player) return res.status(200).send(nunjucks.render("htmls/simple_message.html", { domain: domain, message: "Not Found" }));
+	if (!player) return res.status(200).send(nunjucks.render("htmls/simple_message.html", { domain: domain, message: phrase("server.page.not_found") }));
 	if (!user) {
 		var ref = character.private ? req.params.name : get_id(player);
 		set_cookie(res, "referrer", ref, domain.domain);
@@ -257,17 +290,20 @@ app.get("/player/:name", async (req, res, next) => {
 app.get("/merchants", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
-	domain.title = "All Online Merchants!";
+	domain.title = phrase("server.page.all_online_merchants");
 	var entities = await db.collection("character").find({ online: true, type: "merchant" }).toArray();
 	res.status(200).send(nunjucks.render("htmls/player.html", { domain: domain, characters: entities, merchants: true }));
 });
 
 // Character + server selection (enter game)
 app.get("/character/:name/in/:region/:sname", async (req, res, next) => {
+	if (redirect_inactive_server(req, res)) return;
 	var user = await get_user(req);
 	var domain = await get_domain(req, user),
 		level = 80;
-	var servers = await get_servers();
+	var servers = await get_browser_servers(req);
+	if ((req.get("host") || "").toLowerCase().split(":")[0] === "cloudflare.adventure.land" && !servers.some((server) => server.region === req.params.region && server.name === req.params.sname))
+		return res.redirect("/");
 	var code = req.query.code;
 	if (code) domain.explicit_slot = code;
 	var user_chars = gf(user, "characters", []);
@@ -289,9 +325,10 @@ app.get("/character/:name/in/:region/:sname", async (req, res, next) => {
 
 // Server selection
 app.get("/server/:region/:sname", async (req, res, next) => {
+	if (redirect_inactive_server(req, res)) return;
 	var user = await get_user(req);
 	var domain = await get_domain(req, user);
-	var servers = await get_servers();
+	var servers = await get_browser_servers(req);
 	var S = null;
 	for (var i = 0; i < servers.length; i++) {
 		if (servers[i].region === req.params.region && servers[i].name === req.params.sname) S = servers[i];
@@ -303,7 +340,7 @@ app.get("/server/:region/:sname", async (req, res, next) => {
 app.get("/ev/:uid/:v", async (req, res, next) => {
 	var domain = await get_domain(req);
 	var user = await get(normalize_user_id(req.params.uid));
-	var message = "Email Verification Failed";
+	var message = phrase("server.page.verification_failed");
 	if (user && !gf(user, "verified")) {
 		if (gf(user, "everification") === req.params.v) {
 			var R = await tx(
@@ -314,10 +351,10 @@ app.get("/ev/:uid/:v", async (req, res, next) => {
 				},
 				{ user: user },
 			);
-			if (!R.failed) message = "Your Email Is Now Verified";
+			if (!R.failed) message = phrase("server.page.verification_complete");
 		}
 	} else if (user) {
-		message = "Your Email Is Already Verified";
+		message = phrase("server.page.verification_already");
 	}
 	res.status(200).send(nunjucks.render("htmls/simple_message.html", { domain: domain, message: message }));
 });
@@ -329,7 +366,7 @@ app.get("/reset/:uid/:key", async (req, res, next) => {
 	if (user && gf(user, "password_key", "123") === req.params.key) {
 		res.status(200).send(nunjucks.render("htmls/contents/password_reset.html", { domain: domain, user: user, id: req.params.uid, key: req.params.key }));
 	} else {
-		res.status(200).send(nunjucks.render("htmls/simple_message.html", { domain: domain, message: "Invalid Password Reset URL" }));
+		res.status(200).send(nunjucks.render("htmls/simple_message.html", { domain: domain, message: phrase("server.page.invalid_password_reset_url") }));
 	}
 });
 
@@ -351,26 +388,27 @@ app.all("/code.js", async (req, res, next) => {
 					.send("" + code.info.code);
 		}
 	}
-	if (req.query.xrequire) res.status(200).set("Content-Type", "application/javascript").send("throw('xrequire: Code not found')");
-	else res.status(200).set("Content-Type", "application/javascript").send("game_log('load_code: Code not found',colors.code_error)");
+	if (req.query.xrequire)
+		res
+			.status(200)
+			.set("Content-Type", "application/javascript")
+			.send("throw(" + JSON.stringify(phrase("server.code.xrequire_not_found")) + ")");
+	else
+		res
+			.status(200)
+			.set("Content-Type", "application/javascript")
+			.send("game_log(" + JSON.stringify(phrase("server.code.load_not_found")) + ",colors.code_error)");
 });
 
-// Game data serving
-app.all("/data.js", async (req, res, next) => {
-	var domain = await get_domain(req),
-		additional = "",
-		geometry = {},
-		rpc = {};
-	for (var id in maps) {
-		if (maps[id].ignore) continue;
-		rpc[id] = get("MP_" + maps[id].key);
-	}
-	for (var id in maps) {
-		if (maps[id].ignore) continue;
-		var map = await rpc[id];
-		if (map) geometry[id] = map.info.data;
-	}
-	var G = {
+// Called at startup and in the background, never for a cached data.js request.
+async function get_browser_data() {
+	var geometry = {},
+		ids = Object.keys(maps).filter((id) => !maps[id].ignore);
+	var records = await Promise.all(ids.map((id) => get("MP_" + maps[id].key)));
+	ids.forEach((id, index) => {
+		if (records[index]) geometry[id] = records[index].info.data;
+	});
+	return {
 		version: Version,
 		achievements: achievements,
 		animations: animations,
@@ -393,6 +431,9 @@ app.all("/data.js", async (req, res, next) => {
 		classes: classes,
 		dimensions: dimensions,
 		levels: levels,
+		upgrades: upgrades,
+		compounds: compounds,
+		monster_gold: monster_gold,
 		positions: positions,
 		skills: skills,
 		games: games,
@@ -402,19 +443,13 @@ app.all("/data.js", async (req, res, next) => {
 		docs: docs,
 		drops: drops,
 	};
-	if (req.query.reload || (req.body && req.body.reload)) additional = "add_log('Game data reloaded','#32A3B0');\napply_backup()\n";
-	res
-		.status(200)
-		.set("Content-Type", "application/javascript")
-		.set("Cache-Control", "public, max-age=2592000")
-		.send("var G=" + JSON.stringify(G) + ";\n" + additional);
-});
+}
 
 // Shells / Payment page
 app.get("/shells", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
-	var servers = await get_servers();
+	var servers = await get_browser_servers(req);
 	var server = select_server(req, user, servers);
 	domain.stripe_enabled = true;
 	res.status(200).send(nunjucks.render("htmls/payments.html", { domain: domain, user: user, server: server, extra_shells: extra_shells }));
@@ -484,7 +519,7 @@ app.post("/map/:name/:suffix?", async (req, res, next) => {
 // No POST handler intentionally: writes are not exposed here.
 app.get("/communitymaps/:name", async (req, res, next) => {
 	var name = req.params.name;
-	if (!name) return res.status(404).send("no map");
+	if (!name) return res.status(404).send(phrase("server.page.no_map"));
 	name = name.split("/")[0];
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
@@ -508,11 +543,11 @@ app.get("/editmap", async (req, res, next) => {
 
 app.get("/editmap/:name", async (req, res, next) => {
 	var name = req.params.name;
-	if (!name) return res.status(404).send("no map");
+	if (!name) return res.status(404).send(phrase("server.page.no_map"));
 	name = name.split("/")[0];
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
-	if (!user || (!gf(user, "map_editor") && !is_admin(user))) return res.status(403).send("Not Permitted!");
+	if (!user || (!gf(user, "map_editor") && !is_admin(user))) return res.status(403).send(phrase("server.page.not_permitted"));
 	var map = await get("MP_" + name);
 	res.status(200).send(
 		nunjucks.render("utility/htmls/map_editor.html", {
@@ -528,10 +563,10 @@ app.get("/editmap/:name", async (req, res, next) => {
 app.post("/editmap/:name", async (req, res, next) => {
 	var data = req.body.data;
 	var name = req.params.name;
-	if (!name) return res.status(404).send("no map");
+	if (!name) return res.status(404).send(phrase("server.page.no_map"));
 	name = name.split("/")[0];
 	var user = await get_user(req);
-	if (!user || (!gf(user, "map_editor") && !is_admin(user))) return res.status(403).send("Not Permitted!");
+	if (!user || (!gf(user, "map_editor") && !is_admin(user))) return res.status(403).send(phrase("server.page.not_permitted"));
 	var map = await get("MP_" + name);
 	if (!map) map = { _id: "MP_" + name, created: new Date(), info: {}, blobs: ["info"] };
 	if (typeof data === "string") data = JSON.parse(data);
@@ -704,13 +739,13 @@ app.get("/allnotes", async (req, res, next) => {
 app.get("/update-notes", function (req, res) {
 	var page_size = 20,
 		offset = Math.max(0, parseInt(req.query.offset, 10) || 0),
-		notes = update_notes.slice(offset, offset + page_size);
+		notes = localization.translate_notes(update_notes.slice(offset, offset + page_size));
 	res.status(200).send({ notes: notes, more: offset + notes.length < update_notes.length });
 });
 app.get("/steam-news", async function (req, res) {
 	var post = await latest_steam_news();
 	res.set("Cache-Control", "public, max-age=60");
-	res.status(post ? 200 : 503).send(post || { error: "Steam news unavailable" });
+	res.status(post ? 200 : 503).send(post || { error: phrase("server.page.steam_news_unavailable") });
 });
 app.get("/roadmap", async (req, res, next) => {
 	var user = await get_user(req),
@@ -721,7 +756,7 @@ app.get("/realm/:map?", async (req, res, next) => {
 	if (req.params.map && (!Object.prototype.hasOwnProperty.call(maps, req.params.map) || maps[req.params.map].ignore)) return next();
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
-	domain.title = "Realm Atlas | Adventure Land";
+	domain.title = phrase("server.page.realm_atlas_adventure_land");
 	res.set("Cache-Control", "no-store");
 	res.set("X-Robots-Tag", "noindex, nofollow");
 	res.status(200).send(nunjucks.render("htmls/realm.html", { domain: domain, user: user }));
@@ -779,9 +814,16 @@ app.all("/api", async (req, res, next) => {
 // ==================== START ====================
 
 const PORT = process.env.PORT || options.port;
-app.listen(PORT, () => {
+// Serve cached public text before common's static mounts without modifying shared initialization.
+const http_app = express();
+http_app.enable("trust proxy");
+http_app.use(web_assets.serve_static);
+http_app.use(app);
+web_assets.start();
+const http_server = http_app.listen(PORT, () => {
 	console.log(`\x1b[32mAdventure Land\x1b[0m listening on port ${PORT}`);
 });
+http_server.on("close", web_assets.stop);
 
 process.on("uncaughtException", function (err) {
 	console.error("#EXC Caught exception:", err);
@@ -791,4 +833,4 @@ process.on("unhandledRejection", function (err) {
 	console.error("#EXC Unhandled rejection:", err);
 });
 
-module.exports = app;
+module.exports = http_app;

@@ -1,10 +1,19 @@
 <p><span class='dlabel'>require_code(name_or_slot)</span></p>
-<p>Synchronously evaluates a code slot or local code file in module scope and returns module.exports.</p>
-<p><b>Returns:</b> Exports object or any value assigned to module.exports.</p>
-<p><b>Notes:</b> The loaded file can use module.exports or exports. Use load_code when globals are intentional.</p>
-<p><b>Example:</b></p>
-<div class='code'>var helpers = require_code("helpers");
-helpers.start();</div>
+<p>{{ phrase("docs.functions.require_code.synchronously-evaluates-a-code-slot-or-local-code") }}</p>
+<p>{{ phrase_html("docs.functions.require_code.returns-exports-object-or-any-value-assigned-to") }}</p>
+<p>{{ phrase_html("docs.functions.require_code.exports-the-loaded-file-must-explicitly-assign-module") }}</p>
+<p>{{ phrase_html("docs.functions.require_code.no-module-cache-every-call-executes-the-file") }}</p>
+<p>{{ phrase_html("docs.functions.require_code.no-circular-dependencies-a-requiring-b-while-b") }}</p>
+<p>{{ phrase_html("docs.functions.require_code.these-rules-also-apply-on-mainframe-module-scope") }}</p>
+<hr />
+<p>{{ phrase_html("docs.functions.require_code.example") }}</p>
+<p>{{ phrase("docs.functions.require_code.save-this-in-a-numbered-slot-named-constants") }}</p>
+<div class='code'>const TARGET = "goo";
+module.exports = { TARGET };</div>
+
+<p>{{ phrase("docs.functions.require_code.run-this-from-your-character-slot") }}</p>
+<div class='code'>var constants = require_code("Constants");
+game_log(constants.TARGET); // goo</div>
 
 <p></p>
-<span class='redlabel'>"source"</span>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>

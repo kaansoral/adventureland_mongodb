@@ -1,37 +1,77 @@
-<div class="guide-kicker">GOLD IN, FORTUNE OUT</div>
-<div class="guide-title">Tavern Games</div>
-<p>The Tavern's dice table and slot machine spend gold on games of chance. Read the wager twice. The house has already read it once.</p>
+<div class="guide-kicker">{{ phrase("docs.guide.tavern-games.gold-in-fortune-out") }}</div>
+<div class="guide-title">{{ phrase("docs.guide.tavern-games.tavern-games") }}</div>
+<p>{{ phrase("docs.guide.tavern-games.the-tavern-s-dice-table-and-slot-machine") }}</p>
 
 <div class="guide-showcase" style="border-color:#AA7040">
-	<div class="guide-showcase-art"><span class="tavern-jaqk"></span><span class="tavern-die">55</span><span class="tavern-slots">777</span></div>
-	<div class="guide-showcase-copy"><b>Ask Jaqk for the current house</b>The tavern panel shows whether betting is open, its edge, and the largest win it can presently cover.</div>
+	<div class="guide-showcase-art"><span class="tavern-jaqk"></span><span class="tavern-machines"></span></div>
+	<div class="guide-showcase-copy">{{ phrase_html("docs.guide.tavern-games.house_rules") }}</div>
 </div>
 
 <div class="divider"></div>
-<div class="title mt15">Dice</div>
+<div class="title mt15">{{ phrase("docs.guide.tavern-games.dice") }}</div>
 <div class="guide-flow" style="border-color:#AA7040" data-guide-visual="tavern-dice">
-	<div class="guide-flow-node"><span class="guide-flow-icon tavern-choice">DOWN</span><span class="guide-flow-label">Choose Direction</span></div>
-	<div class="guide-flow-node"><span class="guide-flow-icon tavern-die">55</span><span class="guide-flow-label">Choose Number</span></div>
-	<div class="guide-flow-node"><span class="guide-flow-icon tavern-gold">G</span><span class="guide-flow-label">Choose Wager</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.tavern-games.down-choose-direction") }}</div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.tavern-games.55-choose-number") }}</div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.tavern-games.g-choose-wager") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon tavern-roll">42</span><span class="guide-flow-label">Roll ≤ 55 Wins</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.tavern-games.42-roll-55-wins") }}</div>
 </div>
-<p><b>Down</b> wins when the roll is at or below your chosen number. <b>Up</b> wins when the roll is at or above it. The displayed payout changes with that choice, the threshold, the wager, and the house edge.</p>
+<p>{{ phrase_html("docs.guide.tavern-games.down-wins-when-the-roll-is-at-or") }}</p>
 
 <div class="divider"></div>
-<div class="title mt15">Slots</div>
+<div class="title mt15">{{ phrase("docs.guide.tavern-games.slots") }}</div>
 <div class="guide-flow" style="border-color:#8B5B96" data-guide-visual="tavern-slots">
-	<div class="guide-flow-node"><span class="guide-flow-icon tavern-gold">G</span><span class="guide-flow-label">Fixed Cost Shown</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.tavern-games.g-fixed-cost-shown") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon tavern-slots">777</span><span class="guide-flow-label">Wait for One Spin</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.tavern-games.777-wait-for-one-spin") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon tavern-result">?</span><span class="guide-flow-label">Payout or No Luck</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.tavern-games.payout-or-no-luck") }}</div>
 </div>
-<p>Each play spends the machine's shown cost and enters its short queue. Wait for the result before trying again. A machine offering only dialogue is not currently accepting a game.</p>
-<div class="guide-note">A completed losing wager is a valid result and fulfills its Promise with <span class="dlabel">won: false</span>. A rejected Promise means the wager or machine failed validation.</div>
+<p>{{ phrase("docs.guide.tavern-games.each-play-spends-the-machine-s-shown-cost") }}</p>
+<div class="guide-paytable" data-odds="{{ phrase("docs.guide.tavern-games.1-in-value") }}">
+	<div class="guide-paytable-row guide-paytable-head"><span>{{ phrase("docs.guide.tavern-games.three-of-a-kind") }}</span><span>{{ phrase("docs.guide.tavern-games.prize") }}</span><span>{{ phrase("docs.guide.tavern-games.chance") }}</span></div>
+</div>
 
 <div class="divider"></div>
-<div class="title mt15">CODE: Inspect the House</div>
+<div class="title mt15">{{ phrase("docs.guide.tavern-games.fortune-s-wheel") }}</div>
+<div class="guide-flow" style="border-color:#5C4AB8" data-guide-visual="tavern-wheel">
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.tavern-games.sun-choose-a-side") }}</div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.tavern-games.g-choose-wager") }}</div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.tavern-games.spin-the-wheel") }}</div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.tavern-games.1-1-your-side-pays-even") }}</div>
+</div>
+<p>{{ phrase_html("docs.guide.tavern-games.the-wheel-s-fourteen-slices-alternate-between-sun") }}</p>
+<div class="guide-note">{{ phrase_html("docs.guide.tavern-games.a-completed-losing-wager-is-a-valid-result") }}</div>
+
+<div class="divider"></div>
+<div class="title mt15">{{ phrase("docs.guide.tavern-games.hold-em") }}</div>
+<div class="guide-flow" style="border-color:#2F6B3C" data-guide-visual="tavern-poker">
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.tavern-games.sit-down-buy-in") }}</div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.tavern-games.blinds-and-two-cards") }}</div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.tavern-games.four-betting-streets") }}</div>
+	<div class="guide-flow-arrow">→</div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.tavern-games.showdown-rake-from-each-pot") }}</div>
+</div>
+<p>{{ phrase("docs.guide.tavern-games.the-tavern-has-one-five-seat-no-limit") }}</p>
+<div class="guide-paytable guide-blinds">
+	<div class="guide-paytable-row guide-paytable-head"><span>{{ phrase("docs.guide.tavern-games.servers") }}</span><span>{{ phrase("docs.guide.tavern-games.small-blind") }}</span><span>{{ phrase("docs.guide.tavern-games.big-blind") }}</span><span>{{ phrase("docs.guide.tavern-games.buy-in") }}</span></div>
+	<div class="guide-paytable-row" data-tier="I"><span>{{ phrase("docs.guide.tavern-games.tier-i") }}</span></div>
+	<div class="guide-paytable-row" data-tier="II"><span>{{ phrase("docs.guide.tavern-games.tier-ii") }}</span></div>
+	<div class="guide-paytable-row" data-tier="III"><span>{{ phrase("docs.guide.tavern-games.tier-iii") }}</span></div>
+	<div class="guide-paytable-row" data-tier="IV"><span>{{ phrase("docs.guide.tavern-games.tier-iv") }}</span></div>
+	<div class="guide-paytable-row" data-tier="PVP"><span>{{ phrase("docs.guide.tavern-games.tier-pvp") }}</span></div>
+</div>
+<div class="guide-note">{{ phrase_html("docs.guide.tavern-games.leaving-the-table") }}</div>
+<div class="guide-note">{{ phrase_html("docs.guide.tavern-games.deck-verification") }}</div>
+<div class="guide-note">{{ phrase("docs.poker.waiting") }}</div>
+<div class="guide-note">{{ phrase_html("docs.guide.tavern-games.restarts") }}</div>
+
+<div class="divider"></div>
+<div class="title mt15">{{ phrase("docs.guide.tavern-games.code-inspect-the-house") }}</div>
 <div class="code">async function inspect_tavern() {
 	var house = await get_tavern_info();
 	game_log("House edge: " + house.edge + "%");
@@ -41,7 +81,7 @@
 
 inspect_tavern().catch(show_json);</div>
 
-<div class="title mt15">CODE: Place One Deliberate Wager</div>
+<div class="title mt15">{{ phrase("docs.guide.tavern-games.code-place-one-deliberate-wager") }}</div>
 <div class="code">async function wager_once(direction, number, gold) {
 	var house = await get_tavern_info();
 	if (gold &gt; character.gold) return game_log("Not enough gold");
@@ -55,16 +95,122 @@ inspect_tavern().catch(show_json);</div>
 // This spends gold:
 // wager_once("down", 55, 10000).catch(show_json);
 
-// Slots also spend gold and wait for the completed spin:
-// show_json(await play_slots());</div>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">get_tavern_info</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bet_dice</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">play_slots</span>.</p>
+// Slots also spend gold and wait for the reels to stop:
+// var spin = await play_slots();
+// game_log(spin.symbols.join(" ") + (spin.won ? " pays " + spin.payout : " pays nothing"));</div>
 
-<div class="guide-related">For ordinary trade, see <span onclick="hide_modal(); open_guide('markets-and-trading',get_guide_url('markets-and-trading'))">Markets and Trading</span>.</div>
+<div class="title mt15">{{ phrase("docs.guide.tavern-games.code-spin-fortune-s-wheel") }}</div>
+<div class="code">async function spin_once(side, gold) {
+	if (gold &gt; character.gold) return game_log("Not enough gold");
+	var spin = await bet_wheel(side, gold);
+	game_log("The wheel stopped on " + spin.result + " (" + spin.slice + ")");
+	game_log(spin.won ? "Net win: " + spin.net : "Lost: " + spin.wager);
+	return spin;
+}
+
+// This spends gold:
+// spin_once("sun", 10000).catch(show_json);</div>
+
+<div class="title mt15">{{ phrase("docs.guide.tavern-games.code-play-a-hand") }}</div>
+<div class="code">// Walk up to a free stool, buy in for the smallest amount, play every hand with a plain rule, and leave after a while.
+// The table object carries the stools as offsets from its anchor, your seat (me) and your two hole cards (cards).
+async function play_poker(hands) {
+	if (!Number.isInteger(hands) || hands &lt; 1) return;
+	var table = await get_poker_table();
+	if (table.me &gt;= 0 || table.buyin[0] &gt; character.gold) return;
+	var seat = table.seats.indexOf(null);
+	if (seat == -1) return;
+	await smart_move({ map: "tavern", x: table.x + table.stools[seat][0], y: table.y + table.stools[seat][1] });
+	var cards = [], cards_n = -1, played = 0, last_hand = -1, busy = false, joined = false;
+	var listener = game.on("poker", async function (data) {
+		if (data.event == "cards") { cards = data.cards; cards_n = data.n; return; }
+		if (data.event != "state" || !joined || busy) return;
+		var me = data.seats[seat], hand = data.hand;
+		if (!me || me.name != character.name || !hand || hand.settling) return;
+		if (hand.over) {
+			if (hand.n == cards_n &amp;&amp; hand.n != last_hand &amp;&amp; !hand.results.voided) {
+				last_hand = hand.n;
+				played++;
+			}
+			if (played &lt; hands) return;
+		} else if (hand.acting != seat) return;
+		busy = true;
+		try {
+			if (hand.over) {
+				await poker_leave();
+				game.remove(listener);
+				return;
+			}
+			var to_call = hand.bet - me.bet,
+				pair = cards_n == hand.n &amp;&amp; cards.length == 2 &amp;&amp; cards[0].split("_")[0] == cards[1].split("_")[0];
+			if (pair &amp;&amp; hand.street == "preflop" &amp;&amp; me.can_raise) await poker_act("raise", hand.bet + 2 * hand.min_raise);
+			else await poker_act(to_call == 0 ? "check" : to_call &lt;= 2 * data.blinds[1] ? "call" : "fold");
+		} catch (error) { show_json(error); }
+		finally { busy = false; }
+	});
+	try { await poker_join(table.buyin[0], seat); joined = true; }
+	catch (error) { game.remove(listener); throw error; }
+}
+
+// Sitting out keeps the seat and the stack while you step away; sit back in to be dealt again:
+// await poker_sit_out(); ... await poker_sit_in();
+// A restart or a closed Tavern rejects requests with reason "tavern_closing"; standing too far from a stool with "poker_stool_far".
+// This spends gold:
+// play_poker(5).catch(show_json);</div>
+<p>{{ phrase_html("docs.guide.tavern-games.references-get-tavern-info-bet-dice-play-slots") }}</p>
+
+<div class="guide-related">{{ phrase_html("docs.guide.tavern-games.for-ordinary-trade-see-markets-and-trading") }}</div>
 
 <script>
 	$(".tavern-jaqk").html(sprite(G.npcs.tavern.skin, { height: 62 }));
+	(function () {
+		// The machines as they stand on the Tavern floor: native frames from the map tileset, the wheel's disc rastered
+		// by the same routine that draws it in the room.
+		var strip = $(".tavern-machines"),
+			set = G.tilesets && G.tilesets.custom,
+			machines = {};
+		if (!strip.length || !set) return;
+		(G.maps.tavern.machines || []).forEach(function (machine) {
+			machines[machine.type] = machine;
+		});
+		["dice", "slots", "wheel", "poker"].forEach(function (type) {
+			var machine = machines[type];
+			if (!machine || !machine.frames) return;
+			var f = machine.frames[0],
+				box = $("<span class='tavern-native'></span>").css({ width: f[2] + "px", height: f[3] + "px", backgroundImage: "url(" + url_factory(set.file) + ")", backgroundPosition: "-" + f[0] + "px -" + f[1] + "px" });
+			if (type == "wheel" && typeof wheel_raster == "function") {
+				var canvas = document.createElement("canvas");
+				canvas.width = 30;
+				canvas.height = 32;
+				wheel_raster(canvas.getContext("2d"), { W: 30, H: 32, cx: 15, cy: 17, R: 13, rotation: 0, stand: false, dots: 1 });
+				$(canvas).css({ position: "absolute", left: "1px", top: "9px", imageRendering: "pixelated" });
+				box.append(canvas);
+			}
+			strip.append(box);
+		});
+	})();
+	(function () {
+		var poker = G.games && G.games.poker,
+			blinds = $(".guide-blinds");
+		if (!poker || !blinds.length) return;
+		blinds.find("[data-tier]").each(function () {
+			var tier = poker.blinds[$(this).attr("data-tier")];
+			$(this).append("<span class='guide-paytable-gold'>" + to_pretty_num(tier[0]) + "</span><span class='guide-paytable-gold'>" + to_pretty_num(tier[1]) + "</span><span>" + to_pretty_num(poker.buyin[0] * tier[1]) + " – " + to_pretty_num(poker.buyin[1] * tier[1]) + "</span>");
+		});
+	})();
+	(function () {
+		var slots = G.games && G.games.slots,
+			table = $(".guide-paytable").not(".guide-blinds");
+		if (!slots || !table.length) return;
+		var odds = table.attr("data-odds");
+		slots.prizes.forEach(function (prize) {
+			var icons = "";
+			for (var i = 0; i < 3; i++) icons += item_container({ skin: prize[0], size: 20, bcolor: "#6D3D4B", draggable: false });
+			table.append("<div class='guide-paytable-row'><span>" + icons + "</span><span class='guide-paytable-gold'>" + to_pretty_num(prize[1]) + "</span><span>" + odds.replace("{value}", to_pretty_num(Math.round(slots.draws / prize[2]))) + "</span></div>");
+		});
+	})();
 </script>
 
 <style>
-	.guide-kicker{color:#AA7040;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#7D4C29;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#7D4C29;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #AA7040;background:#F2E4D8;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#85522D;cursor:pointer;text-decoration:underline}.tavern-die,.tavern-roll,.tavern-choice,.tavern-gold,.tavern-slots,.tavern-result{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border:3px solid #D9B274;background:#2A1B13;color:#FFD888;font-size:23px}.tavern-slots{border-color:#C18ACB;background:#221525;color:#F1B6FB}.tavern-choice{font-size:18px}.tavern-roll{color:#8EE1A2}.tavern-gold{border-radius:50%;color:#F1CE4F}.tavern-result{color:#EFA9C9}
+	.guide-kicker{color:#AA7040;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#7D4C29;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#7D4C29;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #AA7040;background:#F2E4D8;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#85522D;cursor:pointer;text-decoration:underline}.tavern-die,.tavern-roll,.tavern-choice,.tavern-gold,.tavern-slots,.tavern-result,.tavern-side,.tavern-wheel,.tavern-even{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border:3px solid #D9B274;background:#2A1B13;color:#FFD888;font-size:23px}.tavern-slots{border-color:#C18ACB;background:#221525;color:#F1B6FB}.tavern-machines{display:inline-flex;align-items:flex-end;gap:10px;margin-left:10px;vertical-align:bottom}.tavern-native{display:inline-block;position:relative;background-repeat:no-repeat;image-rendering:pixelated;image-rendering:crisp-edges}.tavern-side{border-color:#FFBB31;background:#2A1B13;color:#FFE737;font-size:18px}.tavern-wheel{border-radius:50%;border-color:#6D3D4B;background:conic-gradient(#3D34A5 0 25.7deg,#FF82CE 0 51.4deg,#25E2CD 0 77.1deg,#FF7500 0 102.9deg,#6264DC 0 128.6deg,#E03C28 0 154.3deg,#20B562 0 180deg,#FFBB31 0 205.7deg,#A328B3 0 231.4deg,#F68F37 0 257.1deg,#98DCFF 0 282.9deg,#FEC9ED 0 308.6deg,#00604B 0 334.3deg,#FFE737 0 360deg);color:transparent}.tavern-even{border-color:#8BD08B;background:#13251A;color:#9BE29B}.tavern-poker{border-color:#9D5F3E;background:#2F6B3C;color:#F0E4C8}.guide-blinds{border-color:#9D5F3E;background:#1C3A24;color:#F0E4C8}.guide-blinds .guide-paytable-head{color:#9BE29B}.guide-blinds .guide-paytable-row>span:first-child{min-width:170px}.guide-blinds .guide-paytable-row>span:nth-child(2),.guide-blinds .guide-paytable-row>span:nth-child(3){min-width:130px}.guide-paytable{border:3px solid #8B5B96;background:#221525;color:#F1B6FB;padding:6px 12px;margin:12px 0;display:inline-block}.guide-paytable-row{display:flex;align-items:center;gap:14px;line-height:30px}.guide-paytable-row>span:first-child{min-width:96px}.guide-paytable-row>span:nth-child(2){min-width:150px}.guide-paytable-head{color:#C18ACB;font-size:16px;letter-spacing:1px;line-height:22px}.guide-paytable-gold{color:#FFD888}.tavern-choice{font-size:18px}.tavern-roll{color:#8EE1A2}.tavern-gold{border-radius:50%;color:#F1CE4F}.tavern-result{color:#EFA9C9}
 </style>

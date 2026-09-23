@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{domain.language or 'en'}}">
 	<head>
+		{% include "htmls/language.html" %}
 		<title>{{domain.name}}</title>
 		<link rel="apple-touch-icon-precomposed" href="/images/favicon.png" /> <!-- 152 -->
 		<link rel="icon" href="/images/favicon.png" /> <!-- 32 -->
@@ -16,7 +17,7 @@
 			html{
 				background: black;
 				color: white;
-				font-family: pixel;
+				font-family: var(--pixel-font, pixel);
 				font-size: 32px;
 			}
 		</style>

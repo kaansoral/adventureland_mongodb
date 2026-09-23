@@ -1,0 +1,9 @@
+{
+  "navigation.hub": "Hub",
+  "navigation.github": "GitHub",
+	"language.choose": "Jazyk",
+	"language.select": "Použít jazyk: {language}",
+	"language.save_failed": "Jazyk se nepodařilo uložit. Zkus to znovu.",
+	"language.saving": "Ukládání…",
+	"navigation.communicator_short": "KOM"
+}

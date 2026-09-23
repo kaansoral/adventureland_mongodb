@@ -1,0 +1,135 @@
+<p>{{ phrase_html("docs.tutorial.js-capstone.idea") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.task") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-capstone.task") }}</p>
+
+<p>{{ phrase("docs.tutorial.javascript.practice") }}</p>
+
+<div class="tutorial-code" data-lesson="capstone">
+	<!-- prettier-ignore -->
+	<div class="code executeb">const config = { monster: "goo", delay: 1000 };
+let running = true;
+let timer;
+
+async function tick() {
+  if (!running) return;
+  if (character.rip) { stopFarm(); return; }
+  try {
+    await use_hp_or_mp();
+    if (!running || character.rip) return;
+    if (character.hp &lt; character.max_hp / 2 ||
+        character.mp &lt; character.max_mp / 5) return;
+    const target = get_nearest_monster({ type: config.monster });
+    // {{ phrase("docs.tutorial.js-capstone.starter.comment_1") }}
+    if (!is_in_range(target)) {
+      await smart_move({ map: target.map, x: target.x, y: target.y });
+      return;
+    }
+    if (can_attack(target)) await attack(target);
+    if (!running || character.rip) return;
+    await loot();
+  } catch (error) {
+    game_log("Action failed: " + error.reason);
+  } finally {
+    if (running) timer = setTimeout(tick, config.delay);
+  }
+}
+
+function stopFarm() {
+  running = false;
+  clearTimeout(timer);
+  clearTimeout(endTimer);
+  stop("move").catch(function (error) {
+    game_log("Stop failed: " + error.reason);
+  });
+  game_log("Stopped");
+}
+const endTimer = setTimeout(stopFarm, 10000);
+tick();</div>
+
+	<div class="tutorial-code-result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.hint") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-capstone.hint") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.solution") }}</div>
+
+<!-- prettier-ignore -->
+<div class="code readonly">const config = { monster: "goo", delay: 1000 };
+let running = true;
+let timer;
+
+async function tick() {
+  if (!running) return;
+  if (character.rip) { stopFarm(); return; }
+  try {
+    await use_hp_or_mp();
+    if (!running || character.rip) return;
+    if (character.hp &lt; character.max_hp / 2 ||
+        character.mp &lt; character.max_mp / 5) return;
+    const target = get_nearest_monster({ type: config.monster });
+    if (!target) return;
+    if (!is_in_range(target)) {
+      await smart_move({ map: target.map, x: target.x, y: target.y });
+      return;
+    }
+    if (can_attack(target)) await attack(target);
+    if (!running || character.rip) return;
+    await loot();
+  } catch (error) {
+    game_log("Action failed: " + error.reason);
+  } finally {
+    if (running) timer = setTimeout(tick, config.delay);
+  }
+}
+
+function stopFarm() {
+  running = false;
+  clearTimeout(timer);
+  clearTimeout(endTimer);
+  stop("move").catch(function (error) {
+    game_log("Stop failed: " + error.reason);
+  });
+  game_log("Stopped");
+}
+const endTimer = setTimeout(stopFarm, 10000);
+tick();</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.variation") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-capstone.variation") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.transfer") }}</div>
+
+<p>{{ phrase("docs.tutorial.javascript.copy") }}</p>
+
+<p>{{ phrase_html("docs.tutorial.js-capstone.transfer") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.js-capstone.reading_title") }}</div>
+
+{{ phrase_html("docs.tutorial.js-capstone.reading_before") }}
+
+<!-- prettier-ignore -->
+<div class="code readonly">const config = { monster: "goo", delay: 1000 };
+function canContinue(hero) {
+  return !hero.rip &amp;&amp; hero.hp &gt;= hero.max_hp / 2;
+}
+game_log(config.monster);
+game_log(canContinue(character));</div>
+
+{{ phrase_html("docs.tutorial.js-capstone.reading_after") }}
+
+<p>
+	<span class="rlabel clickable" onclick="load_documentation('use_hp_or_mp')">use_hp_or_mp</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('get_nearest_monster')">get_nearest_monster</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('can_attack')">can_attack</span> · <span class="rlabel clickable" onclick="load_documentation('smart_move')">smart_move</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('attack')">attack</span> · <span class="rlabel clickable" onclick="load_documentation('loot')">loot</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('stop')">stop</span>
+</p>

@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{domain.language or 'en'}}">
 	<head>
-		<title>MacOS: How to Make it Work</title>
+		{% include "htmls/language.html" %}
+		<title>{{ phrase("pages.macos.macos-how-to-make-it-work") }}</title>
 		<link rel="apple-touch-icon-precomposed" href="/images/favicon.png" /> <!-- 152 -->
 		<link rel="icon" href="/images/favicon.png" /> <!-- 32 -->
 		<!--[if IE]><link rel="shortcut icon" href="/images/favicon.png"><![endif]--> <!-- .ico -->
@@ -17,7 +18,7 @@
 				background: black;
 			}
 			html,pre,body{
-				font-family: Pixel;
+				font-family: var(--pixel-font, pixel);
 				color: #CECECE;
 				font-size: 24px;
 				/*text-shadow: 0 0 1px rgba(0, 0, 0, 0.4);*/
@@ -78,37 +79,36 @@
 	<body>
 		<div id="devlogs" style="margin-bottom: 32px">
 
-			<p>Adventure Land uses Electron. When you stumble onto an issue, you can google the issue by combining error phrases with "electron".</p>
+			<p>{{ phrase("pages.macos.adventure-land-uses-electron-when-you-stumble-onto") }}</p>
 
 			<div style="background: #EEF1F1; color: #3B3B3C; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px;">
-				<div style="color: #4DA9DF">Just Re-Open or Re-Install</div>
-				<p>Very rarely Steam glitches and the game can't connect to Steamworks, so restarting Steam is a must. Sometimes simply doing a clean install could be the solution.</p>
+				<div style="color: #4DA9DF">{{ phrase("pages.macos.just-re-open-or-re-install") }}</div>
+				<p>{{ phrase("pages.macos.very-rarely-steam-glitches-and-the-game-can") }}</p>
 			</div>
 
 			<div style="background: #EEF1F1; color: #3B3B3C; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px;">
-				<div style="color: #4DA9DF">Steam: Run from the Command Line</div>
-				<p>Copy paste this to Terminal by inserting your own system user: /Users/YOUR_USER/Library/Application\ Support/Steam/steamapps/common/adventureland/Adventure\ Land.app/Contents/MacOS/Adventure\ Land<br />
-					You'll likely stumble onto the issue that you can report/search
+				<div style="color: #4DA9DF">{{ phrase("pages.macos.steam-run-from-the-command-line") }}</div>
+				<p>{{ phrase_html("pages.macos.copy-paste-this-to-terminal-by-inserting-your") }}
 				</p>
 			</div>
 
 			<div style="background: #EEF1F1; color: #3B3B3C; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px;">
-				<div style="color: #4DA9DF">App Store: Run from the Command Line</div>
-				<p>Copy paste this to Terminal: /Applications/Adventure\ Land.app/Contents/MacOS/Adventure\ Land
+				<div style="color: #4DA9DF">{{ phrase("pages.macos.app-store-run-from-the-command-line") }}</div>
+				<p>{{ phrase("pages.macos.copy-paste-this-to-terminal-applications-adventure-land") }}
 				</p>
 			</div>
 
 			<div style="background: #EEF1F1; color: #3B3B3C; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px;">
-				<div style="color: #4DA9DF">App Store: Can't Install - "Unable to Download App"</div>
-				<p>Please email hello@adventure.land</p>
+				<div style="color: #4DA9DF">{{ phrase("pages.macos.app-store-can-t-install-unable-to-download") }}</div>
+				<p>{{ phrase("pages.macos.please-email-hello-adventure-land") }}</p>
 			</div>
 
 			<div style="background: #EEF1F1; color: #3B3B3C; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px;">
-				<div style="color: #4DA9DF">src/common/pipes.cpp (883) : fatal stalled cross-thread pipe.</div>
-				<p>Restart Steam</p>
+				<div style="color: #4DA9DF">{{ phrase("pages.macos.src-common-pipes-cpp-883-fatal-stalled-cross") }}</div>
+				<p>{{ phrase("pages.macos.restart-steam") }}</p>
 			</div>
 
-			<p>If you find and solve an issue, or just stumble onto an issue you can't solve, please email hello@adventure.land with details</p>
+			<p>{{ phrase("pages.macos.if-you-find-and-solve-an-issue-or") }}</p>
 			
 		</div>
 	</body>

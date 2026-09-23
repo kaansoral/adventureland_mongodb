@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe bu karakteri sıraya aldı.",
+	"mainframe.event.included_worker_queued": "Mainframe bu dahil edilen Worker'ı sıraya aldı.",
+	"mainframe.event.shared_with": "{character} ile paylaşılıyor",
+	"mainframe.event.shared_with_root": "Ana karakterle paylaşılıyor",
+	"mainframe.event.explicit_disconnect": "Hesap sahibi bağlantıyı kesti.",
+	"mainframe.event.renewed_free": "{minutes} dakika için 1 ücretsiz Mainframe saati kullanıldı.",
+	"mainframe.event.renewed_shell": "{minutes} dakika için 1 Deniz Kabuğu harcandı.",
+	"mainframe.event.renewal_one": "{count} karakter aktif · Sonraki yenileme {date}",
+	"mainframe.event.renewal_many": "{count} karakter aktif · Sonraki yenileme {date}",
+	"mainframe.event.renewal_failed": "Süre kalmadığı için Mainframe bu karakteri durdurdu.",
+	"mainframe.event.worker_failure": "Mainframe bir Worker hatası algıladı ve yeniden deneyecek.",
+	"mainframe.event.server_change": "Mainframe bu karakteri başka bir sunucuya yeniden bağlıyor.",
+	"mainframe.level.info": "BİLGİ",
+	"mainframe.level.warn": "UYARI",
+	"mainframe.level.error": "HATA"
+}

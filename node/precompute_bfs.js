@@ -133,6 +133,10 @@ async function run() {
 	result.version = G.version;
 	result.amap_data = amap_data;
 	result.smap_data = smap_data;
+	result.collision = {};
+	for (var name in G.maps) {
+		if (G.maps[name].collision_key) result.collision[name] = G.maps[name].collision_key;
+	}
 	fs.writeFileSync(
 		path.resolve(__dirname, "precomputed_map_data.js"),
 		"// " + new Date() + "\nvar precomputed_bfs=" + JSON.stringify(result) + ";",

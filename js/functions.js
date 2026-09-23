@@ -27,6 +27,15 @@ function api_call(method, args, r_args) {
 	$.ajax(call_args)
 		.done(function (data) {
 			var infs = data && data.infs;
+			if (data && data.success && data.language && method == "signup_or_login") {
+				language_account = true;
+				language_cookie(data.language, "account");
+				if (data.language != phrase.language) {
+					P.resolve(data);
+					location.reload();
+					return;
+				}
+			}
 			if (infs) delete data.infs;
 			if (data && !data.failed) P.resolve(data);
 			else P.reject(data || { failed: true, reason: "empty_response" });
@@ -62,6 +71,94 @@ function server_to_ui(key) {
 	// Fallback: strip SR_ prefix
 	if (key.startsWith && key.startsWith("SR_")) return key.substring(3);
 	return key;
+}
+
+function home_server_name(home, short) {
+	var parts = /^(US|EU|ASIA)(.+)$/.exec(home || "");
+	return parts ? (short ? parts[1] : server_names[parts[1]] || parts[1]) + " " + parts[2] : home || "";
+}
+
+function home_server_label(home, html) {
+	var translate = html ? phrase.html : phrase;
+	return home ? translate("interface.selection.home", { server: home_server_name(home) }) : translate("interface.selection.home_unset");
+}
+
+function select_login_server(server, explicit) {
+	if (character || (!explicit && observing) || (window.auth_sent && mssince(window.auth_sent) < 10000)) return;
+	if (!explicit && selection_server_explicit) return;
+	var available = (X.servers || []).find(function (entry) {
+		return entry.address == server.address && entry.path == server.path;
+	});
+	if (!available) return;
+	if (explicit) {
+		selection_server_explicit = true;
+		// Keep a manual choice through language changes, sign-in reloads and refreshes.
+		history.replaceState({}, "", "/server/" + encodeURIComponent(available.region) + "/" + encodeURIComponent(available.name) + "/" + location.search);
+	}
+	if (server_address != available.address || server_path != available.path || (explicit && window.socket && !socket.connected)) {
+		server_address = available.address;
+		server_path = available.path;
+		if (window.socket) init_socket({ selection: true });
+	}
+	update_login_server();
+}
+
+function update_login_server() {
+	var selected = (X.servers || []).find(function (entry) {
+		return entry.address == server_address && entry.path == server_path;
+	});
+	var home = selected && selected.region + selected.name;
+	var destination = phrase.html("game.no_live_server_found");
+	if (selected)
+		destination = phrase.html("interface.selection.destination").replace("{server}", function () {
+			return "<span style='color:white'>" + phrase.escape(home_server_name(home)) + "</span>";
+		});
+	$(".selection-destination").html(destination);
+	$(".selection-connecting").toggle(!!selected && !socket_welcomed);
+	$(".selection-server").each(function () {
+		var current = this.dataset.address == server_address && this.dataset.path == server_path;
+		$(this).attr("aria-current", current ? "true" : null);
+	});
+	$(".selection-character").each(function () {
+		var id = this.dataset.character;
+		var current = (X.characters || []).find(function (entry) {
+			return entry.id == id;
+		});
+		if (current) this.dataset.home = current.home || "";
+		$(this).find(".selection-home-server").text(home_server_name(this.dataset.home, true));
+		$(this).toggleClass("at-home", !!(home && this.dataset.home == home));
+		$(this).toggleClass("away-home", !!(home && this.dataset.home && this.dataset.home != home));
+	});
+	var hover = $("#character-home-hover");
+	if (hover.length) show_character_home(hover.data("card"));
+}
+
+function hide_character_home() {
+	$(".selection-character[aria-describedby='character-home-hover']").removeAttr("aria-describedby");
+	$("#character-home-hover").remove();
+}
+
+function show_character_home(card) {
+	hide_character_home();
+	if (window.no_graphics || window.no_html || !card || !card.isConnected || !$(card).is(":visible") || !$(card).hasClass("away-home")) return;
+	var hover = $("<div id='character-home-hover' class='gamebutton game-hover' role='tooltip'></div>");
+	hover.html(phrase.html("interface.selection.away_home", { name: card.dataset.name }) + "<div class='gray mt5'>" + home_server_label(card.dataset.home, true) + "</div>");
+	hover.data("card", card).appendTo($(card).closest("#pagewrapped"));
+	$(card).attr("aria-describedby", "character-home-hover");
+	var bounds = card.getBoundingClientRect(),
+		zoom = 1 + (window.browser_zoom || 0) / 100;
+	var width = hover.outerWidth(),
+		height = hover.outerHeight(),
+		left = bounds.left / zoom,
+		top = bounds.bottom / zoom + 8;
+	if (top + height > viewport_height() - 8) top = bounds.top / zoom - height - 8;
+	hover.css({ left: Math.max(8, Math.min(left, viewport_width() - width - 8)), top: Math.max(8, Math.min(top, viewport_height() - height - 8)) });
+}
+
+function enter_selected_character(name, id) {
+	hide_character_home();
+	if (!socket_welcomed || !socket || !socket.connected) return ui_log(phrase.html("game.connecting_to_the_server"));
+	if (!observe_character(name)) log_in(user_id, id, user_auth);
 }
 
 function is_hidden() {
@@ -329,16 +426,13 @@ function show_opensource_info() {
 function hide_modal(force) {
 	var old_url = null,
 		new_url = null;
-	if (window.is_comm && mssince(last_focus) < 320) {
-		return;
-	}
 	if (
 		!force &&
 		$('.modal:last input.mprotected[type="text"], .modal:last input.mprotected[type="email"], .modal:last input.mprotected[type="password"], .modal:last textarea.mprotected').filter(function () {
 			return this.value.length > 0;
 		}).length
 	) {
-		return show_confirm("Are you sure you want to discard your entries?", "Yes", "No!", function () {
+		return show_confirm(phrase.html("client.modal.discard_entries"), phrase.html("client.confirm.yes"), phrase.html("client.confirm.no"), function () {
 			hide_modal();
 			hide_modal(true);
 		});
@@ -368,6 +462,24 @@ function hide_modals() {
 	while (modal_count) hide_modal(true);
 }
 
+// CSS page zoom changes the layout viewport without changing window.innerWidth/Height.
+function viewport_width() {
+	return $(window).width() / (1 + (window.browser_zoom || 0) / 100);
+}
+
+function viewport_height() {
+	return $(window).height() / (1 + (window.browser_zoom || 0) / 100);
+}
+
+function map_game_pointer(point, x, y) {
+	// The game canvas is fixed at (0, 0), in the same logical pixels as viewport_width/height.
+	// Older engines unzoom getBoundingClientRect(), so PIXI's default mapping misses CSS zoom.
+	var zoom = 1 + (window.browser_zoom || 0) / 100;
+	point.x = x / zoom;
+	point.y = y / zoom;
+	return point;
+}
+
 var modals = [];
 function show_modal(mhtml, args) {
 	if (window.is_bot) return;
@@ -379,7 +491,7 @@ function show_modal(mhtml, args) {
 	if (args.wrap === undefined) args.wrap = true;
 	var wrap_styles = "",
 		min_width = 600;
-	min_width = min(600, $(window).width() - 32);
+	min_width = min(600, viewport_width() - 32);
 	if (args.wrap) wrap_styles = "width: " + (args.wwidth || min_width) + "px; border: 5px solid gray; background: black;";
 	modals[modal_count] = args;
 	modal_count++;
@@ -396,12 +508,9 @@ function show_modal(mhtml, args) {
 	html += "</div>";
 	if ($(".modal:last").hasClass("hideinbackground")) $(".modal:last").hide();
 	$("body").append(html);
-	var iheight = $(".imodal:last").height();
-	if (height > iheight)
-		$(".imodal:last")
-			.css("margin-bottom", "0px")
-			.css("margin-top", max(0, round(height / 2 - iheight / 2 - 5)));
+	add_ui_close($(".imodal:last"), "modal", Object.assign({ frame: args.wrap }, args.close));
 	if ($(".modal:last").find(".oncreate").length) eval($(".modal:last").find(".oncreate").attr("onclick"));
+	position_modals();
 	block_right_clicks = false;
 	$(".showwithmodals").show();
 	$(".hidewithmodals").hide();
@@ -413,15 +522,19 @@ function show_modal(mhtml, args) {
 }
 
 function show_alert(x) {
-	show_modal("<div style='padding: 20px; text-align:center'><pre style='font-family: Pixel; font-size: 48px;'>" + x + "</pre></div>");
+	show_modal("<div style='padding: 20px; text-align:center'><pre style='font-family: var(--pixel-font, pixel); font-size: 48px;'>" + x + "</pre></div>");
 }
 
 function position_modals() {
-	$(".imodal").each(function () {
+	$(".imodal:visible").each(function () {
 		var $this = $(this),
-			iheight = $this.height();
-		if (height > iheight) $this.css("margin-bottom", "0px").css("margin-top", max(0, round(height / 2 - iheight / 2 - 5)));
-		else $this.css("margin-bottom", "40px").css("margin-top", "100px");
+			iheight = $this.outerHeight(), bounds = this.getBoundingClientRect(), above = 0, below = 0;
+		$this.find(".ui-close:visible,.snippet-actions:visible").each(function () {
+			var rect = this.getBoundingClientRect();
+			above = max(above, (bounds.top - rect.top) / (1 + (window.browser_zoom || 0) / 100));
+			below = max(below, (rect.bottom - bounds.bottom) / (1 + (window.browser_zoom || 0) / 100));
+		});
+		$this.css("margin-top", max(above + 8, round((height - iheight - below + above) / 2))).css("margin-bottom", below + 40);
 	});
 }
 
@@ -439,48 +552,35 @@ function show_json(json, args) {
 		xhtml = "";
 	if (!args) args = {};
 	if (args.character_ui) {
-		if (character && args.name == character.name) name = "<span style='font-size:24px'><span style='color: gray'>Showing</span> parent.<span style='color: #39A920'>character</span></span>";
-		else name = "<span style='font-size:24px'><span style='color: gray'>Showing</span> parent.entities[<span style='color: " + colors.property + "'>\"" + args.name + '"</span>]</span>';
+		if (character && args.name == character.name) name = "<span style='font-size:24px'><span style='color: gray'>" + phrase.html("client.json.showing") + "</span>" + " " + "parent." + "<span style='color: #39A920'>" + "character" + "</span></span>";
+		else name = "<span style='font-size:24px'><span style='color: gray'>" + phrase.html("client.json.showing") + "</span>" + " " + "parent.entities[" + "<span style='color: " + (colors.property) + "'>\"" + (args.name) + "\"</span>]</span>";
 		html +=
-			"<div class='gamebutton' style='float: right' onclick='open_article(\"data-character\",\"/docs/code/character/reference\")'><span style='color:#22F4BE'>Docs:</span> Character Objects Explained</div>";
+			"<div class='gamebutton' style='float: right' onclick='open_article(\"data-character\",\"/docs/code/character/reference\")'><span style='color:#22F4BE'>" + phrase.html("client.json.docs") + "</span>" + " " + phrase.html("client.json.character_objects_explained") + "</div>";
 	} else if (args.monster_ui) {
-		name = "<span style='font-size:24px'><span style='color: gray'>Showing</span> parent.entities[<span style='color: #EF7A4D'>" + args.name + "</span>]</span>";
+		name = "<span style='font-size:24px'><span style='color: gray'>" + phrase.html("client.json.showing") + "</span>" + " " + "parent.entities[" + "<span style='color: #EF7A4D'>" + (args.name) + "</span>]</span>";
 		html += "<div style='float: right; text-align: right'>";
-		html += "<div class='gamebutton' onclick='open_article(\"data-monster\",\"/docs/code/monster/reference\")'><span style='color:#22F4BE'>Docs:</span> Monster Objects Explained</div>";
+		html += "<div class='gamebutton' onclick='open_article(\"data-monster\",\"/docs/code/monster/reference\")'><span style='color:#22F4BE'>" + phrase.html("client.json.docs") + "</span>" + " " + phrase.html("client.json.monster_objects_explained") + "</div>";
 		html += "<div></div>";
-		html += "<div class='gamebutton mt5' onclick='render_monster_info(\"" + args.monster_ui + "\")'><span style='color:#EE8E5B'>Guide:</span> " + G.monsters[args.monster_ui].name + " Info</div>";
+		html += "<div class='gamebutton mt5' onclick='render_monster_info(\"" + (args.monster_ui) + "\")'><span style='color:#EE8E5B'>" + phrase.html("client.json.guide") + "</span>" + " " + phrase.html("client.json.info", { monster: G.monsters[args.monster_ui].name }) + "</div>";
 		html += "<div></div>";
 		html +=
-			"<div class='gamebutton mt5' onclick='show_json(G.drops.monsters[\"" +
-			args.monster_ui +
-			'"],{name:"G.drops.monsters.' +
-			args.monster_ui +
-			"\",info:\"Use the item Tracktrix to see the entire drop list, including global drops.\"})'><span style='color:#B330EB'>Drops:</span> " +
-			G.monsters[args.monster_ui].name +
-			" Drops</div>";
+			"<div class='gamebutton mt5' onclick='show_json(G.drops.monsters[\"" + (args.monster_ui) + "\"],{name:\"G.drops.monsters." + (args.monster_ui) + "\",info:phrase(\"client.json.tracktrix_hint\")})'><span style='color:#B330EB'>" + phrase.html("client.json.drops") + "</span>" + " " + phrase.html("client.json.drops_2", { monster: G.monsters[args.monster_ui].name }) + "</div>";
 		html += "</div>";
 	} else if (args.inventory_ui !== undefined) {
 		args.name = args.inventory_ui;
-		name = "<span style='font-size:24px'><span style='color: gray'>Showing</span> character.items[<span style='color: #EF7A4D'>" + args.name + "</span>]</span>";
+		name = "<span style='font-size:24px'><span style='color: gray'>" + phrase.html("client.json.showing") + "</span>" + " " + "character.items[" + "<span style='color: #EF7A4D'>" + (args.name) + "</span>]</span>";
 		html += "<div style='float: right; text-align: right'>";
 		if (character.items[args.name])
-			html += "<div class='gamebutton' onclick='render_item_info(\"" + character.items[args.name].name + "\")'><span style='color:#22F4BE'>Ref:</span> Item Information</div>";
+			html += "<div class='gamebutton' onclick='render_item_info(\"" + (character.items[args.name].name) + "\")'><span style='color:#22F4BE'>" + phrase.html("client.json.ref") + "</span>" + " " + phrase.html("client.json.item_information") + "</div>";
 		html += "<div></div>";
-		html += "<div class='gamebutton mt5' onclick='show_json(character.items,{prefix:\"character.\",name:\"items\"})'><span style='color:#5993F0'>Show:</span> All Inventory</div>";
+		html += "<div class='gamebutton mt5' onclick='show_json(character.items,{prefix:\"character.\",name:\"items\"})'><span style='color:#5993F0'>" + phrase.html("client.json.show") + "</span>" + " " + phrase.html("client.json.all_inventory") + "</div>";
 		html += "</div>";
 	} else if (args.name) {
 		name =
-			"<span style='font-size:24px'><span style='color: gray'>Showing</span> " +
-			(args.prefix || "") +
-			"<span style='color: " +
-			(args.color || "#EF7A4D") +
-			"'>" +
-			args.name +
-			(args.postfix || "") +
-			"</span></span>";
+			"<span style='font-size:24px'><span style='color: gray'>" + phrase.html("client.json.showing") + "</span> " + ((args.prefix || "")) + "<span style='color: " + ((args.color || "#EF7A4D")) + "'>" + (args.name) + ((args.postfix || "")) + "</span></span>";
 	}
 	if (args.info) {
-		xhtml += "<span style='font-size:24px'><span style='color: gray'>Info</span> " + args.info + "</span></span>";
+		xhtml += "<span style='font-size:24px'><span style='color: gray'>" + phrase.html("client.json.info_2") + "</span> " + (args.info) + "</span></span>";
 	}
 	if (!is_string(json)) json = safe_stringify(json, "\t");
 	// IDEA: XHTML to reference the full object
@@ -495,14 +595,7 @@ function json_to_html(json) {
 function add_magiport(name) {
 	add_chat(
 		"^",
-		"<span style='color: white'>" +
-			name +
-		"</span> wants to magiport you! \
-		<span class='clickable' style='color:#3E97AA' onclick='push_deferred(\"magiport\"); socket.emit(\"magiport\",{name:\"" +
-			name +
-			'"}); remove_chat("mp' +
-			name +
-			"\")'>Accept</span>",
+		phrase.html("client.add_magiport.received", { name: name }) + " \t\t" + "<span class='clickable' style='color:#3E97AA' onclick='push_deferred(\"magiport\"); socket.emit(\"magiport\",{name:\"" + (name) + "\"}); remove_chat(\"mp" + (name) + "\")'>" + phrase.html("client.add_magiport.accept") + "</span>",
 		undefined,
 		"mp" + name,
 	);
@@ -511,14 +604,7 @@ function add_magiport(name) {
 function add_invite(name) {
 	add_chat(
 		"^",
-		"<span style='color: white'>" +
-			name +
-		"</span> wants to party. \
-		<span class='clickable' style='color:green' onclick='push_deferred(\"party\"); socket.emit(\"party\",{event:\"accept\",name:\"" +
-			name +
-			'"}); remove_chat("pin' +
-			name +
-			"\")'>Accept</span>",
+		phrase.html("client.add_invite.received", { name: name }) + " \t\t" + "<span class='clickable' style='color:green' onclick='push_deferred(\"party\"); socket.emit(\"party\",{event:\"accept\",name:\"" + (name) + "\"}); remove_chat(\"pin" + (name) + "\")'>" + phrase.html("client.add_invite.accept") + "</span>",
 		undefined,
 		"pin" + name,
 	);
@@ -527,14 +613,7 @@ function add_invite(name) {
 function add_challenge(name) {
 	add_chat(
 		"^",
-		"<span style='color: white'>" +
-			name +
-			"</span> challenged you to duel! \
-		<span class='clickable' style='color:orange' onclick='socket.emit(\"duel\",{event:\"accept\",name:\"" +
-			name +
-			'"}); remove_chat("chl' +
-			name +
-			"\")'>Accept</span>",
+		phrase.html("client.add_challenge.received", { name: name }) + " \t\t" + "<span class='clickable' style='color:orange' onclick='socket.emit(\"duel\",{event:\"accept\",name:\"" + (name) + "\"}); remove_chat(\"chl" + (name) + "\")'>" + phrase.html("client.add_challenge.accept") + "</span>",
 		undefined,
 		"chl" + name,
 	);
@@ -543,16 +622,7 @@ function add_challenge(name) {
 function add_duel(challenger, vs, id) {
 	add_chat(
 		"^",
-		"<span style='color: white'>" +
-			vs +
-			"</span> accepted a duel from " +
-			challenger +
-			"! \
-		<span class='clickable' style='color:orange' onclick='socket.emit(\"duel\",{event:\"enter\",id:\"" +
-			id +
-			'"}); remove_chat("duel' +
-			vs +
-			"\")'>Join</span>",
+		phrase.html("client.duel.accepted", { player: vs, challenger: challenger }) + " \t\t" + "<span class='clickable' style='color:orange' onclick='socket.emit(\"duel\",{event:\"enter\",id:\"" + (id) + "\"}); remove_chat(\"duel" + (vs) + "\")'>" + phrase.html("client.add_duel.join") + "</span>",
 		undefined,
 		"duel" + vs,
 	);
@@ -561,14 +631,7 @@ function add_duel(challenger, vs, id) {
 function add_request(name) {
 	add_chat(
 		"^",
-		"<span style='color: white'>" +
-			name +
-		"</span> wants to join your party. \
-		<span class='clickable' style='color:#119CC1' onclick='push_deferred(\"party\"); socket.emit(\"party\",{event:\"raccept\",name:\"" +
-			name +
-			'"}); remove_chat("rq' +
-			name +
-			"\")'>Accept</span>",
+		phrase.html("client.add_request.received", { name: name }) + " \t\t" + "<span class='clickable' style='color:#119CC1' onclick='push_deferred(\"party\"); socket.emit(\"party\",{event:\"raccept\",name:\"" + (name) + "\"}); remove_chat(\"rq" + (name) + "\")'>" + phrase.html("client.add_request.accept") + "</span>",
 		undefined,
 		"rq" + name,
 	);
@@ -577,14 +640,7 @@ function add_request(name) {
 function add_frequest(name) {
 	add_chat(
 		"^",
-		"<span style='color: white'>" +
-			name +
-		"</span> wants to be your friend. \
-		<span class='clickable' style='color:#DB7BB3' onclick='push_deferred(\"friend\"); socket.emit(\"friend\",{event:\"accept\",name:\"" +
-			name +
-			'"}); remove_chat("frq' +
-			name +
-			"\")'>Accept</span>",
+		phrase.html("client.add_frequest.received", { name: name }) + " \t\t" + "<span class='clickable' style='color:#DB7BB3' onclick='push_deferred(\"friend\"); socket.emit(\"friend\",{event:\"accept\",name:\"" + (name) + "\"}); remove_chat(\"frq" + (name) + "\")'>" + phrase.html("client.add_frequest.accept") + "</span>",
 		undefined,
 		"frq" + name,
 	);
@@ -592,9 +648,9 @@ function add_frequest(name) {
 
 function add_update_notes() {
 	var latest_note_deploy = update_notes.length && update_notes[0].deployed;
-	add_log("Last Update " + last_deploy, "gray");
+	add_log(phrase.html("client.add_update_notes.last_update", { last_deploy: last_deploy }), "gray");
 	if (update_notes.length && latest_note_deploy != last_deploy)
-		add_log((latest_note_deploy && "Latest Notes " + latest_note_deploy) || "Pending Notes", "gray");
+		add_log(phrase.html("client.notes.heading", { title: latest_note_deploy ? phrase("client.notes.latest", { date: latest_note_deploy }) : phrase("client.notes.pending") }), "gray");
 	update_notes.forEach(function (note) {
 		if (note.deployed != latest_note_deploy) return;
 		var color = "gray";
@@ -605,29 +661,27 @@ function add_update_notes() {
 		if (note.note.indexOf("Valentine") != -1) color = "#C987B7"; // ,color="#85C76B"
 		if (note.note.indexOf("Halloween") != -1) color = "#DE6E37";
 		if (note.note.indexOf("Egg Hunt Event") != -1) color = "#DE5CB8";
-		add_log(note.note, color);
+		add_log(note.text === undefined ? note.note : note.text, color);
 	});
-	if (!no_html) add_log("<span class='clickable' onclick='show_update_notes()'>All Update Notes</span>", "#E4E4E4");
+	if (!no_html) add_log("<span class='clickable' onclick='show_update_notes()'>" + phrase.html("client.add_update_notes.all_update_notes") + "</span>", "#E4E4E4");
+	if (!no_html) $("#gamelog").scrollTop(0);
 }
 
 function render_update_notes() {
 	var html = "";
 	update_notes.forEach(function (entry) {
-		html += "<div class='update-notes-entry'><span class='update-notes-date'>" + html_escape(entry.date) + "</span><span>" + html_escape(entry.note) + "</span></div>";
+		html += "<div class='update-notes-entry'><span class='update-notes-date'>" + html_escape(entry.date) + "</span><span>" + html_escape(entry.text === undefined ? entry.note : entry.text) + "</span></div>";
 	});
-	if (update_notes_more) html += "<div class='update-notes-footer'><div class='gamebutton' onclick='load_more_update_notes()'>Load More</div></div>";
-	else html += "<div class='update-notes-footer update-notes-date'>The Beginning</div>";
+	if (update_notes_more) html += "<div class='update-notes-footer'><div class='gamebutton' onclick='load_more_update_notes()'>" + phrase.html("client.update_notes.load_more") + "</div></div>";
+	else html += "<div class='update-notes-footer update-notes-date'>" + phrase.html("client.update_notes.the_beginning") + "</div>";
 	$(".update-notes-list").html(html);
 	position_modals();
 }
 
 function show_update_notes() {
 	var html =
-		"<div class='update-notes'><div class='update-notes-title'>Update Notes</div>" +
-		"<div class='update-notes-subtitle'>Last Update " +
-		html_escape(last_deploy) +
-		"</div><div class='update-notes-list'></div></div>";
-	show_modal(html, { wwidth: min(760, $(window).width() - 52), hideinbackground: true, url: "/allnotes" });
+		"<div class='update-notes'><div class='update-notes-title'>" + phrase.html("client.update_notes.update_notes") + "</div><div class='update-notes-subtitle'>" + phrase.html("client.update_notes.last_update", { last_deploy: last_deploy }) + "</div><div class='update-notes-list'></div></div>";
+	show_modal(html, { wwidth: min(760, viewport_width() - 52), hideinbackground: true, url: "/allnotes" });
 	render_update_notes();
 }
 
@@ -666,7 +720,7 @@ function add_log(message, color) {
 	if (mode.dom_tests || inside == "payments" || no_html) return;
 	if (game_logs.length > 480) {
 		// previously 1000/720 [27/07/18]
-		var html = "<div class='gameentry' style='color: gray'>- Truncated -</div>";
+		var html = "<div class='gameentry' style='color: gray'>" + phrase.html("client.log.truncated") + "</div>";
 		game_logs = game_logs.slice(-160);
 		game_logs.forEach(function (log) {
 			html += "<div class='gameentry' style='color: " + (log[1] || "white") + "'>" + log[0] + "</div>";
@@ -682,9 +736,7 @@ function add_log(message, color) {
 function add_holiday_log() {
 	if (mode.dom_tests || inside == "payments" || no_html) return;
 	$("#gamelog").append(
-		"<div class='gameentry' style='color: " +
-			"white" +
-			'\'>Would you like to turn on the Holiday Tunes? <span style=\'color: #C82F17\' class=\'clickable\' onclick=\'xmas_tunes=true; sound_music="1"; init_music(); reflect_music();  $(".musicoff").hide(); $(".musicon").show(); add_log("As a reminder, you can control Music from CONF","gray"); $(this).parent().remove();\'>Yes!</span></div>',
+		"<div class='gameentry' style='color: white'>" + phrase.html("client.add_holiday_log.would_you_like_to_turn_on_the_holiday_tunes") + " " + "<span style='color: #C82F17' class='clickable' onclick='xmas_tunes=true; sound_music=\"1\"; init_music(); reflect_music();  $(\".musicoff\").hide(); $(\".musicon\").show(); add_log(phrase(\"client.music.settings_reminder\"),\"gray\"); $(this).parent().remove();'>" + phrase.html("client.add_holiday_log.yes") + "</span></div>",
 	);
 	var entity = $("#gamelog")[0];
 	$("#gamelog").scrollTop(entity && entity.scrollHeight);
@@ -692,13 +744,7 @@ function add_holiday_log() {
 function add_greenlight_log() {
 	if (mode.dom_tests || inside == "payments" || no_html) return;
 	$("#gamelog").append(
-		"<div class='gameentry' style='color: " +
-			"white" +
-			"'>Adventure Land is on Steam Greenlight! Would really appreciate your help: <a href='http://steamcommunity.com/sharedfiles/filedetails/?id=821265543' target='_blank' class='cancela' style='color: " +
-			colors.xmas +
-			"'>Browser</a> <a href='steam://url/CommunityFilePage/821265543' target='_blank' class='cancela' style='color: " +
-			colors.xmasgreen +
-			"'>Open: Steam</a></div>",
+		"<div class='gameentry' style='color: white'>" + phrase.html("client.add_greenlight_log.adventure_land_is_on_steam_greenlight_would_really_appreciate_your") + " " + "<a href='http://steamcommunity.com/sharedfiles/filedetails/?id=821265543' target='_blank' class='cancela' style='color: " + (colors.xmas) + "'>" + phrase.html("client.add_greenlight_log.browser") + "</a> <a href='steam://url/CommunityFilePage/821265543' target='_blank' class='cancela' style='color: " + (colors.xmasgreen) + "'>" + phrase.html("client.add_greenlight_log.open_steam") + "</a></div>",
 	);
 	var entity = $("#gamelog")[0];
 	$("#gamelog").scrollTop(entity && entity.scrollHeight);
@@ -710,8 +756,8 @@ function chat_inventory_logic() {
 	if (no_chat_notification) return;
 	if (inventory) {
 		unread_chat += 1;
-		if (unread_chat == 1) $(".newchatui").html("1 unread chat message!");
-		else $(".newchatui").html(unread_chat + " unread chat messages!");
+		if (unread_chat == 1) $(".newchatui").html(phrase.html("client.chat_inventory_logic.1_unread_chat_message"));
+		else $(".newchatui").html(phrase.html("client.chat_inventory_logic.unread_chat_messages", { unread_chat: unread_chat }));
 		$(".newchatui").css("display", "inline-block");
 	}
 }
@@ -720,7 +766,7 @@ function rebuild_chat() {
 	var selector = (!window.character && "#gamelog") || "#chatlog";
 	var html = "";
 	if (game_chats.length > 250) {
-		html = "<div class='chatentry' style='color: gray'>- Truncated -</div>";
+		html = "<div class='chatentry' style='color: gray'>" + phrase.html("client.rebuild_chat.truncated") + "</div>";
 		var new_chats = [];
 		for (
 			var i = 0;
@@ -806,7 +852,7 @@ function add_pmchat(to, owner, message, xserver) {
 	if (!in_arr(cid, cwindows)) open_chat_window("pm", to, owner == character.name);
 	if (owner != character.name && in_arr(cid, docked)) $("#chatt" + cid).addClass("newmessage");
 	var owner_html = "";
-	xserver = (xserver && " <span style='color:#525553'>[X]</span>") || "";
+	xserver = (xserver && " <span style='color:#525553'>" + phrase.html("client.add_pmchat.x") + "</span>") || "";
 	owner_html = "<span style='color:white'>" + owner + ":</span> ";
 	$("#chatd" + cid).append("<div style='color: " + (color || "gray") + "'>" + owner_html + html_escape(message) + xserver + "</div>"); //class='chatentry'
 	$("#chatd" + cid).scrollTop($("#chatd" + cid)[0].scrollHeight);
@@ -925,12 +971,12 @@ function get_input(args) {
 
 function show_mail_modal() {
 	get_input([
-		{ title: "New Mail" },
-		{ input: "mrecipient", placeholder: "Recipient", style: "width: 320px; text-align: left !important;" },
-		{ input: "msubject", placeholder: "Subject", style: "width: 320px; text-align: left !important;" },
-		{ textarea: "mmsg", placeholder: "Message", style: "width: 324px; height: 74px; text-align: left !important;" },
+		{ title: phrase.html("client.mail_modal.new_mail") },
+		{ input: "mrecipient", placeholder: phrase.html("client.mail_modal.recipient"), style: "width: 320px; text-align: left !important;" },
+		{ input: "msubject", placeholder: phrase.html("client.mail_modal.subject"), style: "width: 320px; text-align: left !important;" },
+		{ textarea: "mmsg", placeholder: phrase.html("client.mail_modal.message"), style: "width: 324px; height: 74px; text-align: left !important;" },
 		{
-			button: "Send",
+			button: phrase.html("client.mail_modal.send"),
 			onclick: function () {
 				pcs();
 				push_deferred("mail");
@@ -950,7 +996,7 @@ function show_confirm(text, ok, cancel, onclick) {
 	html += "<div style='width: 410px; text-align: right; font-size: 0px'>";
 	if (is_array(ok)) (color = ok[0]), (ok = ok[1]);
 	html += "<div class='gamebutton' style='border-color: " + color + "; margin: 6px 6px 6px 0px' onclick='sc_onclick[\"" + rid + "\"]();'>" + ok + "</div>";
-	html += "<div class='gamebutton' style='margin: 6px 0px 6px 6px' onclick='hide_modal();'>" + cancel + "</div>";
+	html += "<div class='gamebutton' data-ui-dismiss style='margin: 6px 0px 6px 6px' onclick='hide_modal();'>" + cancel + "</div>";
 	html += "</div>";
 	show_modal(html, { wrap: false });
 }
@@ -1027,41 +1073,41 @@ function use_skill(name, target, arg, request_id) {
 	} else if (name == "pcoat") {
 		var position = item_position("poison");
 		if (position === undefined) {
-			add_log("You don't have a poison sack", "gray");
+			add_log(phrase.html("client.use_skill.you_don_t_have_a_poison_sack"), "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
 		return request(name, "skill", { name: "pcoat", num: position });
 	} else if (name == "revive") {
 		var position = item_position("essenceoflife");
 		if (position === undefined) {
-			add_log("You don't have an essence", "gray");
+			add_log(phrase.html("client.use_skill.you_don_t_have_an_essence"), "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
 		return request(name, "skill", { name: "revive", num: position, id: target });
 	} else if (name == "entangle") {
 		var position = item_position("essenceofnature");
 		if (position === undefined) {
-			add_log("You don't have an essence", "gray");
+			add_log(phrase.html("client.use_skill.you_don_t_have_an_essence"), "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
 		return request(name, "skill", { name: "entangle", num: position, id: target });
 	} else if (name == "poisonarrow") {
 		var position = item_position("poison");
 		if (position === undefined) {
-			add_log("You don't have a poison sack", "gray");
+			add_log(phrase.html("client.use_skill.you_don_t_have_a_poison_sack"), "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
 		return request(name, "skill", { name: "poisonarrow", num: position, id: target });
 	} else if (name == "shadowstrike" || name == "phaseout") {
 		var position = item_position("shadowstone");
 		if (position === undefined) {
-			add_log("You don't have any shadow stones", "gray");
+			add_log(phrase.html("client.use_skill.you_don_t_have_any_shadow_stones"), "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
 		return request(name, "skill", { name: name, num: position });
 	} else if (name == "throw") {
 		if (!character.items[arg]) {
-			add_log("Inventory slot is empty", "gray");
+			add_log(phrase.html("client.use_skill.inventory_slot_is_empty"), "gray");
 			return rejecting_promise({ reason: "no_item" });
 		}
 		return request(name, "skill", { name: name, num: arg, id: target });
@@ -1092,7 +1138,7 @@ function use_skill(name, target, arg, request_id) {
 	} else if (G.skills[name] && G.skills[name].target) return request(name, "skill", { name: name, id: target });
 	else if (G.skills[name]) return request(name, "skill", { name: name });
 	else {
-		add_log("Skill not found: " + name, "gray");
+		add_log(phrase.html("client.use_skill.skill_not_found", { name: name }), "gray");
 		return rejecting_promise({ reason: "no_skill" });
 	}
 }
@@ -1119,19 +1165,19 @@ function on_skill(key, event) {
 				push_deferred("equip");
 				socket.emit("equip", { num: num });
 			}
-		} else add_log("Item not found", "gray");
+		} else add_log(phrase.html("client.on_skill.item_not_found"), "gray");
 	} else if (name == "attack") {
 		var target = xtarget || ctarget;
 		if (target && target.id) {
 			push_deferred("attack");
 			socket.emit("attack", { id: target.id });
-		} else add_log("No target", "gray");
+		} else add_log(phrase.html("client.on_skill.no_target"), "gray");
 	} else if (name == "heal") {
 		var target = xtarget || ctarget;
 		if (target && target.id) {
 			push_deferred("heal");
 			socket.emit("heal", { id: target.id });
-		} else add_log("No target", "gray");
+		} else add_log(phrase.html("client.on_skill.no_target"), "gray");
 	} else if (name == "blink") {
 		if (event) blink_pressed = true;
 		last_blink_pressed = new Date();
@@ -1159,77 +1205,77 @@ function on_skill(key, event) {
 		var buttons = [];
 		hide_modal();
 		buttons.push({
-			button: "Travel",
+			button: phrase.html("client.moderation.travel"),
 			onclick: function () {
 				hide_modal();
 				render_gtravel();
 			},
 		});
 		buttons.push({
-			button: "P Jump",
+			button: phrase.html("client.moderation.p_jump"),
 			onclick: function () {
 				socket.emit("gm", { action: "jump_list" });
 			},
 		});
 		buttons.push({
-			button: "M Jump",
+			button: phrase.html("client.moderation.m_jump"),
 			onclick: function () {
 				hide_modal();
 				render_gmonsters(1);
 			},
 		});
 		buttons.push({
-			button: "Invincible",
+			button: phrase.html("client.moderation.invincible"),
 			onclick: function () {
 				socket.emit("gm", { action: "invincible" });
 				hide_modal();
 			},
 		});
 		buttons.push({
-			button: "Mute",
+			button: phrase.html("client.moderation.mute"),
 			onclick: function () {
 				hide_modal();
 				get_input({
-					button: "Mute",
+					button: phrase.html("client.on_skill.mute"),
 					onclick: function () {
 						socket.emit("gm", { action: "mute", id: $(".mglocx").val() });
 						hide_modal(true);
 					},
 					input: "mglocx",
-					placeholder: "Name",
-					title: "Character",
+					placeholder: phrase.html("client.on_skill.name"),
+					title: phrase.html("client.on_skill.character"),
 				});
 			},
 		});
 		buttons.push({
-			button: "Jail",
+			button: phrase.html("client.moderation.jail"),
 			onclick: function () {
 				hide_modal();
 				get_input({
-					button: "Jail",
+					button: phrase.html("client.on_skill.jail"),
 					onclick: function () {
 						socket.emit("gm", { action: "jail", id: $(".mglocx").val() });
 						hide_modal(true);
 					},
 					input: "mglocx",
-					placeholder: "Name",
-					title: "Character",
+					placeholder: phrase.html("client.on_skill.name"),
+					title: phrase.html("client.on_skill.character"),
 				});
 			},
 		});
 		buttons.push({
-			button: "Ban",
+			button: phrase.html("client.on_skill.ban"),
 			onclick: function () {
 				hide_modal();
 				get_input({
-					button: "Ban",
+					button: phrase.html("client.on_skill.ban"),
 					onclick: function () {
 						socket.emit("gm", { action: "ban", id: $(".mglocx").val() });
 						hide_modal(true);
 					},
 					input: "mglocx",
-					placeholder: "Name",
-					title: "Character",
+					placeholder: phrase.html("client.on_skill.name"),
+					title: phrase.html("client.on_skill.character"),
 				});
 			},
 		});
@@ -1265,20 +1311,20 @@ function on_skill(key, event) {
 		}
 		if (skill.emotion && in_arr(skill.emotion, emotes)) use_skill(skill.emotion);
 		else if (emotes.length) use_skill(random_one(emotes));
-		else d_text("NO", character);
+		else d_text(phrase("client.on_skill.no_emotes"), character);
 	} else if (name == "eval" || name == "pure_eval") {
 		smart_eval(skill.code);
 	} else if (name == "magiport") {
 		get_input({
 			small: true,
-			button: "Engage",
+			button: phrase.html("client.on_skill.engage"),
 			onclick: function () {
 				use_skill("magiport", $(".mglocx").val());
 				hide_modal(1);
 			},
 			input: "mglocx",
-			placeholder: "Name",
-			title: "Magiport",
+			placeholder: phrase.html("client.on_skill.name"),
+			title: phrase.html("client.on_skill.magiport"),
 		});
 	} else if (G.skills[name] && G.skills[name].emote) {
 		if (name == "ikissyou" && !(character.acx && character.acx.ikissyou) && anniversary_can_visit()) anniversary_kiss();
@@ -1350,6 +1396,7 @@ function map_keys_and_skills() {
 
 var last_move = new Date();
 function move(x, y, code) {
+	if (character?.cave?.paused || character?.cave_entering) return code ? Promise.reject({ reason: character.cave_entering ? "cave_entering" : "cave_paused" }) : undefined;
 	var map = map,
 		move = calculate_move(character, parseFloat(x) || 0, parseFloat(y) || 0);
 	// alert(move.x+" "+move.y);
@@ -1427,9 +1474,9 @@ function inventory_middle(num, event) {
 			else {
 				get_input([
 					{ title: "(1-" + min(G.items[character.items[num].name].s || 1, character.items[num].q - 1) + ")" },
-					{ input: "qt", placeholder: "Quantity", style: "width: 320px; text-align: left !important;" },
+					{ input: "qt", placeholder: phrase.html("client.inventory_middle.quantity"), style: "width: 320px; text-align: left !important;" },
 					{
-						button: "Split",
+						button: phrase.html("client.inventory_middle.split"),
 						small: true,
 						onclick: function () {
 							pcs();
@@ -1515,7 +1562,7 @@ function target_player(name) {
 	if (name == character.name) ptarget = character;
 	for (i in entities) if (entities[i].type == "character" && entities[i].name == name) ptarget = entities[i];
 	if (!ptarget) {
-		add_log(name + " isn't around", "gray");
+		add_log(phrase.html("client.target_player.isn_t_around", { name: name }), "gray");
 		return;
 	}
 	xtarget = ptarget;
@@ -1525,7 +1572,7 @@ function travel_p(name) {
 	if (party[name] && (party[name]["in"] == party[name].map || party[name]["in"] == character["in"])) {
 		call_code_function_f("smart_move", { x: party[name].x, y: party[name].y, map: party[name].map });
 	} else {
-		add_log("Can't find " + name, "gray");
+		add_log(phrase.html("client.travel_p.can_t_find", { name: name }), "gray");
 	}
 }
 
@@ -1534,7 +1581,7 @@ function party_click(name) {
 	if (name == character.name) ptarget = character;
 	for (i in entities) if (entities[i].type == "character" && entities[i].name == name) ptarget = entities[i];
 	if (!ptarget) {
-		add_log(name + " isn't around. <span class='clickable' onclick='pcs(event); travel_p(\"" + name + "\")' style='color: #A78059'>Travel</span>", "gray");
+		add_log(phrase.html("client.party_click.isn_t_around", { name: name }) + " " + "<span class='clickable' onclick='pcs(event); travel_p(\"" + (name) + "\")' style='color: #A78059'>" + phrase.html("client.party_click.travel") + "</span>", "gray");
 		return;
 	}
 	if (character.ctype == "priest") {
@@ -1579,7 +1626,7 @@ function npc_focus() {
 		if (c_dist < m_dist) (m_dist = c_dist), (selected = element);
 	});
 	if (selected) selected.onrclick();
-	else add_log("Nothing nearby", "gray");
+	else add_log(phrase.html("client.npc_focus.nothing_nearby"), "gray");
 }
 
 function locate_item(name) {
@@ -1591,25 +1638,25 @@ function locate_item(name) {
 }
 
 function show_configure() {
-	add_log("Coming soon: Settings, Sounds, Music", "gray");
+	add_log(phrase.html("client.configure.coming_soon_settings_sounds_music"), "gray");
 	ping();
 }
 
 function list_soon() {
-	add_log("Coming soon: Settings, Sounds, Music, PVP (in 1-2 weeks), Trade (Very Soon!)", "gray");
+	add_log(phrase.html("client.list_soon.coming_soon_settings_sounds_music_pvp_in_1_2_weeks"), "gray");
 }
 
 function transport_to(place, s) {
 	if (character.map == place) {
-		add_log("Already here", "gray");
+		add_log(phrase.html("client.transport_to.already_here"), "gray");
 		return;
 	}
 	if (place == "underworld") {
-		add_log("Can't reach the underworld. Yet.", "gray");
+		add_log(phrase.html("client.transport_to.can_t_reach_the_underworld_yet"), "gray");
 		return;
 	}
 	if (place == "desert") {
-		add_log("Can't reach the desertland. Yet.", "gray");
+		add_log(phrase.html("client.transport_to.can_t_reach_the_desertland_yet"), "gray");
 		return;
 	}
 	var promise = push_deferred("transport");
@@ -1618,7 +1665,7 @@ function transport_to(place, s) {
 }
 
 function show_transports() {
-	$("#rightcornerui").html($(".transports").html());
+	render_ui_panel("#rightcornerui", $(".transports").html(), "stats");
 	topright_npc = "transports";
 }
 
@@ -1628,6 +1675,7 @@ function hide_transports() {
 }
 
 function execute_codemirror(button) {
+	if ($(button).closest(".tutorial-code").length) return prepare_tutorial_code(true);
 	$(".executei").remove();
 	window.the_example = $(button).parent()[0].CodeMirror.getValue();
 	$(button)
@@ -1635,6 +1683,25 @@ function execute_codemirror(button) {
 		.append(
 			"<div class='clickable enableclicks' style='position: absolute; top: 4px; right: 4px; z-index: 4;' onclick='$(\".executei\").remove();'><iframe src='/executor' style='width: 200px; height: 26px; border: 1px solid white; pointer-events: none;' class='executei' /></div>",
 		);
+}
+
+var tutorial_code_loading = null;
+function prepare_tutorial_code(execute) {
+	var container = $(".modal:last .tutorial-code")[0];
+	if (!container) return;
+	if (window.TutorialCode) return execute ? TutorialCode.run() : TutorialCode.mount();
+	$(container).find(".tutorial-code-result").text(phrase("client.tutorial_code.loading"));
+	if (!tutorial_code_loading) {
+		tutorial_code_loading = $.getScript("/js/tutorial_code.js?v=" + (window.VERSION || window.Version || 1));
+		tutorial_code_loading.fail(function () {
+			tutorial_code_loading = null;
+			$(".modal:last .tutorial-code-result").text(phrase("client.tutorial_code.unavailable"));
+		});
+	}
+
+	tutorial_code_loading.done(function () {
+		if (container.isConnected && TutorialCode.mount() && execute) TutorialCode.run();
+	});
 }
 
 function eval_snippet() {
@@ -1647,9 +1714,13 @@ function command_snippet() {
 	if (code) socket.emit("o:command", code);
 }
 
+function snippet_actions(action, label, classes) {
+	return "<div class='snippet-actions'><div class='gamebutton ui-close-action' data-ui-dismiss onclick='btc(event); hide_modal()'>" + phrase.html("client.snippet_actions.close") + "</div><div class='gamebutton snippet-action " + ((classes || "")) + "' onclick='" + (action) + "'>" + ((label || phrase.html("client.snippet.execute"))) + "</div></div>";
+}
+
 function show_commander(fvalue) {
 	if ($(".snippetbtn").length) return;
-	var html = "<textarea id='rendererx'></textarea><div class='gamebutton snippetbtn' style='position: absolute; bottom: -68px; right: -5px' onclick='command_snippet()'>COMMAND</div>";
+	var html = "<textarea id='rendererx'></textarea>" + snippet_actions("command_snippet()", phrase.html("client.snippet.command"), "snippetbtn");
 	show_modal(html);
 	var value = "";
 	if (window.codemirror_render3) {
@@ -1674,11 +1745,12 @@ function show_commander(fvalue) {
 		},
 	);
 	codemirror_render3.focus();
+	position_modals();
 }
 
 function show_snippet(fvalue) {
 	if ($(".snippetbtn").length) return;
-	var html = "<textarea id='rendererx'></textarea><div class='gamebutton snippetbtn' style='position: absolute; bottom: -68px; right: -5px' onclick='tut(\"x\"); eval_snippet()'>EXECUTE</div>";
+	var html = "<textarea id='rendererx'></textarea>" + snippet_actions('tut("x"); eval_snippet()', phrase.html("client.snippet.execute"), "snippetbtn");
 	show_modal(html);
 	var value = "";
 	if (window.codemirror_render3) {
@@ -1703,6 +1775,7 @@ function show_snippet(fvalue) {
 		},
 	);
 	codemirror_render3.focus();
+	position_modals();
 }
 
 function eval_character_snippet(name) {
@@ -1714,7 +1787,7 @@ function show_character_snippet(name) {
 	var oname = name;
 	name = name.toLowerCase();
 	var html =
-		"<textarea id='renderer" + name + "'></textarea><div class='gamebutton' style='position: absolute; bottom: -68px; right: -5px' onclick='eval_character_snippet(\"" + name + "\")'>EXECUTE</div>";
+		"<textarea id='renderer" + name + "'></textarea>" + snippet_actions('eval_character_snippet("' + name + '")');
 	show_modal(html);
 	var value = "// " + oname + "\n";
 	if (window["codemirror_render" + name]) {
@@ -1738,6 +1811,7 @@ function show_character_snippet(name) {
 		},
 	);
 	window["codemirror_render" + name].focus();
+	position_modals();
 }
 
 function get_active_characters() {
@@ -1774,12 +1848,12 @@ function character_code_eval(name, snippet) {
 	var rid = "ichar" + name.toLowerCase();
 	var weval = document.getElementById(rid) && document.getElementById(rid).contentWindow && document.getElementById(rid).contentWindow.eval;
 	if (!weval) {
-		add_log("Character not found! ", "#993D42");
+		add_log(phrase.html("client.character_code_eval.character_not_found") + " ", "#993D42");
 		return undefined;
 	}
 	if (document.getElementById(rid).contentWindow.code_active) {
 		document.getElementById(rid).contentWindow.call_code_function("eval", snippet);
-	} else if (document.getElementById(rid).contentWindow.code_run) add_log("CODE is warming up", "#DC9E48");
+	} else if (document.getElementById(rid).contentWindow.code_run) add_log(phrase.html("client.character_code_eval.code_is_warming_up"), "#DC9E48");
 	else {
 		document.getElementById(rid).contentWindow.start_runner(0, "\nset_message('Snippet');\n" + snippet);
 	}
@@ -1789,7 +1863,7 @@ function character_window_eval(name, snippet) {
 	var rid = "ichar" + name.toLowerCase();
 	var weval = document.getElementById(rid) && document.getElementById(rid).contentWindow && document.getElementById(rid).contentWindow.eval;
 	if (!weval) {
-		add_log("Character not found!", "#993D42");
+		add_log(phrase.html("client.character_window_eval.character_not_found"), "#993D42");
 		return undefined;
 	}
 	var result = true;
@@ -1809,7 +1883,7 @@ function code_eval(snippet) {
 	if (snippet.search("await") != -1) snippet = "(async () => {" + snippet + "\n})()";
 	if (code_active) {
 		call_code_function(f, snippet);
-	} else if (code_run) add_log("CODE is warming up", "#DC9E48");
+	} else if (code_run) add_log(phrase.html("client.code_eval.code_is_warming_up"), "#DC9E48");
 	else {
 		start_runner(0, "\nset_message('Snippet');\n" + snippet);
 	}
@@ -1988,9 +2062,9 @@ function free_character(name) {
 		//try{ delete data["global"]; } catch(e){}
 		//storage_set("settings_cache",JSON.stringify(data));
 		smart_eval($(".onbackbutton").attr("onclick"));
-		add_log("Done!");
+		add_log(phrase.html("client.free_character.done"));
 	} else {
-		add_log("Character not found!");
+		add_log(phrase.html("client.free_character.character_not_found"));
 	}
 }
 
@@ -2105,7 +2179,7 @@ function listen_for_hints(editor) {
 				$("#codelog").prepend("<div id='codehint' class='clickable' onclick='load_documentation($(\".thehint\").html())'></div>");
 			}
 			last_hint = text;
-			$("#codehint").html("<span style='color: #716CBB'>[E]</span> <span class='thehint'>" + text + "</span>");
+			$("#codehint").html("<span style='color: #716CBB'>" + phrase.html("client.listen_for_hints.e") + "</span> <span class='thehint'>" + (text) + "</span>");
 			$("#codehint").show();
 		} else if (last_hint) $("#codehint").remove(), (last_hint = undefined);
 	});
@@ -2496,6 +2570,8 @@ function safe_x_move(sprite, x) {
 }
 
 function attack_animation_logic(sprite, source) {
+	if (no_graphics) return;
+	if (sprite.attack_motion) return play_entity_strike(sprite);
 	var only_up = false,
 		multiplier = 1.5;
 	if (sprite.type == "character") multiplier = 3.5;
@@ -2620,6 +2696,7 @@ function remove_sprite(sprite) {
 function destroy_sprite(sprite, mode) {
 	if (mode != "just") remove_sprite(sprite);
 	try {
+		if (sprite.cave_sparks && !sprite.cave_sparks._destroyed) sprite.cave_sparks.destroy();
 		if (mode == "children" || mode == "just") sprite.destroy({ children: true });
 		else sprite.destroy();
 		leave_references(sprite);
@@ -2828,19 +2905,19 @@ function say(message, code) {
 			if (name) start_character_runner(name, code);
 		} else if (command == "codes") {
 			var opened = window.open(base_url + "/vscode", "_blank");
-			if (!opened) show_alert("Open " + base_url + "/vscode");
+			if (!opened) show_alert(phrase.html("client.say.open_vscode", { base_url: base_url }));
 		} else if (command == "leave") {
 			push_deferred("party");
 			socket.emit("party", { event: "leave" });
 		} else if (command == "uptime") {
-			add_chat("", to_pretty_num(parseInt(msince(inception))) + " minutes " + parseInt(ssince(inception) % 60) + " seconds", "gray");
+			add_chat("", phrase.html("client.say.minutes_seconds", { value: to_pretty_num(parseInt(msince(inception))), value2: parseInt(ssince(inception) % 60) }), "gray");
 		} else if (command == "duel" || command == "challenge") {
 			var args = rest.split(" "),
 				name = args.shift();
 			var target = xtarget || ctarget;
 			if (!name && target && target.name) socket.emit("duel", { event: "challenge", name: target.name });
 			else if (name) socket.emit("duel", { event: "challenge", name: name });
-			else add_chat("", "No one to duel");
+			else add_chat("", phrase.html("client.say.no_one_to_duel"));
 		} else if (command == "stop") {
 			var args = rest.split(" "),
 				name = args.shift();
@@ -2880,7 +2957,7 @@ function say(message, code) {
 				name = args.shift(),
 				rest = args.join(" ");
 			if (!name || !rest) {
-				add_chat("", "Format: /w NAME MESSAGE");
+				add_chat("", phrase.html("client.say.format_w_name_message", {command:"/w NAME MESSAGE"}));
 			} else {
 				private_say(name, rest);
 			}
@@ -2890,7 +2967,7 @@ function say(message, code) {
 				name = args.join(" ");
 			if (slot.length && !parseInt(slot)) {
 				add_chat("", "/savecode NUMBER NAME");
-				add_chat("", "NUMBER can be from 1 to 100");
+				add_chat("", phrase.html("client.say.number_can_be_from_1_to_100"));
 			} else {
 				if (!slot) slot = 1;
 				api_call("save_code", { code: codemirror_render.getValue(), slot: slot, name: name });
@@ -2905,35 +2982,35 @@ function say(message, code) {
 		} else if (command == "whisper") {
 			var target = xtarget || ctarget;
 			if (target && !target.me && !target.npc && target.type == "character") private_say(target.name, rest);
-			else add_chat("", "Target someone to whisper");
+			else add_chat("", phrase.html("client.say.target_someone_to_whisper"));
 		} else if (command == "party" || command == "invite") {
 			var args = rest.split(" "),
 				name = args.shift();
 			var target = xtarget || ctarget;
 			if (name && name.length) push_deferred("party"), socket.emit("party", { event: "invite", name: name });
 			else if (target && !target.me && !target.npc && target.type == "character") push_deferred("party"), socket.emit("party", { event: "invite", id: target.id });
-			else add_chat("", "Target someone to invite");
+			else add_chat("", phrase.html("client.say.target_someone_to_invite"));
 		} else if (command == "kick") {
 			var args = rest.split(" "),
 				name = args.shift();
 			var target = xtarget || ctarget;
 			if (name && name.length) socket.emit("party", { event: "kick", name: name });
 			else if (target && !target.me && !target.npc && target.type == "character") socket.emit("party", { event: "kick", id: target.id });
-			else add_chat("", "Target someone to kick");
+			else add_chat("", phrase.html("client.say.target_someone_to_kick"));
 		} else if (command == "request") {
 			var args = rest.split(" "),
 				name = args.shift();
 			var target = xtarget || ctarget;
 			if (name && name.length) socket.emit("party", { event: "request", name: name });
 			else if (target && !target.me && !target.npc && target.type == "character") socket.emit("party", { event: "request", id: target.id });
-			else add_chat("", "Target someone to request party");
+			else add_chat("", phrase.html("client.say.target_someone_to_request_party"));
 		} else if (command == "friend") {
 			var args = rest.split(" "),
 				name = args.shift();
 			var target = xtarget || ctarget;
 			if (name && name.length) push_deferred("friend"), socket.emit("friend", { event: "request", name: name });
 			else if (target && !target.me && !target.npc && target.type == "character") push_deferred("friend"), socket.emit("friend", { event: "request", name: target.name });
-			else add_chat("", "Target someone to friend");
+			else add_chat("", phrase.html("client.say.target_someone_to_friend"));
 		} else if (command == "guide") {
 			show_game_guide();
 		} else if (command == "learn") {
@@ -2942,26 +3019,26 @@ function say(message, code) {
 			render_code_docs();
 		} else if (code_active && document.getElementById("maincode") && document.getElementById("maincode").contentWindow && document.getElementById("maincode").contentWindow.handle_command) {
 			if (document.getElementById("maincode").contentWindow.handle_command(command, rest) != -1);
-			else add_chat("", "Command not found. You can add a `handle_command` function to your CODE to capture commands.");
+			else add_chat("", phrase.html("client.say.command_not_found_you_can_add_a_handle_command_function"));
 		} else if (screenshot_mode && command == "p1") {
-			add_chat("Wizard", "Adventure Land is a 2D Pixel MMORPG", "#D3C7A2");
+			add_chat("Wizard", phrase.html("client.say.adventure_land_is_a_2d_pixel_mmorpg"), "#D3C7A2");
 		} else if (screenshot_mode && command == "p2") {
-			add_chat("Amazon", "20% off on all Elixirs", "gray");
-			add_chat("Healer", "Economy is completely Merchant-to-Merchant, players leave their merchants in the town square to sell or buy items", "#58BCA5");
+			add_chat("Amazon", phrase.html("client.say.20_off_on_all_elixirs"), "gray");
+			add_chat("Healer", phrase.html("client.say.economy_is_completely_merchant_to_merchant_players_leave_their_merchants"), "#58BCA5");
 		} else if (recording_mode && command == "r1") {
-			ui_log("Item upgrade succeeded", "white");
-			ui_log("Item upgrade succeeded", "white");
-			ui_log("Item upgrade succeeded", "white");
-			ui_log("Item upgrade succeeded", "white");
+			ui_log(phrase.html("client.say.item_upgrade_succeeded"), "white");
+			ui_log(phrase.html("client.say.item_upgrade_succeeded"), "white");
+			ui_log(phrase.html("client.say.item_upgrade_succeeded"), "white");
+			ui_log(phrase.html("client.say.item_upgrade_succeeded"), "white");
 			// add_chat("Wizard","Higher monster hp means more gold from selling the drops, as calculations don't account for the hp based increase in drops","gray");
-			add_chat("NewKid", "hi", "gray");
-			add_chat("Wizard", "hello :)", "gray");
-			add_chat("", "SweetPea received a Mittens +9", "#85C76B");
-			add_chat("", "Maela found a Mistletoe", "#85C76B");
-			add_chat("", "Trexnamedted found a Candy Cane", "#85C76B");
+			add_chat("NewKid", phrase.html("client.say.hi"), "gray");
+			add_chat("Wizard", phrase.html("client.say.hello"), "gray");
+			add_chat("", phrase.html("client.say.sweetpea_received_a_mittens_9"), "#85C76B");
+			add_chat("", phrase.html("client.say.maela_found_a_mistletoe"), "#85C76B");
+			add_chat("", phrase.html("client.say.trexnamedted_found_a_candy_cane"), "#85C76B");
 			// add_chat("Wizard","gz :)","gray");
 		} else {
-			add_chat("", "Command not found. Suggestion: /list");
+			add_chat("", phrase.html("client.say.command_not_found_suggestion_list"));
 		}
 	} else {
 		var promise = push_deferred("say");
@@ -3039,25 +3116,39 @@ function quantity(name, level) {
 
 function anniversary_live_event() {
 	var state = typeof S != "undefined" && S.anniversary;
-	return state && state.active && state.live && state.id ? state : null;
+	return state && state.active && state.live && state.id && Date.now() < state.expires ? state : null;
 }
 
 function anniversary_can_visit() {
 	var state = anniversary_live_event(),
-		ticket = character && character.s && character.s.anniversary_visit;
+		ticket = character && character.s && character.s.anniversary_visit,
+		status = character && character.anniversary;
+	if (state && status && status.realm == server_region + " " + server_identifier && status.round == state.round && status.reason != "ready") return false;
 	return !!(state && ticket && ticket.ms > 0 && ticket.round == state.round && ticket.realm == server_region + " " + server_identifier && Date.now() < ticket.expires && Date.now() < state.expires);
 }
 
+function anniversary_visit_reason() {
+	var state = anniversary_live_event(),
+		status = character && character.anniversary;
+	if (!state) return "no_round";
+	if (status && status.realm == server_region + " " + server_identifier && status.round == state.round && status.reason != "ready") return status.reason;
+	if (!anniversary_can_visit()) return "no_visit";
+	if (state.available === false) return "target_unavailable";
+	return null;
+}
+
 function anniversary_kiss() {
-	var state = anniversary_live_event();
-	if (!state) return add_log("No player is featured right now.", "gray");
-	if (!anniversary_can_visit() && !(character.acx && character.acx.ikissyou)) return add_log("You don't have an Anniversary Visit for this round.", "gray");
+	var state = anniversary_live_event(),
+		reason = anniversary_visit_reason();
+	if (!state) return add_log(phrase.html("client.anniversary_kiss.no_player_is_featured_right_now"), "gray");
+	if (reason && !(character.acx && character.acx.ikissyou)) return add_log(phrase.html("interface.anniversary_status." + reason), "gray");
 	return use_skill("ikissyou", state.id);
 }
 
 function find_anniversary_player() {
 	var state = anniversary_live_event();
-	if (!state || !G.maps[state.map] || !Number.isFinite(state.x) || !Number.isFinite(state.y)) return add_log("No player is featured right now.", "gray");
+	if (!state || !G.maps[state.map] || !Number.isFinite(state.x) || !Number.isFinite(state.y)) return add_log(phrase.html("client.find_anniversary_player.no_player_is_featured_right_now"), "gray");
+	if (state.available === false) return add_log(phrase.html("client.find_anniversary_player.waiting_for_to_return_the_round_s_timer_is_still", { target: state.target }), "gray");
 	return call_code_function_f("smart_move", { map: state.map, x: state.x, y: state.y });
 }
 
@@ -3084,41 +3175,34 @@ function anniversary_recipe_state(name) {
 	return { recipe: recipe, rows: rows, ready: ready };
 }
 
-function anniversary_craft(name) {
-	var state = anniversary_recipe_state(name);
-	if (!state) return add_log("Mira can't make that item.", "gray");
-	if (!(typeof S != "undefined" && S.anniversary && S.anniversary.active)) return add_log("Mira's anniversary workshop is closed.", "gray");
-	if (!state.ready) return add_log("You need the listed ingredients and gold.", "gray");
-	var promise = push_deferred("craft");
-	socket.emit("anniversary_craft", { name: name });
-	return promise;
-}
-
 function auto_craft(name, code) {
 	var issue = null;
-	if (!G.craft[name]) issue = "recipe";
+	if (!Object.prototype.hasOwnProperty.call(G.craft, name)) issue = "recipe";
+	else if (G.craft[name].quest == "anniversary_baker" && !(typeof S != "undefined" && S.anniversary && S.anniversary.active)) issue = "season";
 	else if (G.craft[name].cost > character.gold) issue = "gold";
 	else {
 		G.craft[name].items.forEach(function (i) {
 			var enough = false;
 			for (var j = 0; j < character.items.length; j++) {
 				var item = character.items[j];
-				if (item && item.name == i[1] && (item.level || 0) == (i[2] || 0) && (item.q || 1) >= i[0]) enough = true;
+				if (item && !item.l && !item.b && !item.giveaway && item.name == i[1] && (item.level || 0) == (i[2] || 0) && (item.q || 1) >= i[0]) enough = true;
 			}
 			if (!enough) issue = "items";
 		});
 	}
 	if (issue) {
-		if (issue == "recipe") add_log("Can't craft that item", "gray");
-		else if (issue == "gold") add_log("Not enough gold", "gray");
-		else if (issue == "items") add_log("Don't have the required items", "gray");
+		if (issue == "recipe") add_log(phrase.html("client.auto_craft.can_t_craft_that_item"), "gray");
+		else if (issue == "season") add_log(phrase.html("client.auto_craft.mira_s_anniversary_workshop_is_closed"), "gray");
+		else if (issue == "gold") add_log(phrase.html("client.auto_craft.not_enough_gold"), "gray");
+		else if (issue == "items") add_log(phrase.html("client.auto_craft.don_t_have_the_required_items"), "gray");
 		if (code) return rejecting_promise({ reason: issue });
 	} else {
 		var items = [],
 			k = 0;
 		G.craft[name].items.forEach(function (i) {
 			for (var j = 0; j < character.items.length; j++) {
-				if (character.items[j] && character.items[j].name == i[1] && (character.items[j].level || 0) == (i[2] || 0) && (character.items[j].q || 1) >= i[0]) {
+				var item = character.items[j];
+				if (item && !item.l && !item.b && !item.giveaway && item.name == i[1] && (item.level || 0) == (i[2] || 0) && (item.q || 1) >= i[0]) {
 					items.push([k++, j]);
 					break;
 				}
@@ -3134,7 +3218,7 @@ var suppress_calculations = false;
 
 function upgrade(item, scroll, offering, code, calculate) {
 	if (!code && calculate && suppress_calculations) return;
-	if (!code && (item == null || (scroll == null && offering == null))) d_text("INVALID", character);
+	if (!code && (item == null || (scroll == null && offering == null))) d_text(phrase("client.floating.invalid"), character);
 	else {
 		var promise = push_deferred("upgrade");
 		socket.emit("upgrade", { item_num: item, scroll_num: scroll, offering_num: offering, clevel: (character.items[item] && character.items[item].level) || 0, calculate: calculate });
@@ -3145,7 +3229,7 @@ function upgrade(item, scroll, offering, code, calculate) {
 
 function compound(item0, item1, item2, scroll, offering, code, calculate) {
 	if (!code && calculate && suppress_calculations) return;
-	if (!code && (item0 == null || item1 == null || item2 == null || scroll == null)) d_text("INVALID", character);
+	if (!code && (item0 == null || item1 == null || item2 == null || scroll == null)) d_text(phrase("client.floating.invalid"), character);
 	else {
 		var promise = push_deferred("compound");
 		socket.emit("compound", { items: [item0, item1, item2], scroll_num: scroll, offering_num: offering, clevel: character.items[item0].level || 0, calculate: calculate });
@@ -3183,7 +3267,7 @@ function unlock_item(num) {
 
 function deposit(amount) {
 	if (!G.maps[current_map].mount) {
-		add_log("Not in the bank.", "gray");
+		add_log(phrase.html("client.deposit.not_in_the_bank"), "gray");
 		return rejecting_promise({ reason: "not_in_bank" });
 	}
 	if (!amount) amount = $(".npcgold").html() || "";
@@ -3195,7 +3279,7 @@ function deposit(amount) {
 
 function withdraw(amount) {
 	if (!G.maps[current_map].mount) {
-		add_log("Not in the bank.", "gray");
+		add_log(phrase.html("client.withdraw.not_in_the_bank"), "gray");
 		return rejecting_promise({ reason: "not_in_bank" });
 	}
 	if (!amount) amount = $(".npcgold").html() || "";
@@ -3338,8 +3422,8 @@ function poof(is_code) {
 			socket.emit("destroy", { num: p_item, q: 1, statue: true });
 		};
 	}
-	if (p_item == null) d_text("INVALID", character);
-	else if (exchange_animations) d_text("WAIT FOR IT", character);
+	if (p_item == null) d_text(phrase("client.floating.invalid"), character);
+	else if (exchange_animations) d_text(phrase("client.floating.wait_for_it"), character);
 	else {
 		exchange_animations = true;
 		draw_timeout(poof_trigger(p_item), delay);
@@ -3348,10 +3432,10 @@ function poof(is_code) {
 
 function exchange(is_code) {
 	if (character.q.exchange) {
-		d_text("WAIT", character);
+		d_text(phrase("client.floating.wait"), character);
 		return rejecting_promise({ reason: "in_progress" });
 	} else if (!is_code && e_item == null) {
-		d_text("INVALID", character);
+		d_text(phrase("client.floating.invalid"), character);
 		return rejecting_promise({ reason: "invalid" });
 	} else {
 		var promise = push_deferred("exchange");
@@ -3363,7 +3447,7 @@ function exchange(is_code) {
 function exchange_buy(token, name) {
 	var num = item_position(token);
 	if (num == undefined) {
-		d_text("NO TOKENS", character);
+		d_text(phrase("client.floating.no_tokens"), character);
 		return rejecting_promise({ reason: "no_tokens" });
 	} else {
 		var promise = push_deferred("exchange_buy");
@@ -3379,7 +3463,7 @@ function craft() {
 		if (cr_items[i] || cr_items[i] === 0) (j = true), items.push([i, cr_items[i]]);
 	}
 	if (!j) {
-		d_text("INVALID", character);
+		d_text(phrase("client.floating.invalid"), character);
 		return rejecting_promise({ reason: "invalid" });
 	} else {
 		var promise = push_deferred("craft");
@@ -3408,7 +3492,6 @@ function reopen() {
 		else if (rendered_target == "gold") render_gold_npc();
 		else if (rendered_target == "items") render_items_npc();
 		else if (rendered_target == "craftsman") render_craftsman();
-		else if (rendered_target == "anniversary_baker") render_anniversary_baker();
 		else if (rendered_target == "dismantler") render_dismantler();
 		else if (rendered_target == "none") render_none_shrine();
 		else if (rendered_target == "locksmith") render_locksmith();
@@ -3600,7 +3683,7 @@ function generate_textures(name, stype) {
 			textures[name][i] = new PIXI.Texture(C[FC[name]], rectangle);
 		}
 	}
-	if (in_arr(stype, ["v_animation", "head", "hair", "hat", "s_wings", "face", "makeup", "beard"])) {
+	if (in_arr(stype, ["v_animation", "head", "hair", "hat", "s_wings", "face", "makeup", "beard"]) && !(stype == "head" && XYWH[name][4] > 1)) {
 		var d = XYWH[name];
 		textures[name] = [null, null, null, null];
 		for (var i = 0; i < 4; i++) {
@@ -3608,7 +3691,7 @@ function generate_textures(name, stype) {
 			textures[name][i] = new PIXI.Texture(C[FC[name]], rectangle);
 		}
 	}
-	if (in_arr(stype, ["a_makeup", "a_hat"])) {
+	if (in_arr(stype, ["a_makeup", "a_hat"]) || (stype == "head" && XYWH[name][4] > 1)) {
 		var d = XYWH[name];
 		textures[name] = [[], [], [], []];
 		for (var i = 0; i < 4; i++) {
@@ -3640,7 +3723,8 @@ function set_texture(sprite, i, j) {
 		sprite.texture = textures[sprite.skin][i % sprite.frames];
 	}
 	if (in_arr(sprite.stype, ["v_animation", "head", "hair", "hat", "s_wings", "face", "makeup", "beard"])) {
-		sprite.texture = textures[sprite.skin][i % sprite.frames];
+		var frame = textures[sprite.skin][i % sprite.frames];
+		sprite.texture = Array.isArray(frame) ? frame[(j || 0) % frame.length] : frame;
 	}
 	if (in_arr(sprite.stype, ["a_makeup", "a_hat"])) {
 		sprite.texture = textures[sprite.skin][i % sprite.frames][j % textures[sprite.skin][0].length];
@@ -3682,7 +3766,8 @@ function new_sprite(skin, stype, n) {
 	}
 	if (in_arr(stype, ["head", "hair", "hat", "s_wings", "face", "makeup", "beard"])) {
 		if (!textures[skin]) generate_textures(skin, stype);
-		var sprite = new PIXI.Sprite(textures[skin][0]);
+		var frame = textures[skin][0];
+		var sprite = new PIXI.Sprite(Array.isArray(frame) ? frame[0] : frame);
 		sprite.cskin = "0";
 		sprite.i = 0;
 		sprite.frames = 4;
@@ -4897,7 +4982,9 @@ function stop_name_tag(element) {
 }
 
 function add_name_tag_old(element) {
-	var ntag_cache = element.name + "|" + element.level;
+	if (no_graphics || element._destroyed) return;
+	if (pixel_fonts.defer(element.name + " Lv.0123456789", function () { add_name_tag_old(element); })) return;
+	var ntag_cache = element.name + "|" + element.level + "|" + pixel_fonts.family();
 	if (element.name_tag) {
 		if (element.ntag_cache == ntag_cache) return;
 		destroy_sprite(element.name_tag, "children");
@@ -4924,7 +5011,6 @@ function add_name_tag_old(element) {
 
 	var fp = { fontFamily: SZ.font, fontSize: 8 * multiplier, fill: "white", align: "center" }; //,dropShadow:true,dropShadowDistance:1
 	var name = new PIXI.Text(name, fp);
-	// var name=new PIXI.BitmapText(name,{font:"16px m5x7",align:"center"}); // tint:0xFFFFFF} // worse pixel issues [29/11/18]
 	// name.x=0; name.y=-round(element.aheight)-2;
 	name.roundPixels = false;
 	name.anchor.set(0.5, 0);
@@ -4959,6 +5045,13 @@ function add_name_tag_old(element) {
 }
 
 function add_name_tag(element) {
+	if (no_graphics || element._destroyed) return;
+	var font_key = pixel_fonts.family() + "|" + element.name;
+	if (element.pixel_name_font !== font_key && !pixel_fonts.ready(element.name)) {
+		pixel_fonts.load(element.name);
+		return;
+	}
+	element.pixel_name_font = font_key;
 	var bar = { hp: false, mp: false, color: "white", party: false, level: false, cl: false, focus: false, stand: false, online: false },
 		hp_mwidth = 32,
 		mp_mwidth = 24,
@@ -5018,7 +5111,7 @@ function add_name_tag(element) {
 		"|" +
 		(bar.stand && bsc) +
 		"|" +
-		bar.online;
+		bar.online + "|" + pixel_fonts.family();
 	if (element.name_tag) {
 		if (element.ntag_cache == ntag_cache) return;
 		destroy_sprite(element.name_tag, "children");
@@ -5366,7 +5459,9 @@ function calculate_difficulty(monster) {
 }
 
 function test_bitmap(x, y, size) {
-	var text = new PIXI.BitmapText("YAY BITMAPS!", { font: size + "px m5x7", align: "center" });
+	if (no_graphics) return;
+	if (pixel_fonts.defer("YAY BITMAPS!", function () { test_bitmap(x, y, size); })) return;
+	var text = new PIXI.Text("YAY BITMAPS!", { fontFamily: SZ.font, fontSize: size, align: "center" });
 	text.displayGroup = text_layer;
 	text.x = round(x);
 	text.y = round(y);
@@ -5459,6 +5554,8 @@ function shift_d_texts(entity, add) {
 }
 
 function d_text_new(message, entity, args) {
+	if (no_graphics || paused || entity._destroyed) return;
+	if (pixel_fonts.defer(message, function () { d_text_new(message, entity, args); })) return;
 	var x = 0,
 		y = -get_height(entity);
 	if (entity.name_tag || entity.hp_bar) y -= 12;
@@ -5536,6 +5633,8 @@ function d_text_new(message, entity, args) {
 function d_text(message, x, y, args) {
 	var sprite = null;
 	if (mode.dom_tests_pixi || no_graphics || paused) return;
+	if (x && x._destroyed) return;
+	if (pixel_fonts.defer(message, function () { d_text(message, x, y, args); })) return;
 	if (is_object(x)) {
 		if (x.type && mode.use_new_d_texts) return d_text_new(message, x, y);
 		sprite = x;
@@ -5648,9 +5747,9 @@ async function api_call_l(method, args, r_args) {
 			result = data;
 		});
 	if (result && result.failed) {
-		ui_error("Fail reason: " + result.reason);
+		ui_error(phrase.error(result.reason));
 		if (method == "signup_or_login" && result.reason == "invalid_field") {
-			ui_error("New player? Enter your email, choose a password, then click Signup or Login. If the email has no account, one will be created.");
+			ui_error(phrase.html("client.api_call_l.new_player_enter_your_email_choose_a_password_then_click"));
 		}
 	}
 	return result;
@@ -5703,21 +5802,22 @@ var warned = {};
 function new_map_logic(place, data) {
 	future_entities = { players: {}, monsters: {} };
 	I = data.info || {};
+	if (!no_html) $("#merrit-stand-notice").remove();
 	//console.log(JSON.stringify(I));
 
-	if (current_map == "resort") add_log("Resort is a prototype with work in progress", "#ADA9E4");
+	if (current_map == "resort") add_log(phrase.html("client.new_map_logic.resort_is_a_prototype_with_work_in_progress"), "#ADA9E4");
 	if (current_map == "tavern") {
 		if (I.dice == "roll") (map_machines.dice.shuffling = true), (map_machines.dice.num = undefined), delete map_machines.dice.lock_start, (map_machines.dice.locked = 0);
 		if (I.dice == "lock") (map_machines.dice.shuffling = true), (map_machines.dice.num = I.num), (map_machines.dice.lock_start = future_ms(-1200)), (map_machines.dice.locked = 0);
 		if (I.dice == "bets") (map_machines.dice.shuffling = false), (map_machines.dice.num = I.num), (map_machines.dice.seconds = I.seconds), (map_machines.dice.count_start = future_s(-I.seconds));
-		add_log("Tavern is a prototype with work in progress", "#63ABE4");
+		add_log(phrase.html("client.new_map_logic.tavern_is_a_prototype_with_work_in_progress"), "#63ABE4");
 	} else (dice_bet.active = false), (topleft_npc = false);
 
-	if (is_pvp && (place == "start" || place == "welcome")) add_log("This is a PVP Server. Be careful!", "#E1664C");
+	if (is_pvp && (place == "start" || place == "welcome")) add_log(phrase.html("client.new_map_logic.this_is_a_pvp_server_be_careful"), "#E1664C");
 	if (place == "map" && !is_pvp && G.maps[current_map].safe_pvp && !warned[current_map])
-		(warned[current_map] = 1), add_log("This is a Safe PVP Zone. You can lose recently looted items if someone defeats you!", "#E1664C");
-	else if (place == "map" && !is_pvp && G.maps[current_map].pvp && !warned[current_map]) (warned[current_map] = 1), add_log("This is a PVP Zone. Be careful!", "#E1664C");
-	else if (place == "map" && is_pvp && G.maps[current_map].safe && !warned[current_map]) (warned[current_map] = 1), add_log("This is a Safe Zone. No one can hurt you here!", "#9DE85E");
+		(warned[current_map] = 1), add_log(phrase.html("client.new_map_logic.this_is_a_safe_pvp_zone_you_can_lose_recently"), "#E1664C");
+	else if (place == "map" && !is_pvp && G.maps[current_map].pvp && !warned[current_map]) (warned[current_map] = 1), add_log(phrase.html("client.new_map_logic.this_is_a_pvp_zone_be_careful"), "#E1664C");
+	else if (place == "map" && is_pvp && G.maps[current_map].safe && !warned[current_map]) (warned[current_map] = 1), add_log(phrase.html("client.new_map_logic.this_is_a_safe_zone_no_one_can_hurt_you"), "#9DE85E");
 	light_logic();
 	render_map();
 }
@@ -5732,7 +5832,8 @@ function ui_log(m, color) {
 }
 
 function ui_error(m) {
-	add_log(m, "red");
+	if (window.inside == "message") $("#message").html(m);
+	else add_log(m, "red");
 }
 
 function ui_success(m) {
@@ -5741,10 +5842,10 @@ function ui_success(m) {
 
 function load_code_s(num) {
 	if (num == "#") {
-		show_alert("To delete a code slot, simply enter DELETE as the slot name and save the slot!");
+		show_alert(phrase.html("client.load_code_s.to_delete_a_code_slot_simply_enter_delete_as_the"));
 	} else {
 		$(".csharp").val("" + num);
-		$(".codename").val((X.codes[num] && X.codes[num][0]) || "Empty");
+		$(".codename").val((X.codes[num] && X.codes[num][0]) || phrase("client.code.empty"));
 	}
 }
 
@@ -5768,12 +5869,13 @@ setInterval(function () {
 }, 2000);
 
 function update_servers_and_characters() {
+	if (inside == "selection") update_login_server();
 	var keys = { 1: null, 2: null, 3: null, merchant: null },
 		order = 1,
 		c_count = 0;
 	X.characters.forEach(function (character) {
-		if (character.online) $(".characterav" + character.name).html('<span style="color: #F3A05D">[I]</span>');
-		else $(".characterav" + character.name).html('<span style="color: #A4FA64">[A]</span>');
+		if (character.online) $(".characterav" + character.name).html("<span style=\"color: #F3A05D\">" + phrase.html("client.update_servers_and_characters.i") + "</span>");
+		else $(".characterav" + character.name).html("<span style=\"color: #A4FA64\">" + phrase.html("client.update_servers_and_characters.a") + "</span>");
 
 		if (!character.online) return;
 
@@ -5781,7 +5883,7 @@ function update_servers_and_characters() {
 		else if (order <= 3) (keys[order] = character), (order += 1);
 	});
 	[1, 2, 3, "merchant"].forEach(function (key) {
-		if (!keys[key]) $(".characterr" + key).html("<span style='color: orange'>Offline</span>");
+		if (!keys[key]) $(".characterr" + key).html("<span style='color: orange'>" + phrase.html("client.update_servers_and_characters.offline") + "</span>");
 		else $(".characterr" + key).html("<span style='color: green'>" + keys[key].name + "</span>"), (c_count += 1);
 	});
 	$(".ccount").html(c_count);
@@ -5795,9 +5897,9 @@ function update_servers_and_characters() {
 function load_base_code() {
 	if (character && X.codes[real_id])
 		show_confirm(
-			"If you load the base code and engage, your default character slot will be overwritten by it, are you sure you want to load the default base code?",
-			["#D06631", "Yes"],
-			"No!",
+			phrase.html("client.code.replace_default_confirm"),
+			["#D06631", phrase.html("client.confirm.yes")],
+			phrase.html("client.confirm.no"),
 			function () {
 				load_code("0", 1);
 				hide_modal(true);
@@ -5822,24 +5924,20 @@ function handle_information(infs) {
 				var ui_list = clone(info.list);
 				X.codes = info.list;
 				if (code_change) {
-					html += "<div class='gamebutton block' style='margin-bottom: -4px'><span style='color: #E46A64'>[WARNING]</span> Unsaved Changes</div>";
+					html += "<div class='gamebutton block' style='margin-bottom: -4px'><span style='color: #E46A64'>" + phrase.html("client.handle_information.warning") + "</span>" + " " + phrase.html("client.handle_information.unsaved_changes") + "</div>";
 				}
 				html +=
-					'<div class="gamebutton block" style="display: block; margin-bottom: -4px" onclick="open_guide(\'8-code-slots-and-files\',\'/docs/guide/code/8-code-slots-and-files\')"><span style="color: #6FD23F">[Documentation]</span> Code Slots and Files</div>';
-				html += "<div class='gamebutton block' style='margin-bottom: -4px' onclick='load_base_code()'><span style='color: gray'>[Default]</span> Load Base Code</div>";
+					"<div class=\"gamebutton block\" style=\"display: block; margin-bottom: -4px\" onclick=\"open_guide('8-code-slots-and-files','/docs/guide/code/8-code-slots-and-files')\"><span style=\"color: #6FD23F\">" + phrase.html("client.handle_information.documentation") + "</span>" + " " + phrase.html("client.handle_information.code_slots_and_files") + "</div>";
+				html += "<div class='gamebutton block' style='margin-bottom: -4px' onclick='load_base_code()'><span style='color: gray'>" + phrase.html("client.handle_information.default") + "</span>" + " " + phrase.html("client.handle_information.load_base_code") + "</div>";
 				if (character) {
 					html +=
-						"<div class='gamebutton block' style='margin-bottom: -4px' onclick='load_code(\"" +
-						((X.codes[real_id] && real_id) || "0") +
-						"\",1)'><span style='color: #D46E33'>[Character Default]</span> " +
-						character.name +
-						"</div>";
+						"<div class='gamebutton block' style='margin-bottom: -4px' onclick='load_code(\"" + (((X.codes[real_id] && real_id) || "0")) + "\",1)'><span style='color: #D46E33'>" + phrase.html("client.handle_information.character_default") + "</span> " + (character.name) + "</div>";
 				}
 				for (var num in ui_list) {
 					if (num == real_id) continue;
 					var sname = num,
 						lnum = num;
-					if (parseInt(num) > 100 || ("" + num).startsWith("CH_")) (color = "#D46E33"), (sname = "Character Default");
+					if (parseInt(num) > 100 || ("" + num).startsWith("CH_")) (color = "#D46E33"), (sname = phrase.html("client.code.character_default"));
 					else color = colors.code_blue;
 					if (!X.codes[num]) lnum = 0;
 					html +=
@@ -5848,7 +5946,7 @@ function handle_information(infs) {
 				}
 				html += "<div style='margin-top: 10px; font-size: 24px; line-height: 28px; border: 4px solid gray; background: black; padding: 16px;'>";
 				html +=
-					"<div>You can also load codes into your code. For example, you can save your 'Functions' in one code slot, let's say 2, and inside another code slot, you can:<br /><span class='label' style='height: 24px; margin: -2px 0px 0px 0px;'>load_code(2)</span> or <span class='label' style='height: 24px; margin: -2px 0px 0px 0px;'>load_code('Functions')</span></div>";
+					"<div>" + phrase.html("client.handle_information.you_can_also_load_codes_into_your_code_for_example") + "<br /><span class='label' style='height: 24px; margin: -2px 0px 0px 0px;'>" + "load_code(2)" + "</span>" + " " + phrase.html("client.handle_information.or") + " " + "<span class='label' style='height: 24px; margin: -2px 0px 0px 0px;'>" + "load_code('Functions')" + "</span></div>";
 				// html+="<div>To delete a code slot, enter 'delete' in the name field.</div>";
 				html += "</div>";
 				html += "</div>";
@@ -5863,18 +5961,18 @@ function handle_information(infs) {
 				// The id's and name's etc. are all to prevent autocomplete [13/03/19]
 				// https://stackoverflow.com/a/38961567/914546
 				html += "<input type='text' style='box-sizing: border-box; width: 15%;; float: left' placeholder='#' autocomplete='nope' id='alcodenumx' name='alcodenumx' class='csharp cinput'/>";
-				html += "<input type='text' style='box-sizing: border-box; width: 63%;' placeholder='NAME' autocomplete='nope' id='alcodeinputx' name='alcodeinputx' class='codename cinput' />";
-				html += "<div class='gamebutton' style='box-sizing: border-box; width: 20%; padding: 8px; float: right' onclick='save_code_s()'>SAVE</div>";
+				html += "<input type='text' style='box-sizing: border-box; width: 63%;' placeholder='" + phrase.html("client.handle_information.name") + "' autocomplete='nope' id='alcodeinputx' name='alcodeinputx' class='codename cinput' />";
+				html += "<div class='gamebutton' style='box-sizing: border-box; width: 20%; padding: 8px; float: right' onclick='save_code_s()'>" + phrase.html("client.handle_information.save") + "</div>";
 				html += "</div>";
 				// info.list={};
 				var ui_list = clone(info.list);
 				X.codes = info.list;
-				if (!Object.keys(ui_list).length) ui_list = { 1: ["Empty", 0], 2: ["Empty", 0] };
+				if (!Object.keys(ui_list).length) ui_list = { 1: [phrase("client.code.empty"), 0], 2: [phrase("client.code.empty"), 0] };
 				for (var i = 1; i <= 100; i++)
 					if (!ui_list[i]) {
-						ui_list[i] = ["Empty", 0];
+						ui_list[i] = [phrase("client.code.empty"), 0];
 						c_slot = "" + i;
-						c_name = "Empty";
+						c_name = phrase("client.code.empty");
 						break;
 					}
 
@@ -5885,7 +5983,7 @@ function handle_information(infs) {
 				if (character && !ui_list[real_id]) ui_list[real_id] = [character.name, 0];
 				ui_list["#"] = ["DELETE", 0];
 				html +=
-					'<div class="gamebutton block" style="display: block; margin-bottom: -4px" onclick="open_guide(\'8-code-slots-and-files\',\'/docs/guide/code/8-code-slots-and-files\')"><span style="color: #6FD23F">[Documentation]</span> Code Slots and Files</div>';
+					"<div class=\"gamebutton block\" style=\"display: block; margin-bottom: -4px\" onclick=\"open_guide('8-code-slots-and-files','/docs/guide/code/8-code-slots-and-files')\"><span style=\"color: #6FD23F\">" + phrase.html("client.handle_information.documentation") + "</span>" + " " + phrase.html("client.handle_information.code_slots_and_files") + "</div>";
 				for (var num in ui_list) {
 					if (parseInt(num) > 100 || ("" + num).startsWith("CH_")) color = "#975CAD";
 					else if (num == "#") color = "gray";
@@ -5896,7 +5994,7 @@ function handle_information(infs) {
 						"\")'><span style='color: " +
 						color +
 						"'>[" +
-						((num == real_id && "YOUR BASE CODE") || num) +
+						((num == real_id && phrase.html("client.code.your_base_code")) || num) +
 						"]</span> " +
 						ui_list[num][0] +
 						"</div>";
@@ -5914,10 +6012,11 @@ function handle_information(infs) {
 			X.servers = info.servers;
 			X.characters = info.characters;
 			X.tutorial = info.tutorial;
+			X.merchant_tutorial = info.merchant_tutorial;
 			X.unread = info.mail;
 			if (window.character && info.code_list[code_slot] && (!X.codes[code_slot] || info.code_list[code_slot][1] > X.codes[code_slot][1])) {
-				add_log("External code update detected!", "#5BAC57");
-				add_log("Syncing ...", "#5BAC57");
+				add_log(phrase.html("client.handle_information.external_code_update_detected"), "#5BAC57");
+				add_log(phrase.html("client.handle_information.syncing"), "#5BAC57");
 				api_call("load_code", { name: code_slot, run: "", log: true });
 			}
 			if (is_electron && electron_is_main()) {
@@ -5986,9 +6085,9 @@ function handle_information(infs) {
 				}
 
 				if (parseInt(code_slot) <= 100) $(".codeslottype").html("" + code_slot);
-				else $(".codeslottype").html("Character");
+				else $(".codeslottype").html(phrase.html("client.handle_information.character"));
 
-				$(".codeslotname").html("" + ((X.codes[code_slot] && X.codes[code_slot][0]) || "Default Code"));
+				$(".codeslotname").html("" + ((X.codes[code_slot] && X.codes[code_slot][0]) || phrase.html("client.code.default")));
 			}
 		} else if (info.type == "gcode") {
 			var html = "";
@@ -5996,7 +6095,7 @@ function handle_information(infs) {
 			show_modal(html);
 		} else if (info.type == "article") {
 			if (info.tutorial) {
-				render_tutorial(info.html, parseInt(info.tutorial), info.url || "/docs");
+				render_tutorial(info.html, parseInt(info.tutorial), info.url || "/docs", info.track);
 			} else if (info.guide) {
 				render_learn_article(info.html, { url: info.url || "/docs", prev: info.prev, next: info.next });
 			} else if (info.func) {
@@ -6007,12 +6106,12 @@ function handle_information(infs) {
 			}
 		} else if (info.type == "tutorial_data") {
 			delete info.type;
-			X.tutorial = info;
-			claim_tutorial_reward();
+			if (info.track === "merchant") X.merchant_tutorial = info;
+			else { X.tutorial = info; claim_tutorial_reward(); }
 			if (info.next) {
 				small_success(character, { color: "purple" });
 				delete info.next;
-				setTimeout(open_tutorial, 1000);
+				setTimeout(open_tutorial.bind(null, undefined, info.track || ""), 1000);
 			} else if (info.success) {
 				small_success(character, { color: "success" });
 				delete info.success;
@@ -6044,6 +6143,38 @@ function add_alert(e) {
 	if (Dev) alert(e);
 }
 
+var last_equipment_sound = {};
+function equipment_sound(data) {
+	if (no_graphics || no_html || !window.sound_sfx || !character || !data || data.failed || data.success === false) return;
+	var sound;
+	// The unequip response does not identify the slot. Use the confirmed slot update.
+	if (
+		!data.place &&
+		data.slots &&
+		character.slots &&
+		character_slots.some(function (slot) {
+			return slot != "elixir" && character.slots[slot] && data.slots[slot] === null;
+		})
+	)
+		sound = "unequip";
+	else if (data.place == "equip" && data.slot != "elixir" && in_arr(data.slot, character_slots)) sound = "equip";
+	else if (
+		data.place == "equip_batch" &&
+		Array.isArray(data.slots) &&
+		data.slots.some(function (entry) {
+			return entry && entry.slot != "elixir" && in_arr(entry.slot, character_slots);
+		})
+	)
+		sound = "equip";
+	if (!sound) return;
+	var now = Date.now();
+	if (now - (last_equipment_sound[sound] || 0) < 250) return;
+	last_equipment_sound[sound] = now;
+	if (sounds.equip) sounds.equip.stop();
+	if (sounds.unequip) sounds.unequip.stop();
+	sfx(sound);
+}
+
 function sfx(type, x, y) {
 	try {
 		if (!window.sound_sfx || no_html) return;
@@ -6057,6 +6188,11 @@ function sfx(type, x, y) {
 		if (type == "npc") sound = sounds.drop;
 		if (!sound && sounds[type]) sound = sounds[type];
 		if (sound) {
+			var event = window.event;
+			if (event && ui_click_target(event.target)) {
+				event.ui_sound_played = true;
+				if (event.ui_sound_press) event.ui_sound_press.played = true;
+			}
 			if (x === undefined) sound.play();
 			else {
 				if (mode.directional_sfx) {
@@ -6097,7 +6233,7 @@ var tutorial_tasks_in_flight = {};
 var tutorial_reward_in_flight = false,
 	tutorial_reward_settled = false;
 function claim_tutorial_reward() {
-	if (tutorial_reward_in_flight || tutorial_reward_settled || !character || !X || !X.tutorial || !X.tutorial.finished) return;
+	if (tutorial_reward_in_flight || tutorial_reward_settled || !character || !X || !X.tutorial || !(X.tutorial.onboarding_finished || X.tutorial.finished)) return;
 	tutorial_reward_in_flight = true;
 	socket.emit("ureward", { name: "c0" });
 }
@@ -6107,35 +6243,102 @@ function tut(name) {
 		if (
 			X &&
 			X.tutorial &&
+			!X.tutorial.finished &&
 			!tutorial_tasks_in_flight[name] &&
-			(X.tutorial.task == name || (X.tutorial.pending && X.tutorial.pending.indexOf(name) !== -1))
+			(X.tutorial.completed_tasks || X.tutorial.completed || []).indexOf(name) === -1 &&
+			(X.tutorial.task == name ||
+				(X.tutorial.pending && X.tutorial.pending.indexOf(name) !== -1) ||
+				(X.tutorial.completed_tasks &&
+					G.docs.tutorial.some(function (lesson) {
+						return name !== lesson.continue_task && lesson.tasks.indexOf(name) !== -1;
+					})))
 		) {
 			tutorial_tasks_in_flight[name] = true;
-			api_call("tutorial", { task: name }).then(
-				function () {
+			function save_credit(attempt) {
+				if (
+					!X.tutorial ||
+					X.tutorial.finished ||
+					(X.tutorial.completed_tasks || X.tutorial.completed || []).indexOf(name) !== -1 ||
+					(!X.tutorial.completed_tasks && !(X.tutorial.task == name || (X.tutorial.pending && X.tutorial.pending.indexOf(name) !== -1)))
+				) {
 					delete tutorial_tasks_in_flight[name];
-				},
-				function () {
-					delete tutorial_tasks_in_flight[name];
-				},
-			);
+					return;
+				}
+				api_call("tutorial", { task: name }).then(
+					function () {
+						delete tutorial_tasks_in_flight[name];
+					},
+					function (error) {
+						if (attempt < 3 && error && (error.reason === "network_error" || error.reason === "timeout" || error.reason === "failed")) {
+							setTimeout(
+								function () {
+									save_credit(attempt + 1);
+								},
+								500 * Math.pow(2, attempt),
+							);
+							return;
+						}
+						delete tutorial_tasks_in_flight[name];
+					},
+				);
+			}
+			save_credit(0);
 		}
 	} catch (e) {
 		console.error("FATAL: tut() " + name);
 	}
 }
 
+var ui_sound_press = null;
+function ui_click_target(target) {
+	if (!target || !target.closest) return null;
+	if (target.closest(".disabled,.disable,[disabled],[aria-disabled='true']")) return null;
+	if (target.closest("textarea,[contenteditable],input:not([type='checkbox']):not([type='radio'])")) return null;
+	var control = target.closest("button,a[href],[role='button'],[onclick],[onmousedown],.clickable,.rclick,input[type='checkbox'],input[type='radio'],select");
+	while (control && control.matches(".modal,.imodal,.bpclicks,.destroy,.oncreate,[id^='chatw'],#bottomleftcorner2"))
+		control = control.parentElement && ui_click_target(control.parentElement);
+	return control;
+}
+
+function init_ui_click_sound() {
+	if (window.no_html || document.ui_click_sound_ready) return;
+	document.ui_click_sound_ready = true;
+	document.addEventListener("pointerdown", function (event) { event.ui_sound_press = ui_sound_press = { played: false }; }, true);
+	["mousedown", "touchstart", "click"].forEach(function (type) {
+		document.addEventListener(type, function (event) {
+			if (type != "click" || event.detail) event.ui_sound_press = ui_sound_press;
+			if (type == "click") ui_sound_press = null;
+			var control = ui_click_target(event.target);
+			// Some item controls act on mouse-down and replace themselves before click.
+			if (control && (type == "click" || (control.hasAttribute("on" + type) && (type == "touchstart" || (event.button == 0 && !control.hasAttribute("onclick")))))) {
+				// Let existing handlers play first, including the new volume preview.
+				setTimeout(function () { pcs(event); }, 0);
+			}
+		}, true);
+	});
+}
+
+if (typeof document != "undefined") {
+	if (document.readyState == "loading") document.addEventListener("DOMContentLoaded", init_ui_click_sound, { once: true });
+	else init_ui_click_sound();
+}
+
 function pcs(type) {
 	if (!window.sound_sfx) return;
+	var event = type && typeof type == "object" ? type.originalEvent || type : window.event;
+	if (type && typeof type == "object") type = undefined;
 	if (!type || type == 0) {
+		if (event && (event.ui_sound_played || (event.ui_sound_press && event.ui_sound_press.played))) return;
+		if (event) event.ui_sound_played = true;
+		if (event && event.ui_sound_press) event.ui_sound_press.played = true;
 		if (sounds.click) sounds.click.play();
 	}
 	if (type == "success" && sounds.success) sounds.success.play();
 }
 
 var audio_sound_names = {
-	music: ["christmas", "horror01", "horror02", "casual05", "casual02", "rpg07", "rpg08", "rpg10", "rpg14", "rpg16"],
-	sfx: ["click", "fx_explosion", "coin_collect", "drop_egg", "hit_8bit", "magic_8bit", "use_8bit", "chat", "walk", "drop", "open", "whoosh", "reflect", "crackle01", "crackle0", "level_up"],
+	music: ["christmas", "horror01", "horror02", "casual05", "casual02", "rpg07", "rpg08", "rpg10", "rpg14", "rpg16", "cave_exploration", "cave_choices", "poker"],
+	sfx: ["click", "fx_explosion", "coin_collect", "drop_egg", "hit_8bit", "magic_8bit", "use_8bit", "chat", "walk", "drop", "open", "whoosh", "reflect", "crackle01", "crackle0", "level_up", "equip", "unequip"],
 };
 
 function normalize_audio_volume(value) {
@@ -6175,7 +6378,7 @@ function init_sounds() {
 	if (!window.Howl) {
 		sound_music = false;
 		sound_sfx = false;
-		add_log("Sound issue (Howl). Turned sound off");
+		add_log(phrase.html("client.init_sounds.sound_issue_howl_turned_sound_off"));
 		return;
 	}
 	if (no_html) return;
@@ -6191,11 +6394,21 @@ function init_fx() {
 	if (!window.Howl) {
 		sound_music = false;
 		sound_sfx = false;
-		add_log("Sound issue (Howl). Turned sound off");
+		add_log(phrase.html("client.init_fx.sound_issue_howl_turned_sound_off"));
 		return;
 	}
 	if (window.fx_init) return;
 	window.fx_init = 1;
+	sounds.equip = new Howl({
+		src: [url_factory("/sounds/fx/equip.ogg?v=2"), url_factory("/sounds/fx/equip.wav?v=2")],
+		format: ["opus", "wav"],
+		volume: 0.5,
+	});
+	sounds.unequip = new Howl({
+		src: [url_factory("/sounds/fx/unequip.ogg?v=2"), url_factory("/sounds/fx/unequip.wav?v=2")],
+		format: ["opus", "wav"],
+		volume: 0.5,
+	});
 	sounds.fx_explosion = new Howl({
 		src: [url_factory("/sounds/fx/EXPLOSION_Short_Kickback_Crackle_stereo.wav")],
 		volume: 0.3,
@@ -6203,6 +6416,10 @@ function init_fx() {
 	sounds.coin_collect = new Howl({
 		src: [url_factory("/sounds/fx/pop_plink.wav")],
 		volume: 0.2, // 0.1 for Coin's
+	});
+	sounds.poker_win = new Howl({
+		src: [url_factory("/sounds/fx/poker_win.wav?v=1")],
+		volume: 0.35, // a won pot at the Tavern table
 	});
 	sounds.drop_egg = new Howl({
 		src: [url_factory("/sounds/fx/ANIMAL_Duck_08_mono.wav")],
@@ -6280,10 +6497,11 @@ function performance_trick() {
 }
 
 function init_music() {
+	if (no_graphics) return;
 	if (!window.Howl) {
 		sound_music = false;
 		sound_sfx = false;
-		add_log("Sound issue (Howl). Turned sound off");
+		add_log(phrase.html("client.init_music.sound_issue_howl_turned_sound_off"));
 		return;
 	}
 	if (window.music_init) return;
@@ -6293,6 +6511,22 @@ function init_music() {
 		volume: 0.2 * music_level,
 		autoplay: false,
 		loop: true,
+	});
+	sounds.poker = new Howl({
+		src: [url_factory("/sounds/loops/poker_loop.ogg?v=1")],
+		volume: 0.2 * music_level,
+		autoplay: false,
+		preload: false,
+		loop: true,
+	});
+	["exploration", "choices"].forEach(function (track) {
+		sounds["cave_" + track] = new Howl({
+			src: [url_factory("/sounds/loops/cave_dreams_" + track + ".ogg?v=20260915")],
+			volume: 0.2 * music_level,
+			autoplay: false,
+			preload: false,
+			loop: true,
+		});
 	});
 	if (xmas_tunes) {
 		apply_audio_volume("music");
@@ -6362,11 +6596,12 @@ function init_music() {
 
 var current_music = null;
 function reflect_music() {
+	if (no_graphics) return;
 	var the_music = sounds.rpg08;
 	if (!window.Howl) {
 		sound_music = false;
 		sound_sfx = false;
-		add_log("Sound issue (Howl). Turned sound off");
+		add_log(phrase.html("client.reflect_music.sound_issue_howl_turned_sound_off"));
 		return;
 	}
 	if (!sound_music) {
@@ -6375,6 +6610,7 @@ function reflect_music() {
 		return;
 	}
 	if (current_map == "tavern") the_music = sounds.rpg10;
+	if (current_map == "tavern" && typeof poker_me == "function" && poker_me() && sounds.poker) the_music = sounds.poker;
 	if (in_arr(current_map, ["cave", "halloween", "spookytown"]) || current_map.startsWith("level")) the_music = sounds.rpg14;
 	if (current_map.startsWith("winter_inn")) the_music = sounds.rpg16;
 	if (current_map == "desertland") the_music = sounds.rpg07;
@@ -6382,9 +6618,12 @@ function reflect_music() {
 	if (current_map == "bank") the_music = sounds.casual05;
 	if (current_map == "goobrawl") the_music = sounds.casual02;
 	if (current_map == "crypt" || current_map == "winter_instance") the_music = sounds.horror02;
+	if (G.maps[current_map]?.generated?.zone === "dreams")
+		the_music = cave_client_state?.paused ? sounds.cave_choices : sounds.cave_exploration;
 	if (current_music != the_music && the_music) {
 		if (current_music) current_music.stop();
 		current_music = the_music;
+		if (the_music.state() === "unloaded") the_music.load();
 		the_music.play();
 	}
 }
@@ -6452,6 +6691,10 @@ var BACKUP = {};
 
 function reload_data() {
 	BACKUP.maps = G.maps;
+	BACKUP.generated_geometry = {};
+	if (typeof client_generated_maps !== "undefined") client_generated_maps.forEach(function(key) {
+		BACKUP.generated_geometry[key] = G.geometry[key];
+	});
 	prop_cache = {};
 	//$("head").append("<script src='/data.js?reload=1&timestamp="+(new Date().getTime())+"' async></script>");
 	$.getScript("/data.js?reload=1&timestamp=" + new Date().getTime());
@@ -6459,6 +6702,7 @@ function reload_data() {
 
 function apply_backup() {
 	G.maps = BACKUP.maps;
+	Object.assign(G.geometry, BACKUP.generated_geometry || {});
 	gprocess_game_data();
 	BACKUP = {};
 }
@@ -6679,8 +6923,8 @@ jQuery.fn.codemirror = function (args) {
 	if (!args) args = {};
 	return this.each(function () {
 		var $this = jQuery(this);
-		var value = args.value || $this.html();
-		value = value.replace_all("&amp;", "&").replace_all("&gt;", ">").replace_all("&lt;", "<");
+		var practice = $this.closest(".tutorial-code").length;
+		var value = args.value === undefined ? $this.text() : args.value;
 		if (args.trim || $this.hasClass("trimnl")) {
 			while (value[0] == "\n") value = value.substr(1, value.length);
 			while (value[value.length - 1] == "\n") value = value.substr(0, value.length - 1);
@@ -6698,14 +6942,17 @@ jQuery.fn.codemirror = function (args) {
 				lineNumbers: true,
 				gutters: ["CodeMirror-linenumbers", "lspacer"],
 				theme: "pixel",
+				readOnly: $this.hasClass("readonly"),
 				cursorHeight: 0.75,
 				/*,lineNumbers:true*/
 			},
 		);
 		var $cm = $(codemirror.getWrapperElement());
+		if ($this.hasClass("readonly")) codemirror.getInputField().setAttribute("aria-label", phrase("client.tutorial_code.example"));
 		if ($this.hasClass("executeb")) {
-			$cm.append(
-				"<div class='clickable' style='position: absolute; bottom: 4px; right: 4px; color: white; background: black; padding: 2px 2px 2px 4px; border: 1px solid white; z-index:4; padding-left: 8px; padding-right: 4px;' onclick='execute_codemirror(this)'>Execute!</div>",
+			if (practice) $cm.after("<div class='tutorial-code-actions'><button type='button' class='gamebutton gamebutton-small' onclick='btc(event);execute_codemirror(this)'>" + phrase.html("client.interface.execute") + "</button></div>");
+			else $cm.append(
+				"<div class='clickable' style='position: absolute; bottom: 4px; right: 4px; color: white; background: black; padding: 2px 2px 2px 4px; border: 1px solid white; z-index:4; padding-left: 8px; padding-right: 4px;' onclick='execute_codemirror(this)'>" + phrase.html("client.interface.execute") + "</div>",
 			);
 		}
 		if (args.focus) codemirror.focus();
@@ -6879,7 +7126,7 @@ async function save_code_file(num, data, v) {
 		code_ref[cdata.slot].m = stats && stats.mtimeMs;
 		if (!ec_initial) await fs.promises.writeFile(ide_root + "/data.json", JSON.stringify(code_ref), "utf8");
 	});
-	add_log("Saved locally: " + X.codes[num][0] + "." + num + ".js", "#5BAC57");
+	add_log(phrase.html("client.save_code_file.saved_locally_js", { value: X.codes[num][0], num: num }), "#5BAC57");
 }
 
 async function remove_code_file(num) {
@@ -6889,7 +7136,7 @@ async function remove_code_file(num) {
 	if (code_ref[num] && (!flag_new_code[num] || ssince(flag_new_code[num]) > 6)) {
 		var fname = code_ref[num].file;
 		file_op[fname] = new Date();
-		add_log("Moved to /history: " + code_ref[num].file, "#8063A9");
+		add_log(phrase.html("client.remove_code_file.moved_to_history", { file: code_ref[num].file }), "#8063A9");
 		await fs.promises.copyFile(folder + "/" + code_ref[num].file, ide_root + "/history/" + code_ref[num].slot + ".js").catch();
 		await fs.promises.unlink(folder + "/" + code_ref[num].file);
 		delete code_ref[num];
@@ -6978,9 +7225,9 @@ async function process_file(folder, cdata) {
 					if (code_ref[num] && code_ref[num].file == fname)
 						// make sure it's not renamed
 						show_confirm(
-							"Are you sure you want to delete " + cdata.file + "?",
-							["#D06631", "Yes"],
-							"No!",
+							phrase.html("client.code.delete_file_confirm", { file: cdata.file }),
+							["#D06631", phrase.html("client.confirm.yes")],
+							phrase.html("client.confirm.no"),
 							(function (slot) {
 								return function () {
 									api_call("save_code", { name: "DELETE", slot: slot, electron: true });
@@ -6994,7 +7241,7 @@ async function process_file(folder, cdata) {
 		);
 	} else if (!code_ref[cdata.slot] && !X.codes[cdata.slot]) {
 		// new file
-		add_log("Uploading new code: " + cdata.file, "#5BAC57");
+		add_log(phrase.html("client.process_file.uploading_new_code", { file: cdata.file }), "#5BAC57");
 		flag_new_code[cdata.slot] = new Date();
 		await fs.promises
 			.readFile(folder + "/" + cdata.file, "utf8")
@@ -7010,7 +7257,7 @@ async function process_file(folder, cdata) {
 		await sleep(1200);
 	} else if (code_ref[cdata.slot] && !X.codes[cdata.slot]) {
 		// deleted file
-		add_log("Moved to /history: " + cdata.file, "#8063A9");
+		add_log(phrase.html("client.process_file.moved_to_history", { file: cdata.file }), "#8063A9");
 		await fs.promises.copyFile(folder + "/" + cdata.file, ide_root + "/history/" + cdata.slot + ".js").catch(() => {});
 		file_op[cdata.file] = new Date();
 		await fs.promises.unlink(folder + "/" + cdata.file);
@@ -7021,7 +7268,7 @@ async function process_file(folder, cdata) {
 		// file changed or name changed or external update
 		if (code_ref[cdata.slot] && X.codes[cdata.slot][1] > code_ref[cdata.slot].v && code_ref[cdata.slot].m != new_m) {
 			// clash
-			add_log("Moved to /clash: " + cdata.file, "#8063A9");
+			add_log(phrase.html("client.process_file.moved_to_clash", { file: cdata.file }), "#8063A9");
 			await fs.promises.access(ide_root + "/adventureland/clash").catch(async function () {
 				await fs.promises.mkdir(ide_root + "/adventureland/clash");
 			});
@@ -7032,10 +7279,10 @@ async function process_file(folder, cdata) {
 			delete code_ref[cdata.slot];
 		}
 		if (!code_ref[cdata.slot] || X.codes[cdata.slot][1] > code_ref[cdata.slot].v) {
-			add_log("Remote update: " + cdata.file);
+			add_log(phrase.html("client.process_file.remote_update", { file: cdata.file }));
 			await download_code_file(cdata.slot);
 			if (cdata.file && cdata.name != X.codes[cdata.slot][0]) {
-				add_log("Old file deleted: " + cdata.file); // delete old file name
+				add_log(phrase.html("client.process_file.old_file_deleted", { file: cdata.file })); // delete old file name
 				file_op[cdata.file] = new Date();
 				await fs.promises.unlink(folder + "/" + cdata.file).catch();
 				file_op[cdata.file] = new Date();
@@ -7056,7 +7303,7 @@ async function process_file(folder, cdata) {
 		await sleep(1200);
 	} else if (!code_ref[cdata.slot] && !ec_initial) {
 		// happens after rename
-		add_log("Uploading code: " + cdata.file, "#5BAC57");
+		add_log(phrase.html("client.process_file.uploading_code", { file: cdata.file }), "#5BAC57");
 		await fs.promises
 			.readFile(folder + "/" + cdata.file, "utf8")
 			.then(async (data) => {
@@ -7125,15 +7372,15 @@ async function electron_code_sync_logic() {
 					var fname = files[i];
 					var cdata = filename_to_cdata(fname);
 					if (cdata && found[cdata.slot]) {
-						add_log("You need to either delete " + found[cdata.slot] + " or " + fname + " when the game client is closed!", "#A88690");
+						add_log(phrase.html("client.electron_code_sync_logic.you_need_to_either_delete_or_when_the_game_client", { value: found[cdata.slot], fname: fname }), "#A88690");
 					} else if (cdata) {
 						found[cdata.slot] = fname;
 						await process_file(ide_root + "/adventureland/characters", cdata);
-					} else if (fname && fname[0] != ".") add_log("Invalid filename: " + fname, "#A88690");
+					} else if (fname && fname[0] != ".") add_log(phrase.html("client.electron_code_sync_logic.invalid_filename", { fname: fname }), "#A88690");
 				}
 			})
 			.catch((e) => {
-				add_log("/adventureland/codes: " + e, "red");
+				add_log(phrase.html("client.electron_code_sync_logic.adventureland_codes", { e: e }), "red");
 			});
 		await fs.promises
 			.readdir(ide_root + "/adventureland/codes")
@@ -7142,15 +7389,15 @@ async function electron_code_sync_logic() {
 					var fname = files[i];
 					var cdata = filename_to_cdata(fname);
 					if (cdata && found[cdata.slot]) {
-						add_log("You need to either delete " + found[cdata.slot] + " or " + fname + " when the game client is closed!", "#A88690");
+						add_log(phrase.html("client.electron_code_sync_logic.you_need_to_either_delete_or_when_the_game_client", { value: found[cdata.slot], fname: fname }), "#A88690");
 					} else if (cdata) {
 						found[cdata.slot] = fname;
 						await process_file(ide_root + "/adventureland/codes", cdata);
-					} else if (fname && fname[0] != ".") add_log("Invalid filename: " + fname, "#A88690");
+					} else if (fname && fname[0] != ".") add_log(phrase.html("client.electron_code_sync_logic.invalid_filename", { fname: fname }), "#A88690");
 				}
 			})
 			.catch((e) => {
-				add_log("/adventureland/codes: " + e, "red");
+				add_log(phrase.html("client.electron_code_sync_logic.adventureland_codes", { e: e }), "red");
 			});
 		for (var slot in code_ref)
 			if (!found[slot]) {
@@ -7182,14 +7429,14 @@ function electron_start_watching() {
 		console.log("watcher1: " + fname);
 		var cdata = filename_to_cdata(fname);
 		if (cdata) process_file(ide_root + "/adventureland/characters", cdata);
-		else add_log("Invalid filename: " + fname, "#A88690");
+		else add_log(phrase.html("client.electron_start_watching.invalid_filename", { fname: fname }), "#A88690");
 	});
 	watcher2 = fs.watch(ide_root + "/adventureland/codes", function (event, fname) {
 		if (file_op[fname] && mssince(file_op[fname]) < 3600) return;
 		console.log("watcher2: " + fname);
 		var cdata = filename_to_cdata(fname);
 		if (cdata) process_file(ide_root + "/adventureland/codes", cdata);
-		else add_log("Invalid filename: " + fname, "#A88690");
+		else add_log(phrase.html("client.electron_start_watching.invalid_filename", { fname: fname }), "#A88690");
 	});
 }
 
@@ -7202,7 +7449,7 @@ function electron_open_codes() {
 	if (!path) path = require("path");
 	var iroot = path.join(electron.remote.app.getPath("appData"), electron.remote.app.getName()) + "/autosync" + user_id;
 	show_alert(
-		"Import the 'adventureland' folder to your IDE. 'history' folder keeps only one previous local version. If you overwrite a code slot by mistake, you can recover it immediately from the 'history' folder.",
+		phrase.html("client.electron_open_codes.import_the_adventureland_folder_to_your_ide_history_folder_keeps"),
 	);
 	const { shell } = require("electron");
 	try {
@@ -7224,7 +7471,7 @@ function electron_reset() {
 		}
 	getAppPath = path.join(electron.remote.app.getPath("appData"), electron.remote.app.getName());
 	fs.unlink(getAppPath, function () {
-		alert("App data cleared");
+		alert(phrase.html("client.desktop.data_cleared"));
 		electron.relaunch();
 		electron.exit();
 	});

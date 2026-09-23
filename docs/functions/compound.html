@@ -1,16 +1,16 @@
-<p>Arguments:</p>
-	<div>&nbsp;<b>*</b> Integer - Inventory index of the first item [0 to 41]</div>
-	<div>&nbsp;<b>*</b> Integer - Inventory index of the second item [0 to 41]</div>
-	<div>&nbsp;<b>*</b> Integer - Inventory index of the third item [0 to 41]</div>
-	<div>&nbsp;<b>*</b> Integer - Inventory index of the scroll [0 to 41]</div>
-	<div>&nbsp;<b>*</b> Integer - (Optional) Inventory index of the offering [0 to 41]</div>
-	<div>&nbsp;<b>*</b> Boolean - (Optional) Calculate the chance without starting the compound</div>
-<p>Returns:</p>
-	<div>&nbsp; <b>*</b> Promise</div>
+<p>{{ phrase("docs.functions.compound.arguments") }}</p>
+	<div>{{ phrase_html("docs.functions.compound.integer-inventory-index-of-the-first-item-0") }}</div>
+	<div>{{ phrase_html("docs.functions.compound.integer-inventory-index-of-the-second-item-0") }}</div>
+	<div>{{ phrase_html("docs.functions.compound.integer-inventory-index-of-the-third-item-0") }}</div>
+	<div>{{ phrase_html("docs.functions.compound.integer-inventory-index-of-the-scroll-0-to") }}</div>
+	<div>{{ phrase_html("docs.functions.compound.integer-optional-inventory-index-of-the-offering-0") }}</div>
+	<div>{{ phrase_html("docs.functions.compound.boolean-optional-calculate-the-chance-without-starting-the") }}</div>
+<p>{{ phrase("docs.functions.compound.returns") }}</p>
+	<div>{{ phrase_html("docs.functions.compound.promise") }}</div>
 
 <!-- <p>Current inventory with indexes: <br/><span class="xlabel" onclick="code_eval($(this).html())">show_json([Array(42).keys()].reduce(function(map,i){ map[i]=character.items[i]; return map; },{}))</span></p> -->
 
-<p>Example usages:</p>
+<p>{{ phrase("docs.functions.compound.example-usages") }}</p>
 
 <div class='code'>
 compound(0,1,2,3); // Combines the first 3 items in your inventory [0,1,2] using the scroll in the 4th slot [3]
@@ -40,9 +40,9 @@ compound(0,1,2,locate_item("cscroll0")).then(
 );
 </div>
 
-<p>Promise Reference:</p>
+<p>{{ phrase("docs.functions.compound.promise-reference") }}</p>
 
-<span class='dlabel'>"resolve"</span>
+<span class='dlabel'>{{ phrase("docs.reference.fulfilled") }}</span>
 <div class='code'>
 {
 	success: true,
@@ -72,7 +72,7 @@ compound(0,1,2,locate_item("cscroll0")).then(
 </div>
 <div style='margin-bottom: 10px'></div>
 
-<span class='dlabel'>"reject"</span>
+<span class='dlabel'>{{ phrase("docs.reference.rejected") }}</span>
 <div class='code'>
 {
 	reason: "max_level", // Item reached it's max level
@@ -140,4 +140,4 @@ compound(0,1,2,locate_item("cscroll0")).then(
 </div>
 
 <p></p>
-<span class='redlabel'>"source"</span>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>

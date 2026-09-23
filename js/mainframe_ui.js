@@ -20,6 +20,7 @@
 	var tokenConnection = "";
 	var tokenRevealed = false;
 	var tokenRecoverable = false;
+	var tokenActive = false;
 	var maskedToken = "••••••••••••••••••••••••••••••••";
 
 	function text(value) {
@@ -28,10 +29,10 @@
 
 	function duration(seconds) {
 		seconds = Math.max(0, Math.floor(Number(seconds) || 0));
-		if (seconds < 60) return seconds + "s";
+		if (seconds < 60) return phrase("services.mainframe_ui.duration-seconds", { seconds: seconds });
 		var minutes = Math.floor(seconds / 60);
-		if (minutes < 60) return minutes + "m " + (seconds % 60) + "s";
-		return Math.floor(minutes / 60) + "h " + (minutes % 60) + "m";
+		if (minutes < 60) return phrase("services.mainframe_ui.duration-minutes", { minutes: minutes, seconds: seconds % 60 });
+		return phrase("services.mainframe_ui.duration-hours", { hours: Math.floor(minutes / 60), minutes: minutes % 60 });
 	}
 
 	function bytes(value) {
@@ -55,29 +56,23 @@
 	}
 
 	function renewalCostText(contract) {
-		return (
-			((contract && contract.shells_per_period) || 1) +
-			" Shell · " +
-			renewalSchedule(contract)
+		return phrase("services.mainframe_ui.renewal-cost", {
+			shells: (contract && contract.shells_per_period) || 1,
+			schedule: renewalSchedule(contract)
 				.map(function (entry) {
-					return entry.characters + "=" + entry.minutes + "m";
+					return phrase("services.mainframe_ui.renewal-schedule-entry", { characters: entry.characters, minutes: entry.minutes });
 				})
-				.join(" · ")
-		);
+				.join(" · "),
+		});
 	}
 
 	function renewalExplanation(contract, freeTime) {
 		var periods = renewalSchedule(contract)
 			.map(function (entry) {
-				return entry.characters + (entry.characters === 1 ? " character: " : " characters: ") + entry.minutes + "m";
+				return phrase("services.mainframe_ui.renewal-character-period", { count: entry.characters, minutes: entry.minutes });
 			})
 			.join(", ");
-		return (
-			(freeTime ? "One free Mainframe hour is used before Shells. Otherwise, " : "") +
-			"each renewal costs 1 Shell. " +
-			periods +
-			". The count is checked at renewal. Disconnect to stop future renewals; paid time is not refunded."
-		);
+		return freeTime ? phrase("services.mainframe_ui.renewal-explanation-free", { periods: periods }) : phrase("services.mainframe_ui.renewal-explanation", { periods: periods });
 	}
 
 	function metric(label, value) {
@@ -136,7 +131,7 @@
 						.map(function (line) {
 							return [line.at, line.level, (line.values || []).join(" ")].filter(Boolean).join("  ");
 						})
-						.join("\n") || "No CODE logs.";
+						.join("\n") || phrase("services.mainframe_ui.no-code-logs");
 			} else {
 				var eventResult = await call("mainframe_get_events", { character: character, limit: 100 });
 				if (nodes.logs.dataset.request !== request) return;
@@ -145,12 +140,12 @@
 				var events = (eventResult.events || []).slice().sort(function (left, right) {
 					return new Date(right.at).getTime() - new Date(left.at).getTime();
 				});
-				if (!events.length) nodes.logs.textContent = "No Mainframe logs.";
+				if (!events.length) nodes.logs.textContent = phrase("services.mainframe_ui.no-mainframe-logs");
 				else
 					events.forEach(function (event) {
 						var row = document.createElement("div");
 						row.className = "mainframe-log-line event-" + (["warn", "error"].includes(event.level) ? event.level : "info");
-						row.textContent = [event.at, String(event.level || "info").toUpperCase(), event.message, event.detail].filter(Boolean).join("  ");
+						row.textContent = [event.at, phrase("mainframe.level." + (event.level || "info")), phrase.message(event), phrase.message({ message: event.detail, phrase: event.detail_phrase, phrase_args: event.detail_phrase_args })].filter(Boolean).join("  ");
 						nodes.logs.append(row);
 					});
 				var assignment = card.mainframeState.entry.assignment || {};
@@ -202,16 +197,16 @@
 		var reason = (error && error.reason) || "request_failed";
 		return (
 			{
-				not_enough_shells: "You need 1 Shell to open a new Mainframe window.",
-				character_in_game: "This character is already running outside Mainframe.",
-				character_already_linked: "Disconnect this character before changing its CODE or server.",
-				mainframe_unavailable: "Mainframe is unavailable right now.",
-				token_generation_failed: "The token could not be created. Try again.",
-				token_revoke_failed: "The token could not be revoked. Try again.",
-				server_not_found: "Choose a live server.",
-				code_not_found: "Choose one of your saved CODE slots.",
-				rate_limited: "Mainframe received too many requests. Wait a moment and try again.",
-				not_logged_in: "Your session ended. Sign in again.",
+				not_enough_shells: phrase("services.mainframe_ui.you-need-1-shell-to-open-a-new-mainframe"),
+				character_in_game: phrase("services.mainframe_ui.this-character-is-already-running-outside-mainframe"),
+				character_already_linked: phrase("services.mainframe_ui.disconnect-this-character-before-changing-its-code-or-server"),
+				mainframe_unavailable: phrase("services.mainframe_ui.mainframe-is-unavailable-right-now"),
+				token_generation_failed: phrase("services.mainframe_ui.the-token-could-not-be-created-try-again"),
+				token_revoke_failed: phrase("services.mainframe_ui.the-token-could-not-be-revoked-try-again"),
+				server_not_found: phrase("services.mainframe_ui.choose-a-live-server"),
+				code_not_found: phrase("services.mainframe_ui.choose-one-of-your-saved-code-slots"),
+				rate_limited: phrase("services.mainframe_ui.mainframe-received-too-many-requests-wait-a-moment-and"),
+				not_logged_in: phrase("services.mainframe_ui.your-session-ended-sign-in-again"),
 			}[reason] || reason.replace(/_/g, " ")
 		);
 	}
@@ -249,7 +244,7 @@
 			"Authorization: Bearer " +
 			token +
 			"\n" +
-			"First instruction: Read adventureland://guide/start-here and its CODE reading order, then inspect mainframe_get_dashboard and the exact methods and game definitions needed for the task."
+			phrase("services.mainframe_ui.connection-first-instruction")
 		);
 	}
 
@@ -263,20 +258,22 @@
 
 	function renderTokenStatus(state) {
 		var active = !!(state && state.active);
-		tokenStatusNode.textContent = active ? "Token active" : "No active token";
+		tokenActive = active;
+		tokenStatusNode.textContent = active ? phrase("services.mainframe_ui.token-active") : phrase("services.mainframe_ui.no-active-token");
 		if (active) {
 			var created = state && state.created ? new Date(state.created) : null;
-			var createdText = created && Number.isFinite(created.getTime()) ? " Created " + created.toLocaleString() + "." : "";
+			var createdText = created && Number.isFinite(created.getTime()) ? phrase("services.mainframe_ui.token-created", { date: created.toLocaleString(phrase.language) }) : "";
 			tokenConnection = "";
 			tokenRevealed = false;
 			tokenRecoverable = state.recoverable === true;
 			renderTokenSecret();
 			tokenSecretNode.style.display = "block";
-			revealTokenNode.textContent = "Reveal token";
+			revealTokenNode.textContent = phrase("services.mainframe_ui.reveal-token");
 			revealTokenNode.style.display = "inline-block";
 			copyTokenNode.style.display = "none";
 			tokenStatusDetailNode.textContent =
-				(tokenRecoverable ? "Reveal it when you need to connect a client." : "This legacy token cannot be recovered from its stored hash. Replace it once to enable reveal.") + createdText;
+				(tokenRecoverable ? phrase("services.mainframe_ui.reveal-it-when-you-need-to-connect-a-client") : phrase("services.mainframe_ui.this-legacy-token-cannot-be-recovered-from-its-stored")) +
+				createdText;
 		} else {
 			tokenConnection = "";
 			tokenRevealed = false;
@@ -285,9 +282,9 @@
 			tokenSecretNode.style.display = "none";
 			revealTokenNode.style.display = "none";
 			copyTokenNode.style.display = "none";
-			tokenStatusDetailNode.textContent = "Create a token to connect an AI client.";
+			tokenStatusDetailNode.textContent = phrase("services.mainframe_ui.create-a-token-to-connect-an-ai-client");
 		}
-		createTokenNode.textContent = active ? "Replace token" : "Create token";
+		createTokenNode.textContent = active ? phrase("services.mainframe_ui.replace-token") : phrase("services.mainframe_ui.create-token");
 		createTokenNode.disabled = false;
 		revokeTokenNode.disabled = !active;
 	}
@@ -296,15 +293,15 @@
 		try {
 			renderTokenStatus(await call("token_status"));
 		} catch (error) {
-			tokenStatusNode.textContent = "Token status unavailable";
-			tokenStatusDetailNode.textContent = "Refresh the page or sign in again.";
+			tokenStatusNode.textContent = phrase("services.mainframe_ui.token-status-unavailable");
+			tokenStatusDetailNode.textContent = phrase("services.mainframe_ui.refresh-the-page-or-sign-in-again");
 			showError(error);
 		}
 	}
 
 	createTokenNode.onclick = async function () {
-		var rotating = tokenStatusNode.textContent === "Token active";
-		if (rotating && !window.confirm("Replace your MCP token? The current token will stop working immediately.")) return;
+		var rotating = tokenActive;
+		if (rotating && !window.confirm(phrase("services.mainframe_ui.replace-your-mcp-token-the-current-token-will-stop"))) return;
 		createTokenNode.disabled = true;
 		try {
 			var result = await call("generate_token");
@@ -312,7 +309,7 @@
 			tokenConnection = tokenConnectionText(result.token);
 			tokenRevealed = true;
 			renderTokenSecret();
-			revealTokenNode.textContent = "Hide token";
+			revealTokenNode.textContent = phrase("services.mainframe_ui.hide-token");
 			copyTokenNode.style.display = "inline-block";
 			errorNode.style.display = "none";
 		} catch (error) {
@@ -326,12 +323,12 @@
 		if (tokenRevealed) {
 			tokenRevealed = false;
 			renderTokenSecret();
-			revealTokenNode.textContent = "Reveal token";
+			revealTokenNode.textContent = phrase("services.mainframe_ui.reveal-token");
 			copyTokenNode.style.display = "none";
 			return;
 		}
 		if (!tokenRecoverable) {
-			showError({ reason: "This token predates secure reveal. Replace it once to create a revealable token." });
+			showError({ reason: phrase("services.mainframe_ui.this-token-predates-secure-reveal-replace-it-once-to") });
 			return;
 		}
 		revealTokenNode.disabled = true;
@@ -340,7 +337,7 @@
 			tokenConnection = tokenConnectionText(result.token);
 			tokenRevealed = true;
 			renderTokenSecret();
-			revealTokenNode.textContent = "Hide token";
+			revealTokenNode.textContent = phrase("services.mainframe_ui.hide-token");
 			copyTokenNode.style.display = "inline-block";
 			errorNode.style.display = "none";
 		} catch (error) {
@@ -354,17 +351,17 @@
 		if (!tokenConnection) return;
 		try {
 			await navigator.clipboard.writeText(tokenConnection);
-			copyTokenNode.textContent = "Copied";
+			copyTokenNode.textContent = phrase("services.mainframe_ui.copied");
 			setTimeout(function () {
-				copyTokenNode.textContent = "Copy connection";
+				copyTokenNode.textContent = phrase("services.mainframe_ui.copy-connection");
 			}, 1500);
 		} catch (error) {
-			showError({ reason: "Copy failed. Select the connection text manually." });
+			showError({ reason: phrase("services.mainframe_ui.copy-failed-select-the-connection-text-manually") });
 		}
 	};
 
 	revokeTokenNode.onclick = async function () {
-		if (!window.confirm("Revoke your MCP token? Connected AI clients and JSON API programs will lose access immediately.")) return;
+		if (!window.confirm(phrase("services.mainframe_ui.revoke-your-mcp-token-connected-ai-clients-and-json"))) return;
 		revokeTokenNode.disabled = true;
 		try {
 			await call("revoke_token");
@@ -397,16 +394,16 @@
 		var metrics = document.createElement("div");
 		metrics.className = "metrics";
 		var metricNodes = {
-			access: metric("Access", "—"),
-			server: metric("Server", "—"),
-			game: metric("Game", "—"),
-			position: metric("Position", "—"),
-			activity: metric("Activity", "—"),
-			memory: metric("VM memory", "—"),
-			dps: metric("DPS", "—"),
-			gps: metric("Gold / sec", "—"),
-			callCost: metric("Call cost", "—"),
-			disconnectReason: metric("Last disconnect", "—"),
+			access: metric(phrase("services.mainframe_ui.access"), "—"),
+			server: metric(phrase("services.mainframe_ui.server"), "—"),
+			game: metric(phrase("services.mainframe_ui.game"), "—"),
+			position: metric(phrase("services.mainframe_ui.position"), "—"),
+			activity: metric(phrase("services.mainframe_ui.activity"), "—"),
+			memory: metric(phrase("services.mainframe_ui.vm-memory"), "—"),
+			dps: metric(phrase("services.mainframe_ui.dps"), "—"),
+			gps: metric(phrase("services.mainframe_ui.gold-sec"), "—"),
+			callCost: metric(phrase("services.mainframe_ui.call-cost"), "—"),
+			disconnectReason: metric(phrase("services.mainframe_ui.last-disconnect"), "—"),
 		};
 		Object.keys(metricNodes).forEach(function (key) {
 			metrics.append(metricNodes[key]);
@@ -415,11 +412,11 @@
 		var controls = document.createElement("div");
 		controls.className = "controls";
 		var codeLabel = document.createElement("label");
-		codeLabel.textContent = "CODE slot";
+		codeLabel.textContent = phrase("services.mainframe_ui.code-slot");
 		var codeSelect = document.createElement("select");
 		codeLabel.append(codeSelect);
 		var serverLabel = document.createElement("label");
-		serverLabel.textContent = "Server";
+		serverLabel.textContent = phrase("services.mainframe_ui.server");
 		var serverSelect = document.createElement("select");
 		serverLabel.append(serverSelect);
 		controls.append(codeLabel, serverLabel);
@@ -435,15 +432,7 @@
 			var usesFreeTime = !!(freeTime && Number(freeTime.remaining_hours) > 0);
 			if (
 				!access.active &&
-				!window.confirm(
-					usesFreeTime
-						? "Run " +
-								character +
-								" on Mainframe using 1 free Steam hour for 60 minutes? It renews automatically. Included CODE workers change the next renewal to 50, 45, or 40 minutes for 2, 3, or 4 active characters."
-						: "Run " +
-								character +
-								" on Mainframe for 1 Shell and 60 minutes? It renews automatically. Included CODE workers change the next renewal to 50, 45, or 40 minutes for 2, 3, or 4 active characters.",
-				)
+				!window.confirm(usesFreeTime ? phrase("services.mainframe_ui.confirm-free-run", { character: character }) : phrase("services.mainframe_ui.confirm-shell-run", { character: character }))
 			)
 				return;
 			var request = requestId(character, codeSelect.value, serverSelect.value);
@@ -461,7 +450,7 @@
 		};
 		var disconnect = document.createElement("button");
 		disconnect.className = "disconnect";
-		disconnect.textContent = "Disconnect";
+		disconnect.textContent = phrase("services.mainframe_ui.disconnect");
 		disconnect.onclick = async function () {
 			var character = card.mainframeState.entry.character;
 			busy[character] = true;
@@ -477,10 +466,10 @@
 		};
 		var codeLogsButton = document.createElement("button");
 		codeLogsButton.className = "log-tab";
-		codeLogsButton.textContent = "CODE log";
+		codeLogsButton.textContent = phrase("services.mainframe_ui.code-log");
 		var mainframeLogsButton = document.createElement("button");
 		mainframeLogsButton.className = "log-tab";
-		mainframeLogsButton.textContent = "Mainframe log";
+		mainframeLogsButton.textContent = phrase("services.mainframe_ui.mainframe-log");
 		var logs = document.createElement("div");
 		logs.className = "logs";
 		codeLogsButton.onclick = function () {
@@ -509,13 +498,13 @@
 
 	function friendlyDisconnectReason(reason) {
 		var messages = {
-			limits: "Realm character limit",
-			limitdc: "Connection limit",
-			blocked: "Account blocked",
-			not_enough_shells: "Out of Mainframe time",
-			explicit_disconnect: "Disconnected by owner",
-			game_disconnect: "Game connection closed",
-			transport_closed: "Game connection closed",
+			limits: phrase("services.mainframe_ui.realm-character-limit"),
+			limitdc: phrase("services.mainframe_ui.connection-limit"),
+			blocked: phrase("services.mainframe_ui.account-blocked"),
+			not_enough_shells: phrase("services.mainframe_ui.out-of-mainframe-time"),
+			explicit_disconnect: phrase("services.mainframe_ui.disconnected-by-owner"),
+			game_disconnect: phrase("services.mainframe_ui.game-connection-closed"),
+			transport_closed: phrase("services.mainframe_ui.game-connection-closed"),
 		};
 		reason = String(reason || "").trim();
 		if (!reason) return "—";
@@ -536,25 +525,40 @@
 		card.mainframeState = { entry: entry, state: state };
 		card.className = "card " + phase + (movement.stuck ? " stuck" : "");
 		nodes.name.textContent = entry.character;
-		var execution = assignment.execution === "included_worker" ? "Included with " + text(assignment.included_with) : assignment.execution === "shared_microvm" ? "Shared machine" : "Dedicated machine";
-		nodes.detail.textContent = "Level " + text(entry.level) + " " + text(entry.class).toUpperCase() + (assignment.desired_state ? " · " + execution : "");
-		nodes.phase.textContent = phase === "stopped" && assignment.stop_reason === "not_enough_shells" ? "stopped — out of Shells" : phase;
+		var execution =
+			assignment.execution === "included_worker"
+				? phrase("services.mainframe_ui.included-with", { character: text(assignment.included_with) })
+				: assignment.execution === "shared_microvm"
+					? phrase("services.mainframe_ui.shared-machine")
+					: phrase("services.mainframe_ui.dedicated-machine");
+		nodes.detail.textContent =
+			phrase("services.mainframe_ui.character-level", { level: text(entry.level), class: phrase.definition("classes", entry.class, "name", text(entry.class)).toUpperCase() }) +
+			(assignment.desired_state ? " · " + execution : "");
+		nodes.phase.textContent =
+			phase === "stopped" && assignment.stop_reason === "not_enough_shells"
+				? phrase("services.mainframe_ui.stopped-out-of-shells")
+				: phrase.has("services.mainframe_ui.phase-" + phase)
+					? phrase("services.mainframe_ui.phase-" + phase)
+					: phase;
 		setMetric(
 			nodes.metrics.access,
 			access.active
-				? (access.billing_source === "steam_time" ? "Steam · " : access.billing_source === "shell" ? "Shell · " : "") +
+				? (access.billing_source === "steam_time" ? "Steam · " : access.billing_source === "shell" ? phrase("services.mainframe_ui.shell-billing-source") : "") +
 						(Number(access.active_characters) || 1) +
-						" char · " +
+						phrase("services.mainframe_ui.character-short") +
 						(Number(access.period_minutes) || 60) +
 						"m · " +
-						(running ? "renews in " : "time ") +
+						(running ? phrase("services.mainframe_ui.renews-in") : phrase("services.mainframe_ui.time-remaining")) +
 						duration(access.remaining_seconds)
-				: "Not active",
+				: phrase("services.mainframe_ui.not-active"),
 		);
 		setMetric(nodes.metrics.server, text(assignment.server || runtime.server));
-		setMetric(nodes.metrics.game, runtime.game_connected ? "Connected" : "Disconnected");
+		setMetric(nodes.metrics.game, runtime.game_connected ? phrase("services.mainframe_ui.connected") : phrase("services.mainframe_ui.disconnected"));
 		setMetric(nodes.metrics.position, observation.map ? observation.map + " " + Math.round(observation.x || 0) + ", " + Math.round(observation.y || 0) : "—");
-		setMetric(nodes.metrics.activity, text(observation.activity));
+		setMetric(
+			nodes.metrics.activity,
+			phrase.has("services.mainframe_ui.activity-" + observation.activity) ? phrase("services.mainframe_ui.activity-" + observation.activity) : text(observation.activity),
+		);
 		setMetric(nodes.metrics.memory, bytes(containment.memory_current_bytes));
 		setMetric(nodes.metrics.dps, text(performance.dps));
 		setMetric(nodes.metrics.gps, text(performance.gps));
@@ -563,7 +567,7 @@
 			var cpuRatio = Number(runtime.metrics && runtime.metrics.cpu_ratio);
 			callCost = Number.isFinite(cpuRatio) ? Math.min(100, Math.max(0, (cpuRatio / 0.1) * 100)) : NaN;
 		}
-		setMetric(nodes.metrics.callCost, Number.isFinite(callCost) ? callCost.toFixed(1) + "% of worker CPU" : "—");
+		setMetric(nodes.metrics.callCost, Number.isFinite(callCost) ? phrase("services.mainframe_ui.worker-cpu", { percent: callCost.toFixed(1) }) : "—");
 		setMetric(nodes.metrics.disconnectReason, friendlyDisconnectReason((assignment.last_failure && assignment.last_failure.reason) || assignment.stop_reason));
 		updateSelect(
 			nodes.code,
@@ -587,19 +591,25 @@
 		);
 		nodes.code.disabled = running;
 		nodes.server.disabled = running;
-		nodes.run.textContent = access.active ? "Run on Mainframe" : state.free_time ? "Run — 1 free hour" : "Run — 1 Shell";
+		nodes.run.textContent = access.active
+			? phrase("services.mainframe_ui.run-on-mainframe")
+			: state.free_time
+				? phrase("services.mainframe_ui.run-1-free-hour")
+				: phrase("services.mainframe_ui.run-1-shell");
 		nodes.run.disabled = !!busy[entry.character] || !state.online || !nodes.code.value || !nodes.server.value || running;
 		nodes.disconnect.disabled = !!busy[entry.character] || !running;
 		var latestMainframeEvent = assignment.mainframe_error || runtime.mainframe_event;
 		var unseenRestart = latestMainframeEvent && latestMainframeEvent.level === "error" && latestMainframeEvent.id !== seenMainframeEvent(entry.character);
 		nodes.mainframeLogs.classList.toggle("alert", !!unseenRestart);
-		nodes.mainframeLogs.title = unseenRestart ? "Mainframe reported a Worker failure or restart" : "Mainframe lifecycle and recovery log";
+		nodes.mainframeLogs.title = unseenRestart ? phrase("services.mainframe_ui.mainframe-reported-a-worker-failure-or-restart") : phrase("services.mainframe_ui.mainframe-lifecycle-and-recovery-log");
 	}
 
 	function render(state) {
 		statusNode.className = "status " + (state.online ? "online" : "offline");
-		document.getElementById("status-title").textContent = state.online ? "Mainframe online" : "Mainframe offline";
-		document.getElementById("status-detail").textContent = state.updated_at ? "Updated " + new Date(state.updated_at).toLocaleTimeString() : "No controller report.";
+		document.getElementById("status-title").textContent = state.online ? phrase("services.mainframe_ui.mainframe-online") : phrase("services.mainframe_ui.mainframe-offline");
+		document.getElementById("status-detail").textContent = state.updated_at
+			? phrase("services.mainframe_ui.updated-time", { time: new Date(state.updated_at).toLocaleTimeString(phrase.language) })
+			: phrase("services.mainframe_ui.no-controller-report");
 		document.getElementById("shells").textContent = text(state.shells);
 		document.getElementById("running").textContent =
 			(state.characters || []).filter(function (entry) {
@@ -609,7 +619,7 @@
 			(state.characters || []).length;
 		document.getElementById("cost").textContent = renewalCostText(state.contract);
 		if (steamTimeNode && state.free_time && Number(state.free_time.remaining_hours) > 0) {
-			steamTimeHoursNode.textContent = state.free_time.remaining_hours + " free Mainframe hours remaining";
+			steamTimeHoursNode.textContent = phrase("services.mainframe_ui.free-hours-remaining", { count: state.free_time.remaining_hours });
 			steamTimeNode.hidden = false;
 			billingNoteNode.textContent = renewalExplanation(state.contract, true);
 		} else if (steamTimeNode) {
@@ -624,7 +634,7 @@
 			charactersNode.replaceChildren();
 			var empty = document.createElement("div");
 			empty.className = "empty";
-			empty.textContent = "Create a character before using Mainframe.";
+			empty.textContent = phrase("services.mainframe_ui.create-a-character-before-using-mainframe");
 			charactersNode.append(empty);
 			return;
 		}

@@ -1,15 +1,15 @@
-<p><span class="dlabel">The character object</span></p>
+<p>{{ phrase_html("docs.articles.data-character.the-character-object") }}</p>
 
-<p><span class="clabel">character</span> is the public CODE object for your live character. It mirrors <span class="clabel">parent.character</span> while normalizing coordinates to <span class="dlabel">x</span> and <span class="dlabel">y</span>. Read fields from <span class="clabel">character</span>; use public functions such as <span class="dlabel">move</span>, <span class="dlabel">equip</span>, and <span class="dlabel">use_skill</span> to change server state.</p>
+<p>{{ phrase_html("docs.articles.data-character.character-is-the-public-code-object-for-your") }}</p>
 
 <div class="code">show_json(character);
 show_json(character.slots);
 show_json(character.items);
 show_json(character.s);</div>
 
-<p>Character updates are live but asynchronous. A Promise result and the next character update can arrive separately; function docs say when a call waits for both. Optional fields are absent when they do not apply.</p>
+<p>{{ phrase("docs.articles.data-character.character-updates-are-live-but-asynchronous-a-promise") }}</p>
 
-<p><span class="dlabel">Identity and location</span></p>
+<p>{{ phrase_html("docs.articles.data-character.identity-and-location") }}</p>
 
 <div class="code">{
 	<span data-field="name">name</span>: "CharacterName",
@@ -28,9 +28,9 @@ show_json(character.s);</div>
 	<span data-field="cx">cx</span>: ["santahat"],
 }</div>
 
-<p><span class="dlabel">character.x</span> and <span class="dlabel">character.y</span> proxy the underlying <span class="dlabel">real_x</span>/<span class="dlabel">real_y</span>. Nearby entities use ordinary <span class="dlabel">x</span>/<span class="dlabel">y</span> coordinates. <span class="dlabel">map</span> is the map key; <span class="dlabel">in</span> identifies the current instance.</p>
+<p>{{ phrase_html("docs.articles.data-character.character-x-and-character-y-proxy-the-underlying") }}</p>
 
-<p><span class="dlabel">Vitals, offense, and defense</span></p>
+<p>{{ phrase_html("docs.articles.data-character.vitals-offense-and-defense") }}</p>
 
 <div class="code">{
 	<span data-field="hp">hp</span>: 2000,
@@ -55,9 +55,9 @@ show_json(character.s);</div>
 	<span data-field="mp_cost">mp_cost</span>: 24,
 }</div>
 
-<p>Percentage-like fields are expressed in percentage points unless a specific definition says otherwise. The server has the final value; local values can be one network update behind a just-completed action.</p>
+<p>{{ phrase("docs.articles.data-character.percentage-like-fields-are-expressed-in-percentage-points") }}</p>
 
-<p><span class="dlabel">Attributes and combat pressure</span></p>
+<p>{{ phrase_html("docs.articles.data-character.attributes-and-combat-pressure") }}</p>
 
 <div class="code">{
 	<span data-field="str">str</span>: 206,
@@ -72,7 +72,7 @@ show_json(character.s);</div>
 	<span data-field="targets">targets</span>: 2,
 }</div>
 
-<p><span class="dlabel">Inventory, equipment, and currency</span></p>
+<p>{{ phrase_html("docs.articles.data-character.inventory-equipment-and-currency") }}</p>
 
 <div class="code">{
 	<span data-field="gold">gold</span>: 1200000000,
@@ -104,9 +104,9 @@ show_json(character.s);</div>
 	},
 }</div>
 
-<p>Inventory indexes run from <span class="dlabel">0</span> to <span class="dlabel">character.isize - 1</span>. Empty positions are <span class="dlabel">null</span>. Stack quantity is <span class="dlabel">q</span>; a missing <span class="dlabel">q</span> means one. Equipment slot availability can vary by class and item.</p>
+<p>{{ phrase_html("docs.articles.data-character.inventory-indexes-run-from-0-to-character-isize") }}</p>
 
-<p><span class="dlabel">Conditions and ongoing actions</span></p>
+<p>{{ phrase_html("docs.articles.data-character.conditions-and-ongoing-actions") }}</p>
 
 <div class="code">{
 	<span data-field="s">s</span>: {
@@ -124,9 +124,11 @@ show_json(character.s);</div>
 	},
 }</div>
 
-<p><span class="dlabel">s</span> contains active conditions, buffs, and debuffs. <span class="dlabel">c</span> contains cancellable channeling actions. <span class="dlabel">q</span> contains progressed item actions. Entries disappear when complete; test for their presence rather than retaining old references.</p>
+<p>{{ phrase_html("docs.articles.data-character.s-contains-active-conditions-buffs-and-debuffs-c") }}</p>
 
-<p><span class="dlabel">Movement</span></p>
+<p>{{ phrase_html("docs.articles.data-character.encouragement-reports-your-encouragement-totals-eligibility-and-linked") }}</p>
+
+<p>{{ phrase_html("docs.articles.data-character.movement") }}</p>
 
 <div class="code">{
 	<span data-field="moving">moving</span>: true,
@@ -138,9 +140,9 @@ show_json(character.s);</div>
 	<span data-field="going_y">going_y</span>: 40,
 }</div>
 
-<p>Movement fields are meaningful while <span class="dlabel">moving</span> is true. Use <span class="dlabel">is_moving</span>, <span class="dlabel">can_move_to</span>, <span class="dlabel">move</span>, or <span class="dlabel">smart_move</span> rather than assigning them.</p>
+<p>{{ phrase_html("docs.articles.data-character.movement-fields-are-meaningful-while-moving-is-true") }}</p>
 
-<p><span class="dlabel">Social and runtime state</span></p>
+<p>{{ phrase_html("docs.articles.data-character.social-and-runtime-state") }}</p>
 
 <div class="code">{
 	<span data-field="party">party</span>: "LeaderName",
@@ -156,16 +158,20 @@ show_json(character.s);</div>
 	<span data-field="focus">focus</span>: "CharacterName",
 }</div>
 
-<p><span class="dlabel">friends</span> contains owner IDs. <span class="dlabel">target</span> is usually a monster ID or character name. Use <span class="dlabel">get_target</span> and <span class="dlabel">get_target_of</span> to resolve visible entity objects.</p>
+<p>{{ phrase_html("docs.articles.data-character.friends-contains-owner-ids-target-is-usually-a") }}</p>
 
-<p><span class="dlabel">Event methods</span></p>
+<p>{{ phrase_html("docs.articles.data-character.event-methods") }}</p>
 
 <div class="code">character.on(event, callback);
 character.once(event, callback);
 character.all(callback);
 character.remove(listener_id);</div>
 
-<p>See <span class="rlabel" onclick="open_article('events-character','/docs/code/character-events')">Character Events</span> for event data and listener behavior.</p>
+<p>{{ phrase_html("docs.articles.data-character.see-character-events-for-event-data-and-listener") }}</p>
 
-<p><b>Merrit’s visits:</b> Keep an open, stocked stand in the same place for two minutes. Your account can receive one parcel per hour. No parcels within 40px of a stationary NPC or within 10px of another open stand. A stand directly in front of another, up to 15px south and 10px sideways, also receives no parcel. <span class="rlabel" onclick="render_merrit_info()">Merrit: full rules and exchange chances</span>.</p>
-<p><span class="dlabel">character.merrit</span> holds the latest server visit status: reasons, next_at, last receipt and server_now. “Ready” still requires Merrit’s physical visit. There is no CODE claim function. Moving, closing or reopening your stand, disconnecting, or losing the last valid listing restarts the two-minute settling time. The account cooldown remains one hour.</p>
+<p>{{ phrase_html("docs.articles.data-character.merrit-s-visits-keep-an-open-stocked-stand") }}</p>
+<p>{{ phrase_html("docs.articles.data-character.character-merrit-holds-the-latest-server-visit-status") }}</p>
+
+<hr>
+<p><span class="dlabel" data-field="cave">cave</span></p>
+<p>{{ phrase("docs.cave.state") }}</p>

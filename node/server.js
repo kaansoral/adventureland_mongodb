@@ -9,8 +9,13 @@ var server = {
 };
 var keys = require("./../secretsandconfig/keys");
 var options = require("./../secretsandconfig/options");
+var localization = require("../languages"),
+	phrase = localization.phrase,
+	phrase_html = localization.phrase_html;
 var server_key = process.argv[process.argv.length - 1];
 var server_def = options.servers[server_key];
+if (!server_def) throw new Error("Unknown server: " + server_key);
+if (server_def.inactive) throw new Error("Inactive server: " + server_key);
 var region = server_def.region;
 var server_name = server_def.name;
 var Dev = options.Dev;
@@ -31,12 +36,14 @@ const SocketIOServer = require("socket.io").Server;
 const msgpack_parser = require("./msgpack_parser");
 const discord_relay = require("./logic/discord")({
 	token: keys.discord_token,
-	chatChannel: options.discord_chat_channel,
+	chatChannel: options.discord_chat_channel === undefined ? "1546291317196324965" : options.discord_chat_channel,
 	realm: region + " " + server_name,
 	enabled: !Dev,
 });
 const anniversary_rules = require("./logic/anniversary_event");
 const market_patron_rules = require("./logic/market_patron")((a, b) => simple_distance(a, b));
+const monster_hunt_rules = require("./logic/monster_hunts");
+const server_information = require("./logic/server_information")("SR_" + region + server_name);
 var socket_cors = {
 	origin: "*",
 	methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -80,6 +87,18 @@ var server_eval_direct = server_eval;
 eval("" + fs.readFileSync(path.resolve(__dirname, "../models.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "server_functions.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "logic/market_patron_runtime.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/encouragement.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/cavalry.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/character_sessions.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/observer_broadcast.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/chat.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/generated_maps.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/instance_pause.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/cave_of_many_dreams.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/tavern.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/tavern_wheel.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/tavern_slots.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/tavern_poker.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "../version.js")));
 var precomputed_bfs_path = path.resolve(__dirname, "precomputed_map_data.js");
 if (fs.existsSync(precomputed_bfs_path)) eval("" + fs.readFileSync(precomputed_bfs_path));
@@ -92,7 +111,7 @@ var dc_players = {};
 var sockets = {};
 var observers = {};
 var total_monsters = 0;
-var max_players = 96;
+var max_players = 200;
 var chests = {};
 var projectiles = {};
 var name_to_id = {};
@@ -123,6 +142,18 @@ var pend = 0;
 var tavern = {};
 var dbase = { h: 8, v: 7, vn: 2 }; // default-base
 var G = {};
+const monster_abilities = require("./logic/monster_abilities")({
+	get_game: () => G,
+	get_player,
+	distance,
+	is_disabled,
+	is_invis,
+	is_invinc,
+	add_condition,
+	calculate_monster_stats,
+	commence_attack,
+	now: () => new Date(),
+});
 var D = {};
 var P = {}; // the game
 var S = {}; // server data
@@ -363,11 +394,12 @@ async function init_game() {
 				realm: "main",
 				name: server_name,
 				region: region,
-				version: "" + Version,
 				info: { players: 0, observers: 0, total_players: 0, pvp: is_pvp || "", data: data },
 				blobs: ["info"],
 			};
 		}
+		Server.version = "" + Version;
+		Server.info.cave_boot = crypto.randomBytes(12).toString("hex");
 		Server.key = server_key;
 		Server.address = server_def.address;
 		Server.path = server_def.path;
@@ -375,6 +407,8 @@ async function init_game() {
 		Server.local_ip = server_def.local_ip;
 		Server.local_port = server_def.local_port;
 		Server.machine = server_def.machine;
+		if (server_def.max_players) max_players = server_def.max_players;
+		server_information.restore(Server.info.recent_characters);
 
 		server_id = "SR_" + region + server_name;
 		server_auth = keys.SERVER_MASTER;
@@ -469,6 +503,7 @@ async function init_game() {
 			init_server_data(S);
 		}
 		if (G) {
+			restore_generated_maps();
 			sprocess_game_data();
 		}
 		try {
@@ -543,6 +578,7 @@ async function init_game() {
 		shuffle(hiding_places);
 		init_tavern();
 		init_server();
+		await pull_server_information();
 		server.started = true;
 		server.live = true;
 
@@ -551,6 +587,7 @@ async function init_game() {
 		Server.info.observers = Object.keys(observers).length;
 		Server.info.merchants = total_merchants;
 		Server.info.total_players = total_players;
+		Server.info.recent_characters = server_information.snapshot(players);
 		Server.online = true;
 		Server.info.secret = random_string(32);
 		Server.updated = new Date();
@@ -640,13 +677,14 @@ async function reload_server(to_broadcast, change) {
 			monster_gold: monster_gold,
 			odds: typeof odds !== "undefined" && odds,
 		};
+		restore_generated_maps();
 		sprocess_game_data();
 		prop_cache = {};
 		if (to_broadcast) {
 			broadcast("reloaded", { change: change || "" });
 		}
 	} catch (e) {
-		broadcast("notice", { message: "Server Live Reload Failed" });
+		broadcast("notice", localization.message("server.notice.server_live_reload_failed", {}));
 		log_trace("#X live_reload", e);
 	}
 }
@@ -666,10 +704,14 @@ server_api.post("/cupdate", (req, res) => {
 		var player = players[id];
 		player.cash = req.body.cash;
 		if (req.body.ncash && req.body.ncash != "0") {
-			player.socket.emit("game_log", {
-				message: "Received " + req.body.ncash + " shells",
-				color: colors.cash,
-			});
+			player.socket.emit(
+				"game_log",
+				localization.message(
+					"server.game_log.received_shells",
+					{ amount: String(req.body.ncash) },
+					{ color: colors.cash },
+				),
+			);
 		}
 		resend(player, "reopen+nc");
 	}
@@ -709,12 +751,13 @@ server_api.post("/lost_friend", (req, res) => {
 	res.send("yes");
 });
 
-server_api.post("/eval", (req, res) => {
+server_api.post("/eval", async (req, res) => {
 	if (req.body.spass !== keys.ACCESS_MASTER) return res.status(403).send("");
 	var output = "";
 	var data = JSON.parse(req.body.data || "{}");
 	try {
 		eval(req.body.code);
+		output = await output;
 	} catch (e) {
 		console.log("\n" + req.body.code);
 		log_trace("chttp_eval", e);
@@ -746,7 +789,11 @@ function player_to_server(player, place) {
 			char[prop] = player[prop];
 		}
 	}
+	// Poker gold and its escrow must travel in the same snapshot, even when the large p object is omitted.
+	char.poker = (player.p && player.p.poker && Object.assign({}, player.p.poker)) || null;
 	if (place == "sync" && !Object.keys(player.q).length && player.type != "merchant") {
+		char.max_xp_multiplier = player.p.max_xp_multiplier || 1;
+		char.encouragement_reached80 = !!player.p.encouragement_reached80;
 		delete char.p;
 	} // ~20KB - too much [19/11/18]
 	return char;
@@ -754,6 +801,8 @@ function player_to_server(player, place) {
 
 function player_to_client(player, stranger) {
 	var data = {};
+	if (player.motion)
+		data.motion = Object.assign({}, player.motion, { age: Date.now() - player.motion.started, started: undefined });
 	[
 		"hp",
 		"max_hp",
@@ -791,6 +840,7 @@ function player_to_client(player, stranger) {
 		"going_y",
 		"abs",
 		"move_num",
+		"position_id",
 		"angle",
 		"cid",
 		"guild",
@@ -822,6 +872,7 @@ function player_to_client(player, stranger) {
 	data.owner = (!player.private && player.owner) || "";
 
 	if (player.is_npc) {
+		if (is_cavalry(player)) for (var stat of ["str", "int", "dex", "vit", "for"]) data[stat] = player[stat];
 		// data.id="$"+data.id;
 		data.name = player.name;
 		if (player.direction !== undefined) {
@@ -843,6 +894,8 @@ function player_to_client(player, stranger) {
 			"goldm",
 			"xpm",
 			"luckm",
+			"encouragement",
+			"anniversary",
 			"map",
 			"in",
 			"isize",
@@ -943,6 +996,12 @@ function monster_to_client(monster, events) {
 	});
 	if (monster.level > 1) {
 		data.level = monster.level;
+	}
+	if (monster.zone_actor) {
+		data.cx = monster.cx;
+		data.slots = monster.slots;
+		data.name = monster.name;
+		data.cave = { room: monster.zone_actor.room, side: monster.zone_actor.side, citizen: !!monster.zone_actor.citizen };
 	}
 	if (monster.pet) {
 		data.pet = true;
@@ -1196,25 +1255,49 @@ function calculate_player_stats(player) {
 		level_up = true;
 		player.xp -= player.max_xp;
 		player.level++;
+		player.p.max_xp_multiplier = 1;
+		if (player.level >= 80) player.p.encouragement_reached80 = true;
 		player.max_xp = G.levels[player.level + ""];
 		player.hp = 0;
 		achievement_logic_level(player);
 	}
 	if (level_up) {
+		if (player.encouragement) encouragement_update(player, true);
+		if (player.xp > 0)
+			player.p.max_xp_multiplier = max(
+				1,
+				(player.level >= 80 ? player.encouragement_xp_carry80 : player.encouragement_xp_carry) || 1,
+			);
 		if (player.level >= 80) {
-			realm_broadcast("server_message", { message: player.name + " is now level " + player.level, color: "#968CFA" });
+			realm_broadcast(
+				"server_message",
+				localization.message(
+					"server.server_message.is_now_level",
+					{ player: String(player.name), level: String(player.level) },
+					{ color: "#968CFA" },
+				),
+			);
 		} else if (player.level >= 70) {
-			broadcast("server_message", { message: player.name + " is now level " + player.level + "!", color: "#968CFA" });
+			broadcast(
+				"server_message",
+				localization.message(
+					"server.server_message.is_now_level_2",
+					{ player: String(player.name), level: String(player.level) },
+					{ color: "#968CFA" },
+				),
+			);
 		}
 		xy_emit(player, "ui", { type: "level_up", name: player.name });
 	}
+	delete player.encouragement_xp_carry;
+	delete player.encouragement_xp_carry80;
 	//	disappearing_text(player.socket,player,"LEVEL UP!",{xy:1,size:"huge",color:"#724A8F"});
 	if (player.xp < 0) {
 		player.xp = 0;
 		player.warnings = (player.warnings || 0) + 1;
 		if (player.warnings == 2) {
 			console.log("'Your monster!' logged out ->");
-			player.socket.emit("ui_log", "You monster!");
+			player.socket.emit("game_log", localization.message("server.game_log.you_monster"));
 			player.socket.disconnect();
 			return;
 		}
@@ -1439,11 +1522,7 @@ function calculate_player_stats(player) {
 		player.stealth = true;
 	}
 	item_attack = max(item_attack, 5);
-	if (player.type == "paladin") {
-		player.attack += item_attack * (player.str / 20.0 + player.int / 40.0);
-	} else {
-		player.attack += item_attack * (player[class_def.main_stat] / 20.0);
-	}
+	player.attack += weapon_stat_attack(player.type, player, item_attack);
 	player.attack += player.a_attack;
 	if (player.type == "priest") {
 		player.attack *= 1.6;
@@ -1643,7 +1722,7 @@ function calculate_common_stats(entity) {
 }
 
 function calculate_monster_stats(monster) {
-	var def = G.monsters[monster.type];
+	var def = monster.zone_stats || G.monsters[monster.type];
 	["attack", "speed", "frequency", "armor", "resistance", "output", "incdmgamp", "avoidance"].forEach(function (p) {
 		monster[p] = def[p] || 0;
 	});
@@ -1670,7 +1749,7 @@ function calculate_monster_stats(monster) {
 	if (monster.focus && instances[monster.in].monsters[monster.focus]) {
 		monster.speed = min(monster.speed, instances[monster.in].monsters[monster.focus].speed + 4);
 	}
-	if (monster.level > 1) {
+	if (monster.level > 1 && !monster.zone_actor) {
 		var att_mult = 0.125;
 		var freq_mult = 0.034;
 		var speed_mult = 0.24; // speed originally 0.34
@@ -1859,6 +1938,9 @@ function create_new_sitem(item, quantity) {
 	if (item.p) {
 		s_item.p = item.p;
 	}
+	if (Array.isArray(item.ps)) {
+		s_item.ps = item.ps.slice();
+	}
 	return s_item;
 }
 
@@ -1947,7 +2029,7 @@ function add_item(player, new_item, args) {
 			item.data = new_item.data;
 		} // "cxjar"
 		var num = add_item(mr, item, { m: 1 });
-		mr.socket.emit("game_log", { message: "Found " + item_to_phrase(item), color: "#64B867" });
+		mr.socket.emit("game_log", item_message("server.item.found", item, {}, { color: "#64B867" }));
 		xy_emit(mr, "ui", { type: "+M", name: mr.name, item: cache_item(item), num: num, cevent: "mluck", event: "mluck" });
 		resend(mr, "reopen+nc");
 	}
@@ -1955,22 +2037,31 @@ function add_item(player, new_item, args) {
 		var event = G.items[new_item.name].event;
 		var e_type = "server_found";
 		var e_phrase = " found ";
+		var item_action = "found";
 		if (!args.found) {
 			e_type = "server_received";
 			e_phrase = " received ";
+			item_action = "received";
 		}
 		if (args.phrase) {
 			e_type = "server_received";
 			e_phrase = " " + args.phrase.toLowerCase() + " ";
+			item_action = { Fished: "fished", Mined: "mined", Glitched: "glitched" }[args.phrase];
 		}
-		broadcast("server_message", {
+		var item_notice = {
 			message: player.name + e_phrase + item_to_phrase(new_item),
 			color: "#85C76B",
 			type: e_type,
 			item: cache_item(new_item),
 			name: player.name,
 			event: event,
-		});
+		};
+		broadcast(
+			"server_message",
+			item_action
+				? item_message("server.item.named_" + item_action, new_item, { player: player.name }, item_notice)
+				: item_notice,
+		);
 		a_score[new_item.name] = (a_score[new_item.name] || 0) + 1.05;
 	}
 	if (args.log) {
@@ -2091,16 +2182,23 @@ function drop_one_thing(player, items, args) {
 	if (!is_array(items)) {
 		items = [items];
 	}
-	drop = chests[drop_id] = { items: [], cash: 0 };
+	var drop = (chests[drop_id] = args.reserved || { items: [], cash: 0 });
+	if (args.character) {
+		drop.character = args.character;
+		drop.owner = player.owner;
+		drop.group = args.group;
+	}
 	for (var i = 0; i < items.length; i++) {
 		if (is_string(items[i])) {
 			drop_item_logic(drop, [1, items[i]], is_in_pvp(player, 1));
 		}
 	}
 	drop.gold = args.gold || 0;
-	drop.x = (args.x !== undefined && args.x) || player.x;
-	drop.y = (args.y !== undefined && args.y) || player.y;
+	drop.x = args.x !== undefined ? args.x : player.x;
+	drop.y = args.y !== undefined ? args.y : player.y;
 	drop.map = args.map || player.map;
+	drop.in = args.in || player.in;
+	drop.chest = chest;
 	drop.date = new Date();
 	player.socket.emit("drop", {
 		x: drop.x,
@@ -2111,79 +2209,34 @@ function drop_one_thing(player, items, args) {
 		map: drop.map,
 		owners: [player.owner],
 	});
+	return drop_id;
 }
 
-function drop_something(player, monster, share) {
-	if (monster.pet || monster.trap) {
-		return;
-	}
-	const is_pvp = is_in_pvp(player, 1);
-	achievement_logic_monster_kill(player, monster);
-	share = (share === undefined && 1) || share || 0;
-	if (anniversary_is_active() && B.global_drops && player.tskin !== "konami") {
-		const rewards = anniversary_rules.monsterRewards(player.owner, monster, share);
-		if (rewards.length) drop_one_thing(player, rewards, { x: monster.x, y: monster.y, map: monster.map });
-	}
-	// console.log("share: "+share);
-	var drop_id = randomStr(30);
-	var drop;
-	var chest = "chest3";
-	var hp_mult = 1;
-	var drop_norm = 1000;
-	var global_mult = monster.mult;
-	var monster_mult = monster.mult; // originally: G.maps[player.map] && G.maps[player.map].drop_norm [31/01/18]
-	var GOLD = D.monster_gold[monster.type];
-	if (B.use_pack_golds && monster.gold) {
-		GOLD = monster.gold;
-	}
-	if (drop_norm) {
-		hp_mult = monster.max_hp / drop_norm;
-	}
-
-	drop = chests[drop_id] = { items: [], cash: 0 };
-	drop.gold =
-		round(1 + GOLD * D.drops.gold.base * share + Math.random() * GOLD * D.drops.gold.random * share) *
-			monster.level *
-			monster.mult || 0; // previously 0.75
-	if (monster.extra_gold) {
-		drop.egold = (drop.egold || 0) + max(0, monster.extra_gold);
-	}
-	if (monster.outgoing) {
-		drop.egold =
-			(drop.egold || 0) +
-			min(
-				monster.outgoing * B.m_outgoing_gmult,
-				G.monsters[monster.type].hp * 0.048 * (gameplay == "hardcore" ? 50 : 1),
-			);
-	}
-	if (drop.egold) {
-		drop.egold *= share;
-	}
-	if (monster.difficulty === 0) {
-		drop.gold = drop.egold = 0;
-	}
-	drop.x = monster.x;
-	drop.y = monster.y;
-	drop.map = monster.map;
-	if (monster["global"]) {
-		drop.x = player.x;
-		drop.y = player.y;
-		drop.map = player.map;
-	}
+function roll_monster_drops(player, monster, drop, share, encouragement, rules) {
+	rules = rules || {};
+	var is_pvp = encouragement ? encouragement.pvp : is_in_pvp(player, 1);
+	var hp_mult = monster.max_hp / 1000;
+	var global_mult = monster.mult,
+		monster_mult = monster.mult;
 	// if(player.level<50 && mode.low49_20xglobal) global_mult=20; - Commented out after SpadarFaar discovered/used it [16/04/19]
 	// console.log(global_mult);
 	if (monster["1hp"]) {
 		global_mult *= 1000;
 	}
-	if (D.drops.maps.global_static && player.tskin != "konami" && B.global_drops) {
+	if (!rules.table_only && D.drops.maps.global_static && player.tskin != "konami" && B.global_drops) {
 		D.drops.maps.global_static.forEach(function (item) {
 			if (Math.random() / share / player.luckm / monster.luckx / global_mult < item[0] || mode.drop_all) {
 				drop_item_logic(drop, item, is_pvp);
 			}
 		});
 	}
-	if (D.drops.maps.global && player.tskin != "konami" && B.global_drops) {
+	if (!rules.table_only && D.drops.maps.global && player.tskin != "konami" && B.global_drops) {
+		const slice = anniversary_rules.sliceForAccount(player.owner);
 		D.drops.maps.global.forEach(function (item) {
+			const isSlice = anniversary_rules.SLICES.includes(item[1]);
+			if (item[1] === "anniversarygift" || isSlice) {
+				if (!anniversary_is_active() || (isSlice && item[1] !== slice)) return;
+			}
 			if (Math.random() / share / player.luckm / hp_mult / monster.luckx / global_mult < item[0] || mode.drop_all) {
 				drop_item_logic(drop, item, is_pvp);
 			}
@@ -2222,7 +2275,7 @@ function drop_something(player, monster, share) {
 	// if(player.level<50 && monster.type=="goo" && mode.low49_200xgoo) monster_mult=200;
 	if (D.drops.monsters[monster.type] && player.tskin != "konami") {
 		D.drops.monsters[monster.type].forEach(function (item) {
-			for (let d = 0; d < B.drop_table_multiplier; d++) {
+			for (let d = 0; d < (encouragement ? 1 : B.drop_table_multiplier); d++) {
 				let itemShouldDrop = shouldItemDrop(item);
 				if (itemShouldDrop || mode.drop_all) {
 					// /hp_mult - removed [13/07/18]
@@ -2241,7 +2294,12 @@ function drop_something(player, monster, share) {
 		});
 	}
 	// Home-server monster-specific drops
-	if (has_home_server_bonus(player) && D.drops.monsters_home_server[monster.type] && player.tskin != "konami") {
+	if (
+		!rules.table_only &&
+		(encouragement ? encouragement.home : has_home_server_bonus(player)) &&
+		D.drops.monsters_home_server[monster.type] &&
+		player.tskin != "konami"
+	) {
 		D.drops.monsters_home_server[monster.type].forEach(function (item) {
 			let itemShouldDrop = shouldItemDrop(item);
 			if (itemShouldDrop || mode.drop_all) {
@@ -2249,13 +2307,62 @@ function drop_something(player, monster, share) {
 			}
 		});
 	}
-	if (player.tskin == "konami") {
+	if (!rules.table_only && player.tskin == "konami") {
 		D.drops.konami.forEach(function (item) {
 			if (Math.random() / share / player.luckm / monster.level < item[0] || mode.drop_all) {
 				drop_item_logic(drop, item, is_pvp);
 			}
 		});
 	}
+}
+
+function drop_something(player, monster, share) {
+	if (monster.pet || monster.trap) {
+		return;
+	}
+	achievement_logic_monster_kill(player, monster);
+	share = (share === undefined && 1) || share || 0;
+	// console.log("share: "+share);
+	var drop_id = randomStr(30);
+	var drop;
+	var chest = "chest3";
+	var GOLD = D.monster_gold[monster.type];
+	if (B.use_pack_golds && monster.gold) {
+		GOLD = monster.gold;
+	}
+
+	drop = chests[drop_id] = { items: [], cash: 0 };
+	drop.gold =
+		round(1 + GOLD * D.drops.gold.base * share + Math.random() * GOLD * D.drops.gold.random * share) *
+			monster.level *
+			monster.mult || 0; // previously 0.75
+	if (monster.extra_gold) {
+		drop.egold = (drop.egold || 0) + max(0, monster.extra_gold);
+	}
+	if (monster.outgoing) {
+		drop.egold =
+			(drop.egold || 0) +
+			min(
+				monster.outgoing * B.m_outgoing_gmult,
+				G.monsters[monster.type].hp * 0.048 * (gameplay == "hardcore" ? 50 : 1),
+			);
+	}
+	if (drop.egold) {
+		drop.egold *= share;
+	}
+	if (monster.difficulty === 0) {
+		drop.gold = drop.egold = 0;
+	}
+	drop.x = monster.x;
+	drop.y = monster.y;
+	drop.map = monster.map;
+	if (monster["global"]) {
+		drop.x = player.x;
+		drop.y = player.y;
+		drop.map = player.map;
+	}
+	roll_monster_drops(player, monster, drop, share);
+	drop.encouragement_gold = drop.gold;
 	if (player.p.first && !player.p.first_drop) {
 		player.p.first_drop = true;
 		drop.gold += 100000;
@@ -2267,15 +2374,18 @@ function drop_something(player, monster, share) {
 	}
 	if (Math.random() < D.drops.gold.x10) {
 		drop.gold *= 10;
+		drop.encouragement_gold *= 10;
 		chest = "chest4";
 	} // previously 12
 	if (Math.random() < D.drops.gold.x50) {
 		drop.gold *= 50;
+		drop.encouragement_gold *= 50;
 		chest = "chest5";
 	} // previously 200
 	if (drop.items.length || drop.cash) {
 		chest = "chest6";
 	}
+	encouragement_chest(player, monster, drop, share);
 	drop.date = new Date();
 	if (player.party) {
 		var owners = [];
@@ -2590,9 +2700,10 @@ function issue_monster_awards(monster) {
 			if (current.type == "merchant") {
 				continue;
 			}
-			current.xp += round(monster.xp * share * current.xpm);
+			var cxp = encouragement_xp(current, monster, round(monster.xp * share * current.xpm), share);
+			current.xp += cxp;
 			if (current.t) {
-				current.t.xp += round(monster.xp * share * current.xpm);
+				current.t.xp += cxp;
 			}
 			delete current.s.coop;
 			resend(current, "u+cid");
@@ -2601,18 +2712,18 @@ function issue_monster_awards(monster) {
 	B.drop_table_multiplier = 1;
 }
 
-function issue_monster_award(monster) {
+function issue_monster_award(monster, award) {
 	if (monster.cooperative) {
 		return issue_monster_awards(monster);
 	}
-	var player = players[name_to_id[monster.target]];
+	var player = (award && award.player) || players[name_to_id[monster.target]];
 	if (!player) {
 		return;
 	}
 	// if(gameplay=="test" && player.level<80) player.level+=1;
 	stats.kills[monster.type]++;
-	drop_something(player, monster);
-	if (!player.party) {
+	if (!award || award.drop !== false) drop_something(player, monster);
+	if (!player.party && !award?.members) {
 		player.socket.emit("kill_credit", {
 			mtype: monster.type,
 		});
@@ -2635,9 +2746,10 @@ function issue_monster_award(monster) {
 		if (player.type == "merchant") {
 			return;
 		}
-		player.xp += monster.xp * player.xpm * monster.mult;
+		var cxp = encouragement_xp(player, monster, monster.xp * player.xpm * monster.mult, 1);
+		player.xp += cxp;
 		if (player.t) {
-			player.t.xp += monster.xp * player.xpm * monster.mult;
+			player.t.xp += cxp;
 		}
 		player.cid++;
 		player.u = true;
@@ -2647,7 +2759,7 @@ function issue_monster_award(monster) {
 		// xp*=[1,1,0.70,0.5,0.4,0.32,0.26,0.24,0.24,0.24,0.24,0.24][parties[player.party].length];
 		// original: [1,1,0.8,0.7,0.65,0.5,0.4,0.3,0.3,0.3,0.3,0.3]
 		// xp=round(xp);
-		parties[player.party].forEach(function (name) {
+		(award?.members || parties[player.party]).forEach(function (name) {
 			var current = players[name_to_id[name]];
 			if (!current) {
 				return;
@@ -2655,7 +2767,8 @@ function issue_monster_award(monster) {
 			current.socket.emit("kill_credit", {
 				mtype: monster.type,
 			});
-			var cxp = round(xp * current.xpm * current.share);
+			var share = award?.share ?? current.share;
+			var cxp = round(xp * current.xpm * share);
 			if (monster.rbuff && G.conditions[monster.rbuff]) {
 				current.s[monster.rbuff] = { ms: G.conditions[monster.rbuff].duration };
 			}
@@ -2666,9 +2779,10 @@ function issue_monster_award(monster) {
 			if (current.type == "merchant") {
 				return;
 			}
-			current.xp += cxp * monster.mult;
+			cxp = encouragement_xp(current, monster, cxp * monster.mult, share);
+			current.xp += cxp;
 			if (current.t) {
-				current.t.xp += cxp * monster.mult;
+				current.t.xp += cxp;
 			}
 			current.cid++;
 			current.u = true;
@@ -2688,16 +2802,18 @@ function issue_monster_award(monster) {
 }
 
 function kill_monster(attacker, target) {
+	if (is_cavalry(attacker)) attacker = cavalry_reward_player(attacker, target);
+	if (cave_death(attacker, target)) return;
 	if (target.dead) {
 		return;
 	} // [04/02/23]
 	var no_decrease = false;
 	if (attacker) {
 		if (!attacker.party) {
-			attacker.socket.emit("game_log", "You " + killed_message(target.type));
+			attacker.socket.emit("game_log", kill_message(attacker.name, target.type, true));
 		} // tut("killagoo") on game.js
 		else {
-			party_emit(attacker.party, "game_log", attacker.name + " " + killed_message(target.type));
+			party_emit(attacker.party, "game_log", kill_message(attacker.name, target.type, false));
 		}
 		if (B.free_last_hits && target.target && target.target != attacker.name) {
 			stop_pursuit(target, { force: true, cause: "kill_monster call" });
@@ -2708,6 +2824,7 @@ function kill_monster(attacker, target) {
 		}
 	}
 	issue_monster_award(target);
+	if (cavalry_cleared_spawn(target)) target.cavalry_cleared = true;
 	remove_monster(target, { no_decrease: no_decrease });
 }
 
@@ -2719,14 +2836,32 @@ function player_rip_logic(player) {
 }
 
 function pwn_routine(victor, target) {
+	if (generated_entry(target)) {
+		rip(target);
+		resend(target, "u+cid");
+		return;
+	}
 	issue_player_award(victor, target);
 	rip(target);
-	instance_emit(target.in, "server_message", {
-		message: victor.name + " pwned " + target.name,
-		color: (victor.team && colors[victor.team]) || "gray",
-	});
+	instance_emit(
+		target.in,
+		"server_message",
+		localization.message(
+			"server.server_message.pwned",
+			{ victor: String(victor.name), target: String(target.name) },
+			{ color: (victor.team && colors[victor.team]) || "gray" },
+		),
+	);
 	if (target.map == "arena") {
-		xy_emit(npcs.pvp, "chat_log", { owner: npcs.pvp.name, message: victor.name + " pwned " + target.name, id: "pvp" });
+		xy_emit(
+			npcs.pvp,
+			"chat_log",
+			localization.message(
+				"server.chat_log.pwned",
+				{ victor: String(victor.name), target: String(target.name) },
+				{ owner: npcs.pvp.name, id: "pvp" },
+			),
+		);
 	}
 }
 
@@ -2820,7 +2955,10 @@ function issue_player_award(attacker, target) {
 	}
 	pwns[pend++ % 200] = [attacker.name, target.name];
 
-	target.socket.emit("game_log", { message: "Slain by " + attacker.name, color: "#F12F02" });
+	target.socket.emit(
+		"game_log",
+		localization.message("server.game_log.slain_by", { attacker: String(attacker.name) }, { color: "#F12F02" }),
+	);
 	var tome_gold = 0;
 	var psize = 1;
 	if (lost_xp) {
@@ -2830,19 +2968,29 @@ function issue_player_award(attacker, target) {
 				consume_one(target, i);
 				if (gameplay != "hardcore" && gameplay != "test") tome_gold = G.items.xptome.gold_reward;
 				target.to_reopen = true;
-				target.socket.emit("game_log", { message: "A tome fades away", color: "#B5C09C" });
+				target.socket.emit(
+					"game_log",
+					localization.message("server.game_log.a_tome_fades_away", {}, { color: "#B5C09C" }),
+				);
 				break;
 			}
 		}
 	}
 
 	target.gold -= lost_gold;
+	lost_xp = floor(lost_xp / max(1, (target.p && target.p.max_xp_multiplier) || 1));
 	target.xp -= lost_xp;
 	if (target.xp < 0) {
 		target.xp = 0;
 	}
-	target.socket.emit("game_log", "Lost " + to_pretty_num(lost_gold) + " gold");
-	target.socket.emit("game_log", "Lost " + to_pretty_num(lost_xp) + " experience");
+	target.socket.emit(
+		"game_log",
+		localization.message("server.game_log.lost_gold", { amount: String(to_pretty_num(lost_gold)) }),
+	);
+	target.socket.emit(
+		"game_log",
+		localization.message("server.game_log.lost_experience", { amount: String(to_pretty_num(lost_xp)) }),
+	);
 	target.socket.emit("disappearing_text", {
 		message: "-" + lost_xp,
 		x: target.x,
@@ -2860,7 +3008,10 @@ function issue_player_award(attacker, target) {
 	// A consumed tome pays its bounty once to the victor, before ordinary party loot is divided.
 	if (tome_gold) {
 		attacker.gold += tome_gold;
-		attacker.socket.emit("game_log", "Received " + to_pretty_num(tome_gold) + " gold from the tome");
+		attacker.socket.emit(
+			"game_log",
+			localization.message("server.game_log.received_gold_from_the_tome", { amount: String(to_pretty_num(tome_gold)) }),
+		);
 	}
 
 	if (!attacker.party) {
@@ -2869,15 +3020,26 @@ function issue_player_award(attacker, target) {
 		}
 		attacker.gold += gain_gold;
 		attacker.xp += round(lost_xp * 0.95);
-		attacker.socket.emit("game_log", { message: "Pwned " + target.name, color: "#67C051" });
-		attacker.socket.emit("game_log", "Looted " + to_pretty_num(gain_gold) + " gold");
+		attacker.socket.emit(
+			"game_log",
+			localization.message("server.game_log.pwned", { target: String(target.name) }, { color: "#67C051" }),
+		);
+		attacker.socket.emit(
+			"game_log",
+			localization.message("server.game_log.looted_gold", { amount: String(to_pretty_num(gain_gold)) }),
+		);
 		attacker.socket.emit("disappearing_text", {
 			message: "+" + gain_gold,
 			x: target.x,
 			y: target.y - 40,
 			args: { color: "+gold", size: "large" },
 		});
-		attacker.socket.emit("game_log", "Gained " + to_pretty_num(round(lost_xp * 0.95)) + " experience");
+		attacker.socket.emit(
+			"game_log",
+			localization.message("server.game_log.gained_experience", {
+				amount: String(to_pretty_num(round(lost_xp * 0.95))),
+			}),
+		);
 		attacker.socket.emit("disappearing_text", {
 			message: "+" + lost_xp,
 			x: target.x,
@@ -2895,8 +3057,18 @@ function issue_player_award(attacker, target) {
 			if (attacker.type != "merchant") {
 				attacker.xp += lost_xp;
 			}
-			attacker.socket.emit("game_log", { message: name + " pwned " + target.name, color: "#67C051" });
-			attacker.socket.emit("game_log", "Looted " + to_pretty_num(gain_gold) + " gold");
+			attacker.socket.emit(
+				"game_log",
+				localization.message(
+					"server.game_log.pwned_2",
+					{ name: String(name), target: String(target.name) },
+					{ color: "#67C051" },
+				),
+			);
+			attacker.socket.emit(
+				"game_log",
+				localization.message("server.game_log.looted_gold", { amount: String(to_pretty_num(gain_gold)) }),
+			);
 			attacker.socket.emit("disappearing_text", {
 				message: "+" + gain_gold,
 				x: target.x,
@@ -2904,7 +3076,10 @@ function issue_player_award(attacker, target) {
 				args: { color: "+gold", size: "large" },
 			});
 			if (attacker.type != "merchant") {
-				attacker.socket.emit("game_log", "Gained " + to_pretty_num(lost_xp) + " experience");
+				attacker.socket.emit(
+					"game_log",
+					localization.message("server.game_log.gained_experience", { amount: String(to_pretty_num(lost_xp)) }),
+				);
 				attacker.socket.emit("disappearing_text", {
 					message: "+" + lost_xp,
 					x: target.x,
@@ -2917,6 +3092,27 @@ function issue_player_award(attacker, target) {
 }
 
 function commence_attack(attacker, target, atype) {
+	if (instance_is_frozen(attacker) || instance_is_frozen(target))
+		return { failed: true, reason: "cave_paused", place: atype };
+	if (!cavalry_attack_valid(attacker, target)) return { failed: true, reason: "target_gone" };
+	if ((attacker.zone_actor || target.zone_actor) && G.skills[atype].hostile && !cave_hostile(attacker, target))
+		return { failed: true, reason: "friendly_target", place: atype, id: target.id };
+	if (
+		atype === "rimeshell" ||
+		(atype === "rimeshatter" &&
+			(!attacker.is_monster ||
+				attacker.type !== "rimedjinn" ||
+				!target.is_player ||
+				target.npc ||
+				target.rip ||
+				target.map !== attacker.map ||
+				target.in !== attacker.in ||
+				is_invis(target) ||
+				is_invinc(target) ||
+				distance(attacker, target) >= G.skills.rimeshatter.range))
+	) {
+		return { failed: true, reason: "skill_cant_use", place: atype, id: target.id };
+	}
 	// Direct attack callers must also have the required offhand equipped.
 	if (G.skills[atype].offhand_type && !skill_offhand_matches(attacker, G.skills[atype])) {
 		return { failed: true, reason: "skill_cant_slot", place: atype, id: target.id };
@@ -3002,7 +3198,7 @@ function commence_attack(attacker, target, atype) {
 	}
 
 	// PROCS
-	if (!attacker.is_player || G.skills[atype].procs) {
+	if (atype !== "rimeshatter" && (!attacker.is_player || G.skills[atype].procs)) {
 		info.procs = true;
 	}
 
@@ -3163,7 +3359,7 @@ function commence_attack(attacker, target, atype) {
 		attack = attacker.attack * G.skills[atype].damage_multiplier;
 	} else if (atype == "poisonarrow") {
 		info.conditions.push("poisoned");
-	} else if (attacker.is_monster) {
+	} else if (attacker.is_monster && atype !== "rimeshatter") {
 		var rng = parseInt(Math.random() * 100 - 50);
 		if (attacker.s.poisonous) {
 			info.conditions.push("poisoned");
@@ -3172,7 +3368,12 @@ function commence_attack(attacker, target, atype) {
 	}
 
 	if (atype != "attack" && target.immune && (!G.skills[atype] || !G.skills[atype].pierces_immunity)) {
-		disappearing_text(target.socket, target, "IMMUNE!", { xy: 1, color: "evade", nv: 1, from: attacker.id });
+		disappearing_text(target.socket, target, localization.message("server.floating.immune", {}), {
+			xy: 1,
+			color: "evade",
+			nv: 1,
+			from: attacker.id,
+		});
 		return { failed: true, reason: "skill_immune", place: atype, id: target.id };
 	}
 
@@ -3260,6 +3461,7 @@ function commence_attack(attacker, target, atype) {
 	info.attacker = attacker;
 	info.target = target;
 	info.atype = atype;
+	if (is_cavalry(attacker)) info.cavalry_call = attacker.cavalry_call;
 	projectiles[pid] = info;
 
 	var action = {
@@ -3277,6 +3479,7 @@ function commence_attack(attacker, target, atype) {
 		// Capture the equipped item at cast time; do not expose other item data.
 		action.shield = { name: attacker.slots.offhand.name, level: attacker.slots.offhand.level || 0 };
 	}
+	if (attacker.volley_offset) action.origin_offset = attacker.volley_offset;
 
 	if (def.projectile) {
 		action.projectile = def.projectile;
@@ -3421,6 +3624,13 @@ function redirect_guardians_oath_damage(target, attack, mp_eligible) {
 }
 
 function complete_attack(attacker, target, info) {
+	if (
+		is_cavalry(target) ||
+		!cavalry_attack_valid(attacker, target, info) ||
+		(info.cavalry_call && info.cavalry_call !== attacker.cavalry_call)
+	)
+		return;
+	if (!cave_accept_attack(target, info)) return;
 	var defense = "armor";
 	var pierce = "apiercing";
 	var combo = 1;
@@ -3462,7 +3672,7 @@ function complete_attack(attacker, target, info) {
 	if (target.is_player && attack > 0 && !info.heal) {
 		add_pdps(target, attacker, attack * B.dps_tank_mult); // "tank"
 		if (attacker.cooperative) {
-			add_coop_points(attacker, target, attack * B.dps_tank_mult);
+			add_coop_points(attacker, target, attack * B.dps_tank_mult, 0);
 		}
 	}
 	if (attacker.is_monster && attack > 0 && !info.heal) {
@@ -3485,6 +3695,7 @@ function complete_attack(attacker, target, info) {
 		if (!info.action.instant) {
 			eta = (1000 * distance(target, attacker, true)) / G.projectiles[info.action.projectile].speed;
 		}
+		info.reflected_from = info.reflected_from || attacker.id;
 		info.target = attacker;
 		info.attacker = target;
 		info.eta = future_ms(eta);
@@ -3809,12 +4020,22 @@ function complete_attack(attacker, target, info) {
 				if (info.procs && attacker.a.sugarrush && Math.random() < attacker.a.sugarrush.attr0 / 100) {
 					def.trigger = "sugarrush";
 					add_condition(attacker, "sugarrush");
-					disappearing_text(attacker.socket, attacker, "SUGAR RUSH!", { xy: 1, size: "huge", color: "sugar", nv: 1 }); //target.is_player&&"huge"||undefined
+					disappearing_text(attacker.socket, attacker, localization.message("server.floating.sugar_rush", {}), {
+						xy: 1,
+						size: "huge",
+						color: "sugar",
+						nv: 1,
+					}); //target.is_player&&"huge"||undefined
 				}
 				if (attacker.s.invis) {
 					// && target.is_player
 					def.sneak = true;
-					disappearing_text(target.socket, target, "SNEAK!", { xy: 1, size: "huge", color: "sneak", nv: 1 });
+					disappearing_text(target.socket, target, localization.message("server.floating.sneak", {}), {
+						xy: 1,
+						size: "huge",
+						color: "sneak",
+						nv: 1,
+					});
 				}
 				if (info.damage_type == "pure") {
 					attack = ceil(info.first_attack);
@@ -3833,7 +4054,8 @@ function complete_attack(attacker, target, info) {
 			}
 			if (attack >= 1) {
 				target.last.attacked = new Date();
-				if (target.is_monster && attacker.is_player) {
+				if (target.is_monster && is_cavalry(attacker)) cavalry_assisted.set(target, attacker.cavalry_call);
+				if (target.is_monster && attacker.is_player && !is_cavalry(attacker)) {
 					target.points[attacker.name] = (target.points[attacker.name] || 0) + 1;
 				}
 			}
@@ -3914,8 +4136,27 @@ function complete_attack(attacker, target, info) {
 			def.guardian = oath_transfer.guardian.name;
 			def.guardian_mp = oath_transfer.mp_restored;
 		}
+		attack = cave_damage(attacker, target, info, attack);
 		target.hp = min(target.hp - attack, target.max_hp); // both for damage and heal
 		var net = original - max(0, target.hp);
+		if (
+			target.type === "rimedjinn" &&
+			attacker.is_player &&
+			!info.heal &&
+			!info.positive &&
+			!info.reflections &&
+			!info.action.reflect
+		) {
+			monster_abilities.damage(target, attacker, net);
+		}
+		if (target.is_player && net > 0) {
+			if (attacker.is_monster) {
+				encouragement_points(attacker, target, net * B.dps_tank_mult);
+				encouragement_wound(target, attacker, net);
+			} else delete target.encouragement_wound;
+		} else if (target.is_player && net < 0) {
+			encouragement_heal(cavalry_reward_player(attacker, target), target, -net, target.max_hp - original);
+		}
 		if (!info.heal) def.damage = attack;
 		if (
 			!info.heal &&
@@ -3939,6 +4180,7 @@ function complete_attack(attacker, target, info) {
 
 		if (
 			target.dreturn &&
+			!is_cavalry(attacker) &&
 			i_attack > 0 &&
 			first &&
 			attacker.range < 75 &&
@@ -3951,6 +4193,7 @@ function complete_attack(attacker, target, info) {
 				attacker.u = true;
 				attacker.cid++;
 			}
+			if (attacker.is_monster) encouragement_points(attacker, target, min(def.dreturn, attacker.hp));
 			attacker.hp = max(attacker.hp - def.dreturn, 0);
 		}
 
@@ -3980,8 +4223,8 @@ function complete_attack(attacker, target, info) {
 			if (target.master) {
 				m = instances[attacker.in].monsters[target.master];
 			}
-			if (m && m.is_monster && m.cooperative) {
-				add_coop_points(m, attacker, mnet);
+			if (m && m.is_monster) {
+				add_coop_points(m, attacker, mnet, net > 0 ? net : 0);
 			}
 		}
 
@@ -3992,13 +4235,18 @@ function complete_attack(attacker, target, info) {
 			events.push(["hit", def]);
 		}
 
-		if (attacker.is_monster) {
+		if (attacker.is_monster && !target.is_monster) {
 			//monster attacks player
 			achievement_logic_monster_hit(attacker, target, attack);
 			if (target.hp <= 0 && !target.rip) {
 				if (target.a && target.a.secondchance && Math.random() * 100 < target.a.secondchance.attr0) {
 					target.hp = target.max_hp;
-					disappearing_text(target.socket, target, "SECOND CHANCE!", { xy: 1, size: "huge", color: "green", nv: 1 });
+					disappearing_text(target.socket, target, localization.message("server.floating.second_chance", {}), {
+						xy: 1,
+						size: "huge",
+						color: "green",
+						nv: 1,
+					});
 				} else {
 					if (target.s.block && get_player(target.s.block.f)) {
 						pwn_routine(get_player(target.s.block.f), target);
@@ -4010,7 +4258,7 @@ function complete_attack(attacker, target, info) {
 			target.c = {};
 		} else if (target.is_monster) {
 			//player attacks monster
-			achievement_logic_monster_damage(attacker, target, net);
+			if (attacker.is_player) achievement_logic_monster_damage(attacker, target, net);
 			target.u = true;
 			target.cid++;
 			ccms(target);
@@ -4018,7 +4266,7 @@ function complete_attack(attacker, target, info) {
 				if (atype == "mentalburst") {
 					attacker.mp += net;
 				}
-				achievement_logic_monster_last_hit(attacker, target);
+				if (attacker.is_player) achievement_logic_monster_last_hit(attacker, target);
 				kill_monster(attacker, target);
 			} else {
 				if (target.a.warp_on_hit && Math.random() < target.a.warp_on_hit.attr0 && !is_disabled(target)) {
@@ -4026,7 +4274,7 @@ function complete_attack(attacker, target, info) {
 					transport_monster_to(target, target.in, target.map, point.x, point.y);
 				}
 				if (target.drop_on_hit) {
-					drop_something(attacker, target, 1);
+					drop_something(cavalry_reward_player(attacker, target), target, 1);
 				}
 				if (
 					!attacker.is_npc &&
@@ -4061,7 +4309,12 @@ function complete_attack(attacker, target, info) {
 				}
 				if (target.a && target.a.secondchance && Math.random() * 100 < target.a.secondchance.attr0) {
 					target.hp = target.max_hp;
-					disappearing_text(target.socket, target, "SECOND CHANCE!", { xy: 1, size: "huge", color: "green", nv: 1 });
+					disappearing_text(target.socket, target, localization.message("server.floating.second_chance", {}), {
+						xy: 1,
+						size: "huge",
+						color: "green",
+						nv: 1,
+					});
 				} else {
 					var victor = attacker;
 					if (target.s.block && get_player(target.s.block.f)) {
@@ -4104,6 +4357,11 @@ function complete_attack(attacker, target, info) {
 }
 
 function target_player(monster, player, no_increase) {
+	if (is_cavalry(player)) return;
+	if (monster.zone_actor) {
+		if (player && cave_hostile(monster, player)) monster.zone_actor.prey = player;
+		return;
+	}
 	// if(Dev) console.log("target_player: "+player.name+" "+(!no_increase));
 	if (!no_increase && (monster.s.charmed || monster.peaceful)) {
 		return;
@@ -4128,21 +4386,34 @@ function target_player(monster, player, no_increase) {
 }
 
 function defeat_player(player) {
+	if (generated_entry(player)) {
+		rip(player);
+		return;
+	}
 	player.violations = (player.violations || 0) + 1;
 	if (player.s.block && player.s.block.f && !player.rip) {
 		var attacker = players[name_to_id[player.s.block.f]];
 		if (attacker && attacker.name != player.name) {
 			issue_player_award(attacker, player);
-			instance_emit(attacker.in, "server_message", {
-				message: attacker.name + " defeated " + player.name,
-				color: "gray",
-			});
+			instance_emit(
+				attacker.in,
+				"server_message",
+				localization.message(
+					"server.server_message.defeated",
+					{ attacker: String(attacker.name), player: String(player.name) },
+					{ color: "gray" },
+				),
+			);
 			if (player.map == "arena") {
-				xy_emit(npcs.pvp, "chat_log", {
-					owner: npcs.pvp.name,
-					message: attacker.name + " defeated " + player.name,
-					id: "pvp",
-				});
+				xy_emit(
+					npcs.pvp,
+					"chat_log",
+					localization.message(
+						"server.chat_log.defeated",
+						{ attacker: String(attacker.name), player: String(player.name) },
+						{ owner: npcs.pvp.name, id: "pvp" },
+					),
+				);
 			}
 			rip(player);
 		}
@@ -4226,6 +4497,8 @@ function transport_monster_to(monster, to_in, to_map, x, y) {
 function transport_observer_to(observer, to_in, map, x, y) {
 	var instance = instances[to_in];
 	if (!instance) return;
+	if (generated_maps[instance.map] && observer.socket.generated_protocol !== 1) return;
+	send_generated_maps(observer.socket, instance.map);
 	if (instances[observer.in]) delete instances[observer.in].observers[observer.id];
 	instance.observers[observer.id] = observer;
 	resume_instance(instance);
@@ -4254,6 +4527,8 @@ function transport_player_to(player, name, point, effect) {
 		name = "main";
 	}
 	var instance = instances[name];
+	if (!generated_can_enter(player, instance)) return false;
+	send_generated_maps(player.socket, instance.map);
 	var new_map = G.maps[instance.map];
 	var direction = 0;
 	var scatter = 0;
@@ -4357,12 +4632,12 @@ function add_shells(player, amount, reason, announce, override) {
 	if (gameplay == "hardcore" || gameplay == "test") {
 		return;
 	}
-	var phrase = "Received";
-	if (reason == "xptome") {
-		phrase = "Earned";
-	}
+	var shells_message = reason == "xptome" ? "server.shells.earned" : "server.shells.received";
 	player.cash += amount;
-	player.socket.emit("game_log", { message: phrase + " " + to_pretty_num(amount) + " SHELLS", color: "green" });
+	player.socket.emit(
+		"game_log",
+		localization.message(shells_message, { amount: to_pretty_num(amount) }, { color: "green" }),
+	);
 	disappearing_text(player.socket, player, "+" + to_pretty_num(amount), {
 		color: colors.cash,
 		xy: 1,
@@ -4412,13 +4687,14 @@ function add_shells(player, amount, reason, announce, override) {
 		}
 	})();
 	if (announce) {
-		broadcast("server_message", {
-			message: player.name + " found " + to_pretty_num(amount) + " shells",
-			color: "#85C76B",
-			type: "server_found",
-			shells: amount,
-			name: player.name,
-		});
+		broadcast(
+			"server_message",
+			localization.message(
+				"server.server_message.found_shells",
+				{ player: String(player.name), amount: String(to_pretty_num(amount)) },
+				{ color: "#85C76B", type: "server_found", shells: amount, name: player.name },
+			),
+		);
 	}
 }
 
@@ -4460,6 +4736,8 @@ function init_socket_io(socket_server) {
 		socket.total_calls = 0;
 		socket.calls = [];
 		socket.fs = {}; // function list
+		socket.generated_protocol = Number(socket.handshake.query.map_protocol) || 0;
+		socket.generated_headless = socket.handshake.query.no_graphics === "1";
 
 		if (!is_socket_allowed(socket)) {
 			disconnect_old_sockets(socket);
@@ -4518,9 +4796,8 @@ function init_socket_io(socket_server) {
 						}
 						add_call_cost(add * data.to.length * mult, undefined, "cm_data");
 					} else {
-						const cost_method = method === "anniversary_craft" ? "craft" : method;
-						if (CC[cost_method]) {
-							add_call_cost(CC[cost_method] || 0);
+						if (CC[method]) {
+							add_call_cost(CC[method] || 0);
 						}
 					}
 					if (get_call_cost() > climit && method != "disconnect") {
@@ -4528,7 +4805,7 @@ function init_socket_io(socket_server) {
 						socket.emit("limitdcreport", { calls: socket.calls, climit: climit, total: socket.total_calls });
 						socket.emit("disconnect_reason", "limitdc");
 						socket.disconnect();
-					} else {
+					} else if (!instance_block_action(players[socket.id], method, data)) {
 						f(data);
 					}
 				} catch (e) {
@@ -4576,7 +4853,10 @@ function init_socket_io(socket_server) {
 		if (socket.handshake.query && socket.handshake.query.secret) {
 			for (var id in players) {
 				var player = players[id];
-				if (player.secret == socket.handshake.query.secret) {
+				if (
+					player.secret == socket.handshake.query.secret &&
+					(!generated_maps[player.map] || socket.generated_protocol === 1)
+				) {
 					socket.player = player;
 					data.character = player_to_client(player);
 					data.character.id = data.character.name = player.name;
@@ -4599,6 +4879,7 @@ function init_socket_io(socket_server) {
 		data.in = socket.first_in;
 		broadcast_e(true);
 		data.S = E;
+		send_generated_maps(socket, data.map);
 		socket.emit("welcome", data);
 		socket.on("send_updates", function () {
 			if (observers[socket.id]) {
@@ -4609,6 +4890,7 @@ function init_socket_io(socket_server) {
 			}
 		});
 		socket.on("loaded", function (data) {
+			if (!socket.connected || players[socket.id] || observers[socket.id] || socket.login_attempt) return;
 			var observer = (observers[socket.id] = {
 				socket: socket,
 				x: socket.first_x,
@@ -4629,6 +4911,10 @@ function init_socket_io(socket_server) {
 			resume_instance(instances[observer.in]);
 			instances[observer.in].observers[observer.id] = observer;
 			send_all_xy(observer);
+			if (broadcast_observer_enabled(socket)) {
+				observer.broadcast = {};
+				update_broadcast_observer(observer, performance.now());
+			}
 		});
 		socket.on("o:home", function (data) {
 			var observer = observers[socket.id];
@@ -4689,175 +4975,11 @@ function init_socket_io(socket_server) {
 					return fail_response("not_in_a_party");
 				}
 				party_emit(player.party, "partym", { owner: player.name, message: message, id: player.id, p: true });
-			} else if (data.name) {
-				var target = get_player(data.name);
-				if (!target) {
-					player.socket.emit("pm", {
-						owner: player.name,
-						to: data.name,
-						message: message,
-						id: player.id,
-						xserver: true,
-					});
-					// xprivate: deliver PM cross-server + log for both users
-					(async function () {
-						try {
-							var target_owner = await get_owner(data.name);
-							if (!target_owner) {
-								if (players[socket.id])
-									player.socket.emit("pm", {
-										owner: player.name,
-										to: data.name,
-										message: "(FAILED)",
-										id: player.id,
-										xserver: true,
-									});
-								return;
-							}
-							var simplified = data.name.toLowerCase().replace(/\s+/g, "");
-							var target_char = await db.collection("character").findOne({ name: simplified });
-							if (target_char && target_char.server) {
-								var target_srv = await get(target_char.server);
-								if (target_srv)
-									try {
-										await server_eval_direct(
-											target_srv,
-											"var p=get_player(data.name); if(p) p.socket.emit('pm',{owner:data.owner,message:data.message,id:data.owner,xserver:true});",
-											{ owner: player.name, name: data.name, message: message },
-										);
-									} catch (e) {}
-							}
-							var to_id = get_id(target_owner);
-							await insert({
-								_id: "MS_" + random_string(29),
-								created: new Date(),
-								owner: to_id,
-								author: player.owner,
-								fro: player.name,
-								to: [data.name],
-								type: "private",
-								info: { message: message },
-								server: server_id,
-								blobs: ["info"],
-							});
-							if (to_id !== player.owner)
-								await insert({
-									_id: "MS_" + random_string(29),
-									created: new Date(),
-									owner: player.owner,
-									author: player.owner,
-									fro: player.name,
-									to: [data.name],
-									type: "private",
-									info: { message: message },
-									server: server_id,
-									blobs: ["info"],
-								});
-						} catch (e) {
-							console.error("log_chat xprivate error", e);
-						}
-					})();
-				} else {
-					if (target.name == player.name) {
-						return fail_response("invalid");
-					}
-					player.socket.emit("pm", { owner: player.name, to: data.name, message: message, id: player.id });
-					target.socket.emit("pm", { owner: player.name, message: message, id: player.id });
-					// private: log for both users
-					(async function () {
-						try {
-							await insert({
-								_id: "MS_" + random_string(29),
-								created: new Date(),
-								owner: target.owner,
-								author: player.owner,
-								fro: player.name,
-								to: [target.name],
-								type: "private",
-								info: { message: message },
-								server: server_id,
-								blobs: ["info"],
-							});
-							if (target.owner !== player.owner)
-								await insert({
-									_id: "MS_" + random_string(29),
-									created: new Date(),
-									owner: player.owner,
-									author: player.owner,
-									fro: player.name,
-									to: [target.name],
-									type: "private",
-									info: { message: message },
-									server: server_id,
-									blobs: ["info"],
-								});
-						} catch (e) {
-							console.error("log_chat private error", e);
-						}
-					})();
-				}
 			} else {
-				broadcast("chat_log", { owner: player.name, message: message, id: player.id, p: true });
-				if (gameplay !== "hardcore" && gameplay !== "test") discord_relay.chat(player.name, message);
-				var owners = {};
-				for (var id in players) {
-					var p = players[id];
-					owners[p.owner] = owners[p.owner] || [];
-					owners[p.owner].push(p.name);
-				}
-				// ambient: log for each owner on the server
-				(async function () {
-					try {
-						var entries = Object.entries(owners);
-						for (var i = 0; i < entries.length; i++) {
-							var owner_id = entries[i][0],
-								names = entries[i][1];
-							await insert({
-								_id: "MS_" + random_string(29),
-								created: new Date(),
-								owner: owner_id,
-								author: player.owner,
-								fro: player.name,
-								to: names,
-								type: "ambient",
-								info: { message: message },
-								server: server_id,
-								blobs: ["info"],
-							});
-						}
-					} catch (e) {
-						console.error("log_chat ambient error", e);
-					}
-				})();
-				// server: log to server channel + global
-				(async function () {
-					try {
-						await insert({
-							_id: "MS_" + random_string(29),
-							created: new Date(),
-							owner: "~" + server_id,
-							author: player.owner,
-							fro: player.name,
-							type: "server",
-							info: { message: message },
-							server: server_id,
-							blobs: ["info"],
-						});
-						await insert({
-							_id: "MS_" + random_string(29),
-							created: new Date(),
-							owner: "~global",
-							author: player.owner,
-							fro: player.name,
-							type: "server",
-							info: { message: message },
-							server: server_id,
-							blobs: ["info"],
-						});
-					} catch (e) {
-						console.error("log_chat server error", e);
-					}
-				})();
+				if (data.name && get_player(data.name) === player) return fail_response("invalid");
+				deliver_chat_message(player, message, data.name).catch(function (error) {
+					console.error("log_chat error", error);
+				});
 			}
 			if (player.s.typing) {
 				delete player.s.typing;
@@ -4942,7 +5064,7 @@ function init_socket_io(socket_server) {
 							R.tutorial = await tx_get("IE_userdata-" + A.owner);
 							if (!R.owner || !R.tutorial) ex("tutorial_incomplete");
 							process_user_data(A.owner, R.tutorial);
-							if (R.tutorial.info.tutorial_step < docs.tutorial.length) ex("tutorial_incomplete");
+							if (!tutorial_onboarding_complete(R.tutorial)) ex("tutorial_incomplete");
 							R.owner.info.rewards = R.owner.info.rewards || [];
 							if (R.owner.info.rewards.includes(A.name)) ex("already");
 							R.owner.info.rewards.push(A.name);
@@ -5030,27 +5152,44 @@ function init_socket_io(socket_server) {
 			var action = data.action;
 			if (action == "mute") {
 				if (!target) {
-					return socket.emit("game_log", "Player not found: " + data.id);
+					return socket.emit(
+						"game_log",
+						localization.message("server.game_log.player_not_found", { id: String(data.id) }),
+					);
 				}
 				if (!target.s.mute) {
 					target.s.mute = { ms: 48 * 60 * 60 * 1000 };
-					return socket.emit("game_chat", "Muted " + target.name);
+					return socket.emit(
+						"game_chat",
+						localization.message("server.game_chat.muted", { target: String(target.name) }),
+					);
 				} else {
 					target.s.mute = { ms: 0 };
-					return socket.emit("game_chat", "Unmuted " + target.name);
+					return socket.emit(
+						"game_chat",
+						localization.message("server.game_chat.unmuted", { target: String(target.name) }),
+					);
 				}
 			} else if (action == "jail") {
 				if (!target) {
-					return socket.emit("game_log", "Player not found: " + data.id);
+					return socket.emit(
+						"game_log",
+						localization.message("server.game_log.player_not_found", { id: String(data.id) }),
+					);
 				}
 				transport_player_to(target, "jail");
 			} else if (action == "ban") {
 				(async function () {
 					try {
 						var result = await block_account(data.id, 21, "GM Ban", true);
-						socket.emit("game_log", "Ban: " + (result || "No result"));
+						socket.emit(
+							"game_log",
+							result
+								? localization.message("server.admin.ban_result", { result: result })
+								: localization.message("server.admin.ban_no_result"),
+						);
 					} catch (e) {
-						socket.emit("game_log", "Ban error: " + e);
+						socket.emit("game_log", localization.message("server.game_log.ban_error", { e: String(e) }));
 					}
 				})();
 			} else if (action == "invincible") {
@@ -5058,7 +5197,10 @@ function init_socket_io(socket_server) {
 				resend(player, "u+cid");
 			} else if (action == "jump") {
 				if (!target) {
-					return socket.emit("game_log", "Player not found: " + data.id);
+					return socket.emit(
+						"game_log",
+						localization.message("server.game_log.player_not_found", { id: String(data.id) }),
+					);
 				}
 				var spot = safe_xy_nearby(target.map, target.x - 8, target.y - 6);
 				if (spot) {
@@ -5071,12 +5213,18 @@ function init_socket_io(socket_server) {
 					pulled.s.magiport.map = target.map;
 					resend(pulled, "u+cid");
 				} else {
-					return socket.emit("game_log", "No safe spot near: " + data.id);
+					return socket.emit(
+						"game_log",
+						localization.message("server.game_log.no_safe_spot_near", { id: String(data.id) }),
+					);
 				}
 			} else if (action == "mjump") {
 				target = get_monsters(data.monster)[0];
 				if (!target) {
-					return socket.emit("game_log", "Monster not found: " + data.monster);
+					return socket.emit(
+						"game_log",
+						localization.message("server.game_log.monster_not_found", { monster: String(data.monster) }),
+					);
 				}
 				var spot = safe_xy_nearby(target.map, target.x - 8, target.y - 6);
 				if (spot) {
@@ -5089,7 +5237,10 @@ function init_socket_io(socket_server) {
 					pulled.s.magiport.map = target.map;
 					resend(pulled, "u+cid");
 				} else {
-					return socket.emit("game_log", "No safe spot near: " + data.monster);
+					return socket.emit(
+						"game_log",
+						localization.message("server.game_log.no_safe_spot_near_2", { monster: String(data.monster) }),
+					);
 				}
 			} else if (action == "jump_list") {
 				var ids = [];
@@ -5122,7 +5273,8 @@ function init_socket_io(socket_server) {
 			if (player.s.monsterhunt && player.s.monsterhunt.c) {
 				return fail_response("monsterhunt_already");
 			} else if (player.s.monsterhunt) {
-				delete server.s["monsterhunt_" + player.s.monsterhunt.id];
+				var marker = "monsterhunt_" + player.s.monsterhunt.id;
+				if (server.s[marker] && server.s[marker].name === player.name) delete server.s[marker];
 				delete player.s.monsterhunt;
 				add_item(player, "monstertoken", { log: true, q: (gameplay == "hardcore" && 100) || 1 });
 				resend(player, "u+cid+reopen");
@@ -5131,42 +5283,17 @@ function init_socket_io(socket_server) {
 			if (player.type == "merchant") {
 				return socket.emit("game_response", "monsterhunt_merchant");
 			}
-			var mmax = -1;
-			var name = "goo";
-			var count = 100;
-			var times = 0;
-			var the_hp = 0;
-			for (var id in instances) {
-				if (instances[id].name != id || !G.maps[id] || G.maps[id].irregular) {
-					continue;
-				}
-				for (var mid in instances[id].monsters) {
-					var monster = instances[id].monsters[mid];
-					if (monster.level > mmax && !in_arr(monster.type, hunted) && !monster.target) {
-						// added the target condition [21/07/23]
-						name = monster.type;
-						mmax = monster.level;
-						the_hp = monster.max_hp / 1000.0;
-					}
-				}
-			}
-			for (var id in G.maps) {
-				if (G.maps[id].irregular || !G.maps[id].monsters) {
-					continue;
-				}
-				G.maps[id].monsters.forEach(function (p) {
-					if (p.type == name) {
-						times += p.count;
-					}
-				});
-			}
-			// console.log(times);
-			count = max(1, min(500, parseInt((20 * 60 * max(1, times)) / the_hp / (G.monsters[name].respawn + 0.25))));
+			var group = encouragement_groups.get(encouragement_identity(player).key);
+			var level = monster_hunt_rules.account_level(player, players, group && group.characters);
+			var hunt = monster_hunt_rules.assign(G, instances, hunted, level);
+			var name = hunt.name,
+				count = hunt.count;
 			if (gameplay == "hardcore") {
 				count = max(1, parseInt(count / 10));
 			}
 			player.s.monsterhunt = { sn: region + " " + server_name, id: name, c: count, ms: 30 * 60 * 1000, dl: true };
-			server.s["monsterhunt_" + name] = { name: player.name, id: name, ms: 20 * 60 * 1000, type: "monsterhunt" };
+			if (level >= 60)
+				server.s["monsterhunt_" + name] = { name: player.name, id: name, ms: 20 * 60 * 1000, type: "monsterhunt" };
 			player.hitchhikers.push(["game_response", "monsterhunt_started"]);
 			resend(player, "u+cid");
 			success_response({ started: true });
@@ -5362,12 +5489,14 @@ function init_socket_io(socket_server) {
 							var m = await tx_get(A.mail);
 							if (!m || !m.owner || !in_arr(A.owner, m.owner)) ex("not_owner");
 							if (!m.item) ex("no_item");
+							if (m.character && m.character !== A.character) ex("wrong_character");
 							if (m.taken) ex("already_taken");
 							m.taken = A.claim;
 							await tx_save(m);
 							R.item = m.info.item;
+							R.cave_award = m.cave_award === true;
 						},
-						{ mail: mail, owner: player_owner, claim: claim },
+						{ mail: mail, owner: player_owner, character: player.real_id, claim: claim },
 					);
 					if (R.failed) {
 						if (R.reason == "exception") {
@@ -5381,20 +5510,29 @@ function init_socket_io(socket_server) {
 					}
 					var live_player = players[socket.id];
 					var item = JSON.parse(R.item);
-					if (!item || !item.name || !G.items[item.name]) ex("invalid_item");
-					if (!live_player || !can_add_item(live_player, item)) {
+					var gold_attachment =
+						R.cave_award &&
+						Number.isSafeInteger(item?.gold) &&
+						item.gold > 0 &&
+						item.gold <= G.events.dreams.gold_limit;
+					if (!gold_attachment && (!item || !item.name || !G.items[item.name])) ex("invalid_item");
+					if (!live_player || (!gold_attachment && !can_add_item(live_player, item))) {
 						var released = await set_mail_claim(mail, claim, false);
 						if (released.failed) console.error("mail claim release failed: " + released.reason);
 						if (live_player) finish_mail_item("inv_size", { failed: true, reason: "inv_size" });
 						return;
 					}
-					add_item(live_player, item, { announce: false });
+					if (gold_attachment) live_player.gold += item.gold;
+					else add_item(live_player, item, { announce: false });
 					delivered = true;
 					delivered_item = item;
 					var completed = await set_mail_claim(mail, claim, true);
 					if (completed.failed) console.error("mail claim completion failed: " + completed.reason);
 					resend(live_player, "reopen");
-					finish_mail_item("mail_item_taken", { success: true, item: cache_item(item) });
+					finish_mail_item(
+						"mail_item_taken",
+						gold_attachment ? { success: true, gold: item.gold } : { success: true, item: cache_item(item) },
+					);
 				} catch (e) {
 					console.error("take_item_from_mail error", e);
 					if (mail) {
@@ -5402,7 +5540,13 @@ function init_socket_io(socket_server) {
 						if (settled.failed && settled.reason != "claim_changed")
 							console.error("mail claim recovery failed: " + settled.reason);
 					}
-					if (delivered) finish_mail_item("mail_item_taken", { success: true, item: cache_item(delivered_item) });
+					if (delivered)
+						finish_mail_item(
+							"mail_item_taken",
+							delivered_item.gold
+								? { success: true, gold: delivered_item.gold }
+								: { success: true, item: cache_item(delivered_item) },
+						);
 					else finish_mail_item("mail_take_item_failed", { failed: true, reason: "coms_failure" });
 				}
 			})();
@@ -5435,7 +5579,6 @@ function init_socket_io(socket_server) {
 			if (player.gold < 48000) {
 				return fail_response("gold_not_enough");
 			}
-			player.gold -= 48000;
 			if (data.item && player.items[0] && player.items[0].name != "placeholder") {
 				if (player.items[0].l) {
 					return fail_response("item_locked");
@@ -5443,13 +5586,15 @@ function init_socket_io(socket_server) {
 				if (player.items[0].b || player.items[0].v) {
 					return fail_response("item_blocked");
 				}
-				if (player.gold < 312000) {
+				if (player.gold < 360000) {
 					return fail_response("gold_not_enough");
 				}
-				player.gold -= 312000;
+				player.gold -= 360000;
 				item = JSON.stringify(player.items[0]);
 				player.items[0] = player.citems[0] = null;
 				retries = 3;
+			} else {
+				player.gold -= 48000;
 			}
 			(async function () {
 				try {
@@ -5546,14 +5691,7 @@ function init_socket_io(socket_server) {
 						return;
 					}
 					try {
-						var ud2 = await get_user_data(user2);
-						var unread = await db
-							.collection("mail")
-							.find({ owner: get_id(user2), read: false })
-							.limit(100)
-							.toArray();
-						ud2.info.mail = unread.length;
-						await safe_save(ud2);
+						await update_mail_count(user2);
 					} catch (e) {
 						console.error("send_mail ud error", e);
 					}
@@ -5574,6 +5712,11 @@ function init_socket_io(socket_server) {
 			if (!player) {
 				return;
 			}
+			if (generated_entry(player)) {
+				cave_settle_purse(generated_entry(player).record);
+				generated_exit(player, "exit");
+				return success_response();
+			}
 			if (!can_walk(player)) {
 				return fail_response("transport_failed");
 			}
@@ -5592,10 +5735,28 @@ function init_socket_io(socket_server) {
 			if (!can_walk(player) || player.map == "jail") {
 				return fail_response("transport_failed");
 			}
+			if (generated_entry(player)) {
+				void generated_use_door(player, data)
+					.then((result) =>
+						socket.emit(
+							"game_response",
+							Object.assign({ response: "data", place: "transport", success: true }, result),
+						),
+					)
+					.catch((error) =>
+						socket.emit("game_response", { response: "data", place: "transport", failed: true, reason: error.message }),
+					);
+				return;
+			}
 			var new_map = G.maps[data.to];
 			var s = data.s || 0;
 			var the_door = null;
-			if (!new_map || !instances[data.to] || !instances[data.to].allow) {
+			if (
+				!new_map ||
+				!instances[data.to] ||
+				!instances[data.to].allow ||
+				!generated_can_enter(player, instances[data.to])
+			) {
 				return fail_response("cant_enter");
 			}
 			if (player.targets > 5) {
@@ -5751,12 +5912,24 @@ function init_socket_io(socket_server) {
 			// 	if(data.place!="resort" && !G.maps[player.map].ref.transporter || simple_distance(G.maps[player.map].ref.transporter,player)>80) return socket.emit("game_response","transport_cant_reach");
 			// 	if(data.place=="resort" && player.map!="resort") return socket.emit("game_response","transport_cant_reach");
 			// }
+			if (data.place === "dreams") {
+				void enter_dreams(player, data);
+				return;
+			}
 			server_log(data);
 			var name = randomStr(24);
 			if (data.place == "duelland") {
 				if (instances[data.name] && instances[data.name].map == "duelland") {
 					transport_player_to(player, data.name);
-					instance_emit(data.name, "game_log", { message: player.name + " is spectating the duel", color: "gray" });
+					instance_emit(
+						data.name,
+						"game_log",
+						localization.message(
+							"server.game_log.is_spectating_the_duel",
+							{ player: String(player.name) },
+							{ color: "gray" },
+						),
+					);
 				} else {
 					return fail_response("cant_enter");
 				}
@@ -5917,6 +6090,7 @@ function init_socket_io(socket_server) {
 			if (!player) {
 				return;
 			}
+			if (generated_entry(player)) return fail_response("cant_escape");
 			// if(player.last.town && mssince(player.last.town)<1200) return; // bad ui experience [Unknown] - got reported and disabled [25/03/22]
 			if (!can_walk(player) || player.map == "jail") {
 				return fail_response("transport_failed");
@@ -5932,6 +6106,11 @@ function init_socket_io(socket_server) {
 			const player = players[socket.id];
 			if (!player || !player.rip) {
 				return fail_response("invalid");
+			}
+
+			if (generated_entry(player)) {
+				cave_fallen(player);
+				return fail_response("cave_rescuer");
 			}
 
 			if (player.rip_time) {
@@ -6039,9 +6218,6 @@ function init_socket_io(socket_server) {
 			resend(player, "reopen+nc");
 			success_response("dismantle", { name: item.name, cevent: true });
 		});
-		socket.on("anniversary_craft", function (data) {
-			anniversary_craft(players[socket.id], data && data.name);
-		});
 		socket.on("craft", function (data) {
 			var player = players[socket.id];
 			var check = true;
@@ -6054,10 +6230,22 @@ function init_socket_io(socket_server) {
 			if (!player || player.user) {
 				return fail_response("cant_in_bank");
 			}
+			if (player.rip || player.dead) return fail_response("disabled");
+			if (
+				!data ||
+				!Array.isArray(data.items) ||
+				!data.items.length ||
+				data.items.length > 9 ||
+				data.items.some(
+					(x) => !Array.isArray(x) || !Number.isInteger(x[1]) || x[1] < 0 || x[1] >= player.items.length,
+				) ||
+				new Set(data.items.map((x) => x[1])).size !== data.items.length
+			)
+				return fail_response("invalid");
 			data.items.forEach(function (x) {
 				if (!player.items[x[1]]) {
 					check = false;
-				} else if (player.items[x[1]].l || player.items[x[1]].b) {
+				} else if (player.items[x[1]].l || player.items[x[1]].b || player.items[x[1]].giveaway) {
 					check = false;
 					locked = true;
 				} else {
@@ -6087,7 +6275,9 @@ function init_socket_io(socket_server) {
 				return fail_response("craft_cant");
 			}
 			var name = D.craftmap[key];
-			if (G.craft[name].quest === "anniversary_baker") return anniversary_craft(player, name);
+			if (G.craft[name].quest === "anniversary_baker" && (!anniversary_is_active() || !npcs.anniversary_baker)) {
+				return fail_response("craft_cant");
+			}
 			var enough = true;
 			if (
 				!player.computer &&
@@ -6099,7 +6289,7 @@ function init_socket_io(socket_server) {
 			if (
 				!player.computer &&
 				G.craft[name].quest &&
-				simple_distance(get_npc_coords(G.craft[name].quest), player) > B.sell_dist
+				distance(npcs[G.craft[name].quest] || get_npc_coords(G.craft[name].quest), player) > B.sell_dist
 			) {
 				return fail_response("distance");
 			}
@@ -6114,7 +6304,10 @@ function init_socket_io(socket_server) {
 					space = true;
 				}
 			});
-			if (!space && !can_add_item(player, create_new_item(name))) {
+			var output = G.craft[name].output;
+			var crafted = create_new_item(output ? output.name : name);
+			if (output && output.data) crafted.data = output.data;
+			if (!space && !can_add_item(player, crafted)) {
 				return fail_response("inventory_full");
 			}
 			if (!enough) {
@@ -6124,9 +6317,9 @@ function init_socket_io(socket_server) {
 			G.craft[name].items.forEach(function (x) {
 				consume(player, place[x[1]], x[0]);
 			});
-			var i = add_item(player, name, { r: 1, p: Object.keys(p).length && random_one(p) });
+			var i = add_item(player, crafted, { r: 1, p: Object.keys(p).length && random_one(p) });
 			resend(player, "reopen+nc");
-			success_response("craft", { num: i, name: name, cevent: true });
+			success_response("craft", { num: i, name: crafted.name, cevent: true });
 		});
 		socket.on("exchange", function (data) {
 			const player = players[socket.id];
@@ -6415,7 +6608,7 @@ function init_socket_io(socket_server) {
 				if (grade == 4) {
 					return socket.emit("game_response", {
 						response: "max_level",
-						level: item.level || 0,
+						level: item0.level || 0,
 						place: "compound",
 						failed: true,
 					});
@@ -7119,6 +7312,15 @@ function init_socket_io(socket_server) {
 					var slot = equip_def.slot || def.type;
 					var comp = can_equip_item(player, def, slot);
 					if (comp == "no") {
+						if (
+							in_arr(slot, ["weapon", "mainhand", "tool"]) &&
+							player.slots.offhand &&
+							G.classes[player.type].doublehand[def.wtype]
+						)
+							socket.emit(
+								"game_log",
+								localization.message("server.game_log.unequip_your_offhand_item_to_use_this_two_handed_weapon", {}),
+							);
 						resolve.push("cant_equip");
 						break;
 					}
@@ -7187,10 +7389,7 @@ function init_socket_io(socket_server) {
 					return fail_response("not_enough");
 				}
 				if (data.giveaway) {
-					minutes = max(
-						5,
-						min(600, min(parseInt(data.minutes) || 5, max(60, round((calculate_item_value(item) * data.q) / 40000)))),
-					);
+					minutes = max(5, min(600, parseInt(data.minutes) || 5));
 				}
 				if (!price || data.giveaway) {
 					price = 1;
@@ -7199,13 +7398,9 @@ function init_socket_io(socket_server) {
 					return fail_response("slot_occuppied");
 				}
 				if (def.s) {
-					player.slots[slot] = create_new_item(player.items[data.num].name, 1);
+					player.slots[slot] = create_new_sitem(item, data.q);
 					player.slots[slot].price = price;
-					player.slots[slot].q = data.q;
 					player.slots[slot].rid = randomStr(4);
-					if (player.items[data.num].data) {
-						player.slots[slot].data = player.items[data.num].data;
-					}
 					if (data.giveaway) {
 						player.slots[slot].giveaway = minutes;
 						player.slots[slot].list = [];
@@ -7214,11 +7409,21 @@ function init_socket_io(socket_server) {
 					player.cslots[slot] = cache_item(player.slots[slot], true);
 					consume(player, data.num, data.q);
 					if (data.giveaway) {
-						socket.emit("game_log", "Listed " + data.q + " " + item_name(player.slots[slot]) + " to giveaway!");
+						socket.emit(
+							"game_log",
+							localization.message("server.game_log.listed_to_giveaway", {
+								q: String(data.q),
+								item: String(item_name(player.slots[slot])),
+							}),
+						);
 					} else {
 						socket.emit(
 							"game_log",
-							"Listed " + data.q + " " + item_name(player.slots[slot]) + " at " + to_pretty_num(price) + " gold each",
+							localization.message("server.game_log.listed_at_gold_each", {
+								q: String(data.q),
+								item: String(item_name(player.slots[slot])),
+								amount: String(to_pretty_num(price)),
+							}),
 						);
 					}
 				} else {
@@ -7234,11 +7439,19 @@ function init_socket_io(socket_server) {
 					player.items[data.num] = null;
 					player.citems[data.num] = null;
 					if (data.giveaway) {
-						socket.emit("game_log", "Listed " + item_name(player.slots[slot]) + " to giveaway!");
+						socket.emit(
+							"game_log",
+							localization.message("server.game_log.listed_to_giveaway_2", {
+								item: String(item_name(player.slots[slot])),
+							}),
+						);
 					} else {
 						socket.emit(
 							"game_log",
-							"Listed " + item_name(player.slots[slot]) + " at " + to_pretty_num(price) + " gold",
+							localization.message("server.game_log.listed_at_gold", {
+								item: String(item_name(player.slots[slot])),
+								amount: String(to_pretty_num(price)),
+							}),
 						);
 					}
 				}
@@ -7339,6 +7552,15 @@ function init_socket_io(socket_server) {
 				var existing;
 				var comp = can_equip_item(player, def, slot);
 				if (comp == "no") {
+					if (
+						in_arr(slot, ["weapon", "mainhand", "tool"]) &&
+						player.slots.offhand &&
+						G.classes[player.type].doublehand[def.wtype]
+					)
+						socket.emit(
+							"game_log",
+							localization.message("server.game_log.unequip_your_offhand_item_to_use_this_two_handed_weapon", {}),
+						);
 					resend(player, "u+cid+reopen"); // if you drop something on an invalid slot, it stays there for a bit otherwise [29/08/22]
 					return fail_response("cant_equip");
 				}
@@ -7544,7 +7766,7 @@ function init_socket_io(socket_server) {
 			secondhands_logic(item, quantity); // In the end, so if this fails, the "sell" still succeeds - otherwise it could cause a infinite gold loophole [10/07/18]
 		});
 		socket.on("buy_shells", function (data) {
-			return socket.emit("game_log", "No longer possible");
+			return socket.emit("game_log", localization.message("server.game_log.no_longer_possible", {}));
 		});
 		socket.on("buy_with_cash", function (data) {
 			var player = players[socket.id];
@@ -7587,7 +7809,7 @@ function init_socket_io(socket_server) {
 				try {
 					var user = await get(player.owner);
 					if (!user) {
-						socket.emit("game_log", "Purchase failed");
+						socket.emit("game_log", localization.message("server.game_log.purchase_failed", {}));
 						finish_shell_purchase("shell_purchase_failed", { failed: true, reason: "nouser" });
 						return;
 					}
@@ -7604,7 +7826,7 @@ function init_socket_io(socket_server) {
 						{ user: user, amount: cost },
 					);
 					if (R.failed) {
-						socket.emit("game_log", "Purchase failed");
+						socket.emit("game_log", localization.message("server.game_log.purchase_failed", {}));
 						finish_shell_purchase("shell_purchase_failed", { failed: true, reason: R.reason || "purchase_failed" });
 						return;
 					}
@@ -7612,7 +7834,10 @@ function init_socket_io(socket_server) {
 					player.cash = R.element.cash;
 					var new_item = create_new_item(name, quantity);
 					add_item(player, new_item, { announce: false });
-					socket.emit("game_log", "Spent " + to_pretty_num(cost) + " shells");
+					socket.emit(
+						"game_log",
+						localization.message("server.game_log.spent_shells", { amount: String(to_pretty_num(cost)) }),
+					);
 					add_event(R.element, "bill", ["cashflow"], {
 						info: {
 							message: player.name + " [" + get_id(user) + "] spent " + cost + " shells for: " + data.name,
@@ -7662,7 +7887,7 @@ function init_socket_io(socket_server) {
 					var user = await get(player.owner);
 					if (!user) {
 						player.blessing = false;
-						socket.emit("game_log", "Purchase failed");
+						socket.emit("game_log", localization.message("server.game_log.purchase_failed", {}));
 						finish_bless("blessed_fail", { failed: true, reason: "nouser", cost: cost });
 						return;
 					}
@@ -7680,7 +7905,7 @@ function init_socket_io(socket_server) {
 					);
 					player.blessing = false;
 					if (R.failed) {
-						socket.emit("game_log", "Purchase failed");
+						socket.emit("game_log", localization.message("server.game_log.purchase_failed", {}));
 						finish_bless("blessed_fail", { failed: true, reason: R.reason || "purchase_failed", cost: cost });
 						return;
 					}
@@ -7690,7 +7915,10 @@ function init_socket_io(socket_server) {
 					S.blessed_minutes = 60 * 24 * 3;
 					S.blessed_by = player.name;
 
-					socket.emit("game_log", "Spent " + to_pretty_num(cost) + " shells");
+					socket.emit(
+						"game_log",
+						localization.message("server.game_log.spent_shells", { amount: String(to_pretty_num(cost)) }),
+					);
 					finish_bless("blessed", { success: true, cost: cost, blessed_by: player.name, minutes: S.blessed_minutes });
 
 					resend(player, "reopen+nc");
@@ -7698,10 +7926,14 @@ function init_socket_io(socket_server) {
 
 					discord_call(player.name + " blessed " + region + " " + server_name);
 
-					realm_broadcast("server_message", {
-						message: player.name + " blessed " + region + " " + server_name,
-						color: "#8F70D8",
-					});
+					realm_broadcast(
+						"server_message",
+						localization.message(
+							"server.server_message.blessed",
+							{ player: String(player.name), region: String(region), server_name: String(server_name) },
+							{ color: "#8F70D8" },
+						),
+					);
 					add_event(R.element, "bill", ["cashflow"], {
 						info: {
 							message: player.name + " [" + get_id(user) + "] spent " + cost + " shells for: blessing",
@@ -7766,7 +7998,7 @@ function init_socket_io(socket_server) {
 					var item = c[i];
 					if (!can_add_item(player, c[i])) {
 						if (data.request_id) return fail_response("no_space", ev, { request_id: data.request_id, rid: data.rid });
-						return disappearing_text(socket, player, "NO SPACE");
+						return disappearing_text(socket, player, localization.message("server.floating.no_space", {}));
 					}
 					if (gold > player.gold) {
 						if (data.request_id)
@@ -7778,7 +8010,10 @@ function init_socket_io(socket_server) {
 					add_item(player, c[i], { announce: false });
 					c.splice(i, 1);
 					cc.splice(i, 1);
-					socket.emit("game_log", "Spent " + to_pretty_num(gold) + " gold");
+					socket.emit(
+						"game_log",
+						localization.message("server.game_log.spent_gold", { amount: String(to_pretty_num(gold)) }),
+					);
 					resend(player, "reopen+nc");
 					socket.emit(ev, cc);
 					done = true;
@@ -7795,7 +8030,7 @@ function init_socket_io(socket_server) {
 			}
 			if (!done) {
 				if (data.request_id) return fail_response("item_gone", ev, { request_id: data.request_id, rid: data.rid });
-				return socket.emit("game_log", "Item gone");
+				return socket.emit("game_log", localization.message("server.game_log.item_gone", {}));
 			}
 		});
 		socket.on("buy", function (data) {
@@ -8110,13 +8345,15 @@ function init_socket_io(socket_server) {
 					const announce = !item.silent;
 
 					if (announce && !player.stealth) {
-						broadcast("server_message", {
-							message: player.name + " received " + item_to_phrase(item),
-							color: colors.server_success,
-							item: cache_item(item),
-							type: "server_usuccess",
-							name: player.name,
-						});
+						broadcast(
+							"server_message",
+							item_message(
+								"server.item.named_received",
+								item,
+								{ player: String(player.name) },
+								{ color: colors.server_success, item: cache_item(item), type: "server_usuccess", name: player.name },
+							),
+						);
 					}
 				}
 				xy_emit(G.maps.spookytown.ref.poof, "upgrade", { type: "poof", success: 1 });
@@ -8165,7 +8402,7 @@ function init_socket_io(socket_server) {
 			item.registry[player.auth_id] = player.name;
 			item.list = Object.values(item.registry);
 
-			socket.emit("game_log", "Joined the giveaway!");
+			socket.emit("game_log", localization.message("server.game_log.joined_the_giveaway", {}));
 			seller.socket.emit("game_response", {
 				response: "giveaway_join",
 				name: player.name,
@@ -8267,10 +8504,14 @@ function init_socket_io(socket_server) {
 			if (!actual) {
 				return fail_response("no_item");
 			}
-			if (actual.b) {
+			if (actual.acl && buyer.owner != player.owner) {
+				return fail_response("item_locked");
+			}
+			if (actual.b || actual.v) {
 				return fail_response("item_blocked");
 			}
-			if (!can_add_item(buyer, create_new_item(item.name, data.q))) {
+			var trade_item = G.items[actual.name].s ? create_new_sitem(actual, data.q) : actual;
+			if (!can_add_item(buyer, trade_item)) {
 				return fail_response("trade_bspace");
 			}
 			var price = item.price * data.q;
@@ -8296,11 +8537,7 @@ function init_socket_io(socket_server) {
 				player.citems[num] = cache_item(player.items[num]);
 			}
 
-			if (G.items[item.name].s) {
-				bnum = add_item(buyer, create_new_item(item.name, data.q), { announce: false });
-			} else {
-				bnum = add_item(buyer, actual, { announce: false });
-			}
+			bnum = add_item(buyer, trade_item, { announce: false });
 
 			if (player.type == "merchant") {
 				merchant_xp_logic(player, buyer, price, price - round(price * (1 - player.tax)));
@@ -8311,10 +8548,21 @@ function init_socket_io(socket_server) {
 
 			socket.emit(
 				"game_log",
-				"Sales tax " + to_pretty_num(price - round(price * (1 - player.tax))) + " gold [" + player.tax * 100 + "%]",
+				localization.message("server.game_log.sales_tax_gold", {
+					amount: String(to_pretty_num(price - round(price * (1 - player.tax)))),
+					value: String(player.tax * 100),
+				}),
 			);
-			socket.emit("game_log", "Received " + to_pretty_num(round(price * (1 - player.tax))) + " gold");
-			buyer.socket.emit("game_log", "Spent " + to_pretty_num(price) + " gold");
+			socket.emit(
+				"game_log",
+				localization.message("server.game_log.received_gold", {
+					amount: String(to_pretty_num(round(price * (1 - player.tax)))),
+				}),
+			);
+			buyer.socket.emit(
+				"game_log",
+				localization.message("server.game_log.spent_gold", { amount: String(to_pretty_num(price)) }),
+			);
 
 			xy_emit(buyer, "ui", {
 				type: "+$$",
@@ -8369,7 +8617,8 @@ function init_socket_io(socket_server) {
 			if ((item.q || 1) < data.q) {
 				return fail_response("insufficient_q");
 			}
-			if (!can_add_item(player, create_new_item(item.name, data.q))) {
+			var trade_item = item.q ? create_new_sitem(item, data.q) : item;
+			if (!can_add_item(player, trade_item)) {
 				return fail_response("no_space");
 			}
 			var price = item.price * data.q;
@@ -8392,11 +8641,7 @@ function init_socket_io(socket_server) {
 				seller.cslots[data.slot] = cache_item(seller.slots[data.slot], true);
 			}
 
-			if (item.q) {
-				num = add_item(player, create_new_sitem(item, data.q), { announce: false });
-			} else {
-				num = add_item(player, item, { announce: false });
-			}
+			num = add_item(player, trade_item, { announce: false });
 
 			if (seller.owner != player.owner) {
 				item.src = "tb";
@@ -8409,12 +8654,23 @@ function init_socket_io(socket_server) {
 				merchant_xp_logic(seller, player, price, price - round(price * (1 - seller.tax)));
 			}
 
-			socket.emit("game_log", "Spent " + to_pretty_num(price) + " gold");
+			socket.emit(
+				"game_log",
+				localization.message("server.game_log.spent_gold", { amount: String(to_pretty_num(price)) }),
+			);
 			seller.socket.emit(
 				"game_log",
-				"Sales tax " + to_pretty_num(price - round(price * (1 - seller.tax))) + " gold [" + seller.tax * 100 + "%]",
+				localization.message("server.game_log.sales_tax_gold", {
+					amount: String(to_pretty_num(price - round(price * (1 - seller.tax)))),
+					value: String(seller.tax * 100),
+				}),
 			);
-			seller.socket.emit("game_log", "Received " + to_pretty_num(round(price * (1 - seller.tax))) + " gold");
+			seller.socket.emit(
+				"game_log",
+				localization.message("server.game_log.received_gold", {
+					amount: String(to_pretty_num(round(price * (1 - seller.tax)))),
+				}),
+			);
 
 			xy_emit(seller, "ui", {
 				type: "+$$",
@@ -8442,6 +8698,10 @@ function init_socket_io(socket_server) {
 			if (!player) {
 				return;
 			}
+			var item = data.num !== undefined && player.items[data.num],
+				definition = item && G.items[item.name];
+			if (data.num !== undefined && !(definition && definition.stand)) return fail_response("invalid");
+			if (!data.close && item && item.b === "stand" && player.p.stand === definition.stand) return success_response({});
 			market_patron_reset(player);
 			var initial = player.p.stand;
 			server_log("merchant: " + player.name);
@@ -8454,15 +8714,10 @@ function init_socket_io(socket_server) {
 				}
 			}
 			if (data.num !== undefined) {
-				var item = player.items[data.num];
-				if (item && G.items[item.name].stand) {
-					player.p.stand = G.items[item.name].stand;
-					item.b = "stand";
-				} else {
-					return fail_response("invalid");
-				}
+				player.p.stand = definition.stand;
+				item.b = "stand";
 			}
-			if (initial != player.p.stand) {
+			if (initial != player.p.stand || item) {
 				// All unneccessary causes of resend's should be patched [03/08/18]
 				reslot_player(player);
 				resend(player, "u+cid");
@@ -8580,7 +8835,7 @@ function init_socket_io(socket_server) {
 							var user = await get(player.owner);
 							if (!user) {
 								player["unlocking_" + data.pack] = false;
-								socket.emit("game_log", "Purchase failed");
+								socket.emit("game_log", localization.message("server.game_log.purchase_failed", {}));
 								finish_bank_pack("bank_new_pack_failed", { failed: true, reason: "nouser" });
 								return;
 							}
@@ -8597,7 +8852,7 @@ function init_socket_io(socket_server) {
 							);
 							player["unlocking_" + data.pack] = false;
 							if (R.failed) {
-								socket.emit("game_log", "Purchase failed");
+								socket.emit("game_log", localization.message("server.game_log.purchase_failed", {}));
 								finish_bank_pack("bank_new_pack_failed", { failed: true, reason: R.reason || "purchase_failed" });
 								return;
 							}
@@ -8704,7 +8959,14 @@ function init_socket_io(socket_server) {
 					player.items[data.inv] = bank_item;
 					player.cuser[data.pack][data.str] = cache_item(player.user[data.pack][data.str]);
 					player.citems[data.inv] = cache_item(player.items[data.inv]);
-					success = { operation: "swap", bank_action: "swap", pack: data.pack, inv: data.inv, str: data.str };
+					success = {
+						operation: "swap",
+						bank_action: "swap",
+						stored: !!inv_item,
+						pack: data.pack,
+						inv: data.inv,
+						str: data.str,
+					};
 				} else if (operation == "store" && inv_item) {
 					if (!can_add_item(player.user[data.pack], inv_item)) {
 						return fail_response("storage_full");
@@ -8807,7 +9069,7 @@ function init_socket_io(socket_server) {
 				return;
 			}
 			if (player.pokes >= 50) {
-				return socket.emit("game_log", "You are out of pokes!");
+				return socket.emit("game_log", localization.message("server.game_log.you_are_out_of_pokes", {}));
 			}
 			player.pokes = (player.pokes || 0) + 1;
 			if (player.slots.gloves.level >= 10) {
@@ -9035,10 +9297,52 @@ function init_socket_io(socket_server) {
 			if (!gSkill) {
 				return fail_response("no_skill", data.name);
 			}
-			const anniversary_target = gSkill.emote === "ikissyou" && players[id_to_id[data.id]];
+			if (data.name === "rimeshell" || data.name === "rimeshatter") {
+				return fail_response("skill_cant_use", data.name);
+			}
+			// Validate the whole bounded list before any charge, projectile, or cooldown changes.
+			const validTargetId = (id) => typeof id === "string" || (Number.isSafeInteger(id) && id >= 0);
+			if (data.name === "3shot" || data.name === "5shot" || data.name === "fanofknives") {
+				if (!Array.isArray(data.ids)) return fail_response("invalid", data.name);
+				data.ids = data.ids.slice(0, gSkill.max_targets || (data.name === "5shot" ? 5 : 3));
+				if (data.ids.some((id) => !validTargetId(id))) return fail_response("invalid", data.name);
+			} else if (data.name === "cburst") {
+				if (!Array.isArray(data.targets)) return fail_response("invalid", data.name);
+				data.targets = data.targets.slice(0, 16);
+				if (
+					data.targets.some(
+						(entry) =>
+							!Array.isArray(entry) ||
+							entry.length !== 2 ||
+							!validTargetId(entry[0]) ||
+							(typeof entry[1] !== "number" && typeof entry[1] !== "string") ||
+							!Number.isFinite(Number(entry[1])),
+					)
+				)
+					return fail_response("invalid", data.name);
+			}
+			const anniversary = gSkill.emote === "ikissyou" && anniversary_state();
+			const anniversary_target = anniversary && players[id_to_id[data.id]];
+			const anniversary_status = anniversary && anniversary.visitStatus(player);
 			const anniversary_guest_access =
-				anniversary_target && anniversary_state().isTarget(anniversary_target) && anniversary_state().canVisit(player);
+				anniversary_target && anniversary.isTarget(anniversary_target) && anniversary.canVisit(player);
+			let anniversary_reason = (anniversary_status && anniversary_status.reason) || "no_round";
+			if (anniversary_reason === "ready") {
+				if (anniversary_guest_access) anniversary_reason = null;
+				else if (anniversary_status.target === data.id) anniversary_reason = "target_unavailable";
+				else anniversary_reason = "wrong_target";
+			}
 			if (gSkill.emote && (!player.p.acx || !player.p.acx[gSkill.emote]) && !anniversary_guest_access) {
+				if (anniversary)
+					return fail_response(
+						"skill_cant_use",
+						data.name,
+						localization.message(
+							"interface.anniversary_status." + anniversary_reason,
+							{},
+							{ reason: anniversary_reason, rewarded: false },
+						),
+					);
 				return fail_response("skill_cant_use", data.name);
 			}
 
@@ -9266,7 +9570,13 @@ function init_socket_io(socket_server) {
 			}
 
 			if (gSkill.emote) {
-				if (gSkill.emote === "ikissyou") anniversary_state().claim(player, target, anniversary_deliver);
+				if (anniversary) {
+					resolve.rewarded = anniversary.claim(player, target, anniversary_deliver);
+					resolve.reason = resolve.rewarded ? null : anniversary_reason || "no_visit";
+					// Ordinary unlocked kisses still work. Explain missing rewards only for a visit to this round's host.
+					if (!resolve.rewarded && anniversary_status && target.id === anniversary_status.target)
+						Object.assign(resolve, localization.message("interface.anniversary_status." + resolve.reason, {}));
+				}
 				if (gSkill.mp) {
 					consume_mp(player, gSkill.mp);
 					player.to_resend = "u+cid";
@@ -9663,7 +9973,7 @@ function init_socket_io(socket_server) {
 				player.to_resend = "u+cid";
 				if (!c_resolve) {
 					reject = { failed: true, place: data.name, reason: "no_target" };
-					disappearing_text(player.socket, player, "NO HITS");
+					disappearing_text(player.socket, player, localization.message("server.floating.no_hits", {}));
 				} else {
 					resolve = c_resolve;
 				}
@@ -9767,7 +10077,7 @@ function init_socket_io(socket_server) {
 				}
 				if (!c_resolve) {
 					reject = { failed: true, place: data.name, reason: "no_target" };
-					disappearing_text(player.socket, player, "NO HITS");
+					disappearing_text(player.socket, player, localization.message("server.floating.no_hits", {}));
 				} else {
 					resolve = c_resolve;
 				}
@@ -9867,7 +10177,12 @@ function init_socket_io(socket_server) {
 						if (target.immune) {
 							player.hitchhikers.push(["game_response", { response: "skill_immune", skill: data.name }]);
 							player.to_resend = "nc";
-							disappearing_text(target.socket, target, "IMMUNE!", { xy: 1, color: "evade", nv: 1, from: player.id });
+							disappearing_text(target.socket, target, localization.message("server.floating.immune", {}), {
+								xy: 1,
+								color: "evade",
+								nv: 1,
+								from: player.id,
+							});
 						} else if (add_condition(target, "stunned", { duration: G.skills.stomp.duration })) {
 							ids.push(id);
 							add_pdps(player, target, 500);
@@ -9901,7 +10216,12 @@ function init_socket_io(socket_server) {
 						if (target.immune) {
 							player.hitchhikers.push(["game_response", { response: "skill_immune", skill: "scare" }]);
 							player.to_resend = "nc";
-							disappearing_text(target.socket, target, "IMMUNE!", { xy: 1, color: "evade", nv: 1, from: player.id });
+							disappearing_text(target.socket, target, localization.message("server.floating.immune", {}), {
+								xy: 1,
+								color: "evade",
+								nv: 1,
+								from: player.id,
+							});
 						} else {
 							stop_pursuit(target, { force: true, cause: "scare" });
 							target.abs = true;
@@ -9992,6 +10312,7 @@ function init_socket_io(socket_server) {
 					resolve = c_resolve;
 				}
 			} else if (data.name == "magiport") {
+				if (!generated_magiport_allowed(player, target)) return fail_response("cant_enter");
 				consume_mp(player, gSkill.mp, target);
 				if (!is_pvp && mode.pve_safe_magiports) {
 					if (!magiportations[player.name]) {
@@ -10185,7 +10506,7 @@ function init_socket_io(socket_server) {
 		});
 		socket.on("click", function (data) {
 			// You'll be missed 'click' method, the 'click' method was the first method on this server, it was used as an attack method up until [17/06/18] - at this date, there were 3 simple conditions left which checked for data.button=="right" - the game matured so that all interactions were handled client-side rather than processed server-side
-			socket.emit("game_log", "'click' method is deprecated.");
+			socket.emit("game_log", localization.message("server.game_log.click_method_is_deprecated", {}));
 		});
 		socket.on("attack", function (data) {
 			return socket.fs.skill({ name: "attack", id: data.id });
@@ -10212,6 +10533,30 @@ function init_socket_io(socket_server) {
 				if (request_id) interaction_failure("invalid");
 				return;
 			}
+			if (data.type === "cave") {
+				void cave_interaction(player, data)
+					.then((result) =>
+						socket.emit(
+							"game_response",
+							Object.assign(
+								{ response: "data", place: "interaction", interaction: "cave", request_id, success: true },
+								result,
+							),
+						),
+					)
+					.catch((error) =>
+						socket.emit("game_response", {
+							response: "data",
+							place: "interaction",
+							interaction: "cave",
+							request_id,
+							failed: true,
+							reason: error.message,
+						}),
+					);
+				return;
+			}
+			if (data.type === "cavalry") return cavalry_interaction(player, data, socket);
 			if (data.type == "merrit_info") {
 				market_patron_info(player);
 				return;
@@ -10231,7 +10576,7 @@ function init_socket_io(socket_server) {
 					return socket.emit("game_response", "distance");
 				}
 				if (player.last.citizen_route && mssince(player.last.citizen_route) < 10000) {
-					return socket.emit("game_log", "Rook is still reading the sands.");
+					return socket.emit("game_log", localization.message("server.game_log.rook_is_still_reading_the_sands", {}));
 				}
 				player.last.citizen_route = new Date();
 				player.socket.emit("citizen", {
@@ -10240,7 +10585,12 @@ function init_socket_io(socket_server) {
 					from: [rook.x, rook.y],
 					to: [destination.x, destination.y],
 				});
-				player.socket.emit("game_log", "Rook marks the first steps toward " + G.npcs[data.destination].name + ".");
+				player.socket.emit(
+					"game_log",
+					localization.message("server.game_log.rook_marks_the_first_steps_toward", {
+						G: String(G.npcs[data.destination].name),
+					}),
+				);
 				if (!rook.citizen_wayfinder && !rook.moving) {
 					var dx = destination.x - rook.x;
 					var dy = destination.y - rook.y;
@@ -10391,8 +10741,11 @@ function init_socket_io(socket_server) {
 							1,
 						);
 						appengine_log("violation", "move_line: " + player.name + " afk: " + player.afk + " code: " + player.code);
-						player.socket.emit("game_log", "Line violation detected");
-						player.socket.emit("game_log", "Make sure you only move with the built-in move function");
+						player.socket.emit("game_log", localization.message("server.game_log.line_violation_detected", {}));
+						player.socket.emit(
+							"game_log",
+							localization.message("server.game_log.make_sure_you_only_move_with_the_built_in_move_function", {}),
+						);
 						defeat_player(player);
 						transport_player_to(player, "jail");
 						return;
@@ -10433,6 +10786,20 @@ function init_socket_io(socket_server) {
 				return;
 			}
 			var r = { id: data.id, goldm: player.goldm, opener: player.name, items: [] };
+			if (chest?.cave) {
+				var result = cave_open_chest(player, chest, data.id);
+				if (result.failed) return fail_response(result.reason);
+				return;
+			}
+			if (chest && chest.character) {
+				if (
+					chest.character !== player.real_id ||
+					chest.owner !== player.owner ||
+					chest.group !== encouragement_identity(player).key
+				)
+					return fail_response("loot_failed");
+				r.goldm = 1;
+			}
 			if (chest && simple_distance(chest, player) > 400) {
 				r.goldm = 1;
 				r.dry = true;
@@ -10449,20 +10816,24 @@ function init_socket_io(socket_server) {
 					W.chest[player.owner] = new Date();
 					server_log("SEVERE - Cross Loot from " + player.name + " not from " + chest.owners.toString());
 				}
-				if (chest && !player.party) {
+				if (chest && (!player.party || chest.character)) {
 					var all_items = chest.items.slice(0);
 					all_items.concat(chest.pvp_items);
 					if (!can_add_items(player, all_items)) {
 						return fail_response("loot_no_space");
 					}
 					if (chest && !chest.pvp && chest.gold > 100000000 && !player.stealth) {
-						broadcast("server_message", {
-							message:
-								player.name + " looted " + to_pretty_num(server_tax(round(chest.gold * r.goldm), true)) + " gold",
-							color: "gold",
-							type: "server_gold",
-							name: player.name,
-						});
+						broadcast(
+							"server_message",
+							localization.message(
+								"server.server_message.looted_gold",
+								{
+									player: String(player.name),
+									amount: String(to_pretty_num(server_tax(round(chest.gold * r.goldm), true))),
+								},
+								{ color: "gold", type: "server_gold", name: player.name },
+							),
+						);
 					}
 					delete chests[data.id]; // The add_shells routine was at the top, so when inventory was full, attempting to open the chest gave shells infinitely, repeated lesson, always remove before adding, or exceptions [11/07/18]
 					if (chest && chest.cash) {
@@ -10475,7 +10846,7 @@ function init_socket_io(socket_server) {
 						var ritem = cache_item(item);
 						ritem.looter = player.name;
 						r.items.push(ritem);
-						socket.emit("game_log", { message: "Found " + item_to_phrase(item), color: "#4BAEAA" });
+						socket.emit("game_log", item_message("server.item.found", item, {}, { color: "#4BAEAA" }));
 						if (player.t) {
 							player.t.dgold += round(G.items[item.name].g * 0.6);
 						}
@@ -10489,14 +10860,14 @@ function init_socket_io(socket_server) {
 							ritem.looter = player.name;
 							ritem.pvp_loot = true;
 							r.items.push(ritem);
-							socket.emit("game_log", { message: "Looted " + item_to_phrase(item), color: "#4BAEAA" });
+							socket.emit("game_log", item_message("server.item.looted", item, {}, { color: "#4BAEAA" }));
 						} else {
 							lostandfound_logic(item);
 							var ritem = cache_item(item);
 							ritem.looter = null;
 							ritem.lostandfound = true;
 							r.items.push(ritem);
-							socket.emit("game_log", { message: "Lost " + item_to_phrase(item), color: "#AB4E4F" });
+							socket.emit("game_log", item_message("server.item.lost", item, {}, { color: "#AB4E4F" }));
 						}
 					});
 					r.gold = round(chest.gold * r.goldm) + round(chest.egold || 0);
@@ -10505,8 +10876,16 @@ function init_socket_io(socket_server) {
 					if (player.t) {
 						player.t.cgold += r.gold;
 					}
+					r.gold += encouragement_loot(chest, r.goldm, [player.name])[player.id] || 0;
 					if (r.gold) {
-						socket.emit("game_log", { message: to_pretty_num(r.gold) + " gold", color: "gold" });
+						socket.emit(
+							"game_log",
+							localization.message(
+								"server.game_log.gold",
+								{ amount: String(to_pretty_num(r.gold)) },
+								{ color: "gold" },
+							),
+						);
 					}
 					socket.emit("disappearing_text", {
 						message: "+" + r.gold,
@@ -10525,13 +10904,17 @@ function init_socket_io(socket_server) {
 					var chest = chests[data.id];
 					var reopen = {};
 					if (chest && !chest.pvp && chest.gold > 100000000 && !player.stealth) {
-						broadcast("server_message", {
-							message:
-								player.name + " looted " + to_pretty_num(server_tax(round(chest.gold * r.goldm), true)) + " gold",
-							color: "gold",
-							type: "server_gold",
-							name: player.name,
-						});
+						broadcast(
+							"server_message",
+							localization.message(
+								"server.server_message.looted_gold",
+								{
+									player: String(player.name),
+									amount: String(to_pretty_num(server_tax(round(chest.gold * r.goldm), true))),
+								},
+								{ color: "gold", type: "server_gold", name: player.name },
+							),
+						);
 					}
 					delete chests[data.id];
 					if (chest && chest.cash) {
@@ -10564,10 +10947,16 @@ function init_socket_io(socket_server) {
 									var ritem = cache_item(item);
 									ritem.looter = current.name;
 									r.items.push(ritem);
-									party_emit(player.party, "game_log", {
-										message: current.name + " found " + item_to_phrase(item),
-										color: "#4BAEAA",
-									});
+									party_emit(
+										player.party,
+										"game_log",
+										item_message(
+											"server.item.named_found",
+											item,
+											{ player: String(current.name) },
+											{ color: "#4BAEAA" },
+										),
+									);
 									if (current.t) {
 										current.t.dgold += round(G.items[item.name].g * 0.6);
 									}
@@ -10582,7 +10971,7 @@ function init_socket_io(socket_server) {
 							ritem.looter = null;
 							ritem.lostandfound = true;
 							r.items.push(ritem);
-							party_emit(player.party, "game_log", { message: "Lost " + item_to_phrase(item), color: "#AB4E4F" });
+							party_emit(player.party, "game_log", item_message("server.item.lost", item, {}, { color: "#AB4E4F" }));
 						}
 					});
 					(chest.pvp_items || []).forEach(function (item) {
@@ -10613,10 +11002,16 @@ function init_socket_io(socket_server) {
 									ritem.looter = current.name;
 									ritem.pvp_loot = true;
 									r.items.push(ritem);
-									party_emit(player.party, "game_log", {
-										message: current.name + " looted " + item_to_phrase(item),
-										color: "#4BAEAA",
-									});
+									party_emit(
+										player.party,
+										"game_log",
+										item_message(
+											"server.item.named_looted",
+											item,
+											{ player: String(current.name) },
+											{ color: "#4BAEAA" },
+										),
+									);
 								} else {
 									pool_current += current.share;
 								}
@@ -10629,20 +11024,29 @@ function init_socket_io(socket_server) {
 							ritem.pvp_loot = true;
 							ritem.lostandfound = true;
 							r.items.push(ritem);
-							party_emit(player.party, "game_log", { message: "Lost " + item_to_phrase(item), color: "#AB4E4F" });
+							party_emit(player.party, "game_log", item_message("server.item.lost", item, {}, { color: "#AB4E4F" }));
 						}
 					});
+					var encouragement_gold = encouragement_loot(chest, r.goldm, parties[player.party]);
 					parties[player.party].forEach(function (name) {
 						var current = players[name_to_id[name]];
 						var cgold =
 							round(chest.gold * (current.share || 0) * r.goldm) + round((chest.egold || 0) * (current.share || 0));
-						r.gold = cgold = server_tax(cgold);
+						cgold = server_tax(cgold);
 						current.gold += cgold;
 						if (current.t) {
 							current.t.cgold += cgold;
 						}
+						r.gold = cgold += encouragement_gold[current.id] || 0;
 						if (cgold) {
-							current.socket.emit("game_log", { message: to_pretty_num(cgold) + " gold", color: "gold" });
+							current.socket.emit(
+								"game_log",
+								localization.message(
+									"server.game_log.gold",
+									{ amount: String(to_pretty_num(cgold)) },
+									{ color: "gold" },
+								),
+							);
 						}
 						if (current.in == player.in) {
 							current.socket.emit("disappearing_text", {
@@ -10665,321 +11069,427 @@ function init_socket_io(socket_server) {
 			}
 		});
 		socket.on("auth", async function (data) {
+			if (
+				!data ||
+				typeof data !== "object" ||
+				typeof data.user !== "string" ||
+				typeof data.character !== "string" ||
+				typeof data.auth !== "string"
+			)
+				return;
 			if (data.user) data.user = normalize_user_id(data.user);
 			if (data.character && !data.character.startsWith("CH_")) data.character = "CH_" + data.character;
 			if (gameplay == "test" && data.passphrase != "potato salad") {
-				return socket.emit("game_log", "Wrong passphrase!");
+				return socket.emit("game_log", localization.message("server.game_log.wrong_passphrase", {}));
 			}
-			if (observers[socket.id] && observers[socket.id].auth_engaged) {
-				return socket.emit("game_log", "Authorization in progress.");
+			if (socket.login_attempt || pending_logins.has(data.character)) {
+				return socket.emit("game_log", localization.message("server.game_log.authorization_in_progress", {}));
 			}
-			if (dc_players[data.character]) {
-				return socket.emit("game_log", "Authorization in progress.");
+			if (dc_players[data.character] || Object.values(players).some((p) => p.real_id === data.character)) {
+				return socket.emit("game_log", localization.message("server.game_log.authorization_in_progress", {}));
 			}
 			if (!server.live || !observers[socket.id] || players[socket.id]) {
 				return;
 			}
 			if (Object.keys(players).length >= max_players) {
-				socket.emit("game_error", "Can't accept more than " + max_players + " players at this time");
+				socket.emit("game_error", localization.message("server.game_error.capacity", { count: max_players }));
 				return;
 			}
-			socket.observer_secret = randomStr(24);
-			observers[socket.id].auth_engaged = true;
+			var attempt = {
+				id: data.character,
+				socket: socket,
+				secret: randomStr(24),
+				deadline: Date.now() + character_login_timeout,
+				claiming: true,
+				stage: "claim",
+			};
+			socket.observer_secret = attempt.secret;
+			socket.login_attempt = attempt;
+			pending_logins.set(attempt.id, attempt);
+			attempt.timer = setTimeout(function () {
+				server_log("#X Login timed out: " + attempt.id + " at " + attempt.stage, 1);
+				cancel_character_login(attempt);
+				if (socket.connected) socket.disconnect();
+			}, character_login_timeout);
+			try {
+				// tx() to validate auth and mark character online (following qwazy pattern)
+				var R = await tx(async () => {
+					R.owner = await tx_get(A[0].user);
+					R.entity = await tx_get(A[0].character);
+					if (!R.entity) ex("no_character");
+					if (!R.owner || !R.owner.info.auths.includes(A[0].auth)) ex("password_issue");
+					if (R.entity.owner !== get_id(R.owner)) ex("no_character");
+					if (A[0].mainframe_session !== undefined) {
+						var assignment = await tx_get("MK_mainframe_assignment-" + get_id(R.entity));
+						if (!is_valid_mainframe_session(assignment, A[0].mainframe_session)) ex("mainframe_issue");
+						R.mainframe = true;
+					}
+					if (R.entity.server) ex("ingame");
+					if (!(await tavern_poker_recover(R.entity, tx_get))) ex("poker_hand_active");
+					if (A[3].cancelled || Date.now() >= A[3].deadline) ex("cancelled");
+					A[3].claim_written = true;
+					R.previous_online = R.entity.last_online;
+					R.entity.pid = R.entity.pid || R.owner.pid || "";
+					R.entity.server = A[1];
+					R.entity.online = true;
+					R.entity.last_sync = new Date();
+					R.entity.last_online = new Date();
+					R.entity.info.secret = A[2];
+					R.entity.info.afk = true;
+					R.entity.info.last_start = new Date();
+					R.entity.friends = R.owner.friends;
+					R.entity.guild = R.owner.guild;
+					await tx_save(R.entity);
+				}, [data, server_id, attempt.secret, attempt]);
 
-			// tx() to validate auth and mark character online (following qwazy pattern)
-			var R = await tx(async () => {
-				R.owner = await tx_get(A[0].user);
-				R.entity = await tx_get(A[0].character);
-				if (!R.entity) ex("no_character");
-				if (!R.owner || !R.owner.info.auths.includes(A[0].auth)) ex("password_issue");
-				if (R.entity.owner !== get_id(R.owner)) ex("no_character");
-				if (A[0].mainframe_session !== undefined) {
-					var assignment = await tx_get("MK_mainframe_assignment-" + get_id(R.entity));
-					if (!is_valid_mainframe_session(assignment, A[0].mainframe_session)) ex("mainframe_issue");
-					R.mainframe = true;
+				attempt.claiming = false;
+				check_character_login(attempt, "claim complete");
+				if (R.failed) {
+					socket.emit(
+						"game_error",
+						localization.message(
+							R.reason == "poker_hand_active"
+								? "server.game_error.poker_hand_active"
+								: "server.game_error.authentication_failed",
+							{ reason: R.reason },
+							{ reason: R.reason },
+						),
+					);
+					cancel_character_login(attempt);
+					return;
 				}
-				if (R.entity.server && msince(R.entity.last_sync) < 120) ex("ingame");
-				R.entity.server = A[1];
-				R.entity.online = true;
-				R.entity.last_sync = new Date();
-				R.entity.last_online = new Date();
-				R.entity.info.secret = A[2];
-				R.entity.info.afk = true;
-				R.entity.info.last_start = new Date();
-				R.entity.friends = R.owner.friends;
-				R.entity.guild = R.owner.guild;
-				await tx_save(R.entity);
-			}, [data, server_id, socket.observer_secret]);
 
-			if (observers[socket.id]) observers[socket.id].auth_engaged = false;
-			if (R.failed) {
-				socket.emit("game_error", "Failed: " + R.reason);
-				return;
-			}
+				var entity = R.entity;
+				var owner = R.owner;
 
-			var entity = R.entity;
-			var owner = R.owner;
-
-			// Load additional data outside tx (guild, code, characters for stats, IP)
-			var guild = null;
-			if (owner.guild) guild = await get(owner.guild.startsWith("GU_") ? owner.guild : "GU_" + owner.guild);
-			var characters = await get_characters(owner);
-			var stats = { monsters: {} };
-			for (var i = 0; i < characters.length; i++) {
-				var c = characters[i];
-				var c_monsters = (c.info && c.info.p && c.info.p.stats && c.info.p.stats.monsters) || {};
-				var c_monsters_diff = (c.info && c.info.p && c.info.p.stats && c.info.p.stats.monsters_diff) || {};
-				for (var mid in c_monsters) {
-					var total = (c_monsters[mid] || 0) + (c_monsters_diff[mid] || 0);
-					if (total > (stats.monsters[mid] || [0, 0])[0]) {
-						stats.monsters[mid] = [total, c.info.name || c.name];
+				// Load additional data outside tx (guild, code, characters for stats, IP)
+				var guild = null;
+				if (owner.guild) guild = await get(owner.guild.startsWith("GU_") ? owner.guild : "GU_" + owner.guild);
+				check_character_login(attempt, "characters");
+				var characters = await get_characters(owner);
+				check_character_login(attempt, "character stats");
+				var stats = { monsters: {}, level: entity.level || 1 };
+				for (var i = 0; i < characters.length; i++) {
+					var c = characters[i];
+					stats.level = max(stats.level, c.level || 1);
+					var c_monsters = (c.info && c.info.p && c.info.p.stats && c.info.p.stats.monsters) || {};
+					var c_monsters_diff = (c.info && c.info.p && c.info.p.stats && c.info.p.stats.monsters_diff) || {};
+					for (var mid in c_monsters) {
+						var total = (c_monsters[mid] || 0) + (c_monsters_diff[mid] || 0);
+						if (total > (stats.monsters[mid] || [0, 0])[0]) {
+							stats.monsters[mid] = [total, c.info.name || c.name];
+						}
 					}
 				}
-			}
-			var user_data = await get_user_data(owner);
-			var ip_a = get_ip_server(socket);
-			try {
-				ip_a = ip_a.replace("::ffff:", "");
-			} catch (e) {}
-			var ip_info = await get_ip_info(ip_a);
+				check_character_login(attempt, "user data");
+				var user_data = await get_user_data(owner);
+				check_character_login(attempt, "IP data");
+				var ip_a = get_ip_server(socket);
+				try {
+					ip_a = ip_a.replace("::ffff:", "");
+				} catch (e) {}
+				var ip_info = await get_ip_info(ip_a);
+				check_character_login(attempt, "CODE");
 
-			// Load user code
-			var code = null,
-				code_slot = data.code_slot,
-				code_version = 0;
-			if (code_slot) {
-				var code_list = gf(user_data, "code_list", {}) || {};
-				code_slot = "" + code_slot;
-				if (!code_list[code_slot]) {
-					var filename = code_slot;
-					code_slot = find_code_slot(code_list, filename);
-				}
+				// Load user code
+				var code = null,
+					code_slot = data.code_slot,
+					code_version = 0;
 				if (code_slot) {
-					code_version = code_list[code_slot] ? code_list[code_slot][1] : 0;
-					var code_entity = await get("IE_USERCODE-" + get_id(owner) + "-" + code_slot);
-					if (code_entity) code = code_entity.info.code;
+					var code_list = gf(user_data, "code_list", {}) || {};
+					code_slot = "" + code_slot;
+					if (!code_list[code_slot]) {
+						var filename = code_slot;
+						code_slot = find_code_slot(code_list, filename);
+					}
+					if (code_slot) {
+						code_version = code_list[code_slot] ? code_list[code_slot][1] : 0;
+						var code_entity = await get("IE_USERCODE-" + get_id(owner) + "-" + code_slot);
+						check_character_login(attempt, "CODE loaded");
+						if (code_entity) code = code_entity.info.code;
+					}
 				}
-			}
 
-			// DRM check
-			var drm = false,
-				drm_fail = false;
-			if (owner.created > new Date(2019, 1, 1) && !gf(owner, "legacy_override")) drm = true;
-			if (gf(owner, "drm_fail_pid", "not") === entity.pid) drm_fail = true;
+				// DRM check
+				var drm = false,
+					drm_fail = false;
+				if (owner.created > new Date(2019, 1, 1) && !gf(owner, "legacy_override")) drm = true;
+				if (gf(owner, "drm_fail_pid", "not") === entity.pid) drm_fail = true;
 
-			// Build player from entity (following qwazy pattern)
-			server_log("start_character: " + JSON.stringify(entity.name), 1);
-			var player = { u: true, is_player: true, humanoid: true, secret: socket.observer_secret };
-			for (var prop in entity) {
-				player[prop] = entity[prop];
-			}
-			for (var prop in entity.info) {
-				player[prop] = entity.info[prop];
-			}
-			player.id = player.name;
-			player.pid = entity.pid || owner.pid;
-			player.drm = drm;
-			player.drm_fail = drm_fail;
-			player.created = entity.created ? entity.created.getTime() : 0;
-			if (!player.slots) player.slots = {};
-			if (!player.cx) player.cx = {};
-			if (!player.s) player.s = {};
-			if (!player.c) player.c = {};
-			if (!player.q) player.q = {};
-			if (!player.p) player.p = { dt: {} };
-			if (!player.p.dt) player.p.dt = {};
-			if (guild) player.guild = guild_to_info(guild);
-			if (ip_info && ip_info.exception) player.ipx = ip_info.info.limit;
-			player.cash = owner.cash;
-			player.verified = gf(owner, "verified", 0);
-
-			if (!instances[player.map] || !instances[player.map].allow || instances[player.map].mount) {
-				var place = (G.maps[player.map] && G.maps[player.map].on_exit) ||
-					(G.maps[B.start_map] && G.maps[B.start_map].on_exit) || ["main", 0];
-				player.map = player.in = place[0];
-				player.x = G.maps[player.map].spawns[place[1]][0];
-				player.y = G.maps[player.map].spawns[place[1]][1];
-			} else {
-				player.in = player.map;
-			}
-			player.owner = data.user;
-			player.auth = data.user + "-" + data.auth;
-			player.mainframe = R.mainframe === true;
-			player.last_sync = new Date();
-			player.socket = socket;
-			player.max_stats = stats;
-
-			if (data.bot == keys.BOT_MASTER) {
-				player.bot = true;
-				player.afk = "bot";
-			}
-			if (data.no_html) {
-				player.afk = "code";
-				try {
-					player.controller = (name_to_id[data.no_html] && data.no_html) || "";
-				} catch (e) {
-					player.controller = "";
+				// Build player from entity (following qwazy pattern)
+				server_log("start_character: " + JSON.stringify(entity.name), 1);
+				var player = { u: true, is_player: true, humanoid: true, secret: attempt.secret };
+				for (var prop in entity) {
+					player[prop] = entity[prop];
 				}
-			}
-			if (!player.afk) {
-				player.afk = true;
-			}
-			if (gameplay == "test") {
-				player.name += parseInt(Math.random() * 10000);
-			}
-			player.real_id = data.character;
-			player.id = player.name;
-
-			player.total_ips = 1;
-			player.width = 26;
-			player.height = 36;
-			player.damage_type = G.classes[player.type].damage_type;
-			player.xrange = 25;
-			player.red_zone = 0;
-			player.targets = player.targets_p = player.targets_m = player.targets_u = 0;
-			player.cid = 1;
-			player.hits = 0;
-			player.kills = 0;
-			player.m = 0; // map number
-			/* party variables*/
-			player.pdps = 0;
-			player.party_length = 1;
-			player.party_luck = 0;
-			player.party_xp = 0;
-			player.party_gold = 0;
-			player.share = 0.1;
-			player.cx = player.cx || {};
-			if (!player.s) {
-				player.s = {};
-			}
-			player.t = { mdamage: 0, cgold: 0, dgold: 0, xp: 0, start: new Date() };
-			player.hitchhikers = []; // socket events to be registered after a resend
-			player.last = { attack: future_ms(-1200), attacked: really_old };
-			player.bets = {};
-			player.base = dbase;
-			player.age = parseInt(ceil(hsince(new Date(player.created)) / 24.0));
-			// player.vision=[round((data.width/2)/data.scale)+B.ext_vision,round((data.height/2)/data.scale)+B.ext_vision];
-			// player.vision[0]=min(1000,player.vision[0]);
-			// player.vision[1]=min(700,player.vision[1]);
-			player.vision = B.vision;
-
-			if (!player.verified) {
-				player.s.notverified = { ms: 30 * 60 * 1000 };
-			} else if (player.s.notverified) {
-				player.s.notverified = { ms: 100 };
-			}
-
-			if (player.guild) {
-				console.log(player.guild);
-				player.guild = player.guild.short;
-			}
-
-			if (gameplay == "hardcore") {
-				reset_player(player);
-			} //  || gameplay=="test"
-
-			init_player(player);
-			if (!observers[socket.id]) {
-				// observer hang up before "auth"
-				server_log("Abrupt stop for " + (entity.info.name || entity.name), 1);
-				if (gameplay != "hardcore" && gameplay != "test") {
-					dc_players[player.real_id] = player;
+				for (var prop in entity.info) {
+					player[prop] = entity.info[prop];
 				}
-				sync_loop();
-				return;
-			}
-			try {
-				delete_observer(socket);
-			} catch (e) {}
+				player.id = player.name;
+				player.pid = entity.pid || owner.pid;
+				player.drm = drm;
+				player.drm_fail = drm_fail;
+				player.created = entity.created ? entity.created.getTime() : 0;
+				if (!player.slots) player.slots = {};
+				if (!player.cx) player.cx = {};
+				if (!player.s) player.s = {};
+				if (!player.c) player.c = {};
+				if (!player.q) player.q = {};
+				if (!player.p) player.p = { dt: {} };
+				if (!player.p.dt) player.p.dt = {};
+				if (guild) player.guild = guild_to_info(guild);
+				if (ip_info && ip_info.exception) player.ipx = ip_info.info.limit;
+				player.cash = owner.cash;
+				player.verified = gf(owner, "verified", 0);
+				var recovered_generated_map = generated_recover_login(player);
 
-			players[socket.id] = player;
-			resume_instance(instances[player.in]);
-			instances[player.in].players[player.id] = player;
-			pmap_add(player);
+				if (
+					generated_maps[player.map] ||
+					!instances[player.map] ||
+					!instances[player.map].allow ||
+					instances[player.map].mount
+				) {
+					var place = (G.maps[player.map] && G.maps[player.map].on_exit) ||
+						(G.maps[B.start_map] && G.maps[B.start_map].on_exit) || ["main", 0];
+					player.map = player.in = place[0];
+					player.x = G.maps[player.map].spawns[place[1]][0];
+					player.y = G.maps[player.map].spawns[place[1]][1];
+				} else {
+					player.in = player.map;
+				}
+				player.owner = data.user;
+				player.auth = data.user + "-" + data.auth;
+				player.mainframe = R.mainframe === true;
+				player.last_sync = new Date();
+				player.socket = socket;
+				player.max_stats = stats;
 
-			name_to_id[player.name] = socket.id;
-			id_to_id[player.id] = socket.id;
+				if (data.bot == keys.BOT_MASTER) {
+					player.bot = true;
+					player.afk = "bot";
+				}
+				if (data.no_html) {
+					player.afk = "code";
+					try {
+						player.controller = (name_to_id[data.no_html] && data.no_html) || "";
+					} catch (e) {
+						player.controller = "";
+					}
+				}
+				if (!player.afk) {
+					player.afk = true;
+				}
+				if (gameplay == "test") {
+					player.name += parseInt(Math.random() * 10000);
+				}
+				player.real_id = data.character;
+				player.id = player.name;
 
-			cache_player_items(player);
-			invincible_logic(player);
-			serverhop_logic(player);
-			realmfatigue_logic(player, characters);
-			calculate_player_stats(player);
+				player.total_ips = 1;
+				player.width = 26;
+				player.height = 36;
+				player.damage_type = G.classes[player.type].damage_type;
+				player.xrange = 25;
+				player.red_zone = 0;
+				player.targets = player.targets_p = player.targets_m = player.targets_u = 0;
+				player.cid = 1;
+				player.hits = 0;
+				player.kills = 0;
+				player.m = 0; // map number
+				/* party variables*/
+				player.pdps = 0;
+				player.party_length = 1;
+				player.party_luck = 0;
+				player.party_xp = 0;
+				player.party_gold = 0;
+				player.share = 0.1;
+				player.cx = player.cx || {};
+				if (!player.s) {
+					player.s = {};
+				}
+				player.t = { mdamage: 0, cgold: 0, dgold: 0, xp: 0, start: new Date() };
+				player.hitchhikers = []; // socket events to be registered after a resend
+				player.last = { attack: future_ms(-1200), attacked: really_old };
+				player.bets = {};
+				player.base = dbase;
+				player.age = parseInt(ceil(hsince(new Date(player.created)) / 24.0));
+				// player.vision=[round((data.width/2)/data.scale)+B.ext_vision,round((data.height/2)/data.scale)+B.ext_vision];
+				// player.vision[0]=min(1000,player.vision[0]);
+				// player.vision[1]=min(700,player.vision[1]);
+				player.vision = B.vision;
 
-			if (data.epl == "mas" && data.receipt) {
-				player.platform = "mas";
-				verify_mas_receipt(player, data.receipt);
-			} else if (data.epl == "steam" && data.ticket) {
-				player.platform = "steam";
-				verify_steam_ticket(player, data.ticket);
-			} else if (data.epl == "tauri_steam") {
-				try {
-					await verify_tauri_steam_auth(player, owner, entity, data, socket);
-				} catch (e) {
+				if (!player.verified) {
+					player.s.notverified = { ms: 30 * 60 * 1000 };
+				} else if (player.s.notverified) {
+					player.s.notverified = { ms: 100 };
+				}
+
+				if (player.guild) {
+					console.log(player.guild);
+					player.guild = player.guild.short;
+				}
+
+				if (gameplay == "hardcore") {
+					reset_player(player);
+				} //  || gameplay=="test"
+
+				check_character_login(attempt, "initialize");
+				init_player(player);
+				check_character_login(attempt, "platform");
+				if (data.epl == "mas" && data.receipt) {
+					player.platform = "mas";
+					verify_mas_receipt(player, data.receipt);
+				} else if (data.epl == "steam" && data.ticket) {
+					player.platform = "steam";
+					if (verify_steam_ticket(player, data.ticket)) {
+						if (await persist_tauri_steam_install(owner, entity, data.auth, player.p.steam_id))
+							player.pid = player.p.steam_id;
+						else player.s.authfail = { ms: 900000 };
+					} else {
+						player.platform = "web";
+					}
+				} else if (data.epl == "tauri_steam") {
+					try {
+						await verify_tauri_steam_auth(player, owner, entity, data, socket);
+					} catch (e) {
+						player.platform = "web";
+						console.error("#A Tauri Steam authentication unavailable: " + player.name);
+						socket.emit("tauri_auth_error", {
+							reason: "steam_auth_failed",
+							stage: "verify_ticket",
+							ticket_received: !!data.ticket,
+						});
+					}
+				} else {
 					player.platform = "web";
-					console.error("#A Tauri Steam authentication unavailable: " + player.name);
-					socket.emit("tauri_auth_error", {
-						reason: "steam_auth_failed",
-						stage: "verify_ticket",
-						ticket_received: !!data.ticket,
+					if (player.pid) {
+						player.auth_id = player.pid;
+					} // part of the new restriction system [02/05/19]
+				}
+
+				check_character_login(attempt, "platform complete");
+				if (mode.drm_check) {
+					if (player.drm && !player.auth_id) {
+						player.s.authfail = { ms: 900000 * 1000 };
+					} else if (player.s.authfail) {
+						player.s.authfail = { ms: 100 };
+					}
+				}
+
+				check_character_login(attempt, "encouragement");
+				if (!(await encouragement_login(player, R.previous_online))) {
+					socket.emit("game_error", localization.message("server.game_error.characters_unconfirmed"));
+					cancel_character_login(attempt);
+					return;
+				}
+				check_character_login(attempt, "register");
+				if (Object.keys(players).length >= max_players) {
+					socket.emit("game_error", localization.message("server.game_error.capacity", { count: max_players }));
+					return;
+				}
+
+				try {
+					delete_observer(socket);
+				} catch (e) {}
+
+				attempt.registered = true;
+				attempt.player = player;
+				players[socket.id] = player;
+				resume_instance(instances[player.in]);
+				instances[player.in].players[player.id] = player;
+				pmap_add(player);
+
+				name_to_id[player.name] = socket.id;
+				id_to_id[player.id] = socket.id;
+				for (var current of Object.values(players)) {
+					if (encouragement_identity(current).key === encouragement_identity(player).key)
+						encouragement_update(current, true);
+				}
+
+				cache_player_items(player);
+				invincible_logic(player);
+				serverhop_logic(player);
+				realmfatigue_logic(player, characters);
+				calculate_player_stats(player);
+				if (recovered_generated_map) generated_restore_health(player);
+				try {
+					tavern_poker_login(player);
+				} catch (e) {
+					log_trace("#X poker login", e);
+				}
+
+				if (!is_player_allowed(player)) {
+					socket.emit("disconnect_reason", "limits");
+					socket.disconnect();
+				} else {
+					server_information.remember(player);
+					var cdata = player_to_client(player);
+					player.ipass = cdata.ipass = randomStr(12);
+					player.last_ipass = new Date();
+					player.last.attack = future_ms(-10000);
+					player.last.transport = future_ms(-10000);
+					cdata.home = player.p.home;
+					cdata.friends = player.friends;
+					cdata.acx = player.p.acx;
+					cdata.xcx = player.p.xcx;
+					cdata.info = instances[player.in].info;
+					cdata.base_gold = D.base_gold;
+					broadcast_e(true);
+					cdata.s_info = E;
+					if (S.blessed_minutes) {
+						cdata.blessed_by = S.blessed_by;
+						cdata.blessed_minutes = S.blessed_minutes;
+						player.s.patronsgrace = { ms: G.conditions.patronsgrace.duration, f: S.blessed_by };
+					}
+					if (code) {
+						cdata.code = code;
+						cdata.code_slot = code_slot;
+						cdata.code_version = code_version;
+					}
+					cdata.entities = send_all_xy(player, { raw: true });
+					if (players[socket.id] !== player || player.dc || !socket.connected) return;
+					socket.emit("start", cdata);
+					if (!gf(owner, "tracktrix_mail_sent", false))
+						send_tracktrix_mail(owner, player.name)
+							.then(function (count) {
+								if (count === undefined) return;
+								for (var recipient of Object.values(players))
+									if (recipient.owner === player.owner && !recipient.dc && !recipient.socket.disconnected)
+										recipient.socket.emit("game_response", { response: "mail_received", count: count });
+							})
+							.catch(function (e) {
+								log_trace("Tracktrix mail", e);
+							});
+					if (entity.friends && !entity.private) {
+						setTimeout(function () {
+							notify_friends(entity, server_regions[region] + " " + server_name).catch(console.error);
+						}, 0);
+					}
+					add_event(entity, "start", ["activity"], {
+						info: {
+							message: (entity.info.name || entity.name) + " [LV." + entity.level + "] logged in",
+							server: server_id,
+						},
 					});
+					total_players++;
 				}
-			} else {
-				player.platform = "web";
-				if (player.pid) {
-					player.auth_id = player.pid;
-				} // part of the new restriction system [02/05/19]
-			}
-
-			if (mode.drm_check) {
-				if (player.drm && !player.auth_id) {
-					player.s.authfail = { ms: 900000 * 1000 };
-				} else if (player.s.authfail) {
-					player.s.authfail = { ms: 100 };
+			} catch (e) {
+				// Keep call sites, without logging auth payloads or error messages containing credentials.
+				var trace = e && typeof e.stack === "string" ? "\n" + e.stack.split("\n").slice(1, 7).join("\n") : "";
+				server_log("#X Login failed: " + attempt.id + " at " + attempt.stage + trace, 1);
+				if (socket.connected) {
+					try {
+						socket.emit("game_error", "ERROR!");
+					} catch (emit_error) {}
 				}
-			}
-
-			if (!is_player_allowed(player)) {
-				socket.emit("disconnect_reason", "limits");
-				socket.disconnect();
-			} else {
-				var cdata = player_to_client(player);
-				player.ipass = cdata.ipass = randomStr(12);
-				player.last_ipass = new Date();
-				player.last.attack = future_ms(-10000);
-				player.last.transport = future_ms(-10000);
-				cdata.home = player.p.home;
-				cdata.friends = player.friends;
-				cdata.acx = player.p.acx;
-				cdata.xcx = player.p.xcx;
-				cdata.info = instances[player.in].info;
-				cdata.base_gold = D.base_gold;
-				broadcast_e(true);
-				cdata.s_info = E;
-				if (S.blessed_minutes) {
-					cdata.blessed_by = S.blessed_by;
-					cdata.blessed_minutes = S.blessed_minutes;
-					player.s.patronsgrace = { ms: G.conditions.patronsgrace.duration, f: S.blessed_by };
+				cancel_character_login(attempt);
+			} finally {
+				attempt.claiming = false;
+				if (attempt.registered) finish_character_login(attempt);
+				else {
+					cancel_character_login(attempt);
+					await release_character_login(attempt);
 				}
-				if (code) {
-					cdata.code = code;
-					cdata.code_slot = code_slot;
-					cdata.code_version = code_version;
-				}
-				cdata.entities = send_all_xy(player, { raw: true });
-				socket.emit("start", cdata);
-				if (entity.friends && !entity.private) {
-					setTimeout(function () {
-						notify_friends(entity, server_regions[region] + " " + server_name).catch(console.error);
-					}, 0);
-				}
-				add_event(entity, "start", ["activity"], {
-					info: {
-						message: (entity.info.name || entity.name) + " [LV." + entity.level + "] logged in",
-						server: server_id,
-					},
-				});
-				total_players++;
 			}
 		});
 		socket.on("use", function (data) {
@@ -10996,12 +11506,22 @@ function init_socket_io(socket_server) {
 				}
 				player.last.potion = future_ms(4000);
 				if (data.item == "hp") {
-					player.hp = Math.min(player.hp + 50, player.max_hp);
-					disappearing_text(socket, player, "+50", { color: "green", xy: 1, s: "hp", nohp: 1 });
+					player.hp = Math.min(player.hp + G.skills.regen_hp.output, player.max_hp);
+					disappearing_text(socket, player, "+" + G.skills.regen_hp.output, {
+						color: "green",
+						xy: 1,
+						s: "hp",
+						nohp: 1,
+					});
 				}
 				if (data.item == "mp") {
-					player.mp = Math.min(player.mp + 100, player.max_mp);
-					disappearing_text(socket, player, "+100", { color: "#006AA9", xy: 1, s: "mp", nomp: 1 });
+					player.mp = Math.min(player.mp + G.skills.regen_mp.output, player.max_mp);
+					disappearing_text(socket, player, "+" + G.skills.regen_mp.output, {
+						color: "#006AA9",
+						xy: 1,
+						s: "mp",
+						nomp: 1,
+					});
 				}
 				// calculate_player_stats(player); [22/11/16]
 				player.cid++;
@@ -11191,10 +11711,10 @@ function init_socket_io(socket_server) {
 			if (data.event == "challenge") {
 				var invited = players[name_to_id[data.id || data.name]];
 				if (!invited || invited.id == player.id) {
-					return duel_failure("invalid", "Invalid");
+					return duel_failure("invalid", localization.message("server.game_log.invalid", {}));
 				}
 				if (invited.duel || player.duel) {
-					return duel_failure("already_dueling", "Already dueling");
+					return duel_failure("already_dueling", localization.message("server.game_log.already_dueling", {}));
 				}
 				invited.socket.emit("duel", { event: "chellenge", name: player.name });
 				if (data.request_id)
@@ -11205,13 +11725,16 @@ function init_socket_io(socket_server) {
 			} else if (data.event == "accept") {
 				var challenger = players[name_to_id[data.id || data.name]];
 				if (!challenger || challenges[challenger.name] != player.name) {
-					return duel_failure("challenge_expired", "Challenge expired");
+					return duel_failure("challenge_expired", localization.message("server.game_log.challenge_expired", {}));
 				}
 				if (challenger.duel || player.duel) {
-					return duel_failure("already_dueling", "Already dueling");
+					return duel_failure("already_dueling", localization.message("server.game_log.already_dueling", {}));
 				}
 				if (is_in_pvp(challenger) || is_in_pvp(player)) {
-					return duel_failure("pvp_zone", "Can't start a duel if any of the parties are already in a pvp zone");
+					return duel_failure(
+						"pvp_zone",
+						localization.message("server.game_log.can_t_start_a_duel_if_any_of_the_parties_are_already", {}),
+					);
 				}
 				delete challenges[challenger.name];
 				challenger.socket.emit("game_response", { response: "challenge_accepted", name: player.name });
@@ -11292,19 +11815,22 @@ function init_socket_io(socket_server) {
 				duel_completion("accepted", { id: name, challenger: challenger.name, vs: player.name });
 			} else if (data.event == "enter") {
 				if (is_in_pvp(player)) {
-					return duel_failure("pvp_zone", "Can't join the duel from a pvp zone!");
+					return duel_failure(
+						"pvp_zone",
+						localization.message("server.game_log.can_t_join_the_duel_from_a_pvp_zone", {}),
+					);
 				}
 				if (player.duel) {
-					return duel_failure("already_dueling", "Already in a duel!");
+					return duel_failure("already_dueling", localization.message("server.game_log.already_in_a_duel", {}));
 				}
 				if (!E.duels || !E.duels[data.id] || !instances[data.id]) {
-					return duel_failure("duel_expired", "Duel expired");
+					return duel_failure("duel_expired", localization.message("server.game_log.duel_expired", {}));
 				}
 				if (E.duels[data.id].active) {
-					return duel_failure("duel_started", "Duel already started");
+					return duel_failure("duel_started", localization.message("server.game_log.duel_already_started", {}));
 				}
 				if (!(E.duels[data.id].a.includes(player.name) || E.duels[data.id].b.includes(player.name))) {
-					return duel_failure("not_your_duel", "Not your duel");
+					return duel_failure("not_your_duel", localization.message("server.game_log.not_your_duel", {}));
 				}
 				clean_slate(player);
 
@@ -11327,7 +11853,11 @@ function init_socket_io(socket_server) {
 				player.s.stunned = { ms: 120000 };
 
 				resend(player, "u+cid");
-				instance_emit(data.id, "game_chat", { message: player.name + " joined the duel!" });
+				instance_emit(
+					data.id,
+					"game_chat",
+					localization.message("server.game_chat.joined_the_duel", { player: String(player.name) }),
+				);
 				duel_completion("entered", { id: data.id, team: player.team });
 			}
 		});
@@ -11350,7 +11880,10 @@ function init_socket_io(socket_server) {
 				}
 				// if(invited.party) { socket.emit("game_log",invited.name+" is already partying"); return; }
 				invited.socket.emit("invite", { name: player.name });
-				socket.emit("game_log", "Invited " + invited.name + " to party");
+				socket.emit(
+					"game_log",
+					localization.message("server.game_log.invited_to_party", { invited: String(invited.name) }),
+				);
 				if (!invitations[player.name]) {
 					invitations[player.name] = {};
 				}
@@ -11367,7 +11900,10 @@ function init_socket_io(socket_server) {
 				}
 				// if(!invited.party) { socket.emit("game_log",invited.name+" isn't partying"); return; }
 				invited.socket.emit("request", { name: player.name });
-				socket.emit("game_log", "Requested to join " + invited.name + "'s party");
+				socket.emit(
+					"game_log",
+					localization.message("server.game_log.requested_to_join_s_party", { invited: String(invited.name) }),
+				);
 				if (!requests[player.name]) {
 					requests[player.name] = {};
 				}
@@ -11395,7 +11931,7 @@ function init_socket_io(socket_server) {
 				if (player.party) {
 					leave_party(player.party, player);
 					socket.emit("party_update", {});
-					socket.emit("game_log", "Left your current party");
+					socket.emit("game_log", localization.message("server.game_log.left_your_current_party", {}));
 				}
 				invitations[inviter.name][player.id] = 0;
 				if (!inviter.party) {
@@ -11409,14 +11945,18 @@ function init_socket_io(socket_server) {
 				}
 				player.party = inviter.party;
 				parties[inviter.party].push(player.name);
-				party_emit(player.party, "party_update", {
-					list: parties[inviter.party],
-					party: party_to_client(inviter.party),
-					message:
-						player.name +
-						" joined the party" +
-						((inviter.party != inviter.name && " with " + inviter.name + "'s invite") || ""),
-				});
+				party_emit(
+					player.party,
+					"party_update",
+					localization.message(
+						inviter.party != inviter.name ? "server.party.joined_with_invite" : "server.party.joined",
+						{ player: player.name, inviter: inviter.name },
+						{
+							list: parties[inviter.party],
+							party: party_to_client(inviter.party),
+						},
+					),
+				);
 				resend(player, "nc+u+cid");
 				delete requests[player.name];
 				delete requests[inviter.name]; // optional
@@ -11439,7 +11979,7 @@ function init_socket_io(socket_server) {
 				if (requester.party) {
 					leave_party(requester.party, requester);
 					requester.socket.emit("party_update", {});
-					requester.socket.emit("game_log", "Left the party");
+					requester.socket.emit("game_log", localization.message("server.game_log.left_the_party", {}));
 					if (!players[name_to_id[data.name]]) {
 						return fail_response("player_gone", { name: data.name });
 					}
@@ -11453,11 +11993,18 @@ function init_socket_io(socket_server) {
 				}
 				requester.party = player.party;
 				parties[player.party].push(requester.name);
-				party_emit(requester.party, "party_update", {
-					list: parties[player.party],
-					party: party_to_client(player.party),
-					message: requester.name + " joined the party",
-				});
+				party_emit(
+					requester.party,
+					"party_update",
+					localization.message(
+						"server.party.joined",
+						{ player: requester.name },
+						{
+							list: parties[player.party],
+							party: party_to_client(player.party),
+						},
+					),
+				);
 				resend(requester, "nc+u+cid");
 				delete requests[requester.name];
 				delete requests[player.name]; // optional
@@ -11469,7 +12016,7 @@ function init_socket_io(socket_server) {
 				}
 				leave_party(player.party, player);
 				socket.emit("party_update", {});
-				socket.emit("game_log", "Left the party");
+				socket.emit("game_log", localization.message("server.game_log.left_the_party", {}));
 				resend(player, "nc+u+cid");
 			}
 			if (data.event == "kick") {
@@ -11490,10 +12037,17 @@ function init_socket_io(socket_server) {
 				}
 				leave_party(player.party, kicked);
 				if (player.party) {
-					party_emit(player.party, "game_log", player.name + " kicked " + kicked.name);
+					party_emit(
+						player.party,
+						"game_log",
+						localization.message("server.game_log.kicked", {
+							player: String(player.name),
+							kicked: String(kicked.name),
+						}),
+					);
 				}
 				kicked.socket.emit("party_update", {});
-				kicked.socket.emit("game_log", "You've been removed from the party");
+				kicked.socket.emit("game_log", localization.message("server.game_log.you_ve_been_removed_from_the_party", {}));
 				resend(kicked, "nc+u+cid");
 			}
 			success_response({});
@@ -11649,7 +12203,7 @@ function init_socket_io(socket_server) {
 		});
 		socket.on("bet", function (data) {
 			var request_id = data.request_id;
-			var bet_place = data.type == "slots" ? "slots" : "dice";
+			var bet_place = data.type == "slots" ? "slots" : data.type == "wheel" ? "wheel" : "dice";
 			function bet_failure(reason) {
 				if (request_id) return fail_response(reason, bet_place, { request_id: request_id });
 				return socket.emit("game_response", reason);
@@ -11666,6 +12220,12 @@ function init_socket_io(socket_server) {
 			if (player.s.xshotted) {
 				return bet_failure("bet_xshot");
 			}
+			if (tavern_closing()) {
+				return bet_failure("tavern_closing");
+			}
+			if (data.type == "wheel") {
+				return tavern_wheel_bet(player, data, bet_failure, request_id);
+			}
 			if (data.type == "roulette") {
 				if (!Dev) {
 					return;
@@ -11679,20 +12239,26 @@ function init_socket_io(socket_server) {
 					return;
 				}
 				if (tavern.roulette.state != "bets") {
-					socket.emit("game_log", "Not taking bets yet!");
+					socket.emit("game_log", localization.message("server.game_log.not_taking_bets_yet", {}));
 					return;
 				}
 				if (Object.keys(player.bets).length >= 5) {
-					socket.emit("game_log", "You already have 5 active bets");
+					socket.emit("game_log", localization.message("server.game_log.you_already_have_5_active_bets", {}));
 					return;
 				}
 				if (player.gold < data.gold) {
-					socket.emit("game_log", "Not enough gold");
+					socket.emit("game_log", localization.message("server.game_log.not_enough_gold", {}));
 					return;
 				}
 
-				socket.emit("game_log", { message: "Bet accepted on " + data.odds, color: "white" });
-				socket.emit("game_log", { message: to_pretty_num(data.gold) + " gold", color: "gray" });
+				socket.emit(
+					"game_log",
+					localization.message("server.game_log.bet_accepted_on", { odds: String(data.odds) }, { color: "white" }),
+				);
+				socket.emit(
+					"game_log",
+					localization.message("server.game_log.gold", { amount: String(to_pretty_num(data.gold)) }, { color: "gray" }),
+				);
 
 				var rid = randomStr(10);
 				player.gold -= data.gold;
@@ -11747,8 +12313,18 @@ function init_socket_io(socket_server) {
 				}
 				// if(Object.keys(player.bets).length>=5) return socket.emit("game_response","tavern_too_many_bets");
 				// socket.emit("game_log",{"message":"Bet accepted on "+num.toFixed(2)+" "+dir.toUpperCase(),"color":"white"});
-				socket.emit("game_log", { message: "Num: " + num.toFixed(2) + " " + dir.toUpperCase(), color: "white" });
-				socket.emit("game_log", { message: "Bet: " + to_pretty_num(gold) + " gold", color: "gray" });
+				socket.emit(
+					"game_log",
+					localization.message(
+						"server.game_log.num",
+						{ value: String(num.toFixed(2)), value2: String(dir.toUpperCase()) },
+						{ color: "white" },
+					),
+				);
+				socket.emit(
+					"game_log",
+					localization.message("server.game_log.bet_gold", { amount: String(to_pretty_num(gold)) }, { color: "gray" }),
+				);
 
 				var rid = randomStr(10);
 				player.gold -= gold;
@@ -11777,31 +12353,21 @@ function init_socket_io(socket_server) {
 				resend(player, "reopen+nc");
 			}
 			if (data.type == "slots") {
-				if (request_id && player.q.slots) {
-					return bet_failure("in_progress");
-				}
-				var gold = 1000000;
-				if (gold > player.gold) {
-					return bet_failure("gold_not_enough");
-				}
-				player.gold -= gold;
-				S.gold += gold;
-				player.q.slots = { ms: 3000 };
-				if (request_id) {
-					player.q.slots.request_id = request_id;
-					player.q.slots.cost = gold;
-				}
-				xy_emit(player, "ui", { type: "slots", player: player.name });
-				socket.emit("game_response", { response: "gold_use", gold: gold, game: data.type });
-				resend(player, "u+cid+reopen+nc");
+				return tavern_slots_bet(player, data, bet_failure, request_id);
 			}
 		});
 		socket.on("tavern", function (data) {
 			if (data.event == "info") {
 				var info = { event: "info", edge: house_edge(), max: parseInt((S.gold - house_debt()) * 0.4) };
+				if (data.game) info.game = data.game;
 				if (data.request_id) success_response("data", "tavern", Object.assign({ request_id: data.request_id }, info));
 				else socket.emit("tavern", info);
 			}
+		});
+		socket.on("poker", function (data) {
+			var player = players[socket.id];
+			if (!player || !data) return;
+			tavern_poker_request(player, data);
 		});
 		socket.on("play", function (data) {});
 		socket.on("pet", function (data) {
@@ -11898,7 +12464,11 @@ function init_socket_io(socket_server) {
 			if (!player.rip) {
 				rip(player);
 			}
-			disappearing_text(player.socket, player, "SEPPUKU", { xy: 1, size: "huge", color: "#6F76A6" });
+			disappearing_text(player.socket, player, localization.message("server.floating.seppuku", {}), {
+				xy: 1,
+				size: "huge",
+				color: "#6F76A6",
+			});
 			resend(player, "u+cid");
 		});
 		socket.on("skin", function (data) {
@@ -11921,6 +12491,7 @@ function init_socket_io(socket_server) {
 			server_log("requested_ack" + JSON.stringify(data), 1);
 		});
 		socket.on("disconnect", function () {
+			if (socket.login_attempt) cancel_character_login(socket.login_attempt);
 			//#IMPORTANT: disconnect exceptions are fatal [07/08/16]
 			// console.log("disconnect!");
 			var player = players[socket.id];
@@ -11928,10 +12499,16 @@ function init_socket_io(socket_server) {
 			try {
 				delete sockets[socket.id];
 			} catch (e) {}
-			if (player) {
+			if (player && !player.dc) {
 				player.dc = true;
+				if (gameplay != "hardcore" && gameplay != "test") dc_players[player.real_id] = player;
 				try {
-					defeat_player(player);
+					server_information.remember(player);
+				} catch (e) {
+					log_trace("#X DC information", e);
+				}
+				try {
+					if (!generated_entry(player)) defeat_player(player);
 				} catch (e) {
 					log_trace("#X DCERRORPVP", e);
 				}
@@ -11968,6 +12545,9 @@ function init_socket_io(socket_server) {
 						player.gold += player.bets[bid].gold;
 					}
 					player.bets = {};
+					tavern_wheel_disconnect(player);
+					tavern_slots_disconnect(player);
+					tavern_poker_disconnect(player);
 				} catch (e) {
 					log_trace("#X DCERRORBETS", e);
 				}
@@ -11982,8 +12562,9 @@ function init_socket_io(socket_server) {
 
 				try {
 					delete players[socket.id];
-					delete instances[player.in].players[player.id];
-					if (instances[player.in].solo == player.id) {
+					if (instances[player.in] && instances[player.in].players[player.id] === player)
+						delete instances[player.in].players[player.id];
+					if (instances[player.in] && instances[player.in].solo == player.id) {
 						destroy_instance(player.in);
 					}
 					pmap_remove(player);
@@ -11992,7 +12573,7 @@ function init_socket_io(socket_server) {
 				}
 
 				try {
-					restore_state(player, true);
+					if (!generated_disconnect(player)) restore_state(player, true);
 				} catch (e) {
 					log_trace("#X DCERRORrestore", e);
 				}
@@ -12084,7 +12665,10 @@ function init_socket_io(socket_server) {
 				}
 				if (player.map != "cyberland" || player.rip) {
 					if (data.request_id) return fail_response("not_connected", "mainframe", mainframe_result);
-					return player.socket.emit("game_log", "Not connected to the mainframe");
+					return player.socket.emit(
+						"game_log",
+						localization.message("server.game_log.not_connected_to_the_mainframe", {}),
+					);
 				}
 				if (data.command == "hello") {
 					mainframe_reply("hi");
@@ -12159,10 +12743,14 @@ function add_pdps(player, target, points) {
 	// console.log([player.pdps,pdps_mult]);
 }
 
-function add_coop_points(m, attacker, mnet) {
+function add_coop_points(m, attacker, mnet, contribution) {
+	if (is_cavalry(attacker)) attacker = cavalry_reward_player(attacker, m);
+	if (!attacker) return;
 	if (!m) {
 		return;
 	}
+	encouragement_points(m, attacker, contribution === undefined ? mnet : contribution);
+	if (!m.cooperative) return;
 	if (m["1hp"]) {
 		mnet = 1;
 	}
@@ -12447,7 +13035,20 @@ function new_monster(instance, map_def, args) {
 		while (monster.level < args.last_state.level) {
 			level_monster(monster, { silent: true });
 		}
-		["hp", "level", "s", "temp", "points", "m", "extra_gold", "outgoing", "id"].forEach(function (p) {
+		[
+			"hp",
+			"level",
+			"s",
+			"temp",
+			"rime_shell",
+			"points",
+			"contributions",
+			"contribution_total",
+			"m",
+			"extra_gold",
+			"outgoing",
+			"id",
+		].forEach(function (p) {
 			if (args.last_state[p]) {
 				monster[p] = args.last_state[p];
 			}
@@ -12455,7 +13056,7 @@ function new_monster(instance, map_def, args) {
 		calculate_monster_stats(monster);
 	}
 	if (args.before_respawn) {
-		while (monster.level < args.before_respawn.level / 2) {
+		while (monster.level < (args.before_respawn.cavalry_cleared ? 1 : args.before_respawn.level / 2)) {
 			level_monster(monster, { silent: true });
 		}
 		calculate_monster_stats(monster);
@@ -12474,17 +13075,23 @@ function new_monster(instance, map_def, args) {
 		new_monster(instance, map_def, { temp: 1 });
 	}
 	if (!args.last_state && monster_def.announce && server.live) {
-		broadcast("server_message", {
-			color: monster_def.announce,
-			message: monster_def.name + " spawned in " + G.maps[monster.map].name + "!",
-			discord: "orange",
-		});
+		broadcast(
+			"server_message",
+			localization.message(
+				"server.server_message.spawned_in",
+				{ monster_def: String(monster_def.name), map: String(G.maps[monster.map].name) },
+				{ color: monster_def.announce, discord: "orange" },
+			),
+		);
 		if (monster.cooperative) {
-			broadcast("server_message", {
-				color: monster_def.announce,
-				message: "Join the fight against " + monster_def.name + "!",
-				event: true,
-			});
+			broadcast(
+				"server_message",
+				localization.message(
+					"server.server_message.join_the_fight_against",
+					{ monster_def: String(monster_def.name) },
+					{ color: monster_def.announce, event: true },
+				),
+			);
 		}
 	}
 	if (Object.keys(monster.s).length) {
@@ -12507,6 +13114,7 @@ function new_monster_f(instance, map_def, args) {
 }
 
 function start_moving_element(monster) {
+	if (instance_is_frozen(monster)) return;
 	// var last.move=monster.moving&&monster.last.move;
 	if (!monster.moving) {
 		monster.last.move = new Date();
@@ -12704,7 +13312,7 @@ function stop_pursuit(monster, args) {
 				instances[monster.in].monsters[monster.master] &&
 				instances[monster.in].monsters[monster.master].cooperative
 			) {
-				add_coop_points(instances[monster.in].monsters[monster.master], target, max(monster.hp, 300));
+				add_coop_points(instances[monster.in].monsters[monster.master], target, max(monster.hp, 300), 0);
 			}
 		}
 		reduce_targets(target, monster);
@@ -12725,6 +13333,11 @@ function stop_pursuit(monster, args) {
 }
 
 function defeated_by_a_monster(attacker, player) {
+	if (generated_entry(player)) {
+		rip(player);
+		resend(player, "u+cid");
+		return;
+	}
 	var divider = 1;
 	if (is_in_pvp(player) && !(!is_pvp && G.maps[player.map].safe_pvp)) {
 		divider = 10;
@@ -12735,13 +13348,16 @@ function defeated_by_a_monster(attacker, player) {
 		if (player.items[i] && player.items[i].name == "xptome") {
 			lost_xp = floor(lost_xp / 50);
 			consume_one(player, i);
-			player.socket.emit("game_log", { message: "A tome fades away", color: "#B5C09C" });
+			player.socket.emit(
+				"game_log",
+				localization.message("server.game_log.a_tome_fades_away", {}, { color: "#B5C09C" }),
+			);
 			break;
 		}
 	}
 	player.xp -= lost_xp;
 	if (gameplay == "hardcore") {
-		player.socket.emit("game_log", "Lost 1 level");
+		player.socket.emit("game_log", localization.message("server.game_log.lost_1_level", {}));
 	}
 	player.socket.emit("game_response", { response: "defeated_by_a_monster", xp: lost_xp, monster: attacker.type });
 	if (attacker.target) {
@@ -12772,7 +13388,7 @@ function defeated_by_a_monster(attacker, player) {
 }
 
 function can_attack(monster, player) {
-	if (is_disabled(monster)) {
+	if (is_disabled(monster) || monster_abilities.active(monster)) {
 		return false;
 	}
 	if (player == "aggro") {
@@ -12830,7 +13446,7 @@ function rage_logic(instance) {
 }
 
 function update_instance(instance) {
-	if (instance.paused) {
+	if (instance.paused || instance.frozen) {
 		return;
 	}
 	instance.operators = 0;
@@ -12861,6 +13477,8 @@ function update_instance(instance) {
 			change = true;
 		} // better to re-calculate for now, for charge speed changes
 		for (var name in monster.s) {
+			// The cast uses an absolute deadline in monster_abilities.
+			if (name === "rimeshell") continue;
 			var def = G.conditions[name];
 			var ref = monster.s[name];
 			var value = monster.s[name].ms;
@@ -12886,6 +13504,7 @@ function update_instance(instance) {
 					}
 					if (name == "burned") {
 						var damage = ceil(ref.intensity / 5);
+						var contribution = min(monster.hp, damage);
 						//disappearing_text({},monster,"-"+damage,{color:"burn",xy:1});
 						monster.hp = max(0, monster.hp - damage);
 						xy_emit(monster, "hit", {
@@ -12899,9 +13518,8 @@ function update_instance(instance) {
 						var burner = get_player(ref.f);
 						if (burner) {
 							add_pdps(burner, monster, damage);
-							if (monster.cooperative) {
-								add_coop_points(monster, burner, damage);
-							}
+							add_coop_points(monster, burner, damage, contribution);
+							monster_abilities.damage(monster, burner, contribution);
 						}
 						if (monster.hp <= 0) {
 							if (burner) {
@@ -13137,6 +13755,7 @@ function update_instance(instance) {
 		if (change) {
 			calculate_monster_stats(monster);
 		}
+		monster_abilities.tick(monster, events);
 		if (
 			!monster.pet &&
 			!monster.trap &&
@@ -13325,11 +13944,11 @@ function update_instance(instance) {
 			monster.last.move = new Date();
 			xy_u_logic(monster);
 
-			if (monster.moving && monster.attack > 100 && monster.target) {
+			if (!monster.zone_actor && monster.moving && monster.attack > 100 && monster.target) {
 				attack_target_or_move();
 			}
 		} else if (monster.s.sleeping || monster.working) {
-		} else if (can_walk(monster)) {
+		} else if (!monster.zone_actor && can_walk(monster)) {
 			// for the .s.stunned check
 			if (monster.s.magiport) {
 			} else if (monster.target || focus) {
@@ -13477,12 +14096,16 @@ function update_instance(instance) {
 
 	for (var id in instance.players) {
 		var player = instance.players[id];
-		if (!player) {
+		if (!player || player.zone_entering) {
 			continue;
 		}
 		for (var name in player.s) {
 			var def = G.conditions[name];
 			var ref = player.s[name];
+			if (def && def.encouragement) {
+				encouragement_update(player);
+				continue;
+			}
 			if (name == "guardians_oath" && !guardians_oath_source(player)) player.s[name].ms = 0;
 			var value = player.s[name].ms;
 			player.s[name].ms -= ms;
@@ -13667,13 +14290,15 @@ function update_instance(instance) {
 							},
 						]);
 						if (calculate_item_value(item) + (def.edge || 0) * 2000000 > 1800000 && !player.stealth) {
-							broadcast("server_message", {
-								message: player.name + " received " + item_to_phrase(item),
-								color: colors.server_success,
-								item: cache_item(item),
-								type: "server_csuccess",
-								name: player.name,
-							});
+							broadcast(
+								"server_message",
+								item_message(
+									"server.item.named_received",
+									item,
+									{ player: String(player.name) },
+									{ color: colors.server_success, item: cache_item(item), type: "server_csuccess", name: player.name },
+								),
+							);
 						}
 						xy_emit(G.maps.main.compound, "upgrade", { type: "compound", success: 1 });
 						if (player.items[ref.num] && player.items[ref.num].name == "placeholder") {
@@ -13689,13 +14314,15 @@ function update_instance(instance) {
 							{ response: "compound_fail", level: item.level, num: ref.num, stale: ref.stale },
 						]);
 						if (calculate_item_value(item) + (def.edge || 0) * 2000000 > 920000 && !player.stealth) {
-							broadcast("server_message", {
-								message: player.name + " lost " + item_to_phrase(item) + "'s",
-								color: colors.server_failure,
-								item: cache_item(item),
-								type: "server_cfail",
-								name: player.name,
-							});
+							broadcast(
+								"server_message",
+								item_message(
+									"server.item.named_lost_compound",
+									item,
+									{ player: String(player.name) },
+									{ color: colors.server_failure, item: cache_item(item), type: "server_cfail", name: player.name },
+								),
+							);
 						}
 						xy_emit(G.maps.main.compound, "upgrade", { type: "compound", success: 0 });
 						if (player.items[ref.num] && player.items[ref.num].name == "placeholder") {
@@ -13748,13 +14375,15 @@ function update_instance(instance) {
 							{ response: "upgrade_success", level: new_level, num: ref.num, stale: ref.stale },
 						]);
 						if (announce && calculate_item_value(item) > 4800000 && !player.stealth) {
-							broadcast("server_message", {
-								message: player.name + " received " + item_to_phrase(item),
-								color: colors.server_success,
-								item: cache_item(item),
-								type: "server_usuccess",
-								name: player.name,
-							});
+							broadcast(
+								"server_message",
+								item_message(
+									"server.item.named_received",
+									item,
+									{ player: String(player.name) },
+									{ color: colors.server_success, item: cache_item(item), type: "server_usuccess", name: player.name },
+								),
+							);
 						}
 						xy_emit((instances.main && G.maps.main.upgrade) || player, "upgrade", { type: "upgrade", success: 1 });
 						achievement_logic_upgrade_success(player, item);
@@ -13764,13 +14393,15 @@ function update_instance(instance) {
 							{ response: "upgrade_fail", level: new_level, num: ref.num, stale: ref.stale },
 						]);
 						if (announce && calculate_item_value(item) > 4800000 && !player.stealth) {
-							broadcast("server_message", {
-								message: player.name + " lost " + item_to_phrase(item),
-								color: colors.server_failure,
-								item: cache_item(item),
-								type: "server_ufail",
-								name: player.name,
-							});
+							broadcast(
+								"server_message",
+								item_message(
+									"server.item.named_lost",
+									item,
+									{ player: String(player.name) },
+									{ color: colors.server_failure, item: cache_item(item), type: "server_ufail", name: player.name },
+								),
+							);
 						}
 						xy_emit((instances.main && G.maps.main.upgrade) || player, "upgrade", { type: "upgrade", success: 0 });
 					}
@@ -13782,44 +14413,11 @@ function update_instance(instance) {
 					delete player.p.u_level;
 					resend(player, "reopen+u+cid+nc");
 				}
+				if (name == "wheel") {
+					tavern_wheel_settle(player, ref);
+				}
 				if (name == "slots") {
-					if (Math.random() < ((S.gold > 500000000 && D.odds.slots_good) || D.odds.slots)) {
-						var gold = 500000000;
-						player.gold += gold;
-						S.gold -= gold;
-						broadcast("server_message", {
-							message: player.name + " received " + to_pretty_num(gold) + " gold",
-							color: "gold",
-						});
-						resend(player, "reopen+nc");
-						if (ref.request_id)
-							player.socket.emit("game_response", {
-								response: "slots_success",
-								place: "slots",
-								request_id: ref.request_id,
-								success: true,
-								won: true,
-								cost: ref.cost,
-								payout: gold,
-								net: gold - ref.cost,
-							});
-						else player.socket.emit("game_response", "slots_success");
-						player.socket.emit("game_log", { message: "Received " + to_pretty_num(gold) + " gold", color: "gold" });
-					} else {
-						resend(player, "reopen+nc");
-						if (ref.request_id)
-							player.socket.emit("game_response", {
-								response: "slots_fail",
-								place: "slots",
-								request_id: ref.request_id,
-								success: true,
-								won: false,
-								cost: ref.cost,
-								payout: 0,
-								net: -ref.cost,
-							});
-						else player.socket.emit("game_response", "slots_fail");
-					}
+					tavern_slots_settle(player, ref);
 				}
 			}
 		}
@@ -13895,7 +14493,7 @@ function update_instance(instance) {
 								player.cid++;
 								player.u = true;
 								player.cslots.mainhand = player.slots.mainhand = null;
-								player.socket.emit("game_log", "Your rod broke down ...");
+								player.socket.emit("game_log", localization.message("server.game_log.your_rod_broke_down", {}));
 								player.socket.emit("game_response", {
 									response: "data",
 									cevent: "item_break",
@@ -13932,7 +14530,7 @@ function update_instance(instance) {
 								player.cid++;
 								player.u = true;
 								player.cslots.mainhand = player.slots.mainhand = null;
-								player.socket.emit("game_log", "Your pickaxe broke down ...");
+								player.socket.emit("game_log", localization.message("server.game_log.your_pickaxe_broke_down", {}));
 								player.socket.emit("game_response", {
 									response: "data",
 									cevent: "item_break",
@@ -13970,7 +14568,7 @@ function update_instance(instance) {
 		if (player.slots.elixir && player.slots.elixir.expires && now_date > player.slots.elixir.expires) {
 			try {
 				var def = G.items[player.slots.elixir.name];
-				player.socket.emit("game_log", def.name + " wore off ...");
+				player.socket.emit("game_log", localization.message("server.game_log.wore_off", { def: String(def.name) }));
 				if (def.withdrawal) {
 					add_condition(player, def.withdrawal);
 				}
@@ -13995,8 +14593,11 @@ function update_instance(instance) {
 				if (player.red_zone > smap_edge) {
 					player.red_zone = 0;
 					player.hp -= parseInt(player.hp / 2 + 1000);
-					player.socket.emit("game_log", "Received a movement penalty");
-					player.socket.emit("game_log", "This might have happened if your network is too slow");
+					player.socket.emit("game_log", localization.message("server.game_log.received_a_movement_penalty", {}));
+					player.socket.emit(
+						"game_log",
+						localization.message("server.game_log.this_might_have_happened_if_your_network_is_too_slow", {}),
+					);
 					appengine_log("violation", "red_zone: " + player.name + " afk: " + player.afk + " code: " + player.code);
 					transport_player_to(player, player.map);
 					defeat_player(player);
@@ -14144,6 +14745,7 @@ function instance_loop() {
 	var ms_since = 32;
 	try {
 		var now_date = new Date();
+		generated_maps_tick();
 
 		for (name in instances) {
 			var instance = instances[name];
@@ -14343,9 +14945,11 @@ function npc_loop() {
 	var ms_since = 32;
 	try {
 		var now_date = new Date();
+		cavalry_tick();
 
 		for (var id in npcs) {
 			var npc = npcs[id];
+			if (is_cavalry(npc)) continue;
 			var delay = -npc.delay * npc.d_multiplier;
 			if (npc.rip && Math.random() < 0.0005) {
 				delete npc.s.block;
@@ -14762,11 +15366,13 @@ setTimeout(npc_loop, 10);
 setTimeout(instance_loop, 10);
 setTimeout(aura_loop, 10);
 setInterval(count_unique_users, 6000);
+setInterval(broadcast_observer_loop, 250);
 
 setInterval(function () {
 	try {
 		for (var id in observers) {
 			var observer = observers[id];
+			if (observer.broadcast) continue;
 			if (observer.player && get_player(observer.player.name)) {
 				var player = get_player(observer.player.name);
 				if (simple_distance(observer, player) > 200) {
@@ -14853,7 +15459,10 @@ setTimeout(
 						}
 						xp = parseInt(Math.round(xp));
 						player.xp += xp;
-						player.socket.emit("game_log", "Gained " + to_pretty_num(xp) + " marketing XP");
+						player.socket.emit(
+							"game_log",
+							localization.message("server.game_log.gained_marketing_xp", { amount: String(to_pretty_num(xp)) }),
+						);
 						player.socket.emit("disappearing_text", {
 							message: "+" + xp,
 							x: player.x,
@@ -14908,7 +15517,7 @@ setInterval(function () {
 setInterval(function () {
 	try {
 		for (var id in players) {
-			var player = players[id];
+			const player = players[id];
 			players[id].pdps *= 0.8;
 			player.p.minutes++;
 			trade_slots.forEach(function (slot) {
@@ -14938,11 +15547,15 @@ setInterval(function () {
 								item.src = "gva";
 								var mitem = JSON.stringify(item);
 								add_to_trade_history(player, "giveaway", winner.name, cache_item(item, true));
-								xy_emit(player, "game_log", {
-									message: winner.name + " won " + player.name + "'s giveaway of " + G.items[item.name].name + "!",
-									color: "#42A0DC",
-									confetti: winner.name,
-								});
+								xy_emit(
+									player,
+									"game_log",
+									localization.message(
+										"server.game_log.won_s_giveaway_of",
+										{ winner: String(winner.name), player: String(player.name), item: String(G.items[item.name].name) },
+										{ color: "#42A0DC", confetti: winner.name },
+									),
+								);
 								// send giveaway mail with item
 								(async function () {
 									try {
@@ -14955,15 +15568,18 @@ setInterval(function () {
 										var user2 = await get(to_char.owner);
 										var user1 = player.owner ? await get(player.owner) : null;
 										var rid = randomStr(50);
-										var giveaway_msg =
-											"Congratulations, you won " +
-											player.name +
-											"'s giveaway. Participants were: " +
-											list
-												.map(function (e) {
-													return e.name;
-												})
-												.join(", ");
+										var giveaway_msg = phrase(
+											"server.mail.giveaway_message",
+											{
+												player: player.name,
+												participants: list
+													.map(function (entry) {
+														return entry.name;
+													})
+													.join(", "),
+											},
+											localization.normalize(user2.language) || "en",
+										);
 										await insert({
 											_id: "ML_" + rid,
 											created: new Date(),
@@ -14976,7 +15592,11 @@ setInterval(function () {
 											owner: [get_id(user1), get_id(user2)],
 											info: {
 												message: giveaway_msg,
-												subject: "You've won a giveaway!",
+												subject: phrase(
+													"server.mail.giveaway_subject",
+													{},
+													localization.normalize(user2.language) || "en",
+												),
 												sender: get_id(user1),
 												receiver: get_id(user2),
 												item: mitem,
@@ -14984,14 +15604,7 @@ setInterval(function () {
 											blobs: ["info"],
 										});
 										try {
-											var ud2 = await get_user_data(user2);
-											var unread = await db
-												.collection("mail")
-												.find({ owner: get_id(user2), read: false })
-												.limit(100)
-												.toArray();
-											ud2.info.mail = unread.length;
-											await safe_save(ud2);
+											await update_mail_count(user2);
 										} catch (e) {
 											console.error("giveaway mail ud error", e);
 										}
@@ -15011,11 +15624,15 @@ setInterval(function () {
 								item.src = "gva";
 								add_item(winner, item);
 								add_to_trade_history(player, "giveaway", winner.name, cache_item(item, true));
-								xy_emit(player, "game_log", {
-									message: winner.name + " won " + player.name + "'s giveaway of " + G.items[item.name].name + "!",
-									color: "#42A0DC",
-									confetti: winner.name,
-								});
+								xy_emit(
+									player,
+									"game_log",
+									localization.message(
+										"server.game_log.won_s_giveaway_of",
+										{ winner: String(winner.name), player: String(player.name), item: String(G.items[item.name].name) },
+										{ color: "#42A0DC", confetti: winner.name },
+									),
+								);
 								resend(winner, "reopen");
 							}
 						}
@@ -15093,7 +15710,14 @@ setInterval(function () {
 				first_call(player);
 			}
 			if (player.p.first && !player.p.dt.first) {
-				realm_broadcast("server_message", { message: player.name + " joined Adventure Land!", color: "#24A2FA" });
+				realm_broadcast(
+					"server_message",
+					localization.message(
+						"server.server_message.joined_adventure_land",
+						{ player: String(player.name) },
+						{ color: "#24A2FA" },
+					),
+				);
 				player.p.dt.first = future_h(24 * 7);
 			} else if (player.p.dt.first && player.p.dt.first > c) {
 				player.paura = player.paura || {};
@@ -15109,6 +15733,7 @@ function projectiles_loop() {
 	var now = new Date();
 	for (var id in projectiles) {
 		try {
+			if (instance_is_frozen(projectiles[id].attacker) || instance_is_frozen(projectiles[id].target)) continue;
 			if (projectiles[id].eta <= now) {
 				var projectile = projectiles[id];
 				delete projectiles[id];
@@ -15273,6 +15898,7 @@ setInterval(function () {
 
 // Sync player data to MongoDB entity (following qwazy's sync_entity pattern, mirrors update_character)
 function sync_entity(entity, data) {
+	var saved_poker = entity.info.p && entity.info.p.poker;
 	entity.info.x = data["x"];
 	entity.info.y = data["y"];
 	entity.info.s = data["s"];
@@ -15287,7 +15913,20 @@ function sync_entity(entity, data) {
 	entity.info.items = data["items"];
 	entity.info.slots = data["slots"];
 	entity.info.rip = data.rip;
-	if (data.p) entity.info.p = data.p;
+	if (data.p) entity.info.p = Object.assign({}, data.p);
+	if (data.poker !== undefined) {
+		entity.info.p = entity.info.p || {};
+		var poker = data.poker;
+		if (poker && saved_poker && poker.token == saved_poker.token && (saved_poker.revision || 0) > (poker.revision || 0))
+			poker = saved_poker;
+		if (poker) entity.info.p.poker = Object.assign({}, poker);
+		else delete entity.info.p.poker;
+	}
+	if (data.max_xp_multiplier !== undefined) {
+		entity.info.p = entity.info.p || {};
+		entity.info.p.max_xp_multiplier = data.max_xp_multiplier;
+		if (data.encouragement_reached80) entity.info.p.encouragement_reached80 = true;
+	}
 	entity.info.skin = data.skin;
 	entity.info.cx = data.cx || {};
 	entity.info.afk = data.afk;
@@ -15295,6 +15934,7 @@ function sync_entity(entity, data) {
 }
 
 function sync_loop() {
+	retry_character_logins();
 	function check_for_delays(player) {
 		var limit = 6;
 		if (player.mounting && msince(player.mounting) > limit && !player.mount_issue) {
@@ -15307,8 +15947,8 @@ function sync_loop() {
 		}
 		if (player.sync_call && msince(player.last_sync) > limit && !player.sync_issue) {
 			server_log("#X SEVERE: " + limit + " minutes and still syncing: " + player.name, 1);
-			// player.sync_issue=new Date();
-			delete player.sync_call;
+			player.sync_issue = new Date();
+			// Never unlock an in-flight write based on age; logout must wait for it.
 		}
 		if (player.stopping && msince(player.stopping) > limit && !player.stop_issue) {
 			server_log("#X SEVERE: " + limit + " minutes and still stopping: " + player.name, 1);
@@ -15331,14 +15971,15 @@ function sync_loop() {
 			return;
 		}
 		player.mount_call = true;
+		player.mount_id = player.mount_id || randomStr(32);
 		// Diagnostic metadata only; tx() discards its R object on an explicit abort.
 		var bank_conflict = {};
-		var R = await tx(
+		var R = await character_save_tx(
 			async () => {
 				delete A[1].in_bank;
 				var owner = await tx_get(A[0].owner);
 				var entity = await tx_get(A[0].real_id);
-				if (!entity || entity.server != server_id) ex("character_gone"); // [03/03/26]
+				if (!owns_character_session(entity, A[0])) ex("character_gone");
 				if (!owner || (owner.server && (owner.server != server_id || owner.mounted_to != get_id(A[0])))) {
 					A[1].in_bank = owner && owner.mounted_to;
 					ex("already_in_bank");
@@ -15353,6 +15994,7 @@ function sync_loop() {
 				var data = player_to_server(A[0], "sync");
 				sync_entity(entity, data);
 				entity.to_backup = true;
+				entity.session_operation = A[0].mount_id;
 				await tx_save(entity);
 			},
 			[player, bank_conflict],
@@ -15364,6 +16006,7 @@ function sync_loop() {
 			player.last_sync = new Date();
 			server_log("mount_user: " + player.name + " owner: " + player.owner, 1);
 			player.user = R.user;
+			delete player.mount_id;
 			init_bank(player);
 			if (players[player.socket.id]) {
 				transport_player_to(player, player.mount_to, player.mount_s);
@@ -15392,10 +16035,14 @@ function sync_loop() {
 		// player.last_sync = new Date();
 		init_bank_exit(player);
 		player.unmount_call = true;
-		var R = await tx(
+		player.unmount_id = player.unmount_id || randomStr(32);
+		var R = await character_save_tx(
 			async () => {
 				var owner = await tx_get(A[0].owner);
 				var entity = await tx_get(A[0].real_id);
+				if (!owns_character_session(entity, A[0])) ex("not_in_game");
+				if (entity.session_operation === A[0].unmount_id) return;
+				if (!owner || owner.server !== server_id || owner.mounted_to !== get_id(A[0])) ex("bank_owner_lost");
 				if (owner) update_pids(entity, A[0], owner);
 				if (owner && owner.server == server_id && owner.mounted_to == get_id(A[0])) {
 					owner.server = owner.mounted_to = "";
@@ -15410,16 +16057,18 @@ function sync_loop() {
 				var data = player_to_server(A[0], "sync");
 				sync_entity(entity, data);
 				entity.to_backup = true;
+				entity.session_operation = A[0].unmount_id;
 				await tx_save(entity);
 			},
 			[player],
-			41,
+			3,
 		);
 		delete player.unmount_call;
 		if (R.success) {
 			player.last_sync = new Date();
 			server_log("unmount_user: " + player.name + " owner: " + player.owner + " result: " + JSON.stringify(R), 1);
 			delete player.unmounting;
+			delete player.unmount_id;
 			player.user = null;
 			player.cuser = null;
 			if (players[player.socket.id] && player.unmount_to) {
@@ -15430,7 +16079,7 @@ function sync_loop() {
 			}
 		} else {
 			server_log("#X SEVERE: Unmount failed for " + player.name, 1);
-			delete player.unmounting;
+			if (R.reason === "not_in_game") delete player.unmounting;
 			if (player.socket && players[player.socket.id]) player.socket.disconnect();
 		}
 	}
@@ -15452,13 +16101,15 @@ function sync_loop() {
 		}
 		player.last_sync = new Date();
 		player.sync_call = true;
-		var R = await tx(
+		var R = await character_save_tx(
 			async () => {
 				var owner = null,
 					player = A[0];
 				if (player.user) owner = await tx_get(player.owner);
 				var entity = await tx_get(player);
-				if (!entity.server || entity.server != server_id) ex("not_in_game");
+				if (!owns_character_session(entity, player)) ex("not_in_game");
+				if (player.user && (!owner || owner.server !== server_id || owner.mounted_to !== get_id(player)))
+					ex("bank_owner_lost");
 				if (owner) update_pids(entity, player, owner);
 				if (owner && owner.server == server_id && owner.mounted_to == get_id(player)) {
 					if (player.user) {
@@ -15489,19 +16140,29 @@ function sync_loop() {
 	}
 	// stop_call: Character logout using tx() (following qwazy pattern)
 	async function stop_call(player) {
+		if (player.stop_call || player.sync_call || player.mount_call || player.unmount_call || player.merrit_grant) return;
 		var bank = (player.user && true) || false;
 		player.stopping = new Date();
 		init_player_exit(player);
 		player.stop_call = true;
-		var R = await tx(
+		var R = await character_save_tx(
 			async () => {
 				var owner = null,
 					player = A[0];
-				if (player.user) owner = await tx_get(player.owner);
+				if (player.user || player.mount_id) owner = await tx_get(player.owner);
 				var entity = await tx_get(player);
-				if (!entity.server || entity.server != server_id) ex("not_in_game");
-				if (owner) update_pids(entity, player, owner);
-				if (owner && owner.server == server_id && owner.mounted_to == get_id(player)) {
+				if (!owns_character_session(entity, player)) ex("not_in_game");
+				// An unmount may have committed while its reply was lost. Its snapshot
+				// is durable, but later inventory changes still need the final save.
+				var bank_released = player.unmount_id && entity.session_operation === player.unmount_id;
+				if (
+					player.user &&
+					!bank_released &&
+					(!owner || owner.server !== server_id || owner.mounted_to !== get_id(player))
+				)
+					ex("bank_owner_lost");
+				if (owner && !bank_released) update_pids(entity, player, owner);
+				if (!bank_released && owner && owner.server == server_id && owner.mounted_to == get_id(player)) {
 					if (player.user) {
 						owner.info.gold = player.user.gold;
 						if (player.user.unlocked) owner.info.unlocked = player.user.unlocked;
@@ -15519,7 +16180,7 @@ function sync_loop() {
 				await tx_save(entity);
 			},
 			[player],
-			41,
+			3,
 		);
 		delete player.stop_call;
 		server_log(
@@ -15528,7 +16189,7 @@ function sync_loop() {
 		);
 		if (R.success || R.reason == "not_in_game") {
 			if (R.reason == "not_in_game") server_log("#X SEVERE not_in_game stop_call ", player.real_id);
-			delete dc_players[player.real_id];
+			if (dc_players[player.real_id] === player) delete dc_players[player.real_id];
 			add_event({ _id: player._id, info: { name: player.name }, level: player.level }, "stop", ["activity"], {
 				info: { message: player.name + " [LV." + player.level + "] logged out", server: server_id },
 			});
@@ -15595,20 +16256,30 @@ async function server_loop() {
 	try {
 		if (server.live && ssince(Server.updated) > 15) {
 			Server.online = true;
+			Server.version = "" + Version;
 			Server.info.players = Object.keys(players).length;
 			Server.info.observers = Object.keys(observers).length;
 			Server.info.merchants = total_merchants;
 			Server.info.total_players = total_players;
+			Server.info.recent_characters = server_information.snapshot(players);
 			await save(Server);
+			await pull_server_information();
+			for (var id in players) if (!players[id].dc) realmfatigue_logic(players[id]);
+			encouragement_tick();
 		} else if (server.started && !server.live && !server.stopped) {
 			Server.online = false;
+			Server.info.recent_characters = server_information.snapshot(players);
 			await new Promise((r) => setTimeout(r, 200));
 			await retried_save(Server);
 			await new Promise((r) => setTimeout(r, 200));
 			server.stopped = true;
 		} else if (
 			server.stopped &&
-			((!Object.keys(dc_players).length && !Object.keys(players).length) ||
+			((!pending_logins.size &&
+				!Object.keys(dc_players).length &&
+				!Object.keys(players).length &&
+				!tavern_pending() &&
+				!cave_pending()) ||
 				gameplay == "hardcore" ||
 				gameplay == "test")
 		) {
@@ -15638,9 +16309,16 @@ function shutdown() {
 }
 
 function shutdown_routine() {
+	generated_layout_queue.close();
+	for (var key in generated_runs) destroy_generated_run(key, "restart");
 	server_log("shutdown_routine", 1);
 	if (Dev && server.shutdown) process.exit();
 	server.shutdown = true;
+	try {
+		tavern_close();
+	} catch (e) {
+		log_trace("#X tavern close", e);
+	}
 	for (var name in instances) {
 		for (var id in instances[name].monsters) {
 			var monster = instances[name].monsters[id];
@@ -15668,7 +16346,14 @@ function shutdown_routine() {
 	for (var i = 0; i < seconds; i++) {
 		function m(x) {
 			return function () {
-				broadcast("server_message", { message: "Server shutdown in: " + x, color: "#DD1B50", nod: true, log: true });
+				broadcast(
+					"server_message",
+					localization.message(
+						"server.server_message.server_shutdown_in",
+						{ x: String(x) },
+						{ color: "#DD1B50", nod: true, log: true },
+					),
+				);
 			};
 		}
 		setTimeout(m(seconds - i), i * 1000);

@@ -1,10 +1,39 @@
 var conditions = {
+	"rimeshell":{
+		"name": "Rime Shell",
+		"skin": "rimeglass",
+		"ui": true,
+		"buff": true,
+		"persistent": true,
+		"duration": 3000,
+		"explanation": "Deal damage equal to 5% of the Djinn’s maximum HP within 3 seconds, or stun it, to break the shell. Ordinary freezing does not interrupt it. Purify cannot dispel the shell."
+	},
+	"rimeexposed":{
+		"name": "Cracked Shell",
+		"skin": "rimeglass",
+		"ui": true,
+		"debuff": true,
+		"duration": 5000,
+		"resistance": -160,
+		"explanation": "Resistance is reduced by 160 for 5 seconds."
+	},
+
 	anniversary_visit: {
 		name: "Anniversary Visit",
 		skin: "emote_ikissyou",
 		ui: true,
 		duration: 5 * 60 * 1000,
 		explanation: "Find the featured player and send I Kiss You for a cake slice and an Anniversary Gift. Used up after one visit.",
+	},
+	anniversary_kiss: {
+		name: "Anniversary Kiss",
+		skin: "emote_ikissyou",
+		frequency: 10,
+		output: 6,
+		duration: 20 * 60 * 1000,
+		buff: true,
+		ui: true,
+		explanation: "A warm welcome. Increases attack speed and damage output for 20 minutes.",
 	},
 	tangled: {
 		name: "Tangled",
@@ -227,6 +256,28 @@ var conditions = {
 		debuff: true,
 		explanation: "Burns the target with fire essence, dealing damage over time.",
 	},
+	encouragement_new: {
+		skin: "encouragement_new",
+		name: "New Player",
+		ui: true,
+		encouragement: true,
+		phases: [[5, 5, 5], [2, 4, 4], [2, 2, 3], [1.5, 1.5, 1.5]],
+		explanation: "A helping hand for your first 40 days. New Player XP ends at level 80. Extra rewards follow your contribution.",
+	},
+	encouragement_lonewolf: {
+		skin: "encouragement_lonewolf",
+		name: "Lone Wolf",
+		ui: true,
+		encouragement: true,
+		explanation: "3× Gold, XP and Luck while you run one non-merchant character. Merchants may stay online. Extra rewards follow your contribution.",
+	},
+	encouragement_returning: {
+		skin: "encouragement_returning",
+		name: "Welcome Back",
+		ui: true,
+		encouragement: true,
+		explanation: "Welcome back. There is more to discover. 3× Gold, XP and Luck below level 80; 2× from level 80. Extra rewards follow your contribution.",
+	},
 	newcomersblessing: {
 		skin: "newcomersblessing",
 		name: "Newcomers' Blessing",
@@ -401,7 +452,7 @@ var conditions = {
 	hopsickness: {
 		skin: "condition_bad",
 		name: "Hop Sickness",
-		explanation: "You are not in your home server! Go see Bean in Mainland square for a change.",
+		explanation: "Leaving home for another non-PvP server at level 60 or above causes this condition. It lasts up to 12 minutes of online play and blocks kiss rewards. Returning to your saved home clears it immediately. Bean in Mainland can change your home.",
 		luck: -80,
 		gold: -80,
 		xp: -80,
@@ -415,7 +466,7 @@ var conditions = {
 	realmfatigue: {
 		skin: "condition_bad",
 		name: "Realm Fatigue",
-		explanation: "Another non-merchant character on your account recently visited a different server. Home rewards return after you settle in; normal rewards continue.",
+		explanation: "Another non-merchant character on your account was recently on a different server. Home bonuses and kiss rewards are blocked for 30 minutes; activity elsewhere extends the timer. Returning home does not clear it. Keep your non-merchant characters on one server.",
 		ui: true,
 		persistent: true,
 		duration: 1000 * 60 * 30,
@@ -647,7 +698,7 @@ var conditions = {
 		duration: 5000,
 		debuff: true,
 		// "defense":"bmresistance",
-		explanation: "Reduces damage output and speed by 20%. Increases damage taken by 20%.",
+		explanation: "Reduces damage output by 20% and movement speed by 20. Increases damage taken by 20%.",
 	},
 	dampened: {
 		name: "Dampened",

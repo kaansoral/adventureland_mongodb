@@ -1,8 +1,9 @@
 <!doctype html>
-<html>
+<html lang="{{domain.language or 'en'}}">
 	<head>
-		<title>Adventure Land on Linux: Native Steam, Proton and WebView2 Help</title>
-		<meta name="description" content="Run and troubleshoot Adventure Land's native Linux Steam client, authorize your account for browser play, or experiment with Proton and WebView2." />
+		{% include "htmls/language.html" %}
+		<title>{{ phrase("pages.linux.adventure-land-on-linux-native-steam-proton-and") }}</title>
+		<meta name="description" content="{{ phrase("pages.linux.label-run-and-troubleshoot-adventure-land-s-native-linux") }}" />
 		<meta
 			name="keywords"
 			content="Adventure Land Linux, Adventure Land Steam Linux, Tauri Linux crash, Steam Linux browser play, Steam Proton WebView2, Wine WebView2 Runtime, Could not find the WebView2 Runtime, protontricks webview2"
@@ -28,7 +29,7 @@
 			html,
 			pre,
 			body {
-				font-family: Pixel;
+				font-family: var(--pixel-font, pixel);
 				color: #cecece;
 				font-size: 24px;
 				/*text-shadow: 0 0 1px rgba(0, 0, 0, 0.4);*/
@@ -107,52 +108,46 @@
 	</head>
 	<body>
 		<div id="devlogs" style="margin-bottom: 32px">
-			<p><span class="feature">Linux:</span> Native Steam, Proton and WebView2 Help</p>
+			<p>{{ phrase_html("pages.linux.linux-native-steam-proton-and-webview2-help") }}</p>
 
-			<p>Adventure Land's current Steam client uses Tauri. Steam includes a native Linux build, so Proton isn't normally needed.</p>
+			<p>{{ phrase("pages.linux.adventure-land-s-current-steam-client-uses-tauri") }}</p>
 
 			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
-				<div style="color: #7bb18f">#1: Run Adventure Land from the Command Line</div>
-				<p>Keep Steam open. In your Steam Library, right-click <b>Adventure Land</b>, then select <b>Properties &gt; Installed Files &gt; Browse</b>. This opens the exact game folder, even if you use a custom Steam Library.</p>
-				<p>Open a terminal in that folder. In KDE's Dolphin, press <b>F4</b>. In other file managers, right-click inside the folder and select <b>Open in Terminal</b>.</p>
-				<p>Make sure the terminal lists <b>Adventure Land</b>, then run it:</p>
+				<div style="color: #7bb18f">{{ phrase("pages.linux.1-run-adventure-land-from-the-command-line") }}</div>
+				<p>{{ phrase_html("pages.linux.keep-steam-open-in-your-steam-library-right") }}</p>
+				<p>{{ phrase_html("pages.linux.open-a-terminal-in-that-folder-in-kde") }}</p>
+				<p>{{ phrase_html("pages.linux.make-sure-the-terminal-lists-adventure-land-then") }}</p>
 				<pre class="command">
 ls -la
 ./Adventure\ Land</pre>
-				<p>To save the output for troubleshooting, close the game and run this instead:</p>
+				<p>{{ phrase("pages.linux.to-save-the-output-for-troubleshooting-close-the") }}</p>
 				<pre class="command">./Adventure\ Land 2&gt;&amp;1 | tee "$HOME/adventure-land-native.log"</pre>
-				<p>If the game opens, sign up or log in and start a character. If it fails, send <b>~/adventure-land-native.log</b> to hello@adventure.land.</p>
+				<p>{{ phrase_html("pages.linux.if-the-game-opens-sign-up-or-log") }}</p>
 			</div>
 
 			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
-				<div style="color: #4da9df">Use the Native Linux Client</div>
+				<div style="color: #4da9df">{{ phrase("pages.linux.use-the-native-linux-client") }}</div>
 				<p>
-					Open Adventure Land's Steam Properties, select Compatibility, and turn off "Force the use of a specific Steam Play compatibility tool". Then select Installed Files and Verify integrity of
-					game files. Steam should install the native Linux depot.
+					{{ phrase("pages.linux.open-adventure-land-s-steam-properties-select-compatibility") }}
 				</p>
 				<p>
-					Under Installed Files, click Browse. The game folder should contain <b>Adventure Land</b> and <b>libsteam_api.so</b>. If it contains <b>Adventure Land.exe</b>, Steam is still using the
-					Windows build through Proton.
+					{{ phrase_html("pages.linux.under-installed-files-click-browse-the-game-folder") }}
 				</p>
 				<p>
-					The current Linux package prefers your system libraries when they are complete and automatically falls back to its bundled Linux runtime when they aren't. To test the bundled path directly,
-					set this under Steam's General &gt; Launch Options:
+					{{ phrase("pages.linux.the-current-linux-package-prefers-your-system-libraries") }}
 				</p>
 				<pre class="command">ADVENTURELAND_FORCE_BUNDLED=1 %command%</pre>
 				<p>
-					Common Steam locations include <b>~/.local/share/Steam/steamapps/common/Adventure Land/</b>, <b>~/.steam/steam/steamapps/common/Adventure Land/</b>, and
-					<b>~/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common/Adventure Land/</b> for Flatpak Steam. A custom Steam Library can be anywhere, so Installed Files &gt; Browse is the
-					reliable path.
+					{{ phrase_html("pages.linux.common-steam-locations-include-local-share-steam-steamapps") }}
 				</p>
 			</div>
 
 			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
-				<div style="color: #4da9df">Native Client Closes Instantly</div>
+				<div style="color: #4da9df">{{ phrase("pages.linux.native-client-closes-instantly") }}</div>
 				<p>
-					Open Steam's Properties &gt; Installed Files &gt; Browse. On Kubuntu, Dolphin opens the exact game folder. Press <b>F4</b> in that Dolphin window to open a terminal panel already inside it.
-					On another desktop, use your file manager's "Open in Terminal" action.
+					{{ phrase_html("pages.linux.open-steam-s-properties-installed-files-browse-on") }}
 				</p>
-				<p>Run these commands one at a time:</p>
+				<p>{{ phrase("pages.linux.run-these-commands-one-at-a-time") }}</p>
 				<pre class="command">
 pwd
 ls -la
@@ -161,128 +156,111 @@ ldd ./Adventure\ Land | grep "not found"
 ./Adventure\ Land 2&gt;&amp;1 | tee "$HOME/adventure-land-native.log"
 uname -m
 echo "$XDG_SESSION_TYPE"</pre>
-				<p>If the output says <b>libwebkit2gtk-4.1.so.0: cannot open shared object file</b>, install Tauri's Linux webview runtime on Debian, Ubuntu or Kubuntu:</p>
+				<p>{{ phrase_html("pages.linux.if-the-output-says-libwebkit2gtk-4-1-so") }}</p>
 				<pre class="command">
 sudo apt update
 sudo apt install libwebkit2gtk-4.1-0</pre>
 				<p>
-					If <b>ldd</b> prints another missing library, install that library from your distro's package manager too. Do not install Microsoft WebView2 for the native Linux build; native Tauri uses
-					WebKitGTK 4.1.
+					{{ phrase_html("pages.linux.if-ldd-prints-another-missing-library-install-that") }}
 				</p>
-				<p>Please send the complete terminal output and <b>~/adventure-land-native.log</b> to hello@adventure.land. Even an empty log is useful when paired with the other results.</p>
+				<p>{{ phrase_html("pages.linux.please-send-the-complete-terminal-output-and-adventure") }}</p>
 			</div>
 
 			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
-				<div style="color: #7bb18f">Authorize Once, Then Play in Your Browser</div>
+				<div style="color: #7bb18f">{{ phrase("pages.linux.authorize-once-then-play-in-your-browser") }}</div>
 				<p>
-					Linux distributions combine different desktop environments, graphics drivers and WebKit versions. Some combinations are difficult for us to reproduce and support reliably. If the client works from a
-					terminal but not from Steam, you can still use it once to authorize your account.
+					{{ phrase("pages.linux.linux-distributions-combine-different-desktop-environments-graphics-drivers") }}
 				</p>
 				<p>
-					Open the native client from a terminal, sign up or log in, then start one character and wait until the game says <b>Connected</b>. This saves the Steam authorization on that Adventure Land account and
-					character.
+					{{ phrase_html("pages.linux.open-the-native-client-from-a-terminal-sign") }}
 				</p>
 				<p>
-					After that, visit <a href="https://adventure.land">adventure.land</a>, log in with the same email and password, and play that character from your browser indefinitely. Steam doesn't need to be open,
-					and the browser won't ask for another Steam verification.
+					{{ phrase_html("pages.linux.after-that-visit-adventure-land-log-in-with") }}
 				</p>
 			</div>
 
 			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
-				<div style="color: #d6627f">Proton: "Could not find the WebView2 Runtime"</div>
+				<div style="color: #d6627f">{{ phrase("pages.linux.proton-could-not-find-the-webview2-runtime") }}</div>
 				<p>
-					This means Proton launched the Windows Tauri client. Windows normally supplies Microsoft Edge WebView2, but a new Proton/Wine prefix doesn't. The native Linux client above is the recommended
-					fix.
+					{{ phrase("pages.linux.this-means-proton-launched-the-windows-tauri-client") }}
 				</p>
 				<p>
-					If you want to experiment with Proton anyway, install current <a href="https://github.com/Matoking/protontricks" target="_blank">Protontricks</a> and current
-					<a href="https://github.com/Winetricks/winetricks" target="_blank">Winetricks</a>. The WebView2 verb was added to Winetricks in 2026, so older distro packages may not include it.
+					{{ phrase_html("pages.linux.if-you-want-to-experiment-with-proton-anyway") }}
 				</p>
 				<pre class="command">
 winetricks --self-update
 protontricks 777150 webview2</pre>
-				<p>Then launch Adventure Land again with Proton. If the command reports that <b>webview2</b> is unknown, your Winetricks copy is still too old.</p>
+				<p>{{ phrase_html("pages.linux.then-launch-adventure-land-again-with-proton-if") }}</p>
 				<p>
-					You can also download Microsoft's x64 <b>Evergreen Standalone Installer</b> from the official
-					<a href="https://developer.microsoft.com/en-us/microsoft-edge/webview2" target="_blank">WebView2 Runtime page</a>, then run that installer inside Adventure Land's Proton prefix:
+					{{ phrase_html("pages.linux.you-can-also-download-microsoft-s-x64-evergreen") }}
 				</p>
 				<pre class="command">protontricks-launch --appid 777150 "$HOME/Downloads/MicrosoftEdgeWebView2RuntimeInstallerX64.exe"</pre>
 				<p>
-					Change the filename if your browser saved it under another name. Installing WebView2 may remove the missing-runtime message, but WebView2 under Wine/Proton is not officially supported and
-					can still hang or crash.
+					{{ phrase("pages.linux.change-the-filename-if-your-browser-saved-it") }}
 				</p>
 			</div>
 
 			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
-				<div style="color: #4da9df">Advanced: Bundle a Fixed WebView2 Runtime</div>
+				<div style="color: #4da9df">{{ phrase("pages.linux.advanced-bundle-a-fixed-webview2-runtime") }}</div>
 				<p>
-					Microsoft also offers an x64 <b>Fixed Version</b> download on the same WebView2 page. Extract the downloaded CAB with <b>cabextract</b> into a permanent folder. Find the extracted folder
-					that directly contains <b>msedgewebview2.exe</b>, then convert that folder to a Wine path:
+					{{ phrase_html("pages.linux.microsoft-also-offers-an-x64-fixed-version-download") }}
 				</p>
 				<pre class="command">
 mkdir -p "$HOME/.local/share/adventure-land-webview2"
 cabextract -d "$HOME/.local/share/adventure-land-webview2" "$HOME/Downloads/Microsoft.WebView2.FixedVersionRuntime."*.x64.cab
 protontricks -c "winepath -w '$HOME/.local/share/adventure-land-webview2'" 777150</pre>
-				<p>Use the returned Windows-style path in Adventure Land's Steam Launch Options:</p>
+				<p>{{ phrase("pages.linux.use-the-returned-windows-style-path-in-adventure") }}</p>
 				<pre class="command">WEBVIEW2_BROWSER_EXECUTABLE_FOLDER='Z:\home\YOUR_NAME\.local\share\adventure-land-webview2' %command%</pre>
 				<p>
-					Replace the example with the exact path returned by <b>winepath</b>. If <b>msedgewebview2.exe</b> is inside another extracted subfolder, point to that subfolder. Merely downloading the Fixed
-					Version files isn't enough; WebView2 must be directed to the folder containing the executable.
+					{{ phrase_html("pages.linux.replace-the-example-with-the-exact-path-returned") }}
 				</p>
 				<p class="small">
-					This is experimental. Microsoft currently tracks Proton/Wine compatibility as unsupported work, and a newer Fixed Version must be downloaded manually for security updates. For a dependable
-					setup, use Adventure Land's native Linux client.
+					{{ phrase("pages.linux.this-is-experimental-microsoft-currently-tracks-proton-wine") }}
 				</p>
 			</div>
 
 			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
-				<div style="color: #4da9df">Useful Error and Search Terms</div>
+				<div style="color: #4da9df">{{ phrase("pages.linux.useful-error-and-search-terms") }}</div>
 				<p>
-					Adventure Land Linux native crash; Adventure Land Tauri Linux; Steam Linux instant crash; Could not find the WebView2 Runtime; Tauri WebView2 Proton; Wine WebView2 Runtime; protontricks
-					webview2; Microsoft Edge WebView2 Evergreen Runtime; WEBVIEW2_BROWSER_EXECUTABLE_FOLDER.
+					{{ phrase("pages.linux.adventure-land-linux-native-crash-adventure-land-tauri") }}
 				</p>
 			</div>
 
-			<p><span class="devtitle">Old Electron Notes:</span> Kept here for players using the old client and for history.</p>
+			<p>{{ phrase_html("pages.linux.old-electron-notes-kept-here-for-players-using") }}</p>
 
 			<p>
-				The old Adventure Land client used Electron. When you stumble onto an old-client issue, you can google the issue by combining error phrases with "electron". Sadly each distro and setup has
-				it's own various issues, but they are usually easy to solve.
+				{{ phrase("pages.linux.the-old-adventure-land-client-used-electron-when") }}
 			</p>
 
 			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
-				<div style="color: #4da9df">Black or Blank Screen</div>
+				<div style="color: #4da9df">{{ phrase("pages.linux.black-or-blank-screen") }}</div>
 				<p>
-					First thing to try is to find the Steam games directory and simply run Adventure Land from the command line. For some reason it usually works. You can also try the --disable-gpu flag. If the
-					game works when you disable the GPU, the issues are most likely related to GPU/driver issues. When you run the game from command line once, make sure to go back and test it from Steam again.
-					Some players reported the game starting to work from Steam, only after they ran it from command line once. Mysterious.
+					{{ phrase("pages.linux.first-thing-to-try-is-to-find-the") }}
 				</p>
 			</div>
 
 			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
-				<div style="color: #4da9df">Disable Steam Overlay Modification</div>
+				<div style="color: #4da9df">{{ phrase("pages.linux.disable-steam-overlay-modification") }}</div>
 				<p>
-					Find main.js - It's the Electron code/logic of Adventure Land - comment out the line with "app.commandLine.appendSwitch("in-process-gpu");" - this is needed to render the Steam overlay, but
-					it can also cause issues. Currently it's disabled by default.
+					{{ phrase("pages.linux.find-main-js-it-s-the-electron-code") }}
 				</p>
 			</div>
 
 			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
-				<div style="color: #4da9df">[07/03/19]: version `ZLIB_1.2.9' not found (required by /nix/store/parrh56r6sr4ccp9ypl4sh7h5b19rijg-libpng-apng-1.6.36/lib/libpng16.so.16)</div>
+				<div style="color: #4da9df">{{ phrase("pages.linux.07-03-19-version-zlib-1-2-9") }}</div>
 				<p>
-					User "foldM_" on Discord stumbled onto this issue on NixOS - his solution was to set Steam to launch the game with: LD_LIBRARY_PATH=/lib:$LD_LIBRARY_PATH %command% (from Steam's Game
-					Properties > Launch Options)
+					{{ phrase("pages.linux.user-foldm-on-discord-stumbled-onto-this-issue") }}
 				</p>
 			</div>
 
 			<div style="background: #eef1f1; color: #3b3b3c; padding: 10px 10px 10px 10px; margin: 10px -10px 10px -10px">
 				<div style="color: #4da9df">
-					[01/02/24]: [15629:1229/162230.657405:FATAL:gpu_data_manager_impl_private.cc(1034)] The display compositor is frequently crashing. Goodbye. (see it via launching from CLI)
+					{{ phrase("pages.linux.01-02-24-15629-1229-162230-657405-fatal") }}
 				</div>
-				<p>Richard found a fix for this issue, the fix is to use the <b>`--no-sandbox`</b> flag.</p>
+				<p>{{ phrase_html("pages.linux.richard-found-a-fix-for-this-issue-the") }}</p>
 			</div>
 
-			<p>If you find and solve an issue, or just stumble onto an issue you can't solve, please email hello@adventure.land with details</p>
+			<p>{{ phrase("pages.linux.if-you-find-and-solve-an-issue-or") }}</p>
 		</div>
 	</body>
 </html>

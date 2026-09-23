@@ -140,15 +140,66 @@ function mainframe_assignment_record_id(character_id) {
 	return "MK_mainframe_assignment-" + character_id;
 }
 
-function mainframe_event_record_id(character_id) {
-	return "MK_mainframe_events-" + character_id;
+function mainframe_event_record_id(character_id, owner_id) {
+	return "MK_mainframe_events-" + character_id + (owner_id ? "-" + owner_id : "");
+}
+
+function mainframe_owned_record(record, character) {
+	return record && character && record.owner === character.owner && record.character === get_id(character) ? record : null;
+}
+
+// Called inside the caller's transaction. Never transfer authorization or paid
+// access along with a character; historical charges and activity remain intact.
+async function mainframe_retire_assignment(assignment, now, read, save, owner) {
+	if (!assignment || (assignment.desired_state === "stopped" && !assignment.auth && assignment.stop_reason === "character_transferred")) return;
+	if (!owner || get_id(owner) !== assignment.owner) owner = await read(assignment.owner);
+	var assignments = [assignment];
+	var group = assignment.group_id && (await read(mainframe_group_record_id(assignment.group_id)));
+	if (group && group.owner === assignment.owner && Array.isArray(group.members)) {
+		if (group.root_character === assignment.character) {
+			for (var member of group.members.slice(0, MAINFRAME_GROUP_MAX_WORKERS)) {
+				if (member.character === assignment.character) continue;
+				var child = await read(mainframe_assignment_record_id(member.character));
+				if (child && child.owner === assignment.owner && child.group_id === group.group_id) assignments.push(child);
+			}
+			group.desired_state = "stopped";
+		} else {
+			group.members = group.members.filter(function (member) {
+				return member.character !== assignment.character;
+			});
+		}
+		group.updated = now;
+		await save(group);
+	}
+	for (var current of assignments) {
+		if (current.auth && owner && owner.info && Array.isArray(owner.info.auths)) {
+			owner.info.auths = owner.info.auths.filter(function (auth) {
+				return auth !== current.auth;
+			});
+		}
+		current.desired_state = "stopped";
+		current.auth = null;
+		current.stop_reason = "character_transferred";
+		current.updated = now;
+		await save(current);
+	}
+	if (owner) await save(owner);
+}
+
+async function mainframe_current_assignment(character, now, read, save) {
+	var assignment = await read(mainframe_assignment_record_id(get_id(character)));
+	if (assignment && assignment.character === get_id(character) && assignment.owner !== character.owner) {
+		await mainframe_retire_assignment(assignment, now, read, save);
+		return null;
+	}
+	return assignment;
 }
 
 function mainframe_clean_event(event) {
 	if (!event || typeof event !== "object" || Array.isArray(event)) return null;
 	var at = new Date(event.at);
 	if (!/^[0-9a-f]{24,64}$/.test(event.id || "") || !Number.isFinite(at.getTime()) || !["info", "warn", "error"].includes(event.level) || !/^[a-z][a-z0-9_]{2,63}$/.test(event.code || "")) return null;
-	return {
+	var clean = {
 		id: event.id,
 		assignment_id: /^[0-9a-f]{32}$/.test(event.assignment_id || "") ? event.assignment_id : null,
 		at: at.toISOString(),
@@ -164,6 +215,41 @@ function mainframe_clean_event(event) {
 						.replace(/[\r\n\t]+/g, " ")
 						.slice(0, 160),
 	};
+	// Only authored lifecycle phrases and their declared display arguments survive persistence.
+	var phrases = {
+		"mainframe.event.assignment_queued": ["assignment_queued", {}],
+		"mainframe.event.included_worker_queued": ["included_worker_queued", {}],
+		"mainframe.event.shared_with": ["included_worker_queued", { character: "name" }],
+		"mainframe.event.shared_with_root": ["included_worker_queued", {}],
+		"mainframe.event.explicit_disconnect": ["explicit_disconnect", {}],
+		"mainframe.event.renewed_free": ["access_renewed", { minutes: "number" }],
+		"mainframe.event.renewed_shell": ["access_renewed", { minutes: "number" }],
+		"mainframe.event.renewal_one": ["access_renewed", { count: "number", date: "date" }],
+		"mainframe.event.renewal_many": ["access_renewed", { count: "number", date: "date" }],
+		"mainframe.event.renewal_failed": ["renewal_failed", {}],
+		"mainframe.event.worker_failure": ["worker_failure", {}],
+		"mainframe.event.server_change": ["server_change", {}],
+	};
+	for (var field of ["phrase", "detail_phrase"]) {
+		var rule = phrases[event[field]],
+			args = event[field + "_args"] || {},
+			values = {},
+			valid = !!rule && rule[0] === event.code;
+		if (!valid) continue;
+		for (var key of Object.keys(rule[1])) {
+			var value = args[key],
+				type = rule[1][key];
+			if (type === "number" && typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1000000) values[key] = value;
+			else if (type === "name" && typeof value === "string" && /^[A-Za-z0-9_]{1,32}$/.test(value)) values[key] = value;
+			else if (type === "date" && typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value) && Number.isFinite(new Date(value).getTime())) values[key] = value;
+			else valid = false;
+		}
+		if (valid) {
+			clean[field] = event[field];
+			clean[field + "_args"] = values;
+		}
+	}
+	return clean;
 }
 
 function mainframe_bound_events(events, now) {
@@ -182,16 +268,18 @@ function mainframe_bound_events(events, now) {
 	return result.slice(-MAINFRAME_EVENT_MAX_ENTRIES);
 }
 
-function mainframe_new_event(assignment_id, level, code, message, detail) {
-	return mainframe_clean_event({
-		id: crypto.randomBytes(16).toString("hex"),
-		assignment_id: assignment_id || null,
-		at: new Date().toISOString(),
-		level: level,
-		code: code,
-		message: message,
-		detail: detail,
-	});
+function mainframe_new_event(assignment_id, level, code, message, detail, display) {
+	return mainframe_clean_event(
+		Object.assign({}, display, {
+			id: crypto.randomBytes(16).toString("hex"),
+			assignment_id: assignment_id || null,
+			at: new Date().toISOString(),
+			level: level,
+			code: code,
+			message: message,
+			detail: detail,
+		}),
+	);
 }
 
 async function mainframe_record_event(owner_id, character_id, event) {
@@ -201,7 +289,13 @@ async function mainframe_record_event(owner_id, character_id, event) {
 	var now = new Date();
 	var R = await tx(
 		async () => {
+			var character = await tx_get(A.character_id);
+			if (!character || character.owner !== A.owner_id) return;
 			var record = await tx_get(A.record_id);
+			if (!record) {
+				var legacy = await tx_get(mainframe_event_record_id(A.character_id));
+				if (mainframe_owned_record(legacy, character)) record = Object.assign({}, legacy, { _id: A.record_id });
+			}
 			if (record && (record.owner !== A.owner_id || record.character !== A.character_id)) return;
 			record = record || {
 				_id: A.record_id,
@@ -235,7 +329,7 @@ async function mainframe_record_event(owner_id, character_id, event) {
 			R.recorded = true;
 		},
 		{
-			record_id: mainframe_event_record_id(character_id),
+			record_id: mainframe_event_record_id(character_id, owner_id),
 			assignment_id: mainframe_assignment_record_id(character_id),
 			owner_id: owner_id,
 			character_id: character_id,
@@ -257,7 +351,9 @@ async function mainframe_record_event_quietly(owner_id, character_id, event) {
 
 async function mainframe_read_events(owner_id, character_id, limit) {
 	if (!/^US_[A-Za-z0-9_-]{1,100}$/.test(owner_id || "") || !/^CH_[A-Za-z0-9_-]{1,100}$/.test(character_id || "")) return [];
-	var record = await get(mainframe_event_record_id(character_id));
+	var character = await get(character_id);
+	if (!character || character.owner !== owner_id) return [];
+	var record = (await get(mainframe_event_record_id(character_id, owner_id))) || (await get(mainframe_event_record_id(character_id)));
 	if (!record || record.owner !== owner_id || record.character !== character_id) return [];
 	var events = mainframe_bound_events(record.events, new Date());
 	return events.slice(-Math.max(1, Math.min(Number(limit) || 100, MAINFRAME_EVENT_MAX_ENTRIES)));
@@ -358,13 +454,13 @@ async function mainframe_begin_assignment(user, character, request_id, options) 
 			var owner = await tx_get(A.user_id);
 			var current_character = await tx_get(A.character_id);
 			if (!owner || !current_character || current_character.owner !== A.user_id) ex("character_not_found");
-			var existing = await tx_get(A.assignment_id);
+			var existing = await mainframe_current_assignment(current_character, A.now, tx_get, tx_save);
 			if (existing && (existing.owner !== A.user_id || existing.character !== A.character_id)) ex("assignment_conflict");
 			var previous_charge = await tx_get(A.charge_id);
 			if (previous_charge) {
 				if (previous_charge.owner !== A.user_id || previous_charge.character !== A.character_id) ex("idempotency_conflict");
 				R.owner = owner;
-				R.access = await tx_get(A.access_id);
+				R.access = mainframe_owned_record(await tx_get(A.access_id), current_character);
 				R.charge = previous_charge;
 				R.assignment =
 					existing && existing.session_id === previous_charge.session_id && existing.desired_state === "running" && existing.access_until && new Date(existing.access_until) > A.now ? existing : null;
@@ -502,7 +598,9 @@ async function mainframe_begin_assignment(user, character, request_id, options) 
 		await mainframe_record_event_quietly(
 			user_id,
 			character_id,
-			mainframe_new_event(R.assignment && R.assignment.session_id, "info", "assignment_queued", "Mainframe queued this character.", server.label + " · CODE " + code_slot),
+			mainframe_new_event(R.assignment && R.assignment.session_id, "info", "assignment_queued", "Mainframe queued this character.", server.label + " · CODE " + code_slot, {
+				phrase: "mainframe.event.assignment_queued",
+			}),
 		);
 	return {
 		success: true,
@@ -539,7 +637,8 @@ async function mainframe_begin_included_assignment(user, parent_source, characte
 			if (!owner) ex("account_not_found");
 			if (!current_character || current_character.owner !== A.user_id) ex("character_not_found");
 			var previous_action = await tx_get(A.action_id);
-			var existing = await tx_get(A.assignment_id);
+			var existing = await mainframe_current_assignment(current_character, A.now, tx_get, tx_save);
+			if (existing && (existing.owner !== A.user_id || existing.character !== A.character_id)) ex("assignment_conflict");
 			if (previous_action) {
 				if (previous_action.owner !== A.user_id || previous_action.character !== A.character_id || previous_action.source_session_id !== A.parent_session_id) ex("idempotency_conflict");
 				R.assignment = existing && existing.session_id === previous_action.session_id && existing.desired_state === "running" ? existing : null;
@@ -547,7 +646,15 @@ async function mainframe_begin_included_assignment(user, parent_source, characte
 				R.replayed = true;
 				return;
 			}
-			if (!parent || parent.owner !== A.user_id || parent.session_id !== A.parent_session_id || parent.desired_state !== "running" || new Date(parent.access_until) <= A.now) ex("assignment_expired");
+			var parent_character = await tx_get(A.parent_character_id);
+			if (
+				!mainframe_owned_record(parent, parent_character) ||
+				parent.owner !== A.user_id ||
+				parent.session_id !== A.parent_session_id ||
+				parent.desired_state !== "running" ||
+				new Date(parent.access_until) <= A.now
+			)
+				ex("assignment_expired");
 			var group = null;
 			if ((parent.billing_mode || "dedicated") === "dedicated") {
 				if (parent.character !== A.parent_character_id) ex("shared_group_unavailable");
@@ -653,7 +760,7 @@ async function mainframe_begin_included_assignment(user, parent_source, characte
 			existing.start_after = null;
 			existing.updated = A.now;
 			var access = await tx_get(A.access_id);
-			if (access && (access.owner !== A.user_id || access.character !== A.character_id)) ex("access_conflict");
+			if (access && (access.owner !== A.user_id || access.character !== A.character_id)) access = null;
 			access = access || {
 				_id: A.access_id,
 				type: "mainframe_access",
@@ -722,6 +829,11 @@ async function mainframe_begin_included_assignment(user, parent_source, characte
 				"included_worker_queued",
 				"Mainframe queued this included Worker.",
 				"Shared with " + String(R.assignment.group_root_name || "the root character"),
+				{
+					phrase: "mainframe.event.included_worker_queued",
+					detail_phrase: R.assignment.group_root_name ? "mainframe.event.shared_with" : "mainframe.event.shared_with_root",
+					detail_phrase_args: { character: R.assignment.group_root_name },
+				},
 			),
 		);
 	return {
@@ -745,9 +857,10 @@ async function mainframe_stop_assignment(user, character) {
 		async () => {
 			var owner = await tx_get(A.user_id);
 			var current_character = await tx_get(A.character_id);
-			var assignment = await tx_get(A.assignment_id);
 			if (!owner || !current_character || current_character.owner !== A.user_id) ex("character_not_found");
-			if (!assignment || assignment.owner !== A.user_id || assignment.character !== A.character_id) ex("mainframe_unavailable");
+			var assignment = await mainframe_current_assignment(current_character, A.now, tx_get, tx_save);
+			if (!assignment) return;
+			if (assignment.owner !== A.user_id || assignment.character !== A.character_id) ex("mainframe_unavailable");
 			var assignments = [assignment];
 			var group = null;
 			if (assignment.billing_mode === "group_root") {
@@ -801,7 +914,11 @@ async function mainframe_stop_assignment(user, character) {
 	);
 	if (R.failed) return { failed: true, reason: R.reason || "disconnect_failed" };
 	for (var stopped of R.stopped || [])
-		await mainframe_record_event_quietly(get_id(user), stopped.character, mainframe_new_event(stopped.session_id, "info", "explicit_disconnect", "Disconnected by the account owner."));
+		await mainframe_record_event_quietly(
+			get_id(user),
+			stopped.character,
+			mainframe_new_event(stopped.session_id, "info", "explicit_disconnect", "Disconnected by the account owner.", null, { phrase: "mainframe.event.explicit_disconnect" }),
+		);
 	return { success: true, assignment: mainframe_assignment_to_client(R.assignment) };
 }
 
@@ -825,6 +942,13 @@ async function mainframe_renew_assignment(source, now) {
 				R.state = "inactive";
 				return;
 			}
+			var character = await tx_get(A.character_id);
+			if (!mainframe_owned_record(assignment, character)) {
+				await mainframe_retire_assignment(assignment, A.now, tx_get, tx_save);
+				R.state = "stopped";
+				R.reason = "character_transferred";
+				return;
+			}
 			var current_until = new Date(assignment.access_until);
 			if (Number.isFinite(current_until.getTime()) && current_until > A.now) {
 				R.state = "active";
@@ -832,7 +956,6 @@ async function mainframe_renew_assignment(source, now) {
 				return;
 			}
 			var owner = await tx_get(A.user_id);
-			var character = await tx_get(A.character_id);
 			if (!owner || !character || character.owner !== A.user_id) ex("character_not_found");
 			var access = await tx_get(A.access_id);
 			if (access && (access.owner !== A.user_id || access.character !== A.character_id)) ex("access_conflict");
@@ -861,9 +984,21 @@ async function mainframe_renew_assignment(source, now) {
 					if (member.character === A.character_id) continue;
 					var child = await tx_get(mainframe_assignment_record_id(member.character));
 					if (!child || child.owner !== A.user_id || child.group_id !== group.group_id || child.billing_mode !== "included") continue;
+					if (!mainframe_owned_record(child, await tx_get(child.character))) {
+						await mainframe_retire_assignment(child, A.now, tx_get, tx_save, owner);
+						continue;
+					}
 					group_children.push(child);
 				}
 				if (!root_member) ex("shared_group_unavailable");
+				group.members = group.members.filter(function (member) {
+					return (
+						member.character === A.character_id ||
+						group_children.some(function (child) {
+							return child.character === member.character;
+						})
+					);
+				});
 			}
 			var active_children = group_children.filter(function (child) {
 				return child.desired_state === "running";
@@ -1055,12 +1190,21 @@ async function mainframe_renew_assignment(source, now) {
 		var renewal_message = R.billing_source === "steam_time" ? "1 free Mainframe hour used for " + R.period_minutes + " minutes." : "1 Shell charged for " + R.period_minutes + " minutes.";
 		var renewal_detail = R.active_characters + (R.active_characters === 1 ? " character active" : " characters active") + " · Next renewal " + new Date(R.access.access_until).toISOString();
 		for (var renewal_member of R.renewal_members || [{ character: source.character, session_id: source.session_id }])
-			await mainframe_record_event_quietly(source.owner, renewal_member.character, mainframe_new_event(renewal_member.session_id, "info", "access_renewed", renewal_message, renewal_detail));
-	} else if (R.state === "stopped")
+			await mainframe_record_event_quietly(
+				source.owner,
+				renewal_member.character,
+				mainframe_new_event(renewal_member.session_id, "info", "access_renewed", renewal_message, renewal_detail, {
+					phrase: R.billing_source === "steam_time" ? "mainframe.event.renewed_free" : "mainframe.event.renewed_shell",
+					phrase_args: { minutes: R.period_minutes },
+					detail_phrase: R.active_characters === 1 ? "mainframe.event.renewal_one" : "mainframe.event.renewal_many",
+					detail_phrase_args: { count: R.active_characters, date: new Date(R.access.access_until).toISOString() },
+				}),
+			);
+	} else if (R.state === "stopped" && R.reason === "not_enough_shells")
 		await mainframe_record_event_quietly(
 			source.owner,
 			source.character,
-			mainframe_new_event(source.session_id, "error", "renewal_failed", "Mainframe stopped this character because no time remained."),
+			mainframe_new_event(source.session_id, "error", "renewal_failed", "Mainframe stopped this character because no time remained.", null, { phrase: "mainframe.event.renewal_failed" }),
 		);
 	return {
 		success: true,
@@ -1092,7 +1236,41 @@ async function mainframe_controller_assignments(agent_id) {
 		})
 		.limit(MAINFRAME_CONTROLLERS[agent_id].capacity)
 		.toArray();
+	// Retire old-owner assignments left by transfers made before this repair.
+	// Check included workers too; they do not have independent renewal windows.
+	var characters = assignments.length
+		? await db
+				.collection("character")
+				.find(
+					{
+						_id: {
+							$in: assignments.map(function (assignment) {
+								return assignment.character;
+							}),
+						},
+					},
+					{ projection: { owner: 1 } },
+				)
+				.limit(assignments.length)
+				.toArray()
+		: [];
+	var owners = new Map(
+		characters.map(function (character) {
+			return [get_id(character), character.owner];
+		}),
+	);
+	var retired_groups = new Set();
+	for (var assignment of assignments) {
+		if (owners.get(assignment.character) === assignment.owner) continue;
+		var retired = await mainframe_renew_assignment(assignment, now);
+		if (retired.failed && retired.reason !== "invalid_assignment") console.error("Mainframe ownership reconciliation failed", assignment.character, retired.reason);
+		// Withhold the entire stale group even if retirement must wait for the next poll.
+		if (assignment.billing_mode === "group_root") retired_groups.add(assignment.group_id);
+	}
 	return assignments
+		.filter(function (assignment) {
+			return owners.get(assignment.character) === assignment.owner && !retired_groups.has(assignment.group_id);
+		})
 		.map(function (assignment) {
 			var connection_url;
 			try {
@@ -1195,6 +1373,7 @@ async function mainframe_record_controller_failures(report, agent_id) {
 				level: "error",
 				code: "worker_failure",
 				message: "Mainframe detected a Worker failure and will retry it.",
+				phrase: "mainframe.event.worker_failure",
 				detail: bot.failure.reason || bot.failure.code,
 			});
 		}
@@ -1243,7 +1422,7 @@ async function mainframe_change_assignment_server(source, region, name) {
 	await mainframe_record_event_quietly(
 		source.owner,
 		source.character,
-		mainframe_new_event(R.assignment.session_id, "warn", "server_change", "Mainframe is reconnecting this character on another server.", server.label),
+		mainframe_new_event(R.assignment.session_id, "warn", "server_change", "Mainframe is reconnecting this character on another server.", server.label, { phrase: "mainframe.event.server_change" }),
 	);
 	return { success: true, assignment: mainframe_assignment_to_client(R.assignment), start_after: R.assignment.start_after.toISOString() };
 }
@@ -1262,6 +1441,7 @@ async function mainframe_code_action(body) {
 		return { failed: true, reason: "assignment_expired" };
 	var owner = await get(assignment.owner);
 	if (!owner) return { failed: true, reason: "account_not_found" };
+	if (!mainframe_owned_record(assignment, await get(assignment.character))) return { failed: true, reason: "assignment_expired" };
 	var data = body.data || {};
 	if (body.operation === "start_character") {
 		var target = await admin_bots_owned_character(owner, data.character);
@@ -1316,12 +1496,12 @@ function mainframe_access_to_client(access, now) {
 
 async function mainframe_get_access(character) {
 	if (!character || !get_id(character)) return mainframe_access_to_client(null);
-	return mainframe_access_to_client(await get(mainframe_access_record_id(get_id(character))));
+	return mainframe_access_to_client(mainframe_owned_record(await get(mainframe_access_record_id(get_id(character))), character));
 }
 
 async function mainframe_get_assignment(character) {
 	if (!character || !get_id(character)) return null;
-	return mainframe_assignment_to_client(await get(mainframe_assignment_record_id(get_id(character))));
+	return mainframe_assignment_to_client(mainframe_owned_record(await get(mainframe_assignment_record_id(get_id(character))), character));
 }
 
 async function mainframe_grant_operator_access(character, requested_by) {
@@ -1371,7 +1551,10 @@ async function mainframe_renew_access(now) {
 	var stopped = 0;
 	for (var assignment of expired_assignments) {
 		var result = await mainframe_renew_assignment(assignment, now);
-		if (result.failed) throw new Error("Mainframe automatic renewal failed");
+		if (result.failed) {
+			console.error("Mainframe automatic renewal failed", assignment.character, result.reason);
+			continue; // Keep it expired and retry next poll without blocking other assignments.
+		}
 		if (result.state === "renewed") renewed++;
 		else if (result.state === "stopped") stopped++;
 	}

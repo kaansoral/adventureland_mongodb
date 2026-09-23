@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe이 이 캐릭터를 대기열에 넣었어요.",
+	"mainframe.event.included_worker_queued": "Mainframe이 이 기본 제공 Worker를 대기열에 넣었어요.",
+	"mainframe.event.shared_with": "{character} 캐릭터와 공유",
+	"mainframe.event.shared_with_root": "루트 캐릭터와 공유",
+	"mainframe.event.explicit_disconnect": "계정 소유자가 접속을 종료했어요.",
+	"mainframe.event.renewed_free": "{minutes}분을 위해 무료 Mainframe 1시간을 사용했어요.",
+	"mainframe.event.renewed_shell": "{minutes}분에 조개 1개가 청구됐어요.",
+	"mainframe.event.renewal_one": "캐릭터 {count}명 실행 중 · 다음 갱신 {date}",
+	"mainframe.event.renewal_many": "캐릭터 {count}명 실행 중 · 다음 갱신 {date}",
+	"mainframe.event.renewal_failed": "남은 시간이 없어 Mainframe이 이 캐릭터를 중지했어요.",
+	"mainframe.event.worker_failure": "Mainframe이 Worker 오류를 감지했어요. 다시 시도할 예정이에요.",
+	"mainframe.event.server_change": "Mainframe이 이 캐릭터를 다른 서버에 다시 접속시키고 있어요.",
+	"mainframe.level.info": "정보",
+	"mainframe.level.warn": "경고",
+	"mainframe.level.error": "오류"
+}

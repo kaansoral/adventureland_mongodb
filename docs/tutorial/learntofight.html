@@ -1,4 +1,4 @@
-<p class="tutlead">A Goo is a fine first opponent. Soft, green, surprisingly determined.</p>
+<p class="tutlead">{{ phrase("docs.tutorial.learntofight.a-goo-is-a-fine-first-opponent-soft") }}</p>
 
 <div class="tutlinks">
 	<div
@@ -8,34 +8,26 @@
 			open_guide('basics', '/docs/guide/basics');
 		"
 	>
-		COMBAT &amp; CONTROLS
+		{{ phrase("docs.tutorial.learntofight.combat-controls") }}
 	</div>
-	<div
-		class="gamebutton gamebutton-small"
-		onclick="
-			btc(event);
-			code_eval('smart_move(&quot;goo&quot;)');
-		"
-	>
-		GO TO THE GOOS
-	</div>
+	<span class="tutorial-travel" data-type="monster" data-target="goo"></span>
 </div>
 
 {% for task in tutorial_data("learntofight").tasks %} {% if loop.first %}
 <div class="tutdivider"></div>
 {% endif %}
-<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
+<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">{{ phrase("docs.tutorial.learntofight.done") }}</span></div>
 {% endfor %}
 
 <div class="tutpath manual">
-	<div class="tutpath-title">MANUAL</div>
-	<p>Left-click a Goo to target it. Move close, then right-click it to attack. When it falls, click the chest before it fades.</p>
-	<p>Watch your HP. Potions are brave little bottles, but they cannot help from the shop shelf.</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.learntofight.manual") }}</div>
+	<p>{{ phrase("docs.tutorial.new.farming_intro") }}</p>
+	<p>{{ phrase("docs.tutorial.learntofight.watch-your-hp-potions-are-brave-little-bottles") }}</p>
 </div>
 
 <div class="tutpath codepath">
-	<div class="tutpath-title">OPTIONAL CODE</div>
-	<p>This finds one Goo, approaches it, attacks when ready, and checks for chests:</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.learntofight.optional-code") }}</div>
+	<p>{{ phrase("docs.tutorial.learntofight.this-finds-one-goo-approaches-it-attacks-when") }}</p>
 	<!-- prettier-ignore -->
 	<div class="code">var target = get_nearest_monster({type: "goo"});
 
@@ -49,10 +41,9 @@ if (target) {
 }
 
 loot();</div>
-	<p>Run it again as the fight changes. Later, a loop can do that watching for you.</p>
+	<p>{{ phrase("docs.tutorial.learntofight.run-it-again-as-the-fight-changes-later") }}</p>
 	<p>
-		<span class="rlabel" onclick="render_function_reference($(this).html())">get_nearest_monster</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">is_in_range</span> ·
-		<span class="rlabel" onclick="render_function_reference($(this).html())">attack</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">loot</span>
+		{{ phrase_html("docs.tutorial.learntofight.get-nearest-monster-is-in-range-attack-loot") }}
 	</p>
 </div>
 
@@ -108,3 +99,4 @@ loot();</div>
 		text-align: center;
 	}
 </style>
+<script>render_tutorial_items();</script>

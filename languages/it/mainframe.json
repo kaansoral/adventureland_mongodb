@@ -1,0 +1,23 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe ha messo in coda questo personaggio.",
+	"mainframe.event.included_worker_queued": "Mainframe ha messo in coda questo Worker incluso.",
+	"mainframe.event.shared_with": "Condiviso con {character}",
+	"mainframe.event.shared_with_root": "Condiviso con il personaggio principale",
+	"mainframe.event.explicit_disconnect": "Disconnesso dal titolare dell'account.",
+	"mainframe.event.renewed_free": "Usata 1 ora gratuita di Mainframe per una durata in minuti di {minutes}.",
+	"mainframe.event.renewed_shell": "Addebitata 1 conchiglia per una durata in minuti di {minutes}.",
+	"mainframe.event.renewal_one": "{count} personaggio attivo · Prossimo rinnovo {date}",
+	"mainframe.event.renewal_many": "{count} personaggi attivi · Prossimo rinnovo {date}",
+	"mainframe.event.renewal_failed": "Mainframe ha fermato questo personaggio perché il tempo era esaurito.",
+	"mainframe.event.worker_failure": "Mainframe ha rilevato un errore del Worker e riproverà ad avviarlo.",
+	"mainframe.event.server_change": "Mainframe sta riconnettendo questo personaggio su un altro server.",
+	"mainframe.level.info": "INFO",
+	"mainframe.level.warn": "AVVISO",
+	"mainframe.level.error": "ERRORE",
+	"mainframe.event.renewal_many.many": "{count} personaggi attivi · Prossimo rinnovo {date}",
+	"mainframe.event.renewal_many.one": "{count} personaggio attivo · Prossimo rinnovo {date}",
+	"mainframe.event.renewal_many.other": "{count} personaggi attivi · Prossimo rinnovo {date}",
+	"mainframe.event.renewal_one.many": "{count} personaggi attivi · Prossimo rinnovo {date}",
+	"mainframe.event.renewal_one.one": "{count} personaggio attivo · Prossimo rinnovo {date}",
+	"mainframe.event.renewal_one.other": "{count} personaggi attivi · Prossimo rinnovo {date}"
+}

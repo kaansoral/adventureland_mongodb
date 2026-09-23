@@ -1,11 +1,12 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{domain.language or 'en'}}">
 	<head>
+		{% include "htmls/language.html" %}
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="robots" content="noindex, nofollow" />
 		<meta name="referrer" content="no-referrer" />
-		<title>Steam Purchase - Adventure Land</title>
+		<title>{{ phrase("pages.steam_purchase.steam-purchase-adventure-land") }}</title>
 		<link rel="icon" href="/images/favicon.png" />
 		<link href="/css/common.css?v={{domain.v}}" rel="stylesheet" type="text/css" />
 		<style>
@@ -16,7 +17,7 @@
 				margin: 0;
 				background: #050807;
 				color: white;
-				font-family: pixel, monospace;
+				font-family: var(--pixel-font, pixel), monospace;
 			}
 			body {
 				display: flex;
@@ -57,9 +58,9 @@
 	</head>
 	<body>
 		<div id="purchase-card">
-			<div id="title">Steam Purchase</div>
-			<div id="status">Checking your purchase ...</div>
-			<div id="detail">Keep Adventure Land open while Steam finishes the transaction.</div>
+			<div id="title">{{ phrase("pages.steam_purchase.steam-purchase") }}</div>
+			<div id="status">{{ phrase("pages.steam_purchase.checking-your-purchase") }}</div>
+			<div id="detail">{{ phrase("pages.steam_purchase.keep-adventure-land-open-while-steam-finishes-the") }}</div>
 		</div>
 		<script>
 			(function check_purchase() {
@@ -73,24 +74,24 @@
 						var detail = document.getElementById("detail");
 						if (purchase.state === "complete") {
 							status.className = "complete";
-							status.textContent = "Purchase complete. " + purchase.shells.toLocaleString() + " Shells were added to your account.";
-							detail.textContent = "You can close this window and return to Adventure Land.";
+							status.textContent = phrase("page.purchase.complete", {shells:purchase.shells.toLocaleString(phrase.language)});
+							detail.textContent = phrase("page.purchase.close");
 							return;
 						}
 						if (purchase.state === "failed") {
 							status.className = "failed";
-							status.textContent = "Steam couldn't complete this purchase.";
-							detail.textContent = "Return to Adventure Land to try again.";
+							status.textContent = phrase("page.purchase.failed");
+							detail.textContent = phrase("page.purchase.retry");
 							return;
 						}
-						status.textContent = "Steam is finishing the purchase and adding your Shells ...";
+						status.textContent = phrase("page.purchase.pending");
 						setTimeout(check_purchase, 1500);
 					})
 					.catch(function () {
 						var status = document.getElementById("status");
 						status.className = "failed";
-						status.textContent = "This purchase link is invalid.";
-						document.getElementById("detail").textContent = "Return to Adventure Land to check your Shells balance.";
+						status.textContent = phrase("page.purchase.invalid_link");
+						document.getElementById("detail").textContent = phrase("page.purchase.check_balance");
 					});
 			})();
 		</script>

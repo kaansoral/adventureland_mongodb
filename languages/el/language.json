@@ -1,0 +1,9 @@
+{
+  "navigation.hub": "Hub",
+  "navigation.github": "GitHub",
+	"language.choose": "Γλώσσα",
+	"language.select": "Χρήση γλώσσας: {language}",
+	"language.save_failed": "Η γλώσσα σου δεν μπόρεσε να αποθηκευτεί. Δοκίμασε ξανά.",
+	"language.saving": "Αποθήκευση…",
+	"navigation.communicator_short": "COM"
+}

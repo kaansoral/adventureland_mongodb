@@ -742,6 +742,17 @@ var maps = {
 		],
 		animatables: {
 			the_door: { x: 888, y: -672, position: "door0" },
+			dreams_gate: {
+				x: 816,
+				y: 1160,
+				position: "dreams_gate",
+				role: "dreamkeeper",
+				// Native movement checks actor corners; bases need at least 24 by 12 pixels.
+				collision: [
+					[-52, 8, -28, 20],
+					[28, 8, 52, 20],
+				],
+			},
 		},
 		on_death: ["main", 5],
 		on_exit: ["main", 0],
@@ -928,6 +939,10 @@ var maps = {
 		key: "jayson_smallNPCcave",
 		name: "Wizard's Crib",
 		npcs: [
+			{ id: "cavalry_paladin", position: [-172, -162, 0] },
+			{ id: "cavalry_mage", position: [-136, -162, 0] },
+			{ id: "cavalry_warrior", position: [-172, -136, 0] },
+			{ id: "cavalry_priest", position: [-136, -136, 0] },
 			{ id: "lostandfound", position: [-24, -178] },
 			{ id: "wnpc", position: [32, -178, 3] },
 		],
@@ -1021,6 +1036,13 @@ var maps = {
 				],
 				x: -64,
 				y: -216,
+			},
+			{
+				type: "poker",
+				set: "custom",
+				frames: [[0, 26 * 16, 96, 48]],
+				x: -168,
+				y: -52,
 			},
 		],
 		drop_norm: 1000,
@@ -1125,6 +1147,7 @@ var maps = {
 		name: "Frozen Cove",
 		npcs: [],
 		monsters: [
+			{"type": "rimedjinn", "boundary": [-64, -1748, 96, -1620], "count": 4},
 			{ type: "harpy", boundary: [-3.38, -398.22, 273.25, -223.83], count: 5, grow: true, roam: true, random: true }, //added grow 31/1/2024
 			{ type: "rharpy", boundary: [-3.38, -398.22, 273.25, -223.83], count: 1, roam: true },
 		],
@@ -1920,9 +1943,12 @@ var maps = {
 		instance: true,
 	},
 };
+maps.main.spawns.push([816, 1200]);
 for (var name in maps) {
 	if (!maps[name]["doors"]) maps[name]["doors"] = [];
 	if (!maps[name]["npcs"]) maps[name]["npcs"] = [];
 }
 
 if (typeof module !== "undefined") module.exports = { maps };
+
+maps.main.npcs.push({id:"dreamkeeper",position:[816,1200]});

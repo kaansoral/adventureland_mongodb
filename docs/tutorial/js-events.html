@@ -1,0 +1,64 @@
+<p>{{ phrase_html("docs.tutorial.js-events.idea") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.task") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-events.task") }}</p>
+
+<p>{{ phrase("docs.tutorial.javascript.practice") }}</p>
+
+<div class="tutorial-code" data-lesson="events">
+	<!-- prettier-ignore -->
+	<div class="code executeb">const listener = character.on("hit", function (data) {
+  if (typeof data.damage !== "number") return;
+  game_log("Damage: " + data.damage);
+});
+setTimeout(function () {
+  character.remove("hit"); // {{ phrase("docs.tutorial.js-events.starter.comment_1") }}
+}, 2000);</div>
+
+	<div class="tutorial-code-result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.hint") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-events.hint") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.solution") }}</div>
+
+<!-- prettier-ignore -->
+<div class="code readonly">const listener = character.on("hit", function (data) {
+  if (typeof data.damage !== "number") return;
+  game_log("Damage: " + data.damage);
+});
+setTimeout(function () {
+  character.remove(listener);
+}, 2000);</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.variation") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-events.variation") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.transfer") }}</div>
+
+<p>{{ phrase("docs.tutorial.javascript.copy") }}</p>
+
+<p>{{ phrase_html("docs.tutorial.js-events.transfer") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.js-events.reading_title") }}</div>
+
+{{ phrase_html("docs.tutorial.js-events.reading_before") }}
+
+<!-- prettier-ignore -->
+<div class="code readonly">const listener = character.on("hit", function (data) {
+  game_log("A hit event arrived");
+});
+character.remove(listener);
+game_log("Listener removed");</div>
+
+{{ phrase_html("docs.tutorial.js-events.reading_after") }}
+
+<p><span class="rlabel clickable" onclick="open_article('events-character', '/docs/code/character/events')">character.on</span></p>

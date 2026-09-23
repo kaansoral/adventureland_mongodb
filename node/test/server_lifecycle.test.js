@@ -5,6 +5,50 @@ const test = require("node:test");
 const vm = require("node:vm");
 const { read, load, socketHandler } = require("./helpers/server_vm");
 
+test("inactive and unknown server keys fail before sockets or database connections are created", () => {
+	for (const [key, definition, message] of [
+		["retired", { inactive: true }, "Inactive server"],
+		["missing", undefined, "Unknown server"],
+	]) {
+		const context = vm.createContext({
+			process: { argv: ["node", "server.js", key] },
+			require(name) {
+				if (name === "./../secretsandconfig/options") return { servers: { [key]: definition } };
+				if (name === "./../secretsandconfig/keys" || name === "../languages") return {};
+				assert.fail("Inactive server loaded a service: " + name);
+			},
+		});
+		assert.throws(() => vm.runInContext(read("node/server.js"), context), new RegExp(message + ": " + key));
+	}
+});
+
+test("server RPC refuses inactive definitions even when a character points at a stale server record", async () => {
+	let requests = 0;
+	const context = vm.createContext({
+		keys: { ACCESS_MASTER: "test" },
+		URLSearchParams,
+		options: {
+			base_url: "https://adventure.land",
+			servers: { active: { api_path: "/api1/" }, retired: { inactive: true, api_path: "/api2/" } },
+		},
+		console: { error() {} },
+		fetch() {
+			requests++;
+			return { text: async () => "{}" };
+		},
+	});
+	load(context, "adventure_functions.js", ["server_url", "server_eval"]);
+	assert.equal(
+		context.server_url({ key: "active", address: "example.test" }, "eval"),
+		"https://example.test/api1/eval",
+	);
+	for (const key of ["retired", "unknown"])
+		assert.equal(await context.server_eval({ key, address: "example.test" }, "1"), null);
+	assert.equal(requests, 0, "retired and unknown servers must not receive a request");
+	assert.ok(await context.server_eval({ key: "active", address: "example.test" }, "1"));
+	assert.equal(requests, 1, "active server requests still work");
+});
+
 test("destroying an instance moves spectators before deletion and disconnect cleanup remains idempotent", () => {
 	const sent = [];
 	const instances = {
@@ -137,13 +181,38 @@ test("worker accepts late grids and completes unavailable or failed requests wit
 	const port = new EventEmitter(),
 		results = [];
 	port.postMessage = (data) => results.push(structuredClone(data));
-	context.require = () => ({ workerData: { G: {}, smap_data: {}, amap_data: {} }, parentPort: port });
+	context.require = (name) =>
+		name === "worker_threads"
+			? { workerData: { G: {}, smap_data: {}, amap_data: {} }, parentPort: port }
+			: require(name.startsWith(".") ? require("node:path").resolve(__dirname, "..", name) : name);
+	context.fs = require("node:fs");
+	context.path = require("node:path");
+	context.URL = URL;
+	context.URLSearchParams = URLSearchParams;
+	context.options.base_url = "https://adventure.test";
+	context.__dirname = context.path.resolve(__dirname, "..");
 	context.setInterval = () => {};
 	const source = read("node/server_worker.js");
 	vm.runInContext(source.slice(source.indexOf("var { workerData, parentPort }")), context);
-	const request = { type: "fast_astar", map: "late", sx: 0, sy: 0, tx: 48, ty: 0, id: "monster", in: "late-1" };
+	const request = {
+		type: "fast_astar",
+		map: "late",
+		sx: 0,
+		sy: 0,
+		tx: 48,
+		ty: 0,
+		id: "monster",
+		in: "late-1",
+		path_token: "route-1",
+	};
 	port.emit("message", request);
-	assert.deepEqual(results[0], { type: "monster_move", move: null, id: "monster", in: "late-1" });
+	assert.deepEqual(results[0], {
+		type: "monster_move",
+		move: null,
+		id: "monster",
+		in: "late-1",
+		path_token: "route-1",
+	});
 	port.emit("message", { type: "map_data", map: "late", smap_data: {}, amap_data: { "0|0": 8, "24|0": 8, "48|0": 8 } });
 	port.emit("message", request);
 	assert.ok(results[1].move[0] > 0);

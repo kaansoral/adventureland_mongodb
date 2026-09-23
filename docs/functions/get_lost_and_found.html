@@ -1,9 +1,9 @@
 <p><span class='dlabel'>get_lost_and_found(timeout_ms)</span></p>
-<p>Retrieves the Lost and Found's current unlooted-chest listings.</p>
-<p><b>Returns:</b> Promise resolving with {success:true, items:[...]}. It rejects until the character has made a qualifying reserve donation, when too far away, or on timeout.</p>
-<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
-<p><b>Notes:</b> Items are ordered as shown in Ron's shop. Each item includes the rid needed by buy_lost_and_found(). timeout_ms defaults to 10,000ms.</p>
-<p><b>Example:</b></p>
+<p>{{ phrase("docs.functions.get_lost_and_found.retrieves-the-lost-and-found-s-current-unlooted") }}</p>
+<p>{{ phrase_html("docs.functions.get_lost_and_found.returns-promise-resolving-with-success-true-items-it") }}</p>
+<p>{{ phrase_html("docs.functions.get_lost_and_found.promise-failures-unless-a-function-specific-note-says") }}</p>
+<p>{{ phrase_html("docs.functions.get_lost_and_found.notes-items-are-ordered-as-shown-in-ron") }}</p>
+<p>{{ phrase_html("docs.functions.get_lost_and_found.example") }}</p>
 <div class='code'>async function example() {
 	var listings = await get_lost_and_found();
 	show_json(listings.items);
@@ -11,4 +11,4 @@
 example();</div>
 
 <p></p>
-<span class='redlabel'>"source"</span>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>

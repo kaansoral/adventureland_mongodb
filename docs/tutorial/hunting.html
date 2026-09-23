@@ -1,0 +1,24 @@
+<p>{{ phrase("docs.tutorial.new.hunting_intro") }}</p>
+<p style="display:flex;align-items:center;gap:16px"><span class="tutorial-npc" data-npc="monsterhunter"></span><span>Daisy · Mainland<br>(126, -413)</span><span class="tutorial-item" data-item="monstertoken"></span></p>
+<div><span class="tutorial-travel" data-type="npc" data-target="monsterhunter"></span></div>
+<p>{{ phrase("docs.tutorial.new.hunting_steps") }}</p>
+<p>{{ phrase("docs.guide.monster-hunts.beginner-scaling") }}</p>
+<p>{{ phrase("docs.tutorial.new.hunting_choice") }}</p>
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<!-- prettier-ignore -->
+<div class="code">async function visit_daisy() {
+	if (character.ctype === "merchant") return;
+	await smart_move("monsterhunter");
+	var hunt = character.s.monsterhunt;
+	if (!hunt || hunt.c === 0) return await interact("monsterhunt");
+	show_json(hunt);
+}
+visit_daisy().catch(show_json);</div>
+<p>
+	{{ phrase("docs.tutorial.new.references") }}: <span class="rlabel clickable" onclick="load_documentation('smart_move')">smart_move</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('interact')">interact</span>
+</p>
+<span class="clickable dlabel" onclick="open_guide('monster-hunts', get_guide_url('monster-hunts'))">{{ phrase("tutorial.hunting.title") }}</span>
+· <span class="clickable dlabel" onclick="open_guide('tracktrix', get_guide_url('tracktrix'))">Tracktrix</span>
+<script>render_tutorial_items();</script>

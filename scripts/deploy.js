@@ -2,6 +2,8 @@ var path = require("path"),
 	f = require(path.resolve(__dirname, "script_functions.js")),
 	lock_update_notes = require(path.resolve(__dirname, "lock_update_notes.js"));
 
+var exclusions = f.deployment_exclusions();
+
 var mode = process.argv[2] || "";
 var folder = "adventureland";
 
@@ -19,8 +21,11 @@ f.execs("node ~/adventureland/scripts/precompute_images.js");
 
 f.execs("rm -rf ~/deploy/" + folder + "");
 f.execs("mkdir ~/deploy/" + folder + "");
+// Package current local files, including uncommitted changes. Git ignores are not deployment filters.
 f.execs(
-	"rsync -r --whole-file --exclude=.electron --exclude=node_modules --exclude=agentic --exclude=proposals --exclude=scripts --exclude=lib --exclude=python3 --exclude=stack --exclude=electron --exclude=tauri ~/adventureland/* ~/deploy/" + folder + "",
+	"rsync " + exclusions + " -r --whole-file --exclude=.electron --exclude=.git --exclude=node_modules --exclude=scripts --exclude=lib --exclude=python3 --exclude=stack --exclude=electron --exclude=tauri ~/adventureland/* ~/deploy/" +
+		folder +
+		"",
 );
 
 f.execs("rm -rf ~/deploy/" + folder + "/node/node_modules");
@@ -28,8 +33,6 @@ f.execs("rm -rf ~/deploy/" + folder + "/node_modules");
 f.execs("rm -rf ~/deploy/" + folder + "/*.py");
 f.execs("rm -rf ~/deploy/" + folder + "/*.pyc");
 f.execs("rm -rf ~/deploy/" + folder + "/scripts");
-f.execs("rm -rf ~/deploy/" + folder + "/agentic");
-f.execs("rm -rf ~/deploy/" + folder + "/proposals");
 f.execs("rm -rf ~/deploy/" + folder + "/lib");
 f.execs("rm -rf ~/deploy/" + folder + "/python3");
 f.execs("rm -rf ~/deploy/" + folder + "/stack");

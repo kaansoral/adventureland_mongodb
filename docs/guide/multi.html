@@ -1,22 +1,22 @@
 <div class="multi-guide">
-<div class="title mt10">Run More Than One Character</div> <div class="mb10"></div>
-<div>Adventure Land supports browser windows, child character frames, COM, and Mainframe. Choose one method for each character. Do not load the same character twice.</div>
+<div class="title mt10">{{ phrase("docs.guide.multi.run-more-than-one-character") }}</div> <div class="mb10"></div>
+<div>{{ phrase("docs.guide.multi.adventure-land-supports-browser-windows-child-character-frames") }}</div>
 <div class="divider"></div>
 
-<div class="title mt10">Browser Windows</div> <div class="mb10"></div>
-<div>Open another game client from character selection with <b>&gt; New Game Window</b>, or type <span class="dlabel">/window</span> in chat. Each window renders the complete game and runs that character's CODE.</div>
+<div class="title mt10">{{ phrase("docs.guide.multi.browser-windows") }}</div> <div class="mb10"></div>
+<div>{{ phrase_html("docs.guide.multi.open-another-game-client-from-character-selection-with") }}</div>
 <div class="divider"></div>
 
-<div class="title mt10">Launch Through COM</div> <div class="mb10"></div>
-<div>Open <a href="/comm">COM</a>, select <b>Characters</b>, and press <b>Deploy</b> to open an owned character in a new window. COM also shows where your characters are connected.</div>
+<div class="title mt10">{{ phrase("docs.guide.multi.launch-through-com") }}</div> <div class="mb10"></div>
+<div>{{ phrase_html("docs.guide.multi.open-com-select-characters-and-press-deploy-to") }}</div>
 <div class="divider"></div>
 
 <div class="title mt10">Mainframe</div> <div class="mb10"></div>
-<div><a href="/mainframe">Mainframe</a> runs owned characters without keeping a browser open. Choose a CODE slot and live realm for each direct start. Steam accounts receive 250 free hours shared across Adventure Land accounts linked to that Steam account. Each direct start uses time separately. Running CODE can use <span class="dlabel">start_character</span> to include up to three more owned characters in one shared machine. A direct run starts with 60 minutes. At renewal, one Shell or free Steam hour buys 60, 50, 45, or 40 minutes when 1, 2, 3, or 4 characters are active. A running assignment renews automatically and survives Mainframe restarts. It stops only when you disconnect it or the account cannot pay. Mainframe refuses to start a character that is already active elsewhere.</div>
+<div>{{ phrase_html("docs.guide.multi.mainframe-runs-owned-characters-without-keeping-a-browser") }}</div>
 <div class="divider"></div>
 
-<div class="title mt10">Child Characters</div> <div class="mb10"></div>
-<div>Type <span class="dlabel">/start CHARACTERNAME</span> in chat, or use CODE, to run another owned character inside the current browser. Coordinate characters with trusted CODE messages:</div>
+<div class="title mt10">{{ phrase("docs.guide.multi.child-characters") }}</div> <div class="mb10"></div>
+<div>{{ phrase_html("docs.guide.multi.type-start-charactername-in-chat-or-use-code") }}</div>
 <div class='code'>
 start_character("CHARACTERNAME");
 
@@ -30,8 +30,8 @@ character.on("cm", function (message) {
 
 <div class="divider"></div>
 
-<div class="title mt10">Observe and Coordinate</div> <div class="mb10"></div>
-<div>Use <a href="/comm">COM</a> or <span class="dlabel">/comm</span> to observe connected characters. Use <span class="dlabel">send_cm</span> for character-to-character instructions, and always check the sender before acting on a message.</div>
+<div class="title mt10">{{ phrase("docs.guide.multi.observe-and-coordinate") }}</div> <div class="mb10"></div>
+<div>{{ phrase_html("docs.guide.multi.use-com-or-comm-to-observe-connected-characters") }}</div>
 </div>
 
 <style>

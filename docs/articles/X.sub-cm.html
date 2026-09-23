@@ -1,6 +1,6 @@
-<p><span class="dlabel">CODE messages</span></p>
+<p>{{ phrase_html("docs.articles.x.sub-cm.code-messages") }}</p>
 
-<p>CODE messages, or CMs, send JSON-serializable data between characters. Server delivery stays within the current game server; it does not cross from one region/server to another. Characters opened locally can also receive a fast local delivery.</p>
+<p>{{ phrase("docs.articles.x.sub-cm.code-messages-or-cms-send-json-serializable-data") }}</p>
 
 <div class="code">async function send_orders() {
 	try {
@@ -19,9 +19,9 @@
 
 send_orders();</div>
 
-<p><span class="dlabel">send_cm</span> returns one Promise. It fulfills with <span class="dlabel">{receivers, locals}</span>. Offline or missing server recipients are simply absent from <span class="dlabel">receivers</span>. If local delivery succeeds but server delivery fails, the rejection retains those names in <span class="dlabel">locals</span> and <span class="dlabel">receivers</span> so retry logic does not duplicate their message.</p>
+<p>{{ phrase_html("docs.articles.x.sub-cm.send-cm-returns-one-promise-it-fulfills-with") }}</p>
 
-<p>Receive messages through the character event:</p>
+<p>{{ phrase("docs.articles.x.sub-cm.receive-messages-through-the-character-event") }}</p>
 
 <div class="code">character.on("cm", function (data) {
 	if (data.name != "Wizard") {
@@ -32,6 +32,6 @@ send_orders();</div>
 	show_json(data.message);
 });</div>
 
-<p>The payload is <span class="dlabel">{name, message}</span>. Treat every incoming message as untrusted input: verify <span class="dlabel">data.name</span>, validate the message shape and allowed commands, and use <span class="dlabel">safe_log</span> when displaying untrusted text.</p>
+<p>{{ phrase_html("docs.articles.x.sub-cm.the-payload-is-name-message-treat-every-incoming") }}</p>
 
-<p>Messages must survive <span class="dlabel">JSON.stringify</span>. Do not send functions, circular objects, DOM nodes, or live entity objects. Copy only the primitive fields the receiver needs. Larger server-routed messages consume more communication capacity; batching recipients in one call is cheaper than repeating the same call.</p>
+<p>{{ phrase_html("docs.articles.x.sub-cm.messages-must-survive-json-stringify-do-not-send") }}</p>

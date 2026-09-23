@@ -30,7 +30,7 @@ function set_pamount(amount) {
 		steam_poll_count = 0;
 		steam_debug("amount.selected", { usd: pamount });
 		$(".pbutton").removeClass("pfail psuccess");
-		$(".pbutton").html("Buy $" + pamount + " with Steam");
+		$(".pbutton").html(phrase.html("services.payments.buy-steam", { amount: pamount }));
 		update_shells_calc();
 		return;
 	}
@@ -39,13 +39,13 @@ function set_pamount(amount) {
 			if (inside != "payments") hide_modal();
 			stripe_state = "pay";
 			$(".pbutton").removeClass("psuccess");
-			$(".pbutton").html("Pay $" + pamount);
+			$(".pbutton").html(phrase.html("services.payments.pay-amount", { amount: pamount }));
 		}, 20);
 		return;
 	}
 	if (stripe_state == "failed") ((stripe_state = "pay"), $(".pbutton").removeClass("pfail"));
 	if (stripe_state == "declined") ((stripe_state = "pay"), $(".pbutton").removeClass("pfail"));
-	if (stripe_state == "pay") $(".pbutton").html("Pay $" + pamount);
+	if (stripe_state == "pay") $(".pbutton").html(phrase.html("services.payments.pay-amount", { amount: pamount }));
 	update_shells_calc();
 }
 
@@ -62,10 +62,10 @@ function update_shells_calc() {
 	else if (pamount >= 25) bonus_mult = 0.08;
 	var extra = Math.floor(base * bonus_mult);
 	var subtotal = base + extra;
-	var html = "<span style='color: gray;'>" + to_pretty_num(base) + " + " + to_pretty_num(extra) + " (extra)";
+	var html = "<span style='color: gray;'>" + phrase.html("services.payments.shells-base-extra", { base: to_pretty_num(base), extra: to_pretty_num(extra) });
 	if (extra_shells_pct) {
 		var event_bonus = Math.floor((subtotal * extra_shells_pct) / 100.0);
-		html += " + " + to_pretty_num(event_bonus) + " (bonus)";
+		html += phrase.html("services.payments.shells-event-bonus", { bonus: to_pretty_num(event_bonus) });
 		subtotal += event_bonus;
 	}
 	html += " = <span style='color:white'>" + to_pretty_num(subtotal) + "</span></span>";
@@ -74,14 +74,14 @@ function update_shells_calc() {
 }
 
 function steam_payment_message(reason) {
-	if (reason == "steam_purchase_cancelled") return "Purchase cancelled.";
-	if (reason == "steam_auth_failed") return "Steam authentication failed. Please restart Adventure Land through Steam.";
-	if (reason == "steam_account_required") return "Log in through Steam before purchasing Shells.";
-	if (reason == "steam_client_update_required") return "Please update the Steam client and restart Adventure Land.";
-	if (reason == "steam_not_configured") return "Steam purchases aren't available yet.";
-	if (reason == "steam_checkout_unavailable") return "Steam didn't provide a checkout page.";
-	if (reason == "steam_payment_pending" || reason == "steam_purchase_timeout") return "Steam is still processing this purchase.";
-	return "Steam couldn't complete the purchase.";
+	if (reason == "steam_purchase_cancelled") return phrase("services.payments.purchase-cancelled");
+	if (reason == "steam_auth_failed") return phrase("services.payments.steam-authentication-failed-please-restart-adventure-land-through-steam");
+	if (reason == "steam_account_required") return phrase("services.payments.log-in-through-steam-before-purchasing-shells");
+	if (reason == "steam_client_update_required") return phrase("services.payments.please-update-the-steam-client-and-restart-adventure-land");
+	if (reason == "steam_not_configured") return phrase("services.payments.steam-purchases-aren-t-available-yet");
+	if (reason == "steam_checkout_unavailable") return phrase("services.payments.steam-didn-t-provide-a-checkout-page");
+	if (reason == "steam_payment_pending" || reason == "steam_purchase_timeout") return phrase("services.payments.steam-is-still-processing-this-purchase");
+	return phrase("services.payments.steam-couldn-t-complete-the-purchase");
 }
 
 function steam_payment_failed(error) {
@@ -90,11 +90,11 @@ function steam_payment_failed(error) {
 	if (reason == "steam_payment_pending" || reason == "steam_purchase_timeout") {
 		steam_state = "pending";
 		$(".pbutton").removeClass("pfail");
-		$(".pbutton").html("Check Steam Payment");
+		$(".pbutton").html(phrase("services.payments.check-steam-payment"));
 	} else {
 		steam_state = reason == "steam_purchase_cancelled" ? "declined" : "failed";
 		$(".pbutton").addClass("pfail");
-		$(".pbutton").html(reason == "steam_purchase_cancelled" ? "Cancelled." : "Failed.");
+		$(".pbutton").html(reason == "steam_purchase_cancelled" ? phrase("services.payments.cancelled") : phrase("services.payments.failed"));
 	}
 	p_log(steam_payment_message(reason), "#88E5BC");
 }
@@ -103,16 +103,16 @@ function steam_payment_success(data) {
 	steam_debug("completed", { shells_received: data.shells });
 	steam_state = "success";
 	$(".pbutton").removeClass("pfail").addClass("psuccess");
-	$(".pbutton").html("Success!");
+	$(".pbutton").html(phrase("services.payments.success"));
 	if (window.character) character.cash = data.cash;
 	reset_inventory(1);
-	p_log("You received " + to_pretty_num(data.shells) + " Shells!", "#88E5BC");
+	p_log(phrase.html("services.payments.shells-received", { shells: to_pretty_num(data.shells) }), "#88E5BC");
 }
 
 function steam_finish_payment(authorized) {
 	steam_debug("finalize.start", { authorized: !!authorized });
 	steam_state = "finalizing";
-	$(".pbutton").html("Finalizing ...");
+	$(".pbutton").html(phrase("services.payments.finalizing"));
 	api_call("steam_payment_finish", { order_id: steam_order_id, authorized: !!authorized }).then(steam_payment_success).catch(steam_payment_failed);
 }
 
@@ -132,7 +132,7 @@ function steam_poll_payment(order_id, started) {
 					steam_debug("status.pending", { attempt: steam_poll_count, elapsed_ms: Date.now() - started });
 				}
 				steam_state = "authorize";
-				$(".pbutton").html("Waiting for Steam ...");
+				$(".pbutton").html(phrase("services.payments.waiting-for-steam"));
 				setTimeout(function () {
 					steam_poll_payment(order_id, started);
 				}, 1500);
@@ -152,11 +152,11 @@ function steam_pay(event) {
 		logged_in: !!user_id,
 	});
 	if (typeof is_tauri == "undefined" || !is_tauri) {
-		p_log("Steam purchases are available in the Steam client.", "#88E5BC");
+		p_log(phrase("services.payments.steam-purchases-are-available-in-the-steam-client"), "#88E5BC");
 		return;
 	}
 	if (!user_id) {
-		p_log("Please log in before purchasing Shells.", "#88E5BC");
+		p_log(phrase("services.payments.please-log-in-before-purchasing-shells"), "#88E5BC");
 		return;
 	}
 	if (steam_state == "pending" && steam_order_id) {
@@ -165,7 +165,7 @@ function steam_pay(event) {
 		return;
 	}
 	if (in_arr(steam_state, ["process", "authorize", "finalizing"])) {
-		p_log("Currently processing your Steam payment.", "gray");
+		p_log(phrase("services.payments.currently-processing-your-steam-payment"), "gray");
 		return;
 	}
 	if (in_arr(steam_state, ["failed", "declined", "success"])) {
@@ -176,7 +176,7 @@ function steam_pay(event) {
 	steam_state = "process";
 	steam_poll_count = 0;
 	$("#plog").html("");
-	$(".pbutton").html("Contacting Steam ...");
+	$(".pbutton").html(phrase("services.payments.contacting-steam"));
 	tauri_refresh_auth()
 		.then(function (auth) {
 			steam_debug("auth.result", {
@@ -194,11 +194,11 @@ function steam_pay(event) {
 			steam_debug("order.created", { sandbox: !!data.sandbox, checkout_available: !!data.steam_url });
 			steam_order_id = data.order_id;
 			steam_state = "authorize";
-			$(".pbutton").html("Opening Steam ...");
-			p_log((data.sandbox ? "Sandbox: " : "") + "Opening the Steam checkout ...", "gray");
+			$(".pbutton").html(phrase("services.payments.opening-steam"));
+			p_log((data.sandbox ? phrase("services.payments.sandbox-prefix") : "") + phrase("services.payments.opening-the-steam-checkout"), "gray");
 			return tauri_open_steam_checkout(data.steam_url).then(function (method) {
-				if (method == "overlay") p_log((data.sandbox ? "Sandbox: " : "") + "Complete the purchase in the Steam overlay.", "gray");
-				else p_log((data.sandbox ? "Sandbox: " : "") + "Steam overlay unavailable. Complete the purchase in your browser.", "gray");
+				if (method == "overlay") p_log((data.sandbox ? phrase("services.payments.sandbox-prefix") : "") + phrase("services.payments.complete-the-purchase-in-the-steam-overlay"), "gray");
+				else p_log((data.sandbox ? phrase("services.payments.sandbox-prefix") : "") + phrase("services.payments.steam-overlay-unavailable-complete-the-purchase-in-your-browser"), "gray");
 				steam_poll_payment(steam_order_id, Date.now());
 			});
 		})
@@ -208,20 +208,20 @@ function steam_pay(event) {
 function stripe_pay() {
 	$("#plog").html("");
 	if (!window.Stripe) {
-		alert("Stripe hasn't loaded. Please refresh the page and email hello@adventure.land if this is persistent. Thank you.");
+		alert(phrase("services.payments.stripe-hasn-t-loaded-please-refresh-the-page-and"));
 		return;
 	}
 	if (stripe_state == "process") {
-		add_log("Currently processing your payment.");
-		p_log("Currently processing your payment.");
+		add_log(phrase("services.payments.currently-processing-your-payment"));
+		p_log(phrase("services.payments.currently-processing-your-payment"));
 		return;
 	}
 	if (stripe_state == "charge") {
-		add_log("Currently charging your credit card.");
+		add_log(phrase("services.payments.currently-charging-your-credit-card"));
 		return;
 	}
 	if (in_arr(stripe_state, ["failed", "declined", "success"])) return set_pamount(pamount);
-	$(".pbutton").html("Processing ...");
+	$(".pbutton").html(phrase("services.payments.processing"));
 	stripe_state = "process";
 	Stripe.card.createToken(
 		{
@@ -239,12 +239,12 @@ function stripe_response(status, response) {
 	if (status == 200) {
 		$("#plog").html("");
 		stripe_state = "charge";
-		$(".pbutton").html("Charging ...");
+		$(".pbutton").html(phrase("services.payments.charging"));
 		api_call("stripe_payment", { usd: pamount, response: response });
 	} else {
 		$("#plog").html("");
 		stripe_state = "failed";
-		$(".pbutton").html("Failed.");
+		$(".pbutton").html(phrase("services.payments.failed"));
 		if (response.error && response.error.message) (add_log(response.error.message, "gray"), p_log(response.error.message, "gray"));
 	}
 	// if(Dev) show_json(response);
@@ -255,21 +255,21 @@ function stripe_result(result, cash) {
 		$("#plog").html("");
 		stripe_state = "success";
 		$(".pbutton").addClass("psuccess");
-		$(".pbutton").html("Success!");
+		$(".pbutton").html(phrase("services.payments.success"));
 		character.cash = cash;
 		reset_inventory(1);
 	} else if (result == "declined") {
 		$("#plog").html("");
 		stripe_state = "declined";
 		$(".pbutton").addClass("pfail");
-		$(".pbutton").html("Declined.");
-		p_log("If you need help, feel free to email hello@adventure.land", "#88E5BC");
+		$(".pbutton").html(phrase("services.payments.declined"));
+		p_log(phrase("services.payments.if-you-need-help-feel-free-to-email-hello"), "#88E5BC");
 	} else {
 		$("#plog").html("");
 		stripe_state = "failed";
 		$(".pbutton").addClass("pfail");
-		$(".pbutton").html("Failed.");
-		p_log("If you need help, feel free to email hello@adventure.land", "#88E5BC");
+		$(".pbutton").html(phrase("services.payments.failed"));
+		p_log(phrase("services.payments.if-you-need-help-feel-free-to-email-hello"), "#88E5BC");
 	}
 }
 
@@ -285,7 +285,10 @@ function show_payments() {
 
 	html += $("#paymentshtml").html();
 
-	html += "<div class='gamebutton clickable' onclick='$(\".paymentsui\").remove()' style='position: fixed; z-index: 10000; top: 0px; right: 0px; color: #CFCFCF'>Back &gt;</div>";
+	html +=
+		"<div class='gamebutton clickable' onclick='$(\".paymentsui\").remove()' style='position: fixed; z-index: 10000; top: 0px; right: 0px; color: #CFCFCF'>" +
+		phrase.html("services.payments.back") +
+		"</div>";
 
 	html += "</div>";
 	$("body").append(html);
@@ -300,7 +303,10 @@ function show_ppayments() {
 	html += 'style="border: 5px solid gray; background: black"></iframe>';
 	html += "</div>";
 
-	html += "<div class='gamebutton clickable' onclick='$(\".paymentsui\").remove()' style='position: fixed; z-index: 10000; top: 0px; right: 0px; color: #CFCFCF'>Back &gt;</div>";
+	html +=
+		"<div class='gamebutton clickable' onclick='$(\".paymentsui\").remove()' style='position: fixed; z-index: 10000; top: 0px; right: 0px; color: #CFCFCF'>" +
+		phrase.html("services.payments.back") +
+		"</div>";
 
 	html += "</div>";
 	$("body").append(html);
@@ -315,7 +321,7 @@ function show_poffers() {
 	html += 'style="border: 5px solid gray; background: black"></iframe>';
 	html += "</div>";
 
-	html += "<div class='gamebutton clickable' onclick='$(\".paymentsui\").remove()' style='position: fixed; z-index: 10000; top: 0px; right: 0px'>Back &gt;</div>";
+	html += "<div class='gamebutton clickable' onclick='$(\".paymentsui\").remove()' style='position: fixed; z-index: 10000; top: 0px; right: 0px'>" + phrase.html("services.payments.back") + "</div>";
 
 	html += "</div>";
 	$("body").append(html);

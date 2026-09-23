@@ -1,0 +1,84 @@
+<p>{{ phrase_html("docs.tutorial.js-async.idea") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.task") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-async.task") }}</p>
+
+<p>{{ phrase("docs.tutorial.javascript.practice") }}</p>
+
+<div class="tutorial-code" data-lesson="async">
+	<!-- prettier-ignore -->
+	<div class="code executeb">let travelling = false;
+async function takeTrip() {
+  if (travelling) return;
+  travelling = true;
+  try {
+    smart_move({ map: "main", x: 0, y: 0 });
+    game_log("Arrived");
+  } catch (error) {
+    game_log("Travel failed: " + error.reason);
+  } finally {
+    travelling = false;
+  }
+}
+takeTrip();</div>
+
+	<div class="tutorial-code-result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.hint") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-async.hint") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.solution") }}</div>
+
+<!-- prettier-ignore -->
+<div class="code readonly">let travelling = false;
+async function takeTrip() {
+  if (travelling) return;
+  travelling = true;
+  try {
+    await smart_move({ map: "main", x: 0, y: 0 });
+    game_log("Arrived");
+  } catch (error) {
+    game_log("Travel failed: " + error.reason);
+  } finally {
+    travelling = false;
+  }
+}
+takeTrip();</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.variation") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-async.variation") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.transfer") }}</div>
+
+<p>{{ phrase("docs.tutorial.javascript.copy") }}</p>
+
+<p>{{ phrase_html("docs.tutorial.js-async.transfer") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.js-async.reading_title") }}</div>
+
+{{ phrase_html("docs.tutorial.js-async.reading_before") }}
+
+<!-- prettier-ignore -->
+<div class="code readonly">async function visit() {
+  try {
+    await smart_move({ map: "main", x: 0, y: 0 });
+    game_log("Arrived");
+  } catch (error) {
+    game_log("Travel failed: " + error.reason);
+  } finally {
+    game_log("Trip finished");
+  }
+}
+visit();</div>
+
+{{ phrase_html("docs.tutorial.js-async.reading_after") }}
+
+<p><span class="rlabel clickable" onclick="load_documentation('smart_move')">smart_move</span> · <span class="rlabel clickable" onclick="load_documentation('stop')">stop</span></p>

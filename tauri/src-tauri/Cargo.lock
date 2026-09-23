@@ -18,11 +18,13 @@ dependencies = [
  "objc2-foundation",
  "rfd",
  "serde",
+ "serde_json",
  "steamworks",
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
  "tauri-plugin-single-instance",
+ "tokio",
  "url",
 ]
 

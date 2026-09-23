@@ -1,5 +1,7 @@
 var path = require("path"),
 	f = require(path.resolve(__dirname, "script_functions.js"));
+var exclusions = f.deployment_exclusions();
+
 var mode = process.argv[2] || "",
 	suffix = "";
 if (mode) suffix = "_" + mode;
@@ -20,11 +22,11 @@ for (var id in options.machines) {
 	console.log("\nUploading to " + id + " (" + machine.ip + ")...");
 	if (!first) {
 		var command =
-			"ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o BatchMode=yes -p " + (machine.ssh_port || 22) + " -i " + machine.key + " " + machine.user + "@" + machine.ip + ' "' + "uptime" + '"';
+			"ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o BatchMode=yes -p " + (machine.ssh_port || 22) + " -i " + machine.key + " " + machine.user + "@" + machine.ip + ' "' + "uptime" + '"';
 		f.execso(command);
 	}
 	var command =
-		"rsync -rc --exclude='/agentic/' --exclude='/proposals/' -e 'ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o BatchMode=yes -p " +
+		"rsync " + exclusions + " -rc --exclude='.git' -e 'ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o BatchMode=yes -p " +
 		(machine.ssh_port || 22) +
 		" -i " +
 		machine.key +
@@ -38,7 +40,7 @@ for (var id in options.machines) {
 	console.log("Running: " + command);
 	f.execso(command);
 	var dependency_command =
-		"ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o BatchMode=yes -p " +
+		"ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o BatchMode=yes -p " +
 		(machine.ssh_port || 22) +
 		" -i " +
 		machine.key +

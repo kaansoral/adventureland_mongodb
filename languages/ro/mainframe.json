@@ -1,0 +1,23 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe a pus acest personaj în așteptare.",
+	"mainframe.event.included_worker_queued": "Mainframe a pus acest Worker inclus în așteptare.",
+	"mainframe.event.shared_with": "Partajat cu {character}",
+	"mainframe.event.shared_with_root": "Partajat cu personajul principal",
+	"mainframe.event.explicit_disconnect": "Deconectat de proprietarul contului.",
+	"mainframe.event.renewed_free": "S-a folosit 1 oră gratuită de Mainframe pentru o durată de {minutes} min.",
+	"mainframe.event.renewed_shell": "S-a plătit 1 scoică pentru o durată de {minutes} min.",
+	"mainframe.event.renewal_one": "{count} personaj activ · Următoarea reînnoire: {date}",
+	"mainframe.event.renewal_many": "{count} de personaje active · Următoarea reînnoire: {date}",
+	"mainframe.event.renewal_failed": "Mainframe a oprit acest personaj deoarece timpul s-a epuizat.",
+	"mainframe.event.worker_failure": "Mainframe a detectat o eroare la un Worker și va încerca din nou.",
+	"mainframe.event.server_change": "Mainframe reconectează acest personaj pe alt server.",
+	"mainframe.level.info": "INFO",
+	"mainframe.level.warn": "AVERTISMENT",
+	"mainframe.level.error": "EROARE",
+	"mainframe.event.renewal_many.few": "{count} personaje active · Următoarea reînnoire: {date}",
+	"mainframe.event.renewal_many.one": "{count} personaj activ · Următoarea reînnoire: {date}",
+	"mainframe.event.renewal_many.other": "{count} de personaje active · Următoarea reînnoire: {date}",
+	"mainframe.event.renewal_one.few": "{count} personaje active · Următoarea reînnoire: {date}",
+	"mainframe.event.renewal_one.one": "{count} personaj activ · Următoarea reînnoire: {date}",
+	"mainframe.event.renewal_one.other": "{count} de personaje active · Următoarea reînnoire: {date}"
+}

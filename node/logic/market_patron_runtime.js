@@ -1,20 +1,43 @@
 // Runs in the game server's shared scope, alongside the existing citizen handlers.
 var market_patron_sessions = new WeakMap();
+var market_patron_placements = new WeakMap();
+var market_patron_placement_order = 0;
 var market_patron_account_next = new Map();
 function market_patron_config() {
 	return G.npcs.citizen22.market;
 }
 function market_patron_reset(player) {
-	if (player) market_patron_sessions.delete(player);
+	if (player) {
+		market_patron_sessions.delete(player);
+		market_patron_placements.delete(player);
+	}
 }
-// Inventory and gold changes already pass through resend. Observe only shops
-// with a running timer; the citizen tick checks their surroundings once a second.
-function market_patron_observe(player) {
-	if (
-		market_patron_sessions.has(player) &&
-		(player.rip || player.dc || player.moving || !player.p.stand || !market_patron_rules.hasListing(player, G.items))
-	)
+// A shop keeps its place between visits, independently of the reward timer.
+function market_patron_placement(player, now) {
+	if (player.npc || player.rip || player.dc || player.user || player.moving || !player.p?.stand) {
 		market_patron_reset(player);
+		return 0;
+	}
+	var placement = market_patron_placements.get(player),
+		config = market_patron_config();
+	if (
+		!placement ||
+		placement.in !== player.in ||
+		simple_distance(player, placement) > config.anchor_tolerance ||
+		now - placement.checked > config.max_observation_gap
+	) {
+		placement = { x: player.x, y: player.y, in: player.in, order: ++market_patron_placement_order };
+		market_patron_placements.set(player, placement);
+	}
+	placement.checked = now;
+	return placement.order;
+}
+// Resend records stand placement and listing changes; the citizen tick checks
+// surroundings once a second.
+function market_patron_observe(player) {
+	market_patron_placement(player, Date.now());
+	if (market_patron_sessions.has(player) && !market_patron_rules.hasListing(player, G.items))
+		market_patron_sessions.delete(player);
 }
 function market_patron_status(player, now, members) {
 	var instance = instances[player.in],
@@ -28,6 +51,7 @@ function market_patron_status(player, now, members) {
 		G.items,
 		market_patron_sessions.get(player),
 		now,
+		(p) => market_patron_placement(p, now),
 	);
 	if (result.session) market_patron_sessions.set(player, result.session);
 	else market_patron_sessions.delete(player);
@@ -137,7 +161,9 @@ async function market_patron_grant(npc, player) {
 				item: "marketparcel",
 				quantity: 1,
 				shells: shells,
-				reason: "Your shop stayed stocked for two minutes and left the neighbors room.",
+				reason: phrase("server.merrit.receipt", {}, "en"),
+				reason_phrase: "server.merrit.receipt",
+				reason_phrase_args: {},
 			};
 			data.p.merrit_receipt = R.receipt;
 			A.sync(entity, data);
@@ -192,7 +218,7 @@ function market_patron_finish(player, receipt, cash) {
 	}
 	add_item(player, { name: "marketparcel", q: 1 }, { announce: false });
 	player.p.merrit_receipt = receipt;
-	market_patron_reset(player);
+	market_patron_sessions.delete(player);
 	market_patron_account_next.set(player.owner, receipt.at + market_patron_config().hour_ms);
 	if (receipt.shells) {
 		player.cash = cash;
@@ -208,7 +234,9 @@ function market_patron_finish(player, receipt, cash) {
 			disappearing_text(
 				player.socket,
 				npc,
-				receipt.shells ? "A parcel, and 1 SHELL. Good to see your shop!" : "A parcel for keeping a shop on the square.",
+				receipt.shells
+					? localization.message("server.floating.a_parcel_and_1_shell_good_to_see_your_shop", {})
+					: localization.message("server.floating.a_parcel_for_keeping_a_shop_on_the_square", {}),
 				{ color: "#DDB979" },
 			);
 	}

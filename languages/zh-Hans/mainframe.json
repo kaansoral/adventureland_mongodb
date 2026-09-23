@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe已将此角色加入队列。",
+	"mainframe.event.included_worker_queued": "Mainframe已将此附带Worker加入队列。",
+	"mainframe.event.shared_with": "与{character}共享",
+	"mainframe.event.shared_with_root": "与根角色共享",
+	"mainframe.event.explicit_disconnect": "账号所有者已断开连接。",
+	"mainframe.event.renewed_free": "使用了1个免费Mainframe小时，换取{minutes}分钟。",
+	"mainframe.event.renewed_shell": "扣除了1枚贝壳，换取{minutes}分钟。",
+	"mainframe.event.renewal_one": "{count}个角色运行中 · 下次续费{date}",
+	"mainframe.event.renewal_many": "{count}个角色运行中 · 下次续费{date}",
+	"mainframe.event.renewal_failed": "剩余时间已用完，Mainframe已停止此角色。",
+	"mainframe.event.worker_failure": "Mainframe检测到Worker故障，将重试。",
+	"mainframe.event.server_change": "Mainframe正在另一个服务器上重新连接此角色。",
+	"mainframe.level.info": "信息",
+	"mainframe.level.warn": "警告",
+	"mainframe.level.error": "错误"
+}

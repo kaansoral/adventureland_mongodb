@@ -336,8 +336,8 @@ function admin_bots_clean_report(report) {
 	};
 }
 
-function admin_bots_log_record_id(character_id) {
-	return "MK_mainframe_logs-" + character_id;
+function admin_bots_log_record_id(character_id, owner_id) {
+	return "MK_mainframe_logs-" + character_id + (owner_id ? "-" + owner_id : "");
 }
 
 function admin_bots_log_key(entry) {
@@ -396,24 +396,39 @@ async function admin_bots_persist_logs(report, agent_id) {
 	var assignment_ids = reported.map(function (bot) {
 		return mainframe_assignment_record_id(bot.character_id);
 	});
-	var log_ids = reported.map(function (bot) {
-		return admin_bots_log_record_id(bot.character_id);
-	});
 	var records = await db
 		.collection("mark")
-		.find({ _id: { $in: assignment_ids.concat(log_ids) } })
-		.limit(reported.length * 2)
+		.find({ _id: { $in: assignment_ids } })
+		.limit(reported.length)
 		.toArray();
+	var log_ids = records.flatMap(function (assignment) {
+		return [admin_bots_log_record_id(assignment.character, assignment.owner), admin_bots_log_record_id(assignment.character)];
+	});
+	if (log_ids.length)
+		records = records.concat(
+			await db
+				.collection("mark")
+				.find({ _id: { $in: log_ids } })
+				.limit(log_ids.length)
+				.toArray(),
+		);
 	var by_id = {};
 	for (var record of records) by_id[record._id] = record;
 	var now = new Date();
 	var operations = [];
 	for (var bot of reported) {
 		var assignment = by_id[mainframe_assignment_record_id(bot.character_id)];
-		if (!assignment || assignment.owner === undefined || assignment.controller !== agent_id || assignment.session_id !== bot.assignment_id) continue;
-		var record_id = admin_bots_log_record_id(bot.character_id);
-		var previous = by_id[record_id];
-		var merged = Array.isArray(previous && previous.logs) ? previous.logs.slice() : [];
+		if (
+			!assignment ||
+			assignment.character !== bot.character_id ||
+			!/^US_[A-Za-z0-9_-]{1,100}$/.test(assignment.owner || "") ||
+			assignment.controller !== agent_id ||
+			assignment.session_id !== bot.assignment_id
+		)
+			continue;
+		var record_id = admin_bots_log_record_id(bot.character_id, assignment.owner);
+		var previous = by_id[record_id] || by_id[admin_bots_log_record_id(bot.character_id)];
+		var merged = previous && previous.owner === assignment.owner && previous.character === bot.character_id && Array.isArray(previous.logs) ? previous.logs.slice() : [];
 		var seen = new Set(merged.map(admin_bots_log_key));
 		for (var entry of bot.logs) {
 			entry = {
@@ -451,9 +466,10 @@ async function admin_bots_persist_logs(report, agent_id) {
 	return operations.length;
 }
 
-async function admin_bots_persisted_logs(character_id, limit) {
-	if (!/^CH_[A-Za-z0-9_-]{1,100}$/.test(character_id || "")) return [];
-	var record = await get(admin_bots_log_record_id(character_id));
+async function admin_bots_persisted_logs(character_id, limit, owner_id) {
+	if (!/^CH_[A-Za-z0-9_-]{1,100}$/.test(character_id || "") || !/^US_[A-Za-z0-9_-]{1,100}$/.test(owner_id || "")) return [];
+	var record = (await get(admin_bots_log_record_id(character_id, owner_id))) || (await get(admin_bots_log_record_id(character_id)));
+	if (!record || record.owner !== owner_id || record.character !== character_id) return [];
 	var logs = admin_bots_bound_persisted_logs(Array.isArray(record && record.logs) ? record.logs : [], new Date());
 	return logs.slice(-Math.max(1, Math.min(Number(limit) || 100, ADMIN_BOTS_LOG_MAX_ENTRIES)));
 }
@@ -577,12 +593,13 @@ async function admin_mainframe_snapshot() {
 		})
 		.filter(Boolean);
 	for (var i = 0; i < character_marks.length; i++) access_ids.push(mainframe_access_record_id(character_marks[i].owner));
+	for (var bot of snapshot.bots) if (bot.character_id) access_ids.push(mainframe_assignment_record_id(bot.character_id));
 	access_ids = Array.from(new Set(access_ids));
 	var access_records = access_ids.length
 		? await db
 				.collection("mark")
 				.find({ _id: { $in: access_ids } })
-				.limit(400)
+				.limit(access_ids.length)
 				.toArray()
 		: [];
 	var access_by_id = {};
@@ -590,6 +607,11 @@ async function admin_mainframe_snapshot() {
 	var activity_ids = [];
 	for (var i = 0; i < snapshot.bots.length; i++) {
 		if (!snapshot.bots[i].character_id) continue;
+		var assignment = access_by_id[mainframe_assignment_record_id(snapshot.bots[i].character_id)];
+		if (assignment) {
+			activity_ids.push(admin_bots_log_record_id(snapshot.bots[i].character_id, assignment.owner));
+			activity_ids.push(mainframe_event_record_id(snapshot.bots[i].character_id, assignment.owner));
+		}
 		activity_ids.push(admin_bots_log_record_id(snapshot.bots[i].character_id));
 		activity_ids.push(mainframe_event_record_id(snapshot.bots[i].character_id));
 	}
@@ -610,8 +632,12 @@ async function admin_mainframe_snapshot() {
 	snapshot.bots = snapshot.bots.map(function (bot) {
 		var character_id = bot.character_id || character_id_by_name[simplify_name(bot.bot_id)];
 		var access = character_id && access_by_id[mainframe_access_record_id(character_id)];
-		var log_record = character_id && activity_by_id[admin_bots_log_record_id(character_id)];
-		var event_record = character_id && activity_by_id[mainframe_event_record_id(character_id)];
+		var assignment = character_id && access_by_id[mainframe_assignment_record_id(character_id)];
+		var owner_id = assignment && assignment.owner;
+		var log_record = character_id && (activity_by_id[admin_bots_log_record_id(character_id, owner_id)] || activity_by_id[admin_bots_log_record_id(character_id)]);
+		var event_record = character_id && (activity_by_id[mainframe_event_record_id(character_id, owner_id)] || activity_by_id[mainframe_event_record_id(character_id)]);
+		if (log_record && log_record.owner !== owner_id) log_record = null;
+		if (event_record && event_record.owner !== owner_id) event_record = null;
 		return Object.assign({}, bot, {
 			mainframe_access: mainframe_access_to_client(access),
 			logs: admin_bots_merge_retained_logs(log_record && log_record.logs, bot.logs, bot.assignment_id, now, 100),
@@ -651,82 +677,92 @@ async function admin_bots_queue_state(bot_id, desired_state, requested_by) {
 async function admin_bots_owned_character(user, name) {
 	var characters = await get_characters(user);
 	return characters.find(function (character) {
-		return (character && character.info && character.info.name) === name || character.name === name;
+		return character && character.owner === get_id(user) && ((character.info && character.info.name) === name || character.name === name);
 	});
 }
 
 app.post("/internal/bots/control", async function (req, res) {
 	res.set("Cache-Control", "no-store");
-	var body = req.body;
-	if (!body || typeof body !== "object" || Array.isArray(body)) return res.status(400).send({ failed: true, reason: "invalid_body" });
-	if (!mainframe_controller_is_known(body.agent_id)) return res.status(400).send({ failed: true, reason: "invalid_agent" });
-	if (!admin_bots_agent_authorized(req, body.agent_id)) return res.status(401).send({ failed: true, reason: "unauthorized" });
-	if (Buffer.byteLength(JSON.stringify(body), "utf8") > ADMIN_BOTS_MAX_REPORT_BYTES) return res.status(413).send({ failed: true, reason: "report_too_large" });
-	if (body.version !== 1) return res.status(400).send({ failed: true, reason: "invalid_version" });
-	var completed = Array.isArray(body.completed) ? body.completed.slice(0, 20) : [];
-	if (
-		!completed.every(function (id) {
-			return /^[0-9a-f]{32}$/.test(id);
-		})
-	)
-		return res.status(400).send({ failed: true, reason: "invalid_completed" });
-	var now = new Date();
-	var report = admin_bots_clean_report(body.report || {});
-	var pull = { expires_at: { $lt: now } };
-	if (completed.length) pull = { $or: [{ id: { $in: completed } }, { expires_at: { $lt: now } }] };
-	await db.collection(ADMIN_BOTS_COLLECTION).updateOne({ _id: body.agent_id }, { $setOnInsert: { created: now, commands: [] } }, { upsert: true });
-	await db.collection(ADMIN_BOTS_COLLECTION).updateOne(
-		{ _id: body.agent_id },
-		{
-			$set: { report: report, updated: now },
-			$pull: { commands: pull },
-		},
-	);
-	await admin_bots_persist_logs(report, body.agent_id);
-	await admin_bots_persist_events(report, body.agent_id);
-	await mainframe_record_controller_failures(report, body.agent_id);
-	var document = await admin_bots_document(body.agent_id);
-	var commands = ((document && document.commands) || []).slice(0, 10).map(function (command) {
-		return { id: command.id, bot_id: command.bot_id, desired_state: command.desired_state };
-	});
-	var assignments = await mainframe_controller_assignments(body.agent_id);
-	return res.status(200).send({ success: true, commands: commands, assignments: assignments });
+	try {
+		var body = req.body;
+		if (!body || typeof body !== "object" || Array.isArray(body)) return res.status(400).send({ failed: true, reason: "invalid_body" });
+		if (!mainframe_controller_is_known(body.agent_id)) return res.status(400).send({ failed: true, reason: "invalid_agent" });
+		if (!admin_bots_agent_authorized(req, body.agent_id)) return res.status(401).send({ failed: true, reason: "unauthorized" });
+		if (Buffer.byteLength(JSON.stringify(body), "utf8") > ADMIN_BOTS_MAX_REPORT_BYTES) return res.status(413).send({ failed: true, reason: "report_too_large" });
+		if (body.version !== 1) return res.status(400).send({ failed: true, reason: "invalid_version" });
+		var completed = Array.isArray(body.completed) ? body.completed.slice(0, 20) : [];
+		if (
+			!completed.every(function (id) {
+				return /^[0-9a-f]{32}$/.test(id);
+			})
+		)
+			return res.status(400).send({ failed: true, reason: "invalid_completed" });
+		var now = new Date();
+		var report = admin_bots_clean_report(body.report || {});
+		var pull = { expires_at: { $lt: now } };
+		if (completed.length) pull = { $or: [{ id: { $in: completed } }, { expires_at: { $lt: now } }] };
+		await db.collection(ADMIN_BOTS_COLLECTION).updateOne({ _id: body.agent_id }, { $setOnInsert: { created: now, commands: [] } }, { upsert: true });
+		await db.collection(ADMIN_BOTS_COLLECTION).updateOne(
+			{ _id: body.agent_id },
+			{
+				$set: { report: report, updated: now },
+				$pull: { commands: pull },
+			},
+		);
+		await admin_bots_persist_logs(report, body.agent_id);
+		await admin_bots_persist_events(report, body.agent_id);
+		await mainframe_record_controller_failures(report, body.agent_id);
+		var document = await admin_bots_document(body.agent_id);
+		var commands = ((document && document.commands) || []).slice(0, 10).map(function (command) {
+			return { id: command.id, bot_id: command.bot_id, desired_state: command.desired_state };
+		});
+		var assignments = await mainframe_controller_assignments(body.agent_id);
+		return res.status(200).send({ success: true, commands: commands, assignments: assignments });
+	} catch (e) {
+		console.error("Mainframe controller poll failed");
+		return res.status(503).send({ failed: true, reason: "mainframe_unavailable" });
+	}
 });
 
 app.post("/internal/mainframe/code", async function (req, res) {
 	res.set("Cache-Control", "no-store");
-	var body = req.body;
-	if (!body || typeof body !== "object" || Array.isArray(body)) return res.status(400).send({ failed: true, reason: "invalid_body" });
-	if (!mainframe_controller_is_known(body.agent_id)) return res.status(400).send({ failed: true, reason: "invalid_agent" });
-	if (!admin_bots_agent_authorized(req, body.agent_id)) return res.status(401).send({ failed: true, reason: "unauthorized" });
-	if (Buffer.byteLength(JSON.stringify(body), "utf8") > ADMIN_MAINFRAME_CODE_MAX_BYTES) return res.status(413).send({ failed: true, reason: "request_too_large" });
-	if (
-		Object.keys(body).sort().join(",") !== "agent_id,assignment_id,character_id,data,operation,request_id,version" ||
-		body.version !== 1 ||
-		!/^[0-9a-f]{32}$/.test(body.assignment_id || "") ||
-		!/^CH_[A-Za-z0-9_-]{1,100}$/.test(body.character_id || "") ||
-		!/^[A-Za-z0-9_-]{1,80}$/.test(body.request_id || "") ||
-		!["change_server", "command_character", "start_character", "stop_character", "upload_code"].includes(body.operation) ||
-		!body.data ||
-		typeof body.data !== "object" ||
-		Array.isArray(body.data)
-	)
-		return res.status(400).send({ failed: true, reason: "invalid_request" });
-	var fields = {
-		change_server: ["name", "region"],
-		command_character: ["character", "code"],
-		start_character: ["character", "code_slot"],
-		stop_character: ["character"],
-		upload_code: ["code", "name", "slot"],
-	}[body.operation];
-	if (
-		Object.keys(body.data).sort().join(",") !== fields.slice().sort().join(",") ||
-		!fields.every(function (name) {
-			return typeof body.data[name] === "string";
-		})
-	)
-		return res.status(400).send({ failed: true, reason: "invalid_data" });
-	return res.status(200).send({ success: true, result: await mainframe_code_action(body) });
+	try {
+		var body = req.body;
+		if (!body || typeof body !== "object" || Array.isArray(body)) return res.status(400).send({ failed: true, reason: "invalid_body" });
+		if (!mainframe_controller_is_known(body.agent_id)) return res.status(400).send({ failed: true, reason: "invalid_agent" });
+		if (!admin_bots_agent_authorized(req, body.agent_id)) return res.status(401).send({ failed: true, reason: "unauthorized" });
+		if (Buffer.byteLength(JSON.stringify(body), "utf8") > ADMIN_MAINFRAME_CODE_MAX_BYTES) return res.status(413).send({ failed: true, reason: "request_too_large" });
+		if (
+			Object.keys(body).sort().join(",") !== "agent_id,assignment_id,character_id,data,operation,request_id,version" ||
+			body.version !== 1 ||
+			!/^[0-9a-f]{32}$/.test(body.assignment_id || "") ||
+			!/^CH_[A-Za-z0-9_-]{1,100}$/.test(body.character_id || "") ||
+			!/^[A-Za-z0-9_-]{1,80}$/.test(body.request_id || "") ||
+			!["change_server", "command_character", "start_character", "stop_character", "upload_code"].includes(body.operation) ||
+			!body.data ||
+			typeof body.data !== "object" ||
+			Array.isArray(body.data)
+		)
+			return res.status(400).send({ failed: true, reason: "invalid_request" });
+		var fields = {
+			change_server: ["name", "region"],
+			command_character: ["character", "code"],
+			start_character: ["character", "code_slot"],
+			stop_character: ["character"],
+			upload_code: ["code", "name", "slot"],
+		}[body.operation];
+		if (
+			Object.keys(body.data).sort().join(",") !== fields.slice().sort().join(",") ||
+			!fields.every(function (name) {
+				return typeof body.data[name] === "string";
+			})
+		)
+			return res.status(400).send({ failed: true, reason: "invalid_data" });
+		return res.status(200).send({ success: true, result: await mainframe_code_action(body) });
+	} catch (e) {
+		console.error("Mainframe CODE request failed");
+		return res.status(503).send({ failed: true, reason: "mainframe_unavailable" });
+	}
 });
 
 app.get("/admin/mainframe", async function (req, res) {

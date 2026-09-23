@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe поставил персонажа в очередь.",
+	"mainframe.event.included_worker_queued": "Mainframe поставил включённый Worker в очередь.",
+	"mainframe.event.shared_with": "Совместно с {character}",
+	"mainframe.event.shared_with_root": "Совместно с главным персонажем",
+	"mainframe.event.explicit_disconnect": "Отключено владельцем учётной записи.",
+	"mainframe.event.renewed_free": "Использован 1 бесплатный час Mainframe на {minutes} мин.",
+	"mainframe.event.renewed_shell": "Списана 1 ракушка за {minutes} мин.",
+	"mainframe.event.renewal_one": "Активных персонажей: {count} · Следующее продление: {date}",
+	"mainframe.event.renewal_many": "Активных персонажей: {count} · Следующее продление: {date}",
+	"mainframe.event.renewal_failed": "Mainframe остановил персонажа: время закончилось.",
+	"mainframe.event.worker_failure": "Mainframe обнаружил сбой Worker и повторит запуск.",
+	"mainframe.event.server_change": "Mainframe переподключает персонажа на другом сервере.",
+	"mainframe.level.info": "СВЕДЕНИЯ",
+	"mainframe.level.warn": "ВНИМАНИЕ",
+	"mainframe.level.error": "ОШИБКА"
+}

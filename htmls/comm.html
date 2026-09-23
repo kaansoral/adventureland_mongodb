@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{domain.language or 'en'}}">
 	<head>
+		{% include "htmls/language.html" %}
+		<meta charset="utf-8">
 		<style>
 			body{
 				overflow: hidden;
@@ -9,7 +11,7 @@
 				background-color: black;
 			}
 		</style>
-		<title>{{domain.name}}</title>
+		<title>{{ phrase("pages.hub.title", {"name": domain.name}) }}</title>
 		{% if domain.electron and domain.no_html %}<script>require=parent.require;</script>{% endif %}
 
 		{# <meta name="viewport" content="user-scalable=yes, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densityDpi=device-dpi" /> #}
@@ -29,6 +31,7 @@
 
 		<script src="/js/libraries/bowser/bowser.16.08.16.js"{%if domain.electron%} onload="if(typeof require!=='undefined') window.bowser=module.exports;"{%endif%}></script>
 		<script src="/js/libraries/combined.js?v=4"></script>
+		<script src="/js/libraries/jquery-ui.draggable.min.js"></script>
 		
 		<script src="/js/codemirror/{{domain.cm_version}}/codemirror.js"></script>
 		<link href="/js/codemirror/{{domain.cm_version}}/codemirror.css" rel="stylesheet" type="text/css"/>
@@ -39,16 +42,20 @@
 		<script src="/js/common_functions.js?v={{domain.v}}"></script>
 		<script src="/js/old_common_functions.js?v={{domain.v}}"></script>
 		<script src="/js/functions.js?v={{domain.v}}"></script>
+		<script src="/js/generated_zones.js?v={{domain.v}}"></script>
+		<script src="/js/entity_animations.js?v={{domain.v}}"></script>
 		<script src="/js/game.js?v={{domain.v}}"></script>
 		<script src="/js/html.js?v={{domain.v}}"></script>
 		<script src="/js/comm.js?v={{domain.v}}"></script>
 		<script src="/js/payments.js?v={{domain.v}}"></script>
 		<script src="/js/keyboard.js?v={{domain.v}}"></script>
-		<script src="/data.js?v={{domain.v}}"></script>
+		<script src="/data.js?v={{domain.v}}&amp;cache=1"></script>
 		{% if user.admin %}<script src="/js/admin.js?v={{domain.v}}"></script>{% endif %}
 		<link href="/css/index.css?v={{domain.v}}" rel="stylesheet" type="text/css"/>
 		<link href="/css/common.css?v={{domain.v}}" rel="stylesheet" type="text/css"/>
+		<link href="/css/comm.css?v={{domain.v}}" rel="stylesheet" type="text/css"/>
 		{% include "htmls/base_script.html" %}
+		<script src="/js/pixel_fonts.js?v={{domain.v}}"></script>
 		<style>
 			body{
 				overflow: hidden;
@@ -95,29 +102,69 @@
 		</style>
 	</head>
 	<body>
+		<section id="comm-chat" aria-label="{{ phrase("pages.comm.label-chat") }}">
+			<div class="comm-chat-heading">
+				<span>{{ phrase("pages.comm.chat") }}</span>
+				<button type="button" class="gamebutton gamebutton-small comm-chat-back" onclick="comm_chat_list()">{{ phrase("pages.comm.chats") }}</button>
+				{% if user %}<button type="button" class="gamebutton gamebutton-small" onclick="comm_chat_new()">{{ phrase("pages.comm.new-pm") }}</button>{% endif %}
+				<button id="comm-chat-expand" type="button" class="gamebutton gamebutton-small" onclick="comm_chat_expand()" aria-label="{{ phrase("chat.expand") }}" title="{{ phrase("chat.expand") }}" aria-pressed="false">{{ phrase("chat.full") }}</button>
+				<button type="button" class="gamebutton gamebutton-small" onclick="toggle_comm_chat()" aria-label="{{ phrase("pages.comm.label-hide-chat") }}">{{ phrase("pages.comm.hide") }}</button>
+			</div>
+			<div class="comm-chat-body">
+				<nav class="comm-chat-sidebar" aria-label="{{ phrase("pages.comm.label-conversations-newest-first") }}">
+					<div id="comm-chat-list"></div>
+					<button id="comm-chat-more" type="button" class="gamebutton gamebutton-small hidden" onclick="comm_chat_pull_list(true)">{{ phrase("pages.comm.more-chats") }}</button>
+				</nav>
+				<div class="comm-chat-conversation">
+					<div id="comm-chat-title"></div>
+					<div id="comm-chat-history">
+						<button id="comm-chat-older" type="button" class="gamebutton gamebutton-small hidden" onclick="comm_chat_pull(true)">{{ phrase("pages.comm.older-messages") }}</button>
+						<div id="comm-chat-messages"></div>
+					</div>
+					<form id="comm-chat-form" autocomplete="off">
+						<div id="comm-chat-recipient" class="hidden"><label for="comm-chat-to">{{ phrase("pages.comm.to") }}</label><input id="comm-chat-to" class="selectioninput mprotected" maxlength="12" placeholder="{{ phrase("pages.comm.label-character-name") }}" aria-label="{{ phrase("pages.comm.label-recipient-character") }}"></div>
+						<div class="comm-chat-from">
+							<label id="comm-chat-from-label" for="comm-chat-from-button">{{ phrase("pages.comm.from") }}</label>
+							<div class="comm-chat-picker">
+								<button id="comm-chat-from-button" type="button" class="gamebutton gamebutton-small selectioninput mprotected" aria-labelledby="comm-chat-from-label comm-chat-from-name" aria-haspopup="listbox" aria-controls="comm-chat-options" aria-expanded="false"><span id="comm-chat-from-name"></span></button>
+								<div id="comm-chat-options" class="hidden" role="listbox" aria-label="{{ phrase("pages.comm.label-sending-character") }}"></div>
+								<select id="comm-chat-from" class="hidden" aria-hidden="true" tabindex="-1"></select>
+							</div>
+						</div>
+						<div class="comm-chat-compose"><input id="comm-chat-input" class="selectioninput mprotected" maxlength="1200" placeholder="{{ phrase("pages.comm.label-message") }}" aria-label="{{ phrase("pages.comm.label-message") }}"><button id="comm-chat-send" type="submit" class="gamebutton gamebutton-small">{{ phrase("pages.comm.send") }}</button></div>
+					</form>
+					<div id="comm-chat-status" role="status" aria-live="polite"></div>
+				</div>
+			</div>
+		</section>
 		<div id="observeui" class="hidden">
-			<div class="gamebutton block mb5" onclick="socket.emit('o:home')">HOME IN</div>
-			<div class="gamebutton block mb5" onclick="render_inventory()">INVENTORY</div>
-			<div class="gamebutton block mb5" onclick="show_commander()">COMMAND</div>
+			<div class="gamebutton block mb5" onclick="socket.emit('o:home')">{{ phrase("pages.comm.home-in") }}</div>
+			<div class="gamebutton block mb5" onclick="render_inventory()">{{ phrase("pages.comm.inventory") }}</div>
+			<div class="gamebutton block mb5" onclick="render_comm_equipment()">{{ phrase("interface.hub.equipment") }}</div>
+			<div class="gamebutton block mb5" onclick="show_commander()">{{ phrase("pages.comm.command") }}</div>
 		</div>
-		<div class='disconnected hidden' style='color: red'>X Disconnected.</div>
+		<div class='disconnected hidden' style='color: red'>{{ phrase("pages.comm.x-disconnected") }}</div>
 		<!-- <div id="gamelog"></div> -->
 		<div id="progressui">0%</div>
 		<div id="login" style="display: none">
-			<div style='background: black; padding: 8px; border: 4px solid gray' class='gg'><input class="selectioninput theemail mprotected" type="email" placeholder="Email" style='width: 200px; box-sizing: border-box'></input></div>
-			<div style='background: black; padding: 8px; border: 4px solid gray' class='gg'><input class="selectioninput thepassword mprotected" type="password" placeholder="Password" style='width: 200px; box-sizing: border-box'></input></div>
-			<div class="gamebutton block mt5" style='text-align: center' onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('.imodal > .gg > .theemail').val(),password:$('.imodal > .gg > .thepassword').val(),only_login:true,mobile:true},{disable:$(this)})">LOGIN</div>
+			<div style='background: black; padding: 8px; border: 4px solid gray' class='gg'><input class="selectioninput theemail mprotected" type="email" placeholder="{{ phrase("pages.comm.label-email") }}" style='width: 200px; box-sizing: border-box'></input></div>
+			<div style='background: black; padding: 8px; border: 4px solid gray' class='gg'><input class="selectioninput thepassword mprotected" type="password" placeholder="{{ phrase("pages.comm.label-password") }}" style='width: 200px; box-sizing: border-box'></input></div>
+			<div class="gamebutton block mt5" style='text-align: center' onclick="if(bc(this)) return; comm_login(this)">{{ phrase("pages.comm.login") }}</div>
+			<div class="comm-login-error mt5" role="alert" style="color: red; background: black; font-size: 24px; line-height: 24px; max-width: 224px"></div>
 		</div>
 		<div id="bottom" class="{% if not user %}hidewithmodals{% endif %}">
 			{% if not user %}
 				<div class="serversui"></div>
-				<div class="gamebutton" style='min-width: 120px; max-width: 240px; margin-bottom: 8px' onclick="show_modal($('#login').html(),{wrap:false})">LOGIN</div>
+				<button type="button" id="comm-chat-toggle" class="gamebutton" onclick="toggle_comm_chat()" aria-expanded="true" aria-controls="comm-chat">{{ phrase("pages.comm.chat") }}</button>
+				<div class="gamebutton" style='min-width: 120px; max-width: 240px; margin-bottom: 8px' onclick="show_modal($('#login').html(),{wrap:false})">{{ phrase("pages.comm.login") }}</div>
 			{% else %}
 				<div class="serversui serversuic hidden"></div>
 				<div class="charactersui charactersuic"></div>
 				<div></div>
-				<a class="gamebutton" style='min-width: 120px; max-width: 240px; margin-right: 5px; text-decoration: none' href="/mainframe">MAINFRAME</a>
-				<div class="gamebutton" style='min-width: 120px; max-width: 240px' onclick="toggle_ui()">TOGGLE</div>
+				<button type="button" id="comm-chat-toggle" class="gamebutton" onclick="toggle_comm_chat()" aria-expanded="true" aria-controls="comm-chat">{{ phrase("pages.comm.chat") }}</button>
+				<a class="gamebutton" style='min-width: 120px; max-width: 240px; margin-right: 5px; text-decoration: none' href="/mainframe">{{ phrase("pages.comm.mainframe") }}</a>
+				<button type="button" class="gamebutton mr5" onclick="render_comm_bank(this)">{{ phrase("interface.hub.bank") }}</button>
+				<div class="gamebutton" style='min-width: 120px; max-width: 240px' onclick="toggle_ui()">{{ phrase("pages.comm.toggle") }}</div>
 			{% endif %}
 		</div>
 		<script>
@@ -146,8 +193,8 @@
 					if(character && game_loaded) code_persistence_logic();
 					if(character && next_skill.use_town>new Date())
 					{
-						add_log("Since you engaged another player in the last 3.6 seconds, If you leave now, You will be automatically defeated.","#E58859")
-						var response="Are you sure?";
+						add_log(phrase.html("page.pvp.leave_warning"),"#E58859")
+						var response=phrase("page.leave_confirm");
 						e.returnValue=response;
 						return response;
 					}
@@ -167,9 +214,12 @@
 				setTimeout(function(){ $("#gamelog").scrollTop(0);},240);
 			}
 			$(function(){ //document.addEventListener("DOMContentLoaded", // now replaced $(document).on("ready") too [10/04/17]
+				init_comm_chat();
 				first_things_first();
+				comm_chat_bind_socket();
 			});
 			window.addEventListener("contextmenu", function(e) {
+				if($(e.target).closest("#comm-chat").length) return;
 				if(!block_right_clicks) return;
 				var custom=false,current=e.target||{};
 				if((current.className||"").substr(0,6)=="rclick") custom=true;

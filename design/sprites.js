@@ -1,4 +1,15 @@
 var sprites = {
+	"rimedjinn":{
+		"file": "/images/tiles/monsters/femaledjinn_1.png",
+		"rows": 1,
+		"columns": 1,
+		"matrix": [
+			[
+				"rimedjinn"
+			]
+		]
+	},
+
 	jubchan: {
 		file: "/images/tiles/characters/jubchan_1.png",
 		rows: 1,
@@ -18,11 +29,27 @@ var sprites = {
 		],
 	},
 	makeup1: {
-		file: "/images/cosmetics/makeup/makeup1.png?v=6",
+		file: "/images/cosmetics/makeup/makeup1.png?v=7",
 		rows: 1,
-		columns: 42,
+		columns: 47,
 		type: "head",
 		matrix: [[]], //looped below
+	},
+	lavaglass: {
+		file: "/images/cosmetics/makeup/lavaglass_anim.png?v=1",
+		rows: 1,
+		columns: 1,
+		type: "head",
+		frames: 8,
+		matrix: [["lavaglasshead0"]],
+	},
+	stormhead: {
+		file: "/images/cosmetics/makeup/stormhead_anim.png?v=1",
+		rows: 1,
+		columns: 1,
+		type: "head",
+		frames: 6,
+		matrix: [["stormhead0"]],
 	},
 	bwhair: {
 		file: "/images/cosmetics/hairdo/bwhair.png?v=2",
@@ -60,10 +87,11 @@ var sprites = {
 		matrix: [["gcandle"]],
 	},
 	halo: {
-		file: "/images/cosmetics/hats/halo_anim.png",
+		file: "/images/cosmetics/hats/halo_anim.png?v=2",
 		rows: 1,
 		columns: 1,
 		type: "a_hat",
+		frames: 4,
 		matrix: [["halo"]],
 	},
 	aniv2: {
@@ -558,6 +586,13 @@ var sprites = {
 		],
 		type: "v_animation", //new logic [02/07/18]
 	},
+	cavechest: {
+		file: "/images/tiles/items/cave-chest.png?v=1",
+		rows: 1,
+		columns: 1,
+		matrix: [["cavechest"]],
+		type: "v_animation",
+	},
 	animationc: {
 		file: "/images/tiles/characters/animationc.png?v=4",
 		rows: 8,
@@ -1024,9 +1059,9 @@ var sprites = {
 };
 var bodysets = [
 	//skin
-	["sskin1", "skin", "small", 8, "/images/cosmetics/skins/sskin1.png"],
-	["mskin1", "skin", "normal", 8, "/images/cosmetics/skins/mskin1.png"],
-	["lskin1", "skin", "large", 4, "/images/cosmetics/skins/lskin1.png"],
+	["sskin1", "skin", "small", 8, "/images/cosmetics/skins/sskin1.png?v=2"],
+	["mskin1", "skin", "normal", 8, "/images/cosmetics/skins/mskin1.png?v=2"],
+	["lskin1", "skin", "large", 4, "/images/cosmetics/skins/lskin1.png?v=2"],
 	//body
 	["sbody1", "body", "small", 5, "/images/cosmetics/armors/sbody1.png?v=4"],
 	["mbody1", "body", "normal", 8, "/images/cosmetics/armors/mbody1.png?v=2"],
@@ -1083,6 +1118,11 @@ for (var si = 0; si < bodysets.length; si++) {
 		}
 	}
 }
+
+sprites.sskin1.rows = sprites.mskin1.rows = 3;
+sprites.sskin1.matrix.push(["sslimeskin", null, null, null]);
+sprites.mskin1.matrix.push(["mslimeskin", null, null, null]);
+sprites.lskin1.matrix[1] = ["lskin1e", "lslimeskin", null, null];
 
 var rowsets = [
 	["hairdo1", "hair", 25, 25, "/images/cosmetics/hairdo/hairdo1.png?v=7"],
@@ -1144,6 +1184,7 @@ sprites.hats4.matrix[0][13] = "aniv3";
 for (var i = 0; i < 42; i++) {
 	sprites["makeup1"]["matrix"][0].push("makeup1" + ("0" + i).slice(-2));
 }
+sprites.makeup1.matrix[0].push("cyclops0", "eyehead0", "mimichead0", "slimehead0", "lanternhead0");
 
 //for(var i=0;i<25;i++)
 //	sprites["hairdo2"]["matrix"][0].push("hair2"+("0"+i).slice(-2));
@@ -1155,6 +1196,12 @@ for (var i = 0; i < 42; i++) {
 // 	sprites["hairs3"]["matrix"][0].push("hair3"+("0"+i).slice(-2));
 
 var imagesets = {
+	teasers: {
+		size: 20,
+		rows: 1,
+		columns: 4,
+		file: "/images/tiles/items/teasers.png?v=2",
+	},
 	pack_1a: {
 		size: 16,
 		rows: 128,
@@ -1192,21 +1239,22 @@ var imagesets = {
 		size: 20,
 		rows: 4,
 		columns: 10,
-		file: "/images/tiles/items/items_40_remastered.png?v=1",
+		file: "/images/tiles/items/items_40_remastered.png?v=2",
 		load: true,
 	},
 	rawitems: {
 		size: 20,
 		rows: 40,
 		columns: 20,
-		file: "/images/tiles/items/raw_items.png?v=14",
+		file: "/images/tiles/items/raw_items.png?v=30",
 		load: true,
 	},
 };
 var tilesets = {
+	dreamsv3: { file: "/images/tiles/map/dreams-v3.png?v=3" },
 	castle: { file: "/images/tiles/map/castle.png?v=2" },
 	custom2: { file: "/images/tiles/map/custom2.png?v=14" },
-	custom: { file: "/images/tiles/map/custom.png?v=14" },
+	custom: { file: "/images/tiles/map/custom.png?v=16" },
 	custom_a: { frames: 3, frame_width: 16, file: "/images/tiles/map/custom_a.png?v=5" },
 	doors: { file: "/images/tiles/map/doors.png" },
 	dungeon: { file: "/images/tiles/map/dungeon.png?v=5" },

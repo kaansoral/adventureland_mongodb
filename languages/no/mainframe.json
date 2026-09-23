@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe satte denne figuren i kø.",
+	"mainframe.event.included_worker_queued": "Mainframe satte denne inkluderte arbeidsprosessen i kø.",
+	"mainframe.event.shared_with": "Delt med {character}",
+	"mainframe.event.shared_with_root": "Delt med hovedfiguren",
+	"mainframe.event.explicit_disconnect": "Koblet fra av kontoeieren.",
+	"mainframe.event.renewed_free": "1 gratis Mainframe-time brukt for {minutes} minutter.",
+	"mainframe.event.renewed_shell": "1 skjell belastet for {minutes} minutter.",
+	"mainframe.event.renewal_one": "{count} figur aktiv · Neste fornyelse {date}",
+	"mainframe.event.renewal_many": "{count} figurer aktive · Neste fornyelse {date}",
+	"mainframe.event.renewal_failed": "Mainframe stoppet denne figuren fordi tiden var brukt opp.",
+	"mainframe.event.worker_failure": "Mainframe oppdaget en feil i en arbeidsprosess og vil prøve på nytt.",
+	"mainframe.event.server_change": "Mainframe kobler denne figuren til på nytt på en annen server.",
+	"mainframe.level.info": "INFO",
+	"mainframe.level.warn": "ADVARSEL",
+	"mainframe.level.error": "FEIL"
+}

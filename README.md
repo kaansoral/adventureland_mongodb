@@ -92,7 +92,11 @@ base_url: "http://adventure.test",
 
 Or just use `http://localhost` — the default config works without any hosts entry.
 
-### 7. Start the backend
+### 7. Seed the map data
+
+Before starting either server, follow [Seeding Game Data](#seeding-game-data) to load the bundled maps into a fresh local MongoDB database.
+
+### 8. Start the backend
 
 ```sh
 node main.js
@@ -100,7 +104,7 @@ node main.js
 
 The backend starts on port **8090** (configurable in `secretsandconfig/options.js`). Visit http://localhost:8090
 
-### 8. Start the game server
+### 9. Start the game server
 
 ```sh
 cd node
@@ -111,39 +115,31 @@ The argument is a key from `servers` in `secretsandconfig/options.js`. The defau
 
 ### Discord chat (optional)
 
-The game server reuses `discord_token` from `secretsandconfig/keys.js` for event announcements and public chat. Set `discord_chat_channel` in `secretsandconfig/options.js` to the string ID of your `#game_chat` channel, and give the bot permission to view that channel and send messages. Use the same channel ID on every game server to combine their public chat. An empty setting disables chat forwarding; event and join announcements keep their existing channels.
+The game server reuses `discord_token` from `secretsandconfig/keys.js` for event announcements and public chat. Public chat defaults to Adventure Land's `#game_chat` channel. To use another channel, set `discord_chat_channel` in `secretsandconfig/options.js` to its string ID and give the bot permission to view it and send messages. Use the same channel ID on every game server to combine their public chat. An empty string disables chat forwarding; event and join announcements keep their existing channels.
 
 Messages include the realm and character name. Public chat is batched over ten seconds; party chat and private messages are excluded. The relay sends nothing back into the game and is disabled in development, test, and hardcore modes. It uses bounded memory, five-second request timeouts, and at most three attempts per batch. Messages expire after two minutes, so an outage or overload can drop chat. No extra Discord package or Gateway connection is needed.
 
 ## Seeding Game Data
 
-The database needs map data and game entities to function. You have two options:
+Run [scripts/seed_mongodb.js](scripts/seed_mongodb.js) once before starting the backend or game server. It includes the 49 map geometry records needed by `design/maps.js` and inserts them into MongoDB's `map` collection. No SQLite dump, Python setup, or production access is needed.
 
-### Option A: Import from the RDBMS dump (recommended)
+Items, monsters, NPCs, and other game definitions already live in `design/`. Accounts, characters, and server records are created as you use the game; the seed contains no player data.
 
-The original AppEngine development database is available at:
-https://github.com/kaansoral/adventureland-appserver/blob/main/storage/db.rdbms
-
-This SQLite file contains users, characters, maps, and all game data from the development server.
-
-Use the migration scripts in `agentic/` to import this data into MongoDB:
+Set `mongodb_name` in `secretsandconfig/keys.js` to a fresh database and point `mongodb_uri` at your local MongoDB instance. Keep both servers stopped while seeding. From the repository root, run:
 
 ```sh
-# Set up Python environment
-cd agentic
-python3 -m venv .venv
-source .venv/bin/activate
-pip install pymongo
+# Check the local connection and confirm the database has no collections (read-only)
+node scripts/seed_mongodb.js --dry-run
 
-# Run the RDBMS migration (reads db.rdbms, writes to MongoDB)
-python _migrate_rdbms.py
+# Insert the maps; replace adventureland with your exact mongodb_name
+node scripts/seed_mongodb.js --confirm adventureland
 ```
 
-See `agentic/` for additional fix scripts that handle ID prefixing, repeated fields, and other migration edge cases. The scripts are documented in `CLAUDE.md`.
+Running without arguments only prints help and does not connect to MongoDB. The script accepts a single local address (`127.0.0.1`, `localhost`, or `::1`), refuses remote, SRV, and proxy connections, and is disabled when `NODE_ENV=production`. Use an actual local MongoDB instance, never a tunnel to an existing database. For a hosted installation, seed locally first and transfer that fresh database using your own deployment process.
 
-### Option B: Start fresh
+The database must have **no collections**, even empty ones. The script requires the exact database name before inserting and refuses repeat runs. It never overwrites or deletes records. If insertion is interrupted, it may leave partial map data and will refuse another attempt; inspect the target and use a new empty database for a fresh seed.
 
-The game will create entities as needed. You can sign up for a new account through the web UI. You'll need to populate map data for the game server to function — the BFS precomputation (`node/precompute_bfs.js`) depends on map geometry being in the database.
+After seeding, start both servers using the Quick Start steps and sign up through the web UI.
 
 ## Project Structure
 
@@ -166,7 +162,8 @@ adventureland/
   css/                     # Stylesheets
   images/                  # Game art and tilesets
   sounds/                  # Sound effects and music
-  agentic/                 # Migration and data fix scripts
+  scripts/
+    seed_mongodb.js       # Bundled map geometry and guarded local database seeding
   common -> ../common      # Symlink to common_engine
   secretsandconfig -> ...  # Symlink to your config
 ```
