@@ -226,7 +226,7 @@ function market_patron_finish(player, receipt, cash) {
 	}
 	delete player.merrit_grant;
 	if (players[player.socket.id] === player) {
-		resend(player, "reopen+nc+inv");
+		resend(player, "reopen+nc");
 		player.socket.emit("merrit_gift", { id: receipt.id, receipt: receipt });
 		player.socket.emit("merrit_status", market_patron_public_status(player, Date.now()));
 		var npc = citizen_npc_in_instance(player.in, "citizen22");
