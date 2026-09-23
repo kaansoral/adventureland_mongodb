@@ -2250,7 +2250,7 @@ function anniversary_deliver(player, names, bonus) {
 			{ color: "#E6AE3F" },
 		),
 	);
-	resend(player, "reopen+nc+inv");
+	resend(player, "reopen+nc");
 }
 
 function anniversary_tick() {
