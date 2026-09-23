@@ -1,0 +1,350 @@
+#progression-guide {
+	width: 492px;
+	max-width: calc(100vw - 32px);
+	margin: 0 auto 8px;
+	border: 4px solid gray;
+	background: black;
+	text-align: left;
+	pointer-events: auto;
+}
+#progression-guide button {
+	font-family: inherit;
+	cursor: pointer;
+}
+#progression-guide .progression-heading {
+	display: flex;
+	align-items: center;
+	padding: 6px 8px;
+}
+#progression-guide .progression-heading button {
+	flex: 1;
+	border: 0;
+	padding: 0;
+	text-align: left;
+	color: #c9d5bf;
+	background: black;
+	font-size: 24px;
+	line-height: 26px;
+}
+#progression-guide .progression-heading button:last-child {
+	flex: 0;
+	padding-left: 12px;
+}
+.progression-count {
+	font-size: 20px;
+	color: #a8ada4;
+	white-space: nowrap;
+}
+.progression-context {
+	display: block;
+	font-size: 20px;
+	line-height: 22px;
+	color: #a8ada4;
+}
+#progression-guide .progression-row {
+	width: 100%;
+	border: 0;
+	border-top: 2px solid #52574e;
+	padding: 4px 0;
+	background: black;
+	color: white;
+	display: flex;
+	align-items: center;
+	text-align: left;
+}
+#progression-guide .progression-summary {
+	display: flex;
+	align-items: center;
+	flex: 1;
+	min-width: 0;
+	padding: 0;
+	border: 0;
+	background: black;
+	text-align: start;
+}
+#progression-guide .progression-actions {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	flex: 0 0 auto;
+	min-width: 42px;
+	margin-right: 6px;
+}
+#progression-guide .progression-info {
+	border: 0;
+	background: black;
+	padding: 2px 0;
+	font-size: 20px;
+}
+#progression-guide .progression-move {
+	font-size: 20px;
+	line-height: 20px;
+	padding: 1px 3px;
+	margin: 2px 0;
+	border-width: 2px;
+}
+.progression-art {
+	direction: ltr;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	width: 80px;
+	height: 64px;
+	flex: 0 0 80px;
+	vertical-align: middle;
+}
+.progression-art img {
+	max-width: none;
+	image-rendering: crisp-edges;
+	image-rendering: pixelated;
+}
+.progression-copy {
+	flex: 1;
+	min-width: 0;
+	padding: 0 8px 0 0;
+}
+.progression-title {
+	display: block;
+	color: #e9e8d5;
+	font-size: 24px;
+	line-height: 24px;
+}
+.progression-reason {
+	display: block;
+	color: #a8ada4;
+	font-size: 20px;
+	line-height: 20px;
+	margin-top: 3px;
+}
+.progression-info {
+	color: #b4c7a7;
+}
+#progression-guide.is-folded {
+	width: max-content;
+	border: 0;
+	border-color: gray;
+	background: transparent;
+}
+#progression-guide .progression-fold {
+	border: 4px solid gray;
+	border-color: inherit;
+	margin: 0;
+	font-size: 24px;
+}
+#progression-guide.new-path {
+	animation: progression-new 1.2s step-end 2;
+}
+@keyframes progression-new {
+	0%,
+	85%,
+	100% {
+		border-color: gray;
+	}
+	30%,
+	65% {
+		border-color: #ffdc8a;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	#progression-guide.new-path {
+		animation: none;
+		border-color: #ffdc8a;
+	}
+}
+.guide-article.progression-details {
+	width: min(740px, calc(100vw * var(--browser-zoom-inverse, 1) - 48px));
+}
+.progression-article {
+	font-size: 24px;
+	line-height: 1.25;
+	text-align: start;
+}
+.progression-article p {
+	margin: 6px 0;
+}
+.progression-article .title {
+	color: #406944;
+	font-size: 28px;
+	line-height: 1.1;
+	margin: 0 0 6px;
+}
+.progression-article .divider {
+	height: 5px;
+	background: #a2a2a2;
+	margin: 12px -24px 10px;
+}
+.progression-detail-heading,
+.progression-material {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.progression-detail-heading .title {
+	margin: 0;
+	font-size: 32px;
+}
+.progression-material {
+	margin: 6px 0;
+}
+.progression-material > :first-child {
+	flex-shrink: 0;
+	direction: ltr;
+}
+.progression-drops {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 20px;
+}
+.progression-drops > div {
+	min-width: 180px;
+}
+.progression-change {
+	direction: ltr;
+	unicode-bidi: isolate;
+	color: #2e6b43;
+	font-size: 28px;
+}
+.progression-article button,
+.progression-article input,
+.progression-article select {
+	font-family: inherit;
+	font-size: 24px;
+	max-width: 100%;
+}
+.progression-article .gamebutton {
+	color: white;
+	white-space: normal;
+	text-align: start;
+}
+.progression-article .gamebutton-small {
+	padding: 2px 6px;
+	margin: 2px 0;
+}
+.progression-step {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 300px;
+	gap: 12px;
+	align-items: start;
+}
+.progression-step > div:empty {
+	display: none;
+}
+.progression-step:has(> div:last-child:empty) {
+	grid-template-columns: 1fr;
+}
+.progression-destination {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+}
+.progression-place {
+	flex: 1;
+	min-width: 0;
+}
+.progression-location,
+.progression-quantity {
+	font-size: 20px;
+	line-height: 22px;
+	color: #424b43;
+}
+.progression-location bdi {
+	display: inline-block;
+	direction: ltr;
+}
+.progression-resource,
+.progression-costs,
+.progression-choices,
+.progression-ingredients {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 16px;
+	align-items: center;
+}
+.progression-resource > .progression-destination {
+	flex: 1 1 270px;
+}
+.progression-resource > .progression-material {
+	flex: 1 1 260px;
+}
+.progression-ingredients > div {
+	flex: 1 1 280px;
+	min-width: 0;
+}
+.progression-destination-actions {
+	display: flex;
+	flex-direction: column;
+	align-items: end;
+}
+.progression-costs {
+	margin: 8px 0 0;
+}
+.progression-costs > :first-child {
+	color: #406944;
+}
+.progression-article .progression-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	text-align: start;
+	color: inherit;
+	background: transparent;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+}
+.progression-item > :first-child {
+	flex-shrink: 0;
+	direction: ltr;
+}
+.progression-item-info {
+	color: #406944;
+	font-size: 20px;
+}
+.progression-quantity {
+	display: block;
+}
+.progression-lessons {
+	margin-top: 12px;
+}
+.progression-lesson {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	border-top: 2px solid #a2a2a2;
+	padding: 10px 0;
+}
+.progression-lesson .title {
+	font-size: 26px;
+}
+.progression-lesson p {
+	margin: 0;
+}
+@media (max-width: 700px) {
+	.progression-step {
+		grid-template-columns: 1fr;
+		gap: 4px;
+	}
+	.progression-lesson {
+		align-items: start;
+	}
+}
+.guidance-setting-row {
+	display: flex;
+	gap: 4px;
+	margin-top: 4px;
+}
+.guidance-setting-row > div {
+	flex: 1 1 0;
+	min-width: 0;
+}
+.guidance-setting-row .blockbutton {
+	box-sizing: border-box;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	overflow-wrap: anywhere;
+	color: inherit;
+	font-family: inherit;
+}

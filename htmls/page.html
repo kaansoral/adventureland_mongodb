@@ -1,7 +1,7 @@
 {%extends "htmls/base.html"%}
 {%block body%}
 	<div style="position: fixed; top: 0px; left: 0px; z-index: 20">
-		<a class="gamebutton" href="/">&lt; Adventure Land</a>
+		{{ phrase_html("pages.page.adventure-land") }}
 	</div>
 	<table width=100% height="100%">
 		<tr><td align="center">
@@ -13,9 +13,7 @@
 				{% elif content=="credits"%}
 					{% include "htmls/contents/credits.html" %}
 				{% elif content=="contact"%}
-					You can always email me at hello@adventure.land
-
-					Also check out our <a class="eexternal" href="https://discord.gg/44yUVeU" target="_blank" style="border-color: #3386CF">Discord!</a> - You can PM Wizard on Discord for faster and more informal replies :)
+					{{ phrase("pages.page.you-can-always-email-me-at-hello-adventure") }} <a class="eexternal" href="https://discord.gg/44yUVeU" target="_blank" style="border-color: #3386CF">{{ phrase("pages.page.discord") }}</a> {{ phrase("pages.page.you-can-pm-wizard-on-discord-for-faster") }}
 				{%endif%}
 			</div>
 		</td></tr>

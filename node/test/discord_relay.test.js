@@ -241,6 +241,7 @@ test("the real say handler relays only accepted public chat", async () => {
 		players: { socket: player },
 		socket: { id: "socket" },
 		gameplay: "normal",
+		Dev: false,
 		server_id: "EUI",
 		Math,
 		Date,
@@ -256,7 +257,9 @@ test("the real say handler relays only accepted public chat", async () => {
 		insert: async () => {},
 		random_string: () => "fixture",
 		console,
+		server_log() {},
 	});
+	load(context, "node/server_functions.js", ["discord_call"]);
 	const say = socketHandler(context, "say");
 	say({ message: "public" });
 	say({ message: "party secret", party: true });
@@ -279,31 +282,39 @@ test("the real say handler relays only accepted public chat", async () => {
 		context.gameplay = mode;
 		say({ message: mode });
 	}
+	context.gameplay = "normal";
+	context.Dev = true;
+	say({ message: "development" });
 	await settle();
 	assert.deepEqual(forwarded, [["Hero", "public"]]);
-	assert.equal(delivered.length, 3);
+	assert.equal(delivered.length, 4);
 	assert.deepEqual(failures, ["muted", "invalid", "invalid", "chat_slowdown", "chat_slowdown"]);
 });
 
-test("discord_call keeps its development and gameplay guards", () => {
+test("discord_call applies the same development and gameplay guards to events and chat", () => {
 	const sent = [],
+		chat = [],
 		logged = [];
 	const context = vm.createContext({
 		Dev: false,
 		gameplay: "normal",
-		discord_relay: { event: (message) => sent.push(message) },
+		discord_relay: { event: (message) => sent.push(message), chat: (...args) => chat.push(args) },
 		server_log: (message) => logged.push(message),
 	});
 	load(context, "node/server_functions.js", ["discord_call"]);
 	context.discord_call("normal");
+	context.discord_call("hello", "Wizard");
 	context.Dev = true;
 	context.discord_call("local");
+	context.discord_call("local chat", "Wizard");
 	context.Dev = false;
 	for (const mode of ["test", "hardcore"]) {
 		context.gameplay = mode;
 		context.discord_call(mode);
+		context.discord_call(mode, "Wizard");
 	}
 	assert.deepEqual(sent, ["normal"]);
-	assert.deepEqual(logged, ["Discord: local"]);
+	assert.deepEqual(chat, [["Wizard", "hello"]]);
+	assert.deepEqual(logged, ["Discord: local", "Discord: local chat"]);
 	assert.match(read("node/server.js"), /enabled: !Dev/);
 });

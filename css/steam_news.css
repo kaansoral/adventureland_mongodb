@@ -1,8 +1,8 @@
 #steam-news-banner {
 	position: relative;
 	width: 330px;
-	height: 82px;
-	max-width: 100vw;
+	margin-bottom: 8px;
+	max-width: calc(100vw * var(--browser-zoom-inverse, 1));
 	text-align: left;
 }
 #steam-news-banner[hidden] {
@@ -19,7 +19,7 @@
 	width: 100%;
 	padding: 8px 14px;
 	border-color: #ba91ec;
-	font-family: Pixel;
+	font-family: var(--pixel-font, pixel);
 	font-size: 32px;
 	line-height: 26px;
 	cursor: pointer;
@@ -34,10 +34,6 @@
 .steam-news-arrow {
 	color: #69d6cf;
 	font-size: 40px;
-}
-#steam-news-banner .steam-news-button:hover {
-	border-color: #69d6cf;
-	background: #141321;
 }
 .steam-news-button:focus-visible,
 .steam-news-dialog button:focus-visible,
@@ -79,13 +75,13 @@
 .steam-news-dialog {
 	box-sizing: border-box;
 	width: 800px;
-	max-width: calc(100vw - 24px);
-	max-height: calc(100vh - 32px);
+	max-width: calc(100vw * var(--browser-zoom-inverse, 1) - 24px);
+	max-height: calc(100vh * var(--browser-zoom-inverse, 1) - 32px);
 	padding: 0;
 	border: 4px solid #ba91ec;
 	background: #08090f;
 	color: #e5e7ed;
-	font-family: Pixel;
+	font-family: var(--pixel-font, pixel);
 	text-align: left;
 	overflow-y: auto;
 	overscroll-behavior: contain;
@@ -109,7 +105,7 @@
 	font-size: 24px;
 }
 .steam-news-dialog .steam-news-close {
-	font-family: Pixel;
+	font-family: var(--pixel-font, pixel);
 	padding: 4px 10px;
 	border-color: #696078;
 	cursor: pointer;

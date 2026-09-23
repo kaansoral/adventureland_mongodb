@@ -40,7 +40,7 @@ function use(name,target) // a multi-purpose use function, works for skills too
 
 function on_cm(name,data)
 {
-	game_log("Received a code message from: "+name);
+	if(code_settings.log_cm!==false) game_log(parent.phrase("code.cm_received", { name: name }));
 }
 
 function on_combined_damage() // When multiple characters stay in the same spot, they receive combined damage, this function gets called whenever a monster deals combined damage

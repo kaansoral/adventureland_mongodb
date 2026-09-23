@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{domain.language or 'en'}}">
 	<head>
+		<meta charset="utf-8">
+		{% include "htmls/language.html" %}
 		<script src="/js/jquery/jquery-{{domain.jquery_version}}.min.js"></script>
 		<script src="/js/common_functions.js?v={{domain.v}}"></script>
 		<script src="/js/old_common_functions.js?v={{domain.v}}"></script>
 		<script src="/js/functions.js?v={{domain.v}}"></script>
+		<script src="/js/html.js?v={{domain.v}}"></script>
 		<script src="/data.js?v={{domain.v}}"></script>
 		<link href="/css/index.css?v={{domain.v}}" rel="stylesheet" type="text/css" />
 		<link href="/css/common.css?v={{domain.v}}" rel="stylesheet" type="text/css" />
@@ -157,7 +160,7 @@
 				<div class="gamebutton clickable" onclick="mode=2">2</div>
 				<div class="gamebutton clickable" onclick="mode=4">4</div>
 				<div class="gamebutton clickable" onclick="mode=6">6</div>
-				<div class="gamebutton clickable" onclick="mode='alert'">Alert</div>
+				<div class="gamebutton clickable" onclick="mode='alert'">{{ phrase("editor.imagesets.selector.alert") }}</div>
 				<div style="margin-bottom: 5px"></div>
 				<div class="gamebutton clickable" onclick="mode=8">8</div>
 				<div class="gamebutton clickable" onclick="mode=10">10</div>

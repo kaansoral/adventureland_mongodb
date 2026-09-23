@@ -1,6 +1,6 @@
-<p><span class="dlabel">Game events</span></p>
+<p>{{ phrase_html("docs.articles.events-game.game-events") }}</p>
 
-<p>Game events describe ambient or server-wide activity visible to this client: combat around you, map changes, trades, public purchases, spawns, chat, deaths, and server notices.</p>
+<p>{{ phrase("docs.articles.events-game.game-events-describe-ambient-or-server-wide-activity") }}</p>
 
 <div class="code">var listener = game.on("level_up", function (data, event) {
 	game_log(data.name + " is now level " + data.level);
@@ -16,9 +16,9 @@ game.all(function (event, data) {
 
 game.remove(listener);</div>
 
-<p><span class="dlabel">game.on(event, callback)</span> and <span class="dlabel">game.once(event, callback)</span> return listener IDs. Remove either with <span class="dlabel">game.remove(id)</span>. An ordinary callback receives <span class="dlabel">(data, event)</span>; an all-events callback receives <span class="dlabel">(event, data)</span>.</p>
+<p>{{ phrase_html("docs.articles.events-game.game-on-event-callback-and-game-once-event") }}</p>
 
-<p><span class="dlabel">wait_for_event(game, event, timeout, filter)</span> is available when an event belongs to an async sequence.</p>
+<p>{{ phrase_html("docs.articles.events-game.wait-for-event-game-event-timeout-filter-is") }}</p>
 
 <p><span class="dlabel" data-event="event">event</span></p>
 
@@ -29,7 +29,7 @@ game.remove(listener);</div>
 	y: 88,              // Optional
 }</div>
 
-<p>Server event announcements use this event. The event name and optional location depend on the live event.</p>
+<p>{{ phrase("docs.articles.events-game.server-event-announcements-use-this-event-the-event") }}</p>
 
 <p><span class="dlabel" data-event="action">action</span></p>
 
@@ -43,7 +43,7 @@ game.remove(listener);</div>
 	pid: "abcd1234",
 }</div>
 
-<p>Emitted when a visible action launches. The actor and target can be character names or monster IDs. Rays and instant skills can use fields such as <span class="dlabel">ray</span> and <span class="dlabel">instant</span> instead of projectile travel.</p>
+<p>{{ phrase_html("docs.articles.events-game.emitted-when-a-visible-action-launches-the-actor") }}</p>
 
 <p><span class="dlabel" data-event="hit">hit</span></p>
 
@@ -67,9 +67,9 @@ game.remove(listener);</div>
 	aoe: false,
 }</div>
 
-<p>Emitted for resolved visible combat. Optional false, zero, and empty fields are commonly omitted.</p>
+<p>{{ phrase("docs.articles.events-game.emitted-for-resolved-visible-combat-optional-false-zero") }}</p>
 
-<p><span class="dlabel" data-event="trade">trade</span> and <span class="dlabel" data-event="sale">sale</span></p>
+<p>{{ phrase_html("docs.articles.events-game.trade-and-sale") }}</p>
 
 <div class="code">// trade
 {
@@ -82,16 +82,16 @@ game.remove(listener);</div>
 
 // sale: the same shape, emitted locally when your character is the seller</div>
 
-<p><span class="dlabel" data-event="buy">buy</span>, <span class="dlabel" data-event="sell">sell</span>, <span class="dlabel" data-event="sbuy">sbuy</span>, and <span class="dlabel" data-event="fbuy">fbuy</span></p>
+<p>{{ phrase_html("docs.articles.events-game.buy-sell-sbuy-and-fbuy") }}</p>
 
 <div class="code">{
 	name: "CharacterName",
 	item: { name: "pants", level: 0 },
 }</div>
 
-<p><span class="dlabel">buy</span> and <span class="dlabel">sell</span> are ordinary NPC activity. <span class="dlabel">sbuy</span> is a Ponty purchase; <span class="dlabel">fbuy</span> is a Lost and Found purchase.</p>
+<p>{{ phrase_html("docs.articles.events-game.buy-and-sell-are-ordinary-npc-activity-sbuy") }}</p>
 
-<p><span class="dlabel" data-event="item_sent">item_sent</span>, <span class="dlabel" data-event="gold_sent">gold_sent</span>, and <span class="dlabel" data-event="cx_sent">cx_sent</span></p>
+<p>{{ phrase_html("docs.articles.events-game.item-sent-gold-sent-and-cx-sent") }}</p>
 
 <div class="code">// item_sent
 {
@@ -116,9 +116,9 @@ game.remove(listener);</div>
 	cx: "hat999",
 }</div>
 
-<p>These are visible ambient transfer events. Your own transfer completion is also reported once through the corresponding character event.</p>
+<p>{{ phrase("docs.articles.events-game.these-are-visible-ambient-transfer-events-your-own") }}</p>
 
-<p><span class="dlabel" data-event="level_up">level_up</span> and <span class="dlabel" data-event="death">death</span></p>
+<p>{{ phrase_html("docs.articles.events-game.level-up-and-death") }}</p>
 
 <div class="code">// level_up
 {
@@ -138,7 +138,7 @@ game.remove(listener);</div>
 	message: "Hello",
 }</div>
 
-<p>Public chat text is untrusted. Use <span class="dlabel">safe_log</span> before rendering it.</p>
+<p>{{ phrase_html("docs.articles.events-game.public-chat-text-is-untrusted-use-safe-log") }}</p>
 
 <p><span class="dlabel" data-event="new_map">new_map</span></p>
 
@@ -147,7 +147,7 @@ game.remove(listener);</div>
 	in: "main",
 }</div>
 
-<p>This mirrors the character event after your client enters a new map.</p>
+<p>{{ phrase("docs.articles.events-game.this-mirrors-the-character-event-after-your-client") }}</p>
 
 <p><span class="dlabel" data-event="mluck">mluck</span></p>
 
@@ -165,15 +165,15 @@ game.remove(listener);</div>
 	characters: [],
 }</div>
 
-<p>Emitted for asynchronous API information delivered to the game. Fields depend on <span class="dlabel">type</span>.</p>
+<p>{{ phrase_html("docs.articles.events-game.emitted-for-asynchronous-api-information-delivered-to-the") }}</p>
 
-<p><span class="dlabel" data-event="pvp_list">pvp_list</span> and <span class="dlabel" data-event="ccreport">ccreport</span></p>
+<p>{{ phrase_html("docs.articles.events-game.pvp-list-and-ccreport") }}</p>
 
-<p><span class="dlabel">pvp_list</span> carries the current PVP list when the server supplies one to CODE. <span class="dlabel">ccreport</span> carries the server call-cost report object.</p>
+<p>{{ phrase_html("docs.articles.events-game.pvp-list-carries-the-current-pvp-list-when") }}</p>
 
-<p><span class="dlabel">Dynamic events</span></p>
+<p>{{ phrase_html("docs.articles.events-game.dynamic-events") }}</p>
 
-<p>Some server UI and response messages declare their event name at runtime. When a message supplies <span class="dlabel">event: true</span>, its <span class="dlabel">type</span> or <span class="dlabel">response</span> becomes the game event name; when it supplies a string, that string is the name. The complete stable index currently includes:</p>
+<p>{{ phrase_html("docs.articles.events-game.some-server-ui-and-response-messages-declare-their") }}</p>
 
 <div class="code"><span data-event="event">event</span>
 <span data-event="action">action</span>
@@ -196,4 +196,4 @@ game.remove(listener);</div>
 <span data-event="pvp_list">pvp_list</span>
 <span data-event="ccreport">ccreport</span></div>
 
-<p>Dynamic payloads can gain fields over time. Read the fields your code needs and tolerate additions.</p>
+<p>{{ phrase("docs.articles.events-game.dynamic-payloads-can-gain-fields-over-time-read") }}</p>

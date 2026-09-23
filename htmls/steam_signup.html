@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="{{domain.language or 'en'}}" dir="{{ 'rtl' if domain.language == 'ar' else 'ltr' }}">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex">
+		<title>{{ phrase("pages.steam_signup.title") }} - Adventure Land</title>
+		<link rel="icon" href="/images/favicon.png">
+		<link href="/css/common.css?v={{domain.v}}" rel="stylesheet">
+		<link href="/css/index.css?v={{domain.v}}" rel="stylesheet">
+		{% include "htmls/language.html" %}
+		<style>
+			html, body { margin: 0; height: auto; min-height: 100%; overflow: auto; background: black; color: white; font-family: var(--pixel-font, pixel); font-size: 28px; }
+			main { max-width: 520px; margin: 8vh auto; padding: 16px; }
+			.selectioninput { box-sizing: border-box; width: 100%; }
+			main .gamebutton { box-sizing: border-box; width: 100%; font-family: inherit; white-space: normal; }
+		</style>
+	</head>
+	<body>
+		<main>
+			<h1 class="whiteheader">{{ phrase("pages.steam_signup.title") }}</h1>
+			{% if error %}<p style="color:#E57878" role="alert">{{ phrase(error) }}</p>{% endif %}
+			{% if verified %}
+				<p>{{ phrase("pages.steam_signup.verified") }}</p>
+				<form method="post" action="/steam-signup/complete">
+					<input type="hidden" name="state" value="{{state}}">
+					<label class="whiteheader block mb4" for="email">{{ phrase("pages.contents.login.email") }}</label>
+					<input class="selectioninput" id="email" name="email" type="email" dir="ltr" autocomplete="email" maxlength="254" required>
+					<label class="whiteheader block mt5 mb4" for="password">{{ phrase("pages.contents.login.password") }}</label>
+					<input class="selectioninput" id="password" name="password" type="password" dir="ltr" autocomplete="new-password" maxlength="1024" required>
+					<button class="gamebutton block clickable mt5" type="submit">{{ phrase("pages.contents.login.signup") }}</button>
+				</form>
+			{% elif state %}
+				<p>{{ phrase("pages.steam_signup.intro") }}</p>
+				<p>{{ phrase("pages.steam_signup.client_help") }}</p>
+				<form method="post" action="/steam-signup/start">
+					<input type="hidden" name="state" value="{{state}}">
+					<button class="gamebutton block clickable mt5" type="submit">{{ phrase("pages.steam_signup.title") }}</button>
+				</form>
+			{% else %}
+				<a class="gamebutton block mt5" href="/steam-signup">{{ phrase("pages.steam_signup.title") }}</a>
+			{% endif %}
+			<a class="textbutton block mt5" href="/">{{ phrase("pages.contents.login.back") }}</a>
+		</main>
+	</body>
+</html>

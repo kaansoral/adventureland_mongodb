@@ -1,0 +1,24 @@
+<p>{{ phrase("docs.tutorial.new.farming_intro") }}</p>
+<div><span class="tutorial-travel" data-type="monster" data-target="goo"></span> <span class="tutorial-travel" data-type="npc" data-target="fancypots"></span></div>
+<p>
+	<span class="tutorial-item" data-item="hpot0"></span> <span class="tutorial-item" data-item="mpot0"></span> <span class="tutorial-item" data-item="blade" data-class-weapon="true"></span>
+	<span class="tutorial-item" data-item="coat"></span>
+</p>
+<p>{{ phrase("docs.tutorial.new.farming_next") }}</p>
+<p style="display:flex;align-items:center;gap:16px"><span class="tutorial-npc" data-npc="basics"></span><span>Gabriel · Mainland<br>(-89, -165)</span></p>
+<div><span class="tutorial-travel" data-type="npc" data-target="basics"></span></div>
+<p>{{ phrase("docs.tutorial.new.farming_goal") }}</p>
+<hr class="mb15 mt15" />
+<span class="clickable dlabel" onclick="open_guide('upgrading', get_guide_url('upgrading'))">{{ phrase("tutorial.upgrade.title") }}</span> ·
+<span class="clickable dlabel" onclick="open_guide('monster-hunts', get_guide_url('monster-hunts'))">{{ phrase("tutorial.hunting.title") }}</span>
+<p>{{ phrase("docs.tutorial.new.farming_code") }}</p>
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<!-- prettier-ignore -->
+<div class="code">smart_move("goo").catch(show_json);</div>
+<p>
+	{{ phrase("docs.tutorial.new.references") }}: <span class="rlabel clickable" onclick="load_documentation('smart_move')">smart_move</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('get_nearest_monster')">get_nearest_monster</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('attack')">attack</span> · <span class="rlabel clickable" onclick="load_documentation('loot')">loot</span>
+</p>
+<script>render_tutorial_items();</script>

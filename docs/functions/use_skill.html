@@ -1,15 +1,15 @@
 <p><span class='dlabel'>use_skill(name, target, extra_arg, timeout_ms)</span></p>
-<p>Uses a named skill with an optional target and skill-specific extra argument.</p>
-<p><b>Returns:</b> One Promise. Pickpocket, fishing, and mining wait for their final result. Other skills resolve when the server accepts the skill request; a projectile may still be in flight.</p>
-<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
-<p><b>Notes:</b> Targets may be entity objects, character names, monster IDs, coordinate arrays for blink, or arrays for multi-target skills. If target is omitted, get_target() is used. Multi-target skills return one Promise, not an array. The optional timed-action timeout defaults to 20,000ms. Final timed-action results include response, place, request_id, and success; fishing/mining also include found.</p>
-<p><b>Example:</b></p>
+<p>{{ phrase("docs.functions.use_skill.uses-a-named-skill-with-an-optional-target") }}</p>
+<p>{{ phrase_html("docs.functions.use_skill.returns-one-promise-pickpocket-fishing-and-mining-wait") }}</p>
+<p>{{ phrase_html("docs.functions.use_skill.promise-failures-unless-a-function-specific-note-says") }}</p>
+<p>{{ phrase_html("docs.functions.use_skill.notes-targets-may-be-entity-objects-character-names") }}</p>
+<p>{{ phrase_html("docs.functions.use_skill.example") }}</p>
 <div class='code'>async function example() {
 	var result = await use_skill("fishing", null, null, 20000);
 	if (result.found === false) game_log("Nothing caught this time");
 }
 example();</div>
-<p><b>Paladin Aura:</b> At level 60, pass the aura state as the second argument, not extra_arg. Choose <span class='dlabel'>"bulwark"</span> (armor and HP), <span class='dlabel'>"sanctuary"</span> (resistance and MP), <span class='dlabel'>"zeal"</span> (damage output and attack frequency), or <span class='dlabel'>"warding"</span> (elemental and status resistances, and reduced MP costs).</p>
+<p>{{ phrase_html("docs.functions.use_skill.paladin-aura-at-level-60-pass-the-aura") }}</p>
 <div class='code'>async function select_aura() {
 	try {
 		var result = await use_skill("paladin_aura", "zeal");
@@ -19,7 +19,13 @@ example();</div>
 	}
 }
 select_aura();</div>
-<p>Switching costs no MP and has a 500ms cooldown. The aura stays active passively; do not recast it to refresh its 60-second condition. Switching removes your previous aura's contribution immediately. Only the strongest nearby source of each state applies, while different states from different Paladins can coexist. See <span class='dlabel'>G.skills.paladin_aura.states</span> for the stat values.</p>
+<p>{{ phrase_html("docs.functions.use_skill.switching-costs-no-mp-and-has-a-500ms") }}</p>
+
+<p>{{ phrase_html("docs.functions.use_skill.regeneration_output") }}</p>
+<div class="code" id="regeneration-output">show_json({
+	hp: G.skills.regen_hp.output,
+	mp: G.skills.regen_mp.output
+});</div>
 
 <p></p>
-<span class='redlabel'>"source"</span>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>

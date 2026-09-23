@@ -1,17 +1,17 @@
-<p>The simplest way to move your character is <span class="dlabel">move</span>.</p>
+<p>{{ phrase_html("docs.articles.5-goingplaces.the-simplest-way-to-move-your-character-is") }}</p>
 
 <div class='code'>move(100, -50); // Walk directly toward X: 100, Y: -50; returns a Promise</div>
 
-<p><span class="dlabel">move</span> sends one direct walking segment. It cannot route around obstacles or cross maps. Its Promise reports the movement request; use <span class="dlabel">can_move_to</span> first when the direct segment may be blocked.</p>
+<p>{{ phrase_html("docs.articles.5-goingplaces.move-sends-one-direct-walking-segment-it-cannot") }}</p>
 
-<p><span class="dlabel">smart_move</span> calculates and follows a route. Its Promise fulfills when the destination is reached and rejects if the trip is interrupted, cannot be found, disconnects, or times out.</p>
+<p>{{ phrase_html("docs.articles.5-goingplaces.smart-move-calculates-and-follows-a-route-its") }}</p>
 
 <div class='code'>smart_move(100, -50);
 smart_move({ x: 100, y: -50 });
 smart_move({ x: 100, y: -50, map: character.map });
 // These forms describe the same destination. Run one at a time.</div>
 
-<p>Named destinations can be map names, monster types, NPCs, items, quests, or other destinations understood by the smart-move resolver:</p>
+<p>{{ phrase("docs.articles.5-goingplaces.named-destinations-can-be-map-names-monster-types") }}</p>
 
 <div class="code">async function travel_to_bank() {
 	try {
@@ -24,4 +24,4 @@ smart_move({ x: 100, y: -50, map: character.map });
 
 travel_to_bank();</div>
 
-<p>Starting a different smart route interrupts the previous route. Repeating the same active destination shares the existing trip. Use <span class="dlabel">stop("move")</span> to deliberately cancel walking.</p>
+<p>{{ phrase_html("docs.articles.5-goingplaces.starting-a-different-smart-route-interrupts-the-previous") }}</p>

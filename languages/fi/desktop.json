@@ -1,0 +1,10 @@
+{
+	"desktop.support": "Jos kohtaat ongelmia, lähetä sähköpostia: hello@adventure.land",
+	"desktop.loading": "LADATAAN",
+	"desktop.connection_help": "Adventure Land tarvitsee internetyhteyden. Tarkista yhteys ja kokeile ladata uudelleen. Jos peli ei vieläkään lataudu, lähetä sähköpostia osoitteeseen hello@adventure.land.",
+	"desktop.apology": "Pahoittelut odotuksesta :)",
+	"desktop.close_confirmation": "Haluatko varmasti sulkea Adventure Landin?",
+	"desktop.compatibility_help": "Internet-yhteydessäsi tai palveluntarjoajallasi voi olla ongelma. Jos ongelma on palveluntarjoajassa, yhteensopivuustila voi auttaa. Haluatko käyttää sitä tämän istunnon ajan?",
+	"desktop.compatibility_yes": "Kyllä",
+	"desktop.compatibility_retry": "Kokeile ladata peli uudelleen. Tarkista yhteytesi ja estääkö internetpalveluntarjoajasi sen. Kokeile VPN:ää, jos käytössäsi on sellainen, tai kirjoita osoitteeseen hello@adventure.land. Voit pelata myös selaimessa: avaa https://adventure.land ja valitse ”Rekisteröidy Steamilla”."
+}

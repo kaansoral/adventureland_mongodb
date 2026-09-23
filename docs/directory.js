@@ -1,6 +1,8 @@
 docs = {
 	functions: [
+		"cave_info", "cave_enter", "cave_reply", "cave_buy", "cave_exit", "cave_talk",
 		//runner_functions
+		"get_progression",
 		"mode_resolve_all",
 		"start_character",
 		"stop_character",
@@ -88,6 +90,13 @@ docs = {
 		"get_tavern_info",
 		"bet_dice",
 		"play_slots",
+		"bet_wheel",
+		"get_poker_table",
+		"poker_join",
+		"poker_leave",
+		"poker_act",
+		"poker_sit_out",
+		"poker_sit_in",
 		"open_stand",
 		"close_stand",
 		"trade",
@@ -217,9 +226,12 @@ docs = {
 		["Timeouts and Intervals", "setTimeout,setInterval", "https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Timeouts_and_intervals"],
 	],
 	tutorial: [
+		// continue_task is recorded by Continue, not by a gameplay action. Keep task IDs stable when reordering lessons.
+		{ key: "lore", tasks: ["read_lore"], continue_task: "read_lore", title: "The Voice in the Goo" },
 		{
 			key: "helloworld",
-			tasks: [],
+			tasks: ["read_helloworld"],
+			continue_task: "read_helloworld",
 			title: "Welcome to Adventure Land",
 		},
 		{
@@ -227,6 +239,7 @@ docs = {
 			tasks: ["killagoo", "firstloot"],
 			title: "First Combat & Loot",
 		},
+		{ key: "farming", tasks: ["read_farming"], continue_task: "read_farming", title: "Your First Farming Goals" },
 		{
 			key: "interface",
 			tasks: ["inventory", "equip", "usepotion"],
@@ -247,9 +260,13 @@ docs = {
 			tasks: ["buyscrolls", "upgrade"],
 			title: "Upgrading",
 		},
+		{ key: "stat-scrolls", tasks: ["addstats"], title: "Give Your Armor a Stat" },
+		{ key: "gear-comparison", tasks: ["read_gear_comparison"], continue_task: "read_gear_comparison", title: "What +7 Equipment Changes" },
+		{ key: "accessory-comparison", tasks: ["read_accessory_comparison"], continue_task: "read_accessory_comparison", title: "What +2 Accessories Add" },
 		{
 			key: "compound",
 			tasks: ["buycscroll0", "compound"],
+			optional_tasks: ["buycscroll0", "compound"],
 			title: "Compounding",
 		},
 		{
@@ -262,6 +279,9 @@ docs = {
 			tasks: ["travel", "visitnpc"],
 			title: "Travel & NPCs",
 		},
+		{ key: "mail", tasks: ["mail"], title: "Check Your Mail" },
+		{ key: "hunting", tasks: ["read_hunting"], continue_task: "read_hunting", title: "Your First Monster Hunt" },
+		{ key: "tracktrix", tasks: ["read_tracktrix"], continue_task: "read_tracktrix", title: "Tracktrix" },
 		{
 			key: "crafting-exchanges",
 			tasks: ["recipes", "craftsman", "exchanger"],
@@ -274,7 +294,8 @@ docs = {
 		},
 		{
 			key: "hellocode",
-			tasks: [],
+			tasks: ["read_hellocode"],
+			continue_task: "read_hellocode",
 			title: "Hello CODE",
 		},
 		{
@@ -289,9 +310,31 @@ docs = {
 		},
 		{
 			key: "theend",
-			tasks: [],
+			tasks: ["read_theend"],
+			continue_task: "read_theend",
 			title: "The Road Is Yours",
 		},
+		{ key: "js-hello", tasks: ["read_js_hello"], continue_task: "read_js_hello", title: "Make CODE speak" },
+		{ key: "js-values", tasks: ["read_js_values"], continue_task: "read_js_values", title: "Name a value" },
+		{ key: "js-variables", tasks: ["read_js_variables"], continue_task: "read_js_variables", title: "Change a variable" },
+		{ key: "js-character", tasks: ["read_js_character"], continue_task: "read_js_character", title: "Read your character" },
+		{ key: "js-decisions", tasks: ["read_js_decisions"], continue_task: "read_js_decisions", title: "Make a decision" },
+		{ key: "js-arrays", tasks: ["read_js_arrays"], continue_task: "read_js_arrays", title: "Make a list" },
+		{ key: "js-loops", tasks: ["read_js_loops"], continue_task: "read_js_loops", title: "Loop through a list" },
+		{ key: "js-functions", tasks: ["read_js_functions"], continue_task: "read_js_functions", title: "Write your own function" },
+		{ key: "js-inventory", tasks: ["read_js_inventory"], continue_task: "read_js_inventory", title: "Count your supplies" },
+		{ key: "js-targets", tasks: ["read_js_targets"], continue_task: "read_js_targets", title: "There may be no target" },
+		{ key: "js-timers", tasks: ["read_js_timers"], continue_task: "read_js_timers", title: "Check again later" },
+		{ key: "js-async", tasks: ["read_js_async"], continue_task: "read_js_async", title: "Wait for the game" },
+		{ key: "js-events", tasks: ["read_js_events"], continue_task: "read_js_events", title: "React when things happen" },
+		{ key: "js-capstone", tasks: ["read_js_capstone"], continue_task: "read_js_capstone", title: "Build a small farming script" },
+	],
+	merchant_tutorial: [
+		{ key: "merchant-start", tasks: ["read_merchant_start"], continue_task: "read_merchant_start", title: "Your Merchant's First Job" },
+		{ key: "merchant-supplies", tasks: ["read_merchant_supplies"], continue_task: "read_merchant_supplies", title: "Supplies and Deliveries" },
+		{ key: "merchant-shop", tasks: ["read_merchant_shop"], continue_task: "read_merchant_shop", title: "Open Your Shop" },
+		{ key: "merchant-leveling", tasks: ["read_merchant_leveling"], continue_task: "read_merchant_leveling", title: "How Merchants Gain XP" },
+		{ key: "merchant-gathering", tasks: ["read_merchant_gathering"], continue_task: "read_merchant_gathering", title: "Gathering and Market Parcels" },
 	],
 	tasks: {
 		character: "Your Character",
@@ -326,11 +369,14 @@ docs = {
 		exchanger: "Find an Exchanger",
 		characters: "Find Your Characters",
 		events: "Open the Event Guide",
+		mail: "Open Mail",
 	},
 	rewards: {
 		c0: [[1, "open", "cosmo0"]],
 	},
 	interactions: {
+		cavalry: {title:"Cavalry",article:"cavalry",icon:"tracker",summary:"Call four sentries to help with nearby level 3+ monsters.",functions:["interact"],proximity:false},
+		dreams: {title:"Cave of Many Dreams",article:"cave-of-many-dreams",icon:"cave_info",summary:"Enter with your party. Vote, fight and find your way down in 24 minutes.",functions:["cave_info","cave_enter","cave_reply","cave_buy","cave_exit","cave_talk"],proximity:true},
 		anniversary: {
 			title: "Mira's Anniversary Workshop",
 			article: "event-anniversary",
@@ -392,7 +438,21 @@ docs = {
 			article: "markets-and-trading",
 			icon: "stand0",
 			summary: "Trade with adventurers, browse recovered items, or open a merchant stand.",
-			functions: ["get_secondhands", "buy_secondhand", "get_lost_and_found", "buy_lost_and_found", "donate_gold", "open_stand", "close_stand", "trade", "trade_buy", "trade_sell", "wishlist", "giveaway", "join_giveaway"],
+			functions: [
+				"get_secondhands",
+				"buy_secondhand",
+				"get_lost_and_found",
+				"buy_lost_and_found",
+				"donate_gold",
+				"open_stand",
+				"close_stand",
+				"trade",
+				"trade_buy",
+				"trade_sell",
+				"wishlist",
+				"giveaway",
+				"join_giveaway",
+			],
 			proximity: true,
 		},
 		banking: {
@@ -447,9 +507,9 @@ docs = {
 		tavern: {
 			title: "Tavern Games",
 			article: "tavern-games",
-			icon: "xshot",
-			summary: "Read the house rules before placing a dice or slots wager.",
-			functions: ["get_tavern_info", "bet_dice", "play_slots"],
+			icon: "ale",
+			summary: "Read the house rules before placing a dice, slots or wheel wager, or sitting down at the Hold'em table.",
+			functions: ["get_tavern_info", "bet_dice", "play_slots", "bet_wheel", "get_poker_table", "poker_join", "poker_leave", "poker_act", "poker_sit_out", "poker_sit_in"],
 			proximity: true,
 		},
 		gathering: {
@@ -549,6 +609,7 @@ docs = {
 			witch: "crafting",
 		},
 		npc_roles: {
+			cavalry: "cavalry",
 			anniversary_crafter: "anniversary",
 			announcer: "prototype",
 			blocker: "pvp",
@@ -559,6 +620,7 @@ docs = {
 			craftsman: "crafting",
 			cx: "cosmetics",
 			daily_events: "events",
+			dreamkeeper: "dreams",
 			events: "events",
 			exchange: "exchanges",
 			favors: "server_services",
@@ -610,7 +672,7 @@ docs = {
 			the_lever: "special",
 			upgrade: "upgrading",
 		},
-		machines: { dice: "tavern", slots: "tavern", wheel: "prototype" },
+		machines: { dice: "tavern", slots: "tavern", wheel: "tavern", poker: "tavern" },
 		zones: { fishing: "gathering", mining: "gathering" },
 		doors: { ordinary: "travel", key: "travel", protected: "travel", ulocked: "travel" },
 	},
@@ -621,6 +683,9 @@ docs = {
 		// 	]
 		// ],
 		["basics", "The Basics", "", "#97D058"],
+		["lore", "The Voice in the Goo", "story,comic,wizard,nell", "#97D058"],
+		["first-goals", "First Goals", "beginner,farming,gear,stats,hunt", "#97D058"],
+		["merchant", "Playing a Merchant", "merchant,xp,leveling,donations,gathering,deliveries,supplies,stand", "#E0C05E"],
 		["stats", "Attributes, Classes, Skills", "", "#33C9CC"],
 		["items", "Items, Upgrades, Crafting", "items", "#58ABFF"],
 		[
@@ -629,6 +694,8 @@ docs = {
 			"upgrade,compound,craft,lock,seal,destat",
 			"#D88B45",
 			[
+				["encouragement", "Encouragement Bonuses", "new,returning,lone wolf,bonus,contribution,xp", "#7DBC88"],
+				["progression-guide", "Progression Guide", "goal,attack,healing,beginner,bees,amulet,farm,event", "#B4C7A7"],
 				["upgrading", "Upgrading", "upgrade,scroll,offering,grace,stat", "#E7A445"],
 				["compounding", "Compounding", "compound,combine,accessory,scroll,offering,grace", "#CE7C48"],
 				["crafting", "Crafting & Dismantling", "craft,recipe,dismantle,recycle", "#65B790"],
@@ -657,8 +724,11 @@ docs = {
 			[
 				["travel-and-instances", "Travel, Doors & Instances", "travel,door,key,instance,transport,smart_move", "#6DB7B8"],
 				["events-and-home", "Events, Schedules & Home", "event,schedule,home,server,status", "#A58BC8"],
+				["rime-djinn", "Rime Djinn", "frozen cove,rimeglass,shell,cooperative,craft", "#63BCE0"],
+				["cave-of-many-dreams", "Cave of Many Dreams", "cave,party,vote,roguelike,doors", "#B7A083"],
+				["cave-story", "Dorr’s Story", "cave,comic,story,dorr", "#B7A083"],
 				["event-anniversary", "Ten Years & Mira's Cakes", "anniversary,mira,cake,slice,gift,kiss,craft", "#E6AE3F"],
-				["tavern-games", "Tavern Games", "tavern,dice,slots,wager,house edge", "#C78A6B"],
+				["tavern-games", "Tavern Games", "tavern,dice,slots,wheel,fortune,wager,house edge,poker,hold'em,blinds", "#C78A6B"],
 				["gathering", "Fishing & Mining", "fishing,mining,rod,pickaxe", "#62B9A6"],
 				["special-interactions", "Strange Interactions", "tree,lever,statue,jail,quirk", "#9083BC"],
 			],
@@ -695,7 +765,12 @@ docs = {
 					],
 				],
 				["6-items101", "Items 101", "items", "#E28A27"],
-				["8-code-slots-and-files", "Code Slots and Files", "files,slots,save,local", "#7E8895"],
+				[
+					"8-code-slots-and-files",
+					"Code Slots and Files",
+					"files,slots,save,local,load_code,require_code,modules,exports,dependencies,vscode,vs code,visual studio code,cursor,extension,plugin,vsix,sync",
+					"#7E8895",
+				],
 				["code-api", "CODE API and Promises", "api,functions,promises,async,await,errors", "#5CA9D6"],
 				["7-using-skills", "Using Skills", "skills", "#E24148"],
 				["persistent-values", "Add Persistence!", "get,set", "#7A8EE4"],
@@ -715,6 +790,7 @@ docs = {
 			],
 		],
 		["multi", "Multiple Ways to Run Multiple Characters", "multi,deploy", "#5997FF"],
+		["hub", "Hub & Chat", "chat,private,pm,messages,server,comm,hub", "#CD7879"],
 		["adventure-mcp", "Adventure Land MCP for AI", "mcp,ai,tools,code,mainframe,architecture,source", "#238DB9"],
 		["mainframe", "Mainframe", "mainframe,hosting,automation,code", "#5ED6A8"],
 		[
@@ -725,12 +801,13 @@ docs = {
 			[
 				["adventure-api", "Adventure Land JSON API", "api,json,automation,code,data", "#55BDF0"],
 				["tracktrix", "Scoring for Tracktrix Achievements", "", "#5461C3"],
+				["cavalry", "Cavalry", "tracktrix,rescue,sentries,help", "#C6AA62"],
 				//["faq-soon","Looting Dynamics (Soon)","","#C01941"],
 			],
 		],
 	],
 	references: [
-		["code-globals", "CODE Globals", "G,server,game,smart,safeties,parent"],
+		["code-globals", "CODE Globals", "G,server,game,smart,safeties,parent,code_settings,log_cm,log_smart_move,show_smart_move_text"],
 		["data-server-status", "Server Status", "server,status,events,bosses,schedule,parent.S"],
 		["data-character", "Character Objects", "characters,players"],
 		["data-monster", "Monster Objects", "monsters,entity"],

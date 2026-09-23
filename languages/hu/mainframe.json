@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "A Mainframe várólistára tette ezt a karaktert.",
+	"mainframe.event.included_worker_queued": "A Mainframe várólistára tette ezt a hozzá tartozó Worker példányt.",
+	"mainframe.event.shared_with": "Megosztva ezzel a karakterrel: {character}",
+	"mainframe.event.shared_with_root": "Megosztva a fő karakterrel",
+	"mainframe.event.explicit_disconnect": "A fiók tulajdonosa bontotta a kapcsolatot.",
+	"mainframe.event.renewed_free": "1 ingyenes Mainframe-óra felhasználva {minutes} percért.",
+	"mainframe.event.renewed_shell": "1 kagyló levonva {minutes} percért.",
+	"mainframe.event.renewal_one": "{count} aktív karakter · Következő megújítás: {date}",
+	"mainframe.event.renewal_many": "{count} aktív karakter · Következő megújítás: {date}",
+	"mainframe.event.renewal_failed": "A Mainframe leállította ezt a karaktert, mert elfogyott az idő.",
+	"mainframe.event.worker_failure": "A Mainframe hibát észlelt egy Worker példánynál, és újra próbálkozik.",
+	"mainframe.event.server_change": "A Mainframe egy másik szerveren csatlakoztatja újra ezt a karaktert.",
+	"mainframe.level.info": "INFÓ",
+	"mainframe.level.warn": "FIGYELMEZTETÉS",
+	"mainframe.level.error": "HIBA"
+}

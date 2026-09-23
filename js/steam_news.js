@@ -41,9 +41,19 @@ window.SteamNews = (function () {
 		dialog.className = "steam-news-dialog";
 		dialog.setAttribute("aria-labelledby", "steam-news-title");
 		dialog.innerHTML =
-			'<div class="steam-news-toolbar"><span>NEWS FROM STEAM</span><button type="button" class="gamebutton steam-news-close" aria-label="Close Steam post">X</button></div><article class="steam-news-article"><h1 id="steam-news-title">Latest Update</h1><div class="steam-news-body" aria-live="polite">Loading the latest post...</div></article><footer><a class="gamebutton eexternal" href="' +
+			'<div class="steam-news-toolbar"><span>' +
+			phrase.html("services.steam_news.news-from-steam") +
+			'</span><button type="button" class="gamebutton steam-news-close" aria-label="' +
+			phrase.html("services.steam_news.label-close-steam-post") +
+			'">X</button></div><article class="steam-news-article"><h1 id="steam-news-title">' +
+			phrase.html("services.steam_news.latest-update") +
+			'</h1><div class="steam-news-body" aria-live="polite">' +
+			phrase.html("services.steam_news.loading-the-latest-post") +
+			'</div></article><footer><a class="gamebutton eexternal" href="' +
 			news_page +
-			'" target="_blank" rel="noopener noreferrer">Read on Steam &gt;</a></footer>';
+			'" target="_blank" rel="noopener noreferrer">' +
+			phrase.html("services.steam_news.read-on-steam") +
+			"</a></footer>";
 		var current = dialog;
 		current.querySelector("button").addEventListener("click", close);
 		current.addEventListener("close", function () {
@@ -65,12 +75,12 @@ window.SteamNews = (function () {
 				body.innerHTML = post.html;
 				var date = document.createElement("p");
 				date.className = "steam-news-date";
-				date.textContent = new Date(post.date * 1000).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+				date.textContent = new Date(post.date * 1000).toLocaleDateString(phrase.language, { day: "numeric", month: "long", year: "numeric" });
 				body.before(date);
 				current.querySelector("footer a").href = post.url;
 			})
 			.fail(function (_, status) {
-				if (status !== "abort" && dialog === current) current.querySelector(".steam-news-body").textContent = "The post couldn't load. You can still read it on Steam below.";
+				if (status !== "abort" && dialog === current) current.querySelector(".steam-news-body").textContent = phrase("services.steam_news.the-post-couldn-t-load-you-can-still-read");
 			});
 	}
 

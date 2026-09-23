@@ -1,0 +1,55 @@
+<p>{{ phrase_html("docs.tutorial.js-arrays.idea") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.task") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-arrays.task") }}</p>
+
+<p>{{ phrase("docs.tutorial.javascript.practice") }}</p>
+
+<div class="tutorial-code" data-lesson="arrays">
+	<!-- prettier-ignore -->
+	<div class="code executeb">const party = ["Mira", "Nox", "Bram"];
+game_log(party[1]);
+game_log(party.length);</div>
+
+	<div class="tutorial-code-result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.hint") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-arrays.hint") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.solution") }}</div>
+
+<!-- prettier-ignore -->
+<div class="code readonly">const party = ["Mira", "Nox", "Bram"];
+game_log(party[0]);
+game_log(party.length);</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.variation") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-arrays.variation") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.transfer") }}</div>
+
+<p>{{ phrase("docs.tutorial.javascript.copy") }}</p>
+
+<p>{{ phrase_html("docs.tutorial.js-arrays.transfer") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.js-arrays.reading_title") }}</div>
+
+{{ phrase_html("docs.tutorial.js-arrays.reading_before") }}
+
+<!-- prettier-ignore -->
+<div class="code readonly">const names = ["Mira", "Nox"];
+names.push("Bram");
+game_log(names[0]);
+game_log(names.length);</div>
+
+{{ phrase_html("docs.tutorial.js-arrays.reading_after") }}
+
+<p><span class="rlabel clickable" onclick="load_documentation('game_log')">game_log</span></p>

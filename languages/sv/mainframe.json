@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe placerade karaktären i kö.",
+	"mainframe.event.included_worker_queued": "Mainframe placerade denna inkluderade Worker i kö.",
+	"mainframe.event.shared_with": "Delas med {character}",
+	"mainframe.event.shared_with_root": "Delas med rotkaraktären",
+	"mainframe.event.explicit_disconnect": "Frånkopplad av kontoägaren.",
+	"mainframe.event.renewed_free": "1 gratis Mainframe-timme användes för en period på {minutes} min.",
+	"mainframe.event.renewed_shell": "1 snäcka debiterades för en period på {minutes} min.",
+	"mainframe.event.renewal_one": "{count} karaktär aktiv · Nästa förnyelse {date}",
+	"mainframe.event.renewal_many": "{count} karaktärer aktiva · Nästa förnyelse {date}",
+	"mainframe.event.renewal_failed": "Mainframe stoppade karaktären eftersom tiden var slut.",
+	"mainframe.event.worker_failure": "Mainframe upptäckte ett Worker-fel och kommer att försöka igen.",
+	"mainframe.event.server_change": "Mainframe återansluter karaktären på en annan server.",
+	"mainframe.level.info": "INFO",
+	"mainframe.level.warn": "VARNING",
+	"mainframe.level.error": "FEL"
+}

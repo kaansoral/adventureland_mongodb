@@ -1,0 +1,58 @@
+<p>{{ phrase_html("docs.tutorial.js-character.idea") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.task") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-character.task") }}</p>
+
+<p>{{ phrase("docs.tutorial.javascript.practice") }}</p>
+
+<div class="tutorial-code" data-lesson="character">
+	<!-- prettier-ignore -->
+	<div class="code executeb">const missing = 300 - 180;
+game_log("Mira" + ": " + missing + " HP missing");</div>
+
+	<div class="tutorial-code-result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.hint") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-character.hint") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.solution") }}</div>
+
+<!-- prettier-ignore -->
+<div class="code readonly">const missing = character.max_hp - character.hp;
+game_log(character.name + ": " + missing + " HP missing");</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.variation") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-character.variation") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.transfer") }}</div>
+
+<p>{{ phrase("docs.tutorial.javascript.copy") }}</p>
+
+<p>{{ phrase_html("docs.tutorial.js-character.transfer") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.js-character.reading_title") }}</div>
+
+{{ phrase_html("docs.tutorial.js-character.reading_before") }}
+
+<!-- prettier-ignore -->
+<div class="code readonly">game_log(character.name);
+game_log(character.hp);
+game_log(character.max_hp);
+
+const hero = { name: "Mira", hp: 180, max_hp: 300 };
+game_log(hero.max_hp); // 300</div>
+
+{{ phrase_html("docs.tutorial.js-character.reading_after") }}
+
+<p>
+	<span class="rlabel clickable" onclick="open_article('data-character', '/docs/code/character/reference')">character</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('game_log')">game_log</span>
+</p>

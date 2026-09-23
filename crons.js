@@ -10,13 +10,6 @@ if (process.env.pm_id === "0" || !process.env.pm_id) {
 	setInterval(
 		async function () {
 			// hourly
-			await unstuck_characters();
-		},
-		5 * 60 * 1000,
-	);
-	setInterval(
-		async function () {
-			// hourly
 			await check_servers();
 		},
 		1 * 60 * 1000,
@@ -165,36 +158,6 @@ async function check_servers() {
 	}
 }
 
-// ==================== UNSTUCK CHARACTERS ====================
-
-async function unstuck_characters() {
-	console.log("unstuck_characters()");
-	var servers = await get_servers();
-	var domain = get_domain();
-	for (var si = 0; si < servers.length; si++) {
-		var server = servers[si];
-		if (msince(server.updated) > 10) continue; // no - widespread network issue
-		var cutoff = new Date(Date.now() - 30 * 60 * 1000); // 30 minutes ago
-		var stuck = await db
-			.collection("character")
-			.find({
-				online: true,
-				server: server._id,
-				last_sync: { $lt: cutoff },
-			})
-			.toArray();
-		for (var i = 0; i < stuck.length; i++) {
-			var character = post_get(stuck[i]);
-			var m = msince(character.last_sync);
-			await db.collection("character").updateOne({ _id: character._id }, { $set: { online: false, server: "", updated: new Date() } });
-			send_email(domain, "kaansoral@gmail.com", {
-				html: "Stuck for " + m + " minutes",
-				title: "MANUALLY UNSTUCK " + character.name + " from " + server._id,
-			});
-		}
-	}
-}
-
 // ==================== VERIFY STEAM INSTALLS ====================
 
 async function verify_steam_installs() {
@@ -255,16 +218,6 @@ app.all("/cr/check_servers", async function (req, res, next) {
 	}
 	await check_servers();
 	await enforce_limitations();
-	res.send("");
-});
-
-app.all("/cr/unstuck", async function (req, res, next) {
-	var domain = get_domain(req);
-	var user = await get_user(req, domain);
-	if (!(user && user.admin) && req.query.keyword !== keys.SERVER_MASTER) {
-		return res.send("no permission");
-	}
-	await unstuck_characters();
 	res.send("");
 });
 

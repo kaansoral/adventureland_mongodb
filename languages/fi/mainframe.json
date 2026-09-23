@@ -1,0 +1,18 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe lisäsi tämän hahmon jonoon.",
+	"mainframe.event.included_worker_queued": "Mainframe lisäsi tämän mukana tulevan Worker-prosessin jonoon.",
+	"mainframe.event.shared_with": "Jaettu hahmon {character} kanssa",
+	"mainframe.event.shared_with_root": "Jaettu päähahmon kanssa",
+	"mainframe.event.explicit_disconnect": "Tilin omistaja katkaisi yhteyden.",
+	"mainframe.event.renewed_free": "Käytetty 1 maksuton Mainframe-tunti. Käyttöaika: {minutes} min.",
+	"mainframe.event.renewed_shell": "1 simpukka veloitettu {minutes} minuutista.",
+	"mainframe.event.renewal_one": "{count} hahmo aktiivisena · Seuraava uusinta {date}",
+	"mainframe.event.renewal_many": "{count} hahmoa aktiivisena · Seuraava uusinta {date}",
+	"mainframe.event.renewal_failed": "Mainframe pysäytti tämän hahmon, koska aika loppui.",
+	"mainframe.event.worker_failure": "Mainframe havaitsi Worker-prosessin virheen ja yrittää uudelleen.",
+	"mainframe.event.server_change": "Mainframe yhdistää tämän hahmon uudelleen toiselle palvelimelle.",
+	"mainframe.level.info": "INFO",
+	"mainframe.level.warn": "VAROITUS",
+	"mainframe.level.error": "VIRHE",
+	"mainframe.event.renewal_many.one": "{count} hahmo aktiivisena · Seuraava uusinta {date}"
+}

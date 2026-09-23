@@ -30,13 +30,15 @@
 
 	function friendly(error) {
 		var reason = (error && error.reason) || "request_failed";
-		return {
-			not_logged_in: "Your session ended. Sign in again.",
-			token_generation_failed: "The token could not be created. Try again.",
-			token_unavailable: "This token cannot be shown. Rotate it to create a visible replacement.",
-			token_revoke_failed: "The token could not be revoked. Try again.",
-			rate_limited: "Too many requests. Wait a moment and try again.",
-		}[reason] || reason.replace(/_/g, " ");
+		return (
+			{
+				not_logged_in: phrase("services.vscode_sync.your-session-ended-sign-in-again"),
+				token_generation_failed: phrase("services.vscode_sync.the-token-could-not-be-created-try-again"),
+				token_unavailable: phrase("services.vscode_sync.this-token-cannot-be-shown-rotate-it-to-create"),
+				token_revoke_failed: phrase("services.vscode_sync.the-token-could-not-be-revoked-try-again"),
+				rate_limited: phrase("services.vscode_sync.too-many-requests-wait-a-moment-and-try-again"),
+			}[reason] || reason.replace(/_/g, " ")
+		);
 	}
 
 	function showError(error) {
@@ -53,18 +55,19 @@
 		var active = !!(state && state.active);
 		tokenActive = active;
 		tokenRecoverable = active && state.recoverable !== false;
-		statusNode.textContent = active ? "Token active" : "No active token";
+		statusNode.textContent = active ? phrase("services.vscode_sync.token-active") : phrase("services.vscode_sync.no-active-token");
 		if (active) {
 			var created = state.created ? new Date(state.created) : null;
-			detailNode.textContent = created && Number.isFinite(created.getTime()) ? "Created " + created.toLocaleDateString() : "Ready";
-			if (visibleToken) helpNode.textContent = "Copy this token into VS Code. Use Show token to reveal the characters.";
-			else if (tokenRecoverable) helpNode.textContent = "Use Show token to reveal the active token, then paste it into VS Code.";
-			else helpNode.textContent = "This older token cannot be shown. Rotate it to create a visible replacement.";
+			detailNode.textContent =
+				created && Number.isFinite(created.getTime()) ? phrase("services.vscode_sync.created-date", { date: created.toLocaleDateString(phrase.language) }) : phrase("services.vscode_sync.ready");
+			if (visibleToken) helpNode.textContent = phrase("services.vscode_sync.copy-this-token-into-vs-code-use-show-token");
+			else if (tokenRecoverable) helpNode.textContent = phrase("services.vscode_sync.use-show-token-to-reveal-the-active-token-then");
+			else helpNode.textContent = phrase("services.vscode_sync.this-older-token-cannot-be-shown-rotate-it-to");
 		} else {
-			detailNode.textContent = "Create one for VS Code";
-			helpNode.textContent = "Create a token and this page will show it immediately.";
+			detailNode.textContent = phrase("services.vscode_sync.create-one-for-vs-code");
+			helpNode.textContent = phrase("services.vscode_sync.create-a-token-and-this-page-will-show-it");
 		}
-		createNode.textContent = active ? "Rotate and show new token" : "Create and show token";
+		createNode.textContent = active ? phrase("services.vscode_sync.rotate-and-show-new-token") : phrase("services.vscode_sync.create-and-show-token");
 		createNode.disabled = false;
 		revokeNode.disabled = !active;
 	}
@@ -82,7 +85,7 @@
 			copyNode.style.display = "none";
 			showNode.style.display = tokenActive ? "inline-block" : "none";
 			showNode.disabled = !tokenRecoverable;
-			showNode.textContent = "Show token";
+			showNode.textContent = phrase("services.vscode_sync.show-token");
 			return;
 		}
 		secretNode.textContent = tokenShown ? visibleToken : maskToken(visibleToken);
@@ -90,7 +93,7 @@
 		copyNode.style.display = "inline-block";
 		showNode.style.display = "inline-block";
 		showNode.disabled = false;
-		showNode.textContent = tokenShown ? "Hide token" : "Show token";
+		showNode.textContent = tokenShown ? phrase("services.vscode_sync.hide-token") : phrase("services.vscode_sync.show-token");
 	}
 
 	async function refreshStatus() {
@@ -99,7 +102,7 @@
 			renderSecret();
 			hideError();
 		} catch (error) {
-			statusNode.textContent = "Token status unavailable";
+			statusNode.textContent = phrase("services.vscode_sync.token-status-unavailable");
 			detailNode.textContent = "";
 			showError(error);
 		}
@@ -107,7 +110,7 @@
 
 	createNode.onclick = async function () {
 		var rotating = tokenActive;
-		if (rotating && !window.confirm("Rotate your Adventure Land token? The current VS Code token will stop working immediately.")) return;
+		if (rotating && !window.confirm(phrase("services.vscode_sync.rotate-your-adventure-land-token-the-current-vs-code"))) return;
 		createNode.disabled = true;
 		try {
 			var result = await call("generate_token");
@@ -127,12 +130,12 @@
 		if (!visibleToken) return;
 		try {
 			await navigator.clipboard.writeText(visibleToken);
-			copyNode.textContent = "Copied";
+			copyNode.textContent = phrase("services.vscode_sync.copied");
 			setTimeout(function () {
-				copyNode.textContent = "Copy token";
+				copyNode.textContent = phrase("services.vscode_sync.copy-token");
 			}, 1500);
 		} catch (error) {
-			showError({ reason: "Copy failed. Select the token and copy it manually." });
+			showError({ reason: phrase("services.vscode_sync.copy-failed-select-the-token-and-copy-it-manually") });
 		}
 	};
 
@@ -158,7 +161,7 @@
 	};
 
 	revokeNode.onclick = async function () {
-		if (!window.confirm("Revoke your Adventure Land token? VS Code uploads will stop until you set a new token.")) return;
+		if (!window.confirm(phrase("services.vscode_sync.revoke-your-adventure-land-token-vs-code-uploads-will"))) return;
 		revokeNode.disabled = true;
 		try {
 			await call("revoke_token");

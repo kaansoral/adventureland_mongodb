@@ -1,20 +1,19 @@
-<p class="tutlead">Welcome to Adventure Land.</p>
+<p class="tutlead">{{ phrase("docs.tutorial.helloworld.welcome-to-adventure-land") }}</p>
 
-<p>You can play every part of the game by hand. CODE is an extra tool: use it when a repeated task stops being an adventure and starts becoming a chore.</p>
+<p>{{ phrase("docs.tutorial.helloworld.you-can-play-every-part-of-the-game") }}</p>
+<p>{{ phrase("docs.tutorial.helloworld.earlier_actions", {button: phrase("interface.tutorial.continue")}) }}</p>
 
 <div class="tutpath manual">
-	<div class="tutpath-title">MANUAL</div>
-	<p>Move, fight, trade, explore, and meet other adventurers with the game controls. The next lessons begin here.</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.helloworld.manual") }}</div>
+	<p>{{ phrase("docs.tutorial.helloworld.move-fight-trade-explore-and-meet-other-adventurers") }}</p>
 </div>
 
 <div class="tutpath codepath">
-	<div class="tutpath-title">OPTIONAL CODE</div>
-	<p>Each practical lesson includes a small CODE equivalent. Read it, change it, or ignore it. Both paths lead to the same place.</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.helloworld.optional-code") }}</div>
+	<p>{{ phrase("docs.tutorial.helloworld.each-practical-lesson-includes-a-small-code-equivalent") }}</p>
 </div>
 
-<p class="tuttip">
-	<span class="hlabel">Tip:</span> You can reopen this lesson from the Tutorial bar. The tutorial can be hidden or reset from <span class="gamebutton gamebutton-small">CONF</span> → Advanced Settings.
-</p>
+<p class="tuttip">{{ phrase_html("docs.tutorial.helloworld.tip-you-can-reopen-this-lesson-from-the") }}</p>
 
 <div class="tutlinks">
 	<div
@@ -24,7 +23,7 @@
 			open_guide('basics', '/docs/guide/basics');
 		"
 	>
-		BASIC CONTROLS
+		{{ phrase("docs.tutorial.helloworld.basic-controls") }}
 	</div>
 	<div
 		class="gamebutton gamebutton-small"
@@ -33,7 +32,7 @@
 			render_code_docs();
 		"
 	>
-		CODE DOCS
+		{{ phrase("docs.tutorial.helloworld.code-docs") }}
 	</div>
 </div>
 

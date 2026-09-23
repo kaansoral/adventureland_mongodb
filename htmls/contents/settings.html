@@ -1,10 +1,10 @@
 <div class='basicsettings hidden'>
 	{% if domain.electron %}
 		<div class="blockbutton"
-		onclick="btc(event); electron_fullscreen()">Toggle Fullscreen</div>
+		onclick="btc(event); electron_fullscreen()">{{ phrase("pages.contents.settings.toggle-fullscreen") }}</div>
 	{% elif domain.tauri %}
 		<div class="blockbutton"
-		onclick="btc(event); tauri_fullscreen()">Toggle Fullscreen</div>
+		onclick="btc(event); tauri_fullscreen()">{{ phrase("pages.contents.settings.toggle-fullscreen") }}</div>
 	{% endif %}
 
 	{#<div class="mt4 blockbutton promode {% if domain.newcomer_ui %}hidden{% endif %}"
@@ -29,17 +29,17 @@
 
 	<div class="audio-setting-row">
 		<div class="blockbutton audio-setting-toggle musicoff {%if domain.music_on %}hidden{% endif %}"
-			onclick="btc(event); sound_on()">Music: <span style='color: gray'>OFF</span></div>
+			onclick="btc(event); sound_on()">{{ phrase_html("pages.contents.settings.music-off") }}</div>
 		<div class="blockbutton audio-setting-toggle musicon {%if not domain.music_on %}hidden{% endif %}"
-			onclick="btc(event); sound_off()">Music: <span style='color: gray'>ON</span> [Work in Progress]</div>
+			onclick="btc(event); sound_off()">{{ phrase_html("pages.contents.settings.music-on-work-in-progress") }}</div>
 		<div class="blockbutton audio-setting-volume musicvolume" onclick="btc(event); cycle_audio_volume('music')">100%</div>
 	</div>
 
 	<div class="audio-setting-row">
 		<div class="blockbutton audio-setting-toggle sfxoff {% if domain.sfx_on %}hidden{% endif %}"
-			onclick="btc(event); sfx_on()">SFX: <span style='color: gray'>OFF</span></div>
+			onclick="btc(event); sfx_on()">{{ phrase_html("pages.contents.settings.sfx-off") }}</div>
 		<div class="blockbutton audio-setting-toggle sfxon {% if not domain.sfx_on %}hidden{% endif %}"
-			onclick="btc(event); sfx_off()">SFX: <span style='color: gray'>ON</span> [Work in Progress]</div>
+			onclick="btc(event); sfx_off()">{{ phrase_html("pages.contents.settings.sfx-on-work-in-progress") }}</div>
 		<div class="blockbutton audio-setting-volume sfxvolume" onclick="stpr(event); cycle_audio_volume('sfx'); pcs()">100%</div>
 	</div>
 	<!--
@@ -53,25 +53,42 @@
 	<div class="mt4 blockbutton sdlinesoff {% if domain.sd_lines %}hidden{% endif %}"
 		onclick="btc(event); Cookies.set('sd_lines_off','',{ expires:12*365}); $('.sdlinesoff').hide(); $('.sdlineson').show(); sd_lines=1;">Green Lines: OFF</div>
 	-->
-	<div class="mt4 blockbutton" onclick="btc(event); show_modal($('.performancesettings').html(),{wrap:false,styles:'width:600px',hideinbackground:true});">Performance Settings</div>
-	<div class="mt4 blockbutton" onclick="btc(event); show_modal($('.advancedsettings').html(),{wrap:false,styles:'width:600px',hideinbackground:true});">Advanced Settings</div>
+	<div class="audio-setting-row zoom-setting">
+		<div class="blockbutton audio-setting-toggle">{{ phrase("interface.settings.zoom") }}</div>
+		<div class="audio-setting-volume browser-zoom-options">
+			{% for percent in [-25, 0, 25, 50] %}
+				<button type="button" class="tinybutton browserzoom clickable" data-zoom="{{ percent }}" aria-pressed="{{ 'true' if percent == 0 else 'false' }}" onclick="btc(event); set_browser_zoom({{ percent }})">{{ phrase("interface.settings.zoom_percent", {percent: ('+' ~ percent) if percent > 0 else percent}) }}</button>
+			{% endfor %}
+		</div>
+	</div>
+	<div class="guidance-setting-row">
+		<div>
+			<div class="blockbutton tutoff {%if domain.tutorial %}hidden{% endif %}"
+				onclick="btc(event); $('.tutoff').hide(); $('.tuton').show(); tutorial_ui=true; update_tutorial_ui(); Cookies.set('no_tutorial','',{ expires:12*365});">{{ phrase_html("pages.contents.settings.tutorial-off") }}</div>
+			<div class="blockbutton tuton {%if not domain.tutorial %}hidden{% endif %}"
+				onclick="btc(event); $('.tuton').hide(); $('.tutoff').show(); tutorial_ui=false; update_tutorial_ui(); Cookies.set('no_tutorial','1',{ expires:12*365});">{{ phrase_html("pages.contents.settings.tutorial-on") }}</div>
+		</div>
+		<div><button type="button" class="blockbutton progression-setting" onclick="btc(event); set_progression_guide(storage_get('progression_guide') == 'off')">{{ phrase_html("progression.setting.on") }}</button></div>
+	</div>
+	<div class="mt4 blockbutton" onclick="btc(event); show_modal($('.performancesettings').html(),{wrap:false,styles:'width:600px',hideinbackground:true});">{{ phrase("pages.contents.settings.performance-settings") }}</div>
+	<div class="mt4 blockbutton" onclick="btc(event); show_modal($('.advancedsettings').html(),{wrap:false,styles:'width:600px',hideinbackground:true});">{{ phrase("pages.contents.settings.advanced-settings") }}</div>
 	{% if domain.electron %}
 		<div class="mt4 blockbutton promode {% if domain.newcomer_ui %}hidden{% endif %}"
 			onclick="btc(event); electron_dev_tools()">
-			Open Game Inspector</div>
-		<a class="mt4 blockbutton cancela" href="/" onclick='hide_modal(); show_alert("Signing Out")'>Sign Out to Main Menu</a>
+			{{ phrase("pages.contents.settings.open-game-inspector") }}</div>
+		<a class="mt4 blockbutton cancela" href="/" onclick='hide_modal(); show_alert(phrase.html("page.signing_out"))'>{{ phrase("pages.contents.settings.sign-out-to-main-menu") }}</a>
 	{% elif domain.tauri %}
 		<div class="mt4 blockbutton promode {% if domain.newcomer_ui %}hidden{% endif %}"
 			onclick="btc(event); tauri_dev_tools()">
-			Open Game Inspector</div>
-		<a class="mt4 blockbutton cancela" href="/" onclick='hide_modal(); show_alert("Signing Out")'>Sign Out to Main Menu</a>
+			{{ phrase("pages.contents.settings.open-game-inspector") }}</div>
+		<a class="mt4 blockbutton cancela" href="/" onclick='hide_modal(); show_alert(phrase.html("page.signing_out"))'>{{ phrase("pages.contents.settings.sign-out-to-main-menu") }}</a>
 	{% endif %}
 
 	<div class="mt4 blockbutton" style="text-align: left">
-		Note: Feel free to email <span style="color: #36B2F8">hello@adventure.land</span> for anything, the game is in development, I love to receive emails and feedback
+		{{ phrase_html("pages.contents.settings.note-feel-free-to-email-hello-adventure-land") }}
 	</div>
 	<div class="mt4 blockbutton restartneeded hidden" style="text-align: left">
-		You need to refresh the game for changes to be effective.
+		{{ phrase("pages.contents.settings.you-need-to-refresh-the-game-for-changes") }}
 	</div>
 
 	{#<div class="mt4 blockbutton proinfo hidden" style="text-align: left">
@@ -82,73 +99,73 @@
 <div class='performancesettings hidden'>
 
 	<div class="mt4 blockbutton naoff {%if domain.new_attacks %}hidden{% endif %}"
-		onclick="btc(event); $('.naoff').hide(); $('.naon').show(); new_attacks=true; Cookies.set('no_weapons','',{ expires:12*365});">Weapon / Attack Animations: <span style='color: #F54423'>OFF</span></div>
+		onclick="btc(event); $('.naoff').hide(); $('.naon').show(); new_attacks=true; Cookies.set('no_weapons','',{ expires:12*365});">{{ phrase_html("pages.contents.settings.weapon-attack-animations-off") }}</div>
 	<div class="mt4 blockbutton naon {%if not domain.new_attacks %}hidden{% endif %}"
-		onclick="btc(event); $('.naon').hide(); $('.naoff').show(); new_attacks=false; Cookies.set('no_weapons','1',{ expires:12*365});">Weapon / Attack Animations: <span style='color: green'>ON</span></div>
+		onclick="btc(event); $('.naon').hide(); $('.naoff').show(); new_attacks=false; Cookies.set('no_weapons','1',{ expires:12*365});">{{ phrase_html("pages.contents.settings.weapon-attack-animations-on") }}</div>
 
 	<div class="mt4 blockbutton fastoff {%if domain.fast_mode %}hidden{% endif %}"
-		onclick="btc(event); $('.fastoff').hide(); $('.faston').show(); $('.restartneeded').show(); Cookies.set('no_fast_mode','',{ expires:12*365});">Pre-Cached Maps: <span style='color: #F67D4C'>OFF</span></div>
+		onclick="btc(event); $('.fastoff').hide(); $('.faston').show(); $('.restartneeded').show(); Cookies.set('no_fast_mode','',{ expires:12*365});">{{ phrase_html("pages.contents.settings.pre-cached-maps-off") }}</div>
 	<div class="mt4 blockbutton faston {%if not domain.fast_mode %}hidden{% endif %}"
-		onclick="btc(event); $('.faston').hide(); $('.fastoff').show(); $('.restartneeded').show(); Cookies.set('no_fast_mode','1',{ expires:12*365});">Pre-Cached Maps: <span style='color: green'>ON</span></div>
+		onclick="btc(event); $('.faston').hide(); $('.fastoff').show(); $('.restartneeded').show(); Cookies.set('no_fast_mode','1',{ expires:12*365});">{{ phrase_html("pages.contents.settings.pre-cached-maps-on") }}</div>
 	<div class="mt4 blockbutton" style="text-align: left">
-		Processes and caches the entire map into memory. Afterwards movement and animations are as smooth as possible. Turn off if your machine has low GPU memory or low processing power.
+		{{ phrase("pages.contents.settings.processes-and-caches-the-entire-map-into-memory") }}
 	</div>
 	<div class="mt4 blockbutton pixelson {% if not domain.perfect_pixels %}hidden{% endif %}"
-		onclick="btc(event); Cookies.set('perfect_pixels_off','1',{ expires:12*365}); $('.pixelson').hide(); $('.pixelsoff').show(); $('.restartneeded').show()">Perfect Pixels: <span style='color: green'>ON</span></div>
+		onclick="btc(event); Cookies.set('perfect_pixels_off','1',{ expires:12*365}); $('.pixelson').hide(); $('.pixelsoff').show(); $('.restartneeded').show()">{{ phrase_html("pages.contents.settings.perfect-pixels-on") }}</div>
 	<div class="mt4 blockbutton pixelsoff {% if domain.perfect_pixels %}hidden{% endif %}"
-		onclick="btc(event); Cookies.set('perfect_pixels_off','',{ expires:12*365}); $('.pixelsoff').hide(); $('.pixelson').show(); $('.restartneeded').show()">Perfect Pixels: <span style='color: #F67D4C'>OFF</span></div>
+		onclick="btc(event); Cookies.set('perfect_pixels_off','',{ expires:12*365}); $('.pixelsoff').hide(); $('.pixelson').show(); $('.restartneeded').show()">{{ phrase_html("pages.contents.settings.perfect-pixels-off") }}</div>
 	<div class="mt4 blockbutton" style="text-align: left">
-		Turn off to smooth pixels. More of a preference rather than a performance setting.
+		{{ phrase("pages.contents.settings.turn-off-to-smooth-pixels-more-of-a") }}
 	</div>
 	<div class="mt4 blockbutton fcs fcauto {% if domain.engine_mode %}hidden{% endif %}"
-		onclick="btc(event); Cookies.set('engine_mode','canvas',{ expires:12*365}); $('.fcs').hide(); $('.fccanvas').show(); $('.restartneeded').show()">WebGL: <span style='color: green'>AUTO</span></div>
+		onclick="btc(event); Cookies.set('engine_mode','canvas',{ expires:12*365}); $('.fcs').hide(); $('.fccanvas').show(); $('.restartneeded').show()">{{ phrase_html("pages.contents.settings.webgl-auto") }}</div>
 	<div class="mt4 blockbutton fcs fccanvas {% if domain.engine_mode!='canvas' %}hidden{% endif %}"
-		onclick="btc(event); Cookies.set('engine_mode','webgl',{ expires:12*365}); $('.fcs').hide(); $('.fcwebgl').show(); $('.restartneeded').show()">WebGL: <span style='color: #F54423'>OFF</span></div>
+		onclick="btc(event); Cookies.set('engine_mode','webgl',{ expires:12*365}); $('.fcs').hide(); $('.fcwebgl').show(); $('.restartneeded').show()">{{ phrase_html("pages.contents.settings.webgl-off") }}</div>
 	<div class="mt4 blockbutton fcs fcwebgl {% if domain.engine_mode!='webgl' %}hidden{% endif %}"
-		onclick="btc(event); Cookies.set('engine_mode','',{ expires:12*365}); $('.fcs').hide(); $('.fcauto').show(); $('.restartneeded').show()">WebGL: <span style='color: #F7B32F'>FORCED</span></div>
+		onclick="btc(event); Cookies.set('engine_mode','',{ expires:12*365}); $('.fcs').hide(); $('.fcauto').show(); $('.restartneeded').show()">{{ phrase_html("pages.contents.settings.webgl-forced") }}</div>
 	<div class="mt4 blockbutton" style="text-align: left">
-		If for some reason WebGL causes issues on your system, you can force the old HTML5 Canvas to be used.
+		{{ phrase("pages.contents.settings.if-for-some-reason-webgl-causes-issues-on") }}
 	</div>
 	{#<div class="mt4 blockbutton" onclick="btc(event); $('.performancesettings').hide(); $('.basicsettings').show(); position_modals()">&lt; Back</div>#}
 	<div class="mt4 blockbutton restartneeded hidden" style="text-align: left">
-		You need to refresh the game for changes to be effective.
+		{{ phrase("pages.contents.settings.you-need-to-refresh-the-game-for-changes") }}
 	</div>
 </div>
 <div class='advancedsettings hidden'>
-	<div class="mt4 blockbutton tutoff {%if domain.tutorial %}hidden{% endif %}"
-		onclick="btc(event); $('.tutoff').hide(); $('.tuton').show(); tutorial_ui=true; update_tutorial_ui(); Cookies.set('no_tutorial','',{ expires:12*365});">Tutorial: <span style='color: #F54423'>OFF</span></div>
-	<div class="mt4 blockbutton tuton {%if not domain.tutorial %}hidden{% endif %}"
-		onclick="btc(event); $('.tuton').hide(); $('.tutoff').show(); tutorial_ui=false; update_tutorial_ui(); Cookies.set('no_tutorial','1',{ expires:12*365});">Tutorial: <span style='color: green'>ON</span></div>
+	<div class="mt4 blockbutton closebuttonsoff {% if domain.close_buttons != false %}hidden{% endif %}"
+		onclick="btc(event); set_close_buttons(true)">{{ phrase_html("pages.contents.settings.close-buttons-off") }}</div>
+	<div class="mt4 blockbutton closebuttonson {% if domain.close_buttons == false %}hidden{% endif %}"
+		onclick="btc(event); set_close_buttons(false)">{{ phrase_html("pages.contents.settings.close-buttons-on") }}</div>
 
 	<div class="mt4 blockbutton guidesoff {%if domain.proximity_guides %}hidden{% endif %}"
-		onclick="btc(event); set_proximity_guides(true)">Guides: <span style='color: #F54423'>OFF</span></div>
+		onclick="btc(event); set_proximity_guides(true)">{{ phrase_html("pages.contents.settings.guides-off") }}</div>
 	<div class="mt4 blockbutton guideson {%if not domain.proximity_guides %}hidden{% endif %}"
-		onclick="btc(event); set_proximity_guides(false)">Guides: <span style='color: green'>ON</span></div>
+		onclick="btc(event); set_proximity_guides(false)">{{ phrase_html("pages.contents.settings.guides-on") }}</div>
 	<div class="mt4 blockbutton" style="text-align: left">
-		Shows nearby INFO buttons for NPCs, shrines, gathering spots, and special places. Event buttons are always shown.
+		{{ phrase("pages.contents.settings.shows-nearby-info-buttons-for-npcs-shrines-gathering") }}
 	</div>
 	<div class="mt4 blockbutton" onclick="btc(event); set_npc_obstruction_hints(!npc_obstruction_hints_enabled)">
-		Blocked NPC notices: <span class="npc-hints-state" style="color: green">ON</span>
+		{{ phrase_html("pages.contents.settings.blocked-npc-notices-on") }}
 	</div>
 
 	<div class="mt4 blockbutton"
-		onclick="btc(event); show_confirm('Reset the tutorial?','Yes!','Oh No!',function(){api_call('reset_tutorial')});">Reset Tutorial <span style='color: #F7B32F'>[!]</span></div>
+		onclick="btc(event); show_confirm(phrase.html('page.tutorial.reset_confirm'),phrase.html('page.tutorial.reset_yes'),phrase.html('page.tutorial.reset_no'),function(){api_call_l('reset_tutorial')});">{{ phrase_html("pages.contents.settings.reset-tutorial") }}</div>
 
 	<div class='windowsonly hidden'>
 		<div class="mt4 blockbutton win7on hidden"
-			onclick="btc(event); $('.win7on').hide(); $('.win7off').show(); storage_set('win7patch',false); $('.restartneeded').show()">Windows 7/8 Network Patch: <span style='color: orange'>ON</span></div>
+			onclick="btc(event); $('.win7on').hide(); $('.win7off').show(); storage_set('win7patch',false); $('.restartneeded').show()">{{ phrase_html("pages.contents.settings.windows-7-8-network-patch-on") }}</div>
 		<div class="mt4 blockbutton win7off"
-			onclick="btc(event); $('.win7off').hide(); $('.win7on').show(); storage_set('win7patch',true); $('.restartneeded').show()">Windows 7/8 Network Patch: <span style='color: green'>OFF</span></div>
+			onclick="btc(event); $('.win7off').hide(); $('.win7on').show(); storage_set('win7patch',true); $('.restartneeded').show()">{{ phrase_html("pages.contents.settings.windows-7-8-network-patch-off") }}</div>
 	</div>
 	{% if domain.electron %}
 		<div class="mt4 blockbutton httpmodeon"
-			onclick="btc(event); $('.httpmodeon').hide(); $('.httpmodeoff').show(); electron_http_mode(true); $('.restartneeded').show()">Connections: <span style='color: green'>HTTPS</span></div>
+			onclick="btc(event); $('.httpmodeon').hide(); $('.httpmodeoff').show(); electron_http_mode(true); $('.restartneeded').show()">{{ phrase_html("pages.contents.settings.connections-https") }}</div>
 		<div class="mt4 blockbutton httpmodeoff hidden"
-			onclick="btc(event); $('.httpmodeoff').hide(); $('.httpmodeon').show(); electron_http_mode(false); $('.restartneeded').show()">Connections: <span style='color: #F54423'>HTTP</span></div>
+			onclick="btc(event); $('.httpmodeoff').hide(); $('.httpmodeon').show(); electron_http_mode(false); $('.restartneeded').show()">{{ phrase_html("pages.contents.settings.connections-http") }}</div>
 	{% endif %}
 	{#<div class="mt4 blockbutton" onclick="btc(event); $('.advancedsettings').hide(); $('.basicsettings').show(); position_modals()">&lt; Back</div>#}
 	<div class="mt4 blockbutton restartneeded hidden" style="text-align: left">
-		You need to refresh the game for changes to be effective.
+		{{ phrase("pages.contents.settings.you-need-to-refresh-the-game-for-changes") }}
 	</div>
 </div>
 <script>set_npc_obstruction_hints(npc_obstruction_hints_enabled, true);</script>

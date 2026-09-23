@@ -7,6 +7,7 @@
 	var user_id="{{user and user._id or ''}}",user_auth="{{user and user.info.auths[0] or ''}}";
 	var base_url="{{domain.base_url}}";
 	var server_address="{{server and server.address or ''}}",server_path="{{server and server.path or ''}}";
+	var selection_server_explicit={% if domain.server_explicit or domain.url_address %}true{% else %}false{% endif %};
 	var server_names={"US":"Americas","EU":"Europas","ASIA":"Eastlands"};
 	var sound_music='{%if domain.music_on %}1{%endif%}',sound_sfx='{% if domain.sfx_on %}1{%endif%}',xmas_tunes=false,music_level=0.3,music_volume=100,sfx_volume=100;
 	var perfect_pixels='{% if domain.perfect_pixels%}1{%endif%}';
@@ -14,6 +15,7 @@
 	var pro_mode='{% if not domain.newcomer_ui or 1 %}1{% endif %}';
 	var tutorial_ui='{% if domain.tutorial %}1{% endif %}';
 	var proximity_guides='{% if domain.proximity_guides %}1{% endif %}';
+	var close_buttons_enabled={% if domain.close_buttons == false %}false{% else %}true{% endif %};
 	var new_attacks='{% if domain.new_attacks %}1{% endif %}';
 	var recording_mode='{% if domain.recording_mode %}1{% endif %}';
 	var cached_map='{% if domain.fast_mode %}1{%endif%}',scale='{{domain.scale}}';
@@ -83,8 +85,8 @@
 			setTimeout(function(){
 				if(!character)
 				{
-					add_log("If the character doesn't connect","gray");
-					add_log("Reloading the page to retry in 40 seconds","gray");
+					add_log(phrase.html("page.connection.not_connected"),"gray");
+					add_log(phrase.html("page.connection.retry", {seconds:40}),"gray");
 					setTimeout(function(){
 						if(character) return;
 						location.reload();
@@ -95,8 +97,8 @@
 		else
 		{
 			setTimeout(function(){
-				add_log("Server not found","gray");
-				add_log("Reloading the page to retry in 10 seconds","gray");
+				add_log(phrase.html("page.connection.server_missing"),"gray");
+				add_log(phrase.html("page.connection.retry", {seconds:10}),"gray");
 				setTimeout(function(){
 					if(character) return;
 					location.reload();
@@ -175,11 +177,12 @@
 X.servers={{domain.servers|to_json|safe}};
 X.characters={{domain.characters|to_json|safe}};
 X.tutorial={{user_data|to_tutorial|safe}};
+X.merchant_tutorial={{user_data|to_tutorial("merchant")|safe}};
 X.unread={{user_data and user_data.info.mail or 0}};
 X.codes={{(user_data and user_data.info.code_list or {})|to_json|safe}}
 
-{% if domain.no_html == "bot" %}
-	Cookies.set('{{domain.cookie_key}}',"{{user and user._id}}-{{user and user.info.auths[0] or ''}}",{ expires:12*365});
+{% if domain.no_html == "bot" and user and user.info.auths[0] %}
+	Cookies.set('{{domain.cookie_key}}',"{{user._id}}-{{user.info.auths[0]}}",{ expires:12*365, path:'/', domain:'.{{domain.domain}}'});
 {% endif %}
 
 </script>
@@ -203,7 +206,7 @@ X.codes={{(user_data and user_data.info.code_list or {})|to_json|safe}}
 		var access_master="{{domain.access_master}}";
 		function show_renderer()
 		{
-			var html="<textarea id='renderer'></textarea><div class='gamebutton' style='position: absolute; bottom: -68px; right: -5px; border-color: #14561D' onclick='send_to_server()'>EXECUTE</div>";
+			var html="<textarea id='renderer'></textarea>"+snippet_actions("send_to_server()",phrase("client.snippet.execute"),"server-execute");
 			show_modal(html);
 			window.codemirror_render2=CodeMirror(function(current){$("#renderer").replaceWith(current);},{
 				value:window.codemirror_render2 && codemirror_render2.getValue() || "",
@@ -217,6 +220,7 @@ X.codes={{(user_data and user_data.info.code_list or {})|to_json|safe}}
 				cursorHeight:0.75,
 				/*,lineNumbers:true*/
 			});
+			position_modals();
 		}
 
 		function send_to_server()

@@ -9,7 +9,7 @@
 		}
 	</style>
 	<div style="position: fixed; top: 0px; left: 0px; z-index: 9999999" class='showwithmodals'>
-		<div class="gamebutton" onclick='pcs(); hide_modal();'>&lt; Back</div>
+		<div class="gamebutton" onclick='pcs(); hide_modal();'>{{ phrase("pages.docs.back") }}</div>
 	</div>
 	{% include "htmls/contents/booster_howto.html"%}
 	{% include "htmls/contents/shells_info.html"%}
@@ -17,11 +17,11 @@
 	<table width=100% height="95%" class='hidewithmodals'>
 		<tr><td align="center">
 			<div style='width:420px; margin-top: 100px'>
-				<div class='gamebutton block mb5' onclick='pcs(); render_guide();'><span style='color: #9083BC'>&gt;</span> Game Guide <span style='color: #9083BC'>&lt;</span></div>
+				<div class='gamebutton block mb5' onclick='pcs(); render_guide();'>{{ phrase_html("pages.docs.game-guide") }}</div>
 				{#<div class='gamebutton block mb5' onclick='pcs(); render_guide();'>Game Tutorial</div>#}
 				<!-- <div class='gamebutton block mb5' onclick='pcs(); render_code_articles()'><span style='color: #E78E4E'>&gt;</span> Learn CODE <span style='color: #E78E4E'>&lt;</span></div> -->
-				<div class='gamebutton block mb5' onclick='pcs(); render_code_docs()'> <span style='color: #78C13F'>&gt;</span> CODE Docs  <span style='color: #78C13F'>&lt;</span></div>
-				<div class='gamebutton block mb5' onclick='pcs(); render_others()'> <span style='color: #F0D748'>&gt;</span> Other Systems  <span style='color: #F0D748'>&lt;</span></div>
+				<div class='gamebutton block mb5' onclick='pcs(); render_code_docs()'> {{ phrase_html("pages.docs.code-docs") }}</div>
+				<div class='gamebutton block mb5' onclick='pcs(); render_others()'> {{ phrase_html("pages.docs.other-systems") }}</div>
 			</div>
 		</td></tr>
 	</table>
@@ -194,6 +194,8 @@
 				{
 					for(var i=0;i<G.docs.tutorial.length;i++)
 						if(G.docs.tutorial[i].key==path[1]) open_tutorial(i);
+					for(var i=0;i<(G.docs.merchant_tutorial||[]).length;i++)
+						if(G.docs.merchant_tutorial[i].key==path[1]) open_tutorial(i,"merchant");
 				}
 			}
 		}

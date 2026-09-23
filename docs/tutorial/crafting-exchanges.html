@@ -1,4 +1,4 @@
-<p class="tutlead">Crafting follows a recipe. Exchanges trade a known collection for an uncertain reward.</p>
+<p class="tutlead">{{ phrase("docs.tutorial.crafting-exchanges.crafting-follows-a-recipe-exchanges-trade-a-known") }}</p>
 
 <div class="tutlinks">
 	<div
@@ -8,7 +8,7 @@
 			open_guide('crafting', get_guide_url('crafting'));
 		"
 	>
-		CRAFTING &amp; DISMANTLING
+		{{ phrase("docs.tutorial.crafting-exchanges.crafting-dismantling") }}
 	</div>
 	<div
 		class="gamebutton gamebutton-small"
@@ -17,24 +17,28 @@
 			open_guide('exchanges-and-quests', get_guide_url('exchanges-and-quests'));
 		"
 	>
-		EXCHANGES &amp; QUESTS
+		{{ phrase("docs.tutorial.crafting-exchanges.exchanges-quests") }}
 	</div>
 </div>
 
 {% for task in tutorial_data("crafting-exchanges").tasks %} {% if loop.first %}
 <div class="tutdivider"></div>
 {% endif %}
-<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
+<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">{{ phrase("docs.tutorial.crafting-exchanges.done") }}</span></div>
 {% endfor %}
 
 <div class="tutpath manual">
-	<div class="tutpath-title">MANUAL</div>
-	<p>Open <span class="gamebutton gamebutton-small">GUIDE</span> → All Recipes. A recipe names every item, quantity, level, and gold cost. Bring the exact ingredients to the Craftsman.</p>
-	<p>Exchangeable items show their required quantity. Xyn handles many exchanges; quest and event collectors handle their own. Check the possible rewards before surrendering a rare stack.</p>
-</div>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.crafting-exchanges.manual") }}</div>
+	<p>{{ phrase_html("docs.tutorial.crafting-exchanges.open-guide-all-recipes-a-recipe-names-every") }}</p>
+	<p style="display:flex;align-items:center;gap:16px"><span class="tutorial-npc" data-npc="craftsman"></span><span>Leo · Mainland<br>(92, 670)</span></p>
+<div><span class="tutorial-travel" data-type="npc" data-target="craftsman"></span></div>
+	<p>{{ phrase("docs.tutorial.crafting-exchanges.exchangeable-items-show-their-required-quantity-xyn-handles") }}</p>
+	<p style="display:flex;align-items:center;gap:16px"><span class="tutorial-npc" data-npc="exchange"></span><span>Xyn · Mainland<br>(-25, -478)</span><span class="tutorial-item" data-item="seashell"></span></p>
+<div><span class="tutorial-travel" data-type="npc" data-target="exchange"></span></div>
+	</div>
 
 <div class="tutpath codepath">
-	<div class="tutpath-title">OPTIONAL CODE</div>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.crafting-exchanges.optional-code") }}</div>
 	<!-- prettier-ignore -->
 	<div class="code">show_json(G.craft);
 
@@ -46,16 +50,14 @@ if (exchange_num !== -1) {
 	game_log("Exchangeable: " + character.items[exchange_num].name);
 }</div>
 	<p>
-		When the ingredients are ready, <span class="dlabel">auto_craft(name)</span> selects the recipe positions. <span class="dlabel">exchange(num)</span> waits for the timed exchange and returns its
-		reward.
+		{{ phrase_html("docs.tutorial.crafting-exchanges.when-the-ingredients-are-ready-auto-craft-name") }}
 	</p>
 	<p>
-		<span class="rlabel" onclick="render_function_reference($(this).html())">auto_craft</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">craft</span> ·
-		<span class="rlabel" onclick="render_function_reference($(this).html())">dismantle</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">exchange</span>
+		{{ phrase_html("docs.tutorial.crafting-exchanges.auto-craft-craft-dismantle-exchange") }}
 	</p>
 </div>
 
-<p class="tuttip"><span class="hlabel">Careful:</span> Crafting, dismantling, and exchanging consume their inputs. Inspect first; act second.</p>
+<p class="tuttip">{{ phrase_html("docs.tutorial.crafting-exchanges.careful-crafting-dismantling-and-exchanging-consume-their-inputs") }}</p>
 
 <style>
 	.tutlead {
@@ -112,3 +114,4 @@ if (exchange_num !== -1) {
 		text-align: center;
 	}
 </style>
+<script>render_tutorial_items();</script>

@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe นำตัวละครนี้เข้าคิวแล้ว",
+	"mainframe.event.included_worker_queued": "Mainframe นำ Worker ที่รวมมาให้นี้เข้าคิวแล้ว",
+	"mainframe.event.shared_with": "แชร์กับ {character}",
+	"mainframe.event.shared_with_root": "แชร์กับตัวละครหลัก",
+	"mainframe.event.explicit_disconnect": "เจ้าของบัญชีตัดการเชื่อมต่อแล้ว",
+	"mainframe.event.renewed_free": "ใช้เวลา Mainframe ฟรี 1 ชั่วโมงสำหรับ {minutes} นาที",
+	"mainframe.event.renewed_shell": "หักเปลือกหอย 1 หน่วยสำหรับ {minutes} นาที",
+	"mainframe.event.renewal_one": "ตัวละครทำงานอยู่ {count} ตัว · ต่อเวลาครั้งถัดไป {date}",
+	"mainframe.event.renewal_many": "ตัวละครทำงานอยู่ {count} ตัว · ต่อเวลาครั้งถัดไป {date}",
+	"mainframe.event.renewal_failed": "Mainframe หยุดตัวละครนี้เพราะเวลาเหลือหมดแล้ว",
+	"mainframe.event.worker_failure": "Mainframe ตรวจพบว่า Worker ทำงานล้มเหลวและจะลองใหม่",
+	"mainframe.event.server_change": "Mainframe กำลังเชื่อมต่อตัวละครนี้ใหม่บนเซิร์ฟเวอร์อื่น",
+	"mainframe.level.info": "ข้อมูล",
+	"mainframe.level.warn": "คำเตือน",
+	"mainframe.level.error": "ข้อผิดพลาด"
+}

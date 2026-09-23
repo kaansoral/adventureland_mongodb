@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex, nofollow" />
+		<title>{{ domain.title }}</title>
+		<link rel="icon" href="/images/favicon.png" />
+		<link href="/css/common.css?v={{ domain.v }}" rel="stylesheet" type="text/css" />
+		<link href="/css/admin.css?v={{ domain.v }}" rel="stylesheet" type="text/css" />
+	</head>
+	<body>
+		<main class="admin-shell">
+			<header class="topbar">
+				<div>
+					<h1>New Signups</h1>
+					<div class="subtitle">Newest accounts first. Character progress comes from the latest saved game data.</div>
+				</div>
+				<nav class="nav-links" aria-label="Admin navigation">
+					<a class="nav-link" href="/admin">Admin</a><a class="nav-link" href="/admin/mainframe">Mainframe</a><a class="nav-link" href="/">Game</a>
+				</nav>
+			</header>
+			<section class="controls" aria-label="Signup filters">
+				<div>
+					<div class="muted">Showing</div>
+					<div>{{ signups.range_label }} · {{ signups.users.length }} accounts</div>
+				</div>
+				<div class="range-links">
+					{% for value, label in [["1", "24h"], ["7", "7d"], ["30", "30d"], ["all", "All"]] %}
+					<a class="range-link{% if signups.range == value %} active{% endif %}" href="/admin/users?days={{ value }}">{{ label }}</a>
+					{% endfor %}
+				</div>
+			</section>
+			<section class="panel" aria-label="New users">
+				{% for account in signups.users %}
+				<article class="user-row">
+					<div class="user-info">
+						<strong>{{ account.name }}</strong> · {{ account.email }} · Joined {{ account.created }} · {{ account.platform }} / {{ account.country }} · Last seen {{ account.last_seen }}
+					</div>
+					<div class="user-characters">
+						{% for character in account.characters %}
+						<span class="user-character"><strong>{{ character.name }}</strong>, <span class="user-class">{{ character.type }}</span>, Lv. {{ character.level }}, {{ character.map }}</span>
+						{% else %}<span class="muted">No characters yet</span>{% endfor %}
+					</div>
+				</article>
+				{% else %}
+				<div class="muted">No signups in this period.</div>
+				{% endfor %}
+			</section>
+			<nav class="controls" aria-label="Signup pages">
+				<a class="nav-link" href="/admin/users?days={{ signups.range }}">Newest</a>
+				{% if signups.next %}<a class="nav-link" href="{{ signups.next }}">Older signups →</a>{% endif %}
+			</nav>
+		</main>
+	</body>
+</html>

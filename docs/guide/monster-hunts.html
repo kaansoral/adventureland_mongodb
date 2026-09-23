@@ -1,30 +1,31 @@
-<div class="guide-kicker">DAISY'S WORK</div>
-<div class="guide-title">Monster Hunts</div>
-<p>Daisy marks one monster type and a number to defeat. Finish on the server that issued the hunt, then return to her for a Monster Token.</p>
+<div class="guide-kicker">{{ phrase("docs.guide.monster-hunts.daisy-s-work") }}</div>
+<div class="guide-title">{{ phrase("docs.guide.monster-hunts.monster-hunts") }}</div>
+<p>{{ phrase("docs.guide.monster-hunts.daisy-marks-one-monster-type-and-a-number") }}</p>
+<p>{{ phrase("docs.guide.monster-hunts.beginner-scaling") }}</p>
 
 <div class="guide-showcase" style="border-color:#B45C61">
 	<div class="guide-showcase-art"><span class="hunt-daisy"></span><span class="hunt-goo"></span><span class="hunt-token"></span></div>
-	<div class="guide-showcase-copy"><b>Accept · Hunt · Return</b>Your condition bar holds the target, remaining count, server, and time. The reward is not automatic: completed hunts must be turned in to Daisy.</div>
+	<div class="guide-showcase-copy">{{ phrase_html("docs.guide.monster-hunts.accept-hunt-return-your-condition-bar-holds-the") }}</div>
 </div>
 
 <div class="guide-flow" style="border-color:#B45C61" data-guide-visual="monster-hunt">
-	<div class="guide-flow-node"><span class="guide-flow-icon hunt-daisy"></span><span class="guide-flow-label">Accept from Daisy</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.monster-hunts.accept-from-daisy") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon hunt-goo"></span><span class="guide-flow-label">Defeat Marked Monsters</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.monster-hunts.defeat-marked-monsters") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon hunt-token"></span><span class="guide-flow-label">Return for Token</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.monster-hunts.return-for-token") }}</div>
 </div>
 
 <div class="divider"></div>
-<div class="title mt15">Follow the Hunt Condition</div>
+<div class="title mt15">{{ phrase("docs.guide.monster-hunts.follow-the-hunt-condition") }}</div>
 <div class="guide-card-grid">
-	<div class="guide-card"><b>Target</b><span class="dlabel">id</span> is the monster key. Use <span class="dlabel">G.monsters[id].name</span> for its display name.</div>
-	<div class="guide-card"><b>Remaining</b><span class="dlabel">c</span> counts down only for eligible kills of the assigned monster.</div>
-	<div class="guide-card"><b>Server</b><span class="dlabel">sn</span> records the realm. Kills elsewhere do not advance this assignment.</div>
-	<div class="guide-card"><b>Time</b><span class="dlabel">ms</span> is the remaining duration. Return before the condition expires.</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.monster-hunts.target-id-is-the-monster-key-use-g") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.monster-hunts.remaining-c-counts-down-only-for-eligible-kills") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.monster-hunts.server-sn-records-the-realm-kills-elsewhere-do") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.monster-hunts.time-ms-is-the-remaining-duration-return-before") }}</div>
 </div>
-<p>If the count reaches zero, stop hunting and return to Daisy. Merchants cannot accept hunts. A server change does not move an existing assignment to the new realm.</p>
-<div class="guide-note">Do not repeatedly call Daisy while a hunt still has a remaining count. The server will refuse it; read <span class="dlabel">character.s.monsterhunt</span> instead.</div>
+<p>{{ phrase("docs.guide.monster-hunts.if-the-count-reaches-zero-stop-hunting-and") }}</p>
+<div class="guide-note">{{ phrase_html("docs.guide.monster-hunts.do-not-repeatedly-call-daisy-while-a-hunt") }}</div>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
@@ -53,9 +54,9 @@ show_hunt();</div>
 }
 
 visit_daisy().catch(show_json);</div>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">interact</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">get_nearest_monster</span>.</p>
+<p>{{ phrase_html("docs.guide.monster-hunts.references-interact-smart-move-get-nearest-monster") }}</p>
 
-<div class="guide-related">Need help finding creatures? Open <span onclick="hide_modal(); open_guide('tracktrix',get_guide_url('tracktrix'))">Tracktrix</span>.</div>
+<div class="guide-related">{{ phrase_html("docs.guide.monster-hunts.need-help-finding-creatures-open-tracktrix") }}</div>
 
 <script>
 	$(".hunt-daisy").html(sprite(G.npcs.monsterhunter.skin, { height: 62 }));

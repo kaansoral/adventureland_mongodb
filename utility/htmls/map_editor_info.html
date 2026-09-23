@@ -15,35 +15,35 @@
 </style>
 <div id="infomodal" style="display: none">
 	<div style="width: 640px; background: #E5E5E5; color: #424343; font-size: 24px; border: 5px solid gray; padding: 16px">
-		<div>Welcome Adventurer. This is our in-house, custom map editor, we use it to build the maps of Adventure Land. For this reason, it's a bit crude, hard to use, and it's quite heavy in terms of resource usage. Now that you have been warned, onto the fun stuff!</div>
-		<div class="header" style="color: #3B96AA">Tilesets</div>
-		<div>The buttons above, the "castle", "doors", "dungeon" etc. are the tilesets. When you click a tileset, it's opened on the top right corner. You can zoom-in/out with the +/- buttons. When you activate the "M" button, you can move the tileset using arrows.</div>
-		<div class="header" style="color: #8E77DE">Picking and Placing</div>
-		You can pick and place a tile of "SIZE_X"/"SIZE_Y" size, the default size is 16x16. You can also modify the "STEP", try setting it to 1 for example to see what it does. You need to keep the tileset open to place tiles. Just click anywhere on the map to place one tile! If you press "Y" - You can set a tile to be the default tile.
-		<div class="header" style="color: #64AB3D">Moving and Zooming</div>
-		Move around your map using arrows, you can also use the +/- buttons to zoom-in/out.
-		<div class="header" style="color: #CDC647">Area Mode</div>
-		Placing tiles one by one can be tiresome, that's what the "Area Mode" is for, you can place areas instead of single tiles, saves time, performance and space!
-		<div class="header" style="color: #E43491">Under Mode</div>
-		In this mode, everything you place goes under the tiles you've placed.
-		<div class="header" style="color: #C67733">Keypress Features</div>
-		Press Y + Click: Select a default tile to span everywhere<br />
-		Press L + Click: Line continuity test<br />
-		<div class="header" style="color: #DC5567">Deleting Tiles</div>
-		Press X + Click: To delete regular tiles<br />
-		Press Z + Click: To delete area tiles<br />
-		Press C + Click: To delete lines<br />
-		Press V + Click: To delete entities<br />
-		Press B + Click: To delete zones (Aim for top-left corner)<br />
-		<div class="header" style="color: #53C7E7">Entities</div>
-		Entities are things that can appear above characters and monsters, things you can get under, for example, a tree, a chair, a house. It's challenging to create entities, you can't edit an entity, you can only create them in one run, and delete them later on. For this reason, plan the entity you are going to create beforehand and create it perfectly without any mistakes, otherwise you would need to start over. One more important thing, don't put any empty space below entities. (I know these are all very complicated, but you might understand these yourself with trial and error). To start an entity, press "Start Entity", and when you are done, press "Stop Entity", and voila, you created an entity on your map!
-		<div class="header" style="color: #53C7E7">Zones</div>
-		Zones are there to make it easier to reference areas when developing the game. They can be spawns, traps, safe zones, anything! For basic spawns, only draw a rectangle - it makes things very lightweight!
-		<div class="header" style="color: #E55756">Lines</div>
-		Characters can't pass lines, so make sure you place lines around your map. As a best practice, place lines ~8pixels away from actual boundaries. Your character will spawn at 0,0 - on the Red Dot, so, for the time being, build your map according to that.
-		<div class="header" style="color: #33CCB5">Plans</div>
-		Aspiring to combine CODE + Resort at one point, provide a basic Networking architecture to map builders, so they can create simple yet fun interactive experiences, maybe basic multiplayer games. As everything on Adventure Land, the Map Editor, Resort will improve and change over time too, keep this in mind. If you have any questions, requests, feel free to email me at hello@adventure.land. Have fun!
-		<div class="header" style="color: #7E7E7E">Heads Up</div>
-		WebGL is a very moody technology, for example, the Map Editor could slow down the game even after you close the Map Editor, if you feel something is amiss, just restart your browser, and hope WebGL improves in time and we leave issues like these behind :]
+		<div>{{ phrase("editor.map_editor_info.welcome-adventurer-this-is-our-in-house-custom") }}</div>
+		<div class="header" style="color: #3B96AA">{{ phrase("editor.map_editor_info.tilesets") }}</div>
+		<div>{{ phrase("editor.map_editor_info.the-buttons-above-the-castle-doors-dungeon-etc") }}</div>
+		<div class="header" style="color: #8E77DE">{{ phrase("editor.map_editor_info.picking-and-placing") }}</div>
+		{{ phrase("editor.map_editor_info.you-can-pick-and-place-a-tile-of") }}
+		<div class="header" style="color: #64AB3D">{{ phrase("editor.map_editor_info.moving-and-zooming") }}</div>
+		{{ phrase("editor.map_editor_info.move-around-your-map-using-arrows-you-can") }}
+		<div class="header" style="color: #CDC647">{{ phrase("editor.map_editor_info.area-mode") }}</div>
+		{{ phrase("editor.map_editor_info.placing-tiles-one-by-one-can-be-tiresome") }}
+		<div class="header" style="color: #E43491">{{ phrase("editor.map_editor_info.under-mode") }}</div>
+		{{ phrase("editor.map_editor_info.in-this-mode-everything-you-place-goes-under") }}
+		<div class="header" style="color: #C67733">{{ phrase("editor.map_editor_info.keypress-features") }}</div>
+		{{ phrase("editor.map_editor_info.press-y-click-select-a-default-tile-to") }}<br />
+		{{ phrase("editor.map_editor_info.press-l-click-line-continuity-test") }}<br />
+		<div class="header" style="color: #DC5567">{{ phrase("editor.map_editor_info.deleting-tiles") }}</div>
+		{{ phrase("editor.map_editor_info.press-x-click-to-delete-regular-tiles") }}<br />
+		{{ phrase("editor.map_editor_info.press-z-click-to-delete-area-tiles") }}<br />
+		{{ phrase("editor.map_editor_info.press-c-click-to-delete-lines") }}<br />
+		{{ phrase("editor.map_editor_info.press-v-click-to-delete-entities") }}<br />
+		{{ phrase("editor.map_editor_info.press-b-click-to-delete-zones-aim-for") }}<br />
+		<div class="header" style="color: #53C7E7">{{ phrase("editor.map_editor_info.entities") }}</div>
+		{{ phrase("editor.map_editor_info.entities-are-things-that-can-appear-above-characters") }}
+		<div class="header" style="color: #53C7E7">{{ phrase("editor.map_editor_info.zones") }}</div>
+		{{ phrase("editor.map_editor_info.zones-are-there-to-make-it-easier-to") }}
+		<div class="header" style="color: #E55756">{{ phrase("editor.map_editor_info.lines") }}</div>
+		{{ phrase("editor.map_editor_info.characters-can-t-pass-lines-so-make-sure") }}
+		<div class="header" style="color: #33CCB5">{{ phrase("editor.map_editor_info.plans") }}</div>
+		{{ phrase("editor.map_editor_info.aspiring-to-combine-code-resort-at-one-point") }}
+		<div class="header" style="color: #7E7E7E">{{ phrase("editor.map_editor_info.heads-up") }}</div>
+		{{ phrase("editor.map_editor_info.webgl-is-a-very-moody-technology-for-example") }}
 	</div>
 </div>

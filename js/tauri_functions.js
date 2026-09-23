@@ -4,6 +4,7 @@ var tauri_data = { ready: false, ticket: "", error: "" };
 var tauri_auth_promise = null;
 var tauri_reload_pending = false;
 var tauri_invoke = window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke;
+if (tauri_invoke && window.desktop) tauri_invoke = function (command, args) { return desktop.request(command, args, 20000); };
 var tauri_debug_started = Date.now();
 var tauri_debug_sequence = 0;
 
@@ -126,7 +127,7 @@ function tauri_auth_payload() {
 }
 
 function tauri_auth_error(response) {
-	var reason = (response && (response.reason || response.message)) || tauri_data.error || "Steam authentication failed.";
+	var reason = (response && (response.reason || response.message)) || tauri_data.error || phrase("services.tauri_functions.steam-authentication-failed");
 	tauri_debug(
 		"auth.socket.rejected",
 		{
@@ -136,8 +137,8 @@ function tauri_auth_error(response) {
 		},
 		"error",
 	);
-	if (reason == "steam_auth_failed") reason = "Steam authentication failed. Please restart Adventure Land through Steam.";
-	else if (reason == "steam_link_failed") reason = "Steam authentication worked, but the account could not be linked. Please try again.";
+	if (reason == "steam_auth_failed") reason = phrase("services.tauri_functions.steam-authentication-failed-please-restart-adventure-land-through-steam");
+	else if (reason == "steam_link_failed") reason = phrase("services.tauri_functions.steam-authentication-worked-but-the-account-could-not-be");
 	show_alert(reason);
 }
 
@@ -187,20 +188,32 @@ function tauri_character_is_online(name) {
 }
 
 function tauri_wait_for_character_disconnect(name, timeout_ms) {
-	var started = Date.now();
 	return new Promise(function (resolve, reject) {
+		var done = false, poll_timer;
+		var deadline = setTimeout(function () { finish(new Error("character_disconnect_timeout")); }, timeout_ms);
+		function finish(error) {
+			if (done) return;
+			done = true;
+			clearTimeout(deadline);
+			clearTimeout(poll_timer);
+			if (error) reject(error);
+			else resolve();
+		}
 		function check() {
-			api_call("servers_and_characters")
+			if (done) return;
+			// Never overlap requests, even when the last one hangs. The independent
+			// deadline releases the caller without scheduling another request.
+			Promise.resolve().then(function () { return api_call("servers_and_characters"); })
 				.then(function () {
-					setTimeout(function () {
-						if (!tauri_character_is_online(name)) resolve();
-						else if (Date.now() - started >= timeout_ms) reject(new Error("character_disconnect_timeout"));
-						else setTimeout(check, 500);
+					if (done) return;
+					poll_timer = setTimeout(function () {
+						if (done) return;
+						if (!tauri_character_is_online(name)) finish();
+						else poll_timer = setTimeout(check, 500);
 					}, 100);
 				})
 				.catch(function () {
-					if (Date.now() - started >= timeout_ms) reject(new Error("character_disconnect_timeout"));
-					else setTimeout(check, 500);
+					if (!done) poll_timer = setTimeout(check, 500);
 				});
 		}
 		check();
@@ -211,7 +224,7 @@ function tauri_native_reload(selection) {
 	return tauri_invoke("reload_game", { selection: !!selection }).catch(function (error) {
 		tauri_reload_pending = false;
 		console.error("[Tauri] Reload failed: " + error);
-		show_alert("Reload failed: " + error);
+		show_alert(phrase.html("services.tauri_functions.reload-failed", { error: error }));
 	});
 }
 
@@ -251,9 +264,15 @@ function tauri_fullscreen() {
 	return tauri_invoke("toggle_fullscreen");
 }
 
-function tauri_create_subwindow() {
-	return tauri_invoke("create_subwindow").catch(function (error) {
-		show_alert("Couldn't open another game window: " + error);
+function tauri_create_subwindow(url) {
+	// A separate command makes old clients fail clearly instead of silently
+	// ignoring the destination and opening the character-selection page.
+	var command = url ? "create_character_window" : "create_subwindow";
+	return tauri_invoke(command, url ? { url: url } : undefined).catch(function (error) {
+		tauri_debug("window.open_failed", { command: command, reason: "" + error }, "error");
+		if (url && ("" + error).indexOf(command) !== -1)
+			error = phrase("services.payments.please-update-the-steam-client-and-restart-adventure-land");
+		show_alert(phrase.html("services.tauri_functions.window-failed", { error: error }));
 	});
 }
 

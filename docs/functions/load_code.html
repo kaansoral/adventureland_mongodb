@@ -1,9 +1,14 @@
 <p><span class='dlabel'>load_code(name_or_slot, onerror)</span></p>
-<p>Synchronously loads a code slot or local code file into the current top-level CODE scope.</p>
-<p><b>Returns:</b> Nothing.</p>
-<p><b>Notes:</b> Loading is synchronous and the loaded declarations become globals. Use require_code for isolated module scope.</p>
-<p><b>Example:</b></p>
-<div class='code'>load_code("helpers");</div>
+<p>{{ phrase("docs.functions.load_code.synchronously-executes-a-code-slot-or-local-code") }}</p>
+<p>{{ phrase_html("docs.functions.load_code.returns-nothing") }}</p>
+<p>{{ phrase_html("docs.functions.load_code.repeated-calls-every-call-executes-the-file-again") }}</p>
+<p>{{ phrase_html("docs.functions.load_code.load-shared-dependencies-once-from-the-character-slot") }}</p>
+<p>{{ phrase_html("docs.functions.load_code.errors-the-optional-onerror-is-a-script-load") }}</p>
+<p>{{ phrase_html("docs.functions.load_code.use-require-code-for-module-scope-and-explicit") }}</p>
+<p>{{ phrase_html("docs.functions.load_code.example") }}</p>
+<p>{{ phrase("docs.functions.load_code.save-constants-and-combat-as-slots-that-define") }}</p>
+<div class='code'>load_code("Constants");
+load_code("Combat");</div>
 
 <p></p>
-<span class='redlabel'>"source"</span>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>

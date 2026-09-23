@@ -1,0 +1,9 @@
+{
+  "navigation.hub": "Hub",
+  "navigation.github": "GitHub",
+	"language.choose": "언어",
+	"language.select": "{language} 사용",
+	"language.save_failed": "언어 설정을 저장하지 못했어요. 다시 시도해 주세요.",
+	"language.saving": "저장 중…",
+	"navigation.communicator_short": "소통"
+}

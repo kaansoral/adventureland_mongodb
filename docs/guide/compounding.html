@@ -1,10 +1,10 @@
-<div class="guide-kicker">ITEM PROGRESSION</div>
-<div class="guide-title">Compounding</div>
-<p>Accessories and other compoundable items grow by combining three matching copies. All three must have the same item name and level.</p>
+<div class="guide-kicker">{{ phrase("docs.guide.compounding.item-progression") }}</div>
+<div class="guide-title">{{ phrase("docs.guide.compounding.compounding") }}</div>
+<p>{{ phrase("docs.guide.compounding.accessories-and-other-compoundable-items-grow-by-combining") }}</p>
 
 <div class="guide-place">
 	<div class="spcompound"></div>
-	<div><b>Cue and the Shrine of Combinations</b><br />Use the three accessory slots, the compound-scroll slot, and the optional offering slot.</div>
+	<div>{{ phrase_html("docs.guide.compounding.cue-and-the-shrine-of-combinations-use-the") }}</div>
 </div>
 
 <div class="guide-process">
@@ -14,44 +14,44 @@
 	<div class="process-item ecscroll0"></div><span class="process-arrow">→</span>
 	<div class="process-item ecompoundresult"></div>
 </div>
-<div class="guide-process-caption">Three matching +0 accessories and one compatible scroll attempt to make one +1 accessory.</div>
+<div class="guide-process-caption">{{ phrase("docs.guide.compounding.three-matching-0-accessories-and-one-compatible-scroll") }}</div>
 
 <div class="divider"></div>
-<div class="title mt15">One Attempt</div>
-<p>Visit a compound shrine. Place three matching items of the same level into its item slots, then add a compatible compound scroll. The shrine calculates the real chance for that exact set.</p>
-<p>A success consumes three items and returns one item a level higher. A normal failure consumes all three. Locked items are refused.</p>
+<div class="title mt15">{{ phrase("docs.guide.compounding.one-attempt") }}</div>
+<p>{{ phrase("docs.guide.compounding.visit-a-compound-shrine-place-three-matching-items") }}</p>
+<p>{{ phrase("docs.guide.compounding.a-success-consumes-three-items-and-returns-one") }}</p>
 
 <div class="guide-grid">
-	<div><span class="guide-step">1</span><b>Match name and level</b><br />Three +1 rings can become one +2 ring. A +0 copy cannot join them.</div>
-	<div><span class="guide-step">2</span><b>Match the scroll</b><br />Use a compound scroll that supports the items' current grade. A stronger scroll can improve the displayed chance.</div>
-	<div><span class="guide-step">3</span><b>Count the copies</b><br />One guaranteed +N needs at least 3<sup>N</sup> base copies before failures: 3 for +1, 9 for +2, 27 for +3.</div>
-	<div><span class="guide-step">4</span><b>Check every slot</b><br />The first selected item is the survivor on success. Verify properties, locks, and level before combining.</div>
+	<div>{{ phrase_html("docs.guide.compounding.1-match-name-and-level-three-1-rings") }}</div>
+	<div>{{ phrase_html("docs.guide.compounding.2-match-the-scroll-use-a-compound-scroll") }}</div>
+	<div>{{ phrase_html("docs.guide.compounding.3-count-the-copies-one-guaranteed-n-needs") }}</div>
+	<div>{{ phrase_html("docs.guide.compounding.4-check-every-slot-the-first-selected-item") }}</div>
 </div>
 
 <div class="divider"></div>
-<div class="title mt15">Scroll Grades</div>
-<p>Match the scroll to the item's current grade. A higher-grade scroll is also accepted and slightly improves the displayed chance.</p>
+<div class="title mt15">{{ phrase("docs.guide.compounding.scroll-grades") }}</div>
+<p>{{ phrase("docs.guide.compounding.match-the-scroll-to-the-item-s-current") }}</p>
 <div class="guide-scrolls">
-	<div><span class="ecscroll-grade0"></span><b>Normal</b><br />Compound Scroll</div>
-	<div><span class="ecscroll-grade1"></span><b>High</b><br />High Compound Scroll</div>
-	<div><span class="ecscroll-grade2"></span><b>Rare</b><br />Rare Compound Scroll</div>
-	<div><span class="ecscroll-grade3"></span><b>Legendary</b><br />Legendary Compound Scroll</div>
+	<div>{{ phrase_html("docs.guide.compounding.normal-compound-scroll") }}</div>
+	<div>{{ phrase_html("docs.guide.compounding.high-high-compound-scroll") }}</div>
+	<div>{{ phrase_html("docs.guide.compounding.rare-rare-compound-scroll") }}</div>
+	<div>{{ phrase_html("docs.guide.compounding.legendary-legendary-compound-scroll") }}</div>
 </div>
-<div class="guide-note">Exalted is the end of the item's compound path. There is no Exalted compound scroll because another attempt is not allowed.</div>
+<div class="guide-note">{{ phrase("docs.guide.compounding.exalted-is-the-end-of-the-item-s") }}</div>
 
 <div class="divider"></div>
-<div class="title mt15">Offerings &amp; Grace</div>
-<p>An offering can improve the chance. Its grade matters, so compare the shrine percentage before committing it. Higher levels represent many consumed copies; plan the whole chain, not only the next roll.</p>
+<div class="title mt15">{{ phrase("docs.guide.compounding.offerings-grace") }}</div>
+<p>{{ phrase("docs.guide.compounding.an-offering-can-improve-the-chance-its-grade") }}</p>
 <div class="guide-offerings">
-	<div><span class="eprimling"></span><b>Primling</b><br />An offering for upgrade and compound attempts.</div>
-	<div><span class="eprimordial"></span><b>Primordial Essence</b><br />A stronger offering; preview its exact effect first.</div>
+	<div>{{ phrase_html("docs.guide.compounding.primling-an-offering-for-upgrade-and-compound-attempts") }}</div>
+	<div>{{ phrase_html("docs.guide.compounding.primordial-essence-a-stronger-offering-preview-its-exact") }}</div>
 </div>
-<p>Previous attempts can contribute grace. The shrine includes it in the shown chance, so check the preview before each roll.</p>
-<div class="guide-note">A compoundable item becomes Exalted at the end of its defined path. At that point the server refuses another compound.</div>
+<p>{{ phrase("docs.guide.compounding.previous-attempts-can-contribute-grace-the-shrine-includes") }}</p>
+<div class="guide-note">{{ phrase("docs.guide.compounding.a-compoundable-item-becomes-exalted-at-the-end") }}</div>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
-<p><span class="rlabel" onclick="render_function_reference($(this).html())">compound</span> accepts four inventory positions, an optional offering position, and calculation mode. Previewing resolves with the exact chance without consuming or moving anything.</p>
+<p>{{ phrase_html("docs.guide.compounding.compound-accepts-four-inventory-positions-an-optional-offering") }}</p>
 <div class="code">async function compound_three(name, level, minimum_chance) {
 	var copies = [];
 	for (var i = 0; i &lt; character.items.length; i++) {
@@ -70,10 +70,10 @@
 }
 
 compound_three("ringsj", 0, 0.9).catch(show_json);</div>
-<p>Useful references: <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_grade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">item_properties</span>.</p>
-<div class="guide-note">If <span class="dlabel">compound()</span> rejects, no compound started. If it returns <span class="dlabel">success: false</span>, the roll happened and all three accessories were lost.</div>
+<p>{{ phrase_html("docs.guide.compounding.useful-references-locate-item-item-grade-item-properties") }}</p>
+<div class="guide-note">{{ phrase_html("docs.guide.compounding.if-compound-rejects-no-compound-started-if-it") }}</div>
 
-<div class="guide-related">See also: <span onclick="hide_modal(); open_guide('items',get_guide_url('items'))">Items and Grades</span> · <span onclick="hide_modal(); open_guide('upgrading',get_guide_url('upgrading'))">Upgrading</span> · <span onclick="hide_modal(); open_guide('crafting',get_guide_url('crafting'))">Crafting and Dismantling</span></div>
+<div class="guide-related">{{ phrase_html("docs.guide.compounding.see-also-items-and-grades-upgrading-crafting-and") }}</div>
 
 <script>
 	$(".spcompound").html(sprite(G.npcs.newupgrade.skin, { height: 62 }));

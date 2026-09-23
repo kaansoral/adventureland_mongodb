@@ -1,6 +1,6 @@
-<p><span class="dlabel">Practical geometry</span></p>
+<p>{{ phrase_html("docs.articles.4.g-geometry.practical-geometry") }}</p>
 
-<p>Use <span class="dlabel">distance(a, b)</span> for gameplay range checks. It understands entity dimensions and returns edge-to-edge distance rather than blindly measuring sprite centers.</p>
+<p>{{ phrase_html("docs.articles.4.g-geometry.use-distance-a-b-for-gameplay-range-checks") }}</p>
 
 <div class="code">async function attack_nearest_in_range() {
 	var target = get_nearest_monster();
@@ -12,7 +12,7 @@
 
 attack_nearest_in_range();</div>
 
-<p>Use ordinary Euclidean distance when you specifically need the distance between two mathematical points:</p>
+<p>{{ phrase("docs.articles.4.g-geometry.use-ordinary-euclidean-distance-when-you-specifically-need") }}</p>
 
 <div class="code">function point_distance(a, b) {
 	var dx = b.x - a.x;
@@ -20,7 +20,7 @@ attack_nearest_in_range();</div>
 	return Math.sqrt(dx * dx + dy * dy);
 }</div>
 
-<p>The direction from A to B in radians is <span class="dlabel">Math.atan2(b.y - a.y, b.x - a.x)</span>. Because positive Y points downward, positive angles turn visually clockwise on the map.</p>
+<p>{{ phrase_html("docs.articles.4.g-geometry.the-direction-from-a-to-b-in-radians") }}</p>
 
 <div class="code">function point_at_distance(a, b, units) {
 	var angle = Math.atan2(b.y - a.y, b.x - a.x);
@@ -30,4 +30,4 @@ attack_nearest_in_range();</div>
 	};
 }</div>
 
-<p>Geometry alone does not prove a route is walkable. Use <span class="dlabel">can_move_to</span> for a direct segment and <span class="dlabel">smart_move</span> for pathfinding. For skills, prefer <span class="dlabel">is_in_range(target, skill)</span>; skill ranges can differ from the character's ordinary attack range.</p>
+<p>{{ phrase_html("docs.articles.4.g-geometry.geometry-alone-does-not-prove-a-route-is") }}</p>

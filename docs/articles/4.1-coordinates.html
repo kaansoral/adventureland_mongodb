@@ -1,13 +1,13 @@
-<p><span class="dlabel">Coordinate system</span></p>
+<p>{{ phrase_html("docs.articles.4.1-coordinates.coordinate-system") }}</p>
 
-<p>Adventure Land maps use two-dimensional coordinates. Positive X moves right, negative X moves left, positive Y moves down, and negative Y moves up.</p>
+<p>{{ phrase("docs.articles.4.1-coordinates.adventure-land-maps-use-two-dimensional-coordinates-positive") }}</p>
 
 <div class="code">move(100, 0);   // Right of the origin
 move(0, 100);   // Below the origin
 move(-100, 0);  // Left of the origin
 move(0, -100);  // Above the origin</div>
 
-<p><span class="dlabel">character.x</span> and <span class="dlabel">character.y</span> are your current map coordinates. A coordinate is meaningful only with its map and instance:</p>
+<p>{{ phrase_html("docs.articles.4.1-coordinates.character-x-and-character-y-are-your-current") }}</p>
 
 <div class="code">var here = {
 	map: character.map,
@@ -16,6 +16,6 @@ move(0, -100);  // Above the origin</div>
 	y: character.y
 };</div>
 
-<p>Two identical X/Y pairs on different maps or in different instances are not the same place. <span class="dlabel">distance</span> returns a very large value when compatible map or instance fields disagree.</p>
+<p>{{ phrase_html("docs.articles.4.1-coordinates.two-identical-x-y-pairs-on-different-maps") }}</p>
 
-<p>Nearby entities also expose <span class="dlabel">real_x</span> and <span class="dlabel">real_y</span> internally. Public movement functions and ordinary CODE should use <span class="dlabel">x</span>/<span class="dlabel">y</span> unless a documented function specifically requires otherwise.</p>
+<p>{{ phrase_html("docs.articles.4.1-coordinates.nearby-entities-also-expose-real-x-and-real") }}</p>

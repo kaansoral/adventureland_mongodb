@@ -1,13 +1,13 @@
 <p><span class='dlabel'>doneify(fn,s_event,f_event)</span></p>
-<p>Adds the legacy .done(callback) interface to a Promise-returning or event-based function.</p>
-<p><b>Returns:</b> A wrapper whose calls return a native Promise with done(callback). The callback receives success as its first argument and the result or failure as its second.</p>
-<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
-<p><b>Notes:</b> For current functions, done() follows the returned Promise. The optional event names keep the old event-based fallback for legacy functions that do not return a Promise. Temporary listeners are added before the call and removed when the call finishes or fails.</p>
-<p><b>Example:</b></p>
+<p>{{ phrase("docs.functions.doneify.adds-the-legacy-done-callback-interface-to-a") }}</p>
+<p>{{ phrase_html("docs.functions.doneify.returns-a-wrapper-whose-calls-return-a-native") }}</p>
+<p>{{ phrase_html("docs.functions.doneify.promise-failures-unless-a-function-specific-note-says") }}</p>
+<p>{{ phrase_html("docs.functions.doneify.notes-for-current-functions-done-follows-the-returned") }}</p>
+<p>{{ phrase_html("docs.functions.doneify.example") }}</p>
 <div class='code'>var old_buy = doneify(buy, "buy_success", "buy_fail");
 old_buy("hpot0").done(function (success, data) {
 	game_log(success ? "Bought" : data.reason);
 });</div>
 
 <p></p>
-<span class='redlabel'>"source"</span>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>

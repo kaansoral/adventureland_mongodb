@@ -1,44 +1,44 @@
-<div class="guide-kicker">COMBAT</div>
-<div class="guide-title">PVP &amp; Duels</div>
-<p>There are three different fights between adventurers: open PVP, safe PVP maps, and private duels. Check which one you are entering before you attack.</p>
+<div class="guide-kicker">{{ phrase("docs.guide.pvp.combat") }}</div>
+<div class="guide-title">{{ phrase("docs.guide.pvp.pvp-duels") }}</div>
+<p>{{ phrase("docs.guide.pvp.there-are-three-different-fights-between-adventurers-open") }}</p>
 
 <div class="guide-showcase" style="border-color:#C3443D">
 	<div class="guide-showcase-art"><span class="pvp-ace"></span><span class="pvp-marked"></span><span class="pvp-token"></span></div>
-	<div class="guide-showcase-copy"><b>Know what can be lost</b>Open PVP can cost gold, experience, and <span class="guide-pvp">^</span>-marked items. Safe arenas and private duels use different defeat rules.</div>
+	<div class="guide-showcase-copy">{{ phrase_html("docs.guide.pvp.know-what-can-be-lost-open-pvp-can") }}</div>
 </div>
 
 <div class="guide-cards">
-	<div><b>Open PVP</b><br />On a PVP server—or an ordinary PVP map—other adventurers can attack you. Defeat can cost gold and experience. Items marked with <span class="guide-pvp">^</span> can also drop.</div>
-	<div><b>Safe PVP</b><br />Some PVE-server arenas allow fighting without the ordinary gold and experience loss. The map, not its appearance, decides the rule.</div>
-	<div><b>Duels</b><br />A private duel moves both leaders—and their parties—into Duelland. Duel defeat does not use ordinary PVP loss.</div>
+	<div>{{ phrase_html("docs.guide.pvp.open-pvp-on-a-pvp-server-or-an") }}</div>
+	<div>{{ phrase_html("docs.guide.pvp.safe-pvp-some-pve-server-arenas-allow-fighting") }}</div>
+	<div>{{ phrase_html("docs.guide.pvp.duels-a-private-duel-moves-both-leaders-and") }}</div>
 </div>
 
 <div class="divider"></div>
-<div class="title mt15">Before Entering</div>
-<p><span class="dlabel">in_pvp()</span> reports whether your character is presently exposed. <span class="dlabel">server.pvp</span> tells you whether the whole server is PVP, while <span class="dlabel">G.maps[character.map].pvp</span> describes the current map.</p>
-<p>A safe room can still exist on a PVP server. Your party and team are protected from ordinary friendly fire, but strangers are not. Store spare gold and inspect every <span class="guide-pvp">^</span>-marked item before leaving safety.</p>
-<div class="guide-note">The PVP board records the realm's latest defeats. The Token of Honor collector beside the arena shows the current token exchanges.</div>
+<div class="title mt15">{{ phrase("docs.guide.pvp.before-entering") }}</div>
+<p>{{ phrase_html("docs.guide.pvp.in-pvp-reports-whether-your-character-is-presently") }}</p>
+<p>{{ phrase_html("docs.guide.pvp.a-safe-room-can-still-exist-on-a") }}</p>
+<div class="guide-note">{{ phrase("docs.guide.pvp.the-pvp-board-records-the-realm-s-latest") }}</div>
 
 <div class="divider"></div>
-<div class="title mt15">Starting a Duel</div>
+<div class="title mt15">{{ phrase("docs.guide.pvp.starting-a-duel") }}</div>
 <div class="guide-flow" style="border-color:#C3443D" data-guide-visual="duel">
-	<div class="guide-flow-node"><span class="guide-flow-icon pvp-side">P1</span><span class="guide-flow-label">Leader Challenges</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.pvp.p1-leader-challenges") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon pvp-side">P2</span><span class="guide-flow-label">Leader Accepts</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.pvp.p2-leader-accepts") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon pvp-duel">VS</span><span class="guide-flow-label">Parties Enter Duelland</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.pvp.vs-parties-enter-duelland") }}</div>
 </div>
 <ol>
-	<li>Both leaders must be online, outside PVP, and not already dueling.</li>
-	<li>Challenge the other leader. They accept while the challenge is still live.</li>
-	<li>The two leaders enter immediately. Online party members receive an invitation to the same duel.</li>
-	<li>Party members enter before the duel begins. Each side spawns as a separate team.</li>
+	<li>{{ phrase("docs.guide.pvp.both-leaders-must-be-online-outside-pvp-and") }}</li>
+	<li>{{ phrase("docs.guide.pvp.challenge-the-other-leader-they-accept-while-the") }}</li>
+	<li>{{ phrase("docs.guide.pvp.the-two-leaders-enter-immediately-online-party-members") }}</li>
+	<li>{{ phrase("docs.guide.pvp.party-members-enter-before-the-duel-begins-each") }}</li>
 </ol>
-<p>Manually, use <span class="dlabel">/challenge CharacterName</span>, then accept the incoming challenge button. Party leaders challenge for their current parties.</p>
+<p>{{ phrase_html("docs.guide.pvp.manually-use-challenge-charactername-then-accept-the-incoming") }}</p>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
-<p>The duel functions settle only after the server has accepted each step. Challenge and duel invitations are also character events.</p>
+<p>{{ phrase("docs.guide.pvp.the-duel-functions-settle-only-after-the-server") }}</p>
 <div class="code">character.on("challenge", function (name) {
 	game_log(name + " challenged you");
 });
@@ -57,9 +57,9 @@ async function recent_pvp() {
 	var history = await get_pvp_history();
 	show_json(history.list); // [winner, defeated]
 }</div>
-<p>The receiving leader uses <span class="rlabel" onclick="render_function_reference($(this).html())">accept_duel_challenge</span>. See also <span class="rlabel" onclick="render_function_reference($(this).html())">send_duel_challenge</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">enter_duel</span>, and <span class="rlabel" onclick="render_function_reference($(this).html())">get_pvp_history</span>.</p>
+<p>{{ phrase_html("docs.guide.pvp.the-receiving-leader-uses-accept-duel-challenge-see") }}</p>
 
-<div class="guide-related">Related: <span onclick="hide_modal(); open_guide('items',get_guide_url('items'))">Items</span> · <span onclick="hide_modal(); open_guide('travel-and-instances',get_guide_url('travel-and-instances'))">Travel &amp; Instances</span></div>
+<div class="guide-related">{{ phrase_html("docs.guide.pvp.related-items-travel-instances") }}</div>
 
 <script>
 	$(".pvp-ace").html(sprite(G.npcs.pvp.skin, { height: 58 }));

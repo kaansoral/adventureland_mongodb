@@ -1,6 +1,6 @@
-<p><span class="dlabel">The account API</span></p>
+<p>{{ phrase_html("docs.articles.x.sub-api.the-account-api") }}</p>
 
-<p><span class="dlabel">parent.api_call(method, args, options)</span> sends a POST request to Adventure Land's account/backend API. This is different from real-time character actions such as <span class="dlabel">attack</span>, <span class="dlabel">move</span>, or <span class="dlabel">send_item</span>, which use the character's game-server socket.</p>
+<p>{{ phrase_html("docs.articles.x.sub-api.parent-api-call-method-args-options-sends-a") }}</p>
 
 <div class="code">async function inspect_account_data() {
 	try {
@@ -13,13 +13,13 @@
 
 inspect_account_data();</div>
 
-<p>The returned Promise fulfills with the API result. Failed API results, network errors, and configured request timeouts reject with a structured error. Use <span class="dlabel">try/catch</span> or <span class="dlabel">.catch</span>.</p>
+<p>{{ phrase_html("docs.articles.x.sub-api.the-returned-promise-fulfills-with-the-api-result") }}</p>
 
-<p>The optional <span class="dlabel">options.timeout</span> is measured in milliseconds. API calls are not intended for combat loops or high-frequency polling.</p>
+<p>{{ phrase_html("docs.articles.x.sub-api.the-optional-options-timeout-is-measured-in-milliseconds") }}</p>
 
-<p><span class="dlabel">Additional information events</span></p>
+<p>{{ phrase_html("docs.articles.x.sub-api.additional-information-events") }}</p>
 
-<p>Some API responses carry additional information records. Those records are also emitted through <span class="dlabel">game.on("api_response", ...)</span> after the main request finishes:</p>
+<p>{{ phrase_html("docs.articles.x.sub-api.some-api-responses-carry-additional-information-records-those") }}</p>
 
 <div class="code">game.on("api_response", function (data) {
 	if (data.type == "merchants") show_json(data);
@@ -29,4 +29,4 @@ parent.api_call("pull_merchants").catch(function (error) {
 	game_log("Merchant lookup failed: " + error.reason);
 });</div>
 
-<p>Prefer a documented public CODE function when one exists. For example, use <span class="dlabel">upload_code</span> instead of calling <span class="dlabel">save_code</span> directly. Low-level API method names and payloads are advanced, compatibility-sensitive interfaces and can evolve independently of the public CODE function directory.</p>
+<p>{{ phrase_html("docs.articles.x.sub-api.prefer-a-documented-public-code-function-when-one") }}</p>

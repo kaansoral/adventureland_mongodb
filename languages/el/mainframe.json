@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Το Mainframe έβαλε αυτόν τον χαρακτήρα στην ουρά.",
+	"mainframe.event.included_worker_queued": "Το Mainframe έβαλε αυτή τη συμπεριλαμβανόμενη διεργασία στην ουρά.",
+	"mainframe.event.shared_with": "Κοινή χρήση με {character}",
+	"mainframe.event.shared_with_root": "Κοινή χρήση με τον κύριο χαρακτήρα",
+	"mainframe.event.explicit_disconnect": "Αποσυνδέθηκε από τον κάτοχο του λογαριασμού.",
+	"mainframe.event.renewed_free": "Χρησιμοποιήθηκε 1 δωρεάν ώρα Mainframe για διάρκεια {minutes} λεπτών.",
+	"mainframe.event.renewed_shell": "Χρεώθηκε 1 κοχύλι για διάρκεια {minutes} λεπτών.",
+	"mainframe.event.renewal_one": "{count} ενεργός χαρακτήρας · Επόμενη ανανέωση {date}",
+	"mainframe.event.renewal_many": "{count} ενεργοί χαρακτήρες · Επόμενη ανανέωση {date}",
+	"mainframe.event.renewal_failed": "Το Mainframe σταμάτησε αυτόν τον χαρακτήρα επειδή εξαντλήθηκε ο χρόνος.",
+	"mainframe.event.worker_failure": "Το Mainframe εντόπισε αποτυχία διεργασίας και θα δοκιμάσει ξανά.",
+	"mainframe.event.server_change": "Το Mainframe επανασυνδέει αυτόν τον χαρακτήρα σε άλλον διακομιστή.",
+	"mainframe.level.info": "ΠΛΗΡ.",
+	"mainframe.level.warn": "ΠΡΟΕΙΔ.",
+	"mainframe.level.error": "ΣΦΑΛΜΑ"
+}

@@ -1,0 +1,56 @@
+<p>{{ phrase_html("docs.tutorial.js-loops.idea") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.task") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-loops.task") }}</p>
+
+<p>{{ phrase("docs.tutorial.javascript.practice") }}</p>
+
+<div class="tutorial-code" data-lesson="loops">
+	<!-- prettier-ignore -->
+	<div class="code executeb">const party = ["Mira", "Nox", "Bram"];
+for (let i = 1; i &lt; party.length; i++) {
+  game_log(party[i]);
+}</div>
+
+	<div class="tutorial-code-result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.hint") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-loops.hint") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.solution") }}</div>
+
+<!-- prettier-ignore -->
+<div class="code readonly">const party = ["Mira", "Nox", "Bram"];
+for (let i = 0; i &lt; party.length; i++) {
+  game_log(party[i]);
+}</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.variation") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-loops.variation") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.transfer") }}</div>
+
+<p>{{ phrase("docs.tutorial.javascript.copy") }}</p>
+
+<p>{{ phrase_html("docs.tutorial.js-loops.transfer") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.js-loops.reading_title") }}</div>
+
+{{ phrase_html("docs.tutorial.js-loops.reading_before") }}
+
+<!-- prettier-ignore -->
+<div class="code readonly">for (let count = 1; count &lt;= 3; count++) {
+  game_log(count);
+}</div>
+
+{{ phrase_html("docs.tutorial.js-loops.reading_after") }}
+
+<p><span class="rlabel clickable" onclick="load_documentation('game_log')">game_log</span></p>

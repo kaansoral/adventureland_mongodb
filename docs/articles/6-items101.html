@@ -1,4 +1,4 @@
-<p>Items are defined in <span class='jlabel' onclick="code_eval('show_json('+$(this).html()+')')">G.items</span>. Each entry describes an item type. One example:</p>
+<p>{{ phrase_html("docs.articles.6-items101.items-are-defined-in-g-items-each-entry") }}</p>
 
 <div class="code">
 "fclaw":{
@@ -22,11 +22,11 @@
 }
 </div>
 
-<p>Its <span class="dlabel">type</span> is <span class="dlabel">weapon</span> and its weapon type, <span class="dlabel">wtype</span>, is <span class="dlabel">fist</span>. Inspect <span class='jlabel' onclick="code_eval('show_json('+$(this).html()+')')">G.classes</span> to see which classes can use each weapon type. The visible name is Frozen Claw; its definition key is <span class="dlabel">fclaw</span>.</p>
+<p>{{ phrase_html("docs.articles.6-items101.its-type-is-weapon-and-its-weapon-type") }}</p>
 
-<p><span class="dlabel">grades</span> contains the upgrade levels where the item becomes high grade and rare grade. <span class="dlabel">[0, 7]</span> means high grade at +0 and rare grade at +7. Use <span class='rlabel' onclick="render_function_reference($(this).html())">item_grade</span> instead of duplicating the grade calculation.</p>
+<p>{{ phrase_html("docs.articles.6-items101.grades-contains-the-upgrade-levels-where-the-item") }}</p>
 
-<p><span class='jlabel' onclick="code_eval('show_json('+$(this).html()+')')">character.items</span> is the live inventory array. An actual inventory entry refers back to its definition with <span class="dlabel">name</span>:</p>
+<p>{{ phrase_html("docs.articles.6-items101.character-items-is-the-live-inventory-array-an") }}</p>
 
 <div class="code">
 {
@@ -35,7 +35,7 @@
 }
 </div>
 
-<p>Inventory slots can be <span class="dlabel">null</span>. Do not assume every array index contains an item. Common instance fields include <span class="dlabel">level</span> for upgraded/compounded items, <span class="dlabel">q</span> for stack quantity, <span class="dlabel">p</span> for a special property, <span class="dlabel">l</span> for a lock marker, and <span class="dlabel">stat_type</span> for an applied stat. Fields appear only when relevant.</p>
+<p>{{ phrase_html("docs.articles.6-items101.inventory-slots-can-be-null-do-not-assume") }}</p>
 
 <div class="code">for (var slot = 0; slot &lt; character.items.length; slot++) {
 	var item = character.items[slot];
@@ -45,9 +45,9 @@
 	game_log(slot + ": " + definition.name + " +" + (item.level || 0));
 }</div>
 
-<p><span class="dlabel">G.items</span> is definition data, not proof that your character owns an item. Conversely, an inventory item is instance data and does not repeat the complete definition. Read both when necessary.</p>
+<p>{{ phrase_html("docs.articles.6-items101.g-items-is-definition-data-not-proof-that") }}</p>
 
-<p><span class="dlabel">Finding and counting</span></p>
+<p>{{ phrase_html("docs.articles.6-items101.finding-and-counting") }}</p>
 
 <div class="code">var scroll_slot = locate_item("scroll0");
 var scroll_count = item_quantity("scroll0");
@@ -57,11 +57,11 @@ if (scroll_slot !== -1) {
 	show_json(G.items[character.items[scroll_slot].name]);
 }</div>
 
-<p>Use <span class='rlabel' onclick="render_function_reference($(this).html())">locate_item</span> to find a matching slot and <span class='rlabel' onclick="render_function_reference($(this).html())">item_quantity</span> to count stack quantities. Both accept optional filters for instance fields.</p>
+<p>{{ phrase_html("docs.articles.6-items101.use-locate-item-to-find-a-matching-slot") }}</p>
 
-<p><span class="dlabel">Changing items</span></p>
+<p>{{ phrase_html("docs.articles.6-items101.changing-items") }}</p>
 
-<p>Actions such as <span class="dlabel">buy</span>, <span class="dlabel">sell</span>, <span class="dlabel">equip</span>, <span class="dlabel">upgrade</span>, <span class="dlabel">compound</span>, <span class="dlabel">craft</span>, <span class="dlabel">exchange</span>, <span class="dlabel">send_item</span>, and bank functions return Promises. Await them and handle rejection; the server revalidates ownership, quantities, range, cost, compatibility, and action state.</p>
+<p>{{ phrase_html("docs.articles.6-items101.actions-such-as-buy-sell-equip-upgrade-compound") }}</p>
 
 <div class="code">async function equip_first(name) {
 	var slot = locate_item(name);
@@ -69,4 +69,4 @@ if (scroll_slot !== -1) {
 	return await equip(slot);
 }</div>
 
-<p>Inventory indexes can change after an action. Locate the item again before the next independent operation rather than keeping a slot number indefinitely.</p>
+<p>{{ phrase("docs.articles.6-items101.inventory-indexes-can-change-after-an-action-locate") }}</p>

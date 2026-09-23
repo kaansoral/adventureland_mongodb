@@ -71,7 +71,18 @@ function get_referrer(req, ip) {
 
 // ==================== AUTH / ACCOUNT ====================
 
-async function signup_or_login_api(args) {
+function load_bank_api(args) {
+	var bank = user_to_server(args.user),
+		packs = {};
+	for (var i = 0; i < 48; i++) {
+		var pack = "items" + i;
+		if (Array.isArray(bank[pack])) packs[pack] = bank[pack].slice(0, 42);
+	}
+	return { success: true, gold: bank.gold, packs: packs };
+}
+
+// steam_signup is trusted server context from the verified OpenID route, never API input.
+async function signup_or_login_api(args, steam_signup) {
 	var domain = await get_domain(args.req),
 		email = args.email,
 		password = args.password,
@@ -79,27 +90,34 @@ async function signup_or_login_api(args) {
 
 	if (existing && existing.server && msince(existing.last_online) < 15 && msince(gf(existing, "last_auth", really_old)) < 15) return { failed: true, reason: "cant_login_inside_bank" };
 
-	if (!domain.electron && !domain.tauri && !args.only_login && !Dev) return { failed: true, reason: "cant_signup_on_web" };
+	if (steam_signup && (!args.only_signup || args.only_login || existing)) return { failed: true, reason: "already_signed_up" };
+	if (!domain.electron && !domain.tauri && !args.only_login && !Dev && !steam_signup) return { failed: true, reason: "cant_signup_on_web" };
 
 	if (existing && !args.only_signup) {
 		if (existing.password == hash_password(password, gf(existing, "salt", "5"))) {
 			var R = await tx(
 				async () => {
 					R.user = await tx_get(A.user);
+					if (A.explicit_language || !localization.initialized(R.user)) {
+						R.user.language = A.language;
+						R.user.language_set = A.language_set;
+					}
 					R.auth = get_new_auth(R.user);
 					await tx_save(R.user);
 				},
-				{ user: existing },
+				Object.assign({ user: existing, explicit_language: localization.explicit_cookie(args.req) }, localization.preference_fields(args.req, existing)),
 			);
 			if (R.failed) return { failed: true, reason: R.reason || "login_failed" };
+			localization.bind_user(args.req, R.user);
+			domain = await get_domain(args.req, R.user);
 			set_cookie(args.res, options.cookie_key, get_id(R.user) + "-" + R.auth, domain.domain);
 			if (args.mobile) {
 				args.res.infs.push({ type: "refresh" });
-				return { success: true, user: get_id(R.user), auth: R.auth };
+				return { success: true, user: get_id(R.user), auth: R.auth, language: domain.language };
 			}
-			args.res.infs.push({ type: "message", message: "Logged In!" });
+			args.res.infs.push({ type: "message", message: phrase_html("server.api.logged_in") });
 			args.res.infs.push(await selection_info(args.req, R.user, domain));
-			return { success: true, user: get_id(R.user), auth: R.auth };
+			return { success: true, user: get_id(R.user), auth: R.auth, language: domain.language };
 		}
 		args.res.infs.push({ type: "eval", code: "$('.passwordui').show()" });
 		return { failed: true, reason: "wrong_password" };
@@ -118,6 +136,7 @@ async function signup_or_login_api(args) {
 	var R = await tx(
 		async () => {
 			if (await tx_get("MK_email-" + A.email)) ex("email_exists");
+			if (A.steam_signup && await tx_get("MK_steam-signup-" + A.steam_signup.id)) ex("steam_signup_used");
 			var salt = random_string(20);
 			var hpassword = hash_password(A.password, salt);
 			R.user = {
@@ -134,9 +153,10 @@ async function signup_or_login_api(args) {
 				timezone: 0,
 				cash: 0,
 				worth: 0,
-				language: "en",
-				platform: "",
-				pid: "",
+				language: A.language,
+				language_set: A.language_set,
+				platform: A.steam_signup ? "steam" : "",
+				pid: A.steam_signup ? A.steam_signup.steamid : "",
 				guild: "",
 				server: "",
 				friends: [],
@@ -161,15 +181,29 @@ async function signup_or_login_api(args) {
 			R.auth = get_new_auth(R.user);
 			await tx_save(R.user);
 			await tx_save({ _id: "MK_email-" + A.email, type: "email", phrase: A.email, owner: get_id(R.user), created: new Date() });
+			if (A.steam_signup) await tx_save({ _id: "MK_steam-signup-" + A.steam_signup.id, type: "steam_signup", owner: get_id(R.user), created: new Date() });
 		},
-		{ email: email, password: password, signupth: signupth, referrer: referrer, slots: domain.electron || domain.tauri ? 8 : 5, ip: get_ip(args.req), country: get_country(args.req) },
+		{
+			email: email,
+			password: password,
+			signupth: signupth,
+			referrer: referrer,
+			slots: domain.electron || domain.tauri || steam_signup ? 8 : 5,
+			steam_signup: steam_signup || null,
+			ip: get_ip(args.req),
+			country: get_country(args.req),
+			language: domain.language,
+			language_set: localization.preference_fields(args.req).language_set,
+		},
 	);
 
 	if (R.failed) return { failed: true, reason: R.reason };
 
+	localization.bind_user(args.req, R.user);
+	domain = await get_domain(args.req, R.user);
 	set_cookie(args.res, options.cookie_key, get_id(R.user) + "-" + R.auth, domain.domain);
 	send_verification_email(domain, R.user);
-	args.res.infs.push({ type: "success", message: "Signup Complete!" });
+	args.res.infs.push({ type: "success", message: phrase_html("server.api.signup_complete") });
 	args.res.infs.push(await selection_info(args.req, R.user, domain));
 	add_event(R.user, "signup", ["new", "noteworthy"], { req: args.req, info: { message: "Signup " + R.user.info.email } });
 	increase_signupth();
@@ -182,10 +216,18 @@ async function signup_or_login_api(args) {
 		console.error("signup ip error", e);
 	}
 
-	return { success: true, user: get_id(R.user), auth: R.auth };
+	return { success: true, user: get_id(R.user), auth: R.auth, language: domain.language };
 }
 
 async function settings_api(args) {
+	if (args.setting === "language") {
+		var result = await localization.set_preference(db.collection("user"), args.user, args.value);
+		if (result.success) {
+			localization.bind_user(args.req, args.user);
+			localization.set_language(result.language);
+		}
+		return result;
+	}
 	var domain = await get_domain(args.req),
 		user = args.user;
 	if (user.server) return { failed: true, reason: "cant_make_changes_while_in_bank" };
@@ -201,7 +243,7 @@ async function settings_api(args) {
 		{ user: user, setting: args.setting, value: args.value },
 	);
 	if (R.failed) return { failed: true, reason: R.reason };
-	args.res.infs.push({ type: "success", message: "Setting changed!" });
+	args.res.infs.push({ type: "success", message: phrase_html("server.api.setting_changed") });
 	args.res.infs.push(await selection_info(args.req, R.user, domain));
 	return { success: true };
 }
@@ -229,6 +271,7 @@ async function change_email_api(args) {
 			await delete_phrase_mark("email", gf(A.user, "email", ""));
 			if (await tx_get("MK_email-" + A.email)) ex("email_exists");
 			R.user = await tx_get(A.user);
+			if (R.user.info.email !== A.email) R.user.ses_bounce = false;
 			R.user.email = [A.email];
 			R.user.info.email = A.email;
 			R.user.info.last_email_change = new Date();
@@ -242,7 +285,7 @@ async function change_email_api(args) {
 
 	if (R.failed) return { failed: true, reason: R.reason || "operation_failed" };
 	send_verification_email(domain, R.user);
-	args.res.infs.push({ type: "success", message: "Email changed! Verification email re-sent. Refresh the page." });
+	args.res.infs.push({ type: "success", message: phrase_html("server.api.email_changed_verification_email_re_sent_refresh_the_page") });
 	args.res.infs.push(await selection_info(args.req, R.user, domain));
 	return { success: true };
 }
@@ -265,7 +308,7 @@ async function change_password_api(args) {
 	);
 
 	if (R.failed) return { failed: true, reason: R.reason };
-	args.res.infs.push({ type: "success", message: "Password changed!" });
+	args.res.infs.push({ type: "success", message: phrase_html("server.api.password_changed") });
 	args.res.infs.push(await selection_info(args.req, R.user, domain));
 	return { success: true };
 }
@@ -288,7 +331,7 @@ async function reset_password_api(args) {
 	);
 
 	if (R.failed) return { failed: true, reason: R.reason };
-	args.res.infs.push({ type: "success", message: "New password set!" });
+	args.res.infs.push({ type: "success", message: phrase_html("server.api.new_password_set") });
 	return { success: true };
 }
 
@@ -317,13 +360,13 @@ async function password_reminder_api(args) {
 
 	if (R.failed) return { failed: true, reason: R.reason };
 	send_password_reminder_email(domain, R.user);
-	args.res.infs.push({ type: "success", message: "Emailed password reset instructions" });
+	args.res.infs.push({ type: "success", message: phrase_html("server.api.emailed_password_reset_instructions") });
 	return { success: true };
 }
 
 async function logout_api(args) {
-	delete_cookie(args.res, options.cookie_key, args.req.get ? args.req.get("host").split(":")[0] : "");
-	args.res.infs.push({ type: "message", message: "Logged Out" });
+	await delete_auth_cookies(args.req, args.res);
+	args.res.infs.push({ type: "message", message: phrase_html("server.api.logged_out") });
 	return { success: true };
 }
 
@@ -341,8 +384,8 @@ async function logout_everywhere_api(args) {
 	);
 
 	if (R.failed) return { failed: true, reason: R.reason };
-	delete_cookie(args.res, options.cookie_key, args.req.get ? args.req.get("host").split(":")[0] : "");
-	args.res.infs.push({ type: "message", message: "Logged Out Everywhere" });
+	await delete_auth_cookies(args.req, args.res);
+	args.res.infs.push({ type: "message", message: phrase_html("server.api.logged_out_everywhere") });
 	return { success: true };
 }
 
@@ -392,7 +435,7 @@ async function servers_and_characters_api(args) {
 	var user_data = await get_user_data(user);
 	var characters_data = await get_characters(user);
 	var characters = characters_to_client(characters_data);
-	var servers_data = await get_servers();
+	var servers_data = await get_browser_servers(args.req);
 	var servers = servers_to_client(domain, servers_data);
 	var mail = gf(user_data, "mail", 0);
 
@@ -401,6 +444,7 @@ async function servers_and_characters_api(args) {
 		servers: servers,
 		characters: characters,
 		tutorial: data_to_tutorial(user_data),
+		merchant_tutorial: data_to_tutorial(user_data, "merchant"),
 		code_list: gf(user_data, "code_list", {}),
 		mail: mail,
 		rewards: gf(user, "rewards", []),
@@ -512,7 +556,7 @@ async function create_character_api(args) {
 		console.error("create_character ip error", e);
 	}
 
-	args.res.infs.push({ type: "success", message: name + " is alive!" });
+	args.res.infs.push({ type: "success", message: phrase_html("server.api.is_alive", { name: String(name) }) });
 	args.res.infs.push(await selection_info(args.req, R.owner, domain));
 	add_event(R.owner, "new_character", ["characters", "noteworthy"], { req: args.req, info: { message: "New Character " + name + " from " + user.info.email }, backup: true });
 	increase_characterth();
@@ -562,7 +606,7 @@ async function sort_characters_api(args) {
 	);
 
 	if (R.failed) return { failed: true, reason: R.reason || "something_went_wrong" };
-	args.res.infs.push({ type: "message", message: "Done!" });
+	args.res.infs.push({ type: "message", message: phrase_html("server.api.done") });
 	args.res.infs.push(await selection_info(args.req, R.owner, domain));
 	return { success: true };
 }
@@ -622,8 +666,8 @@ async function rename_character_api(args) {
 
 	if (R.failed) return { failed: true, reason: R.reason };
 	add_event(character, "rename_character", ["characters"], { req: args.req, info: { message: name + " renamed to " + nname }, backup: true });
-	args.res.infs.push({ type: "message", message: "Spent " + to_pretty_num(price) + " shells" });
-	args.res.infs.push({ type: "message", message: name + " renamed to " + nname });
+	args.res.infs.push({ type: "message", message: phrase_html("server.api.spent_shells", { amount: String(to_pretty_num(price)) }) });
+	args.res.infs.push({ type: "message", message: phrase_html("server.api.renamed_to", { name: String(name), nname: String(nname) }) });
 	args.res.infs.push(await selection_info(args.req, R.owner, domain));
 	return { success: true };
 }
@@ -678,6 +722,7 @@ async function transfer_character_api(args) {
 			}
 			owner.info.last_delete = new Date();
 			owner.cash -= 500;
+			await mainframe_retire_assignment(await tx_get(mainframe_assignment_record_id(get_id(c))), new Date(), tx_get, tx_save, owner);
 			await tx_save(owner);
 			c.info.transfer = true;
 			c.owner = get_id(A.receiver);
@@ -704,7 +749,7 @@ async function transfer_character_api(args) {
 
 	if (R.failed) return { failed: true, reason: R.reason || "something_went_wrong" };
 	add_event(character, "transfer_character", ["characters"], { req: args.req, info: { message: user.name + " transferred " + name + " to " + id }, backup: true });
-	args.res.infs.push({ type: "message", message: name + " flew away ..." });
+	args.res.infs.push({ type: "message", message: phrase_html("server.api.flew_away", { name: String(name) }) });
 	args.res.infs.push(await selection_info(args.req, R.owner, domain));
 	return { success: true };
 }
@@ -751,7 +796,7 @@ async function delete_character_api(args) {
 	);
 
 	if (R.failed) return { failed: true, reason: R.reason || "something_went_wrong" };
-	args.res.infs.push({ type: "message", message: name + " is no more ..." });
+	args.res.infs.push({ type: "message", message: phrase_html("server.api.is_no_more", { name: String(name) }) });
 	args.res.infs.push(await selection_info(args.req, R.owner, domain));
 	return { success: true };
 }
@@ -776,12 +821,11 @@ async function edit_character_api(args) {
 	);
 
 	if (R.failed) return { failed: true, reason: R.reason || "something_went_wrong" };
-	var message = "Done!";
+	var message = phrase_html("server.api.done");
 	if (operation === "toggle_privacy") {
 		if (R.element.private) {
-			message = "Character is now private";
-			if (simplify_name(user.name) === R.element.name) message += " WARNING: SORT YOUR CHARACTERS ONCE TO AUTO-CHANGE YOUR ACCOUNT NAME";
-		} else message = "Character isn't private anymore";
+			message = simplify_name(user.name) === R.element.name ? phrase_html("server.api.character_private_rename") : phrase_html("server.api.character_private");
+		} else message = phrase_html("server.api.character_public");
 	}
 	args.res.infs.push({ type: "message", message: message });
 	args.res.infs.push(await selection_info(args.req, user, domain));
@@ -797,7 +841,7 @@ async function disconnect_character_api(args) {
 	if (character.owner !== get_id(user)) return { failed: true, reason: "not_owner" };
 	if (!is_in_game(character)) return { failed: true, reason: "character_not_in_game" };
 	await character_eval(character, "console.log('disconnect_character_api'); player.socket.disconnect()");
-	args.res.infs.push({ type: "message", message: "Sent the disconnect signal to the server" });
+	args.res.infs.push({ type: "message", message: phrase_html("server.api.sent_the_disconnect_signal_to_the_server") });
 	if (args.selection) args.res.infs.push(await selection_info(args.req, user, domain));
 	return { success: true };
 }
@@ -805,7 +849,7 @@ async function disconnect_character_api(args) {
 // ==================== SERVER MANAGEMENT ====================
 
 async function get_servers_api(args) {
-	var server_list = await get_servers();
+	var server_list = await get_browser_servers(args.req);
 	var servers = [];
 	for (var i = 0; i < server_list.length; i++) {
 		var s = server_list[i];
@@ -824,7 +868,7 @@ async function get_servers_api(args) {
 
 async function can_reload_api(args) {
 	var user = args.user;
-	var servers = await get_servers();
+	var servers = await get_browser_servers(args.req);
 	for (var i = 0; i < servers.length; i++) {
 		var server = servers[i];
 		if (server.region === args.region && server.name === args.name) {
@@ -922,30 +966,251 @@ async function pull_merchants_api(args) {
 
 // ==================== MAIL / MESSAGES ====================
 
+function chat_message_to_client(message) {
+	return {
+		id: get_id(message),
+		fro: message.fro || "",
+		to: Array.isArray(message.to) ? message.to : message.to ? [message.to] : [],
+		message: gf(message, "message", ""),
+		type: message.type,
+		server: message.server || "",
+		date: message.created.toISOString(),
+	};
+}
+
+function chat_cursor_query(cursor, after) {
+	if (!cursor) return {};
+	if (typeof cursor !== "string" || cursor.length > 100) return null;
+	var parts = cursor.split("|"),
+		date = new Date(parts[0]);
+	if (parts.length !== 2 || !Number.isFinite(date.getTime()) || !/^MS_[A-Za-z0-9]+$/.test(parts[1])) return null;
+	return { $or: [{ created: { [after ? "$gt" : "$lt"]: date } }, { created: date, _id: { [after ? "$gt" : "$lt"]: parts[1] } }] };
+}
+
+function chat_page(messages, page, after, started) {
+	var more = messages.length > page;
+	messages = messages.slice(0, page);
+	var last = messages[messages.length - 1],
+		latest = after ? last : messages[0];
+	return {
+		success: true,
+		messages: messages.map(chat_message_to_client),
+		more: more,
+		cursor: more && last ? last.created.toISOString() + "|" + get_id(last) : null,
+		after: latest ? latest.created.toISOString() + "|" + get_id(latest) : started.toISOString() + "|MS_0",
+	};
+}
+
+async function pull_chat_api(args) {
+	var started = new Date(),
+		before = chat_cursor_query(args.cursor || args.after, !!args.after),
+		query;
+	if ((args.cursor && args.after) || !before) return { failed: true, reason: "invalid_cursor" };
+	if (args.server) {
+		var servers = await get_servers();
+		if (
+			!servers.some(function (server) {
+				return get_id(server) === args.server;
+			})
+		)
+			return { failed: true, reason: "server_not_found" };
+		query = { owner: "~" + args.server, type: "server" };
+	} else {
+		var user = await get_user(args.req);
+		if (!user) return { failed: true, reason: "not_logged_in" };
+		if (!is_name_xallowed(args.character || "") || !is_name_xallowed(args.to || "")) return { failed: true, reason: "invalid_name" };
+		var character = new RegExp("^" + args.character.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i");
+		var to = new RegExp("^" + args.to.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i");
+		query = {
+			owner: get_id(user),
+			type: "private",
+			$or: [
+				{ fro: character, to: to },
+				{ fro: to, to: character },
+			],
+		};
+	}
+	var messages = await db
+		.collection("message")
+		.find({ $and: [query, before] })
+		.sort({ created: args.after ? 1 : -1, _id: args.after ? 1 : -1 })
+		.limit(81)
+		.maxTimeMS(4000)
+		.toArray();
+	return chat_page(messages, 80, !!args.after, started);
+}
+
+var chat_server_cache;
+async function chat_server_channels(servers) {
+	var key = servers.map(get_id).join(",");
+	if (chat_server_cache && chat_server_cache.key === key && chat_server_cache.until > Date.now()) return chat_server_cache.promise;
+	var cache = { key: key, until: Date.now() + 5000 };
+	chat_server_cache = cache;
+	cache.promise = Promise.all(
+		servers.map(async function (server) {
+			var latest = await db
+				.collection("message")
+				.findOne(
+					{ owner: "~" + get_id(server), type: "server" },
+					{ sort: { created: -1, _id: -1 }, projection: { fro: 1, to: 1, created: 1, type: 1, server: 1, "info.message": 1 }, maxTimeMS: 4000 },
+				);
+			return { type: "server", server: get_id(server), latest: latest ? chat_message_to_client(latest) : null };
+		}),
+	).catch(function (error) {
+		if (chat_server_cache === cache) chat_server_cache = null;
+		throw error;
+	});
+	return cache.promise;
+}
+
+async function pull_chats_api(args) {
+	var started = new Date(),
+		before = chat_cursor_query(args.cursor),
+		after = chat_cursor_query(args.after, true);
+	if ((args.cursor && args.after) || !before || !after) return { failed: true, reason: "invalid_cursor" };
+	var user = args.user,
+		owner = get_id(user);
+	var characters = await db
+		.collection("character")
+		.find({ owner: owner }, { projection: { owner: 1, "info.name": 1, online: 1, server: 1 } })
+		.limit(100)
+		.toArray();
+	var order = ((user.info && user.info.characters) || []).map(function (character) {
+		return character.id;
+	});
+	characters.sort(function (a, b) {
+		return order.indexOf(get_id(a)) - order.indexOf(get_id(b));
+	});
+	var owned = {};
+	characters.forEach(function (character) {
+		owned[character.info.name.toLowerCase()] = character.info.name;
+	});
+	// Group both directions of each character pair. The owner match also covers
+	// conversations with characters that were renamed or transferred later.
+	var messages = await db
+		.collection("message")
+		.aggregate(
+			[
+				{ $match: { owner: owner, type: "private", ...after } },
+				{ $sort: { created: -1, _id: -1 } },
+				{ $project: { fro: 1, to: 1, created: 1, author: 1, type: 1, server: 1, "info.message": 1 } },
+				{ $addFields: { first: { $toLower: "$fro" }, second: { $toLower: { $cond: [{ $isArray: "$to" }, { $arrayElemAt: ["$to", 0] }, "$to"] } } } },
+				{ $group: { _id: { $cond: [{ $lt: ["$first", "$second"] }, ["$first", "$second"], ["$second", "$first"]] }, latest: { $first: "$$ROOT" } } },
+				{ $replaceRoot: { newRoot: "$latest" } },
+				{ $match: before },
+				{ $sort: { created: args.after ? 1 : -1, _id: args.after ? 1 : -1 } },
+				{ $limit: 41 },
+			],
+			{ maxTimeMS: 4000 },
+		)
+		.toArray();
+	var page = chat_page(messages, 40, !!args.after, started);
+	var chats = messages.slice(0, 40).map(function (message) {
+		var latest = chat_message_to_client(message),
+			fro = latest.fro,
+			to = latest.to[0] || "";
+		var mine = owned[fro.toLowerCase()] ? fro : owned[to.toLowerCase()] ? to : message.author === owner ? fro : to;
+		if (owned[fro.toLowerCase()] && owned[to.toLowerCase()]) mine = fro.toLowerCase() < to.toLowerCase() ? fro : to;
+		return { type: "private", character: owned[mine.toLowerCase()] || mine, to: mine === fro ? to : fro, latest: latest };
+	});
+	if (!args.cursor) {
+		var servers = await get_servers();
+		var channels = await chat_server_channels(servers);
+		chats = chats.concat(channels);
+	}
+	return {
+		success: true,
+		chats: chats,
+		more: page.more,
+		cursor: page.cursor,
+		after: page.after,
+		characters: characters.map(function (character) {
+			return { name: character.info.name, online: !!character.online, server: character.server || "" };
+		}),
+	};
+}
+
+// These functions run only through the existing authenticated server_eval bridge.
+// Read moderation state without emitting through or changing a character's socket.
+function communicator_chat_status(data) {
+	var player = get_player(data.character);
+	if (!player) return { success: true };
+	if (player.owner !== data.owner || player.real_id !== data.id) return { failed: true, reason: "not_owner" };
+	if (player.s.mute) return { failed: true, reason: "muted" };
+	if (player.last_say && mssince(player.last_say) < 400) return { failed: true, reason: "chat_slowdown" };
+	return { success: true };
+}
+
+async function communicator_say(data) {
+	if (server_id !== data.server) return { failed: true, reason: "wrong_server" };
+	var message = strip_string(data.message).substr(0, 1200);
+	if (!message) return { failed: true, reason: "invalid_message" };
+	var character = await get_character(data.character);
+	if (!character || character.owner !== data.owner || get_id(character) !== data.id) return { failed: true, reason: "not_owner" };
+	if (gf(character, "s", {}).mute) return { failed: true, reason: "muted" };
+	var status = communicator_chat_status(data);
+	if (status.failed) return status;
+	// One atomic cooldown per account, shared across HTTP workers and servers.
+	try {
+		await db
+			.collection("mark")
+			.updateOne({ _id: "MK_comm-chat-" + data.owner, $or: [{ updated: { $lte: new Date(Date.now() - 400) } }, { updated: { $exists: false } }] }, { $set: { updated: new Date() } }, { upsert: true });
+	} catch (error) {
+		if (error.code === 11000) return { failed: true, reason: "chat_slowdown" };
+		throw error;
+	}
+	return deliver_chat_message({ owner: data.owner, name: character.info.name, id: "comm:" + data.id }, message, data.to);
+}
+
+async function send_message_api(args) {
+	if (args.user.banned) return { failed: true, reason: "banned" };
+	if (typeof args.message !== "string" || !args.message.trim() || args.message.length > 1200) return { failed: true, reason: "invalid_message" };
+	if (!is_name_xallowed(args.character || "")) return { failed: true, reason: "invalid_name" };
+	var character = await get_character(args.character);
+	if (!character || character.owner !== get_id(args.user)) return { failed: true, reason: "not_owner" };
+	var to = null;
+	if (args.to) {
+		if (!is_name_xallowed(args.to) || args.server) return { failed: true, reason: "invalid_name" };
+		to = await get_character(args.to);
+		if (!to) return { failed: true, reason: "character_not_found" };
+		if (get_id(to) === get_id(character)) return { failed: true, reason: "message_self" };
+	} else if (!args.server) return { failed: true, reason: "server_not_found" };
+	var servers = await get_servers();
+	var server = servers.find(function (server) {
+		return get_id(server) === (to ? to.server : args.server);
+	});
+	if (to && !server) server = servers[0];
+	if (!server) return { failed: true, reason: "server_not_found" };
+	var data = { owner: get_id(args.user), id: get_id(character), character: character.info.name, server: get_id(server), to: to ? to.info.name : "", message: args.message };
+	// A live mute on another realm must still apply before its next database sync.
+	var source =
+		character.online &&
+		servers.find(function (source) {
+			return get_id(source) === character.server && get_id(source) !== get_id(server);
+		});
+	if (source) {
+		var status = await server_eval(source, "output=(" + communicator_chat_status.toString() + ")(data);", data, 3000);
+		if (!status || !status.success) return status && status.failed ? status : { failed: true, reason: "chat_unavailable" };
+	}
+	var result = await server_eval(server, "var communicator_chat_status=" + communicator_chat_status.toString() + "; output=(" + communicator_say.toString() + ")(data);", data, 5000);
+	return result && (result.success || result.failed) ? result : { failed: true, reason: "chat_unavailable" };
+}
+
 async function read_mail_api(args) {
 	var user = args.user;
-	var user_data = await get_user_data(user);
 
 	var R = await tx(
 		async () => {
-			var mail = await tx_get("ML_" + A.mail_id);
+			var mail = await tx_get(A.mail_id);
 			if (mail && !mail.read && gf(mail, "receiver") === get_id(A.user)) {
 				mail.read = true;
 				await tx_save(mail);
 			}
 		},
-		{ mail_id: args.mail, user: user },
+		{ mail_id: args.mail.startsWith("ML_") ? args.mail : "ML_" + args.mail, user: user },
 	);
-
-	var unread = await db
-		.collection("mail")
-		.find({ owner: get_id(user), read: false })
-		.limit(100)
-		.toArray();
-	var old = gf(user_data, "mail", -1);
-	user_data.info.mail = Math.max(0, unread.length - 1);
-	if (old !== user_data.info.mail) safe_save(user_data);
-	args.res.infs.push({ type: "unread", count: user_data.info.mail });
+	if (R.failed) return { failed: true, reason: R.reason };
+	args.res.infs.push({ type: "unread", count: await update_mail_count(user) });
 	return { success: true };
 }
 
@@ -955,12 +1220,12 @@ async function pull_mail_api(args) {
 	var page = 40;
 
 	var query = { owner: get_id(user) };
-	var cursor_skip = args.cursor ? parseInt(args.cursor) || 0 : 0;
+	var cursor_skip = args.cursor ? Math.max(0, parseInt(args.cursor) || 0) : 0;
 	if (cursor_skip) data.cursored = true;
 	var mails = await db
 		.collection("mail")
 		.find(query)
-		.sort({ created: -1 })
+		.sort({ created: -1, _id: -1 })
 		.skip(cursor_skip)
 		.limit(page + 1)
 		.toArray();
@@ -981,6 +1246,14 @@ async function pull_mail_api(args) {
 			sent: "" + mail.created,
 			id: get_id(mail),
 		};
+		if (mail.cave_award === true) {
+			mail_data.subject_message = { phrase: "server.cave.mail_subject" };
+			mail_data.body_message = { phrase: "server.cave.mail_body" };
+		}
+		if (mail.tracktrix_gift === true) {
+			mail_data.subject_message = { phrase: "server.tracktrix.mail_subject" };
+			mail_data.body_message = { phrase: "server.tracktrix.mail_body" };
+		}
 		if (mail.item) {
 			mail_data.item = simplify_item(mail.info.item);
 			mail_data.taken = mail.taken;
@@ -988,6 +1261,7 @@ async function pull_mail_api(args) {
 		data.mail.push(mail_data);
 	}
 	args.res.infs.push(data);
+	args.res.infs.push({ type: "unread", count: await update_mail_count(user) });
 	return { success: true };
 }
 
@@ -996,7 +1270,11 @@ async function delete_mail_api(args) {
 	var mail = await get(args.mid);
 	if (!user || !mail || !mail.owner || mail.owner.indexOf(get_id(user)) === -1) return { failed: true, reason: "cant_delete" };
 	await remove(mail);
-	args.res.infs.push({ type: "message", message: "Mail deleted." });
+	for (var owner of new Set(mail.owner)) {
+		var count = await update_mail_count(owner);
+		if (owner === get_id(user)) args.res.infs.push({ type: "unread", count: count });
+	}
+	args.res.infs.push({ type: "message", message: phrase_html("server.api.mail_deleted") });
 	return { success: true };
 }
 
@@ -1105,15 +1383,15 @@ async function save_code_api(args) {
 	if (name === "DELETE") {
 		args.res.infs.push({ type: "code_info", num: slot, delete: true });
 		if (!args.electron) args.res.infs.push({ type: "eval", code: "code_slot=0;code_change=false;" });
-		if (args.log) args.res.infs.push({ type: "message", message: "Deleted " + old_name + "." + slot + ".js", color: "gray" });
-		else args.res.infs.push({ type: "chat_message", message: "Deleted " + old_name + "." + slot + ".js", color: "gray" });
+		if (args.log) args.res.infs.push({ type: "message", message: phrase_html("server.api.deleted_js", { old_name: String(old_name), slot: String(slot) }), color: "gray" });
+		else args.res.infs.push({ type: "chat_message", message: phrase_html("server.api.deleted_js", { old_name: String(old_name), slot: String(slot) }), color: "gray" });
 	} else {
 		args.res.infs.push({ type: "code_info", num: slot, name: data.info.code_list[slot][0], v: data.info.code_list[slot][1] });
 		if (!args.electron) args.res.infs.push({ type: "eval", code: "code_slot=" + JSON.stringify("" + slot) + ";code_change=false;" });
-		if (args.log) args.res.infs.push({ type: "message", message: "Saved " + name + "." + slot + ".js", color: "#E13758" });
-		else if (args.auto && character) args.res.infs.push({ type: "message", message: "Auto-saved [" + character + "]", color: "#96E8A7" });
-		else if (args.auto) args.res.infs.push({ type: "message", message: "Auto-saved " + name + "." + slot + ".js", color: "#96E8A7" });
-		else args.res.infs.push({ type: "chat_message", message: "Saved " + name + "." + slot + ".js", color: "#E13758" });
+		if (args.log) args.res.infs.push({ type: "message", message: phrase_html("server.api.saved_js", { name: String(name), slot: String(slot) }), color: "#E13758" });
+		else if (args.auto && character) args.res.infs.push({ type: "message", message: phrase_html("server.api.auto_saved", { character: String(character) }), color: "#96E8A7" });
+		else if (args.auto) args.res.infs.push({ type: "message", message: phrase_html("server.api.auto_saved_js", { name: String(name), slot: String(slot) }), color: "#96E8A7" });
+		else args.res.infs.push({ type: "chat_message", message: phrase_html("server.api.saved_js", { name: String(name), slot: String(slot) }), color: "#E13758" });
 	}
 	return { success: true };
 }
@@ -1127,8 +1405,8 @@ async function load_code_api(args) {
 		var default_code = shtml("htmls/contents/codes/default_code.js");
 		if (args.pure) return { code: default_code };
 		args.res.infs.push({ type: "code", code: default_code, run: args.run, slot: 0, save: args.save });
-		if (args.log) args.res.infs.push({ type: "message", message: "Loaded the default code", color: "#32A3B0" });
-		else if (!args.save) args.res.infs.push({ type: "chat_message", message: "Loaded the default code", color: "#32A3B0" });
+		if (args.log) args.res.infs.push({ type: "message", message: phrase_html("server.api.loaded_the_default_code"), color: "#32A3B0" });
+		else if (!args.save) args.res.infs.push({ type: "chat_message", message: phrase_html("server.api.loaded_the_default_code"), color: "#32A3B0" });
 		return { success: true };
 	}
 
@@ -1142,13 +1420,13 @@ async function load_code_api(args) {
 		if (code_entity) {
 			if (args.pure) return { code: code_entity.info.code };
 			args.res.infs.push({ type: "code", code: code_entity.info.code, run: args.run, slot: slot, save: args.save, name: code_list[slot][0], v: code_list[slot][1] });
-			if (args.log) args.res.infs.push({ type: "message", message: "Loaded " + code_list[slot][0] + "." + slot + ".js", color: "#32A3B0" });
-			else if (!args.save) args.res.infs.push({ type: "chat_message", message: "Loaded " + code_list[slot][0] + "." + slot + ".js", color: "#32A3B0" });
+			if (args.log) args.res.infs.push({ type: "message", message: phrase_html("server.api.loaded_js", { value: String(code_list[slot][0]), slot: String(slot) }), color: "#32A3B0" });
+			else if (!args.save) args.res.infs.push({ type: "chat_message", message: phrase_html("server.api.loaded_js", { value: String(code_list[slot][0]), slot: String(slot) }), color: "#32A3B0" });
 			return { success: true };
 		}
 	}
 	if (args.pure) return { code: "say('Code not found'); set_status('Not Found')" };
-	args.res.infs.push({ type: "chat_message", message: "Not Found", color: "#AD3844" });
+	args.res.infs.push({ type: "chat_message", message: phrase_html("server.api.not_found"), color: "#AD3844" });
 	return { failed: true, reason: "not_found" };
 }
 
@@ -1171,77 +1449,97 @@ async function list_codes_api(args) {
 }
 
 async function tutorial_api(args) {
+	if (args.track && args.track !== "merchant") return { failed: true, reason: "invalid" };
 	var user = args.user,
 		task = args.task,
 		step = args.step;
 
 	var R = await tx(
 		async () => {
-			var data = await get_user_data(A.user);
-			var current = data.info.tutorial_step;
+			var user_id = A.user._id || A.user;
+			var data = process_user_data(user_id, await tx_get("IE_userdata-" + user_id));
+			var progress = get_tutorial_track(data, A.track);
+			var lessons = A.track === "merchant" ? docs.merchant_tutorial : docs.tutorial;
+			calculate_tutorial_step(progress, lessons);
+			var current = progress.info.tutorial_step;
 			if (A.task) {
-				var lesson = docs.tutorial[current];
-				var valid_task = docs.tasks && docs.tasks[A.task] && lesson && lesson.tasks.indexOf(A.task) !== -1;
-				if (valid_task && data.info.completed_tasks.indexOf(A.task) === -1) {
-					data.info.completed_tasks.push(A.task);
+				var lesson = lessons[current];
+				R.silent = lesson && lesson.tasks.indexOf(A.task) === -1;
+				// Remember gameplay even when a player has not opened its lesson yet.
+				var valid_task = docs.tasks && docs.tasks[A.task] && lessons.some(function (entry) {
+					return A.task !== entry.continue_task && entry.tasks.indexOf(A.task) !== -1;
+				});
+				if (valid_task && progress.info.completed_tasks.indexOf(A.task) === -1) {
+					progress.info.completed_tasks.push(A.task);
 					await tx_save(data);
-					R.result = ["Task '" + docs.tasks[A.task] + "' Complete!", "#85C76B", data, 1];
+					R.result = [phrase_html("server.tutorial.task_complete", { task: phrase("tutorial.task." + A.task) }), "#85C76B", data, 1];
 				} else {
-					if (valid_task) R.result = ["Task '" + docs.tasks[A.task] + "' Complete!", "gray", data, 0];
-					else if (docs.tasks && docs.tasks[A.task]) R.result = ["That task belongs to another lesson.", "gray", data, 0];
-					else R.result = ["Invalid task '" + A.task + "'", "gray", data, 0];
+					if (valid_task) R.result = [phrase_html("server.tutorial.task_complete", { task: phrase("tutorial.task." + A.task) }), "gray", data, 0];
+					else if (docs.tasks && docs.tasks[A.task]) R.result = [phrase_html("server.tutorial.other_lesson"), "gray", data, 0];
+					else R.result = [phrase_html("server.tutorial.invalid_task", { task: A.task }), "gray", data, 0];
 				}
 			} else {
 				var next = parseInt(A.step);
-				var current_lesson = docs.tutorial[current];
-				var complete = !!current_lesson;
-				if (current_lesson)
-					for (var i = 0; i < current_lesson.tasks.length; i++) {
-						if (data.info.completed_tasks.indexOf(current_lesson.tasks[i]) === -1) complete = false;
-					}
-				if (next !== current + 1 || next > docs.tutorial.length || !complete) {
-					R.result = ["Complete the current lesson before continuing.", "gray", data, 0];
+				var current_lesson = lessons[current];
+				var complete = current_lesson && (!A.lesson || A.lesson === current_lesson.key) && tutorial_lesson_complete(progress, current_lesson, true);
+				if (next !== current + 1 || next > lessons.length || !complete) {
+					R.result = [phrase_html("server.tutorial.complete_current"), "gray", data, 0];
 				} else {
-					data.info.tutorial_step = next;
+					if (current_lesson.continue_task && progress.info.completed_tasks.indexOf(current_lesson.continue_task) === -1) progress.info.completed_tasks.push(current_lesson.continue_task);
+					(current_lesson.optional_tasks || []).forEach(function (task) {
+						if (progress.info.completed_tasks.indexOf(task) === -1) progress.info.completed_tasks.push(task);
+					});
+					while (next < lessons.length && tutorial_lesson_complete(progress, lessons[next])) next++;
+					progress.info.tutorial_step = next;
+					progress.info.tutorial_key = lessons[next] ? lessons[next].key : null;
 					await tx_save(data);
-					R.result = ["Lesson '" + current_lesson.title + "' Complete!", "#85C76B", data, 2];
+					R.result = [phrase_html("server.tutorial.lesson_complete", { lesson: phrase("tutorial." + current_lesson.key + ".title") }), "#85C76B", data, 2];
 				}
 			}
 		},
-		{ user: user, task: task, step: step },
+		{ user: user, task: task, step: step, lesson: args.lesson, track: args.track },
+		5,
+		25,
 	);
 
 	if (R.failed) return { failed: true, reason: "failed" };
 	if (R.result) {
-		var info = data_to_tutorial(R.result[2]);
+		var info = data_to_tutorial(R.result[2], args.track);
+		if (args.track) info.track = args.track;
 		info.type = "tutorial_data";
-		if (R.result[3] === 1) info.success = true;
+		if (R.result[3] === 1 && !R.silent) info.success = true;
 		if (R.result[3] === 2) info.next = true;
 		args.res.infs.push(info);
-		args.res.infs.push({ type: "message", message: R.result[0], color: R.result[1] });
+		if (!R.silent) args.res.infs.push({ type: "message", message: R.result[0], color: R.result[1] });
 	}
 	return { success: true };
 }
 
 async function reset_tutorial_api(args) {
+	if (args.track && args.track !== "merchant") return { failed: true, reason: "invalid" };
 	var user = args.user;
 
 	var R = await tx(
 		async () => {
-			var data = await get_user_data(A.user);
-			data.info.completed_tasks = [];
-			data.info.tutorial_step = 0;
+			var user_id = A.user._id || A.user;
+			var data = process_user_data(user_id, await tx_get("IE_userdata-" + user_id));
+			var progress = get_tutorial_track(data, A.track);
+			var lessons = A.track === "merchant" ? docs.merchant_tutorial : docs.tutorial;
+			progress.info.completed_tasks = [];
+			progress.info.tutorial_step = 0;
+			progress.info.tutorial_key = lessons[0].key;
 			await tx_save(data);
 			R.data = data;
 		},
-		{ user: user },
+		{ user: user, track: args.track },
 	);
 
 	if (R.failed) return { failed: true, reason: "failed" };
-	var info = data_to_tutorial(R.data);
+	var info = data_to_tutorial(R.data, args.track);
+	if (args.track) info.track = args.track;
 	info.type = "tutorial_data";
 	args.res.infs.push(info);
-	args.res.infs.push({ type: "message", message: "Tutorial Reset!", color: "#F7B32F" });
+	args.res.infs.push({ type: "message", message: phrase_html("server.api.tutorial_reset"), color: "#F7B32F" });
 	return { success: true };
 }
 
@@ -1249,6 +1547,12 @@ async function reset_tutorial_api(args) {
 
 var STEAM_SHELL_USD_AMOUNTS = [1, 10, 25, 100, 500];
 var STEAM_PURCHASE_COLLECTION = "steam_purchase";
+
+function steam_checkout_language(language) {
+	// Steam uses regional Web API codes. Its UI falls back to English for Arabic; Filipino has no Web API locale.
+	language = localization.normalize(language) || "en";
+	return { "zh-Hans": "zh-CN", "zh-Hant": "zh-TW", "pt-PT": "pt", ar: "en", fil: "en" }[language] || language;
+}
 
 function purchased_shells_for_usd(usd, event_bonus) {
 	var shells = usd === 1 ? 75 : usd * 80;
@@ -1259,12 +1563,13 @@ function purchased_shells_for_usd(usd, event_bonus) {
 	return shells;
 }
 
-function steam_web_checkout_url(steam_url, order_id, return_token) {
+function steam_web_checkout_url(steam_url, order_id, return_token, req) {
 	try {
 		var checkout_url = new URL(steam_url);
 		if (checkout_url.protocol !== "https:") return "";
 		if (["checkout.steampowered.com", "store.steampowered.com"].indexOf(checkout_url.hostname) === -1) return "";
 		var return_url = new URL("https://adventure.land/steam-purchase");
+		if (req && req.get && (req.get("host") || "").toLowerCase().split(":")[0] === "cloudflare.adventure.land") return_url.hostname = "cloudflare.adventure.land";
 		return_url.searchParams.set("order_id", order_id);
 		return_url.searchParams.set("token", return_token);
 		checkout_url.searchParams.set("returnurl", return_url.toString());
@@ -1436,7 +1741,7 @@ async function grant_steam_shell_purchase(purchase, args) {
 			});
 			update_characters(result.referrer, null, null, result.referrer_shells).catch(console.error);
 		}
-		args.res.infs.push({ type: "success", message: "You received " + result.shells + " SHELLS!" });
+		args.res.infs.push({ type: "success", message: phrase_html("server.api.you_received_shells", { amount: String(result.shells) }) });
 	}
 	return { success: true, cash: result.cash, shells: result.shells, already_delivered: result.already_delivered || false };
 }
@@ -1463,6 +1768,7 @@ async function steam_payment_start_api(args) {
 	}
 	if (!purchase) return { failed: true, reason: "purchase_creation_failed" };
 
+	var checkout_language = steam_checkout_language(domain.language);
 	var initialized = await steam_microtxn_request(
 		"POST",
 		"InitTxn/v3",
@@ -1472,12 +1778,12 @@ async function steam_payment_start_api(args) {
 			ipaddress: get_ip(args.req),
 			orderid: purchase._id,
 			itemcount: 1,
-			language: "en",
+			language: checkout_language,
 			currency: purchase.currency,
 			"itemid[0]": purchase.item_id,
 			"qty[0]": 1,
 			"amount[0]": purchase.amount,
-			"description[0]": purchase.shells + " Shells",
+			"description[0]": localization.phrase("server.payment.shells", { count: purchase.shells }, checkout_language),
 			"category[0]": "Shells",
 		},
 		sandbox,
@@ -1490,7 +1796,7 @@ async function steam_payment_start_api(args) {
 	}
 
 	purchase.trans_id = "" + (initialized.params.transid || "");
-	var steam_url = steam_web_checkout_url(initialized.params.steamurl, purchase._id, purchase.return_token);
+	var steam_url = steam_web_checkout_url(initialized.params.steamurl, purchase._id, purchase.return_token, args.req);
 	if (!steam_url) {
 		await db.collection(STEAM_PURCHASE_COLLECTION).updateOne({ _id: purchase._id }, { $set: { state: "checkout_unavailable", trans_id: purchase.trans_id, updated: new Date() } });
 		return { failed: true, reason: "steam_checkout_unavailable" };
@@ -1596,7 +1902,7 @@ async function stripe_payment_api(args) {
 
 		add_event(R.element, "shells", ["cashflow"], { req: args.req, info: { message: "STRIPE! " + user.name + " received " + shells + " SHELLS!", usd: usd, token: token } });
 		args.res.infs.push({ type: "func", func: "stripe_result", args: ["success", R.element.cash] });
-		args.res.infs.push({ type: "success", message: "You received " + shells + " SHELLS!" });
+		args.res.infs.push({ type: "success", message: phrase_html("server.api.you_received_shells", { amount: String(shells) }) });
 		update_characters(R.element, null, null, shells).catch(console.error);
 
 		// Referrer bonus: 10% of shells to the referrer
@@ -1655,9 +1961,9 @@ async function copy_map_api(args) {
 		var to_map = await get("MP_" + args.to);
 		if (to_map) await backup_entity(to_map);
 		await save({ _id: "MP_" + args.to, name: args.to, created: new Date(), updated: new Date(), info: { data: from_map.info.data }, blobs: ["info"] });
-		args.res.infs.push({ type: "success", message: "Done!" });
+		args.res.infs.push({ type: "success", message: phrase_html("server.api.done") });
 	} else {
-		args.res.infs.push({ type: "info", message: "Map didn't exist" });
+		args.res.infs.push({ type: "message", message: phrase_html("server.api.map_didn_t_exist") });
 	}
 	return { success: true };
 }
@@ -1672,9 +1978,9 @@ async function delete_map_api(args) {
 	if (map) {
 		await backup_entity(map);
 		await remove(map);
-		args.res.infs.push({ type: "success", message: "Deleted!" });
+		args.res.infs.push({ type: "success", message: phrase_html("server.api.deleted") });
 	} else {
-		args.res.infs.push({ type: "info", message: "Map didn't exist" });
+		args.res.infs.push({ type: "message", message: phrase_html("server.api.map_didn_t_exist") });
 	}
 	return { success: true };
 }
@@ -1682,7 +1988,7 @@ async function delete_map_api(args) {
 async function load_article_api(args) {
 	var name = to_filename("" + args.name);
 	if (args.tutorial) {
-		args.res.infs.push({ type: "article", html: shtml("docs/tutorial/" + name + ".html"), tutorial: args.tutorial, url: args.url });
+		args.res.infs.push({ type: "article", html: shtml("docs/tutorial/" + name + ".html"), tutorial: args.tutorial, track: args.track, url: args.url });
 	} else if (args.guide) {
 		var col = [],
 			prev = null,
@@ -1711,7 +2017,7 @@ async function load_article_api(args) {
 			try {
 				args.res.infs.push({ type: "article", html: shtml("docs/articles/" + name + ".html"), url: args.url, prev: found && prev, next: found && next });
 			} catch (e2) {
-				args.res.infs.push({ type: "article", html: "Article not found: " + name, url: args.url });
+				args.res.infs.push({ type: "article", html: phrase_html("server.api.article_not_found", { name: name }), url: args.url });
 			}
 		}
 	} else if (args.func) {
@@ -1733,7 +2039,7 @@ async function load_gcode_api(args) {
 async function load_map_api(args) {
 	var map = await get("MP_" + args.key);
 	if (!map || !gf(map, "resort")) {
-		args.res.infs.push({ type: "message", message: "Deck not found", color: "#AE384D" });
+		args.res.infs.push({ type: "message", message: phrase_html("server.api.deck_not_found"), color: "#AE384D" });
 		return { failed: true };
 	}
 	args.res.infs.push({ type: "map", data: map.info.data });
@@ -1802,6 +2108,7 @@ var REF = {
 	revoke_token: { F: revoke_token_api, P: true, U: true },
 
 	servers_and_characters: { F: servers_and_characters_api, P: true, U: true },
+	load_bank: { F: load_bank_api, P: true, U: true },
 	create_character: {
 		F: create_character_api,
 		P: true,
@@ -1898,6 +2205,31 @@ var REF = {
 		type: { type: "string", optional: true },
 		cursor: { type: "any", optional: true },
 	},
+	pull_chat: {
+		F: pull_chat_api,
+		P: true,
+		server: { type: "string", optional: true },
+		character: { type: "string", optional: true },
+		to: { type: "string", optional: true },
+		cursor: { type: "string", optional: true },
+		after: { type: "string", optional: true },
+	},
+	pull_chats: {
+		F: pull_chats_api,
+		P: true,
+		U: true,
+		cursor: { type: "string", optional: true },
+		after: { type: "string", optional: true },
+	},
+	send_message: {
+		F: send_message_api,
+		P: true,
+		U: true,
+		character: { type: "string" },
+		message: { type: "string" },
+		server: { type: "string", optional: true },
+		to: { type: "string", optional: true },
+	},
 	save_code: {
 		F: save_code_api,
 		P: true,
@@ -1932,8 +2264,10 @@ var REF = {
 		U: true,
 		task: { type: "string", optional: true },
 		step: { type: "any", optional: true },
+		lesson: { type: "string", optional: true },
+		track: { type: "string", optional: true },
 	},
-	reset_tutorial: { F: reset_tutorial_api, P: true, U: true },
+	reset_tutorial: { F: reset_tutorial_api, P: true, U: true, track: { type: "string", optional: true } },
 
 	stripe_payment: {
 		F: stripe_payment_api,
@@ -1976,6 +2310,7 @@ var REF = {
 		name: { type: "string" },
 		func: { type: "any", optional: true },
 		tutorial: { type: "any", optional: true },
+		track: { type: "string", optional: true },
 		guide: { type: "any", optional: true },
 		url: { type: "string", optional: true },
 	},

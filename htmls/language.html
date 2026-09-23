@@ -1,0 +1,19 @@
+<script src="/js/phrases.js?v={{domain.v}}"></script>
+<script src="/phrases/{{domain.language or 'en'}}.js?v={{domain.v}}"></script>
+<script>
+	var language_account = {% if user %}true{% else %}false{% endif %};
+	var language_initialized = {% if domain.language_set %}true{% else %}false{% endif %};
+	var language_source = {{ (domain.language_source or 'default')|to_json|safe }};
+	document.documentElement.lang = phrase.language;
+</script>
+{% if domain.tauri %}<script src="/js/desktop.js?v={{domain.v}}"></script>{% endif %}
+<script src="/js/language_picker.js?v={{domain.v}}"></script>
+<script>
+	if (window.desktop) {
+		initialize_desktop_language();
+	} else if (!language_initialized) {
+		var detected_language = phrase.detect(navigator.languages || [navigator.language]);
+		language_cookie(detected_language, "detected");
+		if (detected_language != phrase.language) location.reload();
+	}
+</script>

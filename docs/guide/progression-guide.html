@@ -1,0 +1,18 @@
+<div class="title">{{ phrase("directory.guide.progression-guide.title") }}</div>
+<p>{{ phrase("docs.progression.use") }}</p>
+<p>{{ phrase("docs.progression.travel", {move: phrase("docs.guide.basics.move")}) }}</p>
+<p>{{ phrase("docs.progression.goals") }}</p>
+<div class="divider"></div>
+<p>{{ phrase("docs.progression.estimates") }}</p>
+<p>{{ phrase("docs.progression.resources") }}</p>
+<p>{{ phrase("docs.merchant.progression") }}</p>
+<div class="divider"></div>
+<div class="title">CODE</div>
+<p>{{ phrase("docs.progression.code") }}</p>
+<p><a href="/docs/code/functions/get_progression">get_progression</a></p>
+<!-- prettier-ignore -->
+<div class="code" id="progression-code">var advice = get_progression({
+    goal: { kind: "item", name: "quiver", level: 2 },
+    spendLimit: 50000
+});
+show_json({ goal: advice.goal, progress: advice.progress, rows: advice.rows });</div>

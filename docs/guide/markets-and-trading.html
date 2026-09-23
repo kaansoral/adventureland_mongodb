@@ -1,37 +1,39 @@
-<div class="guide-kicker">THE PLAYER ECONOMY</div>
-<div class="guide-title">Markets &amp; Trading</div>
-<p>Merchant stands hold player-priced sales, buy orders, and giveaways. Ponty and Ron run separate recovered-item markets whose listings can disappear when another adventurer buys first.</p>
+<div class="guide-kicker">{{ phrase("docs.guide.markets-and-trading.the-player-economy") }}</div>
+<div class="guide-title">{{ phrase("docs.guide.markets-and-trading.markets-trading") }}</div>
+<p>{{ phrase("docs.guide.markets-and-trading.merchant-stands-hold-player-priced-sales-buy-orders") }}</p>
 
 <div class="guide-card-grid">
-	<div class="guide-card"><span class="guide-card-icon market-divian"></span><b>Divian</b>Buy a stand, then list your own items or publish exact buy orders.</div>
-	<div class="guide-card"><span class="guide-card-icon market-ponty"></span><b>Ponty</b>Browse equipment sold back into the ordinary second-hand market.</div>
-	<div class="guide-card"><span class="guide-card-icon market-ron"></span><b>Ron</b>Browse items recovered from unlooted chests after a qualifying reserve donation.</div>
-	<div class="guide-card"><span class="guide-card-icon market-stand"></span><b>Nearby Players</b>Open a visible merchant's stand to buy, fill a wishlist, or join a giveaway.</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.markets-and-trading.divian-buy-a-stand-then-list-your-own") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.markets-and-trading.ponty-browse-equipment-sold-back-into-the-ordinary") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.markets-and-trading.ron-browse-items-recovered-from-unlooted-chests-after") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.markets-and-trading.nearby-players-open-a-visible-merchant-s-stand") }}</div>
 </div>
 
-<div class="guide-flow" style="border-color:#2F917A" data-guide-visual="market-listings">
-	<div class="guide-flow-node"><span class="guide-flow-icon market-staff"></span><span class="guide-flow-label">Your Staff +9</span></div>
+<div class="guide-flow" style="border-color: #2f917a" data-guide-visual="market-listings">
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.markets-and-trading.your-staff-9") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon market-stand"></span><span class="guide-flow-label">SALE · Set Quantity &amp; Price</span></div>
-	<div class="guide-flow-node"><span class="guide-flow-icon market-wishlist"></span><span class="guide-flow-label">BUY · Name, Level &amp; Price</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.markets-and-trading.sale-set-quantity-price") }}</div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.markets-and-trading.buy-name-level-price") }}</div>
 </div>
 
 <div class="divider"></div>
-<div class="title mt15">Your Merchant Stand</div>
+<div class="title mt15">{{ phrase("docs.guide.markets-and-trading.your-merchant-stand") }}</div>
 <div class="guide-card-grid">
-	<div class="guide-card"><b>Sale listing</b>Choose the exact inventory item, trade slot, unit price, and quantity. Modified gear keeps its level and properties in the listing.</div>
-	<div class="guide-card"><b>Wishlist</b>Name the item and level you will accept, the quantity wanted, and the gold paid for each. This is a buy order, not a sale.</div>
-	<div class="guide-card"><b>Giveaway</b>Move an item into a timed stand listing. Nearby eligible players join the current listing before its timer ends.</div>
-	<div class="guide-card"><b>Stay open</b>The character's stand must remain open for its listings to operate. Close it when you are done managing the market.</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.markets-and-trading.sale-listing-choose-the-exact-inventory-item-trade") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.markets-and-trading.wishlist-name-the-item-and-level-you-will") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.markets-and-trading.giveaway-move-an-item-into-a-timed-stand") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.markets-and-trading.stay-open-the-character-s-stand-must-remain") }}</div>
 </div>
+<p>{{ phrase("docs.functions.giveaway.duration") }}</p>
 
 <div class="divider"></div>
-<div class="title mt15">Buying from Another Player</div>
-<p>Stand nearby and open the player's merchant panel. Re-read the item name, level, special properties, quantity, and total. A CODE trade includes the listing's current ID so a changed or replaced offer is refused instead of silently buying something else.</p>
-<div class="guide-note">Prices are per unit. Before confirming a stack purchase, multiply the visible unit price by the quantity and make sure your inventory can receive it.</div>
+<div class="title mt15">{{ phrase("docs.guide.markets-and-trading.buying-from-another-player") }}</div>
+<p>{{ phrase("docs.guide.markets-and-trading.stand-nearby-and-open-the-player-s-merchant") }}</p>
+<div class="guide-note">{{ phrase("docs.guide.markets-and-trading.prices-are-per-unit-before-confirming-a-stack") }}</div>
 
 <div class="divider"></div>
-<div class="title mt15">CODE: List and Buy</div>
+<div class="title mt15">{{ phrase("docs.guide.markets-and-trading.code-list-and-buy") }}</div>
+<!-- prettier-ignore -->
 <div class="code">async function open_example_shop() {
 	await open_stand();
 
@@ -46,6 +48,7 @@
 }
 
 open_example_shop().catch(show_json);</div>
+<!-- prettier-ignore -->
 <div class="code">async function inspect_nearby_listing(player_name, slot) {
 	var merchant = get_player(player_name);
 	var listing = merchant &amp;&amp; merchant.slots[slot];
@@ -56,37 +59,92 @@ open_example_shop().catch(show_json);</div>
 }
 
 // inspect_nearby_listing("MerchantName", "trade1");</div>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">open_stand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">close_stand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">wishlist</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_buy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_sell</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">giveaway</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">join_giveaway</span>.</p>
+<p>{{ phrase_html("docs.guide.markets-and-trading.references-open-stand-close-stand-trade-wishlist-trade") }}</p>
 
 <div class="divider"></div>
-<div class="title mt15">CODE: Recovered Markets</div>
-<div class="code">async function inspect_recovered_items() {
-	var ponty = await get_secondhands();
-	show_json(ponty.items);
-	// if (ponty.items.length) await buy_secondhand(ponty.items[0]);
-
-	var found = await get_lost_and_found();
-	show_json(found.items);
-	// if (found.items.length) await buy_lost_and_found(found.items[0]);
+<div class="title mt15">{{ phrase("docs.guide.markets-and-trading.code-recovered-markets") }}</div>
+<p>{{ phrase("docs.merchant.resale") }}</p>
+<p style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap">
+	<span class="tutorial-npc" data-npc="secondhands"></span><span>Ponty · Mainland<br /><span class="tutorial-travel" data-type="npc" data-target="secondhands"></span></span
+	><span class="tutorial-npc" data-npc="lostandfound"></span><span>Ron · Wizard's Crib<br /><span class="tutorial-travel" data-type="npc" data-target="lostandfound"></span></span>
+</p>
+<p>{{ phrase("docs.merchant.resale_code") }}</p>
+<!-- prettier-ignore -->
+<div class="code" id="merchant-resale-code">get_progression();
+async function inspect_resale(market) {
+	if (character.ctype !== "merchant") return;
+	if (!["secondhands", "lostandfound"].includes(market)) return;
+	await smart_move(find_npc(market));
+	var stock = market === "secondhands"
+		? await get_secondhands()
+		: await get_lost_and_found();
+	var advice = get_progression({ goal: { kind: "trade", market }, spendLimit: 100000 });
+	var row = advice.rows.find(row =&gt; row.kind === "market" &amp;&amp; row.action.npc === market);
+	show_json({ stock: stock.items, resale: row ? row.action.quote : null });
 }
+inspect_resale("secondhands").catch(show_json);</div>
+<p>{{ phrase_html("docs.guide.markets-and-trading.ron-refuses-the-listing-request-until-this-character") }}</p>
+<p>{{ phrase_html("docs.guide.markets-and-trading.recovered-market-references-get-secondhands-buy-secondhand-get") }}</p>
 
-inspect_recovered_items().catch(show_json);</div>
-<p>Ron refuses the listing request until this character has made a qualifying <span class="rlabel" onclick="render_function_reference($(this).html())">donate_gold</span> contribution. Retrieved listing objects contain the ID needed by their matching buy routine.</p>
-<p>Recovered-market references: <span class="rlabel" onclick="render_function_reference($(this).html())">get_secondhands</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">buy_secondhand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">get_lost_and_found</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">buy_lost_and_found</span>.</p>
-
-<div class="guide-related">See also: <span onclick="hide_modal(); open_guide('shops-and-selling',get_guide_url('shops-and-selling'))">Shops and Selling</span> · <span onclick="hide_modal(); open_guide('exchanges-and-quests',get_guide_url('exchanges-and-quests'))">Exchanges and Quests</span></div>
+<p>
+	<span class="rlabel clickable" onclick="load_documentation('get_progression')">get_progression</span> · <span class="rlabel clickable" onclick="load_documentation('smart_move')">smart_move</span>
+</p>
+<div class="guide-related">{{ phrase_html("docs.guide.markets-and-trading.see-also-shops-and-selling-exchanges-and-quests") }}</div>
 
 <script>
-	$(".market-divian").html(sprite(G.npcs.standmerchant.skin, { height: 58 }));
-	$(".market-ponty").html(sprite(G.npcs.secondhands.skin, { height: 58 }));
-	$(".market-ron").html(sprite(G.npcs.lostandfound.skin, { height: 58 }));
-	$(".market-stand").html(item_container({ skin: G.items.stand0.skin }, { name: "stand0" }));
-	$(".market-staff").html(item_container({ skin: G.items.staff.skin }, { name: "staff", level: 9 }));
-	$(".market-wishlist").html(item_container({ skin: G.items.staff.skin }, { name: "staff", level: 9 }));
+	if (!window.no_graphics && !window.no_html) {
+		render_tutorial_items();
+		$(".market-divian").html(sprite(G.npcs.standmerchant.skin, { height: 58 }));
+		$(".market-ponty").html(sprite(G.npcs.secondhands.skin, { height: 58 }));
+		$(".market-ron").html(sprite(G.npcs.lostandfound.skin, { height: 58 }));
+		$(".market-stand").html(item_container({ skin: G.items.stand0.skin }, { name: "stand0" }));
+		$(".market-staff").html(item_container({ skin: G.items.staff.skin }, { name: "staff", level: 9 }));
+		$(".market-wishlist").html(item_container({ skin: G.items.staff.skin }, { name: "staff", level: 9 }));
+	}
 </script>
 
 <style>
-	.guide-kicker{color:#2A7F6B;font-size:18px;font-weight:bold;letter-spacing:2px}.guide-title{color:#236353;font-size:44px;line-height:48px;margin:2px 0 12px}.title{color:#236353;font-size:36px;margin-top:15px}.divider{margin-top:15px;height:5px;background-color:#A2A2A2;margin-left:-26px;margin-right:-26px}.guide-note{border-left:6px solid #368C78;background:#DCEDE8;padding:10px 14px;margin:12px 0}.guide-related{border-top:2px dotted #AAA;margin-top:18px;padding-top:10px;color:#666}.guide-related span{color:#26735E;cursor:pointer;text-decoration:underline}
+	.guide-kicker {
+		color: #2a7f6b;
+		font-size: 18px;
+		font-weight: bold;
+		letter-spacing: 2px;
+	}
+	.guide-title {
+		color: #236353;
+		font-size: 44px;
+		line-height: 48px;
+		margin: 2px 0 12px;
+	}
+	.title {
+		color: #236353;
+		font-size: 36px;
+		margin-top: 15px;
+	}
+	.divider {
+		margin-top: 15px;
+		height: 5px;
+		background-color: #a2a2a2;
+		margin-left: -26px;
+		margin-right: -26px;
+	}
+	.guide-note {
+		border-left: 6px solid #368c78;
+		background: #dcede8;
+		padding: 10px 14px;
+		margin: 12px 0;
+	}
+	.guide-related {
+		border-top: 2px dotted #aaa;
+		margin-top: 18px;
+		padding-top: 10px;
+		color: #666;
+	}
+	.guide-related span {
+		color: #26735e;
+		cursor: pointer;
+		text-decoration: underline;
+	}
 </style>
 
-<p><b>Merrit’s visits:</b> Keep an open, stocked stand in the same place for two minutes. Your account can receive one parcel per hour. No parcels within 40px of a stationary NPC or within 10px of another open stand. A stand directly in front of another, up to 15px south and 10px sideways, also receives no parcel. <span class="rlabel" onclick="render_merrit_info()">Merrit: full rules and exchange chances</span>.</p>
+<p>{{ phrase_html("docs.guide.markets-and-trading.merrit-s-visits-keep-an-open-stocked-stand") }}</p>

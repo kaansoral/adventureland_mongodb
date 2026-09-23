@@ -1,4 +1,4 @@
-<p class="tutlead">Your bag keeps the useful close and the dangerous clearly labelled.</p>
+<p class="tutlead">{{ phrase("docs.tutorial.interface.your-bag-keeps-the-useful-close-and-the") }}</p>
 
 <div class="tutlinks">
 	<div
@@ -8,37 +8,36 @@
 			open_guide('items', '/docs/guide/items');
 		"
 	>
-		ITEMS &amp; INVENTORY
+		{{ phrase("docs.tutorial.interface.items-inventory") }}
 	</div>
 </div>
 
 {% for task in tutorial_data("interface").tasks %} {% if loop.first %}
 <div class="tutdivider"></div>
 {% endif %}
-<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
+<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">{{ phrase("docs.tutorial.interface.done") }}</span></div>
 {% endfor %}
 
 <div class="tutpath manual">
-	<div class="tutpath-title">MANUAL</div>
-	<p>Open <span class="gamebutton gamebutton-small">INV</span>. Right-click equipment to wear it and right-click an equipped slot to remove it. Drag items to keep the bag tidy.</p>
-	<p>HP and MP potions share a short cooldown. Use the one you need; carrying them is not the same as drinking them.</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.interface.manual") }}</div>
+	<p>{{ phrase_html("docs.tutorial.interface.open-inv-right-click-equipment-to-wear-it") }}</p>
+	<p>{{ phrase("docs.tutorial.interface.hp-and-mp-potions-share-a-short-cooldown") }}</p>
 </div>
 
 <div class="tutpath codepath">
-	<div class="tutpath-title">OPTIONAL CODE</div>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.interface.optional-code") }}</div>
 	<!-- prettier-ignore -->
 	<div class="code">var weapon = locate_item("blade");
 if (weapon !== -1) equip(weapon);
 
 use_hp_or_mp();</div>
-	<p>Replace <span class="dlabel">"blade"</span> with an item key from your bag. <span class="dlabel">use_hp_or_mp()</span> only drinks when recovery is useful.</p>
+	<p>{{ phrase_html("docs.tutorial.interface.replace-blade-with-an-item-key-from-your") }}</p>
 	<p>
-		<span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">equip</span> ·
-		<span class="rlabel" onclick="render_function_reference($(this).html())">use_hp_or_mp</span>
+		{{ phrase_html("docs.tutorial.interface.locate-item-equip-use-hp-or-mp") }}
 	</p>
 </div>
 
-<p class="tuttip"><span class="hlabel">Careful:</span> Lock anything precious before selling, upgrading, or dismantling it.</p>
+<p class="tuttip">{{ phrase_html("docs.tutorial.interface.careful-lock-anything-precious-before-selling-upgrading-or") }}</p>
 
 <style>
 	.tutlead {

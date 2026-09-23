@@ -360,6 +360,58 @@ var npcs={
 		"skin":"thehelmet",
 		"type":"fullstatic",
 	},
+	"cavalry_paladin":{
+		"name":"Cavalry I", "role":"cavalry", "class":"paladin",
+		"skin":"thehelmet", "type":"fullstatic", "moving":true,
+		"level":100, "speed":150, "frequency":4.4, "attack_motion":true,
+		"cavalry":{"str":2650,"int":1200,"dex":180,"vit":600},
+		"slots":{
+			"mainhand":{"name":"hammer","level":10}, "offhand":{"name":"dawnwardaegis","level":10},
+			"helmet":{"name":"xhelmet","level":10,"stat_type":"str"}, "chest":{"name":"oathplate","level":10,"stat_type":"str"},
+			"pants":{"name":"xpants","level":10,"stat_type":"str"}, "gloves":{"name":"xgloves","level":10,"stat_type":"str"},
+			"shoes":{"name":"xboots","level":10,"stat_type":"str"}, "cape":{"name":"vcape","level":10,"stat_type":"str"},
+			"ring1":{"name":"strring","level":5}, "ring2":{"name":"strring","level":5}, "orb":{"name":"orbofstr","level":5}
+		}
+	},
+	"cavalry_mage":{
+		"name":"Cavalry II", "role":"cavalry", "class":"mage",
+		"skin":"thehelmet", "type":"fullstatic", "moving":true,
+		"level":100, "speed":140, "frequency":3.6, "attack_motion":true,
+		"cavalry":{"str":200,"int":2250,"dex":220,"vit":500},
+		"slots":{
+			"mainhand":{"name":"staff4","level":10},
+			"helmet":{"name":"xhelmet","level":10,"stat_type":"int"}, "chest":{"name":"xarmor","level":10,"stat_type":"int"},
+			"pants":{"name":"starkillers","level":10,"stat_type":"int"}, "gloves":{"name":"xgloves","level":10,"stat_type":"int"},
+			"shoes":{"name":"xboots","level":10,"stat_type":"int"}, "cape":{"name":"vcape","level":10,"stat_type":"int"},
+			"ring1":{"name":"intring","level":5}, "ring2":{"name":"intring","level":5}, "orb":{"name":"orbofint","level":5}
+		}
+	},
+	"cavalry_warrior":{
+		"name":"Cavalry III", "role":"cavalry", "class":"warrior",
+		"skin":"thehelmet", "type":"fullstatic", "moving":true,
+		"level":100, "speed":210, "frequency":5.2, "attack_motion":true,
+		"cavalry":{"str":2300,"int":150,"dex":300,"vit":650},
+		"slots":{
+			"mainhand":{"name":"heartwood","level":10}, "offhand":{"name":"vsword","level":10},
+			"helmet":{"name":"xhelmet","level":10,"stat_type":"str"}, "chest":{"name":"xarmor","level":10,"stat_type":"str"},
+			"pants":{"name":"xpants","level":10,"stat_type":"str"}, "gloves":{"name":"xgloves","level":10,"stat_type":"str"},
+			"shoes":{"name":"xboots","level":10,"stat_type":"str"}, "cape":{"name":"vcape","level":10,"stat_type":"str"},
+			"ring1":{"name":"strring","level":5}, "ring2":{"name":"strring","level":5}, "orb":{"name":"orbofstr","level":5}
+		}
+	},
+	"cavalry_priest":{
+		"name":"Cavalry IV", "role":"cavalry", "class":"priest",
+		"skin":"thehelmet", "type":"fullstatic", "moving":true,
+		"level":100, "speed":145, "frequency":4.2, "attack_motion":true,
+		"cavalry":{"str":200,"int":4400,"dex":180,"vit":550},
+		"slots":{
+			"mainhand":{"name":"lmace","level":10}, "offhand":{"name":"mshield","level":10},
+			"helmet":{"name":"xhelmet","level":10,"stat_type":"int"}, "chest":{"name":"xarmor","level":10,"stat_type":"int"},
+			"pants":{"name":"starkillers","level":10,"stat_type":"int"}, "gloves":{"name":"xgloves","level":10,"stat_type":"int"},
+			"shoes":{"name":"xboots","level":10,"stat_type":"int"}, "cape":{"name":"vcape","level":10,"stat_type":"int"},
+			"ring1":{"name":"intring","level":5}, "ring2":{"name":"intring","level":5}, "orb":{"name":"orbofint","level":5}
+		}
+	},
 	"pvp":{
 		"role":"pvp_announcer",
 		"name":"Ace",
@@ -700,7 +752,7 @@ var npcs={
 			"shell_zero":0.005,
 			"areas":[[-240,-120,240,144],[-88,144,88,360]],
 			"stops":[[0,0],[-96,0],[-192,104],[0,120],[0,320],[32,200],[96,104]],
-			"spacing_text":"No parcels within 40px of a stationary NPC or within 10px of another open stand. A stand directly in front of another, up to 15px south and 10px sideways, also receives no parcel.",
+			"spacing_text":"Stay more than 40px from fixed NPCs, more than 10px from open stands, and more than 15px vertically when within 10px sideways of another stand. The shop set up first keeps its place.",
 		},
 		"says":["Fresh stock? Let me have a look.","Good to see the square busy.","Leave your neighbors some room."],
 		"interaction":["Keep a stocked shop here for two minutes and leave the neighbors room. I bring parcels once an hour."],
@@ -926,7 +978,7 @@ var npcs={
 		"items":[
 			"helmet","shoes","gloves","pants","coat",
 			"blade","claw","staff","bow","wshield",
-			"wand","mace","wbasher",
+			"wand","mace","wbasher","waxe","cave_reedscythe",
 		],
 		"skin":"daggers",
 		"says":"Blades, blades, blades",
@@ -956,7 +1008,7 @@ var npcs={
 			"qubics",null,null,null,
 		],
 		//"items":["cosmo0","cosmo1","cosmo2",null,null,"cosmo3","cosmo4"],
-		"items":["cosmo0","cosmo2","cosmo3","cosmo5"],
+		"items":["cosmo0","cosmo1","cosmo2","cosmo3","cosmo4","cosmo5"],
 		"skin":"fancyd",
 		"says":"Sup",
 		"type":"fullstatic",
@@ -1064,6 +1116,7 @@ for(var i=8;i<48;i++){
 		"type":"fullstatic",
 	};
 }
+npcs.dreamkeeper={name:"Dorr",role:"dreamkeeper",skin:"mbody4e", cx:{head:"mmakeup01",hair:"hairdo410",chin:"beard102",hat:"hat221",back:"backpacks202"},type:"fullstatic",says:["Going inside? Bring your party close."],interaction:["You have 24 minutes inside. Stay together."]};
 for(var npc in npcs){
 	npcs[npc]["id"]=npc;
 }

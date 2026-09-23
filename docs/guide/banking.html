@@ -1,45 +1,46 @@
-<div class="guide-kicker">ACCOUNT STORAGE</div>
+<div class="guide-kicker">{{ phrase("docs.guide.banking.account-storage") }}</div>
 <div class="guide-title">The Bank</div>
-<p>The bank holds gold and items for your whole account. Every character sees the same vault, but only one of your characters can be inside it at a time.</p>
+<p>{{ phrase("docs.guide.banking.the-bank-holds-gold-and-items-for-your") }}</p>
 
 <div class="guide-showcase" style="border-color:#4C83AA">
 	<div class="guide-showcase-art"><span class="bank-rich"></span><span class="bank-gabrielle"></span></div>
-	<div class="guide-showcase-copy"><b>Gold and items use different tellers</b>Mr. Rich handles the account's shared gold. Gabrielle and the other item tellers each open one named 42-slot pack.</div>
+	<div class="guide-showcase-copy">{{ phrase_html("docs.guide.banking.gold-and-items-use-different-tellers-mr-rich") }}</div>
 </div>
 
 <div class="guide-cards">
-	<div><span class="guide-mark">G</span><b>Mr. Rich</b><br />Deposit carried gold or withdraw shared gold. You cannot deposit more than you carry or withdraw more than the bank holds.</div>
-	<div><span class="guide-mark">42</span><b>One Teller, One Pack</b><br />Every item teller controls a 42-slot pack. The first two packs are open on every account.</div>
-	<div><span class="guide-mark">3</span><b>Three Floors</b><br />The Bank, Basement, and Underground hold different packs. A pack can only be used from its own floor.</div>
+	<div>{{ phrase_html("docs.guide.banking.g-mr-rich-deposit-carried-gold-or-withdraw") }}</div>
+	<div>{{ phrase_html("docs.guide.banking.42-one-teller-one-pack-every-item-teller") }}</div>
+	<div>{{ phrase_html("docs.guide.banking.3-three-floors-the-bank-basement-and-underground") }}</div>
 </div>
 
 <div class="divider"></div>
-<div class="title mt15">Storing Items</div>
+<div class="title mt15">{{ phrase("docs.guide.banking.storing-items") }}</div>
 <div class="guide-flow" style="border-color:#4C83AA" data-guide-visual="bank-storage">
-	<div class="guide-flow-node"><span class="guide-flow-icon bank-potions"></span><span class="guide-flow-label">Inventory Stack</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.banking.inventory-stack") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon bank-gabrielle"></span><span class="guide-flow-label">Open Teller</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.banking.open-teller") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon bank-potions"></span><span class="guide-flow-label">Shared Bank Pack</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.banking.shared-bank-pack") }}</div>
 </div>
-<p>Open an item teller, then drag an inventory item into a bank slot. Drag it back to retrieve it, or move items between slots to organise the pack. Stackable items join compatible stacks when possible.</p>
-<p>Items cannot be equipped, sold, upgraded, or sent while stored. PVP markings are removed when an item is banked. Blocked items and operations already in progress are refused.</p>
-<div class="guide-note">Leave at least one inventory space before retrieving an item. Automatic storage needs a compatible stack or an empty bank slot.</div>
+<p>{{ phrase("docs.guide.banking.open-an-item-teller-then-drag-an-inventory") }}</p>
+<p>{{ phrase("docs.guide.banking.items-cannot-be-equipped-sold-upgraded-or-sent") }}</p>
+<div class="guide-note">{{ phrase("docs.guide.banking.leave-at-least-one-inventory-space-before-retrieving") }}</div>
 
 <div class="divider"></div>
-<div class="title mt15">Opening More Space</div>
-<p>Walk up to a closed teller to see its current price in gold or Shells. The quote shown there is the price for that exact pack. Once opened, the pack remains part of the account.</p>
-<p>The Bank Key opens the Basement. The Underground has its own key. A Diamond Key opens the next unopened teller; using any key consumes it. Deeper floors remain inaccessible until their door has been unlocked.</p>
+<div class="title mt15">{{ phrase("docs.guide.banking.opening-more-space") }}</div>
+<p>{{ phrase("docs.guide.banking.walk-up-to-a-closed-teller-to-see") }}</p>
+<p>{{ phrase("docs.guide.banking.the-bank-key-opens-the-basement-the-underground") }}</p>
 <div class="guide-card-grid">
-	<div class="guide-card"><span class="guide-card-icon bank-bkey"></span><b>Basement Key</b>Unlocks the door from the Bank to its Basement.</div>
-	<div class="guide-card"><span class="guide-card-icon bank-ukey"></span><b>Underground Key</b>Unlocks the deeper Underground floor.</div>
-	<div class="guide-card"><span class="guide-card-icon bank-dkey"></span><b>Diamond Key</b>Opens the next unopened item teller and is consumed.</div>
-	<div class="guide-card"><b>Gold or Shells</b>A closed teller shows its own current opening price. Read that quote before choosing the payment.</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.banking.basement-key-unlocks-the-door-from-the-bank") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.banking.underground-key-unlocks-the-deeper-underground-floor") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.banking.diamond-key-opens-the-next-unopened-item-teller") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.banking.gold-or-shells-a-closed-teller-shows-its") }}</div>
 </div>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
-<p><span class="dlabel">character.bank</span> exists while you are inside the bank. It contains the shared gold and every open pack available to the character.</p>
+<p>{{ phrase_html("docs.guide.banking.character-bank-exists-while-you-are-inside-the") }}</p>
+<p>{{ phrase("docs.functions.bank_store.explicit_destination") }}</p>
 <div class="code">async function bank_trip() {
 	await smart_move("bank");
 
@@ -57,10 +58,10 @@
 }
 
 bank_trip().catch(show_json);</div>
-<p>Open a closed teller through CODE with <span class="rlabel" onclick="render_function_reference($(this).html())">open_bank_pack</span>, for example <span class="dlabel">await open_bank_pack("items2", "gold")</span>. The character must be on the floor that owns that pack.</p>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">bank_deposit</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_withdraw</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_store</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_retrieve</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_swap</span>.</p>
+<p>{{ phrase_html("docs.guide.banking.open-a-closed-teller-through-code-with-open") }}</p>
+<p>{{ phrase_html("docs.guide.banking.references-bank-deposit-bank-withdraw-bank-store-bank") }}</p>
 
-<div class="guide-related">Related: <span onclick="hide_modal(); open_guide('items',get_guide_url('items'))">Items</span> · <span onclick="hide_modal(); open_guide('item-maintenance',get_guide_url('item-maintenance'))">Item Maintenance</span> · <span onclick="hide_modal(); open_guide('travel-and-instances',get_guide_url('travel-and-instances'))">Travel</span></div>
+<div class="guide-related">{{ phrase_html("docs.guide.banking.related-items-item-maintenance-travel") }}</div>
 
 <script>
 	$(".bank-rich").html(sprite(G.npcs.goldnpc.skin, { height: 58 }));

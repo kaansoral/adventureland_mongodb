@@ -1,0 +1,40 @@
+{% include "docs/tutorial/farming.html" %}
+<hr class="mb15 mt15" />
+<span class="clickable dlabel" onclick="open_guide('upgrading', get_guide_url('upgrading'))">{{ phrase("tutorial.upgrade.title") }}</span>
+<div
+	class="gamebutton gamebutton-small"
+	onclick="
+		open_tutorial(
+			G.docs.tutorial.findIndex(function (l) {
+				return l.key === 'gear-comparison';
+			}),
+		)
+	"
+>
+	{{ phrase("tutorial.gear-comparison.title") }}
+</div>
+<div
+	class="gamebutton gamebutton-small"
+	onclick="
+		open_tutorial(
+			G.docs.tutorial.findIndex(function (lesson) {
+				return lesson.key === 'accessory-comparison';
+			}),
+		)
+	"
+>
+	{{ phrase("tutorial.accessory-comparison.title") }}
+</div>
+<div class="gamebutton gamebutton-small" onclick="open_tutorial(undefined, 'merchant')">{{ phrase("interface.tutorial.merchant_track") }}</div>
+<div
+	class="gamebutton gamebutton-small"
+	onclick="
+		open_tutorial(
+			G.docs.tutorial.findIndex(function (l) {
+				return l.key === 'stat-scrolls';
+			}),
+		)
+	"
+>
+	{{ phrase("tutorial.stat-scrolls.title") }}
+</div>

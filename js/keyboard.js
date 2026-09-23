@@ -129,7 +129,8 @@ function keyboard_logic()
 			if(mm_afk) last_interaction=new Date();
 			if(window.options && options.move_with_mouse && character)
 			{
-				var x=event.pageX,y=event.pageY;
+				var point=map_game_pointer({},event.clientX,event.clientY);
+				var x=point.x,y=point.y;
 				dx=x-width/2; dy=y-height/2;
 				if(manual_centering && character) dx=x-character.x,dy=y-character.y;
 				dx/=scale; dy/=scale;

@@ -26,7 +26,7 @@ body {
 	margin: 0;
 	background: var(--realm-bg);
 	color: var(--realm-text);
-	font-family: pixel, monospace;
+	font-family: var(--pixel-font, pixel), monospace;
 	font-size: 18px;
 	line-height: 1.35;
 }
@@ -351,7 +351,7 @@ h3 {
 
 .graph-node text {
 	fill: var(--realm-text);
-	font-family: pixel, monospace;
+	font-family: var(--pixel-font, pixel), monospace;
 	font-size: 17px;
 	pointer-events: none;
 }
@@ -725,7 +725,7 @@ h3 {
 .map-card-title code,
 .monster-name code {
 	color: var(--realm-muted);
-	font-family: pixel, monospace;
+	font-family: var(--pixel-font, pixel), monospace;
 	font-size: 13px;
 }
 

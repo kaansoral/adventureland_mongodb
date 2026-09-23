@@ -1,0 +1,9 @@
+{
+  "navigation.hub": "Hub",
+  "navigation.github": "GitHub",
+	"language.choose": "Ngôn ngữ",
+	"language.select": "Dùng {language}",
+	"language.save_failed": "Không lưu được ngôn ngữ của bạn. Vui lòng thử lại.",
+	"language.saving": "Đang lưu…",
+	"navigation.communicator_short": "LIÊN LẠC"
+}

@@ -1,0 +1,70 @@
+<p>{{ phrase_html("docs.tutorial.js-targets.idea") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.task") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-targets.task") }}</p>
+
+<p>{{ phrase("docs.tutorial.javascript.practice") }}</p>
+
+<div class="tutorial-code" data-lesson="targets">
+	<!-- prettier-ignore -->
+	<div class="code executeb">function reportTarget() {
+  if (character.rip) { game_log("Dead"); return; }
+  const target = get_nearest_monster({ type: "goo" });
+  // {{ phrase("docs.tutorial.js-targets.starter.comment_1") }}
+  if (is_in_range(target)) game_log("In range");
+  else game_log("Too far");
+}
+reportTarget();</div>
+
+	<div class="tutorial-code-result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.hint") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-targets.hint") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.solution") }}</div>
+
+<!-- prettier-ignore -->
+<div class="code readonly">function reportTarget() {
+  if (character.rip) { game_log("Dead"); return; }
+  const target = get_nearest_monster({ type: "goo" });
+  if (!target) { game_log("No goo"); return; }
+  if (is_in_range(target)) game_log("In range");
+  else game_log("Too far");
+}
+reportTarget();</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.variation") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-targets.variation") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.transfer") }}</div>
+
+<p>{{ phrase("docs.tutorial.javascript.copy") }}</p>
+
+<p>{{ phrase_html("docs.tutorial.js-targets.transfer") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.js-targets.reading_title") }}</div>
+
+{{ phrase_html("docs.tutorial.js-targets.reading_before") }}
+
+<!-- prettier-ignore -->
+<div class="code readonly">const target = get_nearest_monster({ type: "goo" });
+if (target &amp;&amp; target.mtype === "goo") {
+  game_log("Found a goo");
+} else {
+  game_log("No goo");
+}</div>
+
+{{ phrase_html("docs.tutorial.js-targets.reading_after") }}
+
+<p>
+	<span class="rlabel clickable" onclick="load_documentation('get_nearest_monster')">get_nearest_monster</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('is_in_range')">is_in_range</span>
+</p>

@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="pixel/fontfaces.83601c062a30.css">
+		<script src="phrases.js"></script>
+		<script src="desktop.js"></script>
 		<style>
-			@font-face {
-				font-family: pixel;
-				src: url(m5x7.ttf);
-				font-weight: normal;
-				font-style: normal;
-			}
 			html,body{
 				background:black;
 				color:white;
@@ -16,26 +14,132 @@
 				width:100%;
 				height:100%;
 				overflow:hidden;
-				font-family:pixel;
+				font-family:var(--pixel-font, pixel);
 				color:white;
 				word-wrap:break-word;
 				-webkit-font-smoothing:subpixel-antialiased;
 			}
+			body{display:flex;flex-direction:column;}
+			#loading-screen{
+				flex:1;
+				min-height:0;
+				display:flex;
+				align-items:center;
+				justify-content:center;
+				padding:20px;
+				overflow:auto;
+			}
+			#support{
+				flex:none;
+				box-sizing:border-box;
+				width:calc(100% - 40px);
+				max-width:640px;
+				margin:0 auto 20px;
+				border:4px solid #477C79;
+				background:#081714;
+				color:#B8D9D4;
+				padding:12px 16px;
+				font-size:24px;
+				line-height:28px;
+				text-align:center;
+			}
+			#support:empty{display:none;}
+			#compatibility{
+				position:fixed;
+				top:20px;
+				right:20px;
+				display:none;
+				box-sizing:border-box;
+				max-width:440px;
+				width:calc(100% - 40px);
+				max-height:calc(100% - 40px);
+				overflow:auto;
+				border:5px solid gray;
+				background:black;
+				padding:16px;
+				font-size:24px;
+				line-height:28px;
+				text-align:start;
+				color:#C7C7C7;
+				z-index:10;
+			}
+			#compatibility-button{
+				display:block;
+				width:100%;
+				margin-top:14px;
+				border:4px solid #5A854C;
+				background:black;
+				color:#85C76B;
+				padding:10px 12px;
+				font:inherit;
+				line-height:24px;
+				text-align:center;
+				cursor:pointer;
+			}
+			#compatibility-button:hover,#compatibility-button:focus{
+				border-color:#85C76B;
+				outline:none;
+			}
+			#compatibility-button:disabled{
+				border-color:gray;
+				color:gray;
+				cursor:default;
+			}
+			#compatibility-button[hidden]{display:none;}
 		</style>
 	</head>
 	<body>
-		<table width=100% height="100%">
-			<tr>
-				<td align="center">
-					<div style='border: 5px solid gray;font-size: 24px;line-height: 24px;padding: 12px; display: inline-block;text-align: center; overflow-wrap: break-word; max-width: 400px'><div id='thecolor' style='color:#85C76B'>LOADING</div> <span id="percentage">0</span>%</div>
-					<div style='border: 5px solid gray; font-size: 24px; line-height: 24px; padding: 20px; margin-top: 10px; display: none; width: 380px' id="notloading">
-						At this point, it's probably not loading. Adventure Land requires an internet connection. Make sure you are connected! Try reloading once to see if it works. If the issue persists: You can always email hello@adventure.land
-						<div style='color:#85C76B; display: none' id='apologies'>Apologies :)</div>
-					</div>
-				</td>
-			</tr>
-		</table>
+		<div id="compatibility">
+			<div id="compatibility-help" role="status" aria-live="polite" dir="auto"></div>
+			<button type="button" id="compatibility-button"></button>
+		</div>
+		<div id="loading-screen">
+			<div style='border: 5px solid gray;font-size: 24px;line-height: 24px;padding: 12px; display: inline-block;text-align: center; overflow-wrap: break-word; max-width: 400px'><div id='thecolor' style='color:#85C76B'>...</div> <span id="percentage">0</span>%</div>
+		</div>
+		<div id="support" dir="auto"></div>
 		<script>
+			var language=phrase.detect(navigator.languages || [navigator.language]);
+			var compatibility_started=false,compatibility_active=false,long_wait=false,compatibility_failed=false;
+			function show_connection_help(){
+				var retry=compatibility_active && long_wait;
+				document.getElementById('compatibility-help').textContent=phrase(compatibility_failed?'desktop.connection_help':retry?'desktop.compatibility_retry':'desktop.compatibility_help');
+				var button=document.getElementById('compatibility-button');
+				button.hidden=retry || compatibility_failed;
+				button.disabled=compatibility_started;
+				button.textContent=phrase(compatibility_started?'desktop.loading':'desktop.compatibility_yes');
+			}
+			function use_compatibility(){
+				if(compatibility_started) return;
+				compatibility_started=true;
+				show_connection_help();
+				desktop.compatibility().then(function(){
+					compatibility_active=true;
+					show_connection_help();
+				}).catch(function(error){
+					// Do not retry a timed-out command: it may still reach the native UI.
+					compatibility_failed=true;
+					show_connection_help();
+					console.error('[Tauri] Compatibility mode failed:',error);
+				});
+			}
+			document.getElementById('compatibility-button').addEventListener('click',use_compatibility);
+			function show_language(language){
+				document.documentElement.lang=language;
+				var language_script=document.createElement('script');
+				language_script.src='languages/'+language+'.js';
+				language_script.onload=function(){
+					document.getElementById('thecolor').textContent=phrase('desktop.loading');
+					document.getElementById('support').textContent=phrase('desktop.support');
+					show_connection_help();
+				};
+				document.head.appendChild(language_script);
+				return new Promise(function(resolve){language_script.addEventListener('load',resolve);language_script.addEventListener('error',resolve);});
+			}
+			// Start in the system language immediately. Steam/cache resolution is optional.
+			var initial_language=show_language(language);
+			desktop.language().then(function(selected){
+				if(selected && selected!==language) initial_language.then(function(){show_language(selected);});
+			});
 			var progress=0,s9=0,percent=0;
 			setInterval(function(){
 				progress+=1;
@@ -56,14 +160,13 @@
 				}
 			},10);
 			setTimeout(function(){
-				document.getElementById("notloading").style.display="block";
-				document.getElementById("thecolor").style.color="#D38639";
-			},24000);
+				document.getElementById('compatibility').style.display='block';
+				document.getElementById('thecolor').style.color='#D38639';
+			},30000);
 			setTimeout(function(){
-				document.getElementById("notloading").style.display="block";
-				document.getElementById("apologies").style.display="block";
-				document.getElementById("thecolor").style.color="#D22E1B";
-			},36000);
+				long_wait=true;
+				show_connection_help();
+			},60000);
 		</script>
 	</body>
 </html>

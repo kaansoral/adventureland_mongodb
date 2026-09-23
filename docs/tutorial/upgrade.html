@@ -1,4 +1,5 @@
-<p class="tutlead">Upgrading makes weapons and armor stronger. A failed attempt can destroy the item.</p>
+<p class="tutlead">{{ phrase("docs.tutorial.upgrade.upgrading-makes-weapons-and-armor-stronger-a-failed") }}</p>
+<div><span class="tutorial-travel" data-type="npc" data-target="basics"></span></div>
 
 <div class="tutlinks">
 	<div
@@ -8,37 +9,29 @@
 			open_guide('upgrading', get_guide_url('upgrading'));
 		"
 	>
-		COMPLETE UPGRADING GUIDE
-	</div>
-	<div
-		class="gamebutton gamebutton-small"
-		onclick="
-			btc(event);
-			code_eval('smart_move(&quot;scrolls&quot;)');
-		"
-	>
-		GO TO THE SCROLLS
+		{{ phrase("docs.tutorial.upgrade.complete-upgrading-guide") }}
 	</div>
 </div>
 
 {% for task in tutorial_data("upgrade").tasks %} {% if loop.first %}
 <div class="tutdivider"></div>
 {% endif %}
-<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
+<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">{{ phrase("docs.tutorial.upgrade.done") }}</span></div>
 {% endfor %}
 
 <div class="tutpath manual">
-	<div class="tutpath-title">MANUAL</div>
-	<p>Buy one Basic Upgrade Scroll. Take a cheap +0 weapon or armor piece to Cue, place both in the upgrade window, and read the chance before you commit.</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.upgrade.manual") }}</div>
+	<p>{{ phrase("docs.tutorial.upgrade.buy-one-basic-upgrade-scroll-take-a-cheap") }}</p>
+	<p style="display:flex;align-items:center;gap:16px;flex-wrap:wrap"><span class="tutorial-npc" data-npc="scrolls"></span><span>Lucas · Mainland<br>(-464, -96)</span><span class="tutorial-item" data-item="scroll0"></span><span class="tutorial-npc" data-npc="newupgrade"></span><span>Cue · Mainland<br>(-207, -220)</span></p>
+<div><span class="tutorial-travel" data-type="npc" data-target="scrolls"></span> <span class="tutorial-travel" data-type="npc" data-target="newupgrade"></span></div>
 	<p>
-		The item's current grade decides which scroll it needs. The item and scroll are consumed on failure. Offerings and grace can help with difficult attempts; locking prevents an item from being
-		upgraded at all.
+		{{ phrase("docs.tutorial.upgrade.the-item-s-current-grade-decides-which-scroll") }}
 	</p>
 </div>
 
 <div class="tutpath codepath">
-	<div class="tutpath-title">OPTIONAL CODE</div>
-	<p>This selects a normal-grade upgradeable item. It will only attempt the upgrade after you change the confirmation line from <span class="dlabel">false</span> to <span class="dlabel">true</span>:</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.upgrade.optional-code") }}</div>
+	<p>{{ phrase_html("docs.tutorial.upgrade.this-selects-a-normal-grade-upgradeable-item-it") }}</p>
 	<!-- prettier-ignore -->
 	<div class="code">async function upgrade_once() {
 	await smart_move(find_npc("newupgrade"));
@@ -60,14 +53,13 @@
 upgrade_once().catch(function (error) {
 	show_json(error);
 });</div>
-	<p>Calculation mode consumes nothing. Read its chance, then change <span class="dlabel">CONFIRM_UPGRADE</span> to <span class="dlabel">true</span> only if you accept the risk.</p>
+	<p>{{ phrase_html("docs.tutorial.upgrade.calculation-mode-consumes-nothing-read-its-chance-then") }}</p>
 	<p>
-		<span class="rlabel" onclick="render_function_reference($(this).html())">upgrade</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">item_grade</span> ·
-		<span class="rlabel" onclick="render_function_reference($(this).html())">lock_item</span>
+		{{ phrase_html("docs.tutorial.upgrade.upgrade-item-grade-lock-item") }}
 	</p>
 </div>
 
-<p class="tuttip"><span class="hlabel">Stat scrolls:</span> Eligible armor can receive STR, INT, DEX, or another supported stat. The full guide explains which items accept them.</p>
+<p class="tuttip">{{ phrase_html("docs.tutorial.upgrade.stat-scrolls-eligible-armor-can-receive-str-int") }}</p>
 
 <style>
 	.tutlead {
@@ -124,3 +116,4 @@ upgrade_once().catch(function (error) {
 		text-align: center;
 	}
 </style>
+<script>render_tutorial_items();</script>

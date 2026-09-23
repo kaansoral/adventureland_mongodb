@@ -1,4 +1,5 @@
-<p class="tutlead">Roads, doors, transporters, and a little curiosity connect the world.</p>
+<p class="tutlead">{{ phrase("docs.tutorial.move.roads-doors-transporters-and-a-little-curiosity-connect") }}</p>
+<div><span class="tutorial-travel" data-type="npc" data-target="transporter"></span> <span class="tutorial-travel" data-type="npc" data-target="fancypots"></span></div>
 
 <div class="tutlinks">
 	<div
@@ -8,7 +9,7 @@
 			open_guide('travel-and-instances', get_guide_url('travel-and-instances'));
 		"
 	>
-		TRAVEL GUIDE
+		{{ phrase("docs.tutorial.move.travel-guide") }}
 	</div>
 	<div
 		class="gamebutton gamebutton-small"
@@ -17,24 +18,24 @@
 			open_article('data-npc', '/docs/code/npc/reference');
 		"
 	>
-		NPC REFERENCE
+		{{ phrase("docs.tutorial.move.npc-reference") }}
 	</div>
 </div>
 
 {% for task in tutorial_data("move").tasks %} {% if loop.first %}
 <div class="tutdivider"></div>
 {% endif %}
-<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
+<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">{{ phrase("docs.tutorial.move.done") }}</span></div>
 {% endfor %}
 
 <div class="tutpath manual">
-	<div class="tutpath-title">MANUAL</div>
-	<p>Use <span class="gamebutton gamebutton-small">TRAVEL</span> for a long journey. Nearby doors and NPCs can be activated with right-click or <span class="gamebutton gamebutton-small">F</span>.</p>
-	<p>When an <span class="gamebutton gamebutton-small">INFO</span> button appears nearby, open it. It explains the system you are standing next to.</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.move.manual") }}</div>
+	<p>{{ phrase_html("docs.tutorial.move.use-travel-for-a-long-journey-nearby-doors") }}</p>
+	<p>{{ phrase_html("docs.tutorial.move.when-an-info-button-appears-nearby-open-it") }}</p>
 </div>
 
 <div class="tutpath codepath">
-	<div class="tutpath-title">OPTIONAL CODE</div>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.move.optional-code") }}</div>
 	<!-- prettier-ignore -->
 	<div class="code">async function visit_potions() {
 	var destination = find_npc("fancypots");
@@ -46,10 +47,9 @@
 visit_potions().catch(function (error) {
 	show_json(error);
 });</div>
-	<p>For banks, shops, doors, and special NPCs, use the documented CODE function instead of sending low-level socket events.</p>
+	<p>{{ phrase("docs.tutorial.move.for-banks-shops-doors-and-special-npcs-use") }}</p>
 	<p>
-		<span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">find_npc</span> ·
-		<span class="rlabel" onclick="render_function_reference($(this).html())">use_nearest_door</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">transport</span>
+		{{ phrase_html("docs.tutorial.move.smart-move-find-npc-use-nearest-door-transport") }}
 	</p>
 </div>
 
@@ -105,3 +105,4 @@ visit_potions().catch(function (error) {
 		text-align: center;
 	}
 </style>
+<script>render_tutorial_items();</script>

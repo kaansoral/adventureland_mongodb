@@ -1,0 +1,27 @@
+<p><span class="dlabel">get_progression(options)</span></p>
+<p>{{ phrase("docs.progression.code") }}</p>
+<p>{{ phrase("docs.progression.api") }}</p>
+<p>{{ phrase("docs.progression.resources") }}</p>
+<p>{{ phrase("docs.merchant.progression") }}</p>
+<!-- prettier-ignore -->
+<div class="code">var advice = get_progression({
+    goal: { kind: "stat", metric: "attack", target: 1500 },
+    spendLimit: 200000,
+    allowPvp: false
+});
+show_json(advice.rows);</div>
+<div class="divider"></div>
+<!-- prettier-ignore -->
+<div class="code">var goals = [
+    { kind: "item", name: "oathplate", level: 4, quantity: 1 },
+    { kind: "set", name: "oathkeeper", target: 3 },
+    { kind: "farm", monster: "bee", map: "main" },
+    { kind: "encounter", monster: "snowman" },
+    { kind: "gold", target: 1000000 },
+    { kind: "gather", skill: "fishing" },
+    { kind: "trade", market: "secondhands" },
+    { kind: "trade", market: "lostandfound" }
+];
+show_json(get_progression({ goal: goals[0] }).plans);</div>
+<p><a href="/docs/guide/progression/progression-guide">{{ phrase("directory.guide.progression-guide.title") }}</a></p>
+<span class="redlabel">{{ phrase("docs.reference.source_code") }}</span>

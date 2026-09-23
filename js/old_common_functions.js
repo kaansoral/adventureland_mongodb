@@ -197,6 +197,22 @@ function process_game_data()
 		if(map.ignore) continue;
 		// var M=map.data={x_lines:(G.geometry[name].x_lines||[]).slice(),y_lines:(G.geometry[name].y_lines||[]).slice()},LD=5;
 		var M=map.data=G.geometry[name];
+		// Composed scenery uses the same collision lines as the map's native tiles.
+		var fixtures=Object.values(map.animatables||{}).filter(function(a){ return a.collision; });
+		map.collision_key=fixtures.length ? JSON.stringify(fixtures.map(function(a){ return [a.x,a.y,a.collision]; })) : null;
+		if(M && fixtures.length)
+		{
+			function add_line(axis,line) {
+				if(!M[axis].some(function(old){ return old[0]===line[0] && old[1]===line[1] && old[2]===line[2]; })) M[axis].push(line);
+			}
+			fixtures.forEach(function(a){ a.collision.forEach(function(box){
+				var x1=a.x+box[0],y1=a.y+box[1],x2=a.x+box[2],y2=a.y+box[3];
+				add_line("x_lines",[x1,y1,y2]); add_line("x_lines",[x2,y1,y2]);
+				add_line("y_lines",[y1,x1,x2]); add_line("y_lines",[y2,x1,x2]);
+			}); });
+			M.x_lines.sort(function(a,b){ return a[0]-b[0]; });
+			M.y_lines.sort(function(a,b){ return a[0]-b[0]; });
+		}
 		// Instead of extending lines, applied the emulated move forward logic everywhere [18/07/18]
 		// G.geometry[name].x_lines=[]; G.geometry[name].y_lines=[]; // New system [17/07/18]
 		// map.data.x_lines.forEach(function(line){
@@ -392,7 +408,9 @@ function can_stack(a,b,d,args)
 {
 	if(a && b && a.name && G.items[a.name].s && a.name==b.name && a.q+b.q+(d||0)<=(G.items[a.name].s===true&&9999||G.items[a.name].s))
 	{
-		if((a.p || b.p) && a.p!=b.p) return false; // property
+		// Provenance-only titles can share a stack; stat-bearing properties cannot.
+		var ap=G.titles?.[a.p]?.stackable ? null : a.p, bp=G.titles?.[b.p]?.stackable ? null : b.p;
+		if((ap || bp) && ap!=bp) return false; // property
 		if(a.name=="cxjar" && a.data!=b.data) return false;
 		if(!args || !args.ignore_pvp) if(a.v && !b.v || !a.v && b.v) return false; // pvp
 		if(a.l || b.l || a.b || b.b) return false; // blocked and locked
@@ -594,10 +612,11 @@ function object_sort(o,algorithm)
 	}
 	function gsort(x,y)
 	{
-		// console.log(x);
-		if(G.items[x[0]].g<G.items[y[0]].g) return -1;
-		else if(G.items[x[0]].g<G.items[y[0]].g && x[0]<y[0]) return -1;
-		return 1;
+		// A recipe ID can differ from the item it produces.
+		var xg=G.items[(x[1] && x[1].output && x[1].output.name)||x[0]].g;
+		var yg=G.items[(y[1] && y[1].output && y[1].output.name)||y[0]].g;
+		if(xg!=yg) return xg-yg;
+		return x[0]==y[0] ? 0:lexi(x,y);
 	}
 	function hpsort(x,y)
 	{

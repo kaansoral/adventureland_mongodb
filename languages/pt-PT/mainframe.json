@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "O Mainframe colocou esta personagem na fila.",
+	"mainframe.event.included_worker_queued": "O Mainframe colocou este Worker incluído na fila.",
+	"mainframe.event.shared_with": "Partilhado com {character}",
+	"mainframe.event.shared_with_root": "Partilhado com a personagem principal",
+	"mainframe.event.explicit_disconnect": "Desligado pelo titular da conta.",
+	"mainframe.event.renewed_free": "1 hora grátis de Mainframe usada durante {minutes} minutos.",
+	"mainframe.event.renewed_shell": "1 concha cobrada por {minutes} minutos.",
+	"mainframe.event.renewal_one": "{count} personagem ativa · Próxima renovação {date}",
+	"mainframe.event.renewal_many": "{count} personagens ativas · Próxima renovação {date}",
+	"mainframe.event.renewal_failed": "O Mainframe parou esta personagem porque o tempo acabou.",
+	"mainframe.event.worker_failure": "O Mainframe detetou uma falha de Worker e tentará novamente.",
+	"mainframe.event.server_change": "O Mainframe está a voltar a ligar esta personagem noutro servidor.",
+	"mainframe.level.info": "INFO",
+	"mainframe.level.warn": "AVISO",
+	"mainframe.level.error": "ERRO"
+}

@@ -1,6 +1,15 @@
-<p class="tutlead">Your characters share an account, a bank, and—if you choose—a plan.</p>
+<p class="tutlead">{{ phrase("docs.tutorial.multiple-characters.your-characters-share-an-account-a-bank-and") }}</p>
 
 <div class="tutlinks">
+	<div
+		class="gamebutton gamebutton-small"
+		onclick="
+			btc(event);
+			open_tutorial(undefined, 'merchant');
+		"
+	>
+		{{ phrase("interface.tutorial.merchant_track") }}
+	</div>
 	<div
 		class="gamebutton gamebutton-small"
 		onclick="
@@ -8,35 +17,35 @@
 			open_guide('multi', '/docs/guide/multi');
 		"
 	>
-		CHARACTERS &amp; COORDINATION
+		{{ phrase("docs.tutorial.multiple-characters.characters-coordination") }}
 	</div>
 </div>
 
 {% for task in tutorial_data("multiple-characters").tasks %} {% if loop.first %}
 <div class="tutdivider"></div>
 {% endif %}
-<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
+<div class="tuttaskrow">
+	<span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span>
+	<span class="tuttaskd tuttaskd{{task}}">{{ phrase("docs.tutorial.multiple-characters.done") }}</span>
+</div>
 {% endfor %}
 
 <div class="tutpath manual">
-	<div class="tutpath-title">MANUAL</div>
-	<p>Open <span class="gamebutton gamebutton-small">COM</span> → Characters. You can deploy another character in a game window and move equipment or gold through the shared bank.</p>
-	<p>Each character keeps its own class, inventory, skills, and CODE. Only one character can occupy the bank at a time.</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.multiple-characters.manual") }}</div>
+	<p>{{ phrase_html("docs.tutorial.multiple-characters.open-com-characters-you-can-deploy-another-character") }}</p>
+	<p>{{ phrase("docs.tutorial.multiple-characters.each-character-keeps-its-own-class-inventory-skills") }}</p>
 </div>
 
 <div class="tutpath codepath">
-	<div class="tutpath-title">OPTIONAL CODE</div>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.multiple-characters.optional-code") }}</div>
 	<!-- prettier-ignore -->
 	<div class="code">start_character("YourCharacter").then(function () {
 	return send_cm("YourCharacter", {command: "hello"});
 }).catch(function (error) {
 	show_json(error);
 });</div>
-	<p>Only trust commands from your own characters. Check the sender before acting on a CODE message.</p>
-	<p>
-		<span class="rlabel" onclick="render_function_reference($(this).html())">start_character</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">send_cm</span> ·
-		<span class="rlabel" onclick="render_function_reference($(this).html())">on_cm</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">command_character</span>
-	</p>
+	<p>{{ phrase("docs.tutorial.multiple-characters.only-trust-commands-from-your-own-characters-check") }}</p>
+	<p>{{ phrase_html("docs.tutorial.multiple-characters.start-character-send-cm-on-cm-command-character") }}</p>
 </div>
 
 <style>

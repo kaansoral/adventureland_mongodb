@@ -1,12 +1,12 @@
 <p><span class='dlabel'>trade(num, trade_slot, price, quantity)</span></p>
-<p>Lists an inventory item in one of your merchant trade slots.</p>
-<p><b>Returns:</b> Promise resolving with the listing response, or rejecting with a structured failure object.</p>
-<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
-<p><b>Notes:</b> Numeric slot 4 and string slot "trade4" are equivalent.</p>
-<p><b>Example:</b></p>
+<p>{{ phrase("docs.functions.trade.lists-an-inventory-item-in-one-of-your") }}</p>
+<p>{{ phrase_html("docs.functions.trade.returns-promise-resolving-with-the-listing-response-or") }}</p>
+<p>{{ phrase_html("docs.functions.trade.promise-failures-unless-a-function-specific-note-says") }}</p>
+<p>{{ phrase_html("docs.functions.trade.notes-numeric-slot-4-and-string-slot-trade4") }}</p>
+<p>{{ phrase_html("docs.functions.trade.example") }}</p>
 <div class='code'>trade(0, 4, 100000, 1);</div>
 
 <p></p>
-<span class='redlabel'>"source"</span>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>
 
-<p><b>Merrit’s visits:</b> Keep an open, stocked stand in the same place for two minutes. Your account can receive one parcel per hour. No parcels within 40px of a stationary NPC or within 10px of another open stand. A stand directly in front of another, up to 15px south and 10px sideways, also receives no parcel. <span class="rlabel" onclick="render_merrit_info()">Merrit: full rules and exchange chances</span>.</p>
+<p>{{ phrase_html("docs.functions.trade.merrit-s-visits-keep-an-open-stocked-stand") }}</p>

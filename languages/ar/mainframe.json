@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "أضاف Mainframe هذه الشخصية إلى قائمة الانتظار.",
+	"mainframe.event.included_worker_queued": "أضاف Mainframe عامل التشغيل المشمول هذا إلى قائمة الانتظار.",
+	"mainframe.event.shared_with": "مشترك مع {character}",
+	"mainframe.event.shared_with_root": "مشترك مع الشخصية الرئيسية",
+	"mainframe.event.explicit_disconnect": "فصلها مالك الحساب.",
+	"mainframe.event.renewed_free": "تم استخدام ساعة مجانية واحدة من Mainframe. مدة التشغيل بالدقائق: {minutes}.",
+	"mainframe.event.renewed_shell": "تم خصم صدفة واحدة. مدة التشغيل بالدقائق: {minutes}.",
+	"mainframe.event.renewal_one": "عدد الشخصيات النشطة: {count} · التجديد التالي {date}",
+	"mainframe.event.renewal_many": "عدد الشخصيات النشطة: {count} · التجديد التالي {date}",
+	"mainframe.event.renewal_failed": "أوقف Mainframe هذه الشخصية لنفاد الوقت.",
+	"mainframe.event.worker_failure": "اكتشف Mainframe خللا في عامل تشغيل وسيعيد المحاولة.",
+	"mainframe.event.server_change": "يعيد Mainframe توصيل هذه الشخصية بخادم آخر.",
+	"mainframe.level.info": "معلومات",
+	"mainframe.level.warn": "تحذير",
+	"mainframe.level.error": "خطأ"
+}

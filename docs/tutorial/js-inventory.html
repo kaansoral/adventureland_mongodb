@@ -1,0 +1,66 @@
+<p>{{ phrase_html("docs.tutorial.js-inventory.idea") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.task") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-inventory.task") }}</p>
+
+<p>{{ phrase("docs.tutorial.javascript.practice") }}</p>
+
+<div class="tutorial-code" data-lesson="inventory">
+	<!-- prettier-ignore -->
+	<div class="code executeb">let total = 0;
+for (const item of character.items) {
+  if (!item || item.name !== "hpot0") continue;
+  total += 1; // {{ phrase("docs.tutorial.js-inventory.starter.comment_1") }}
+}
+game_log("HP potions: " + total);</div>
+
+	<div class="tutorial-code-result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.hint") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-inventory.hint") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.solution") }}</div>
+
+<!-- prettier-ignore -->
+<div class="code readonly">let total = 0;
+for (const item of character.items) {
+  if (!item || item.name !== "hpot0") continue;
+  if (item.q === undefined) total += 1;
+  else total += item.q;
+}
+game_log("HP potions: " + total);</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.variation") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-inventory.variation") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.transfer") }}</div>
+
+<p>{{ phrase("docs.tutorial.javascript.copy") }}</p>
+
+<p>{{ phrase_html("docs.tutorial.js-inventory.transfer") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.js-inventory.reading_title") }}</div>
+
+{{ phrase_html("docs.tutorial.js-inventory.reading_before") }}
+
+<!-- prettier-ignore -->
+<div class="code readonly">const bag = [null, { name: "hpot0", q: 4 }];
+for (const item of bag) {
+  if (!item) continue;
+  game_log(item.name + ": " + item.q);
+}</div>
+
+{{ phrase_html("docs.tutorial.js-inventory.reading_after") }}
+
+<p>
+	<span class="rlabel clickable" onclick="open_article('data-character', '/docs/code/character/reference')">character</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('game_log')">game_log</span>
+</p>

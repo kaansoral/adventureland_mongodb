@@ -1,0 +1,9 @@
+{
+  "navigation.hub": "Hub",
+  "navigation.github": "GitHub",
+	"language.choose": "ภาษา",
+	"language.select": "ใช้{language}",
+	"language.save_failed": "บันทึกภาษาที่เลือกไม่ได้ โปรดลองอีกครั้ง",
+	"language.saving": "กำลังบันทึก…",
+	"navigation.communicator_short": "สื่อสาร"
+}

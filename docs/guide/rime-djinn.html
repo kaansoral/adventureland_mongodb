@@ -1,0 +1,41 @@
+<div class="title">Rime Djinn</div>
+<p>{{ phrase("docs.guide.rime-djinn.intro") }}</p>
+<div class="divider"></div>
+<div class="title">{{ phrase("skill.rimeshell.name") }}</div>
+<p>{{ phrase("skill.rimeshell.explanation") }}</p>
+<p>{{ phrase("docs.guide.rime-djinn.ui") }}</p>
+<p>{{ phrase("skill.rimeshatter.explanation") }}</p>
+<div class="divider"></div>
+<div class="title">{{ phrase("interface.monster_info.drops") }}</div>
+<p>{{ phrase("docs.guide.rime-djinn.rewards") }}</p>
+<div class="rime-djinn-drops"></div>
+<p><b>Cove Mantle</b> — {{ phrase("item.covemantle.explanation") }}</p>
+<div class="divider"></div>
+<div class="title">CODE</div>
+<p>{{ phrase("docs.guide.rime-djinn.code_combat") }}</p>
+<!-- prettier-ignore -->
+<div class="code" id="rime-djinn-combat-code">async function strike_rime_djinn() {
+    if (character.map !== "winter_cove" || character.rip) return;
+    var target = get_nearest_monster({ type: "rimedjinn" });
+    if (!target || !can_attack(target)) return;
+    var shell = target.s &amp;&amp; target.s.rimeshell;
+    if (shell) show_json({ ms: shell.ms, remaining: shell.remaining });
+    return await attack(target);
+}
+
+strike_rime_djinn().catch(show_json);</div>
+<p>{{ phrase("docs.guide.rime-djinn.code_craft") }}</p>
+<!-- prettier-ignore -->
+<div class="code" id="rime-djinn-craft-code">async function make_djinn_crown() {
+    return await auto_craft("djinncrown");
+}
+
+make_djinn_crown().catch(show_json);</div>
+<p><a href="/docs/code/functions/get_nearest_monster" target="_blank">get_nearest_monster</a> · <a href="/docs/code/functions/can_attack" target="_blank">can_attack</a> · <a href="/docs/code/functions/attack" target="_blank">attack</a> · <a href="/docs/code/functions/auto_craft" target="_blank">auto_craft</a> · <a href="/docs/code/monster/reference" target="_blank">monster</a></p>
+<style>
+	.title { color: #467956; font-size: 36px; margin-top: 15px; }
+	.divider { margin: 15px -26px 0; height: 5px; background-color: #a2a2a2; }
+</style>
+<script>
+	$(".rime-djinn-drops").html(G.drops.monsters.rimedjinn.map(function(drop) { return render_drop(drop, 1, "#858B8E"); }).join(""));
+</script>

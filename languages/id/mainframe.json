@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe memasukkan karakter ini ke antrean.",
+	"mainframe.event.included_worker_queued": "Mainframe memasukkan Worker bawaan ini ke antrean.",
+	"mainframe.event.shared_with": "Dibagikan dengan {character}",
+	"mainframe.event.shared_with_root": "Dibagikan dengan karakter utama",
+	"mainframe.event.explicit_disconnect": "Koneksi diputus oleh pemilik akun.",
+	"mainframe.event.renewed_free": "1 jam Mainframe gratis digunakan untuk {minutes} menit.",
+	"mainframe.event.renewed_shell": "Dikenakan biaya 1 kerang untuk {minutes} menit.",
+	"mainframe.event.renewal_one": "{count} karakter aktif · Perpanjangan berikutnya {date}",
+	"mainframe.event.renewal_many": "{count} karakter aktif · Perpanjangan berikutnya {date}",
+	"mainframe.event.renewal_failed": "Mainframe menghentikan karakter ini karena waktunya habis.",
+	"mainframe.event.worker_failure": "Mainframe mendeteksi kegagalan Worker dan akan mencoba menjalankannya lagi.",
+	"mainframe.event.server_change": "Mainframe sedang menghubungkan kembali karakter ini ke server lain.",
+	"mainframe.level.info": "INFO",
+	"mainframe.level.warn": "PERINGATAN",
+	"mainframe.level.error": "GALAT"
+}

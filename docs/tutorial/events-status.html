@@ -1,4 +1,4 @@
-<p class="tutlead">A realm is never entirely quiet. Watch the signs.</p>
+<p class="tutlead">{{ phrase("docs.tutorial.events-status.a-realm-is-never-entirely-quiet-watch-the") }}</p>
 
 <div class="tutlinks">
 	<div
@@ -9,7 +9,7 @@
 			open_guide('events-and-home', get_guide_url('events-and-home'));
 		"
 	>
-		EVENTS, SCHEDULES &amp; HOME
+		{{ phrase("docs.tutorial.events-status.events-schedules-home") }}
 	</div>
 	<div
 		class="gamebutton gamebutton-small"
@@ -18,27 +18,26 @@
 			open_article('data-server-status', '/docs/code/server/status');
 		"
 	>
-		SERVER STATUS REFERENCE
+		{{ phrase("docs.tutorial.events-status.server-status-reference") }}
 	</div>
 </div>
 
 {% for task in tutorial_data("events-status").tasks %} {% if loop.first %}
 <div class="tutdivider"></div>
 {% endif %}
-<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
+<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">{{ phrase("docs.tutorial.events-status.done") }}</span></div>
 {% endfor %}
 
 <div class="tutpath manual">
-	<div class="tutpath-title">MANUAL</div>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.events-status.manual") }}</div>
 	<p>
-		Event buttons appear when something is active or approaching. Open their <span class="gamebutton gamebutton-small">INFO</span> guide before joining. The Guide's event list keeps daily, nightly,
-		and seasonal knowledge together.
+		{{ phrase_html("docs.tutorial.events-status.event-buttons-appear-when-something-is-active-or") }}
 	</p>
-	<p>Events differ by server. Each character has a home server with stronger cooperative credit and extra rewards. Switching non-merchant characters between servers within 30 minutes causes Realm Fatigue, which pauses those home bonuses while normal rewards continue.</p>
+	<p>{{ phrase("docs.tutorial.events-status.events-differ-by-server-each-character-has-a") }}</p>
 </div>
 
 <div class="tutpath codepath">
-	<div class="tutpath-title">OPTIONAL CODE</div>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.events-status.optional-code") }}</div>
 	<!-- prettier-ignore -->
 	<div class="code">show_json(server.status);
 
@@ -48,11 +47,10 @@ if (franky &amp;&amp; franky.live) {
 	// smart_move(franky); // Travel only when you are ready
 }</div>
 	<p>
-		<span class="dlabel">G.events</span> explains an event. <span class="dlabel">server.status</span> tells you what is happening on this server now. Read it again after waiting; live state changes.
+		{{ phrase_html("docs.tutorial.events-status.g-events-explains-an-event-server-status-tells") }}
 	</p>
 	<p>
-		<span class="rlabel" onclick="render_function_reference($(this).html())">on_game_event</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span> ·
-		<span class="rlabel" onclick="render_function_reference($(this).html())">join</span>
+		{{ phrase_html("docs.tutorial.events-status.on-game-event-smart-move-join") }}
 	</p>
 </div>
 

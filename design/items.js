@@ -3,6 +3,62 @@
 // "a" Announce + High Grade
 // "a" 2 - Announce Within the Map
 var items={
+	"rimeglass":{
+		"type": "material",
+		"skin": "rimeglass",
+		"name": "Rimeglass",
+		"s": 9999,
+		"g": 160,
+		"exclusive": true,
+		"explanation": "Cold to the touch. Warmth will not melt it."
+	},
+	"covemantle":{
+		"type": "cape",
+		"skin": "covemantle",
+		"name": "Cove Mantle",
+		"cave": {
+			"attack": 240,
+			"lifesteal": 24
+		},
+		"scroll": true,
+		"stat": 6,
+		"armor": 12,
+		"resistance": 24,
+		"mp": 160,
+		"mp_reduction": 3,
+		"upgrade": {
+			"stat": 0.1,
+			"armor": 1.5,
+			"resistance": 3,
+			"mp": 25
+		},
+		"grades": [
+			0,
+			7,
+			9,
+			10
+		],
+		"g": 120000,
+		"exclusive": true,
+		"cx": {
+			"accent": "#779DB8"
+		},
+		"explanation": "The dark feeds its wearer. In Cave of Darkness only: +240 attack and +24% lifesteal."
+	},
+	"stillwaterlens":{
+		"type": "orb",
+		"skin": "stillwaterlens",
+		"name": "Stillwater Lens",
+		"int": 9,
+		"mp": 400,
+		"resistance": 60,
+		"g": 240000,
+		"exclusive": true,
+		"cx": {
+			"accent": "#59C7B8"
+		},
+		"explanation": "Something beneath the glass has stopped moving."
+	},
 	"homecomingcape":{
 		"type":"cape",
 		"skin":"homecomingcape",
@@ -31,6 +87,8 @@ var items={
 		"mp":150,
 		"mp_reduction":6,
 		"xp":2,
+		"compound":{"mp":75,"mp_reduction":0.5},
+		"grades":[0,2,6,7],
 		"g":180000,
 		"cx":{"accent":"#DFA34C"},
 	},
@@ -260,6 +318,35 @@ var items={
 }
 
 var armor={
+	"djinncrown":{
+		"type": "helmet",
+		"skin": "djinncrown",
+		"name": "Djinn Crown",
+		"tier": 2.5,
+		"scroll": true,
+		"class": [
+			"mage",
+			"priest"
+		],
+		"mp": 240,
+		"mp_reduction": 4,
+		"upgrade": {
+			"mp": 35
+		},
+		"grades": [
+			0,
+			5,
+			9,
+			10
+		],
+		"g": 160000,
+		"exclusive": true,
+		"cx": {
+			"accent": "#63BCE0"
+		},
+		"explanation": "A cold crown for a restless mind.",
+		"stat": 3
+	},
 	"duskweavehood":{
 		"name": "Duskweave Hood",
 		"type": "helmet",
@@ -2111,6 +2198,48 @@ var armor={
 		"explanation":"The fingers are reinforced. The palms make no sound at all.",
 		"g":420000,
 	},
+	"cave_mothsteps":{
+		"type":"shoes",
+		"tier":2,
+		"skin":"cave_mothsteps",
+		"scroll":true,
+		"resistance":8,
+		"speed":8,
+		"evasion":4,
+		"cave":{"evasion":35,"speed":20},
+		"upgrade":{"speed":0.75,"evasion":0.25},
+		// Keep the original low-grade starting scrolls on this accessible craft.
+		"grades":[4,8,10,12],
+		"g":90000,
+		"cx":{"accent":"#B780AB"},
+		"name":"Mothstep Boots",
+		"explanation":"Cave of Darkness: +35% Evasion and +20 Speed.",
+		"exclusive":true
+	},
+	"cave_ambercoat":{
+		"type": "chest",
+		"tier": 3,
+		"skin": "cave_ambercoat",
+		"scroll": true,
+		"hp": 100,
+		"upgrade": {
+			"hp": 20,
+			"mp": 15,
+			"evasion": 0.15,
+			"luck": 0.25
+		},
+		"name": "Amberweave Coat",
+		"explanation": "Warm amber is woven into its lining.",
+		"g": 480000,
+		"exclusive": true,
+		"cx": {
+			"accent": "#DFB766"
+		},
+		"mp": 120,
+		"evasion": 2,
+		"luck": 3
+	},
+
 }
 for(var name in armor){
 	//import logging; logging.info(name)
@@ -3734,6 +3863,18 @@ var weapons={
 		"grades":[0,7],
 		"cx":{"accent":"#5085B0"},
 	},
+	"waxe":{
+		"type":"weapon",
+		"wtype":"axe",
+		"tier":1,
+		"skin":"waxe",
+		"damage_type":"physical",
+		"upgrade":{},
+		"name":"Wooden Axe",
+		"g":4900,
+		"exclusive":true,
+		"cx":{"accent":"#A1774F"},
+	},
 	"bataxe":{
 		"type":"weapon",
 		"wtype":"axe",
@@ -4350,6 +4491,7 @@ var weapons={
 		"tier":4,
 		"class":["priest"],
 		"skin":"worldrootcrook",
+		"cx":{"accent":"#F47A1F"},
 		"int":6,
 		"str":7,
 		"dex":16,
@@ -4532,6 +4674,93 @@ var weapons={
 		"g":360000,
 		"cx":{"accent":"#426E9C"},
 	},
+	"cave_locktooth":{
+		"type":"weapon",
+		"tier":2,
+		"wtype":"short_sword",
+		"class":["warrior","paladin","merchant"],
+		"skin":"cave_locktooth",
+		"damage_type":"physical",
+		// The hooked blade keeps its six-point reach bonus on the T2 curve.
+		"range":6,
+		"apiercing":40,
+		"upgrade":{"apiercing":6},
+		"grades":[4,8,10,12],
+		"g":48000,
+		"cx":{"accent":"#CBAE69","scale":0.5,"extension":true},
+		"name":"Locktooth",
+		"explanation":"It opens locks. Their owners usually object.",
+		"exclusive":true
+	},
+	"cave_tunnelaxe":{
+		"type": "weapon",
+		"wtype": "axe",
+		"tier": 2,
+		"skin": "cave_tunnelaxe",
+		"damage_type": "physical",
+		"upgrade": {
+			"str": 0.25,
+			"armor": 2,
+			"apiercing": 2
+		},
+		"name": "Tunnel Axe",
+		"explanation": "A stout axe for roots, ribs and stubborn doors.",
+		"g": 48000,
+		"exclusive": true,
+		"cx": {
+			"accent": "#7E9CA2"
+		},
+		"str": 2,
+		"armor": 16,
+		"apiercing": 8,
+		"courage": 1
+	},
+	"cave_reedscythe":{
+		"type": "weapon",
+		"wtype": "scythe",
+		"tier": 1,
+		"skin": "cave_reedscythe",
+		"damage_type": "physical",
+		"upgrade": {
+			"dex": 0.25,
+			"mp": 15
+		},
+		"name": "Reed Scythe",
+		"explanation": "Made to clear a path.",
+		"g": 16000,
+		"exclusive": true,
+		"cx": {
+			"accent": "#8DA8A2"
+		},
+		"dex": 2,
+		"mp": 120,
+		"speed": 3,
+		"evasion": 1
+	},
+	"cave_deepaxe":{
+		"type": "weapon",
+		"wtype": "axe",
+		"tier": 3,
+		"skin": "cave_deepaxe",
+		"damage_type": "physical",
+		"upgrade": {
+			"str": 0.5,
+			"apiercing": 4,
+			"crit": 0.125
+		},
+		"name": "Deepvein Axe",
+		"explanation": "A pale seam runs through the dark blade.",
+		"g": 480000,
+		"exclusive": true,
+		"cx": {
+			"accent": "#D5A653"
+		},
+		"str": 4,
+		"apiercing": 30,
+		"crit": 2,
+		"lifesteal": 1
+	},
+
 }
 
 for(var name in weapons){
@@ -4722,6 +4951,8 @@ var offhands={
 		"xp":2,
 		"resistance":60,
 		"stresistance":8,
+		"compound":{"int":3,"vit":1,"mp":25,"resistance":10},
+		"grades":[0,2,6,7],
 		"g":240000,
 		"cx":{"accent":"#3E8B79"},
 	},
@@ -5599,7 +5830,7 @@ var scrolls={
 		"skin":"strscroll",
 		"stat":"str",
 		"name":"Strength Scroll",
-		"explanation":"Adds Stength to an armor with a Stat attribute.",
+		"explanation":"Adds Strength to an armor with a Stat attribute.",
 		"multiplier":1,
 		"s":true,
 		"g":8000,
@@ -5873,9 +6104,9 @@ var premiums={
 		"cash":459, //149
 		"g":10000000,
 		"name":"New Make-up",
-		"explanation":"Give this to NPC Haila to receive a new make-up. Heads-up! It's random, you may or may-not like it. [Work in progress - Not functional yet.]",
+		"explanation":"Give this to Haila for a random unique head or a set of related head colors and faces.",
 		"s":true,
-		//"e":1,
+		"e":1,
 		"quest":"cx",
 	},
 	"cosmo2":{
@@ -5906,9 +6137,9 @@ var premiums={
 		"cash":1399, //399
 		"g":10000000,
 		"name":"New Accessory",
-		"explanation":"Give this to NPC Haila to receive a unique accessory. Heads-up! It's random, you may or may-not like it. [Work in progress - Not functional yet.]",
+		"explanation":"Give this to Haila for a random accessory: glasses, facial hair, a mask, face markings, a backpack, wings or a tail.",
 		"s":true,
-		//"e":1,
+		"e":1,
 		"quest":"cx",
 	},
 	"cosmo5":{
@@ -5917,7 +6148,7 @@ var premiums={
 		"cash":1299,
 		"g":10000000,
 		"name":"New Misc.",
-		"explanation":"Give this to Haila for a curious new flourish. It may be an emote or a gravestone.",
+		"explanation":"Give this to Haila for an emote, a gravestone or a glowing halo.",
 		"s":true,
 		"e":1,
 		"quest":"cx",
@@ -6411,6 +6642,7 @@ var misc={
 		"g":400000,
 	},
 	"tracker":{
+		"cavalry":{"range":320,"min_level":3,"max_targets":3,"duration":15000,"newcomer_level":80,"newcomer_targets":24,"newcomer_duration":90000,"veteran_range":150,"cooldown_base":600000,"cooldown_per_level":60000},
 		"type":"tracker",
 		"skin":"tracker",
 		"name":"Tracktrix",
@@ -8358,9 +8590,9 @@ var items40={
 		"exclusive":true,
 		"class":["merchant"],
 		"skin":"saffronloop",
-		"vit":8,
-		"gold":4,
-		"compound":{"vit":2,"gold":0.75},
+		"vit":10,
+		"gold":5,
+		"compound":{"vit":2,"gold":1},
 		"name":"Saffron Loop",
 		"explanation":"A lucky loop for merchants who know that gold favors the prepared.",
 		"grades":[1,5,6,7],
@@ -8594,5 +8826,142 @@ for(var name in items){
 		current.g=1;
 	}
 }
+
+// Cave offhands, accessories and rare encounter weapons have explicit progression.
+Object.assign(items, {
+  "cave_counterweight": {
+    "type": "shield",
+    "tier": 2,
+    "class": [
+      "warrior",
+      "paladin",
+      "priest",
+      "merchant"
+    ],
+    "skin": "cave_counterweight",
+    "armor": 90,
+    "resistance": 20,
+    "courage": 2,
+    "speed": -2,
+    "upgrade": {
+      "armor": 15,
+      "resistance": 2,
+      "hp": 10
+    },
+    "grades": [
+      4,
+      8,
+      10,
+      12
+    ],
+    "g": 60000,
+    "cx": {
+      "accent": "#8B809F"
+    },
+    "name": "Counterweight",
+    "explanation": "A heavy stone shield with thick leather straps.",
+    "exclusive": true,
+    "hp": 120
+  },
+  "cave_loaded_die": {
+    "type": "orb",
+    "skin": "cave_loaded_die",
+    "crit": 8,
+    "critdamage": 10,
+    "grade": 1,
+    "g": 72000,
+    "cx": {
+      "accent": "#E5BC83"
+    },
+    "name": "Loaded Die",
+    "explanation": "Someone put a little extra weight under the six.",
+    "exclusive": true
+  },
+  "cave_amber": {
+    "type": "material",
+    "skin": "cave_amber",
+    "name": "Cave Amber",
+    "s": 9999,
+    "g": 200,
+    "explanation": "Warm stone from the lower caves.",
+    "exclusive": true
+  },
+  "cave_blackstaff": {
+    "type": "weapon",
+    "wtype": "staff",
+    "class": [
+      "mage",
+      "priest"
+    ],
+    "tier": 4,
+    "skin": "cave_blackstaff",
+    "name": "Nightjudge",
+    "damage_type": "magical",
+    "projectile": "magic",
+    "attack": 48,
+    "range": 60,
+    "rpiercing": 80,
+    "reflection": 8,
+    "frequency": -8,
+    "upgrade": {
+      "attack": 6.5,
+      "range": 4,
+      "rpiercing": 12,
+      "reflection": 0.5
+    },
+    "grades": [
+      0,
+      0,
+      8,
+      10
+    ],
+    "g": 1200000,
+    "exclusive": true,
+    "a": true,
+    "cx": {
+      "accent": "#8768B5",
+      "scale": 0.5,
+      "extension": true
+    },
+    "explanation": "The last spell it cast came back."
+  },
+  "cave_backstabber": {
+    "type": "weapon",
+    "wtype": "dagger",
+    "class": [
+      "rogue"
+    ],
+    "tier": 4,
+    "skin": "cave_backstabber",
+    "name": "Last Word",
+    "damage_type": "physical",
+    "attack": 28,
+    "range": 10,
+    "apiercing": 80,
+    "crit": 5,
+    "speed": -4,
+    "upgrade": {
+      "attack": 6,
+      "range": 2,
+      "apiercing": 10,
+      "crit": 0.25
+    },
+    "grades": [
+      0,
+      0,
+      8,
+      10
+    ],
+    "g": 980000,
+    "exclusive": true,
+    "a": true,
+    "cx": {
+      "accent": "#BD526C",
+      "scale": 0.5,
+      "extension": true
+    },
+    "explanation": "Its owner never waited for an answer."
+  }
+});
 
 if(typeof module!=="undefined") module.exports={items:items,sets:sets};

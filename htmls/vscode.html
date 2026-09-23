@@ -1,12 +1,13 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{domain.language or 'en'}}">
 	<head>
+		{% include "htmls/language.html" %}
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>{{ domain.title }}</title>
 		<meta
 			name="description"
-			content="Use the Adventure Land VS Code extension to sync CODE slots through the Adventure Land API, including full download and upload on save."
+			content="{{ phrase("pages.vscode.label-use-the-adventure-land-vs-code-extension-to") }}"
 		/>
 		<link rel="icon" href="/images/favicon.png" />
 		<link href="/css/common.css?v={{ domain.v }}" rel="stylesheet" />
@@ -34,7 +35,7 @@
 				margin: 0;
 				background: var(--bg);
 				color: var(--text);
-				font-family: pixel, monospace;
+				font-family: var(--pixel-font, pixel), monospace;
 				font-size: 18px;
 				line-height: 1.45;
 			}
@@ -75,7 +76,7 @@
 			}
 			code,
 			pre {
-				font-family: pixel, monospace;
+				font-family: var(--pixel-font, pixel), monospace;
 			}
 			.top,
 			.actions,
@@ -257,97 +258,94 @@
 		<main>
 			<header class="top">
 				<div>
-					<h1>Adventure Land for VS Code</h1>
-					<p class="muted">Sync every CODE slot into a local folder, edit in VS Code, and upload when you save.</p>
+					<h1>{{ phrase("pages.vscode.adventure-land-for-vs-code") }}</h1>
+					<p class="muted">{{ phrase("pages.vscode.sync-every-code-slot-into-a-local-folder") }}</p>
 				</div>
-				<nav class="nav" aria-label="Main navigation"><a href="/">Game</a><a href="/mainframe">Mainframe</a><a href="/docs/guide/advanced/adventure-api">API</a></nav>
+				<nav class="nav" aria-label="{{ phrase("pages.vscode.label-main-navigation") }}">{{ phrase_html("pages.vscode.game-mainframe-api") }}</nav>
 			</header>
 
 			<section class="grid">
 				<div>
 					<section class="panel highlight">
-						<h2>Install the extension</h2>
-						<p>Use <span class="shell">{{ extension.id }}</span> in VS Code or Cursor. It replaces the old client folder sync with API-based autosync, so it works from Steam, browser, and normal desktop editors.</p>
+						<h2>{{ phrase("pages.vscode.install-the-extension") }}</h2>
+						<p>{{ phrase_html("pages.vscode.use-in-vs-code-or-cursor-it-replaces", {"id": extension.id}) }}</p>
 						<div class="install-actions" style="margin-top: 14px">
 							{% if extension.marketplace_available %}
-								<a class="button primary" href="{{ extension.vscode_url }}">Open in VS Code</a>
-								<a class="button" href="{{ extension.marketplace_url }}" target="_blank" rel="noopener">Marketplace page</a>
+								<a class="button primary" href="{{ extension.vscode_url }}">{{ phrase("pages.vscode.open-in-vs-code") }}</a>
+								<a class="button" href="{{ extension.marketplace_url }}" target="_blank" rel="noopener">{{ phrase("pages.vscode.marketplace-page") }}</a>
 							{% endif %}
 							{% if extension.download_available %}
-								<a class="button primary" href="{{ extension.download_url }}">Download VSIX {{ extension.version }}</a>
+								<a class="button primary" href="{{ extension.download_url }}">{{ phrase("pages.vscode.download-vsix", {"version": extension.version}) }}</a>
 							{% endif %}
 						</div>
 						{% if extension.download_available %}
-							<p class="muted">Manual install: download the VSIX, open Command Palette with Ctrl+Shift+P or Cmd+Shift+P, run <span class="shell">Extensions: Install from VSIX...</span>, then choose the downloaded file. Use this in Cursor too.</p>
+							<p class="muted">{{ phrase_html("pages.vscode.manual-install-download-the-vsix-open-command-palette") }}</p>
 						{% elif extension.marketplace_available %}
-							<p class="muted">Install from the Marketplace, then return here to create your token.</p>
+							<p class="muted">{{ phrase("pages.vscode.install-from-the-marketplace-then-return-here-to") }}</p>
 						{% else %}
-							<p class="muted">The Marketplace page is not live yet. The direct VSIX download will appear here when the package is available on this server.</p>
+							<p class="muted">{{ phrase("pages.vscode.the-marketplace-page-is-not-live-yet-the") }}</p>
 						{% endif %}
-						<img class="code-shot" src="/images/screenshots/code_characters.png" alt="Adventure Land CODE slots" />
+						<img class="code-shot" src="/images/screenshots/code_characters.png" alt="{{ phrase("pages.vscode.label-adventure-land-code-slots") }}" />
 					</section>
 
-					<section class="steps" aria-label="VS Code setup steps">
+					<section class="steps" aria-label="{{ phrase("pages.vscode.label-vs-code-setup-steps") }}">
 						<div class="step">
-							<strong>1. Create a token</strong>
-							<p>Sign in here, create a token below, and copy it while it is visible. The token starts with <span class="shell">mcp_</span>.</p>
+							<strong>{{ phrase("pages.vscode.1-create-a-token") }}</strong>
+							<p>{{ phrase_html("pages.vscode.sign-in-here-create-a-token-below-and") }}</p>
 						</div>
 						<div class="step">
-							<strong>2. Paste it in VS Code</strong>
-							<p>Open Command Palette and run <span class="shell">Adventure Land: Set API Token</span>. Paste the token there. This works in Cursor too.</p>
+							<strong>{{ phrase("pages.vscode.2-paste-it-in-vs-code") }}</strong>
+							<p>{{ phrase_html("pages.vscode.open-command-palette-and-run-adventure-land-set") }}</p>
 						</div>
 						<div class="step">
-							<strong>3. Activate a folder</strong>
-							<p>Run <span class="shell">Adventure Land: Activate Auto Sync Folder</span>. Choose any local folder you want VS Code to manage.</p>
+							<strong>{{ phrase("pages.vscode.3-activate-a-folder") }}</strong>
+							<p>{{ phrase_html("pages.vscode.run-adventure-land-activate-auto-sync-folder-choose") }}</p>
 						</div>
 						<div class="step">
-							<strong>4. Edit and save</strong>
-							<p>The extension downloads every CODE slot. Saving a managed file uploads it back to Adventure Land.</p>
+							<strong>{{ phrase("pages.vscode.4-edit-and-save") }}</strong>
+							<p>{{ phrase("pages.vscode.the-extension-downloads-every-code-slot-saving-a") }}</p>
 						</div>
 					</section>
 
 					<section class="panel old-flow">
-						<h2>Same idea as /codes</h2>
-						<p>The extension creates an <span class="shell">adventureland</span> folder with <span class="shell">codes</span>, <span class="shell">characters</span>, <span class="shell">libraries</span>, and <span class="shell">clash</span> inside it. It also keeps <span class="shell">history</span> beside that folder.</p>
-						<p>On activation it downloads every CODE slot. After that it checks for remote changes, uploads offline edits when safe, and uploads managed files when you save them.</p>
-						<p>Saving from VS Code does not spend Shells and does not start Mainframe by itself.</p>
+						<h2>{{ phrase("pages.vscode.same-idea-as-codes") }}</h2>
+						<p>{{ phrase_html("pages.vscode.the-extension-creates-an-adventureland-folder-with-codes") }}</p>
+						<p>{{ phrase("pages.vscode.on-activation-it-downloads-every-code-slot-after") }}</p>
+						<p>{{ phrase("pages.vscode.saving-from-vs-code-does-not-spend-shells") }}</p>
 					</section>
 				</div>
 
 				<aside>
 					<section class="panel token">
-						<h2>Your token</h2>
+						<h2>{{ phrase("pages.vscode.your-token") }}</h2>
 						{% if not user %}
-							<p>Sign in to Adventure Land first. Then return here and create a token for VS Code.</p>
-							<div class="actions" style="margin-top: 14px"><a class="button primary" href="/">Sign in</a></div>
+							<p>{{ phrase("pages.vscode.sign-in-to-adventure-land-first-then-return") }}</p>
+							<div class="actions" style="margin-top: 14px">{{ phrase_html("pages.vscode.sign-in") }}</div>
 						{% else %}
-							<p class="muted">One token is active per account. Creating a new one rotates the old token immediately.</p>
-							<div class="status-line"><strong id="vscode-token-status">Checking token</strong><span id="vscode-token-detail"></span></div>
+							<p class="muted">{{ phrase("pages.vscode.one-token-is-active-per-account-creating-a") }}</p>
+							<div class="status-line">{{ phrase_html("pages.vscode.checking-token") }}</div>
 							<div class="token-actions" style="margin-top: 14px">
-								<button id="vscode-create-token" class="primary" type="button" disabled>Create and show token</button>
-								<button id="vscode-copy-token" type="button" style="display: none">Copy token</button>
-								<button id="vscode-show-token" type="button" style="display: none">Show token</button>
-								<button id="vscode-revoke-token" class="warning" type="button" disabled>Revoke token</button>
+								{{ phrase_html("pages.vscode.create-and-show-token-copy-token-show-token") }}
 							</div>
 							<p id="vscode-token-help" class="token-help"></p>
 							<pre id="vscode-token-secret" class="token-secret" aria-live="polite"></pre>
 							<div id="vscode-token-error" class="error"></div>
-							<p class="muted">Adventure Land keeps one active token for your account. Use Show token whenever you need to paste it into VS Code.</p>
+							<p class="muted">{{ phrase("pages.vscode.adventure-land-keeps-one-active-token-for-your") }}</p>
 						{% endif %}
 					</section>
 
 					<section class="panel">
-						<h2>Commands in VS Code</h2>
-						<div class="copy-row"><span class="muted">Set token</span><code>Adventure Land: Set API Token</code></div>
-						<div class="copy-row"><span class="muted">Start sync</span><code>Adventure Land: Activate Auto Sync Folder</code></div>
-						<div class="copy-row"><span class="muted">Pull/push now</span><code>Adventure Land: Sync CODE Folder Now</code></div>
-						<div class="copy-row"><span class="muted">Open folder</span><code>Adventure Land: Open Auto Sync Folder</code></div>
-						<div class="copy-row"><span class="muted">Stop sync</span><code>Adventure Land: Stop Auto Sync Folder</code></div>
+						<h2>{{ phrase("pages.vscode.commands-in-vs-code") }}</h2>
+						<div class="copy-row"><span class="muted">{{ phrase("pages.vscode.set-token") }}</span><code>Adventure Land: Set API Token</code></div>
+						<div class="copy-row"><span class="muted">{{ phrase("pages.vscode.start-sync") }}</span><code>Adventure Land: Activate Auto Sync Folder</code></div>
+						<div class="copy-row"><span class="muted">{{ phrase("pages.vscode.pull-push-now") }}</span><code>Adventure Land: Sync CODE Folder Now</code></div>
+						<div class="copy-row"><span class="muted">{{ phrase("pages.vscode.open-folder") }}</span><code>Adventure Land: Open Auto Sync Folder</code></div>
+						<div class="copy-row"><span class="muted">{{ phrase("pages.vscode.stop-sync") }}</span><code>Adventure Land: Stop Auto Sync Folder</code></div>
 					</section>
 
 					<section class="note">
-						<h3>File names</h3>
-						<p>Managed CODE files use <span class="shell">name.slot.js</span>. Examples: <span class="shell">farm.1.js</span>, <span class="shell">merchant.12.js</span>, <span class="shell">pvp.Warrior.js</span>. The slot before <span class="shell">.js</span> decides where the file uploads. Files in <span class="shell">libraries</span> are read-only helpers from the game.</p>
+						<h3>{{ phrase("pages.vscode.file-names") }}</h3>
+						<p>{{ phrase_html("pages.vscode.managed-code-files-use-name-slot-js-examples") }}</p>
 					</section>
 				</aside>
 			</section>

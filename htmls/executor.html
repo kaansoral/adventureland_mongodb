@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{domain.language or 'en'}}">
 	<head>
+		<script>var phrase=parent.phrase; document.documentElement.lang=phrase.language;</script>
 		<script src="/js/jquery/jquery-{{domain.jquery_version}}.min.js"{%if domain.electron%} onload="if(typeof require!=='undefined') window.$=window.jQuery=module.exports;"{%endif%}></script>
 		{% if domain.electron%}<script>require=parent.require;</script>{% endif %}
 		<script src="/js/common_functions.js?v={{domain.v}}"></script>
@@ -11,7 +12,7 @@
 			html,body{
 				background: black;
 				color: white;
-				font-family: Pixel;
+				font-family: var(--pixel-font, pixel);
 				font-size: 24px;
 				overflow: hidden;
 				margin: 0px;
@@ -28,24 +29,24 @@
 		</style>
 	</head>
 	<body>
-		<div id="gg" style="text-align: center; color: #FD9610; height: 24px; line-height: 24px; padding-left: 4px; padding-right: 4px;">Initiating</div>
+		<div id="gg" style="text-align: center; color: #FD9610; height: 24px; line-height: 24px; padding-left: 4px; padding-right: 4px;">{{ phrase("pages.executor.initiating") }}</div>
 		<script>
 			var active=false,catch_errors=true,Place="code",Dev=parent.Dev,Staging=parent.Staging,Prod=parent.Prod,Local=parent.Local;
 			document.addEventListener("DOMContentLoaded",function(event){
 				active=true;
-				set_message("Executing ...","#FD9610");
+				set_message(phrase("page.code.executing"),"#FD9610");
 				eval(parent.the_example);
 				if(parent.the_example.indexOf("set_message")==-1)
-					set_message("Test Executed!","#4FA91D");
+					set_message(phrase("page.code.executed"),"#4FA91D");
 				if(character.rip) handle_death();
 			});
 			window.onerror = function(msg, url, line, col, error) { //http://stackoverflow.com/a/10556743/914546
 				if(!catch_errors) return false;
-				var extra = !col ? '' : ' Column: ' + col,output="";
+				var location_text = col ? phrase("page.code.error_location", {line:line,column:col}) : phrase("page.code.error_line", {line:line}),output="";
 				//extra += !error ? '' : '\nerror: ' + error;
-				output+="Execute! Error Caught\n";
+				output+=phrase("page.code.example_error")+"\n";
 				output+=msg+"\n";
-				output+="Line: " + line + extra;
+				output+=location_text;
 				alert(output);
 				return false;
 			};

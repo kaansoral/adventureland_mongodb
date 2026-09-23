@@ -1,26 +1,26 @@
-<div class="guide-kicker">NOT EVERYTHING IS A SHOP</div>
-<div class="guide-title">Strange Interactions</div>
-<p>Terminals, levers, trees, statues, and jailers follow their own local rules. Approach until their interface appears, then read the exact action before using it.</p>
+<div class="guide-kicker">{{ phrase("docs.guide.special-interactions.not-everything-is-a-shop") }}</div>
+<div class="guide-title">{{ phrase("docs.guide.special-interactions.strange-interactions") }}</div>
+<p>{{ phrase("docs.guide.special-interactions.terminals-levers-trees-statues-and-jailers-follow-their") }}</p>
 
 <div class="guide-card-grid">
-	<div class="guide-card"><span class="guide-card-icon special-tree"></span><b>New Year Tree</b>When awake, it can grant holiday spirit and perhaps a token. Keep inventory space free.</div>
-	<div class="guide-card"><span class="guide-card-icon special-computer"></span><b>Mainframe</b>Cyberland's visible terminal accepts its own contained command set.</div>
-	<div class="guide-card"><span class="guide-card-icon special-lever">⇊</span><b>Resort Lever</b>Works only beside the lever in its proper room and moves you through that interaction.</div>
-	<div class="guide-card"><span class="guide-card-icon special-jail"></span><b>Jailord</b>The LEAVE action exits the jail when its normal server checks allow it.</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.special-interactions.new-year-tree-when-awake-it-can-grant") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.special-interactions.mainframe-cyberland-s-visible-terminal-accepts-its-own") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.special-interactions.resort-lever-works-only-beside-the-lever-in") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.special-interactions.jailord-the-leave-action-exits-the-jail-when") }}</div>
 </div>
 
 <div class="divider"></div>
-<div class="title mt15">The Invisible Statue</div>
+<div class="title mt15">{{ phrase("docs.guide.special-interactions.the-invisible-statue") }}</div>
 <div class="guide-flow" style="border-color:#725F86" data-guide-visual="invisible-statue">
-	<div class="guide-flow-node"><span class="guide-flow-icon special-item"></span><span class="guide-flow-label">Selected Eligible Item</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.special-interactions.selected-eligible-item") }}</div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon special-poof">POOF</span><span class="guide-flow-label">Item Destroyed</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.special-interactions.poof-item-destroyed") }}</div>
 </div>
-<p>The statue in Spooky Town accepts an inventory item and offers <b>POOF</b>. This permanently destroys the selected item, though the statue has strange exceptions. Locked items are refused.</p>
-<div class="guide-note">A visible character, guard, lottery host, wheel, or machine may currently offer only dialogue. If no action appears, there is no hidden service to click.</div>
+<p>{{ phrase_html("docs.guide.special-interactions.the-statue-in-spooky-town-accepts-an-inventory") }}</p>
+<div class="guide-note">{{ phrase("docs.guide.special-interactions.a-visible-character-guard-lottery-host-wheel-or") }}</div>
 
 <div class="divider"></div>
-<div class="title mt15">CODE: Local Interactions</div>
+<div class="title mt15">{{ phrase("docs.guide.special-interactions.code-local-interactions") }}</div>
 <div class="code">async function use_special_place(name) {
 	if (name !== "newyear_tree" &amp;&amp; name !== "the_lever") {
 		return game_log("Unsupported interaction name");
@@ -41,7 +41,7 @@ async function leave_jail() {
 	if (character.map === "jail") await leave();
 }</div>
 
-<div class="title mt15">CODE: Destructive Actions</div>
+<div class="title mt15">{{ phrase("docs.guide.special-interactions.code-destructive-actions") }}</div>
 <div class="code">function inspect_before_poof(slot, expected_name) {
 	var item = character.items[slot];
 	if (!item || item.name !== expected_name || item.l) return false;
@@ -51,9 +51,9 @@ async function leave_jail() {
 
 // Stand beside the statue, inspect the output, then deliberately call:
 // if (inspect_before_poof(0, "coat")) await destroy(0);</div>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">interact</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">mainframe_command</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">leave</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">destroy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>.</p>
+<p>{{ phrase_html("docs.guide.special-interactions.references-interact-mainframe-command-leave-destroy-locate-item") }}</p>
 
-<div class="guide-related">Ordinary services are covered by <span onclick="hide_modal(); open_guide('shops-and-selling',get_guide_url('shops-and-selling'))">Shops and Selling</span> and <span onclick="hide_modal(); open_guide('travel-and-instances',get_guide_url('travel-and-instances'))">Travel and Instances</span>.</div>
+<div class="guide-related">{{ phrase_html("docs.guide.special-interactions.ordinary-services-are-covered-by-shops-and-selling") }}</div>
 
 <script>
 	$(".special-tree").html(sprite(G.npcs.newyear_tree.skin, { height: 64, overflow: true }));

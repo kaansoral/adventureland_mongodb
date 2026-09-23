@@ -1,0 +1,67 @@
+<p>{{ phrase_html("docs.tutorial.js-functions.idea") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.task") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-functions.task") }}</p>
+
+<p>{{ phrase("docs.tutorial.javascript.practice") }}</p>
+
+<div class="tutorial-code" data-lesson="functions">
+	<!-- prettier-ignore -->
+	<div class="code executeb">function statusFor(hero) {
+  return "Ready";
+}
+
+game_log(character.name + ": " + statusFor(character));</div>
+
+	<div class="tutorial-code-result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.hint") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-functions.hint") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.solution") }}</div>
+
+<!-- prettier-ignore -->
+<div class="code readonly">function statusFor(hero) {
+  if (hero.hp &lt; hero.max_hp / 2) {
+    return "Heal";
+  }
+  return "Ready";
+}
+
+game_log(character.name + ": " + statusFor(character));</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.variation") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-functions.variation") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.transfer") }}</div>
+
+<p>{{ phrase("docs.tutorial.javascript.copy") }}</p>
+
+<p>{{ phrase_html("docs.tutorial.js-functions.transfer") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.js-functions.reading_title") }}</div>
+
+{{ phrase_html("docs.tutorial.js-functions.reading_before") }}
+
+<!-- prettier-ignore -->
+<div class="code readonly">function missingHp(hero) {
+  return hero.max_hp - hero.hp;
+}
+
+const missing = missingHp(character);
+game_log(missing);</div>
+
+{{ phrase_html("docs.tutorial.js-functions.reading_after") }}
+
+<p>
+	<span class="rlabel clickable" onclick="open_article('data-character', '/docs/code/character/reference')">character</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('game_log')">game_log</span>
+</p>

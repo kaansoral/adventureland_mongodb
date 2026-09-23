@@ -1,10 +1,10 @@
-<div class="guide-kicker">MAKING AND UNMAKING</div>
-<div class="guide-title">Crafting &amp; Dismantling</div>
-<p>Crafting follows a recipe: bring its exact items, levels, quantities, and gold to the named craftsman. Dismantling is a separate recipe and returns only the materials shown in its own preview.</p>
+<div class="guide-kicker">{{ phrase("docs.guide.crafting.making-and-unmaking") }}</div>
+<div class="guide-title">{{ phrase("docs.guide.crafting.crafting-dismantling") }}</div>
+<p>{{ phrase("docs.guide.crafting.crafting-follows-a-recipe-bring-its-exact-items") }}</p>
 
 <div class="guide-showcase" style="border-color:#4D9C82">
 	<div class="guide-showcase-art"><span class="craft-leo"></span><span class="craft-fireblade"></span></div>
-	<div class="guide-showcase-copy"><b>Leo handles ordinary recipes</b>Choose the result first. His panel shows every ingredient, required item level, gold cost, and the nine-slot crafting grid.</div>
+	<div class="guide-showcase-copy">{{ phrase_html("docs.guide.crafting.leo-handles-ordinary-recipes-choose-the-result-first") }}</div>
 </div>
 
 <div class="guide-flow" style="border-color:#4D9C82" data-guide-visual="craft-fireblade">
@@ -12,32 +12,39 @@
 	<div class="guide-flow-arrow">+</div>
 	<div class="guide-flow-node"><span class="guide-flow-icon craft-fire"></span><span class="guide-flow-label">Essence of Fire</span></div>
 	<div class="guide-flow-arrow">→</div>
-	<div class="guide-flow-node"><span class="guide-flow-icon craft-fireblade"></span><span class="guide-flow-label">Fire Blade</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.crafting.fire-blade") }}</div>
 </div>
 
 <div class="divider"></div>
-<div class="title mt15">Craft One Recipe</div>
+<div class="title mt15">{{ phrase("docs.guide.crafting.craft-one-recipe") }}</div>
 <div class="guide-card-grid">
-	<div class="guide-card"><b>1. Inspect the result</b>Select the item you want to make. A level printed beside an ingredient is required; a different level does not count.</div>
-	<div class="guide-card"><b>2. Gather exact stacks</b>Quantities may come from one stack in the automatic routine. Combine split stacks before using <span class="dlabel">auto_craft()</span>.</div>
-	<div class="guide-card"><b>3. Visit the right specialist</b>Leo handles ordinary work. Some recipes name another NPC, and both the panel and CODE require that specialist nearby.</div>
-	<div class="guide-card"><b>4. Leave one space</b>The ingredients and gold are consumed only when crafting succeeds. Keep room for the finished item.</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.crafting.1-inspect-the-result-select-the-item-you") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.crafting.2-gather-exact-stacks-quantities-may-come-from") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.crafting.3-visit-the-right-specialist-leo-handles-ordinary") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.crafting.4-leave-one-space-the-ingredients-and-gold") }}</div>
 </div>
 
 <div class="divider"></div>
-<div class="title mt15">Dismantling Is Not Undo</div>
-<p>Open Leo's dismantling service and inspect the result before committing the item. Some returns are fractional chances, and an ingredient used to craft an item is not automatically returned.</p>
+<div class="title mt15">{{ phrase("docs.guide.crafting.dismantling-is-not-undo") }}</div>
+<p>{{ phrase("docs.guide.crafting.open-leo-s-dismantling-service-and-inspect-the") }}</p>
 <div class="guide-flow" style="border-color:#B8774F" data-guide-visual="dismantle-fireblade">
-	<div class="guide-flow-node"><span class="guide-flow-icon craft-fireblade"></span><span class="guide-flow-label">Fire Blade</span></div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.crafting.fire-blade") }}</div>
 	<div class="guide-flow-arrow">→</div>
 	<div class="guide-flow-node"><span class="guide-flow-icon craft-fire"></span><span class="guide-flow-label">Essence of Fire</span></div>
 </div>
-<p>For this example, the dismantle recipe returns the fire essence—not the original blade. Leo can also split many leveled compound accessories into three lower-level copies; his panel shows the current cost and requirements.</p>
-<div class="guide-note">Craft and dismantle both consume inputs. Locked items are refused. Read the visible result, cost, and free-space warning immediately before confirming.</div>
+<p>{{ phrase("docs.guide.crafting.for-this-example-the-dismantle-recipe-returns-the") }}</p>
+<div class="guide-note">{{ phrase("docs.guide.crafting.craft-and-dismantle-both-consume-inputs-locked-items") }}</div>
+
+<div class="divider"></div>
+<div class="title mt15">Ghastly Battle Axe</div>
+<p>{{ phrase("docs.guide.crafting.bataxe_recipe") }}</p>
+<p><span class="craft-bataxe"></span></p>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
-<p><span class="rlabel" onclick="render_function_reference($(this).html())">auto_craft</span> finds the required inventory stacks. <span class="rlabel" onclick="render_function_reference($(this).html())">craft</span> is useful when you need to choose the exact inventory positions yourself.</p>
+<p>{{ phrase_html("docs.guide.crafting.bataxe_code") }}</p>
+<div class="code" id="craft-bataxe-code">auto_craft("bataxe").then(show_json).catch(show_json);</div>
+<p>{{ phrase_html("docs.guide.crafting.auto-craft-finds-the-required-inventory-stacks-craft") }}</p>
 <div class="code">async function make_fireblade() {
 	var blade = locate_item("blade");
 	var essence = locate_item("essenceoffire");
@@ -57,7 +64,7 @@
 make_fireblade().catch(function (error) {
 	game_log(error.reason || error.message || "Crafting could not start");
 });</div>
-<p>Recipes are available in <span class="dlabel">G.craft</span>. This logs the live recipe without risking an item:</p>
+<p>{{ phrase_html("docs.guide.crafting.recipes-are-available-in-g-craft-this-logs") }}</p>
 <div class="code">show_json(G.craft.fireblade);
 
 async function dismantle_fireblade() {
@@ -67,15 +74,16 @@ async function dismantle_fireblade() {
 	// Remove the comment only after inspecting the recipe above.
 	// show_json(await dismantle(slot));
 }</div>
-<p>References: <span class="rlabel" onclick="render_function_reference($(this).html())">craft</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">auto_craft</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">dismantle</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">locate_item</span>.</p>
+<p>{{ phrase_html("docs.guide.crafting.references-craft-auto-craft-dismantle-locate-item") }}</p>
 
-<div class="guide-related">See also: <span onclick="hide_modal(); open_guide('exchanges-and-quests',get_guide_url('exchanges-and-quests'))">Exchanges and Quests</span> · <span onclick="hide_modal(); open_guide('item-maintenance',get_guide_url('item-maintenance'))">Item Maintenance</span></div>
+<div class="guide-related">{{ phrase_html("docs.guide.crafting.see-also-exchanges-and-quests-item-maintenance") }}</div>
 
 <script>
 	$(".craft-leo").html(sprite(G.npcs.craftsman.skin, { height: 66 }));
 	$(".craft-blade").html(item_container({ skin: G.items.blade.skin }, { name: "blade" }));
 	$(".craft-fire").html(item_container({ skin: G.items.essenceoffire.skin }, { name: "essenceoffire" }));
 	$(".craft-fireblade").html(item_container({ skin: G.items.fireblade.skin }, { name: "fireblade" }));
+	$(".craft-bataxe").html(item_container({ skin: G.items.bataxe.skin }, { name: "bataxe" }));
 </script>
 
 <style>

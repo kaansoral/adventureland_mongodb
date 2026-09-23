@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe satte denne figur i kø.",
+	"mainframe.event.included_worker_queued": "Mainframe satte denne inkluderede Worker i kø.",
+	"mainframe.event.shared_with": "Delt med {character}",
+	"mainframe.event.shared_with_root": "Delt med hovedfiguren",
+	"mainframe.event.explicit_disconnect": "Forbindelsen blev afbrudt af kontoejeren.",
+	"mainframe.event.renewed_free": "1 gratis Mainframe-time brugt til {minutes} min.",
+	"mainframe.event.renewed_shell": "1 skal trukket for {minutes} min.",
+	"mainframe.event.renewal_one": "{count} figur aktiv · Næste fornyelse {date}",
+	"mainframe.event.renewal_many": "{count} figurer aktive · Næste fornyelse {date}",
+	"mainframe.event.renewal_failed": "Mainframe stoppede denne figur, fordi der ikke var mere tid tilbage.",
+	"mainframe.event.worker_failure": "Mainframe registrerede en fejl i en Worker og forsøger igen.",
+	"mainframe.event.server_change": "Mainframe forbinder denne figur igen på en anden server.",
+	"mainframe.level.info": "INFO",
+	"mainframe.level.warn": "ADVARSEL",
+	"mainframe.level.error": "FEJL"
+}

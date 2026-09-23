@@ -1,6 +1,7 @@
-<p class="tutlead">CODE is a companion, not a gate.</p>
+<p class="tutlead">{{ phrase("docs.tutorial.hellocode.code-is-a-companion-not-a-gate") }}</p>
+<div><span class="tutorial-travel" data-type="monster" data-target="goo"></span></div>
 
-<p>Everything you have done so far can stay manual. CODE becomes useful when you want your character to watch, repeat, coordinate, or react while your attention is elsewhere.</p>
+<p>{{ phrase("docs.tutorial.hellocode.everything-you-have-done-so-far-can-stay") }}</p>
 
 <div class="tutlinks">
 	<div
@@ -10,7 +11,7 @@
 			open_article('code-api', '/docs/code/learn/code-api');
 		"
 	>
-		CODE API &amp; PROMISES
+		{{ phrase("docs.tutorial.hellocode.code-api-promises") }}
 	</div>
 	<div
 		class="gamebutton gamebutton-small"
@@ -19,22 +20,22 @@
 			render_code_docs();
 		"
 	>
-		FUNCTION REFERENCE
+		{{ phrase("docs.tutorial.hellocode.function-reference") }}
 	</div>
 </div>
 
 <div class="tutpath manual">
-	<div class="tutpath-title">MANUAL</div>
-	<p>Keep playing exactly as you are. Leave CODE disengaged until you want it. No adventure should demand JavaScript at the door.</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.hellocode.manual") }}</div>
+	<p>{{ phrase("docs.tutorial.hellocode.keep-playing-exactly-as-you-are-leave-code") }}</p>
 </div>
 
 <div class="tutpath codepath">
-	<div class="tutpath-title">OPTIONAL CODE</div>
-	<p>Open <span class="gamebutton gamebutton-small">CODE</span>. The default script uses potions and loots chests. Change its first line to:</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.hellocode.optional-code") }}</div>
+	<p>{{ phrase_html("docs.tutorial.hellocode.open-code-the-default-script-uses-potions-and") }}</p>
 	<!-- prettier-ignore -->
 	<div class="code">var attack_mode = true;</div>
-	<p>Press <span class="gamebutton gamebutton-small">Engage!</span>. The rest of the default script finds suitable monsters, moves into range, and attacks. Disengage before making a large change.</p>
-	<p>Most actions return a Promise. Handle success and failure when an action matters:</p>
+	<p>{{ phrase_html("docs.tutorial.hellocode.press-engage-the-rest-of-the-default-script") }}</p>
+	<p>{{ phrase("docs.tutorial.hellocode.most-actions-return-a-promise-handle-success-and") }}</p>
 	<!-- prettier-ignore -->
 	<div class="code">smart_move("goo").then(function () {
 	game_log("Arrived.");
@@ -44,7 +45,7 @@
 </div>
 
 <p class="tuttip">
-	<span class="hlabel">Safety:</span> Use public functions from the CODE Docs. Do not copy code you do not understand, especially code that sells, sends, destroys, upgrades, or trades items.
+	{{ phrase_html("docs.tutorial.hellocode.safety-use-public-functions-from-the-code-docs") }}
 </p>
 
 <style>
@@ -81,3 +82,4 @@
 		text-align: center;
 	}
 </style>
+<script>render_tutorial_items();</script>

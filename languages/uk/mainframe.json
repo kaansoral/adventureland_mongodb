@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe додав цього персонажа до черги.",
+	"mainframe.event.included_worker_queued": "Mainframe додав цього включеного Worker до черги.",
+	"mainframe.event.shared_with": "Спільне використання з {character}",
+	"mainframe.event.shared_with_root": "Спільне використання з головним персонажем",
+	"mainframe.event.explicit_disconnect": "Власник облікового запису відключив персонажа.",
+	"mainframe.event.renewed_free": "Використано 1 безкоштовну годину Mainframe на {minutes} хв.",
+	"mainframe.event.renewed_shell": "Списано 1 мушлю за {minutes} хв.",
+	"mainframe.event.renewal_one": "Активних персонажів: {count} · Наступне поновлення: {date}",
+	"mainframe.event.renewal_many": "Активних персонажів: {count} · Наступне поновлення: {date}",
+	"mainframe.event.renewal_failed": "Mainframe зупинив цього персонажа, бо час вичерпано.",
+	"mainframe.event.worker_failure": "Mainframe виявив збій Worker і спробує запустити його знову.",
+	"mainframe.event.server_change": "Mainframe перепідключає цього персонажа до іншого сервера.",
+	"mainframe.level.info": "ІНФО",
+	"mainframe.level.warn": "УВАГА",
+	"mainframe.level.error": "ПОМИЛКА"
+}

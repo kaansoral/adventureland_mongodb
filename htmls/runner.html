@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{domain.language or 'en'}}">
 	<head>
+		<script>var phrase=parent.phrase; document.documentElement.lang=phrase.language;</script>
 		{% if domain.electron%}<script>require=parent.require;</script>{% endif %}
 		<script src="/js/jquery/jquery-{{domain.jquery_version}}.min.js"{%if domain.electron%} onload="try{if(typeof require!=='undefined') window.$=window.jQuery=module.exports;}catch(e){}"{%endif%}></script>
 		<script src="/js/common_functions.js?v={{domain.v}}"></script>
@@ -12,7 +13,7 @@
 			html,body{
 				background: black;
 				color: white;
-				font-family: Pixel;
+				font-family: var(--pixel-font, pixel);
 				font-size: 24px;
 				overflow: hidden;
 			}
@@ -27,14 +28,14 @@
 	</head>
 	<body>
 		<div style="border: 2px solid gray; text-align: center; margin-bottom: 1px" id="code">CODE</div>
-		<div id="gg" style="text-align: center;">Initiating</div>
+		<div id="gg" style="text-align: center;">{{ phrase("pages.runner.initiating") }}</div>
 		<script>
 			var active=false,catch_errors=true,Place="code",is_bot=parent.is_bot,Dev=parent.Dev,Staging=parent.Staging,Prod=parent.Prod,Local=parent.Local;
 			document.addEventListener("DOMContentLoaded",function(event){
 				active=true;
 				parent.code_active=true;
-				set_message("Code Active");
-				parent.socket.emit("code",{run:1});
+				set_message(phrase("page.code.active"));
+				if(parent.socket && typeof parent.socket.emit=="function") parent.socket.emit("code",{run:1});
 				var s=document.createElement('script');
 				s.type='text/javascript';
 				try{
@@ -47,11 +48,11 @@
 			});
 			window.onerror = function(msg, url, line, col, error) { //http://stackoverflow.com/a/10556743/914546
 				if(!catch_errors) return false;
-				var extra = !col ? '' : ' Column: ' + col;
+				var location_text = col ? phrase("page.code.error_location", {line:line,column:col}) : phrase("page.code.error_line", {line:line});
 				//extra += !error ? '' : '\nerror: ' + error;
-				game_log("CODE Error Caught",colors.code_error);
+				game_log(phrase("page.code.error"),colors.code_error);
 				game_log(msg,colors.code_error);
-				game_log("Line: " + line + extra,colors.code_error);
+				game_log(location_text,colors.code_error);
 				// if(error && error.stack) console.log("stack:"),console.log(error.stack);
 				return false;
 			};

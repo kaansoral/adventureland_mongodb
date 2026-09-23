@@ -1,0 +1,24 @@
+<p>{{ phrase("docs.tutorial.tracktrix.intro") }}</p>
+<div style="display:flex;align-items:center;gap:16px;direction:ltr">
+	<span class="tutorial-npc" data-npc="monsterhunter"></span>
+	<span class="tutorial-item" data-item="monstertoken" data-quantity="4"></span>
+	<span>→</span>
+	<span class="tutorial-item" data-item="tracker"></span>
+</div>
+<div><span class="tutorial-travel" data-type="npc" data-target="monsterhunter"></span></div>
+<p>{{ phrase("docs.tutorial.tracktrix.manual") }}</p>
+<hr class="mb15 mt15" />
+<p>{{ phrase("docs.tutorial.tracktrix.achievements") }}</p>
+<p>{{ phrase("docs.tutorial.tracktrix.goo_rewards") }}</p>
+<p>{{ phrase("docs.tutorial.tracktrix.goal") }}</p>
+<p style="display:flex;align-items:center;gap:16px">
+	<span class="tutorial-monster clickable" data-monster="goo" onclick="render_monster_info('goo')"></span>
+	<span class="clickable dlabel" onclick="render_monster_info('goo')">Goo</span>
+	<span class="clickable dlabel" onclick="open_guide('tracktrix', get_guide_url('tracktrix'))">Tracktrix</span>
+</p>
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<p>{{ phrase("docs.tutorial.tracktrix.code") }}</p>
+<div class="code">show_json(G.monsters.goo.achievements);</div>
+<p><span class="rlabel clickable" onclick="load_documentation('show_json')">show_json</span> · <span class="clickable dlabel" onclick="load_documentation('G')">G</span></p>
+<script>render_tutorial_items();</script>

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{domain.language or 'en'}}">
 	<head>
+		{% include "htmls/language.html" %}
 		<title>{{domain.title}}</title>
 		{% include "htmls/seo.html" %}
 		<link rel="apple-touch-icon-precomposed" href="/images/favicon.png" /> <!-- 152 -->
@@ -14,7 +15,7 @@
 		{% else %}
 			<script src="/js/pixi/{{domain.pixi_version}}/pixi.min.js"></script>
 		{% endif %}
-		{% if 1%}<script src="/js/pixi-display/{{domain.pixi_display_version}}/pixi-display.js"></script>{% endif %}
+		<script src="/js/pixi-layers/{{domain.pixi_layers_version}}/pixi-layers.js"></script>
 		<script src="/js/socket.io/1.4.5/socket.io.js"></script>
 		<script src="/js/jquery/jquery-{{domain.jquery_version}}.min.js"{%if domain.electron%} onload="if(typeof require!=='undefined') window.$=window.jQuery=module.exports;"{%endif%}></script>
 		<script src="/js/howler/{{domain.howler_version}}/howler.min.js"></script>
@@ -34,14 +35,16 @@
 		<script src="/js/common_functions.js?v={{domain.v}}"></script>
 		<script src="/js/old_common_functions.js?v={{domain.v}}"></script>
 		<script src="/js/functions.js?v={{domain.v}}"></script>
+		<script src="/js/generated_zones.js?v={{domain.v}}"></script>
 		<script src="/js/game.js?v={{domain.v}}"></script>
 		<script src="/js/html.js?v={{domain.v}}"></script>
 		<script src="/js/payments.js?v={{domain.v}}"></script>
 		<script src="/js/keyboard.js?v={{domain.v}}"></script>
-		<script src="/data.js?v={{domain.v}}"></script>
+		<script src="/data.js?v={{domain.v}}&amp;cache=1"></script>
 		<link href="/css/index.css?v={{domain.v}}" rel="stylesheet" type="text/css"/>
 		<link href="/css/common.css?v={{domain.v}}" rel="stylesheet" type="text/css"/>
 		{% include "htmls/base_script.html" %}
+		<script src="/js/pixel_fonts.js?v={{domain.v}}"></script>
 		<script src="/js/ios-drag-drop.js"></script> <!-- https://github.com/timruffles/ios-html5-drag-drop-shim -->
 	</head>
 	<body>
@@ -65,6 +68,7 @@
 				// $("#gameui").css("left", round((width-$("#gameui").width())/2) );
 			}
 			document.addEventListener("DOMContentLoaded",function(event){
+				setTimeout(payment_logic,200);
 				keyboard_logic();
 				init_sounds();
 				if(!bowser.chrome && perfect_pixels) retina_mode=true;
@@ -73,7 +77,6 @@
 				window.onresize = resize;
 				on_resize();
 				if(inside!="payments") setTimeout(code_logic,10);
-				setTimeout(payment_logic,200);
 				// $("body").nodoubletapzoom();
 			});
 			window.addEventListener("contextmenu", function(e) {

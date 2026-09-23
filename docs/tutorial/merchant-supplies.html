@@ -1,0 +1,64 @@
+<p>{{ phrase("docs.tutorial.new.supplies_manual") }}</p>
+<p style="display: flex; align-items: center; gap: 16px">
+	<span class="tutorial-npc" data-npc="fancypots"></span><span>Ernis · Mainland<br />(-35, -162)</span><span class="tutorial-item" data-item="hpot0"></span>
+	<span class="tutorial-item" data-item="mpot0"></span>
+</p>
+<div><span class="tutorial-travel" data-type="npc" data-target="fancypots"></span></div>
+<p>{{ phrase("docs.tutorial.new.supplies_code") }}</p>
+<div class="divider"></div>
+<div class="title mt15">CODE</div>
+<!-- prettier-ignore -->
+<div class="code" id="merchant-delivery-code">function potion_stacks(stat) {
+	return character.items.map((item, slot) =&gt; ({ item, slot }))
+		.filter(({ item }) =&gt; item &amp;&amp; !item.l &amp;&amp; !item.b &amp;&amp; !item.r &amp;&amp;
+			G.items[item.name].type === "pot" &amp;&amp;
+			G.items[item.name].gives.some(give =&gt; give[0] === stat &amp;&amp; give[1] &gt; 0));
+}
+function potion_count(stat) {
+	return potion_stacks(stat).reduce((sum, entry) =&gt; sum + (entry.item.q || 1), 0);
+}
+async function supply_friend() {
+	if (character.ctype !== "merchant" || character.rip) return;
+	var own = get_characters().map(c =&gt; c.name);
+	var party = get_party() || {};
+	var name = Object.keys(party).find(name =&gt;
+		name !== character.name &amp;&amp; own.includes(name) &amp;&amp;
+		!party[name].rip &amp;&amp; party[name].type !== "merchant" &amp;&amp;
+		G.maps[party[name].map] &amp;&amp; !G.maps[party[name].map].instance);
+	if (!name) return show_json({ delivered: false, reason: "no_party_recipient" });
+	var hp = Math.max(0, 40 - potion_count("hp"));
+	var mp = Math.max(0, 40 - potion_count("mp"));
+	var cost = hp * G.items.hpot0.g + mp * G.items.mpot0.g;
+	if (character.gold &lt; cost + 4000) return;
+	if (hp || mp) {
+		await smart_move(find_npc("fancypots"));
+		if (hp) await buy_with_gold("hpot0", hp);
+		if (mp) await buy_with_gold("mpot0", mp);
+	}
+	var destination = (get_party() || {})[name];
+	if (!destination || destination.rip || G.maps[destination.map].instance) return;
+	await smart_move({ map: destination.map, x: destination.x, y: destination.y });
+	for (var stat of ["hp", "mp"]) {
+		var remaining = 20;
+		while (remaining &gt; 0) {
+			var friend = get_player(name), entry = potion_stacks(stat)[0];
+			if (!friend || friend.rip || friend.map !== character.map ||
+				distance(character, friend) &gt; 200 || !entry) return;
+			var amount = Math.min(remaining, entry.item.q || 1, potion_count(stat) - 20);
+			if (amount &lt;= 0) return;
+			await send_item(name, entry.slot, amount);
+			remaining -= amount;
+		}
+	}
+	show_json({ delivered: true, name });
+}
+supply_friend().catch(show_json);</div>
+<p>
+	{{ phrase("docs.tutorial.new.references") }}: <span class="rlabel clickable" onclick="load_documentation('buy_with_gold')">buy_with_gold</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('send_item')">send_item</span> · <span class="rlabel clickable" onclick="load_documentation('send_gold')">send_gold</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('bank_store')">bank_store</span> · <span class="rlabel clickable" onclick="load_documentation('get_party')">get_party</span> ·
+	<span class="rlabel clickable" onclick="load_documentation('get_characters')">get_characters</span> · <span class="rlabel clickable" onclick="load_documentation('smart_move')">smart_move</span>
+</p>
+<script>
+	render_tutorial_items();
+</script>

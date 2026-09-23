@@ -1,4 +1,4 @@
-<p class="tutlead">Skills turn a class into a calling. Recovery keeps that calling alive.</p>
+<p class="tutlead">{{ phrase("docs.tutorial.skills-recovery.skills-turn-a-class-into-a-calling-recovery") }}</p>
 
 <div class="tutlinks">
 	<div
@@ -8,7 +8,7 @@
 			open_guide('stats', '/docs/guide/stats');
 		"
 	>
-		CLASSES &amp; SKILLS
+		{{ phrase("docs.tutorial.skills-recovery.classes-skills") }}
 	</div>
 	<div
 		class="gamebutton gamebutton-small"
@@ -17,35 +17,35 @@
 			open_article('7-using-skills', '/docs/code/learn/7-using-skills');
 		"
 	>
-		SKILLS IN CODE
+		{{ phrase("docs.tutorial.skills-recovery.skills-in-code") }}
 	</div>
 </div>
 
 {% for task in tutorial_data("skills-recovery").tasks %} {% if loop.first %}
 <div class="tutdivider"></div>
 {% endif %}
-<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
+<div class="tuttaskrow">
+	<span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">{{ phrase("docs.tutorial.skills-recovery.done") }}</span>
+</div>
 {% endfor %}
 
 <div class="tutpath manual">
-	<div class="tutpath-title">MANUAL</div>
-	<p>Open <span class="gamebutton gamebutton-small">SKILLS</span>. Read your class skills, their MP costs, ranges, and cooldowns. Put the ones you use on the skillbar.</p>
-	<p>Regeneration costs time; potions cost gold and share a cooldown. If you fall, respawn when the way is safe. Death takes experience, not your whole adventure.</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.skills-recovery.manual") }}</div>
+	<p>{{ phrase_html("docs.tutorial.skills-recovery.open-skills-read-your-class-skills-their-mp") }}</p>
+	<p>{{ phrase("docs.tutorial.skills-recovery.regeneration-costs-time-potions-cost-gold-and-share") }}</p>
+	<p>{{ phrase("docs.tutorial.skills-recovery.regeneration_task", {skills: phrase("pages.index.skills")}) }}</p>
 </div>
 
 <div class="tutpath codepath">
-	<div class="tutpath-title">OPTIONAL CODE</div>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.skills-recovery.optional-code") }}</div>
 	<!-- prettier-ignore -->
 	<div class="code">if (character.hp &lt; character.max_hp &amp;&amp; can_use("regen_hp")) {
 	use_skill("regen_hp");
 }
 
 if (character.rip) respawn();</div>
-	<p>For class skills, read <span class="dlabel">G.skills</span>, then pass the documented target when one is required.</p>
-	<p>
-		<span class="rlabel" onclick="render_function_reference($(this).html())">can_use</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">use_skill</span> ·
-		<span class="rlabel" onclick="render_function_reference($(this).html())">respawn</span>
-	</p>
+	<p>{{ phrase_html("docs.tutorial.skills-recovery.for-class-skills-read-g-skills-then-pass") }}</p>
+	<p>{{ phrase_html("docs.tutorial.skills-recovery.can-use-use-skill-respawn") }}</p>
 </div>
 
 <style>

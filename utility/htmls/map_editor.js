@@ -28,7 +28,7 @@ function register_tile(set,x,y,size_x,size_y,rotation)
 
 function place_tile(num,x,y,already)
 {
-	if(anim && !parseInt($(".interval").val())) return show_alert("Invalid interval");
+	if(anim && !parseInt($(".interval").val())) return show_alert(phrase.html("editor.message.place_tile_invalid_interval"));
 	var def=map_data.tiles[num],name="tile-"+num;
 
 	if(!texture_cache[name])
@@ -72,7 +72,7 @@ function place_tile(num,x,y,already)
 
 function place_area(num,x,y,lx,ly,already)
 {
-	if(anim && !parseInt($(".interval").val())) return show_alert("Invalid interval");
+	if(anim && !parseInt($(".interval").val())) return show_alert(phrase.html("editor.message.place_tile_invalid_interval"));
 	// alert("x: "+x+" lx: "+lx+" y: "+y+" ly: "+ly);
 	var tiling=((lx-x)+(ly-y))>300;
 	// tiling=false; // bad performance
@@ -184,7 +184,7 @@ function line_check(visited,type,current)
 	}
 	if(first)
 	{
-		if(paths>1) show_alert(paths+" paths - there is probably a gap!!");
+		if(paths>1) show_alert(phrase.html("editor.message.line_check_paths_there_is_probably_a", {paths:paths}));
 	}
 }
 
@@ -206,14 +206,14 @@ function map_click(event)
 			{
 				var point=map_data.points[id];
 				if(point_distance(cx,cy,point[0],point[1])<6)
-					return show_alert("Point: ["+rf(point[0])+","+rf(point[1])+"]");
+					return show_alert(phrase.html("editor.message.map_click_point", {value1:rf(point[0]),value2:rf(point[1])}));
 			}
 		if(map_data.rectangles)
 			for(var id in map_data.rectangles)
 			{
 				var point=map_data.rectangles[id];
 				if(point_distance(cx,cy,point[0],point[1])<8)
-					return show_alert("Rectangle: ["+rf(point[0])+","+rf(point[1])+","+rf(point[2])+","+rf(point[3])+"]<br />Door: ["+rf(point[0]+(point[2]-point[0])/2)+","+rf(point[3])+","+rf(point[2]-point[0])+","+rf(point[3]-point[1])+"]");
+					return show_alert(phrase.html("editor.message.map_click_rectangle_door", {value1:rf(point[0]),value2:rf(point[1]),value3:rf(point[2]),value4:rf(point[3]),value5:rf(point[0]+(point[2]-point[0])/2),value6:rf(point[3]),value7:rf(point[2]-point[0]),value8:rf(point[3]-point[1])}));
 			}
 		if(map_data.polygons)
 			for(var z in map_data.polygons||{})
@@ -230,7 +230,7 @@ function map_click(event)
 						found=true;
 				}
 				if(found)
-					return show_alert("Polygon: ["+p+"]<br />Boundaries: ["+rf(min_x)+","+rf(min_y)+","+rf(max_x)+","+rf(max_y)+"]");
+					return show_alert(phrase.html("editor.message.map_click_polygon_boundaries", {p:p,value2:rf(min_x),value3:rf(min_y),value4:rf(max_x),value5:rf(max_y)}));
 			}
 	}
 
@@ -244,7 +244,7 @@ function map_click(event)
 			if(abs(cx-current[0])<3 && current[1]<=cy && cy<=current[2])
 			{
 				done=1;
-				if(mode=="alert") show_alert("x-line x "+current[0]+" | y "+current[1]+" to "+current[2]);
+				if(mode=="alert") show_alert(phrase.html("editor.message.map_click_x_line_x_y_to", {value1:current[0],value2:current[1],value3:current[2]}));
 				else map_data.x_lines.splice(i,1);
 				break;
 			}
@@ -256,7 +256,7 @@ function map_click(event)
 			if(abs(cy-current[0])<3 && current[1]<=cx && cx<=current[2])
 			{
 				done=1;
-				if(mode=="alert") show_alert("y-line y "+current[0]+" | x "+current[1]+" to "+current[2]);
+				if(mode=="alert") show_alert(phrase.html("editor.message.map_click_y_line_y_x_to", {value1:current[0],value2:current[1],value3:current[2]}));
 				else map_data.y_lines.splice(i,1);
 				break;
 			}
@@ -341,7 +341,7 @@ function map_click(event)
 			var w=def[3],h=nunv(def[4],def[3]);
 			if(tile[1]<=cx && tile[2]<=cy && tile[3]+w>=cx && tile[4]+h>=cy)
 			{
-				if(mode=="alert") show_alert("area-tile def: "+JSON.stringify(def)+" tile: "+JSON.stringify(tile));
+				if(mode=="alert") show_alert(phrase.html("editor.message.map_click_area_tile_def_tile", {value1:JSON.stringify(def),value2:JSON.stringify(tile)}));
 				else to_delete.push(i);
 				break;
 			}
@@ -362,7 +362,7 @@ function map_click(event)
 			var w=def[3],h=nunv(def[4],def[3]);
 			if(tile[1]<=cx && tile[2]<=cy && tile[1]+w>=cx && tile[2]+h>=cy)
 			{
-				if(mode=="alert") show_alert("single-tile def: "+JSON.stringify(def)+" tile: "+JSON.stringify(tile));
+				if(mode=="alert") show_alert(phrase.html("editor.message.map_click_single_tile_def_tile", {value1:JSON.stringify(def),value2:JSON.stringify(tile)}));
 				else to_delete.push(i);
 				break;
 			}
@@ -481,7 +481,7 @@ function map_click(event)
 			if(tile[1]<=cx && tile[2]<=cy && tile[1]+w>=cx && tile[2]+h>=cy)
 			{
 				map_data['default']=tile[0];
-				show_alert("Default is Set");
+				show_alert(phrase.html("editor.message.map_click_default_is_set"));
 				break;
 			}
 		}
@@ -572,14 +572,14 @@ function map_click(event)
 
 function show_alert(x)
 {
-	show_modal("<div style='padding: 20px; text-align:center'><pre style='font-family: Pixel; font-size: 48px;'>"+x+"</pre></div>");
+	show_modal("<div style='padding: 20px; text-align:center'><pre style='font-family: var(--pixel-font, pixel); font-size: 48px;'>"+x+"</pre></div>");
 }
 
 function save(url)
 {
 	if(!url) url=document.url;
 	$.post(url,{data:JSON.stringify(map_data)}).done(function(data){
-		show_alert("Done! "+data+" bytes");
+		show_alert(phrase.html("editor.message.save_done_bytes", {data:data}));
 	});
 }
 
@@ -776,8 +776,8 @@ function toggle_alert_mode()
 
 function toggle_lines()
 {
-	if(lines) $('.linesbutton').html("Info: OFF");
-	else $('.linesbutton').html("Info: ON");
+	if(lines) $('.linesbutton').html(phrase.html("editor.message.toggle_lines_info_off"));
+	else $('.linesbutton').html(phrase.html("editor.map_editor.info-on"));
 	lines=!lines;
 	redraw_map();
 }
@@ -796,14 +796,14 @@ function startstop_group()
 			map_data.groups[cgroup-1][0][5]=parseFloat($('.zoffsetval').val())||0;
 		}
 		cgroup=null;
-		$(".entitybutton").removeClass("active").removeClass("orangeborder").html("Add Entity");
+		$(".entitybutton").removeClass("active").removeClass("orangeborder").html(phrase.html("editor.map_editor.add-entity"));
 		$(".zoffset").hide();
 	}
 	else
 	{
 		map_data.groups.push([]);
 		cgroup=map_data.groups.length;
-		$(".entitybutton").addClass("active").html("Complete");
+		$(".entitybutton").addClass("active").html(phrase.html("editor.message.startstop_group_complete"));
 		$(".zoffset").css("display","inline-block");
 	}
 	hide_modal();
@@ -816,14 +816,14 @@ function startstop_animation(type)
 	if(anim)
 	{
 		anim=false;
-		$(".entitybutton").removeClass("active").removeClass("orangeborder").html("Add Entity");
+		$(".entitybutton").removeClass("active").removeClass("orangeborder").html(phrase.html("editor.map_editor.add-entity"));
 		$(".zoffset").hide();
 		$(".animinfo").hide();
 	}
 	else
 	{
 		anim=true;
-		$(".entitybutton").addClass("orangeborder").html("Cancel");
+		$(".entitybutton").addClass("orangeborder").html(phrase.html("editor.message.startstop_animation_cancel"));
 		$(".animinfo").css("display","inline-block");
 		purpose=type;
 		if(type!="simple") $(".zoffset").css("display","inline-block");
@@ -846,7 +846,7 @@ function startstop_zone()
 	if(mode=="polygon" || mode=="point" || mode=="rectangle")
 	{
 		mode="normal"; polygon=[];
-		$(".zonebutton").removeClass("orangeborder").html("Add Zone");
+		$(".zonebutton").removeClass("orangeborder").html(phrase.html("editor.map_editor.add-zone"));
 		$('.idbutton').hide();
 	}
 	else show_modal($('#zonemodal').html(),{wrap:false});
@@ -857,13 +857,13 @@ function startstop_polygon()
 	if(mode=="polygon")
 	{
 		mode="normal"; polygon=[];
-		$(".zonebutton").removeClass("orangeborder").html("Add Zone");
+		$(".zonebutton").removeClass("orangeborder").html(phrase.html("editor.map_editor.add-zone"));
 		$('.idbutton').hide();
 	}
 	else
 	{
 		mode="polygon"; $('.idbuttonid').val(randomStr(5)); $('.idbutton').css("display","inline-block"); polygon=[];
-		$(".zonebutton").addClass("orangeborder").html("Cancel");
+		$(".zonebutton").addClass("orangeborder").html(phrase.html("editor.message.startstop_animation_cancel"));
 	}
 	hide_modal();
 }
@@ -874,13 +874,13 @@ function startstop_point(p)
 	if(mode=="point")
 	{
 		mode="normal";
-		$(".zonebutton").removeClass("orangeborder").html("Add Zone");
+		$(".zonebutton").removeClass("orangeborder").html(phrase.html("editor.map_editor.add-zone"));
 		$('.idbutton').hide();
 	}
 	else
 	{
 		mode="point"; $('.idbuttonid').val(randomStr(5)); $('.idbutton').css("display","inline-block");
-		$(".zonebutton").addClass("orangeborder").html("Cancel");
+		$(".zonebutton").addClass("orangeborder").html(phrase.html("editor.message.startstop_animation_cancel"));
 	}
 	hide_modal();
 }
@@ -891,13 +891,13 @@ function startstop_rectangle(p)
 	if(mode=="rectangle")
 	{
 		mode="normal";
-		$(".zonebutton").removeClass("orangeborder").html("Add Zone");
+		$(".zonebutton").removeClass("orangeborder").html(phrase.html("editor.map_editor.add-zone"));
 		$('.idbutton').hide();
 	}
 	else
 	{
 		mode="rectangle"; $('.idbuttonid').val(randomStr(5)); $('.idbutton').css("display","inline-block"); r_start=null;
-		$(".zonebutton").addClass("orangeborder").html("Cancel");
+		$(".zonebutton").addClass("orangeborder").html(phrase.html("editor.message.startstop_animation_cancel"));
 	}
 	hide_modal();
 }
@@ -911,7 +911,7 @@ function register_point(x,y)
 			var current=map_data.x_lines[i];
 			if(abs(x-current[0])<12 && current[1]<=y && y<=current[2])
 			{
-				return show_alert("Spawn points need to be 12px away from lines!");
+				return show_alert(phrase.html("editor.message.register_point_spawn_points_need_to_be"));
 			}
 		}
 		for(var i=0;i<(map_data.y_lines||[]).length;i++)
@@ -919,7 +919,7 @@ function register_point(x,y)
 			var current=map_data.y_lines[i];
 			if(abs(y-current[0])<12 && current[1]<=x && x<=current[2])
 			{
-				return show_alert("Spawn points need to be 12px away from lines!");
+				return show_alert(phrase.html("editor.message.register_point_spawn_points_need_to_be"));
 			}
 		}
 	}
@@ -1005,9 +1005,9 @@ function load_tileset(name,file)
 function show_upload_modal()
 {
 	var html="<div style='font-size: 32px'>";
-	html+="<div style='margin-bottom: 20px'>Make sure you save your map before uploading a tileset</div>";
-	html+='<form action="{{upload_url}}" method="post" enctype="multipart/form-data">"this_map": <input type="file" name="image"/><input type="hidden" name="iname" value="map" /><input type="hidden" name="key" value="{{name}}"><input type="submit" name="submit" value="Upload"/></form>';
-	html+='<form action="{{upload_url}}" method="post" enctype="multipart/form-data">"this_map_a": <input type="file" name="image"/><input type="hidden" name="iname" value="map_a" /><input type="hidden" name="key" value="{{name}}"><input type="submit" name="submit" value="Upload"/></form>';
+	html+="<div style='margin-bottom: 20px'>"+phrase.html("editor.upload.save_first")+"</div>";
+	html+='<form action="{{upload_url}}" method="post" enctype="multipart/form-data">"this_map": <input type="file" name="image"/><input type="hidden" name="iname" value="map" /><input type="hidden" name="key" value="{{name}}"><input type="submit" name="submit" value="'+phrase.html("editor.upload.button")+'"/></form>';
+	html+='<form action="{{upload_url}}" method="post" enctype="multipart/form-data">"this_map_a": <input type="file" name="image"/><input type="hidden" name="iname" value="map_a" /><input type="hidden" name="key" value="{{name}}"><input type="submit" name="submit" value="'+phrase.html("editor.upload.button")+'"/></form>';
 	html+="</div>";
 	if(set) destroy_tileset();
 	set="upload";
@@ -1083,7 +1083,7 @@ function redraw_map()
 	}
 	
 	delete_indices(map_data.placements,to_delete);
-	if(deleted) show_alert("Deleted some faulty tiles, this might have happened if you shrinked your own tileset, or if you increased your tile area after selecting a tile etc.");
+	if(deleted) show_alert(phrase.html("editor.message.redraw_map_deleted_some_faulty_tiles_this"));
 
 	to_delete=[]; deleted=false;
 
@@ -1103,7 +1103,7 @@ function redraw_map()
 		}
 
 	delete_indices(map_data.animations,to_delete);
-	if(deleted) show_alert("Deleted some faulty tiles, this might have happened if you shrinked your own tileset, or if you increased your tile area after selecting a tile etc.");
+	if(deleted) show_alert(phrase.html("editor.message.redraw_map_deleted_some_faulty_tiles_this"));
 
 	to_delete=[]; deleted=false;
 
@@ -1127,7 +1127,7 @@ function redraw_map()
 	}
 
 	delete_indices(map_data.groups,to_delete);
-	if(deleted) show_alert("Deleted some faulty groups, this might have happened if you shrinked your own tileset, or if you increased your tile area after selecting a tile etc.");
+	if(deleted) show_alert(phrase.html("editor.message.redraw_map_deleted_some_faulty_groups_this"));
 
 	to_delete=[]; deleted=false;
 
@@ -1147,7 +1147,7 @@ function redraw_map()
 	}
 
 	delete_indices(map_data.animations,to_delete);
-	if(deleted) show_alert("Deleted some faulty tiles, this might have happened if you shrinked your own tileset, or if you increased your tile area after selecting a tile etc.");
+	if(deleted) show_alert(phrase.html("editor.message.redraw_map_deleted_some_faulty_tiles_this"));
 
 	if(map_data.lights)
 	for(var i=0;i<map_data.lights.length;i++)
@@ -1164,7 +1164,7 @@ function redraw_map()
 	}
 	
 	delete_indices(map_data.lights,to_delete);
-	if(deleted) show_alert("Deleted some faulty lights, this might have happened if you shrinked your own tileset, or if you increased your tile area after selecting a tile etc.");
+	if(deleted) show_alert(phrase.html("editor.message.redraw_map_deleted_some_faulty_lights_this"));
 
 	to_delete=[]; deleted=false;
 
@@ -1307,7 +1307,7 @@ function redraw_map()
 		}
 
 	delete_indices(map_data.nights,to_delete);
-	if(deleted) show_alert("Deleted some faulty nights, this might have happened if you shrinked your own tileset, or if you increased your tile area after selecting a tile etc.");
+	if(deleted) show_alert(phrase.html("editor.message.redraw_map_deleted_some_faulty_nights_this"));
 
 	if(map_name)
 	{

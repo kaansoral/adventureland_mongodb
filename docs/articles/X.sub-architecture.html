@@ -1,6 +1,6 @@
-<p><span class="dlabel">Game and CODE architecture</span></p>
+<p>{{ phrase_html("docs.articles.x.sub-architecture.game-and-code-architecture") }}</p>
 
-<p>Each character has two cooperating browser contexts:</p>
+<p>{{ phrase("docs.articles.x.sub-architecture.each-character-has-two-cooperating-browser-contexts") }}</p>
 
 <div class="code">Game frame
   Owns the server socket, live entities, map state, rendering, CODE editor, and account API calls
@@ -8,9 +8,9 @@
 CODE frame (/runner)
   Loads the public CODE functions, event listeners, compatibility helpers, and your code</div>
 
-<p>The CODE frame is deliberately separate. Restarting CODE replaces that frame and clears ordinary JavaScript variables, timers, listeners, and unfinished work from the old run. The game frame and character connection stay alive.</p>
+<p>{{ phrase("docs.articles.x.sub-architecture.the-code-frame-is-deliberately-separate-restarting-code") }}</p>
 
-<p><span class="dlabel">How an action travels</span></p>
+<p>{{ phrase_html("docs.articles.x.sub-architecture.how-an-action-travels") }}</p>
 
 <div class="code">Your code
   -> public function such as attack(target)
@@ -19,15 +19,15 @@ CODE frame (/runner)
   -> socket response reaches the game frame
   -> the matching Promise fulfills or rejects in your CODE frame</div>
 
-<p>The response is registered before the request is sent. Requests sharing a response channel are queued in request order. Use the public functions instead of raw socket emits so matching replies, safeguards, timeouts, and compatibility behavior remain intact.</p>
+<p>{{ phrase("docs.articles.x.sub-architecture.the-response-is-registered-before-the-request-is") }}</p>
 
-<p><span class="dlabel">Live data</span></p>
+<p>{{ phrase_html("docs.articles.x.sub-architecture.live-data") }}</p>
 
-<p><span class="dlabel">character</span>, nearby entities returned by functions such as <span class="dlabel">get_entity</span>, and the objects under <span class="dlabel">parent</span> are live runtime objects. Do not keep a nearby entity reference forever: an entity that leaves visibility stops updating. Fetch it again by ID or name when needed.</p>
+<p>{{ phrase_html("docs.articles.x.sub-architecture.character-nearby-entities-returned-by-functions-such-as") }}</p>
 
-<p><span class="dlabel">G</span> contains game definitions such as items, skills, maps, monsters, and recipes. Definitions describe content; the server decides whether an action is valid and what it finally costs or changes.</p>
+<p>{{ phrase_html("docs.articles.x.sub-architecture.g-contains-game-definitions-such-as-items-skills") }}</p>
 
-<p><span class="dlabel">Events</span></p>
+<p>{{ phrase_html("docs.articles.x.sub-architecture.events") }}</p>
 
 <div class="code">character.on("loot", function (data) {
 	show_json(data);
@@ -37,20 +37,20 @@ game.on("hit", function (data) {
 	// World event: may describe another entity.
 });</div>
 
-<p>Socket data is normalized by the game frame and forwarded to <span class="dlabel">character</span> or <span class="dlabel">game</span> listeners in the CODE frame. Character events concern your character; game events describe the visible world or server. See both event references for exact event data.</p>
+<p>{{ phrase_html("docs.articles.x.sub-architecture.socket-data-is-normalized-by-the-game-frame") }}</p>
 
-<p><span class="dlabel">Account API</span></p>
+<p>{{ phrase_html("docs.articles.x.sub-architecture.account-api") }}</p>
 
-<p><span class="dlabel">parent.api_call</span> sends an HTTP request to the account/backend API. It is separate from real-time character socket actions. Public wrappers such as <span class="dlabel">upload_code</span> should be preferred when one exists.</p>
+<p>{{ phrase_html("docs.articles.x.sub-architecture.parent-api-call-sends-an-http-request-to") }}</p>
 
-<p><span class="dlabel">Multiple characters</span></p>
+<p>{{ phrase_html("docs.articles.x.sub-architecture.multiple-characters") }}</p>
 
-<p><span class="dlabel">start_character</span> opens another owned character with its own game frame, socket, CODE frame, variables, and listeners. Communicate through <span class="dlabel">send_cm</span>; do not assume two characters share JavaScript memory merely because they are open in the same browser.</p>
+<p>{{ phrase_html("docs.articles.x.sub-architecture.start-character-opens-another-owned-character-with-its") }}</p>
 
-<p><span class="dlabel">Persistence boundaries</span></p>
+<p>{{ phrase_html("docs.articles.x.sub-architecture.persistence-boundaries") }}</p>
 
 <div class="code">set("local-plan", { monster: "goo" }); // Browser-local JSON value
 pset("raw-key", "raw value");            // Platform persistent string
 upload_code(12, "helpers", source);        // Account-backed code slot; returns a Promise</div>
 
-<p>Choose storage deliberately. Ordinary variables last only for the current CODE run; <span class="dlabel">get/set</span> and <span class="dlabel">pget/pset</span> are local to the current platform profile; code slots are stored with the account.</p>
+<p>{{ phrase_html("docs.articles.x.sub-architecture.choose-storage-deliberately-ordinary-variables-last-only-for") }}</p>

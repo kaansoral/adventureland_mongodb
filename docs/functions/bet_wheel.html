@@ -1,0 +1,14 @@
+<p><span class='dlabel'>bet_wheel(side, gold, timeout_ms)</span></p>
+<p>{{ phrase("docs.functions.bet_wheel.places-one-fortune-s-wheel-wager-on-a") }}</p>
+<p>{{ phrase_html("docs.functions.bet_wheel.returns-promise-resolving-with-won-side-result-slice") }}</p>
+<p>{{ phrase_html("docs.functions.bet_wheel.promise-failures-unless-a-function-specific-note-says") }}</p>
+<p>{{ phrase_html("docs.functions.bet_wheel.notes-use-sun-or-moon-the-server-keeps") }}</p>
+<p>{{ phrase_html("docs.functions.bet_wheel.example") }}</p>
+<div class='code'>async function example() {
+	var spin = await bet_wheel("sun", 10000);
+	game_log(spin.won ? "Sun! Won " + spin.net : "Moon... Lost " + spin.wager);
+}
+example();</div>
+
+<p></p>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>

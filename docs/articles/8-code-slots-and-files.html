@@ -1,36 +1,98 @@
-<p><span class='dlabel'>CODE slots and files</span></p>
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.code-slots-and-files") }}</p>
 
-<p>Each character has a default CODE slot. When you run changed CODE in the in-game editor, the client saves that slot to the game server.</p>
+<p>{{ phrase("docs.articles.8-code-slots-and-files.each-character-has-a-default-code-slot-when") }}</p>
 
-<p>Your account also has numbered CODE slots from <span class='dlabel'>1</span> to <span class='dlabel'>100</span>. Use them for shared helpers, combat loops, merchant logic, or experiments that more than one character can load.</p>
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.your-account-also-has-numbered-code-slots-from") }}</p>
 
-<p>Character slots use the character's internal ID as their slot number. Numbered slots use the number you see in the editor.</p>
+<p>{{ phrase("docs.articles.8-code-slots-and-files.character-slots-use-the-character-s-internal-id") }}</p>
 
 <div class='code'>show_json(X.codes); // Slot names and IDs available to this account</div>
 
-<p><span class='dlabel'>Loading shared CODE</span></p>
+<hr />
 
-<p>Keep the character's default slot small when possible. Put reusable functions in numbered slots, then load them from the character slot.</p>
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.loading-shared-code") }}</p>
 
-<div class='code'>load_code("helpers");
+<p>{{ phrase("docs.articles.8-code-slots-and-files.keep-the-character-s-default-slot-small-when") }}</p>
 
-// or, if the slot exports values:
-var helpers = require_code("helpers");</div>
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.both-load-code-and-require-code-run-the") }}</p>
 
-<p><span class='dlabel'>load_code</span> runs the target slot in the current CODE scope, similar to pasting that slot into the caller. <span class='dlabel'>require_code</span> runs the target slot as a module and returns its exports.</p>
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.global-scripts-load-code") }}</p>
 
-<p><span class='dlabel'>VS Code sync</span></p>
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.load-code-runs-a-file-in-the-character") }}</p>
 
-<p>Type <span class='hlabel clickable' onclick='say("/codes")'>/codes</span> in chat or open <a class='cancela' href='/vscode' target='_blank'>adventure.land/vscode</a>. The VS Code extension creates a local sync folder and uploads through your account token.</p>
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.loading-the-same-file-again-can-cause-an") }}</p>
 
-<p>Name local files with the slot number before <span class='dlabel'>.js</span>:</p>
+<p>{{ phrase("docs.articles.8-code-slots-and-files.for-scripts-that-use-globals-load-dependencies-once") }}</p>
+
+<div class='code'>load_code("Constants");
+load_code("Combat");
+load_code("Merchant");</div>
+
+<p>{{ phrase("docs.articles.8-code-slots-and-files.in-this-arrangement-combat-and-merchant-use-the") }}</p>
+
+<hr />
+
+<p><span class='dlabel'>{{ phrase("docs.articles.8-code-slots-and-files.modules-require-code") }}</span></p>
+
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.require-code-gives-the-loaded-file-its-own") }}</p>
+
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.use-module-exports-value-to-return-a-value") }}</p>
+
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.no-module-cache-each-call-evaluates-the-file") }}</p>
+
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.no-circular-dependencies-a-chain-such-as-a") }}</p>
+
+<p>{{ phrase("docs.articles.8-code-slots-and-files.these-repeated-loading-rules-also-apply-on-mainframe") }}</p>
+
+<hr />
+
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.vs-code-sync") }}</p>
+
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.type-codes-in-chat-or-open-adventure-land") }}</p>
+
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.name-local-files-with-the-slot-number-before") }}</p>
 
 <div class='code'>Wizard.482008842.js // A character default slot
 Farming.12.js       // Account CODE slot 12</div>
 
-<p>Run <span class='dlabel'>Adventure Land: Activate Auto Sync Folder</span> once. It downloads your CODE slots, refreshes helper libraries, checks for remote changes, uploads safe offline edits, and uploads managed files when you save them.</p>
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.run-adventure-land-activate-auto-sync-folder-once") }}</p>
 
-<p><span class='dlabel'>Useful functions</span></p>
+<hr />
+
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.code-example-shared-module-dependencies") }}</p>
+
+<p>{{ phrase("docs.articles.8-code-slots-and-files.save-constants-combat-and-merchant-in-three-separate") }}</p>
+
+<p><span class='dlabel'>Constants</span></p>
+
+<div class='code'>const TARGET = "goo";
+const BANK_MAP = "bank";
+
+module.exports = { TARGET, BANK_MAP };</div>
+
+<p><span class='dlabel'>Combat</span></p>
+
+<div class='code'>const constants = require_code("Constants");
+
+module.exports = { target_type: constants.TARGET };</div>
+
+<p><span class='dlabel'>Merchant</span></p>
+
+<div class='code'>const constants = require_code("Constants");
+
+module.exports = { bank_map: constants.BANK_MAP };</div>
+
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.character-slot") }}</p>
+
+<div class='code'>var combat = require_code("Combat");
+var merchant = require_code("Merchant");
+
+game_log(combat.target_type); // goo
+game_log(merchant.bank_map);  // bank</div>
+
+<p>{{ phrase("docs.articles.8-code-slots-and-files.the-character-slot-requires-combat-and-merchant-each") }}</p>
+
+<p>{{ phrase_html("docs.articles.8-code-slots-and-files.useful-functions") }}</p>
 
 <p><span class='rlabel' onclick="render_function_reference($(this).html())">load_code</span></p>
 <p><span class='rlabel' onclick="render_function_reference($(this).html())">require_code</span></p>

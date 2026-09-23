@@ -1,29 +1,29 @@
 <div style='width: 600px'>
-	<p style='font-size: 32px; color: #8A203A; text-decoration: underline dotted #B30B1A'>A/B Testing PVP Event</p>
+	<p style='font-size: 32px; color: #8A203A; text-decoration: underline dotted #B30B1A'>{{ phrase("docs.guide.event-abtesting.a-b-testing-pvp-event") }}</p>
 
 	<p>
-		<span class='sphelmet'></span> <span class='sphelmet'></span> In A/B Testing players are divided into 2 groups to fight. Winning team gets better rewards!
+		{{ phrase_html("docs.guide.event-abtesting.in-a-b-testing-players-are-divided-into") }}
 	</p>
 
 	<p>
-		<span class='dlabel'>character.team</span> is either <span class='dlabel'>"A"</span> or <span class='dlabel'>"B"</span> for all participants. The PVP is safe. Unlike other events, at the end of the event, each character is placed back to where they were taken from. In the event of a character reload, you're placed in Mainland. You can only signup in the first 2 minutes, yet you can rejoin to the same team later on if you end up disconnecting.
+		{{ phrase_html("docs.guide.event-abtesting.character-team-is-either-a-or-b-for") }}
 	</p>
 
 	<p>
-		1000 kills get you the <span class='jlabel' onclick="code_eval('show_json('+$(this).html()+')')">G.achievements.abtesting</span> achievement and the <span class='jlabel' onclick="code_eval('show_json('+$(this).html()+')')">G.titles.abtesting</span> title on your orb! You can see the winner drops at: <span class='jlabel' onclick="code_eval('show_json('+$(this).html()+')')">G.drops.abtesting</span> and loser drops at: <span class='jlabel' onclick="code_eval('show_json('+$(this).html()+')')">G.drops.abtesting_loser</span>
+		{{ phrase_html("docs.guide.event-abtesting.1000-kills-get-you-the-g-achievements-abtesting") }}
 	</p>
 
 
 	<div style='margin-bottom: 24x'></div>
 
-	<div class='gamebutton' onclick="btc(event); join('abtesting'); hide_modal();">Join the Event!</div>
+	<div class='gamebutton' onclick="btc(event); join('abtesting'); hide_modal();">{{ phrase("docs.guide.event-abtesting.join-the-event") }}</div>
 
 
 	<script>
 		$(".sphelmet").html(sprite("thehelmet",{width:50,height:88,scale:3}));
 	</script>
 
-<p style='font-size: 32px; color: #216D25; text-decoration: underline dotted #B30B1A; margin-bottom: 10px'>Snippets</p>
+<p style='font-size: 32px; color: #216D25; text-decoration: underline dotted #B30B1A; margin-bottom: 10px'>{{ phrase("docs.guide.event-abtesting.snippets") }}</p>
 
 <div class='code'>
 	if(server.status.abtesting && character.map!="abtesting")

@@ -1,4 +1,5 @@
-<p class="tutlead">Town merchants sell dependable supplies. Monsters provide the stranger merchandise.</p>
+<p class="tutlead">{{ phrase("docs.tutorial.shops.town-merchants-sell-dependable-supplies-monsters-provide-the") }}</p>
+<div><span class="tutorial-travel" data-type="npc" data-target="fancypots"></span> <span class="tutorial-travel" data-type="npc" data-target="basics"></span></div>
 
 <div class="tutlinks">
 	<div
@@ -8,24 +9,24 @@
 			open_guide('shops-and-selling', get_guide_url('shops-and-selling'));
 		"
 	>
-		BUYING &amp; SELLING
+		{{ phrase("docs.tutorial.shops.buying-selling") }}
 	</div>
 </div>
 
 {% for task in tutorial_data("shops").tasks %} {% if loop.first %}
 <div class="tutdivider"></div>
 {% endif %}
-<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">DONE</span></div>
+<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">{{ phrase("docs.tutorial.shops.done") }}</span></div>
 {% endfor %}
 
 <div class="tutpath manual">
-	<div class="tutpath-title">MANUAL</div>
-	<p>Walk near a merchant and right-click. Buy a small stack of potions. To sell, open your inventory while a merchant is active and choose an item you truly do not need.</p>
-	<p>Keep one empty inventory slot. Full bags have a talent for becoming full at the worst moment.</p>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.shops.manual") }}</div>
+	<p>{{ phrase("docs.tutorial.shops.walk-near-a-merchant-and-right-click-buy") }}</p>
+	<p>{{ phrase("docs.tutorial.shops.keep-one-empty-inventory-slot-full-bags-have") }}</p>
 </div>
 
 <div class="tutpath codepath">
-	<div class="tutpath-title">OPTIONAL CODE</div>
+	<div class="tutpath-title">{{ phrase("docs.tutorial.shops.optional-code") }}</div>
 	<!-- prettier-ignore -->
 	<div class="code">async function stock_up() {
 	await smart_move(find_npc("fancypots"));
@@ -35,10 +36,9 @@
 stock_up().catch(function (error) {
 	show_json(error);
 });</div>
-	<p>Selling uses an inventory slot number. Check the item first; CODE is fast, regret is faster.</p>
+	<p>{{ phrase("docs.tutorial.shops.selling-uses-an-inventory-slot-number-check-the") }}</p>
 	<p>
-		<span class="rlabel" onclick="render_function_reference($(this).html())">find_npc</span> · <span class="rlabel" onclick="render_function_reference($(this).html())">buy</span> ·
-		<span class="rlabel" onclick="render_function_reference($(this).html())">sell</span>
+		{{ phrase_html("docs.tutorial.shops.find-npc-buy-sell") }}
 	</p>
 </div>
 
@@ -94,3 +94,4 @@ stock_up().catch(function (error) {
 		text-align: center;
 	}
 </style>
+<script>render_tutorial_items();</script>

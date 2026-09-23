@@ -1,23 +1,75 @@
-<table style="width:100%; height: 100%; background-color: black; color: white; font-size: 24px; min-height: 400px;" border="0" cellpadding="0" cellspacing="0">
-	<tr style="text-align: center">
-		<td style="vertical-align: middle; font-family: 'Palatino Linotype', 'Book Antiqua','Palatino','Times New Roman','Times';">
-			{% if purpose == "password" %}
-				To Reset Your Password Please Visit:<br /><br />
-				<a href="{{url}}">{{url}}</a><br /><br />
-				<span style="font-size: 12px">If you haven't initiated this routine, please ignore this email.</span>
-			{% elif purpose == "verification" %}
-				<div style='margin-bottom: 8px'>To Verify Your Email</div>
-				<a href="{{url}}" style="color: #F26EA7; text-decoration:none">{{url}}</a>
-				<div style='margin-bottom: 8px; margin-top: 12px'>Some Suggestions!</div>
-				<div style='max-width: 560px; display: inline-block'>
-					<div style='text-align: left; line-height: 20px'>
-						<div style='font-size: 16px; margin-bottom: 6px'>1) Check out the GUIDE, you can type /guide in chat</div>
-						<div style='font-size: 16px; margin-bottom: 6px'>2) Check out the CODE, you don't need to be a programmer to use CODE!</div>
-						<div style='font-size: 16px; margin-bottom: 6px'>3) Join us on <a href="{{domain.discord_url}}" style="color: #18C0F4; text-decoration:none">Discord</a>, the game is in active development, there is an active and helpful community on Discord, for gameplay, trade and coding help!</div>
-						<div style='font-size: 16px; margin-bottom: 6px'>4) You are able to play with multiple characters simultaneously, you can have 3 regular characters and a merchant, freely, for as long as you want!</div>
-					</div>
-				</div>
-			{% endif %}
-		</td>
-	</tr>
-</table>
+{% set verification = purpose == "verification" %}
+{% set language = domain.language or "en" %}
+{% set rtl = language == "ar" %}
+{% set action = phrase("pages.email.to-verify-your-email") if verification else phrase("pages.email.to-reset-your-password-please-visit") %}
+{% set subject = phrase("server.email.verification_subject") if verification else phrase("server.email.reset_subject") %}
+{% set icon = "✉️" if verification else "🔐" %}
+{% set font = "'Lucida Console', Monaco, Consolas, monospace" %}
+{% macro with_emoji(emoji, text) -%}
+	{% set words = text.split(" ") -%}
+	{% if words.length > 1 -%}
+		<span style="display:inline-block;white-space:nowrap;">{{ emoji }}&nbsp;{{ words[0] }}</span>{% for word in words %}{% if not loop.first %} {{ word }}{% endif %}{% endfor %}
+	{%- else -%}
+		<span style="display:inline-block;white-space:nowrap;">{{ emoji }}&nbsp;{{ text[0] }}</span>{{ text.slice(1) }}
+	{%- endif %}
+{%- endmacro %}
+<!doctype html>
+<html lang="{{ language }}" dir="ltr">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="color-scheme" content="light">
+		<meta name="supported-color-schemes" content="light">
+		<title>{{ subject }}</title>
+		<style>
+			body, table, td, a, p, h1, h2 { font-family: {{ font | safe }}; }
+			body { margin: 0; padding: 0; width: 100%; background-color: #0b1725; }
+			table { border-collapse: collapse; }
+			.hero-title, .content { overflow-wrap: anywhere; word-wrap: break-word; }
+			.suggestions a { color: #176b5b !important; text-decoration: underline !important; }
+			@media screen and (max-width: 520px) {
+				.outer { padding: 12px 8px !important; }
+				.hero { padding: 32px 20px !important; }
+				.content { padding: 28px 20px !important; }
+				.hero-title { font-size: 26px !important; line-height: 38px !important; }
+			}
+		</style>
+	</head>
+	<body style="margin:0;padding:0;background-color:#0b1725;">
+		<div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">{{ subject }}</div>
+		<table role="presentation" dir="ltr" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#0b1725" style="background-color:#0b1725;table-layout:fixed;">
+			<tr><td class="outer" align="center" style="padding:32px 12px;">
+				<!--[if mso]><table role="presentation" width="640" align="center"><tr><td><![endif]-->
+				<table role="presentation" dir="{{ 'rtl' if rtl else 'ltr' }}" width="640" border="0" cellspacing="0" cellpadding="0" style="width:100%;max-width:640px;background-color:#f8f4e9;table-layout:fixed;">
+					<tr><td height="6" bgcolor="{{ '#8fd0b0' if verification else '#efbf58' }}" style="height:6px;line-height:6px;font-size:0;">&nbsp;</td></tr>
+					<tr><td class="hero" align="center" bgcolor="#132638" style="padding:40px 32px;background-color:#132638;">
+						<p style="margin:0 0 20px;font-family:{{ font }};font-size:13px;line-height:20px;font-weight:700;letter-spacing:3px;color:#bcd6d3;">ADVENTURE LAND</p>
+						<h1 class="hero-title" style="margin:0;font-family:{{ font }};font-size:32px;line-height:44px;font-weight:700;color:#efbf58;">{{ with_emoji(icon, action) }}</h1>
+					</td></tr>
+					<tr><td class="content" dir="{{ 'rtl' if rtl else 'ltr' }}" style="padding:32px 40px;background-color:#f8f4e9;text-align:{{ 'right' if rtl else 'left' }};">
+						<p style="margin:0 0 24px;font-family:{{ font }};font-size:15px;line-height:26px;color:#293d48;">{{ phrase("pages.contents.announcement_email.hi-adventurer") }}</p>
+						<table role="presentation" border="0" cellspacing="0" cellpadding="0"><tr><td bgcolor="#efbf58" style="background-color:#efbf58;border:2px solid #152b3c;">
+							<a href="{{ url }}" style="display:inline-block;padding:15px 18px;font-family:{{ font }};font-size:14px;line-height:22px;font-weight:700;color:#152b3c;text-decoration:none;">{{ with_emoji(icon, action) }}</a>
+						</td></tr></table>
+						{% if not verification %}
+							<p style="margin:24px 0 0;font-family:{{ font }};font-size:13px;line-height:23px;color:#62726f;">{{ phrase("pages.email.if-you-haven-t-initiated-this-routine-please") }}</p>
+						{% endif %}
+					</td></tr>
+					{% if verification %}
+						<tr><td class="content suggestions" dir="{{ 'rtl' if rtl else 'ltr' }}" style="padding:28px 40px;background-color:#fff0cf;border-top:1px solid #ded8c9;text-align:{{ 'right' if rtl else 'left' }};">
+							<h2 style="margin:0 0 20px;font-family:{{ font }};font-size:19px;line-height:28px;color:#153f46;">{{ with_emoji("🧭", phrase("pages.email.some-suggestions")) }}</h2>
+							<p style="margin:0 0 18px;font-family:{{ font }};font-size:15px;line-height:26px;color:#293d48;">{{ phrase("pages.email.1-check-out-the-guide-you-can-type") }}</p>
+							<p style="margin:0 0 18px;font-family:{{ font }};font-size:15px;line-height:26px;color:#293d48;">{{ phrase("pages.email.2-check-out-the-code-you-don-t") }}</p>
+							<p style="margin:0 0 18px;font-family:{{ font }};font-size:15px;line-height:26px;color:#293d48;">{{ phrase_html("pages.email.3-join-us-on-discord-the-game-is", {"discord_url": domain.discord_url}) }}</p>
+							<p style="margin:0;font-family:{{ font }};font-size:15px;line-height:26px;color:#293d48;">{{ phrase("pages.email.4-you-are-able-to-play-with-multiple") }}</p>
+						</td></tr>
+					{% endif %}
+					<tr><td align="center" bgcolor="#132638" style="padding:24px 20px;background-color:#132638;font-family:{{ font }};font-size:12px;line-height:20px;color:#bdcfcd;">
+						<a href="{{ domain.base_url }}" style="font-family:{{ font }};color:#bdcfcd;text-decoration:none;">Adventure Land</a>
+					</td></tr>
+				</table>
+				<!--[if mso]></td></tr></table><![endif]-->
+			</td></tr>
+		</table>
+	</body>
+</html>

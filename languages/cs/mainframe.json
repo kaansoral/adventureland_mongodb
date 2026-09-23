@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe zařadil tuto postavu do fronty.",
+	"mainframe.event.included_worker_queued": "Mainframe zařadil tento zahrnutý pracovní proces do fronty.",
+	"mainframe.event.shared_with": "Sdíleno s postavou {character}",
+	"mainframe.event.shared_with_root": "Sdíleno s hlavní postavou",
+	"mainframe.event.explicit_disconnect": "Odpojeno vlastníkem účtu.",
+	"mainframe.event.renewed_free": "1 bezplatná hodina Mainframe použita na {minutes} min.",
+	"mainframe.event.renewed_shell": "Účtována 1 mušle za {minutes} min.",
+	"mainframe.event.renewal_one": "Aktivní postavy: {count} · Další obnovení: {date}",
+	"mainframe.event.renewal_many": "Aktivní postavy: {count} · Další obnovení: {date}",
+	"mainframe.event.renewal_failed": "Mainframe zastavil tuto postavu, protože už nezbýval žádný čas.",
+	"mainframe.event.worker_failure": "Mainframe zjistil selhání pracovního procesu a zkusí ho spustit znovu.",
+	"mainframe.event.server_change": "Mainframe znovu připojuje tuto postavu na jiný server.",
+	"mainframe.level.info": "INFO",
+	"mainframe.level.warn": "VAROVÁNÍ",
+	"mainframe.level.error": "CHYBA"
+}

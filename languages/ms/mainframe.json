@@ -1,0 +1,17 @@
+{
+	"mainframe.event.assignment_queued": "Mainframe memasukkan watak ini ke dalam baris gilir.",
+	"mainframe.event.included_worker_queued": "Mainframe memasukkan Worker yang disertakan ini ke dalam baris gilir.",
+	"mainframe.event.shared_with": "Dikongsi dengan {character}",
+	"mainframe.event.shared_with_root": "Dikongsi dengan watak induk",
+	"mainframe.event.explicit_disconnect": "Sambungan diputuskan oleh pemilik akaun.",
+	"mainframe.event.renewed_free": "1 jam Mainframe percuma digunakan untuk {minutes} minit.",
+	"mainframe.event.renewed_shell": "1 cangkerang dicaj untuk {minutes} minit.",
+	"mainframe.event.renewal_one": "{count} watak aktif · Pembaharuan seterusnya {date}",
+	"mainframe.event.renewal_many": "{count} watak aktif · Pembaharuan seterusnya {date}",
+	"mainframe.event.renewal_failed": "Mainframe menghentikan watak ini kerana masa telah habis.",
+	"mainframe.event.worker_failure": "Mainframe mengesan kegagalan Worker dan akan mencubanya semula.",
+	"mainframe.event.server_change": "Mainframe sedang menyambungkan semula watak ini pada pelayan lain.",
+	"mainframe.level.info": "INFO",
+	"mainframe.level.warn": "AMARAN",
+	"mainframe.level.error": "RALAT"
+}

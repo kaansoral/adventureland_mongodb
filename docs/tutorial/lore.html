@@ -1,0 +1,26 @@
+<div class="tutorial-lore" data-page="1" data-language="{{domain.language}}">
+	<img
+		class="tutorial-lore-page"
+		src="/images/tutorial/lore/{{domain.language}}/page-01.jpg?v=native-20260909"
+		alt="{{ phrase('docs.lore.page1.alt')|e }}"
+		data-alt-1="{{ phrase('docs.lore.page1.alt')|e }}"
+		data-alt-2="{{ phrase('docs.lore.page2.alt')|e }}"
+		data-alt-3="{{ phrase('docs.lore.page3.alt')|e }}"
+		data-alt-4="{{ phrase('docs.lore.page4.alt')|e }}"
+		data-alt-5="{{ phrase('docs.lore.page5.alt')|e }}"
+		width="960"
+		height="540"
+		style="display: block; width:100%; height:auto; padding-bottom:8px; background:#f4e9cd; image-rendering: crisp-edges; image-rendering: pixelated"
+	/>
+	<div style="border-top:5px solid gray;padding:8px 20px 10px">
+		<p style="margin:0 0 8px;font-size:28px;line-height:28px">{{ phrase("docs.tutorial.new.lore_intro") }}</p>
+		<div style="display:grid; grid-template-columns:1fr 1fr 1fr; align-items:center; direction:ltr">
+			<div style="text-align:left"><button class="tutorial-lore-prev gamebutton" style="font-family:inherit;font-size:28px;line-height:28px;padding:4px 8px;visibility:hidden" onclick="turn_tutorial_lore(-1)">{{ phrase_html("interface.learn_article.lt_previous") }}</button></div>
+			<div style="text-align:center"><button class="tutorial-lore-skip gamebutton" style="font-family:inherit;font-size:28px;line-height:28px;padding:4px 8px" onclick="finish_tutorial_lore()">{{ phrase("interface.tutorial.skip") }}</button></div>
+			<div style="text-align:right">
+				<button class="tutorial-lore-next gamebutton" style="font-family:inherit;font-size:28px;line-height:28px;padding:4px 8px" onclick="turn_tutorial_lore(1)">{{ phrase_html("interface.learn_article.next_gt") }}</button>
+				<button class="tutorial-lore-finish gamebutton" style="font-family:inherit;font-size:28px;line-height:28px;padding:4px 8px;color:#73BD6D;display:none" onclick="finish_tutorial_lore()">{{ phrase("interface.tutorial.continue") }}</button>
+			</div>
+		</div>
+	</div>
+</div>

@@ -20,6 +20,14 @@ var drops = {
 	maps: {
 		global_static: [],
 		global: [
+			// Anniversary only. A credited account rolls only its own slice flavor.
+			[1.0 / 1500, "anniversarygift"],
+			[1.0 / 50000, "slice_strawberry"],
+			[1.0 / 50000, "slice_citrus"],
+			[1.0 / 50000, "slice_honey"],
+			[1.0 / 50000, "slice_mint"],
+			[1.0 / 50000, "slice_blueberry"],
+			[1.0 / 50000, "slice_nightberry"],
 			//[0.000015,"goldenegg"], //originally 0.000005
 			//[0.0000001,"5bucks"],
 			//[0.0002,"gift0"],
@@ -336,7 +344,10 @@ var drops = {
 		],
 		bscorpion: [[1.0 / 20, "offeringp"]],
 		//"ghost":[[0.001,"candy0"]],
-		ghost: [[0.0002, "pmace"]], //0.001 was tooooo high
+		ghost: [
+			[0.0002, "pmace"], //0.001 was tooooo high
+			[1.0 / 20, "drapes"],
+		],
 		booboo: [
 			[0.005, "essenceofether"],
 			[5.0 / 100000, "ectoplasm"],
@@ -344,7 +355,10 @@ var drops = {
 		mummy: [
 			[1.0 / 4000, "open", "weaponofthedead"],
 			[1.0 / 500, "bandages"],
+			[1.0 / 20, "drapes"],
 		],
+		nerfedmummy: [[1.0 / 100, "drapes"]],
+		rimedjinn: [[0.6, "rimeglass"], [0.08, "essenceoffrost"], [0.0002, "frozenkey"], [0.005, "djinncrown"], [0.0033333333333333335, "covemantle"], [0.0016666666666666668, "stillwaterlens"]],
 		iceroamer: [
 			[0.0001, "essenceoffrost"],
 			[0.00001, "frozenkey"],
@@ -1025,12 +1039,21 @@ var drops = {
 		[8, "keepsakependant"],
 	],
 	anniversarygift: [
-		[600000, "gold", 5000],
+		[608910, "gold", 5000],
 		[200000, "gold", 20000],
 		[190000, "open", "anniversary_legacy"],
-		[9900, "open", "anniversary_equipment"],
+		[990, "open", "anniversary_equipment"],
 		[99, "cxjar", 1, "makeawish"],
 		[1, "cxjar", 1, "ikissyou"],
+	],
+	anniversary_kiss: [
+		[1, "cxjar", 1, "ikissyou"],
+		[999, "empty"],
+	],
+	// Independent extra rolls after opening a cake, not weights in its prize pool.
+	sixcake_bonus: [
+		[1, "anniversarygift", 3],
+		[1.0 / 100000, "cxjar", 1, "ikissyou"],
 	],
 	//thrash
 	thrash: [
@@ -1451,10 +1474,119 @@ var drops = {
 		[1.0 / 12, "cxbundle", "pinkb"],
 		[1.0 / 40, "cxbundle", "blackw"],
 	],
-	cosmo1: [[1, "cx", "mmakeup0"]],
+	cosmo1: [
+		[1, "cxbundle", "headroundbrown"],
+		[1, "cxbundle", "headroundred"],
+		[1, "cxbundle", "headroundgold"],
+		[1, "cxbundle", "headroundgreen"],
+		[1, "cxbundle", "headroundblue"],
+		[1, "cxbundle", "headroundslate"],
+		[1, "cxbundle", "headroundpale"],
+		[1, "cx", "makeup130"],
+		[1, "cxbundle", "headsoftwarm"],
+		[1, "cxbundle", "headsoftbrown"],
+		[1, "cxbundle", "headsoftgold"],
+		[1, "cxbundle", "headsoftred"],
+		[1, "cx", "nfmakeup11"],
+		[1, "cxbundle", "headsoftbrightgreen"],
+		[1, "cxbundle", "headsoftmuted"],
+		[1, "cxbundle", "headbeards"],
+		[1, "cxbundle", "headaliens"],
+		[1, "cxbundle", "headorcs"],
+		[1, "cxbundle", "headfins"],
+		[1, "cxbundle", "headelves"],
+		[1, "cxbundle", "headmice"],
+		[1, "cxbundle", "headwolves"],
+		[1, "cxbundle", "headyetis"],
+		[1, "cxbundle", "headbones"],
+		[1, "cx", "makeup120"],
+		[1, "cx", "cyclops0"],
+		[1, "cx", "eyehead0"],
+		[1, "cx", "mimichead0"],
+		[1, "cx", "slimehead0"],
+		[1, "cx", "lanternhead0"],
+		[1, "cx", "lavaglasshead0"],
+		[1, "cx", "stormhead0"],
+	],
 	cosmo2: [],
 	cosmo3: [],
+	cosmo4: [
+		[1, "open", "cosmo4_face"],
+		[1, "open", "cosmo4_chin"],
+		[1, "open", "cosmo4_makeup"],
+		[1, "open", "cosmo4_back"],
+		[1, "open", "cosmo4_tail"],
+	],
+	cosmo4_face: [
+		[1, "cx", "bwglasses"],
+		[1, "cx", "face100"],
+		[1, "cx", "face101"],
+		[1, "cx", "face102"],
+		[1, "cx", "face103"],
+		[1, "cx", "face104"],
+		[1, "cx", "face105"],
+		[1, "cx", "face106"],
+		[1, "cx", "face107"],
+		[1, "cx", "face108"],
+		[1, "cx", "face109"],
+		[1, "cx", "face110"],
+		[1, "cx", "tortoise_g"],
+	],
+	cosmo4_chin: [
+		[1, "cx", "beard100"],
+		[1, "cx", "beard101"],
+		[1, "cx", "beard102"],
+		[1, "cx", "beard103"],
+		[1, "cx", "beard104"],
+		[1, "cx", "beard105"],
+		[1, "cx", "beard106"],
+		[1, "cx", "beard107"],
+		[1, "cx", "beard108"],
+		[1, "cx", "beard109"],
+		[1, "cx", "beard110"],
+		[1, "cx", "beard111"],
+		[1, "cx", "beard113"],
+		[1, "cx", "beard114"],
+		[1, "cx", "mask100"],
+		[1, "cx", "mask101"],
+		[1, "cx", "mask102"],
+		[1, "cx", "mask103"],
+	],
+	cosmo4_makeup: [
+		[1, "cx", "bbeyes"],
+		[1, "cx", "facemakeup00"],
+		[1, "cx", "facemakeup01"],
+		[1, "cx", "facemakeup03"],
+		[1, "cx", "facemakeup04"],
+		[1, "cx", "facemakeup05"],
+		[1, "cx", "facemakeup06"],
+		[1, "cx", "facemakeup07"],
+	],
+	cosmo4_back: [
+		[1, "cx", "backpacks00"],
+		[1, "cx", "backpacks01"],
+		[1, "cx", "backpacks02"],
+		[1, "cx", "backpacks03"],
+		[1, "cx", "backpacks04"],
+		[1, "cx", "backpacks200"],
+		[1, "cx", "backpacks201"],
+		[1, "cx", "wings100"],
+		[1, "cx", "wings101"],
+		[1, "cx", "wings103"],
+		[1, "cx", "wings104"],
+		[1, "cx", "wings300"],
+		[1, "cx", "wings301"],
+		[1, "cx", "wings302"],
+		[1, "cx", "wings303"],
+		[1, "cx", "wings304"],
+	],
+	cosmo4_tail: [
+		[1, "cx", "tail100"],
+		[1, "cx", "tail200"],
+		[1, "cx", "tail300"],
+	],
 	cosmo5: [
+		[0.1, "cx", "halo"],
 		[1, "cx", "gravestonea"],
 		[1, "cx", "xgravestone0"],
 		[1, "cx", "xgravestone1"],
@@ -1477,11 +1609,16 @@ var drops = {
 
 // Keep the established gift rewards intact; the anniversary opens that same pool.
 drops.anniversary_legacy = drops.gift1.map(function (entry) { return entry.slice(); });
-drops.sixcake = drops.anniversary_equipment.map(function (entry) { return entry.slice(); }).concat([
-	[1.0 / 100, "cx", "aniv0"],
-	[1.0 / 100, "cx", "aniv1"],
-	[1.0 / 100, "cx", "aniv2"],
-	[1.0 / 100, "cx", "aniv3"],
+// Equipment has 96% of the cake pool; each anniversary hat has an actual 1% chance.
+drops.sixcake = drops.anniversary_equipment.map(function (entry) {
+	var drop = entry.slice();
+	drop[0] *= 0.96;
+	return drop;
+}).concat([
+	[1, "cx", "aniv0"],
+	[1, "cx", "aniv1"],
+	[1, "cx", "aniv2"],
+	[1, "cx", "aniv3"],
 ]);
 
 // The elemental mage chain previously had no item drops. Void Thread gives
@@ -1498,6 +1635,7 @@ var cosmo2_data = [
 	[3, 25],
 	[4, 25],
 	[5, 22],
+	[6, 6],
 ];
 for (var i = 0; i < cosmo2_data.length; i++) {
 	var n = cosmo2_data[i][0],
@@ -1595,3 +1733,26 @@ drops["monsters"]["cutebee"].push([1, "funtoken"]);
 //drops["candy1"].push([0.32,"phelmet"]);
 
 if (typeof module !== "undefined") module.exports = { drops: drops };
+
+
+// Weighted encounter rewards use chest_exchange and the ordinary item creation path.
+drops.cave_parcel=[[50,"cave_amber",1],[22,"cave_amber",2],[10,"scroll1"],[5,"gem1"],[2,"cave_locktooth"],[1,"cave_mothsteps"],[5,"cave_tunnelaxe"],[5,"cave_reedscythe"]];
+drops.cave_rescue=[[60,"cave_amber",2],[20,"cave_amber",3],[10,"gem1"],[3,"cave_counterweight"],[2,"cave_mothsteps"],[5,"cave_tunnelaxe"]];
+drops.cave_boss=[[55,"cave_amber",3],[15,"cave_locktooth"],[12,"cave_counterweight"],[8,"cave_mothsteps"],[10,"cave_tunnelaxe"]];
+drops.cave_finish=[[45,"cave_amber",5],[15,"cave_locktooth"],[15,"cave_counterweight"],[10,"cave_mothsteps"],[5,"cave_loaded_die"],[10,"cave_tunnelaxe"]];
+drops.cave_darkmage=[[1,"cave_blackstaff"]];
+drops.cave_rogue_weapon=[[1,"cave_backstabber"]];
+for(var cave_monster of ["cave_bat","cave_rat","cave_crab","cave_guard","cave_wolf"])
+ drops.monsters[cave_monster]=[[0.08,"cave_amber",1]];
+
+
+// Quiet hollows pay once per cleared wave, at most three waves each.
+drops.cave_farm=[[57,"cave_amber",1],[20,"cave_amber",2],[10,"scroll1"],[3,"cave_locktooth"],[2,"cave_mothsteps"],[4,"cave_tunnelaxe"],[4,"cave_reedscythe"]];
+
+// Local cave creatures supply existing crafts; no ordinary-world rare pool is inherited.
+drops.monsters.cave_spider=[[0.08,"cave_amber",1],[0.03,"spidersilk",1]];
+drops.monsters.cave_scorpion=[[0.08,"cave_amber",1],[0.03,"cscale",1]];
+drops.monsters.cave_snake=[[0.08,"cave_amber",1],[0.03,"snakeoil",1]];
+drops.monsters.cave_broodmother=[[1,"cave_amber",1],[0.1,"spidersilk",1]];
+
+drops.cave_finish_bonus=[[0.001,"cave_deepaxe"],[0.001,"cave_ambercoat"]];

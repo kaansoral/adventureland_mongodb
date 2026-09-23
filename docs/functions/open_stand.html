@@ -1,11 +1,11 @@
 <p><span class='dlabel'>open_stand(num)</span></p>
-<p>Opens a merchant stand using the stand item in a supplied or automatically located inventory slot.</p>
-<p><b>Returns:</b> Promise resolving with the stand response, or rejecting with a structured failure object.</p>
-<p><b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.</p>
-<p><b>Example:</b></p>
+<p>{{ phrase("docs.functions.open_stand.opens-a-merchant-stand-using-the-stand-item") }}</p>
+<p>{{ phrase_html("docs.functions.open_stand.returns-promise-resolving-with-the-stand-response-or") }}</p>
+<p>{{ phrase_html("docs.functions.open_stand.promise-failures-unless-a-function-specific-note-says") }}</p>
+<p>{{ phrase_html("docs.functions.open_stand.example") }}</p>
 <div class='code'>open_stand();</div>
 
 <p></p>
-<span class='redlabel'>"source"</span>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>
 
-<p><b>Merrit’s visits:</b> Keep an open, stocked stand in the same place for two minutes. Your account can receive one parcel per hour. No parcels within 40px of a stationary NPC or within 10px of another open stand. A stand directly in front of another, up to 15px south and 10px sideways, also receives no parcel. <span class="rlabel" onclick="render_merrit_info()">Merrit: full rules and exchange chances</span>.</p>
+<p>{{ phrase_html("docs.functions.open_stand.merrit-s-visits-keep-an-open-stocked-stand") }}</p>

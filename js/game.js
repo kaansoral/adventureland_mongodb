@@ -232,7 +232,7 @@ setInterval(function () {
 				data.time = new Date(data.time);
 				if (new Date() < data.time) {
 					if (reload_state != "synced") {
-						add_log("Reload Synced", colors.serious_green);
+						add_log(phrase.html("game.reload_synced"), colors.serious_green);
 					}
 					reload_state = "synced";
 				}
@@ -243,11 +243,11 @@ setInterval(function () {
 		}
 		if (reload_state == "start") {
 			((reload_state = "schedule"), (reload_timer = future_s((window.rc_delay || 0) + 3 + parseInt(Math.random() * 2))));
-			add_log("First Echo In " + parseInt(-ssince(reload_timer)) + " Seconds", "gray");
+			add_log(phrase.html("game.echo.first_delay", { value: parseInt(-ssince(reload_timer)) }), "gray");
 		}
 		if (reload_state == "schedule" && new Date() > reload_timer) {
 			api_call("can_reload", { region: server_region, pvp: is_pvp || "", name: server_identifier });
-			add_log("Echo Sent", "gray");
+			add_log(phrase.html("game.echo_sent"), "gray");
 			reload_timer = future_s((window.rc_delay || 0) + 3 + parseInt(Math.random() * 2));
 		}
 		if (reload_state == "synced" && new Date() > reload_timer) {
@@ -302,7 +302,7 @@ setInterval(function () {
 }, 200);
 
 function code_button() {
-	add_log("Executed");
+	add_log(phrase.html("game.executed"));
 	add_tint(".mpui", { ms: 3000 });
 }
 
@@ -330,11 +330,11 @@ function observe_character(name) {
 }
 
 function log_in(user, character, auth, passphrase) {
-	if (!socket) return show_alert("Connect to a server first!");
+	if (!socket) return show_alert(phrase.html("game.connect_to_a_server_first"));
 	real_id = character;
 	if (!passphrase) passphrase = storage_get("passphrase") || "";
 	if (!game_loaded) {
-		ui_log("Game hasn't loaded yet");
+		ui_log(phrase.html("game.game_hasn_t_loaded_yet"));
 		return;
 	}
 	if (is_tauri && !tauri_auth_ready()) {
@@ -346,7 +346,7 @@ function log_in(user, character, auth, passphrase) {
 		return;
 	}
 	clear_game_logs();
-	add_log("Connecting ...");
+	add_log(phrase.html("game.connecting"));
 	var no_html_value = no_html;
 	if (no_html && parent && parent.character) no_html_value = parent.character.name;
 	var data = {
@@ -385,35 +385,36 @@ function disconnect() {
 		try {
 			(socket.disconnect(), (socket = null));
 		} catch (e) {}
-	var message = "DISCONNECTED",
-		title_m = "Disconnected";
+	render_event_announcements();
+	var message = phrase.html("game.connection.disconnected"),
+		title_m = phrase("game.disconnected");
 	game_loaded = false;
 	if (window.disconnect_reason == "limits") {
-		message = "REJECTED";
+		message = phrase.html("game.connection.rejected");
 		// add_log("Hey there, Adventurer! To make the game fun for everyone, as requested by our community, you can only connect with 2 characters to a normal server, 1 additional character to a PVP server and 1 merchant. If you wish to support our game, a 'Stone of Wisdom' currently allows you to bypass limitations for the wearer.","#83BDCF");
 		// add_log("Ps. This is the third version of our prototype limits enforcer. If it's unfair, please email hello@adventure.land","#CF888A");
-		add_log("Oops. You exceeded the limitations.", "#83BDCF");
+		add_log(phrase.html("game.oops_you_exceeded_the_limitations"), "#83BDCF");
 		// add_log("You can use one character on a normal server, one additional character on a PVP server and one merchant.","#CF888A");
-		add_log("You can have 3 characters and one merchant online at most.", "#CF888A");
-	} else if (window.disconnect_reason) add_log("Disconnect Reason: " + window.disconnect_reason, "gray");
+		add_log(phrase.html("game.you_can_have_3_characters_and_one_merchant_online"), "#CF888A");
+	} else if (window.disconnect_reason) add_log(phrase.html("game.disconnect_reason", { disconnect_reason: window.disconnect_reason }), "gray");
 	if (inside != "game") {
 		return;
 	}
 	if (character && (auto_reload == "on" || (auto_reload == "auto" && (character.stand || code_run || 1)))) {
 		// Just reload, better to have more players ;) [23/09/17]
 		auto_reload = true;
-		title_m = "Reloading";
-		add_log("Auto Reload Active", colors.serious_red);
+		title_m = phrase("game.reloading");
+		add_log(phrase.html("game.auto_reload_active"), colors.serious_red);
 		reload_state = "start";
 	} else if (character_to_load) {
-		add_log("Retrying in 2500ms", "gray");
+		add_log(phrase.html("game.retrying_in_2500ms"), "gray");
 		setTimeout(function () {
 			window.location.href = page.url; //location.reload(true);
 		}, 2500);
 	}
 
 	if (no_html) {
-		set_status("Disconnected");
+		set_status(phrase.html("game.status.disconnected"));
 		$("#name").css("color", "red");
 	} else {
 		if (0) {
@@ -496,11 +497,13 @@ function reset_topleft() {
 	if (ctarget && ctarget.type == "monster" && last_target_cid != ctarget.cid) {
 		render_monster(ctarget);
 	} else if (ctarget && ctarget.npc) {
-		render_npc(ctarget);
+		if (G.npcs[ctarget.npc].cavalry) {
+			if (last_target_cid != ctarget.cid) render_character(ctarget);
+		} else render_npc(ctarget);
 	} else if (ctarget && ctarget.type == "character" && last_target_cid != ctarget.cid) {
 		render_character(ctarget);
 	} else if (!ctarget && rendered_target != null) {
-		$("#topleftcornerui").html('<div class="gamebutton">NO TARGET</div>');
+		$("#topleftcornerui").html('<div class="gamebutton">' + phrase.html("game.target.none") + '</div>');
 	}
 	rendered_target = ctarget;
 	last_target_cid = ctarget && ctarget.cid;
@@ -517,7 +520,7 @@ function handle_entities(data, args) {
 		if (!first_entities) {
 			first_entities = true;
 			if (character_to_load) {
-				set_status("LOADING " + character_to_load);
+				set_status(phrase.html("game.status.loading", { character: character_to_load }));
 				try {
 					log_in(user_id, character_to_load, user_auth);
 				} catch (e) {
@@ -589,7 +592,23 @@ function draw_entities() {
 }
 
 function sync_entity(current, monster) {
+	var repositioned = monster.position_id !== undefined && monster.position_id !== current.position_id;
 	adopt_soft_properties(current, monster); // previously only move_num, speed, dead
+	if (repositioned) {
+		// Authoritative relocations also work within one map, before their visual motion begins.
+		current.resync = true;
+		current.vx = current.vy = 0;
+		delete current.entity_motion;
+		delete current.entity_strike;
+	}
+	if (monster.cave && !monster.moving) {
+		// A traveler can stop mid-walk to speak, or the whole instance can pause.
+		current.moving=false;
+		current.vx=current.vy=0;
+		current.engaged_move=current.move_num;
+		current.real_x=monster.x; current.real_y=monster.y;
+		if(monster.angle!==undefined) { current.angle=monster.angle; set_direction(current); }
+	}
 
 	if (current.resync) {
 		// currently only set when the entity is new [03/08/16]
@@ -845,20 +864,96 @@ function reposition_ui() {
 	}
 }
 
+function tutorial_npc(npc) {
+	var id = typeof npc === "string" ? npc : npc && (npc.npc || npc.id),
+		def = G.npcs && G.npcs[id];
+	if (!def) return;
+	tut("visitnpc");
+	if (def.items || def.role === "merchant") tut("visitshop");
+	var key = G.docs.interaction_map.npc_ids[id] || G.docs.interaction_map.npc_roles[def.role];
+	if (key === "crafting") tut("craftsman");
+	if (key === "exchanges") tut("exchanger");
+}
+
+function update_tutorial_state() {
+	if (!window.character || window.is_comm || !window.X || !X.tutorial || X.tutorial.finished) return;
+	if (window.inventory) tut("inventory");
+	if (window.skillsui) tut("skills");
+	if (window.friends_inside === "characters" || (X.characters && X.characters.length > 1)) tut("characters");
+	if (window.topleft_npc === "recipes") tut("recipes");
+	if (window.topleft_npc === "craftsman") tut("craftsman");
+	if (window.topleft_npc === "exchange") tut("exchanger");
+	var equipped = Object.keys(character.slots || {}).filter(function (slot) {
+		return slot.indexOf("trade") !== 0 && character.slots[slot];
+	});
+	if (equipped.length) tut("equip");
+	(character.items || [])
+		.concat(
+			equipped.map(function (slot) {
+				return character.slots[slot];
+			}),
+		)
+		.forEach(function (item) {
+			var def = item && G.items && G.items[item.name];
+			if (!def) return;
+			if (/^scroll[0-9]+$/.test(item.name)) tut("buyscrolls");
+			if (/^cscroll[0-9]+$/.test(item.name)) tut("buycscroll0");
+			if (item.stat_type) tut("addstats");
+			if (item.level > 0 && def.upgrade) {
+				tut("upgrade");
+				tut("buyscrolls");
+			}
+			if (item.level > 0 && def.compound) {
+				tut("compound");
+				tut("buycscroll0");
+			}
+		});
+	var bank = character.bank || character.user;
+	if (bank || /^bank(?:_|$)/.test(character.map || "")) tut("bank");
+	if (bank) {
+		if (bank.gold > 0) tut("deposit");
+		if (
+			Object.keys(bank).some(function (pack) {
+				return (
+					/^items[0-9]+$/.test(pack) &&
+					Array.isArray(bank[pack]) &&
+					bank[pack].some(function (item) {
+						return item && item.name !== "placeholder";
+					})
+				);
+			})
+		)
+			tut("store");
+	}
+	// Tutorial visits use service range, not the deliberately smaller INFO radius.
+	var map = G.maps && G.maps[character.map],
+		x = character.real_x === undefined ? character.x : character.real_x,
+		y = character.real_y === undefined ? character.y : character.real_y;
+	if (map)
+		(map.npcs || []).forEach(function (npc) {
+			if (npc.position && point_distance(x, y, npc.position[0], npc.position[1]) <= 400) tutorial_npc(npc);
+		});
+}
+
 function update_tutorial_ui() {
-	var completion = X.tutorial.progress,
-		reviewing = last_rendered_step != X.tutorial.step;
-	if (last_rendered_step > X.tutorial.step) {
+	update_tutorial_state();
+	var view = get_tutorial_view(last_rendered_track),
+		progress = view.progress,
+		completion = progress.progress,
+		reviewing = last_rendered_step != progress.step,
+		lesson = view.lessons[last_rendered_step],
+		completed = progress.completed_lessons ? lesson && progress.completed_lessons.indexOf(lesson.key) !== -1 : last_rendered_step < progress.step;
+	if (reviewing && !completed) {
 		completion = 0;
 	} else {
-		if (last_rendered_step < X.tutorial.step) {
+		if (reviewing && completed) {
 			completion = 100;
 			$(".tuttask").css("color", "#85C76B").css("font-size", "64px");
 			//$(".tutstask").show();
 			$(".tuttask").html("©");
 			$(".tuttaskd").show();
-		} else completion = X.tutorial.progress;
-		X.tutorial.completed.forEach(function (name) {
+		} else completion = progress.progress;
+		progress.completed.forEach(function (name) {
 			$(".tuttask" + name)
 				.css("color", "#85C76B")
 				.css("font-size", "64px");
@@ -872,8 +967,8 @@ function update_tutorial_ui() {
 		$(".tutcontinue,.tutincomplete").hide();
 		$(".tutreview")
 			.show()
-			.html(last_rendered_step < X.tutorial.step ? "COMPLETED" : "UPCOMING");
-	} else if (completion == 100) {
+			.html(phrase.html(completed ? "game.tutorial.completed" : "game.tutorial.upcoming"));
+	} else if (progress.can_continue || completion == 100) {
 		$(".tutcontinue").show();
 		$(".tutincomplete").hide();
 		$(".tutreview").hide();
@@ -884,10 +979,11 @@ function update_tutorial_ui() {
 	}
 
 	$(".tutprogress").html(completion);
-	if (X.tutorial.step > 1) $(".flasht").removeClass("flasht");
-	$("#tutorialui").html("TUTORIAL " + (X.tutorial.step + 1) + " / " + G.docs.tutorial.length);
-	$("#tutorialslider").css("width", ((X.tutorial.step + 1) * 100) / G.docs.tutorial.length + "%");
-	if (X.tutorial.finished || !tutorial_ui) $(".tutorialui").hide();
+	var active = get_tutorial_view();
+	if (active.progress.step > 1) $(".flasht").removeClass("flasht");
+	$("#tutorialui").html(phrase.html("game.tutorial.progress", { step: Math.min(active.progress.step + 1, active.lessons.length), total: active.lessons.length }));
+	$("#tutorialslider").css("width", (Math.min(active.progress.step + 1, active.lessons.length) * 100) / active.lessons.length + "%");
+	if (active.progress.finished || !tutorial_ui) $(".tutorialui").hide();
 	else $(".tutorialui").show();
 }
 
@@ -897,8 +993,8 @@ function update_overlays() {
 	if (character) {
 		if (anniversary_visible_skill != anniversary_can_visit()) render_server();
 		else if ($("#anniversary-event-panel").length) render_anniversary_event(true);
-		if (!cached("att", character.attack)) $(".attackui").html(((character.ctype == "priest" && "HEAL ") || "ATT ") + ((character.ctype == "priest" && character.heal) || character.attack));
-		if (!cached("inv", character.esize + "|" + character.isize)) $(".invui").html("INV " + (character.isize - character.esize) + "/" + character.isize);
+		if (!cached("att", character.attack)) $(".attackui").html(phrase.html(character.ctype == "priest" ? "game.hud.heal" : "game.hud.attack", { amount: (character.ctype == "priest" && character.heal) || character.attack }));
+		if (!cached("inv", character.esize + "|" + character.isize)) $(".invui").html(phrase.html("game.hud.inventory", { used: character.isize - character.esize, total: character.isize }));
 		if (!cached("hptop", character.hp, character.max_hp)) {
 			//$(".hpui").html("HP: "+character.hp+"/"+character.max_hp);
 			$("#hptext").html(character.hp + "/" + character.max_hp);
@@ -911,10 +1007,11 @@ function update_overlays() {
 		}
 		var xp = floor((character.xp / character.max_xp) * 100);
 		if (!cached("xptop", character.level + "|" + xp)) {
-			$("#xpui").html("LV" + character.level + " " + xp + "%");
+			$("#xpui").html(phrase.html("game.hud.experience", { level: character.level, percent: xp }));
 			$("#xpslider").css("width", (character.xp * 100) / character.max_xp + "%");
 		}
-		if (!cached("tutorialtop", X.tutorial.step + "|" + X.tutorial.task + "|" + X.tutorial.progress)) {
+		var tutorial = get_tutorial_view();
+		if (!cached("tutorialtop", tutorial.track + "|" + tutorial.progress.step + "|" + tutorial.progress.task + "|" + tutorial.progress.progress + "|" + tutorial.progress.finished)) {
 			update_tutorial_ui();
 		}
 		if (inventory && !cached("igold", character.gold)) $(".goldnum").html(to_pretty_num(character.gold + (new Date().getDate() == 101 && new Date().getMonth() == 3 ? 1014201800 : 0)));
@@ -943,6 +1040,7 @@ function update_overlays() {
 		else if (seconds < 10) seconds = "0" + seconds;
 		$(".abtime").html("0" + minutes + ":" + seconds);
 	}
+	update_cave_hud();
 	if (character && character.moving && options.code_fx && stage.cfilter_ascii) remove_code_fx();
 	showhide_quirks_logic();
 }
@@ -995,10 +1093,13 @@ function showhide_quirks_logic() {
 	for (var i = 0; i < interaction_npcs.length; i++) {
 		var map_npc = interaction_npcs[i],
 			context = get_npc_interaction_context(map_npc);
+		if (distance(character, map_npc) <= 400) tutorial_npc(map_npc);
 		if (!context || !context.definition.proximity) continue;
 		var c_distance = distance(character, map_npc);
 		consider_interaction_context(context.key, "npc:" + context.npc_id, c_distance, 72, context, 3, "npc");
 	}
+	var cavalry_context = get_cavalry_interaction_context();
+	if (cavalry_context) interaction_contexts.push(cavalry_context);
 	normalize_interaction_contexts();
 	var near_npc = false;
 	for (var context_index = 0; context_index < interaction_contexts.length; context_index++) {
@@ -1039,6 +1140,7 @@ function interaction_context_range(definition, source, fallback) {
 
 function interaction_door_visual(door) {
 	var destination = door && G.maps[door[4]];
+	if (destination && destination.generated) return null;
 	if (!((door && door[7] && door[7] != "ordinary") || (destination && destination.instance))) return null;
 	var keys = { crypt: "cryptkey", winter_instance: "frozenkey", spider_instance: "spiderkey", tomb: "tombkey" };
 	return { icon: keys[door[4]] || "stonekey" };
@@ -1047,6 +1149,8 @@ function interaction_door_visual(door) {
 function normalize_interaction_contexts() {
 	interaction_contexts.sort(function (a, b) {
 		if (a.priority != b.priority) return b.priority - a.priority;
+		// Keep guide order fixed; distance only chooses between NPCs sharing a guide.
+		if (a.key != b.key) return a.key.localeCompare(b.key);
 		return a.distance - b.distance;
 	});
 	var unique = [],
@@ -1077,6 +1181,44 @@ function get_npc_interaction_context(npc) {
 	return { key: key, definition: definition, npc_id: npc_id, npc: npc };
 }
 
+function get_cavalry_interaction_context() {
+	if (!character || !(character.level < 60) || character.rip || !(character.hp > 0) || no_graphics || no_html || !proximity_guides) return null;
+	var config = G.items.tracker && G.items.tracker.cavalry,
+		definition = G.docs && G.docs.interactions && G.docs.interactions.cavalry,
+		npc = G.npcs.cavalry_warrior;
+	if (!config || !definition || !npc || !G.maps[character.map] || G.maps[character.map].generated) return null;
+	var nearby = Object.values(entities).filter(function (entity) {
+		return entity && !entity.dead && !entity.rip && entity.hp > 0 && entity.in === character.in && distance(character, entity) <= config.range + config.veteran_range;
+	});
+	for (var monster of nearby) {
+		var def = G.monsters[monster.mtype];
+		if (monster.type !== "monster" || !def || monster.level < config.min_level || !Number.isFinite(monster.level) || distance(character, monster) > config.range) continue;
+		if (monster.pet || monster.trap || monster.cave || monster.cooperative || def.special || def.cooperative || def.announce || def.good || def.peaceful || !(def.respawn >= 0 && def.respawn < 300)) continue;
+		if (monster.target && monster.target !== character.name && !(party && party[monster.target])) continue;
+		if (nearby.some(function (player) {
+			return player.type === "character" && !player.npc && player.level >= config.newcomer_level && simple_distance(player, monster) <= config.veteran_range;
+		})) continue;
+		// Use live scaled stats. This is a hint; the server still authorizes every call.
+		var physical = character.damage_type === "physical",
+			defense = physical ? monster.armor || 0 : monster.resistance || 0,
+			piercing = physical ? character.apiercing || 0 : character.rpiercing || 0,
+			hit = character.attack * damage_multiplier(defense - piercing),
+			incoming = monster.attack,
+			kind = monster.damage_type || def.damage_type;
+		if (kind !== "pure") incoming *= damage_multiplier(kind === "physical" ? (character.armor || 0) - (monster.apiercing || def.apiercing || 0) : (character.resistance || 0) - (monster.rpiercing || def.rpiercing || 0));
+		var hits = Math.ceil(monster.hp / Math.max(1, hit)),
+			seconds = hits / Math.max(0.1, character.frequency),
+			loss = Math.ceil(seconds * monster.frequency) * incoming;
+		// A few dangerous hits, or a long fight costing at least half the remaining HP.
+		if (![hit, incoming, seconds, loss].every(Number.isFinite) || hits <= 1 || (incoming * 4 < character.hp && (seconds < 8 || loss < character.hp / 2))) continue;
+		return {
+			key: "cavalry", definition: definition, npc_id: "cavalry", priority: 2, source: "combat", distance: distance(character, monster),
+			visual: { skin: npc.skin, cx: npc.cx, label: "interface.cavalry.call_short" },
+		};
+	}
+	return null;
+}
+
 var last_loader = { progress: 0 };
 function on_load_progress(loader, resource) {
 	// called at selection.html - as it gets loaded dynamically into the game [16/11/18]
@@ -1089,11 +1231,11 @@ function on_load_progress(loader, resource) {
 function loader_click() {
 	if (!server_address)
 		show_modal(
-			"<div style='font-size: 48px'>No servers found, 3 possible scenarios: <br /><br />(1) The game is being updated <br />(2) All existing servers overloaded <br />(3) Someone found a bug that brought down all the servers<br /><br />Best to spend this time in our Discord to figure out what happened</div>",
+			"<div style='font-size: 48px'>" + phrase.html("game.loading.no_servers") + "</div>",
 		);
 	else if ($("#progressui").html() != "100%")
-		show_modal("<div style='font-size: 48px'>Game resources are loading<br /><br />This may take some time<br /><br />If the game got stuck at this stage, please email hello@adventure.land</div>");
-	else show_modal("<div style='font-size: 48px'>All game resources have been loaded<br /><br />If you can't sign in, please email hello@adventure.land</div>");
+		show_modal("<div style='font-size: 48px'>" + phrase.html("game.loading.resources") + "</div>");
+	else show_modal("<div style='font-size: 48px'>" + phrase.html("game.loading.ready") + "</div>");
 }
 
 function init_interface() {
@@ -1110,8 +1252,8 @@ function init_interface() {
 
 function the_game(demo) {
 	// if(!window.requestAnimationFrame) window.requestAnimationFrame=function(a){ setTimeout(a,16); }; // jsdom patch [18/04/19]
-	width = $(window).width();
-	height = $(window).height();
+	width = viewport_width();
+	height = viewport_height();
 	if (bowser.mac && bowser.firefox && !engine_mode)
 		renderer = new PIXI.CanvasRenderer(width, height, { antialias: antialias, transparent: false }); //, resolution:window.devicePixelRatio etc. doesn't work [15/11/16]
 	else if (retina_mode && !engine_mode) renderer = new PIXI.autoDetectRenderer(width, height, { antialias: antialias, transparent: false, resolution: window.devicePixelRatio, autoResize: true });
@@ -1126,6 +1268,7 @@ function the_game(demo) {
 
 	renderer.plugins.interaction.cursorStyles.help = "help";
 	renderer.plugins.interaction.cursorStyles.crosshair = "crosshair";
+	if (!no_graphics) renderer.plugins.interaction.mapPositionToPoint = map_game_pointer;
 
 	// renderer.plugins.interaction.cursorStyles.pointer = function() {
 	// console.log('Should be a pointer');
@@ -1258,6 +1401,8 @@ function the_game(demo) {
 	FM = {}; // [i,j] for portraits
 	XYWH = {}; // dimensions - previously D, it was cool while it lasted, renamed to XYWH, so the server.D can be imported into window.D [12/07/18]
 	loader = PIXI.loader;
+	if (!no_graphics) loader.concurrency = 64;
+	if (!no_graphics && window.desktop) desktop.loadImages(loader);
 	loader.on("progress", on_load_progress);
 
 	// Different animations can share a sheet; register each resource only once.
@@ -1283,9 +1428,7 @@ function the_game(demo) {
 
 	gprocess_game_data();
 
-	if (mode.bitmapfonts && (!loader.resources || !loader.resources["/css/fonts/m5x7.xml"])) loader.add("/css/fonts/m5x7.xml"); //,{xhrType:PIXI.loaders.Resource.XHR_RESPONSE_TYPE.DOCUMENT}
-
-	set_status("75% ->Server");
+	set_status(phrase.html("game.status.server"));
 
 	if (!demo) {
 		load_game();
@@ -1354,17 +1497,18 @@ function init_demo() {
 
 var first_welcome = false;
 function init_socket(args) {
+	var tutorial_map;
 	if (!args) args = {};
 	if (!server_address) {
-		add_log("Welcome");
-		add_log("No live server found", "red");
-		add_log("Please check again in 2-3 minutes");
-		add_log("Spend this time in our Discord chat room", colors.code_blue);
+		add_log(phrase.html("game.welcome"));
+		add_log(phrase.html("game.no_live_server_found"), "red");
+		add_log(phrase.html("game.please_check_again_in_2_3_minutes"));
+		add_log(phrase.html("game.spend_this_time_in_our_discord_chat_room"), colors.code_blue);
 		add_update_notes();
 		return;
 	}
 	if (window.socket) {
-		if (!socket_welcomed) return add_log("Another server connection in progress. Please wait.");
+		if (!socket_welcomed && !args.selection) return add_log(phrase.html("game.another_server_connection_in_progress_please_wait"));
 		window.socket.destroy();
 	}
 	$(".disconnected").hide();
@@ -1374,7 +1518,8 @@ function init_socket(args) {
 		if (window.location.origin == "http://127.0.0.1/") server_address = "127.0.0.1";
 		// else server_address = "0.0.0.0";
 	}
-	var query = (args.secret && "desktop=" + ((!is_comm && 1) || "") + "&secret=" + args.secret) || undefined;
+	var query = "map_protocol=1&no_graphics=" + (no_graphics ? "1" : "0") +
+		((args.secret && "&desktop=" + ((!is_comm && 1) || "") + "&secret=" + args.secret) || "");
 	if (location.protocol == "https:")
 		window.socket = io(server_address, {
 			path: server_path,
@@ -1390,9 +1535,11 @@ function init_socket(args) {
 			transports: ["websocket"],
 			query: query,
 		});
-	add_log("Connecting to the server.");
+	add_log(phrase.html("game.connecting_to_the_server"));
 	socket_ready = false;
 	socket_welcomed = false;
+	update_login_server();
+	render_event_announcements();
 	observing = null;
 	$("#observeui").hide();
 	original_onevent = socket.onevent;
@@ -1409,6 +1556,7 @@ function init_socket(args) {
 				transporting = new Date();
 				transporting_event = event;
 				transporting_data = { to: event_data.to, s: event_data.s || 0, place: event_data.place, name: event_data.name };
+				cave_transport_animation(event, event_data);
 			}
 		} else {
 			var same_request = transporting_event == event;
@@ -1422,6 +1570,8 @@ function init_socket(args) {
 		if (mode.log_incoming) console.log("INCOMING", JSON.stringify(arguments) + " " + new Date());
 		original_onevent.apply(socket, arguments);
 	};
+	socket.on("map_chunk", receive_generated_map_chunk);
+	socket.on("cave", receive_cave_state);
 	socket.on("welcome", function (data) {
 		if (data && data.character) {
 			observing = data.character;
@@ -1434,14 +1584,15 @@ function init_socket(args) {
 		server_region = data.region;
 		server_identifier = data.name;
 		server_name = server_names[data.region] + " " + data.name;
+		update_login_server();
 		clear_game_logs();
-		add_log("Welcome to " + server_names[data.region] + " " + data.name);
+		add_log(phrase.html("game.welcome_to", { value: server_names[data.region], name: data.name }));
 		add_update_notes();
 		if (!first_welcome) {
 			first_welcome = true;
 			if (is_electron && electron_is_main() && user_id) setTimeout(electron_code_sync_logic, 1);
 		}
-		current_map = data.map;
+		current_map = tutorial_map = data.map;
 		current_in = data["in"];
 		first_coords = true;
 		first_x = data.x;
@@ -1450,7 +1601,7 @@ function init_socket(args) {
 		M = G.maps[current_map].data;
 		GEO = G.geometry[current_map];
 		$(".servername").html(server_name);
-		$(".mapname").html(G.maps[current_map].name || "Unknown");
+		$(".mapname").html(G.maps[current_map].name || phrase.html("game.map.unknown"));
 		if (!resources_loaded) socket_ready = true;
 		else {
 			launch_game();
@@ -1468,14 +1619,17 @@ function init_socket(args) {
 			topleft_npc = false;
 			data.redraw = true;
 		}
-		if (create && character) tut("travel");
+		// Player packets can update current_map before new_map arrives.
+		if (tutorial_map && tutorial_map !== data.name && character) tut("travel");
+		tutorial_map = data.name;
 		current_map = data.name;
 		current_in = data["in"];
+		finish_cave_entry();
 		reflect_music();
 		// alert(current_map);
 		M = G.maps[current_map].data;
 		GEO = G.geometry[current_map];
-		$(".mapname").html(G.maps[current_map].name || "Unknown");
+		$(".mapname").html(G.maps[current_map].name || phrase.html("game.map.unknown"));
 		if (character) {
 			character.real_x = data.x;
 			character.real_y = data.y;
@@ -1520,6 +1674,7 @@ function init_socket(args) {
 		if (data.eval) eval(data.eval);
 		call_code_function("trigger_event", "new_map", data);
 		call_code_function("trigger_character_event", "new_map", data);
+		prune_generated_maps();
 	});
 	socket.on("start", function (data) {
 		if (window.SteamNews) SteamNews.stop();
@@ -1562,6 +1717,7 @@ function init_socket(args) {
 		G.base_gold = data.base_gold;
 		delete data.base_gold;
 		character = add_character(data, 1);
+		update_tutorial_state();
 		character.ping = min(320, mssince(window.auth_sent));
 		pings = [character.ping];
 		if (!data.vision) character.vision = [700, 500];
@@ -1574,28 +1730,28 @@ function init_socket(args) {
 			if (!character.xcx.includes(c)) character.xcx.push(c);
 		});
 		if (character.level == 1) {
-			if (X && X.tutorial && !X.tutorial.finished && tutorial_ui) open_tutorial();
+			if (X && !get_tutorial_view().progress.finished && tutorial_ui) open_tutorial();
 			else show_game_guide();
 		}
 		if (character.ctype == "merchant" || recording_mode || 1) options.show_names = true;
 		clear_game_logs();
-		add_log("Connected!");
+		add_log(phrase.html("game.connected"));
 		if (S.holidayseason) add_holiday_log();
 		// add_greenlight_log();
 		if (gameplay == "hardcore") {
 			add_log(
-				"Pro Tips: You can transport to anywhere from the Beach Cave, Water Spirits drop stat belts, 3 monsters drop 3 new unique items, 3 monsters drop 50 times the gold they usually do!",
+				phrase.html("game.welcome.hardcore_tips"),
 				"#B2D5DF",
 			);
 			$(".saferespawn").show();
-		} else add_log("Note: Game dynamics and drops aren't final, they are evolving with every update", "gray");
+		} else add_log(phrase.html("game.welcome.development_note"), "gray");
 		if (data.blessed_by) {
-			add_chat("", "This server has been blessed by " + data.blessed_by, "#8F70D8");
+			add_chat("", phrase("game.this_server_has_been_blessed_by", { blessed_by: data.blessed_by }), "#8F70D8");
 		}
 		// add_log("Warning: A Chrome bug is causing memory leaks, very small but it adds up. They patched the bug, however, that patch didn't make it to our browsers yet","#E08583");
 		$(".charactername").html(character.name);
 		page.title = character.name;
-		if (gameplay == "hardcore") page.title = "Fierce " + character.name;
+		if (gameplay == "hardcore") page.title = phrase("game.title.hardcore", { character: character.name });
 		try {
 			var get = "";
 			if (no_html) get += ((!get && "?") || "&") + "no_html=true";
@@ -1619,7 +1775,7 @@ function init_socket(args) {
 			reflect_music();
 			M = G.maps[current_map].data;
 			GEO = G.geometry[current_map];
-			$(".mapname").html(G.maps[current_map].name || "Unknown");
+			$(".mapname").html(G.maps[current_map].name || phrase.html("game.map.unknown"));
 			create_map();
 		}
 		if (!gtest) {
@@ -1669,7 +1825,7 @@ function init_socket(args) {
 		map_keys_and_skills();
 		render_skillbar();
 		if (!character.rip) $("#name").css("color", "#1AC506");
-		set_status("Connected");
+		set_status(phrase.html("game.status.connected"));
 		render_server();
 		// show_json(d_entities);
 		handle_entities(d_entities, { new_map: true });
@@ -1677,7 +1833,7 @@ function init_socket(args) {
 	});
 	socket.on("correction", function (data) {
 		if (can_move({ map: character.map, x: character.real_x, y: character.real_y, going_x: data.x, going_y: data.y, base: character.base })) {
-			add_log("Location corrected", "gray");
+			add_log(phrase.html("game.location_corrected"), "gray");
 			console.log("Character correction");
 			character.real_x = parseFloat(data.x);
 			character.real_y = parseFloat(data.y);
@@ -1695,7 +1851,7 @@ function init_socket(args) {
 	});
 	socket.on("ping_ack", function (data) {
 		if (!pingts[data.id]) return;
-		if (data.ui) add_log("Ping: " + mssince(pingts[data.id]) + "ms", "gray");
+		if (data.ui) add_log(phrase.html("game.ping_ms", { value: mssince(pingts[data.id]) }), "gray");
 		push_ping(mssince(pingts[data.id]));
 		delete pingts[data.id];
 	});
@@ -1708,8 +1864,8 @@ function init_socket(args) {
 			if (requested_name) parent.character_start_failed_runner(requested_name, data);
 		}
 		draw_trigger(function () {
-			if (is_string(data)) ui_error(data);
-			else ui_error(data.message);
+			if (is_string(data)) ui_error(data === "ERROR!" ? phrase.html("response.exception") : data);
+			else ui_error(phrase.message(data, true));
 		});
 	});
 	socket.on("game_log", function (data) {
@@ -1730,12 +1886,17 @@ function init_socket(args) {
 					message: start_error,
 				});
 		}
-		if ((data.message || data) == "You killed a Goo") tut("killagoo");
+		if (
+			(data.message || data) == "You killed a Goo" ||
+			(data.phrase && data.phrase.indexOf("server.kill.") === 0 && data.phrase_args && data.phrase_args.monster === G.monsters.goo.name) ||
+			(typeof (data.message || data) === "string" && / killed (?:a |the )?Goo$/.test(data.message || data))
+		)
+			tut("killagoo");
 		draw_trigger(function () {
 			if (is_string(data)) ui_log(data, "gray");
 			else {
 				if (data.sound) sfx(data.sound);
-				ui_log(data.message, data.color);
+				ui_log(phrase.message(data, true), data.color);
 			}
 			if (data.confetti && get_player(data.confetti)) confetti_shower(get_player(data.confetti), 1);
 		});
@@ -1746,7 +1907,7 @@ function init_socket(args) {
 			if (is_string(data)) add_chat("", data, "gray");
 			else {
 				if (data.sound) sfx(data.sound);
-				add_chat("", data.message, data.color);
+				add_chat("", phrase.message(data), data.color);
 			}
 		});
 	});
@@ -1758,7 +1919,7 @@ function init_socket(args) {
 	socket.on("online", function (data) {
 		draw_trigger(function () {
 			no_chat_notification = true;
-			add_chat("", data.name + " is on " + server_to_ui(data.server), "white", "online|" + data.name); //#80ECA7
+			add_chat("", phrase("game.character_online", { name: data.name, server: server_to_ui(data.server) }), "white", "online|" + data.name); //#80ECA7
 			no_chat_notification = false;
 		});
 	});
@@ -1773,7 +1934,7 @@ function init_socket(args) {
 			last_light = new Date();
 			var player = get_entity(data.name);
 			if (!player) return;
-			d_text("LIGHT", player, { color: "white" });
+			d_text(phrase("combat.light"), player, { color: "white" });
 			//disappearing_circle(player.real_x,player.real_y-9,20,{alpha:0.7});
 			//disappearing_circle(player.real_x,player.real_y-8,10,{alpha:0.7,color:0xDED491});
 			if (player.me) start_animation(player, "light");
@@ -1786,7 +1947,7 @@ function init_socket(args) {
 	socket.on("game_event", function (data) {
 		if (!data.name) data = { name: data };
 		if (data.name == "pinkgoo") {
-			add_chat("", "The 'Love Goo' has respawned in " + G.maps[data.map].name + "!", "#EDB0E0");
+			add_chat("", phrase("game.spawn.love_goo", { map: G.maps[data.map].name }), "#EDB0E0");
 		}
 		if (data.name == "snowman") {
 			// add_chat("","Snowman respawned in "+G.maps[data.map].name+"!","#B1DCEF");
@@ -1797,10 +1958,10 @@ function init_socket(args) {
 			// add_chat("","Join the fight against Franky!","#9D99EF");
 		}
 		if (data.name == "wabbit") {
-			add_chat("", "Wabbit has respawned in " + G.maps[data.map].name + "!", "#78CFEF");
+			add_chat("", phrase("game.spawn.wabbit", { map: G.maps[data.map].name }), "#78CFEF");
 		}
 		if (data.name == "goldenbat") {
-			add_chat("", "The Golden Bat has spawned in " + G.maps[data.map].name + "!", "gold");
+			add_chat("", phrase("game.spawn.golden_bat", { map: G.maps[data.map].name }), "gold");
 		}
 		if (data.name == "ab_score") {
 			if (!events.abtesting) return;
@@ -1812,15 +1973,17 @@ function init_socket(args) {
 		call_code_function("trigger_event", "event", data);
 	});
 	socket.on("achievement_progress", function (data) {
-		add_log("AP[" + data.name + "]: " + to_pretty_num(data.count) + "/" + to_pretty_num(data.needed), "#6DCC9E");
+		add_log(phrase.html("game.ap", { name: data.name, count: to_pretty_num(data.count), needed: to_pretty_num(data.needed) }), "#6DCC9E");
 	});
 	socket.on("achievement_success", function (data) {
-		add_log("AP[" + data.name + "]: Complete!", "#58CF40");
+		add_log(phrase.html("game.achievement.complete", { name: data.name }), "#58CF40");
 	});
 	socket.on("skill_timeout", function (data) {
 		skill_timeout(data.name, data.ms);
 	});
 	socket.on("game_response", function (data) {
+		if (data.interaction === "cavalry" && !no_graphics) add_log(phrase.message(data), data.failed ? "gray" : "#C6AA62");
+		if (data.place == "poker") poker_response(data);
 		if (Dev) console.log(["game_response", data]);
 		var response = data.response || data;
 		try {
@@ -1835,14 +1998,50 @@ function init_socket(args) {
 
 			if (data.place && data.failed) {
 				if (!data.reason) data.reason = data.response;
+				if (in_arr(data.place, ["transport", "enter", "leave"])) transporting = false;
+				if (data.place === "transport" && G.maps[current_map]?.generated) cave_transport_failed(data);
 				reject_deferred(data.place, data);
 			} else if (data.place) {
 				resolve_deferred(data.place, data);
 			}
+			equipment_sound(data);
 			if (!data.failed && data.place == "equip" && data.slot && !in_arr(data.slot, trade_slots)) tut("equip");
+			if (
+				data.place == "equip_batch" &&
+				Array.isArray(data.slots) &&
+				data.slots.some(function (slot) {
+					return slot && slot.slot && !in_arr(slot.slot, trade_slots);
+				})
+			)
+				tut("equip");
 			if (!data.failed && (data.place == "skill" || (data.place != "attack" && G.skills[data.place]))) tut("useskill");
+			if (!data.failed && data.place == "use" && in_arr(data.used, ["hp", "mp"])) tut("useskill");
+			if (!data.failed && in_arr(data.place, ["heal", "attack"])) tut("useskill");
 			if (!data.failed && data.used && ((data.place == "use" && in_arr(data.used, ["hp", "mp"])) || (data.place == "equip" && G.items[data.used] && G.items[data.used].gives))) tut("usepotion");
-			if (!data.failed && data.place == "bank" && data.bank_action == "store") tut("store");
+			if (!data.failed && data.place == "bank" && (data.bank_action == "store" || (data.bank_action == "swap" && data.stored))) tut("store");
+			if (!data.failed && data.place == "bank") tut("bank");
+			if (!data.failed && in_arr(data.place, ["buy", "buy_with_cash", "exchange_buy", "trade_buy"])) {
+				tut("visitshop");
+				tut("buyitem");
+				tut("visitnpc");
+			}
+			if (!data.failed && in_arr(data.place, ["craft", "dismantle"])) {
+				tut("craftsman");
+				tut("recipes");
+				tut("visitnpc");
+			}
+			if (!data.failed && data.place == "exchange") {
+				tut("exchanger");
+				tut("visitnpc");
+			}
+			if (!data.failed && response == "upgrade_chance") {
+				tut("upgrade");
+				tut("buyscrolls");
+			}
+			if (!data.failed && response == "compound_chance") {
+				tut("compound");
+				tut("buycscroll0");
+			}
 			var merge_transfer_cevent = cevent == response && in_arr(response, ["item_received", "item_sent", "gold_sent", "gold_received"]);
 			if (cevent && !merge_transfer_cevent) call_code_function("trigger_character_event", cevent, data);
 			if (event) call_code_function("trigger_event", event, data);
@@ -1852,98 +2051,101 @@ function init_socket(args) {
 		if (response == "upgrade_success" || response == "upgrade_fail") u_retain_t = options.retain_upgrades;
 		draw_trigger(function () {
 			if (response == "elixir") {
-				ui_log("Consumed the elixir", "gray");
-				d_text("YUM", character, { color: "elixir" });
+				ui_log(phrase.html("response.elixir"), "gray");
+				d_text(phrase("response.elixir.floating"), character, { color: "elixir" });
 			} else if (response == "data") {
+				if (data.place == "ikissyou" && data.rewarded === false && data.message) ui_log(phrase.message(data, true), "gray");
 			} else if (response == "invalid") {
-				d_text("INVALID", character);
+				d_text(phrase("response.invalid.floating"), character);
 			} else if (response == "error") {
-				ui_error("Server error!");
+				ui_error(phrase.html("response.error"));
 			} else if (response == "storage_full") {
-				ui_log("Storage is full", "gray");
+				ui_log(phrase.html("response.storage_full"), "gray");
 				reopen();
 			} else if (response == "safety_check");
 			else if (response == "inventory_full") {
-				d_text("NO SPACE", character);
-				ui_log("Inventory is full", "gray");
+				d_text(phrase("response.inventory_full.floating"), character);
+				ui_log(phrase.html("response.inventory_full"), "gray");
 				reopen();
 			} else if (response == "home_set") {
-				render_interaction({ auto: true, skin: "lionsuit", message: "Set your home to: " + data.home });
+				render_interaction({ auto: true, skin: "lionsuit", message: phrase.html("response.home_set", { home: data.home }) });
 				character.home = data.home;
 			} else if (response == "sh_time") {
-				render_interaction({ auto: true, skin: "lionsuit", message: "You can't change your home server for another " + to_pretty_float(data.hours) + " hours!" });
-			} else if (response == "invalid") ui_log("Invalid", "gray");
-			else if (response == "only_in_home") ui_log("You can only do this in your home server!", "gray");
+				render_interaction({ auto: true, skin: "lionsuit", message: phrase.html("response.sh_time", { hours: to_pretty_float(data.hours) }) });
+			} else if (response == "invalid") ui_log(phrase.html("response.invalid"), "gray");
+			else if (response == "only_in_home") ui_log(phrase.html("response.only_in_home"), "gray");
 			else if (response == "cant_when_sick") {
-				if (data.goblin) render_interaction({ auto: true, skin: G.npcs.lostandfound.skin, message: "Ugh, you're sick! Come back when you are healed!" });
-				ui_log("You can't do this when you are sick!", "gray");
-			} else if (response == "party_full") ui_log("The party is full", "gray");
-			else if (response == "already_in_party") ui_log("Already in this party", "gray");
-			else if (response == "player_gone") ui_log(data.name + " is gone", "gray");
-			else if (response == "invitation_expired") ui_log("Invitation expired", "gray");
-			else if (response == "request_expired") ui_log("Request expired", "gray");
-			else if (response == "cant_kick") ui_log("You can't kick someone who's above you.", "gray");
+				if (data.goblin) render_interaction({ auto: true, skin: G.npcs.lostandfound.skin, message: phrase.html("response.cant_when_sick") });
+				ui_log(phrase.html("response.cant_when_sick.you_can_t_do_this_when_you_are_sick"), "gray");
+			} else if (response == "party_full") ui_log(phrase.html("response.party_full"), "gray");
+			else if (response == "already_in_party") ui_log(phrase.html("response.already_in_party"), "gray");
+			else if (response == "player_gone") ui_log(phrase.html("response.player_gone", { name: data.name }), "gray");
+			else if (response == "invitation_expired") ui_log(phrase.html("response.invitation_expired"), "gray");
+			else if (response == "request_expired") ui_log(phrase.html("response.request_expired"), "gray");
+			else if (response == "cant_kick") ui_log(phrase.html("response.cant_kick"), "gray");
 			else if (response == "compound_success") {
 				tut("compound");
-				ui_log("Item combination succeeded", (data.up && "#1ABEFF") || "white");
+				ui_log(phrase.html("response.compound_success"), (data.up && "#1ABEFF") || "white");
 				if (!data.stale) resolve_deferred("compound", { success: true, level: data.level, num: data.num });
 			} else if (response == "compound_fail") {
 				tut("compound");
-				ui_error("Item combination failed");
+				ui_error(phrase.html("response.compound_fail"));
 				if (!data.stale) resolve_deferred("compound", { success: false, level: data.level, num: data.num });
 			} else if (response == "compound_no_scroll") {
 				reject_deferred("compound", { reason: "no_scroll" });
 			} else if (response == "compound_in_progress") {
-				ui_log("Another combination in progress", "gray");
+				ui_log(phrase.html("response.compound_in_progress"), "gray");
 			} else if (response == "compound_invalid_offering") {
-				ui_log("Offering not accepted", "gray");
+				ui_log(phrase.html("response.compound_invalid_offering"), "gray");
 				reject_deferred("compound", { reason: "offering" });
 			} else if (response == "compound_mismatch") {
-				ui_log("Items are different", "gray");
+				ui_log(phrase.html("response.compound_mismatch"), "gray");
 				reject_deferred("compound", { reason: "mismatch" });
 			} else if (response == "compound_cant") {
-				ui_log("Can't be combined", "gray");
+				ui_log(phrase.html("response.compound_cant"), "gray");
 				reject_deferred("compound", { reason: "not_combinable" });
 			} else if (response == "compound_incompatible_scroll") {
 				set_uchance("?");
-				ui_log("Incompatible scroll", "gray");
+				ui_log(phrase.html("response.compound_incompatible_scroll"), "gray");
 				reject_deferred("compound", { reason: "scroll" });
 			} else if (response == "misc_fail") {
 				ui_log(":)", "#FF5D54");
 			} else if (response == "upgrade_success") {
 				tut("upgrade");
-				ui_log("Item upgrade succeeded", "white");
+				ui_log(phrase.html("response.upgrade_success"), "white");
 				if (!data.stale) resolve_deferred("upgrade", { success: true, level: data.level, num: data.num });
 			} else if (response == "upgrade_fail") {
 				tut("upgrade");
-				ui_error("Item upgrade failed");
+				ui_error(phrase.html("response.upgrade_fail"));
 				if (!data.stale) resolve_deferred("upgrade", { failed: true, success: false, level: data.level, num: data.num });
 			} else if (response == "upgrade_success_stat") {
 				tut("addstats");
 				if (!data.stale) resolve_deferred("upgrade", { stat: true, stat_type: data.stat_type, num: data.num });
 			} else if (response == "upgrade_offering_success") {
-				ui_log("Offering succeeded", "white");
+				ui_log(phrase.html("response.upgrade_offering_success"), "white");
 				if (!data.stale) resolve_deferred("upgrade", { success: true });
 			} else if (response == "upgrade_no_item") {
 				reject_deferred("upgrade", { reason: "no_item" });
 			} else if (response == "upgrade_in_progress") {
-				ui_log("Another upgrade in progress", "gray");
+				ui_log(phrase.html("response.upgrade_in_progress"), "gray");
 				reject_deferred("upgrade", { reason: "in_progress" });
 			} else if (response == "mail_sending") {
-				ui_log("Sending mail ...", "gray");
+				ui_log(phrase.html("response.mail_sending"), "gray");
 				hide_modal(true);
 			} else if (response == "mail_failed") {
-				show_alert("Mail failed, reason: " + data.reason);
+				show_alert(phrase.html("response.mail_failed", { reason: phrase.error(data.reason) }));
 			} else if (response == "mail_sent") {
-				ui_log("Mail sent to " + data.to + "!", "#C06978");
+				ui_log(phrase.html("response.mail_sent", { to: data.to }), "#C06978");
+			} else if (response == "mail_received") {
+				handle_information([{ type: "unread", count: data.count }]);
 			} else if (response == "mail_take_item_failed") {
-				ui_log("Can't retrieve the item, probably you took it already", "#C06978");
+				ui_log(phrase.html("response.mail_take_item_failed"), "#C06978");
 				setTimeout(function () {
 					api_call("pull_mail");
 				}, 2000);
 				$(".takeitem").hide();
 			} else if (response == "mail_item_taken") {
-				ui_log("Item retrieved!", "#6DAD47");
+				ui_log(phrase.html("response.mail_item_taken"), "#6DAD47");
 				setTimeout(function () {
 					api_call("pull_mail");
 				}, 2000);
@@ -1953,76 +2155,76 @@ function init_socket(args) {
 			} else if (response == "upgrade_mismatch") {
 				reject_deferred("upgrade", { reason: "mismatch" });
 			} else if (response == "upgrade_invalid_offering") {
-				ui_log("Offering not accepted", "gray");
+				ui_log(phrase.html("response.upgrade_invalid_offering"), "gray");
 				reject_deferred("upgrade", { reason: "offering" });
 			} else if (response == "upgrade_cant") {
-				ui_log("Can't be upgraded", "gray");
+				ui_log(phrase.html("response.upgrade_cant"), "gray");
 				reject_deferred("upgrade", { reason: "not_upgradeable" });
 			} else if (response == "upgrade_incompatible_scroll") {
 				set_uchance("?");
-				ui_log("Incompatible scroll", "gray");
+				ui_log(phrase.html("response.upgrade_incompatible_scroll"), "gray");
 				reject_deferred("upgrade", { reason: "scroll" });
 			} else if (response == "upgrade_scroll_q") {
-				ui_log("Need " + data.q + " scrolls", "gray");
+				ui_log(phrase.html("response.upgrade_scroll_q", { q: data.q }), "gray");
 				reject_deferred("upgrade", { reason: "scroll_quantity", need: data.q, have: data.h });
 			} else if (response == "upgrade_chance" || response == "compound_chance") {
 				set_uchance(data.chance);
 			} else if (response == "max_level") {
 				set_uchance("?");
-				ui_log("Already +" + data.level, "white");
+				ui_log(phrase.html("response.max_level", { level: data.level }), "white");
 			} else if (response == "exception") {
-				ui_error("ERROR!");
-			} else if (response == "got_picked") ui_log("Felt a touch", "#D8866C");
+				ui_error(phrase.html("response.exception"));
+			} else if (response == "got_picked") ui_log(phrase.html("response.got_picked"), "#D8866C");
 			else if (response == "picked") {
 				yes_yes_yes();
-				ui_log("Got something!", "#3AD585");
+				ui_log(phrase.html("response.picked"), "#3AD585");
 			} else if (response == "pick_failed") {
 				no_no_no();
-				ui_log("Couldn't pick anything", "gray");
-			} else if (response == "nothing") ui_log("Nothing happens", "gray");
-			else if (response == "inviter_gone") ui_log("Inviter gone", "gray");
-			else if (response == "not_ready") d_text("NOT READY", character);
-			else if (response == "cant_equip") d_text("CAN'T EQUIP", character);
-			else if (response == "cant") d_text("CAN'T", character);
-			else if (response == "muted") d_text("MUTED", character);
-			else if (response == "cant_consume") d_text("CAN'T CONSUME", character);
-			else if (response == "giveaway") d_text("GIVEAWAY?!", character);
-			else if (response == "no_merchants") ui_log("No merchants!", "gray");
-			else if (response == "join_too_late") ui_log("Too late to join", "gray");
-			else if (response == "receiver_unavailable") ui_log("Receiver unavailable", "gray");
+				ui_log(phrase.html("response.pick_failed"), "gray");
+			} else if (response == "nothing") ui_log(phrase.html("response.nothing"), "gray");
+			else if (response == "inviter_gone") ui_log(phrase.html("response.inviter_gone"), "gray");
+			else if (response == "not_ready") d_text(phrase("response.not_ready.floating"), character);
+			else if (response == "cant_equip") d_text(phrase("response.cant_equip.floating"), character);
+			else if (response == "cant") d_text(phrase("response.cant.floating"), character);
+			else if (response == "muted") d_text(phrase("response.muted.floating"), character);
+			else if (response == "cant_consume") d_text(phrase("response.cant_consume.floating"), character);
+			else if (response == "giveaway") d_text(phrase("response.giveaway.floating"), character);
+			else if (response == "no_merchants") ui_log(phrase.html("response.no_merchants"), "gray");
+			else if (response == "join_too_late") ui_log(phrase.html("response.join_too_late"), "gray");
+			else if (response == "receiver_unavailable") ui_log(phrase.html("response.receiver_unavailable"), "gray");
 			else if (response == "no_mp") {
-				d_text("NO MP", character);
+				d_text(phrase("response.no_mp.floating"), character);
 			} else if (response == "friendly") {
 				var safe = false,
-					phrase = "FRIENDLY";
-				if (G.maps[character.map].safe) ((safe = true), (phrase = "SAFE ZONE"));
-				if (get_entity(data.id)) d_text(phrase, get_entity(data.id));
-				else d_text(phrase, character);
-				if (safe) ui_log("You can't attack in a safe zone", "gray");
+					friendly_text = phrase("response.friendly");
+				if (G.maps[character.map].safe) ((safe = true), (friendly_text = phrase("response.friendly.safe_zone")));
+				if (get_entity(data.id)) d_text(friendly_text, get_entity(data.id));
+				else d_text(friendly_text, character);
+				if (safe) ui_log(phrase.html("response.friendly.you_can_t_attack_in_a_safe_zone"), "gray");
 			} else if (response == "cooldown") {
-				if (data.id && get_entity(data.id)) d_text("WAIT", get_entity(data.id));
-				else d_text("WAIT", character);
-			} else if (response == "too_far") d_text("TOO FAR", (data.id && get_entity(data.id)) || character);
-			else if (response == "invalid_target") d_text("DOESN'T WORK", (data.id && get_entity(data.id)) || character);
+				if (data.id && get_entity(data.id)) d_text(phrase("response.cooldown.floating"), get_entity(data.id));
+				else d_text(phrase("response.cooldown.floating"), character);
+			} else if (response == "too_far") d_text(phrase("response.too_far.floating"), (data.id && get_entity(data.id)) || character);
+			else if (response == "invalid_target") d_text(phrase("response.invalid_target.floating"), (data.id && get_entity(data.id)) || character);
 			else if (response == "miss") {
-				if (get_entity(data.id)) d_text("MISS", get_entity(data.id));
-				else d_text("MISS", character);
+				if (get_entity(data.id)) d_text(phrase("response.miss.floating"), get_entity(data.id));
+				else d_text(phrase("response.miss.floating"), character);
 			} else if (response == "disabled") {
-				d_text("DISABLED", character);
+				d_text(phrase("response.disabled.floating"), character);
 			} else if (response == "attack_failed") {
-				if (get_entity(data.id)) d_text("FAILED", get_entity(data.id));
-				else d_text("FAILED", character);
-				if (data.reason == "level") ui_log("Level gap higher than 10", "gray");
-			} else if (response == "no_skill") ui_log("Skill doesn't exist", "gray");
-			else if (response == "target_alive") d_text("LOOKS LIVE?", character);
-			else if (response == "slot_occuppied") ui_log("Slot occuppied", "gray");
-			else if (response == "no_target") d_text((!ctarget && "NO TARGET") || "INVALID TARGET", character);
-			else if (response == "non_friendly_target") d_text("NON FRIENDLY", character);
-			else if (response == "cant_respawn") ui_log("Can't respawn yet.", "gray");
-			else if (response == "chat_slowdown") ui_log("You can't chat this fast.", "gray");
-			else if (response == "not_in_party") ui_log("You are not in a party.", "gray");
-			else if (response == "challenge_sent") add_chat("", "Challenged " + data.name + " to duel", "white");
-			else if (response == "challenge_accepted") add_chat("", data.name + " accepted the challenge!", "#DF231B");
+				if (get_entity(data.id)) d_text(phrase("response.attack_failed.floating"), get_entity(data.id));
+				else d_text(phrase("response.attack_failed.floating"), character);
+				if (data.reason == "level") ui_log(phrase.html("response.attack_failed"), "gray");
+			} else if (response == "no_skill") ui_log(phrase.html("response.no_skill"), "gray");
+			else if (response == "target_alive") d_text(phrase("response.target_alive.floating"), character);
+			else if (response == "slot_occuppied") ui_log(phrase.html("response.slot_occupied"), "gray");
+			else if (response == "no_target") d_text(phrase(!ctarget ? "combat.no_target" : "combat.invalid_target"), character);
+			else if (response == "non_friendly_target") d_text(phrase("response.non_friendly_target.floating"), character);
+			else if (response == "cant_respawn") ui_log(phrase.html("response.cant_respawn"), "gray");
+			else if (response == "chat_slowdown") ui_log(phrase.html("response.chat_slowdown"), "gray");
+			else if (response == "not_in_party") ui_log(phrase.html("response.not_in_party"), "gray");
+			else if (response == "challenge_sent") add_chat("", phrase("response.challenge_sent", { name: data.name }), "white");
+			else if (response == "challenge_accepted") add_chat("", phrase("response.challenge_accepted", { name: data.name }), "#DF231B");
 			else if (response == "challenge_received") {
 				add_challenge(data.name);
 				call_code_function("trigger_character_event", "challenge", data.name);
@@ -2030,199 +2232,208 @@ function init_socket(args) {
 				add_duel(data.challenger, data.vs, data.id);
 				call_code_function("trigger_character_event", "duel", { challenger: data.challenger, vs: data.vs, id: data.id });
 			} else if (response == "no_level") {
-				d_text("LOW LEVEL", character);
+				d_text(phrase("response.no_level.floating"), character);
 			} else if (response == "not_in_pvp") {
-				d_text("NO", character);
+				d_text(phrase("response.not_in_pvp.floating"), character);
 			} else if (response == "skill_cant_incapacitated") {
-				d_text("CAN'T USE", character);
+				d_text(phrase("response.skill_cant_incapacitated.floating"), character);
 			} else if (response == "skill_cant_use") {
-				d_text("CAN'T USE", character);
+				if (data.place == "ikissyou" && data.message) ui_log(phrase.message(data, true), "gray");
+				else d_text(phrase("response.skill_cant_use.floating"), character);
 			} else if (response == "skill_cant_safe") {
-				d_text("CAN'T USE", character);
+				d_text(phrase("response.skill_cant_safe.floating"), character);
 			} else if (response == "skill_cant_item") {
-				d_text("OUT OF AMMO", character);
+				d_text(phrase("response.skill_cant_item.floating"), character);
 			} else if (response == "skill_cant_charges") {
-				d_text("NO CHARGE", character);
+				d_text(phrase("response.skill_cant_charges.floating"), character);
 			} else if (response == "skill_cant_pve") {
-				d_text("CAN'T USE", character);
+				d_text(phrase("response.skill_cant_pve.floating"), character);
 			} else if (response == "skill_cant_wtype") {
-				ui_log("Wrong weapon", "gray");
-				d_text("NOPE", character);
+				ui_log(phrase.html("response.skill_cant_wtype"), "gray");
+				d_text(phrase("response.skill_cant_wtype.floating"), character);
 			} else if (response == "skill_cant_slot") {
-				ui_log("Item not equipped", "gray");
-				d_text("NOPE", character);
+				ui_log(phrase.html("response.skill_cant_slot"), "gray");
+				d_text(phrase("response.skill_cant_slot.floating"), character);
 			} else if (response == "skill_cant_requirements") {
-				ui_log("Skill requirements not met", "gray");
-				d_text("NOPE", character);
-			} else if (response == "cruise") ui_log("Cruise speed set at " + data.speed, "gray");
+				ui_log(phrase.html("response.skill_cant_requirements"), "gray");
+				d_text(phrase("response.skill_cant_requirements.floating"), character);
+			} else if (response == "cruise") ui_log(phrase.html("response.cruise", { speed: data.speed }), "gray");
 			else if (response == "exchange_existing") {
-				d_text("WAIT", character);
-				ui_log("Existing exchange in progress", "gray");
+				d_text(phrase("response.exchange_existing.floating"), character);
+				ui_log(phrase.html("response.exchange_existing"), "gray");
 				reopen();
 			} else if (response == "exchange_notenough") {
-				d_text("NOT ENOUGH", character);
-				ui_log("Need more", "gray");
+				d_text(phrase("response.exchange_notenough.floating"), character);
+				ui_log(phrase.html("response.exchange_notenough"), "gray");
 				reopen();
 			} else if (in_arr(response, ["mistletoe_success", "leather_success", "candycane_success", "ornament_success", "seashell_success", "gemfragment_success"])) {
 				render_interaction(response);
 			} else if (in_arr(response, ["donate_thx", "donate_gum", "donate_low"])) {
 				var message;
-				if (response == "donate_thx") message = "Thanks kind sir. Thanks for helping the reserve.";
-				else if (response == "donate_gum") message = to_pretty_num(data.gold) + "? " + to_pretty_num(data.gold) + "? " + to_pretty_num(data.gold) + "?! Here, take this!";
-				else if (response == "donate_low") message = "They say there's no small contribution.. BUT THEY ARE OBVIOUSLY WRONG. " + to_pretty_num(data.gold) + "??!!! GET LOST";
-				ui_log("Donated " + to_pretty_num(data.gold) + " gold", "gray");
+				if (response == "donate_thx") message = phrase.html("response.donate_thx");
+				else if (response == "donate_gum") message = phrase.html("response.donate_gum", { gold: to_pretty_num(data.gold) });
+				else if (response == "donate_low") message = phrase.html("response.donate_low", { gold: to_pretty_num(data.gold) });
+				ui_log(phrase.html("response.donated_gold", { gold: to_pretty_num(data.gold) }), "gray");
 				render_interaction({ auto: true, skin: "goblin", message: message });
 			} else if (response == "lostandfound_info") {
-				var message = "Hey there! I'm in charge of taking care of our gold reserve and making sure unlooted chests are 'recycled'! ",
-					xp = 3.2;
-				if (data.gold < 500000000) ((message += "Currently the gold reserves are low, so I'm taking a small something something out of every chest :] "), (xp = 4.8));
-				else if (data.gold < 1000000000) ((message += "Currently the gold reserves are low, so I'm taking a small something out of every chest :] "), (xp = 4));
-				message += "Donations are always welcome, merchants get " + xp + " XP for every gold they donate!";
+				var xp = data.gold < 500000000 ? 4.8 : data.gold < 1000000000 ? 4 : 3.2;
+				var message = phrase.html(data.gold < 500000000 ? "npc.lostandfound.reserve_very_low" : data.gold < 1000000000 ? "npc.lostandfound.reserve_low" : "npc.lostandfound.reserve", { xp: xp });
 				render_interaction({
 					auto: true,
 					skin: "goblin",
 					message: message,
-					button: "WHAT HAVE YOU FOUND?",
+					button: phrase.html("response.lostandfound_info.what_have_you_found"),
 					onclick: function () {
 						socket.emit("lostandfound");
 					},
-					button2: "DONATE",
+					button2: phrase.html("response.lostandfound_info.donate"),
 					onclick2: function () {
 						render_donate();
 					},
 				});
 			} else if (response == "lostandfound_donate") {
-				var message = "Not feeling like showing my loots to cheapskates! Sorry not sorry..";
+				var message = phrase.html("response.lostandfound_donate");
 				render_interaction({ auto: true, skin: "goblin", message: message });
 			} else if (response == "bet_xshot") {
-				var message = "Get lost critter! You can't gamble substanced here!";
+				var message = phrase.html("response.bet_xshot");
 				render_interaction({ auto: true, skin: "bouncer", message: message });
-				if (Math.random() < 0.5) d_text("MOVE B****", get_npc("bouncer"), { color: "#F7A9C5" });
-				else d_text("GET OUT THE WAY", get_npc("bouncer"), { color: "#F7A9C5" });
+				if (Math.random() < 0.5) d_text(phrase("response.bet_xshot.floating"), get_npc("bouncer"), { color: "#F7A9C5" });
+				else d_text(phrase("response.bet_xshot.floating.get_out_the_way"), get_npc("bouncer"), { color: "#F7A9C5" });
 			} else if (response == "cant_escape") {
-				d_text("CAN'T ESCAPE", character);
+				d_text(phrase("response.cant_escape.floating"), character);
 				transporting = false;
 			} else if (response == "cant_enter") {
-				ui_log("Can't enter", "gray");
+				ui_log(phrase.html("response.cant_enter"), "gray");
 				transporting = false;
 			} else if (response == "cant_in_bank") {
-				ui_log("Operation unavailable in bank", "gray");
-			} else if (response == "bank_unavailable") ui_log("Bank unavailable", "gray");
-			else if (response == "bank_withdraw") ui_log("Withdrew " + to_pretty_num(data.gold) + " gold", "gray");
+				ui_log(phrase.html("response.cant_in_bank"), "gray");
+			} else if (response == "bank_unavailable") ui_log(phrase.html("response.bank_unavailable"), "gray");
+			else if (response == "bank_withdraw") ui_log(phrase.html("response.bank_withdraw", { gold: to_pretty_num(data.gold) }), "gray");
 			else if (response == "bank_store") {
 				tut("deposit");
-				ui_log("Stored " + to_pretty_num(data.gold) + " gold", "gray");
+				ui_log(phrase.html("response.bank_store", { gold: to_pretty_num(data.gold) }), "gray");
 			} else if (response == "bank_new_pack") {
-				if (data.gold) ui_log("Opened an account for " + to_pretty_num(data.gold) + " gold", "gray");
-				else ui_log("Opened an account for " + to_pretty_num(data.shells) + " shells", "gray");
-			} else if (response == "locked") ui_log("Locked", "gray");
-			else if (response == "seller_gone") ui_log("Seller gone", "gray");
-			else if (response == "buyer_gone") ui_log("Buyer gone", "gray");
-			else if (response == "item_gone") ui_log("Item gone", "gray");
-			else if (response == "hmm") ui_log("Hmm.", "gray");
-			else if (response == "sneaky") ui_log("Sneaky sneaky.", "gray");
-			else if (response == "need_auth") ui_log("To perform this action your account needs a game client authorization", "gray");
-			else if (response == "giveaway_join") ui_log(data.name + " joined your giveaway!", "gray");
+				if (data.gold) ui_log(phrase.html("response.bank_new_pack", { gold: to_pretty_num(data.gold) }), "gray");
+				else ui_log(phrase.html("response.bank_new_pack.opened_an_account_for_shells", { shells: to_pretty_num(data.shells) }), "gray");
+			} else if (response == "locked") ui_log(phrase.html("response.locked"), "gray");
+			else if (response == "seller_gone") ui_log(phrase.html("response.seller_gone"), "gray");
+			else if (response == "buyer_gone") ui_log(phrase.html("response.buyer_gone"), "gray");
+			else if (response == "item_gone") ui_log(phrase.html("response.item_gone"), "gray");
+			else if (response == "hmm") ui_log(phrase.html("response.hmm"), "gray");
+			else if (response == "sneaky") ui_log(phrase.html("response.sneaky"), "gray");
+			else if (response == "need_auth") ui_log(phrase.html("response.need_auth"), "gray");
+			else if (response == "giveaway_join") ui_log(phrase.html("response.giveaway_join", { name: data.name }), "gray");
 			else if (response == "bank_opi") {
-				ui_log("Bank connection in progress", "gray");
+				ui_log(phrase.html("response.bank_opi"), "gray");
 				transporting = false;
 			} else if (response == "bank_opx") {
-				if (data.name) ui_log(data.name + " is in the bank", "gray");
-				else if (data.reason == "locked") ui_log("The door is locked", "gray");
-				else ui_log("Bank is busy right now", "gray");
+				if (data.name) ui_log(phrase.html("response.bank_opx", { name: data.name }), "gray");
+				else if (data.reason == "locked") ui_log(phrase.html("response.bank_opx.the_door_is_locked"), "gray");
+				else ui_log(phrase.html("response.bank_opx.bank_is_busy_right_now"), "gray");
 				transporting = false;
 			} else if (response == "only_in_bank") {
-				ui_log("Only works inside the bank", "gray");
+				ui_log(phrase.html("response.only_in_bank"), "gray");
 			} else if (response == "already_unlocked") {
-				ui_log("Already unlocked", "gray");
+				ui_log(phrase.html("response.already_unlocked"), "gray");
 			} else if (response == "door_unlocked") {
 				v_shake();
-				ui_log("Door unlocked!", "#9D9CFF");
+				ui_log(phrase.html("response.door_unlocked"), "#9D9CFF");
 			} else if (response == "bank_pack_unlocked") {
 				v_shake();
-				ui_log("Teller unlocked!", "#9D9CFF");
+				ui_log(phrase.html("response.bank_pack_unlocked"), "#9D9CFF");
 			} else if (response == "transport_failed") {
 				transporting = false;
 			} else if (response == "loot_failed") {
 				close_chests();
-				ui_log("Can't loot", "gray");
+				ui_log(phrase.html("response.loot_failed"), "gray");
 			} else if (response == "no_space") {
-				d_text("NO SPACE", character);
+				d_text(phrase("response.no_space.floating"), character);
 			} else if (response == "loot_no_space") {
 				close_chests();
-				d_text("NO SPACE", character);
+				d_text(phrase("response.loot_no_space.floating"), character);
 			} else if (response == "transport_cant_reach") {
-				ui_log("Can't reach", "gray");
+				ui_log(phrase.html("response.transport_cant_reach"), "gray");
 				transporting = false;
 			} else if (response == "transport_cant_invalid") {
-				ui_log("Instance not found", "gray");
+				ui_log(phrase.html("response.transport_cant_invalid"), "gray");
 				transporting = false;
 			} else if (response == "transport_cant_item") {
-				ui_log("Item not found", "gray");
+				ui_log(phrase.html("response.transport_cant_item"), "gray");
 				transporting = false;
 			} else if (response == "transport_cant_dampened") {
-				ui_log("Can't transport inside a dampening field", "#A772D0");
+				ui_log(phrase.html("response.transport_cant_dampened"), "#A772D0");
 				transporting = false;
 				v_shake_i2(character);
 			} else if (response == "transport_cant_protection") {
-				ui_log("The door is protected!", "#A7282E");
+				ui_log(phrase.html("response.transport_cant_protection"), "#A7282E");
 				transporting = false;
 			} else if (response == "transport_cant_locked") {
-				ui_log("The door is locked!", "#A7282E");
+				ui_log(phrase.html("response.transport_cant_locked"), "#A7282E");
 				transporting = false;
 			} else if (response == "not_in_this_server") {
-				ui_log("Not possible in this server", "#7D5B93");
+				ui_log(phrase.html("response.not_in_this_server"), "#7D5B93");
 			} else if (response == "destroyed") {
-				ui_log("Destroyed " + G.items[data.name].name, "gray");
-			} else if (response == "distance") ui_log("Get closer", "gray");
+				ui_log(phrase.html("response.destroyed", { item: G.items[data.name].name }), "gray");
+			} else if (response == "distance") ui_log(phrase.html("response.distance"), "gray");
 			else if (response == "trade_bspace") {
-				ui_log("No space on buyer", "gray");
+				ui_log(phrase.html("response.trade_bspace"), "gray");
 			} else if (response == "bank_restrictions") {
-				ui_log("You can't buy, trade or upgrade in the bank.", "gray");
-			} else if (response == "tavern_too_late") ui_log("Too late to bet!", "gray");
-			else if (response == "tavern_not_yet") ui_log("Not taking bets yet!", "gray");
-			else if (response == "tavern_too_many_bets") ui_log("You have too many active bets", "gray");
-			else if (response == "tavern_dice_exist") ui_log("You already have a bet", "gray");
-			else if (response == "tavern_gold_not_enough") ui_log("Gold reserve insufficient to cover this bet", "gray");
+				ui_log(phrase.html("response.bank_restrictions"), "gray");
+			} else if (response == "tavern_too_late") ui_log(phrase.html("response.tavern_too_late"), "gray");
+			else if (response == "tavern_not_yet") ui_log(phrase.html("response.tavern_not_yet"), "gray");
+			else if (response == "tavern_too_many_bets") ui_log(phrase.html("response.tavern_too_many_bets"), "gray");
+			else if (response == "tavern_dice_exist") ui_log(phrase.html("response.tavern_dice_exist"), "gray");
+			else if (response == "tavern_gold_not_enough") ui_log(phrase.html("response.tavern_gold_not_enough"), "gray");
+			else if (response == "wheel_spinning") ui_log(phrase.html("response.wheel_spinning"), "gray");
+			else if (response == "wheel_side") ui_log(phrase.html("response.wheel_side"), "gray");
+			else if (response == "slots_spinning") ui_log(phrase.html("response.slots_spinning"), "gray");
+			else if (response == "tavern_closing") ui_log(phrase.html("response.tavern_closing"), "gray");
 			else if (response == "condition") {
 				var def = G.conditions[data.name],
 					from = data.from;
-				if (def.debuff) {
-					ui_log("Afflicted by " + def.name, "gray");
+				if (data.name == "hopsickness" || data.name == "realmfatigue") {
+					ui_log(
+						phrase.html("response.condition", { name: phrase.definition("condition", data.name, "name", def.name) }) +
+							(character ? " — " + home_server_label(character.home, true) : "") +
+							" <span class='clickable' style='color:#85c76b' onclick=\"open_guide('events-and-home',get_guide_url('events-and-home'))\">" + phrase.html("interface.server.info") + "</span>",
+						"gray",
+					);
+				} else if (def.debuff) {
+					ui_log(phrase.html("response.condition", { name: phrase.definition("condition", data.name, "name", def.name) }), "gray");
 				} else if (from) {
-					ui_log(from + " buffed you with " + def.name, "gray");
+					ui_log(phrase.html("response.condition.buffed_you_with", { from: from, name: phrase.definition("condition", data.name, "name", def.name) }), "gray");
 				} else {
-					ui_log("Buffed with " + def.name, "gray");
+					ui_log(phrase.html("response.condition.buffed_with", { name: phrase.definition("condition", data.name, "name", def.name) }), "gray");
 				}
 			} else if (response == "cx_sent") {
-				ui_log("Cosmetics sent: " + data.cx, "#DB7AA9");
+				ui_log(phrase.html("response.cx_sent", { cx: data.cx }), "#DB7AA9");
 				refresh_cosmetic_skills(data.acx);
 			} else if (response == "cx_received") {
-				ui_log("Cosmetics received: " + data.cx, "#A888DD");
+				ui_log(phrase.html("response.cx_received", { cx: data.cx }), "#A888DD");
 				refresh_cosmetic_skills(data.acx);
 			} else if (response == "cx_new") {
 				if ($("#topleftcornerdialog").length) {
 					var html = "";
 					html += "<div style='padding: 16px; border: 5px solid gray; background: black; text-align: center; min-width: 60px'>";
 					html += "<div style='margin-bottom: 8px; margin-top: 4px'>" + cx_sprite(data.name) + "</div>";
-					html += "<div class='gamebutton' onclick='$(this).parent().remove()'>OK</div>";
+					html += "<div class='gamebutton' data-ui-dismiss onclick='$(this).parent().remove()'>" + phrase.html("game.dismiss.ok") + "</div>";
 					html += "</div>";
 					$("#topleftcornerdialog").html(html);
-				} else ui_log("Cosmetics: " + data.name, "#DB7AA9");
+				} else ui_log(phrase.html("response.cx_new", { name: data.name }), "#DB7AA9");
 				refresh_cosmetic_skills(data.acx);
 			} else if (response == "cx_not_found") {
-				ui_log("Cosmetics not found", "gray");
+				ui_log(phrase.html("response.cx_not_found"), "gray");
 			} else if (response == "reward_received") {
 				tutorial_reward_in_flight = false;
 				tutorial_reward_settled = true;
-				ui_log("Tutorial reward received!", "#73BD6D");
+				ui_log(phrase.html("response.reward_received"), "#73BD6D");
 			} else if (response == "reward_already") {
 				tutorial_reward_in_flight = false;
 				tutorial_reward_settled = true;
 			} else if (response == "reward_notverified" || response == "reward_unavailable") {
 				tutorial_reward_in_flight = false;
 				tutorial_reward_settled = true;
-				ui_log("Tutorial reward unavailable", "gray");
+				ui_log(phrase.html("response.reward_notverified"), "gray");
 			} else if (response == "ex_condition") {
 				var def = G.conditions[data.name];
 				// ui_log(def.name+" faded away ...","gray");
@@ -2230,162 +2441,159 @@ function init_socket(args) {
 				tut("buyitem");
 				if (data.name == "scroll0") tut("buyscrolls");
 				if (data.name == "cscroll0") tut("buycscroll0");
-				ui_log("Spent " + to_pretty_num(data.cost) + " gold", "gray");
+				ui_log(phrase.html("response.buy_success", { cost: to_pretty_num(data.cost) }), "gray");
 			} else if (response == "buy_cant_npc") {
-				ui_log("Can't buy this from an NPC", "gray");
+				ui_log(phrase.html("response.buy_cant_npc"), "gray");
 			} else if (response == "buy_cant_space" || response == "cant_space") {
-				d_text("SPACE", character);
-				ui_log("No space", "gray");
+				d_text(phrase("response.buy_cant_space.floating"), character);
+				ui_log(phrase.html("response.buy_cant_space"), "gray");
 			} else if (response == "buy_cost") {
-				d_text("INSUFFICIENT", character);
-				ui_log("Not enough gold", "gray");
-			} else if (response == "cant_reach") ui_log("Can't reach", "gray");
-			else if (response == "no_item") ui_log("No item provided", "gray");
-			else if (response == "not_enough") ui_log("Not enough", "gray");
-			else if (response == "buyer_gold") ui_log("Not enough gold on buyer", "gray");
-			else if (response == "dont_have_enough") ui_log("Don't have enough", "gray");
-			else if (response == "op_unavailable") add_chat("", "Operation unavailable", "gray");
-			else if (response == "send_no_space") add_chat("", "No space on receiver", "gray");
-			else if (response == "send_no_item") add_chat("", "Nothing to send", "gray");
-			else if (response == "send_no_cx") add_chat("", "Don't have or not enough", "gray");
-			else if (response == "send_diff_owner") add_chat("", "This is not one of ours!", "gray");
-			else if (response == "insufficient_q") ui_log("There aren't that many available", "gray");
-			else if (response == "signed_up") ui_log("Signed Up!", "#39BB54");
+				d_text(phrase("response.buy_cost.floating"), character);
+				ui_log(phrase.html("response.buy_cost"), "gray");
+			} else if (response == "cant_reach") ui_log(phrase.html("response.cant_reach"), "gray");
+			else if (response == "no_item") ui_log(phrase.html("response.no_item"), "gray");
+			else if (response == "not_enough") ui_log(phrase.html("response.not_enough"), "gray");
+			else if (response == "buyer_gold") ui_log(phrase.html("response.buyer_gold"), "gray");
+			else if (response == "dont_have_enough") ui_log(phrase.html("response.dont_have_enough"), "gray");
+			else if (response == "op_unavailable") add_chat("", phrase("response.op_unavailable"), "gray");
+			else if (response == "send_no_space") add_chat("", phrase("response.send_no_space"), "gray");
+			else if (response == "send_no_item") add_chat("", phrase("response.send_no_item"), "gray");
+			else if (response == "send_no_cx") add_chat("", phrase("response.send_no_cx"), "gray");
+			else if (response == "send_diff_owner") add_chat("", phrase("response.send_diff_owner"), "gray");
+			else if (response == "insufficient_q") ui_log(phrase.html("response.insufficient_q"), "gray");
+			else if (response == "signed_up") ui_log(phrase.html("response.signed_up"), "#39BB54");
 			else if (response == "item_placeholder") {
-				ui_log("Slot is occupied", "gray");
+				ui_log(phrase.html("response.item_placeholder"), "gray");
 			} else if (response == "item_locked") {
-				ui_log("Item is locked", "gray");
+				ui_log(phrase.html("response.item_locked"), "gray");
 			} else if (response == "item_blocked") {
-				ui_log("Item is in use", "gray");
+				ui_log(phrase.html("response.item_blocked"), "gray");
 			} else if (response == "item_received" || response == "item_sent") {
 				var additional = "";
 				if (data.q > 1) additional = "(x" + data.q + ")";
 				if (response == "item_received") {
-					add_chat("", "Received " + G.items[data.item].name + additional + " from " + data.name, "#6AB3FF");
+					add_chat("", phrase("response.item_received", { item: G.items[data.item].name, additional: additional, name: data.name }), "#6AB3FF");
 					var transfer_event = clone(data);
 					transfer_event.from = data.name;
 					call_code_function("trigger_character_event", "item_received", transfer_event);
 				} else {
-					add_chat("", "Sent " + G.items[data.item].name + additional + " to " + data.name, "#6AB3FF");
+					add_chat("", phrase("response.item_sent", { item: G.items[data.item].name, additional: additional, name: data.name }), "#6AB3FF");
 					var transfer_event = clone(data);
 					transfer_event.to = data.name;
 					call_code_function("trigger_character_event", "item_sent", transfer_event);
 				}
 			} else if (response == "add_item") {
-				var additional = "",
-					prefix = "a ";
-				if (data.item.q > 1) ((additional = "(x" + data.item.q + ")"), (prefix = ""));
-				add_log("Received " + prefix + G.items[data.item.name].name + additional, "#3B9358");
-			} else if (response == "gold_not_enough") ui_log("Not enough gold", "gray");
+				add_log(data.item.q > 1 ? phrase.html("response.add_item.quantity", { item: G.items[data.item.name].name, quantity: data.item.q }) : phrase.html("response.add_item.single", { item: G.items[data.item.name].name }), "#3B9358");
+			} else if (response == "gold_not_enough") ui_log(phrase.html("response.gold_not_enough"), "gray");
 			else if (response == "gold_sent") {
-				add_chat("", "Sent " + to_pretty_num(data.gold) + " gold to " + data.name, colors.gold);
+				add_chat("", phrase("response.gold_sent", { gold: to_pretty_num(data.gold), name: data.name }), colors.gold);
 				var transfer_event = clone(data);
 				transfer_event.amount = data.gold;
 				transfer_event.to = data.name;
 				call_code_function("trigger_character_event", "gold_sent", transfer_event);
 			} else if (response == "gold_received" && !data.name) {
-				add_log("Received " + to_pretty_num(data.gold) + " gold", "gray");
+				add_log(phrase.html("response.gold_received", { gold: to_pretty_num(data.gold) }), "gray");
 			} else if (response == "gold_received") {
-				add_chat("", "Received " + to_pretty_num(data.gold) + " gold from " + data.name, colors.gold);
+				add_chat("", phrase("response.gold_received.received_gold_from", { gold: to_pretty_num(data.gold), name: data.name }), colors.gold);
 				var transfer_event = clone(data);
 				transfer_event.amount = data.gold;
 				transfer_event.from = data.name;
 				call_code_function("trigger_character_event", "gold_received", transfer_event);
-			} else if (response == "friend_already") add_chat("", "You are already friends", "gray");
-			else if (response == "friend_rleft") add_chat("", "Player left the server", "gray");
-			else if (response == "friend_rsent") add_chat("", "Friend request sent", "#409BDD");
-			else if (response == "friend_expired") add_chat("", "Request expired", "#409BDD");
-			else if (response == "friend_failed") add_chat("", "Friendship failed, reason: " + data.reason, "#409BDD");
-			else if (response == "unfriend_failed") add_chat("", "Unfriend failed, reason: " + data.reason, "#409BDD");
-			else if (response == "gold_use") ui_log("Used " + to_pretty_num(data.gold) + " gold", "gray");
-			else if (response == "slots_success") ui_log("Machine went crazy", "#9733FF");
-			else if (response == "slots_fail") ui_log("Machine got stuck", "gray");
-			else if (response == "temporalsurge_none") ui_log("Temporal surge failed", "gray");
-			else if (response == "temporalsurge") ui_log("Temporal surge hastened respawns!", "gray");
+			} else if (response == "friend_already") add_chat("", phrase("response.friend_already"), "gray");
+			else if (response == "friend_rleft") add_chat("", phrase("response.friend_rleft"), "gray");
+			else if (response == "friend_rsent") add_chat("", phrase("response.friend_rsent"), "#409BDD");
+			else if (response == "friend_expired") add_chat("", phrase("response.friend_expired"), "#409BDD");
+			else if (response == "friend_failed") add_chat("", phrase("response.friend_failed", { reason: phrase.error(data.reason) }), "#409BDD");
+			else if (response == "unfriend_failed") add_chat("", phrase("response.unfriend_failed", { reason: phrase.error(data.reason) }), "#409BDD");
+			else if (response == "gold_use") ui_log(phrase.html("response.gold_use", { gold: to_pretty_num(data.gold) }), "gray");
+			else if (response == "slots_success") ui_log(phrase.html("response.slots_success"), "#9733FF");
+			else if (response == "slots_fail") ui_log(phrase.html("response.slots_fail"), "gray");
+			else if (response == "temporalsurge_none") ui_log(phrase.html("response.temporalsurge_none"), "gray");
+			else if (response == "temporalsurge") ui_log(phrase.html("response.temporalsurge"), "gray");
 			else if (response == "craft") {
 				var def = G.craft[data.name];
-				if (def.cost) ui_log("Spent " + to_pretty_num(def.cost) + " gold", "gray");
-				ui_log("Received " + G.items[data.name].name, "white");
+				if (def.cost) ui_log(phrase.html("response.craft", { cost: to_pretty_num(def.cost) }), "gray");
+				ui_log(phrase.html("response.craft.received", { item: G.items[data.name].name }), "white");
 			} else if (response == "dismantle") {
 				var def = G.dismantle[data.name];
-				if (data.level) ui_log("Spent " + to_pretty_num(data.cost || 10000) + " gold", "gray");
-				else ui_log("Spent " + to_pretty_num(def.cost) + " gold", "gray");
-				ui_log("Dismantled " + G.items[data.name].name, "#CF5C65");
+				if (data.level) ui_log(phrase.html("response.dismantle", { value: to_pretty_num(data.cost || 10000) }), "gray");
+				else ui_log(phrase.html("response.dismantle.spent_gold", { cost: to_pretty_num(def.cost) }), "gray");
+				ui_log(phrase.html("response.dismantle.dismantled", { item: G.items[data.name].name }), "#CF5C65");
 			} else if (response == "defeated_by_a_monster") {
-				ui_log("Defeated by " + G.monsters[data.monster].name, "#571F1B");
-				ui_log("Lost " + to_pretty_num(data.xp) + " experience", "gray");
-			} else if (response == "dismantle_cant") ui_log("Can't dismantle", "gray");
-			else if (response == "inv_size") ui_log("Need more empty space", "gray");
-			else if (response == "craft_cant") ui_log("Can't craft", "gray");
-			else if (response == "craft_cant_quantity") ui_log("Not enough materials", "gray");
-			else if (response == "craft_atleast2") ui_log("You need to provide at least 2 items", "gray");
+				ui_log(phrase.html("response.defeated_by_a_monster", { monster: G.monsters[data.monster].name }), "#571F1B");
+				ui_log(phrase.html("response.defeated_by_a_monster.lost_experience", { xp: to_pretty_num(data.xp) }), "gray");
+			} else if (response == "dismantle_cant") ui_log(phrase.html("response.dismantle_cant"), "gray");
+			else if (response == "inv_size") ui_log(phrase.html("response.inv_size"), "gray");
+			else if (response == "craft_cant") ui_log(phrase.html("response.craft_cant"), "gray");
+			else if (response == "craft_cant_quantity") ui_log(phrase.html("response.craft_cant_quantity"), "gray");
+			else if (response == "craft_atleast2") ui_log(phrase.html("response.craft_atleast2"), "gray");
 			else if (response == "target_lock") {
-				ui_log("Target Acquired: " + G.monsters[data.monster].name, "#F00B22");
+				ui_log(phrase.html("response.target_lock", { monster: G.monsters[data.monster].name }), "#F00B22");
 			} else if (response == "charm_failed") {
-				ui_log("Couldn't charm ...", "gray");
+				ui_log(phrase.html("response.charm_failed"), "gray");
 			} else if (response == "cooldown") {
-				d_text("NOT READY", character);
+				d_text(phrase("response.cooldown.floating.not_ready"), character);
 			} else if (response == "blink_failed") {
 				no_no_no();
-				d_text("NO", character);
+				d_text(phrase("response.blink_failed.floating"), character);
 				last_blink_pressed = inception;
 			} else if (response == "dash_failed") {
 				no_no_no();
-				d_text("CANT", character);
+				d_text(phrase("response.dash_failed.floating"), character);
 			} else if (response == "magiport_sent") {
-				ui_log("Magiportation request sent to " + data.id, "white");
+				ui_log(phrase.html("response.magiport_sent", { id: data.id }), "white");
 			} else if (response == "magiport_gone") {
-				ui_log("Magiporter gone", "gray");
+				ui_log(phrase.html("response.magiport_gone"), "gray");
 				no_no_no(2);
-			} else if (response == "magiport_failed") (ui_log("Magiport failed", "gray"), no_no_no(2));
-			else if (response == "revive_failed") (ui_log("Revival failed", "gray"), no_no_no(1));
+			} else if (response == "magiport_failed") (ui_log(phrase.html("response.magiport_failed"), "gray"), no_no_no(2));
+			else if (response == "revive_failed") (ui_log(phrase.html("response.revive_failed"), "gray"), no_no_no(1));
 			else if (response == "scrollsmith_cant") {
-				ui_log("Can't destat this item", "gray");
+				ui_log(phrase.html("response.scrollsmith_cant"), "gray");
 			} else if (response == "scrollsmith_success") {
-				ui_log("Spent " + data.gold.toLocaleString() + " gold", "gray");
-				ui_log("De-statted the item", "gray");
+				ui_log(phrase.html("response.scrollsmith_success", { value: data.gold.toLocaleString() }), "gray");
+				ui_log(phrase.html("response.scrollsmith_success.de_statted_the_item"), "gray");
 			} else if (response == "locksmith_cant") {
-				ui_log("Can't lock/unlock this item", "gray");
+				ui_log(phrase.html("response.locksmith_cant"), "gray");
 			} else if (response == "locksmith_aunlocked") {
-				ui_log("Already unlocked", "gray");
+				ui_log(phrase.html("response.locksmith_aunlocked"), "gray");
 			} else if (response == "locksmith_alocked") {
-				ui_log("Already locked", "gray");
+				ui_log(phrase.html("response.locksmith_alocked"), "gray");
 			} else if (response == "locksmith_unsealed") {
-				ui_log("Spent 250,000 gold", "gray");
-				ui_log("Unsealed the item", "gray");
-				ui_log("It can be unlocked in 2 days", "gray");
+				ui_log(phrase.html("response.locksmith_unsealed"), "gray");
+				ui_log(phrase.html("response.locksmith_unsealed.unsealed_the_item"), "gray");
+				ui_log(phrase.html("response.locksmith_unsealed.it_can_be_unlocked_in_2_days"), "gray");
 			} else if (response == "locksmith_unsealing") {
-				ui_log("It can be unlocked in " + parseInt(data.hours) + " hours", "gray");
+				ui_log(phrase.html("response.locksmith_unsealing", { hours: parseInt(data.hours) }), "gray");
 			} else if (response == "locksmith_unlocked") {
-				ui_log("Spent 250,000 gold", "gray");
-				ui_log("Unlocked the item", "gray");
+				ui_log(phrase.html("response.locksmith_unlocked"), "gray");
+				ui_log(phrase.html("response.locksmith_unlocked.unlocked_the_item"), "gray");
 			} else if (response == "locksmith_unseal_complete") {
-				ui_log("Unlocked the item", "gray");
+				ui_log(phrase.html("response.locksmith_unseal_complete"), "gray");
 			} else if (response == "locksmith_locked") {
-				ui_log("Spent 250,000 gold", "gray");
-				ui_log("Locked the item", "gray");
+				ui_log(phrase.html("response.locksmith_locked"), "gray");
+				ui_log(phrase.html("response.locksmith_locked.locked_the_item"), "gray");
 			} else if (response == "locksmith_sealed") {
-				ui_log("Spent 250,000 gold", "gray");
-				ui_log("Sealed the item", "gray");
+				ui_log(phrase.html("response.locksmith_sealed"), "gray");
+				ui_log(phrase.html("response.locksmith_sealed.sealed_the_item"), "gray");
 			} else if (response == "blessed") {
-				render_interaction({ auto: true, skin: "favore", message: "Thank you! The server has been blessed." });
+				render_interaction({ auto: true, skin: "favore", message: phrase.html("response.blessed") });
 			} else if (response == "blessed_fail") {
-				render_interaction({ auto: true, skin: "favore", message: "Ooops! It failed." });
+				render_interaction({ auto: true, skin: "favore", message: phrase.html("response.blessed_fail") });
 			} else if (response == "monsterhunt_started" || response == "monsterhunt_already") {
 				if (!character.s.monsterhunt) return;
 				if (character.s.monsterhunt.c == 1)
 					$("#merchant-item").html(
-						render_interaction({ auto: true, skin: "daisy", message: "Alrighty then! Now go defeat " + G.monsters[character.s.monsterhunt.id].name + " and come back here!" }, "return_html"),
+						render_interaction({ auto: true, skin: "daisy", message: phrase.html("response.monsterhunt_started", { monster: G.monsters[character.s.monsterhunt.id].name }) }, "return_html"),
 					);
 				else
 					$("#merchant-item").html(
 						render_interaction(
-							{ auto: true, skin: "daisy", message: "Alrighty then! Now go defeat " + character.s.monsterhunt.c + " " + G.monsters[character.s.monsterhunt.id].name + "'s and come back here!" },
+							{ auto: true, skin: "daisy", message: phrase.html("response.monsterhunt_started.quantity", { c: character.s.monsterhunt.c, monster: G.monsters[character.s.monsterhunt.id].name }) },
 							"return_html",
 						),
 					);
 			} else if (response == "monsterhunt_merchant") {
-				$("#merchant-item").html(render_interaction({ auto: true, skin: "daisy", message: "Huh? A merchant? On the hunt? Hahahahahahahaha ... Go sell cake or something ..." }, "return_html"));
+				$("#merchant-item").html(render_interaction({ auto: true, skin: "daisy", message: phrase.html("response.monsterhunt_merchant") }, "return_html"));
 			} else {
 				console.log("Missed game_response: " + response);
 			}
@@ -2423,30 +2631,35 @@ function init_socket(args) {
 	socket.on("game_chat_log", function (data) {
 		draw_trigger(function () {
 			if (is_string(data)) add_chat("", data);
-			else add_chat("", data.message, data.color); // <- add_chat needs a different color logic
+			else add_chat("", phrase.message(data), data.color); // <- add_chat needs a different color logic
 		});
 	});
 	socket.on("chat_log", function (data) {
 		// <- bad naming [22/10/16]
 		draw_trigger(function () {
-			var entity = get_entity(data.id);
+			var entity = get_entity(data.id), display_message = phrase.message(data);
 			if (data.id == "mainframe") {
-				d_text(data.message, { real_x: 0, real_y: -100, height: 24 }, { size: SZ.chat, color: "#C7EFFF" });
+				d_text(display_message, { real_x: 0, real_y: -100, height: 24 }, { size: SZ.chat, color: "#C7EFFF" });
 				sfx("chat", 0, -100);
 			} else if (entity) {
-				d_text(data.message, entity, { size: SZ.chat });
+				d_text(display_message, entity, { size: SZ.chat });
 				sfx("chat", entity.real_x, entity.real_y);
 			} else sfx("chat");
-			add_chat(data.owner, data.message, data.color, (is_number(data.id) && data.id) || undefined);
+			add_chat(data.owner, display_message, data.color, (is_number(data.id) && data.id) || undefined);
 			call_code_function("trigger_event", "chat", { from: data.owner, message: data.message });
 		});
 	});
 	socket.on("emote", function (data) {
 		draw_trigger(function () {
-			var player = get_player(data.player);
+			var player = get_player(data.player),
+				target = data.target && get_player(data.target);
 			var emote = data.name;
 			if (player && G.skills[emote] && G.skills[emote].emote) {
-				play_cosmetic_emote(player, emote, data.target && get_player(data.target), data);
+				if (emote == "ikissyou" && target) {
+					if (target == character) add_log(phrase.html("game.kissed_you", { name: player.name }), "gray");
+					add_chat("", phrase("game.kissed", { name: player.name, name2: target.name }), "gray");
+				}
+				play_cosmetic_emote(player, emote, target, data);
 				citizen_echo_emote(player, emote, data);
 			}
 		});
@@ -2466,6 +2679,7 @@ function init_socket(args) {
 		});
 	}
 	socket.on("ui", function (data) {
+		if (data.type === "cave_enter") { cave_entry_animation(data); return; }
 		if (data.event) call_code_function("trigger_event", (data.event === true && data.type) || data.event, data);
 		if (data.cevent && data.name == character.name) call_code_function("trigger_character_event", (data.cevent === true && data.type) || data.cevent, data);
 		// show_json(data);
@@ -2489,10 +2703,10 @@ function init_socket(args) {
 				call_code_function("trigger_event", "sbuy", { item: data.item, name: data.name });
 			} else if (data.type == "+M") {
 				var player = get_player(data.name);
-				if (player) d_text("+M", player, { color: "#67D385" });
+				if (player) d_text(phrase("combat.mana_gained"), player, { color: "#67D385" });
 			} else if (data.type == "restore_mp") {
 				var player = get_player(data.id);
-				if (player) d_text("+" + data.amount + " MPX!", player, { color: "#6585D3", huge: true });
+				if (player) d_text(phrase("combat.mpx", { amount: data.amount }), player, { color: "#6585D3", huge: true });
 			} else if (data.type == "+$f") {
 				var npc = get_npc("lostandfound"),
 					player = get_player(data.name);
@@ -2521,7 +2735,7 @@ function init_socket(args) {
 			} else if (data.type == "magiport") {
 				var player = get_player(data.name);
 				if (player) {
-					d_text("M", player, { size: "huge", color: "#3E97AA" });
+					d_text(phrase("combat.mana"), player, { size: "huge", color: "#3E97AA" });
 					jump_up();
 				}
 			} else if (data.type == "mlevel") {
@@ -2544,26 +2758,26 @@ function init_socket(args) {
 				// warpstomp
 				// exceeds_range
 				// cant_move
-				let text = "FFT..";
+				let text = phrase("combat.disengage");
 				let color = "#84A1D1";
 				switch (data.cause) {
 					case "taunt redirect":
-						text = "GRR..";
+						text = phrase("combat.taunt_growl");
 						break;
 					case "agitate redirect":
-						text = "GRRRR..";
+						text = phrase("combat.agitate_growl");
 						break;
 					case "absorb redirect":
-						text = "GRRR..";
+						text = phrase("combat.absorb_growl");
 						break;
 					case "bored":
 						// if last attack is too long ago.
-						text = "Yawns..";
+						text = phrase("combat.bored");
 					case "player_gone":
 						// different instance, dead player, invis player
-						text = "Huh?!";
+						text = phrase("combat.target_disappeared");
 					case "scare":
-						text = "EEP..";
+						text = phrase("combat.scared");
 						break;
 				}
 
@@ -2614,16 +2828,16 @@ function init_socket(args) {
 				if (sender) mojo(sender);
 			} else if (data.type == "mcourage") {
 				var sender = get_player(data.name);
-				if (sender) d_text("OMG!", sender, { size: "huge", color: "#B9A08C" });
+				if (sender) d_text(phrase("combat.omg"), sender, { size: "huge", color: "#B9A08C" });
 			} else if (data.type == "mfrenzy") {
 				var sender = get_player(data.name);
-				if (sender) d_text("OMG!!", sender, { size: "huge", color: "#B9A08C" });
+				if (sender) d_text(phrase("combat.omg_emphatic"), sender, { size: "huge", color: "#B9A08C" });
 			} else if (data.type == "fishing_fail") {
 				var sender = get_player(data.name);
 				if (sender) v_shake_i2(sender);
-				if (sender.me) add_log("Failed to fish", "gray");
+				if (sender.me) add_log(phrase.html("game.failed_to_fish"), "gray");
 			} else if (data.type == "fishing_none") {
-				add_log("Didn't catch anything", "gray");
+				add_log(phrase.html("game.didn_t_catch_anything"), "gray");
 			} else if (data.type == "fishing_start") {
 				var sender = get_player(data.name);
 				if (sender) {
@@ -2633,9 +2847,9 @@ function init_socket(args) {
 			} else if (data.type == "mining_fail") {
 				var sender = get_player(data.name);
 				if (sender) v_shake_i2(sender);
-				if (sender.me) add_log("Failed to mine", "gray");
+				if (sender.me) add_log(phrase.html("game.failed_to_mine"), "gray");
 			} else if (data.type == "mining_none") {
-				add_log("Didn't mine anything", "gray");
+				add_log(phrase.html("game.didn_t_mine_anything"), "gray");
 			} else if (data.type == "mining_start") {
 				var sender = get_player(data.name);
 				if (sender) {
@@ -2644,21 +2858,21 @@ function init_socket(args) {
 				}
 			} else if (data.type == "poisoned_resist") {
 				var target = get_entity(data.id);
-				if (target) d_text("RESIST!", target, { color: "#68B84B" });
+				if (target) d_text(phrase("combat.resist"), target, { color: "#68B84B" });
 			} else if (data.type == "frozen_resist" || data.type == "deepfreezed_resist") {
 				var target = get_entity(data.id);
-				if (target) d_text("RESIST!", target, { color: "#66C1C8" });
+				if (target) d_text(phrase("combat.resist"), target, { color: "#66C1C8" });
 			} else if (data.type == "burned_resist") {
 				var target = get_entity(data.id);
-				if (target) d_text("RESIST!", target, { color: "#B22F1A" });
+				if (target) d_text(phrase("combat.resist"), target, { color: "#B22F1A" });
 			} else if (data.type == "stunned_resist") {
 				var target = get_entity(data.id);
-				if (target) d_text("RESIST!", target, { color: "crit" });
+				if (target) d_text(phrase("combat.resist"), target, { color: "crit" });
 			} else if (data.type == "huntersmark") {
 				var sender = get_player(data.name);
 				var target = get_entity(data.id);
 				if (sender && target) d_line(sender, target, { color: "#730E0B" });
-				if (target) d_text("X", target, { size: "huge", color: "#730E0B" });
+				if (target) d_text(phrase("combat.marked"), target, { size: "huge", color: "#730E0B" });
 			} else if (data.type == "agitate") {
 				var attacker = get_entity(data.name);
 				data.ids.forEach(function (id) {
@@ -2687,7 +2901,7 @@ function init_socket(args) {
 					start_emblem(entity, "j1", { frames: 5 });
 					v_shake_i2(entity);
 				});
-				if (attacker) d_text("BE GONE!", attacker, { size: "huge", color: "#ff5817" });
+				if (attacker) d_text(phrase("combat.be_gone"), attacker, { size: "huge", color: "#ff5817" });
 			} else if (data.type == "cleave") {
 				var points = [],
 					attacker = get_entity(data.name);
@@ -2727,12 +2941,14 @@ function init_socket(args) {
 					start_emblem(attacker, "o1", { frames: 5 });
 				}
 			} else if (data.type == "slots") {
-				if (map_machines.slots) map_machines.slots.spinning = future_s(3);
+				slots_start(data);
+			} else if (data.type == "wheel") {
+				wheel_start(data);
 			} else if (data.type == "level_up") {
 				var player = get_entity(data.name);
 				if (player) {
 					small_success(player);
-					d_text("LEVEL UP!", player, { size: "huge", color: "#724A8F" });
+					d_text(phrase("combat.level_up"), player, { size: "huge", color: "#724A8F" });
 					call_code_function("trigger_event", "level_up", { name: player.name, level: player.level });
 					if (player.me) {
 						call_code_function("trigger_character_event", "level_up", { level: player.level });
@@ -2744,7 +2960,7 @@ function init_socket(args) {
 				if (player) {
 					v_shake_i2(player);
 					if (player.me) {
-						add_log("Disrupted by a dampening field", "#A772D0");
+						add_log(phrase.html("game.disrupted_by_a_dampening_field"), "#A772D0");
 						delete character.fading_out;
 						delete character.s.magiport;
 						delete character.s.blink;
@@ -2756,22 +2972,34 @@ function init_socket(args) {
 			} else if (Dev) console.log("Unhandled 'ui': " + data.type);
 		});
 	});
+	socket.on("poker", function (data) {
+		poker_event(data);
+	});
 	socket.on("tavern", function (data) {
+		if (data.type == "wheel" && data.event != "info") return wheel_tavern_event(data);
+		if (data.type == "slots" && data.event != "info") return slots_tavern_event(data);
 		if (data.event == "bet") {
 			var player = get_entity(data.name);
-			if (player) d_text("+B", player, { color: "#6E9BBE" });
+			if (player) d_text(phrase("combat.buff_gained"), player, { color: "#6E9BBE" });
 			if (player && player.me) {
 				dice_bet.active = true;
 				on_dice_change();
 			}
 		}
+		if (data.event == "refund") {
+			// A restart returned the open dice bet; the panel takes new bets again once the Tavern reopens.
+			var player = get_entity(data.name);
+			if (player && player.me) ((dice_bet.active = false), on_dice_change());
+		}
 		if (data.event == "info") {
-			render_tavern_info(data);
+			if (data.game == "wheel") wheel_info(data);
+			else if (data.game == "slots") slots_info(data);
+			else render_tavern_info(data);
 		}
 		if (data.event == "won") {
 			var player = get_entity(data.name);
 			if (player) {
-				d_text("+B", player, { color: "green" });
+				d_text(phrase("combat.buff_gained"), player, { color: "green" });
 				if (data.net >= 100000000) confetti_shower(player, 2);
 				else if (data.net >= 10000000) confetti_shower(player, 1);
 			}
@@ -2784,7 +3012,7 @@ function init_socket(args) {
 		if (data.event == "lost") {
 			var player = get_entity(data.name);
 			if (player) {
-				d_text("-B", player, { color: "red" });
+				d_text(phrase("combat.buff_lost"), player, { color: "red" });
 				if (data.gold >= 10000000) assassin_smoke(player.real_x, player.real_y);
 			}
 			if (player && player.me) {
@@ -2839,14 +3067,14 @@ function init_socket(args) {
 	});
 	socket.on("hardcore_info", function (data) {
 		S = data.E;
-		if (data.achiever) add_chat("mainframe", data.achiever + " ranked on the rewards list!", "#60B879");
+		if (data.achiever) add_chat("mainframe", phrase("game.rewards.ranked", { achiever: data.achiever }), "#60B879");
 		render_server();
 	});
 	socket.on("server_message", function (data) {
 		// console.log(data.message);
 		draw_trigger(function () {
-			add_chat("", data.message, data.color || "orange");
-			if (data.log && character) add_log(data.message, data.color || "orange");
+			add_chat("", phrase.message(data), data.color || "orange");
+			if (data.log && character) add_log(phrase.message(data, true), data.color || "orange");
 			if (data.type && data.item) call_code_function("trigger_event", data.type, { item: data.item, name: data.name });
 		});
 	});
@@ -2858,11 +3086,11 @@ function init_socket(args) {
 		merrit_gift_feedback(data);
 	});
 	socket.on("notice", function (data) {
-		add_chat("SERVER", data.message, data.color || "orange");
+		add_chat(phrase("game.sender.server"), phrase.message(data), data.color || "orange");
 	});
 	socket.on("reloaded", function (data) {
-		add_chat("SERVER", "Executed a live reload. (Optional) Refresh the game.", "orange");
-		if (data.change) add_chat("CHANGES", data.change, "#59CAFF");
+		add_chat(phrase("game.sender.server"), phrase("game.live_reload"), "orange");
+		if (data.change) add_chat(phrase("game.sender.changes"), data.change, "#59CAFF");
 		reload_data();
 	});
 	socket.on("chest_opened", function (data) {
@@ -2870,6 +3098,7 @@ function init_socket(args) {
 		call_code_function("trigger_character_event", "loot", data);
 		if (data.opener == character.name || data.gone) resolve_deferred("open_chest", data);
 		draw_trigger(function () {
+			if (no_graphics) { delete chests[data.id]; return; }
 			if (chests[data.id]) {
 				var chest = chests[data.id],
 					x = chest.x,
@@ -2908,16 +3137,17 @@ function init_socket(args) {
 	});
 	socket.on("pm", function (data) {
 		draw_trigger(function () {
+			var message = phrase.message(data);
 			var entity = get_entity(data.id);
 			if (entity) {
-				d_text(data.message, entity, { size: SZ.chat, color: "#BA6B88" });
+				d_text(message, entity, { size: SZ.chat, color: "#BA6B88" });
 				sfx("chat", entity.real_x, entity.real_y);
 			} else {
 				sfx("chat");
 			}
 			var cid = "pm" + (data.to || data.owner);
-			add_pmchat(data.to || data.owner, data.owner, data.message, data.xserver);
-			if (in_arr(cid, docked)) add_chat(data.owner, data.message, "#CD7879");
+			add_pmchat(data.to || data.owner, data.owner, message, data.xserver);
+			if (in_arr(cid, docked)) add_chat(data.owner, message, "#CD7879");
 			call_code_function("trigger_character_event", "pm", { from: data.owner, message: data.message });
 		});
 	});
@@ -2960,7 +3190,9 @@ function init_socket(args) {
 		// more draw_trigger's might be needed in the future [24/09/18]
 		var hitchhikers = data.hitchhikers;
 		delete data.hitchhikers;
+		equipment_sound(data);
 		if (character) (adopt_soft_properties(character, data), rip_logic());
+		update_tutorial_state();
 		if (hitchhikers)
 			hitchhikers.forEach(function (tuple) {
 				original_onevent.apply(socket, [{ type: 2, nsp: "/", data: tuple }]);
@@ -2985,12 +3217,7 @@ function init_socket(args) {
 	});
 	socket.on("limitdcreport", function (data) {
 		window.rc_delay = 16;
-		data.calls["!"] =
-			"You've made " +
-			data.climit +
-			" callcosts in 4 seconds. That's tooooo much. This is most probably because you are calling a function like 'move' consecutively. Some calls are also more expensive than others. If you are experiencing issues please email hello@adventure.land or ask for help in Discord/#code_beginner. Ps. You made " +
-			to_pretty_num(data.total) +
-			" calls in total.";
+		data.calls["!"] = phrase("game.call_limit.report", { cost: data.climit, total: to_pretty_num(data.total) });
 		show_json(data.calls);
 	});
 	socket.on("ccreport", function (data) {
@@ -3020,10 +3247,11 @@ function init_socket(args) {
 		if (data.source == "shield_slam") {
 			animate_shield_slam(attacker, target, data.shield);
 		} else if (new_attacks) {
+			var origin = projectile_origin(attacker, target, data.origin_offset || 0);
 			if (G.projectiles[data.projectile] && G.projectiles[data.projectile].animation)
 				map_animation(G.projectiles[data.projectile].animation, {
-					x: get_x(attacker),
-					y: get_y(attacker) - 15,
+					x: origin.x,
+					y: origin.y,
 					target: target,
 					m: data.m,
 					id: data.pid,
@@ -3069,30 +3297,30 @@ function init_socket(args) {
 			if (entity && data.reflect) sfx("reflect", entity.real_x, entity.real_y);
 			if (data.reflect) {
 				t = true;
-				d_text("REFLECT!", entity, { color: "reflect", from: data.hid, size: "huge" });
+				d_text(phrase("combat.reflect"), entity, { color: "reflect", from: data.hid, size: "huge" });
 			}
 			if (data.evade) {
 				evade = true;
-				d_text("EVADE", entity, { color: "evade", size: "huge", from: data.hid });
+				d_text(phrase("combat.evade"), entity, { color: "evade", size: "huge", from: data.hid });
 			}
 			if (data.miss) {
 				evade = true;
-				d_text("OOPS", entity, { color: "evade", size: "huge", from: data.hid });
+				d_text(phrase("combat.oops"), entity, { color: "evade", size: "huge", from: data.hid });
 			}
 			if (data.avoid) {
 				var c = { x: data.x, y: data.y, map: data.map, in: data["in"], height: 14 };
 				// console.log(c);
 				if (entity == character) c = character;
 				evade = true;
-				d_text("AVOID", c, { color: "evade", size: "huge", from: data.hid });
+				d_text(phrase("combat.avoid"), c, { color: "evade", size: "huge", from: data.hid });
 			}
 			if (entity && data.goldsteal) {
 				if (data.goldsteal > 0) {
 					d_text("-" + data.goldsteal, entity, { color: "gold", from: data.hid, y: -8 });
-					if (entity == character) add_log("You lost " + to_pretty_num(data.goldsteal) + " gold", "#5D5246");
+					if (entity == character) add_log(phrase.html("game.you_lost_gold", { goldsteal: to_pretty_num(data.goldsteal) }), "#5D5246");
 				} else {
 					d_text("+" + -data.goldsteal, entity, { color: "gold", from: data.hid, y: -8 });
-					if (entity == character) add_log("Received " + to_pretty_num(-data.goldsteal) + " gold, huh", "#25B77D");
+					if (entity == character) add_log(phrase.html("game.received_gold_huh", { goldsteal: to_pretty_num(-data.goldsteal) }), "#25B77D");
 				}
 			}
 			if (entity && data.projectile && !evade && G.projectiles[data.projectile].hit_animation) {
@@ -3101,11 +3329,11 @@ function init_socket(args) {
 			}
 			if (entity && !evade) sfx("monster_hit", entity.real_x, entity.real_y);
 			if (entity && data.projectile && !evade && G.projectiles[data.projectile].hit_text) {
-				d_text(G.projectiles[data.projectile].hit_text[0], entity, { color: G.projectiles[data.projectile].hit_text[1], size: "huge", offset: -offsets * 25 - 10 });
+				d_text(phrase.definition("projectile", data.projectile, "hit_text.0", G.projectiles[data.projectile].hit_text[0]), entity, { color: G.projectiles[data.projectile].hit_text[1], size: "huge", offset: -offsets * 25 - 10 });
 				offsets += 1;
 			}
 			if (entity && data.projectile && !evade && G.projectiles[data.projectile].kill_text && (entity.dead || entity.hp <= 0)) {
-				d_text(G.projectiles[data.projectile].kill_text[0], entity, { color: G.projectiles[data.projectile].kill_text[1], size: "huge", offset: -offsets * 25 - 10 });
+				d_text(phrase.definition("projectile", data.projectile, "kill_text.0", G.projectiles[data.projectile].kill_text[0]), entity, { color: G.projectiles[data.projectile].kill_text[1], size: "huge", offset: -offsets * 25 - 10 });
 				offsets += 1;
 			}
 			if (data.crit) {
@@ -3140,8 +3368,8 @@ function init_socket(args) {
 			// if(data.message=="+50" && entity && entity.me) add_log("Regenerated 50 HP","gray");
 			// if(data.message=="+100" && entity && entity.me) add_log("Regenerated 100 MP","gray");
 
-			if (entity) d_text(data.message, entity, data.args);
-			else d_text(data.message, data.x, data.y, data.args);
+			if (entity) d_text(phrase.message(data), entity, data.args);
+			else d_text(phrase.message(data), data.x, data.y, data.args);
 		});
 	});
 	socket.on("death", function (data) {
@@ -3165,8 +3393,8 @@ function init_socket(args) {
 		draw_trigger(function () {
 			var entity = get_entity(data.name);
 			if (entity) {
-				if (entity == character) add_log(data.who + " poked you", "gray");
-				if (data.level >= 2) add_chat("", data.who + " poked " + data.name, "gray");
+				if (entity == character) add_log(phrase.html("game.poked_you", { who: data.who }), "gray");
+				if (data.level >= 2) add_chat("", phrase("game.poked", { who: data.who, name: data.name }), "gray");
 				bump_up(entity, data.level * 2);
 			}
 		});
@@ -3209,11 +3437,11 @@ function init_socket(args) {
 	socket.on("friend", function (data) {
 		draw_trigger(function () {
 			if (data.event == "new") {
-				add_chat("", "You are now friends with " + data.name, "#409BDD");
+				add_chat("", phrase("game.you_are_now_friends_with", { name: data.name }), "#409BDD");
 				friends = data.friends;
 			}
 			if (data.event == "lost") {
-				add_chat("", "Lost a friend", "#DB5E59"); // : "+data.name
+				add_chat("", phrase("game.lost_a_friend"), "#DB5E59"); // : "+data.name
 				friends = data.friends;
 			}
 			if (data.event == "request") {
@@ -3231,9 +3459,9 @@ function init_socket(args) {
 	});
 	socket.on("party_update", function (data) {
 		draw_trigger(function () {
-			if (data.message) {
-				if (data.leave) add_log(data.message, "#875045");
-				else add_log(data.message, "#703987");
+			if (data.message || data.phrase) {
+				if (data.leave) add_log(phrase.message(data, true), "#875045");
+				else add_log(phrase.message(data, true), "#703987");
 			}
 			if (party_list.length == 0 && (data.list || []).length && !in_arr("party", cwindows)) open_chat_window("party");
 			party_list = data.list || [];
@@ -3244,7 +3472,7 @@ function init_socket(args) {
 	socket.on("blocker", function (data) {
 		if (data.type == "pvp") {
 			if (data.allow) {
-				add_chat("Ace", "Be careful in there!", "#62C358");
+				add_chat("Ace", phrase("game.be_careful_in_there"), "#62C358");
 				draw_trigger(function () {
 					var npc = get_npc("pvpblocker");
 					if (npc) {
@@ -3253,7 +3481,7 @@ function init_socket(args) {
 					}
 				});
 			} else {
-				add_chat("Ace", "I will leave when there are 6 adventurers around.", "#C36348");
+				add_chat("Ace", phrase("game.i_will_leave_when_there_are_6_adventurers_around"), "#C36348");
 			}
 		}
 	});
@@ -3270,43 +3498,51 @@ function init_socket(args) {
 			if (h[2].level) item += " +" + h[2].level;
 			if (h[2].q) prefix += "" + h[2].q + "x ";
 			if (h[0] == "buy") {
-				html += "<div>- Bought " + prefix + "'" + item + "' from " + h[1] + " for " + to_pretty_num(h[3]) + " gold</div>";
+				html += "<div>" + phrase.html("game.trade_history.bought", { quantity: prefix, item: item, player: h[1], gold: to_pretty_num(h[3]) }) + "</div>";
 			} else if (h[0] == "giveaway") {
-				html += "<div>- Gave away " + prefix + "'" + item + "' to " + h[1] + "</div>";
+				html += "<div>" + phrase.html("game.trade_history.gave_away", { quantity: prefix, item: item, player: h[1] }) + "</div>";
 			} else {
-				html += "<div>- Sold " + prefix + "'" + item + "' to " + h[1] + " for " + to_pretty_num(h[3]) + " gold</div>";
+				html += "<div>" + phrase.html("game.trade_history.sold", { quantity: prefix, item: item, player: h[1], gold: to_pretty_num(h[3]) }) + "</div>";
 			}
 		});
-		if (!data.length) add_log("No trade recorded yet.", "gray");
+		if (!data.length) add_log(phrase.html("game.no_trade_recorded_yet"), "gray");
 		else show_modal(html);
 	});
 	socket.on("track", function (list) {
-		if (!list.length) return add_log("No echoes", "gray");
+		if (!list.length) return add_log(phrase.html("game.no_echoes"), "gray");
 		if (list.length == 1) {
-			add_log("One echo", "gray");
-			add_log(parseInt(list[0].dist) + " clicks away", "gray");
+			add_log(phrase.html("game.one_echo"), "gray");
+			add_log(phrase.html("game.clicks_away", { dist: parseInt(list[0].dist) }), "gray");
 			return;
 		}
 		var c = "";
-		add_log(list.length + " echoes", "gray");
+		add_log(phrase.html("game.echoes", { length: list.length }), "gray");
 		list.forEach(function (e) {
 			if (!c) c = parseInt(e.dist);
 			else c = c + "," + parseInt(e.dist);
 		});
-		add_log(c + " clicks", "gray");
+		add_log(phrase.html("game.clicks", { c: c }), "gray");
 	});
 }
 
 function npc_right_click(event) {
+	if (this.role === "dreamkeeper") { if (event) event.stopPropagation(); return render_cave_keeper(); }
 	var npc = G.npcs[this.npc];
+	if (npc.cavalry) {
+		if (event) event.stopPropagation();
+		if (no_graphics) return;
+		xtarget = this;
+		return render_character(this);
+	}
+	tutorial_npc(this);
 	sfx("npc", this.x, this.y);
 	if (this.type == "character") npc = G.npcs[this.npc];
 	last_npc_right_click = new Date();
 	$("#topleftcornerdialog").html("");
-	next_side_interaction = npc.side_interaction;
+	next_side_interaction = phrase.definition("npc", this.npc, "side_interaction", npc.side_interaction);
 	if (!npc.color && current_map == "main") npc.color = colors.npc_white;
 	if (this.role != "shrine" && this.role != "compound") {
-		var says = npc.says || "Yes";
+		var says = phrase.definition("npc", this.npc, "says", npc.says) || phrase("npc.default_reply");
 		if (is_array(says)) says = says[seed1() % says.length];
 		if (says == "rbin") says = random_binary();
 		d_text(says, this, { color: npc.color });
@@ -3344,10 +3580,8 @@ function npc_right_click(event) {
 				auto: true,
 				skin: "lionsuit",
 				message:
-					"This is not your home server. You are a resident of " +
-					character.home +
-					". Home realms offer stronger cooperative credit and special rewards; rapid non-merchant character switching pauses them for 30 minutes. Would you like to set this server as your home?",
-				button: "Yes!",
+					phrase.html("npc.home.set_offer", { home: character.home }),
+				button: phrase.html("npc.yes"),
 				onclick: function () {
 					push_deferred("set_home");
 					socket.emit("set_home");
@@ -3358,7 +3592,7 @@ function npc_right_click(event) {
 				auto: true,
 				skin: "lionsuit",
 				message:
-					"This is your home server. Your help against cooperative monsters counts for more here, and some monsters carry extra home rewards. Switching here after another non-merchant character visits a different server causes 30 minutes of Realm Fatigue. Normal rewards continue while you settle in.",
+					phrase.html("npc.home.current"),
 			});
 		}
 	}
@@ -3366,8 +3600,8 @@ function npc_right_click(event) {
 		render_interaction({
 			auto: true,
 			skin: "favore",
-			message: "Would you like to bless the entire server for 3 days?",
-			button: "Yes! [1,200 Shells]",
+			message: phrase.html("npc.bless_server.offer"),
+			button: phrase.html("npc.bless_server.accept"),
 			onclick: function () {
 				socket.emit("bless_server");
 			},
@@ -3380,21 +3614,21 @@ function npc_right_click(event) {
 				{
 					auto: true,
 					skin: "proft",
-					message: "Always looking for new materials for a grand project of mine. Bring the materials you find to me, I will exchange them for items that are more useful to you.",
+					message: phrase.html("npc.material_collector.greeting"),
 				},
 				"return_html",
 			),
 		);
 	}
 	if (this.role == "anniversary_crafter") {
-		render_anniversary_baker("combine");
+		render_anniversary_baker();
 		if (event) event.stopPropagation();
 		return;
 	}
 	if (this.role == "witch") {
 		render_recipes("witch");
 		$("#recipe-item").html(
-			render_interaction({ auto: true, skin: "brewingwitch", message: "My child, bring me the materials I seek and I shall unlock unimaginable horrors for you!" }, "return_html"),
+			render_interaction({ auto: true, skin: "brewingwitch", message: phrase.html("npc.witch.greeting") }, "return_html"),
 		);
 	}
 	if (this.role == "shrine") {
@@ -3487,8 +3721,8 @@ function npc_right_click(event) {
 					{
 						auto: true,
 						skin: "daisy",
-						message: "Would you like to go on a hunt? However, I have to warn you. It's not for the faint-hearted!" + ((gameplay == "hardcore" && " [100 TOKENS!]") || ""),
-						button: "I CAN HANDLE IT!",
+						message: phrase.html(gameplay == "hardcore" ? "npc.monsterhunt.offer_hardcore" : "npc.monsterhunt.offer"),
+						button: phrase.html("npc.monsterhunt.accept"),
 						onclick: function () {
 							push_deferred("monsterhunt");
 							socket.emit("monsterhunt");
@@ -3497,15 +3731,15 @@ function npc_right_click(event) {
 					"return_html",
 				),
 			);
-		else if (character.s.monsterhunt.c) $("#merchant-item").html(render_interaction({ auto: true, skin: "daisy", message: "Go now, go! Come back after you completed your hunt ..." }, "return_html"));
+		else if (character.s.monsterhunt.c) $("#merchant-item").html(render_interaction({ auto: true, skin: "daisy", message: phrase.html("npc.monsterhunt.in_progress") }, "return_html"));
 		else {
 			push_deferred("monsterhunt");
 			socket.emit("monsterhunt");
-			$("#merchant-item").html(render_interaction({ auto: true, skin: "daisy", message: "Well done, well done! A token for your service!" }, "return_html"));
+			$("#merchant-item").html(render_interaction({ auto: true, skin: "daisy", message: phrase.html("npc.monsterhunt.complete") }, "return_html"));
 		}
 	}
 	if (this.role == "announcer") {
-		render_interaction({ auto: true, skin: "lionsuit", message: "Daily Events? Yes. Soon. Hopefully ... Definitely one day." });
+		render_interaction({ auto: true, skin: "lionsuit", message: phrase.html("npc.events.coming_soon") });
 	}
 	if (npc.citizen_behavior == "market_patron") {
 		render_merrit_interaction();
@@ -3513,7 +3747,7 @@ function npc_right_click(event) {
 	} else if (npc.citizen_behavior == "wayfinder") {
 		render_citizen_routes(this);
 	} else if (npc.interaction) {
-		var message = npc.interaction;
+		var message = phrase.definition("npc", this.npc, "interaction", npc.interaction);
 		if (is_array(message)) message = message[seed0() % message.length];
 		if (message == "rbin") message = random_binaries();
 		render_interaction({ auto: true, skin: this.skin, cx: this.cx, cosmetic_head_y: this.cosmetic_head_y, message: message });
@@ -3544,12 +3778,12 @@ function request_citizen_route(destination) {
 }
 
 function render_citizen_routes(npc) {
-	render_interaction({ auto: true, skin: npc.skin, cx: npc.cx, cosmetic_head_y: npc.cosmetic_head_y, message: "Who are you looking for?" });
+	render_interaction({ auto: true, skin: npc.skin, cx: npc.cx, cosmetic_head_y: npc.cosmetic_head_y, message: phrase.html("npc.routes.choose_service") });
 	$("#topleftcornerui > div").append(
 		"<div style='clear: both; float: right; margin-top: 7px'>" +
-			"<div class='slimbutton' onclick='request_citizen_route(\"transporter\")'>TRANSPORTER</div> " +
-			"<div class='slimbutton' onclick='request_citizen_route(\"locksmith\")'>LOCKSMITH</div> " +
-			"<div class='slimbutton' onclick='request_citizen_route(\"scrollsmith\")'>SCROLLSMITH</div>" +
+			"<div class='slimbutton' onclick='request_citizen_route(\"transporter\")'>" + phrase.html("npc.routes.transporter") + "</div> " +
+			"<div class='slimbutton' onclick='request_citizen_route(\"locksmith\")'>" + phrase.html("npc.routes.locksmith") + "</div> " +
+			"<div class='slimbutton' onclick='request_citizen_route(\"scrollsmith\")'>" + phrase.html("npc.routes.scrollsmith") + "</div>" +
 			"</div>",
 	);
 }
@@ -3574,7 +3808,7 @@ function player_attack(event, code) {
 	if (event) event.stopPropagation();
 	if (distance(this, character) > character.range + 5) {
 		draw_trigger(function () {
-			d_text("TOO FAR", ctarget || character);
+			d_text(phrase("combat.too_far"), ctarget || character);
 		});
 		return rejecting_promise({ reason: "too_far", distance: distance(this, character) });
 	}
@@ -3585,7 +3819,7 @@ function player_attack(event, code) {
 		((character.party && ctarget.party == character.party) || (character.guild && ctarget.guild == character.guild))
 	) {
 		// let server decide [05/06/19]
-		d_text("FRIENDLY", character);
+		d_text(phrase("combat.friendly"), character);
 		return rejecting_promise({ reason: "friendly" });
 	}
 	var promise = push_deferred("attack");
@@ -3603,11 +3837,11 @@ function player_heal(event, code) {
 	if (distance(this, character) > character.range) {
 		if (this != character)
 			draw_trigger(function () {
-				d_text("TOO FAR", ctarget || character);
+				d_text(phrase("combat.too_far"), ctarget || character);
 			});
 		else
 			draw_trigger(function () {
-				d_text("TOO FAR", character);
+				d_text(phrase("combat.too_far"), character);
 			});
 		return rejecting_promise({ reason: "too_far", distance: distance(this, character) });
 	}
@@ -3623,7 +3857,7 @@ function monster_attack(event, code) {
 	if (event) event.stopPropagation();
 	if (distance(this, character) > character.range + 10) {
 		draw_trigger(function () {
-			d_text("TOO FAR", ctarget || character);
+			d_text(phrase("combat.too_far"), ctarget || character);
 		}); // Added +10 - otherwise seems unfair [17/06/18]
 		return rejecting_promise({ reason: "too_far", distance: distance(this, character) });
 	}
@@ -3637,11 +3871,11 @@ function player_right_click(event) {
 	//alert("here");
 	if (this.npc && this.npc == "pvp") {
 		if (this.allow) {
-			var message = "Be careful in there!";
+			var message = phrase.html("npc.ace.warning");
 			add_chat("Ace", message);
 			d_text(message, this, { size: SZ.chat });
 		} else {
-			var message = "I will guard this entrance until there are 6 adventurers around.";
+			var message = phrase.html("npc.ace.guard_entrance");
 			add_chat("Ace", message);
 			d_text(message, this, { size: SZ.chat });
 		}
@@ -3662,6 +3896,7 @@ function player_right_click(event) {
 }
 
 function monster_click(event) {
+	if (this.cave && ["neutral", "ally", "victim"].includes(this.cave.side)) { if (event) event.stopPropagation(); return cave_manual("talk", {room: this.cave.room, actor: this.id}); }
 	if (ctarget == this) map_click(event);
 	ctarget = this;
 	xtarget = null;
@@ -3715,7 +3950,7 @@ function map_click(event) {
 		if (next_minteraction) ((data.key = next_minteraction), (next_minteraction = null));
 		socket.emit("move", data);
 	}
-	if (!(topleft_npc == "dice" && current_map == "tavern")) {
+	if (!(in_arr(topleft_npc, ["dice", "wheel", "slots"]) && current_map == "tavern")) {
 		if (topleft_npc && inventory) render_inventory();
 		topleft_npc = false;
 	}
@@ -3753,9 +3988,9 @@ var cosmetic_emote_durations = {
 };
 var cosmetic_targeted_emotes = { highfive: 1, boop: 1, spotlight: 1, pocketstorm: 1, mirrordance: 1 };
 var cosmetic_emote_fart_variants = [
-	{ duration: 720, sound_duration: 0.34, colors: [0x4f793f, 0x8eaa58, 0xc2cc78], text: "PFFT", text_color: "#D7E49A", filter: 310, buzz: [104, 48], puffs: 6 },
-	{ duration: 960, sound_duration: 0.48, colors: [0x526b4f, 0x83a064, 0xd1b96f], text: "PRRT", text_color: "#E5CE86", filter: 245, buzz: [88, 38], puffs: 8 },
-	{ duration: 1200, sound_duration: 0.62, colors: [0x5f496d, 0x8b6688, 0xb4946a], text: "TOOT", text_color: "#DAB9D8", filter: 190, buzz: [72, 31], puffs: 10 },
+	{ duration: 720, sound_duration: 0.34, colors: [0x4f793f, 0x8eaa58, 0xc2cc78], text: phrase("combat.emote.pfft"), text_color: "#D7E49A", filter: 310, buzz: [104, 48], puffs: 6 },
+	{ duration: 960, sound_duration: 0.48, colors: [0x526b4f, 0x83a064, 0xd1b96f], text: phrase("combat.emote.prrt"), text_color: "#E5CE86", filter: 245, buzz: [88, 38], puffs: 8 },
+	{ duration: 1200, sound_duration: 0.62, colors: [0x5f496d, 0x8b6688, 0xb4946a], text: phrase("combat.emote.toot"), text_color: "#DAB9D8", filter: 190, buzz: [72, 31], puffs: 10 },
 ];
 var cosmetic_emote_audio_context = null;
 
@@ -3868,6 +4103,12 @@ function play_cosmetic_emote_sound(name, variation) {
 				cosmetic_emote_tone(context, output, start + i * 0.16, 0.32, frequency, frequency, "triangle", 0.04);
 			});
 			cosmetic_emote_tone(context, output, start + 0.54, 0.42, 1567.98, 1567.98, "sine", 0.025);
+		} else if (name == "ikissyou") {
+			// Pucker, then a lip smack as the kiss reaches the target at 480 ms.
+			cosmetic_emote_noise(context, output, start + 0.36, 0.1, 700, 0.05);
+			cosmetic_emote_tone(context, output, start + 0.36, 0.1, 500, 900, "sine", 0.05);
+			cosmetic_emote_noise(context, output, start + 0.48, 0.028, 2600, 0.23);
+			cosmetic_emote_tone(context, output, start + 0.48, 0.075, 1100, 280, "sine", 0.08);
 		} else if (name == "jump") {
 			cosmetic_emote_tone(context, output, start, 0.14, 270 * pitch, 700 * pitch, "square", 0.055);
 		} else if (name == "superjump") {
@@ -4703,7 +4944,7 @@ function citizen_behavior_logic(sprite) {
 function play_cosmetic_emote(player, name, target, data) {
 	if (no_graphics) return;
 	if (name == "makeawish" || name == "ikissyou") {
-		if (cosmetic_emote_sheet_start(player, name, target) && name == "makeawish" && !(data && data.silent)) play_cosmetic_emote_sound(name, 1);
+		if (cosmetic_emote_sheet_start(player, name, target) && !(data && data.silent)) play_cosmetic_emote_sound(name, 1);
 		return;
 	}
 	if (name == "drop_egg") {
@@ -4803,6 +5044,11 @@ function cosmetic_emote_logic(player) {
 
 function update_sprite(sprite) {
 	if (!sprite || !sprite.stype) return;
+	if (character?.cave?.paused && (sprite.type === "character" || sprite.type === "monster" || sprite.atype === "map" || sprite.atype === "xmap")) {
+		sprite.last_ms = sprite.last_update = sprite.last_frame = new Date();
+		return;
+	}
+	if (sprite.atype === "effect") { update_map_effect(sprite); return; }
 	if (sprite.atype == "shield_slam_item") {
 		update_shield_slam_item(sprite);
 		return;
@@ -4843,10 +5089,11 @@ function update_sprite(sprite) {
 		if (sprite.npc && !sprite.moving && sprite.allow === false) sprite.direction = 0;
 		if (sprite.orientation && !sprite.moving && !sprite.target) sprite.direction = sprite.orientation;
 
-		if ((sprite.moving || aa || (sprite.fx && sprite.fx.aaa)) && sprite.walking === null) {
+		var animated = sprite.moving || aa || (sprite.fx && sprite.fx.aaa) || sprite.entity_motion || sprite.entity_strike;
+		if (animated && sprite.walking === null) {
 			if (sprite.last_stop && msince(sprite.last_stop) < 320) sprite.walking = sprite.last_walking;
 			else (reset_ms_check(sprite, "walk", 350), (sprite.walking = 1));
-		} else if (!(sprite.moving || aa || (sprite.fx && sprite.fx.aaa)) && sprite.walking) {
+		} else if (!animated && sprite.walking) {
 			sprite.last_stop = new Date();
 			sprite.last_walking = sprite.walking || sprite.last_walking || 1;
 			sprite.walking = null;
@@ -4854,6 +5101,7 @@ function update_sprite(sprite) {
 
 		var sequence = [0, 1, 2, 1],
 			base_ms = 350;
+		if (sprite.entity_motion || sprite.entity_strike) base_ms = 180;
 		if (sprite.mtype == "wabbit") ((sequence = [0, 1, 2]), (base_ms = 220));
 
 		if (sprite.walking && ms_check(sprite, "walk", base_ms - ((sprite.speed + ((sprite.fx && sprite.fx.aaa && 500) || 0)) / 2 || 0))) sprite.walking++; //sprite.updates%20==1
@@ -5101,24 +5349,20 @@ function update_sprite(sprite) {
 			}
 		}
 
-		if (sprite.mtype == "slots" || sprite.mtype == "wheel") {
-			if (sprite.spinning) {
-				if (!(sprite.updates % 2)) {
-					sprite.cskin = "" + ((parseInt(sprite.cskin) + 1) % 3);
-					sprite.texture = textures[sprite.mtype][sprite.cskin];
-				}
-				if (sprite.spinning < new Date()) sprite.spinning = false;
-			}
-		}
+		if (sprite.mtype == "slots") slots_map_update(sprite);
+		if (sprite.mtype == "wheel") wheel_map_update(sprite);
+		if (sprite.mtype == "poker") poker_map_update(sprite);
 	}
 
 	if (sprite.type == "chest" && sprite.openning) {
-		if (mssince(sprite.openning) > 30 && sprite.frame != 3) {
+		var chest_frame_ms = sprite.skin === "cavechest" ? 140 : 30;
+		if (mssince(sprite.openning) > chest_frame_ms && sprite.frame != 3) {
 			sprite.openning = new Date();
 			set_texture(sprite, ++sprite.frame);
 			if (sprite.to_delete) sprite.alpha -= 0.1;
-		} else if (mssince(sprite.openning) > 30 && sprite.to_delete && sprite.alpha >= 0.5) {
+		} else if (mssince(sprite.openning) > chest_frame_ms && sprite.to_delete && sprite.alpha >= 0.5) {
 			sprite.alpha -= 0.1;
+			if (sprite.skin === "cavechest") sprite.openning = new Date();
 		} else if (sprite.alpha < 0.5) {
 			destroy_sprite(chests[sprite.id]);
 			delete chests[sprite.id];
@@ -5131,6 +5375,7 @@ function update_sprite(sprite) {
 	}
 	if (sprite.type == "character" || sprite.cosmetic_emote) cosmetic_emote_logic(sprite);
 	if (sprite.type == "npc" && sprite.citizen_behavior) citizen_behavior_logic(sprite);
+	if (sprite.motion || sprite.entity_motion || sprite.entity_strike) update_entity_motion(sprite);
 
 	if (sprite.last_ms && sprite.s) {
 		var ms = mssince(sprite.last_ms);
@@ -5180,7 +5425,7 @@ function add_monster(data) {
 	sprite.vx = data.vx || 0;
 	sprite.vy = data.vy || 0;
 	if (def.slots) sprite.slots = def.slots;
-	sprite.level = 1;
+	sprite.level = data.cave ? data.level : 1;
 	if (sprite.s.young) sprite.real_alpha = 0.4;
 	if (def.charge_skin) {
 		sprite.normal_skin = sprite.skin;
@@ -5517,18 +5762,31 @@ function player_effects_logic(sprite) {
 	}
 
 	if (sprite.me && sprite.fear && (!sprite.last_fear || sprite.last_fear < sprite.fear)) {
-		if (character.fear > 3) add_log("You are petrified", "#B03736");
-		else if (character.fear > 1) add_log("You are terrified", "#B04157");
-		else if (character.fear) add_log("You are getting scared", "gray");
+		if (character.fear > 3) add_log(phrase.html("game.you_are_petrified"), "#B03736");
+		else if (character.fear > 1) add_log(phrase.html("game.you_are_terrified"), "#B04157");
+		else if (character.fear) add_log(phrase.html("game.you_are_getting_scared"), "gray");
 	}
 	if (sprite.me) sprite.last_fear = sprite.fear;
 }
 
 function effects_logic(sprite) {
 	if (no_graphics || !sprite.s) return;
+	if (sprite.s.rimeshell && !sprite.fx.rimeshell) {
+		sprite.fx.rimeshell = true;
+		start_animation(sprite, "rimeshell_cast");
+	} else if (!sprite.s.rimeshell && sprite.fx.rimeshell) {
+		delete sprite.fx.rimeshell;
+		stop_animation(sprite, "rimeshell_cast");
+	}
+	if (sprite.s.rimeexposed && !sprite.fx.rimeexposed) {
+		sprite.fx.rimeexposed = true;
+		start_animation(sprite, "rimehelix_impact");
+	} else if (!sprite.s.rimeexposed && sprite.fx.rimeexposed) {
+		delete sprite.fx.rimeexposed;
+	}
 
 	if (sprite.s && sprite.s.sleeping && !sprite.shaking) {
-		if (Math.random() < 0.1) d_text("zZz", sprite, { color: "white" });
+		if (Math.random() < 0.1) d_text(phrase("combat.zzz"), sprite, { color: "white" });
 		v_shake_i_minorX(sprite);
 	}
 
@@ -5638,7 +5896,11 @@ function cosmetics_logic(sprite) {
 		body_type = "full",
 		cx_prop = {},
 		cxs = [sprite.skin];
-	for (var n in sprite.cx) cxs.push(n);
+	for (var n in sprite.cx) {
+		var cid = sprite.cx[n];
+		if (n == "upper" && (in_arr(T[sprite.skin], ["full", "character"]) || T[cid] != "armor" || SSU[cid] != SSU[sprite.skin])) continue;
+		cxs.push(cid);
+	}
 
 	cxs.forEach(function (cid) {
 		if (G.cosmetics.prop[cid])
@@ -5666,6 +5928,7 @@ function cosmetics_logic(sprite) {
 			var cid = sprite.cx[place];
 			if (!cid || ["stone"].includes(place)) continue;
 			if (place == "hair" && cx_prop.no_hair) continue;
+			if (place == "hat" && cx_prop.no_hat) continue;
 			if (body_type == "full" && in_arr(place, ["head", "hair"])) continue;
 			if (body_type == "character" && in_arr(place, ["head", "hair"])) continue;
 			if (place == "upper" && (body_type == "full" || SSU[cid] != SSU[sprite.skin])) continue;
@@ -5853,7 +6116,8 @@ function cosmetics_logic(sprite) {
 				c.x = +tilt + x_disp; //,c.zy=-2*ZEPS; // new
 			else if (sprite.j == 3) ((c.x = 0 + x_disp), (c.zy = -ZEPS));
 			if (sprite.j < 3 && covers) c.zy = -2 * ZEPS;
-			if (sprite.j !== undefined) set_texture(c, sprite.j);
+			var head_interval = G.cosmetics.head_animation && G.cosmetics.head_animation[cid];
+			if (sprite.j !== undefined) set_texture(c, sprite.j, head_interval ? Math.floor(Date.now() / head_interval) : 0);
 			c.moved = false;
 		} else if (c.stype == "hair") {
 			c.y_disp = -(G.cosmetics.default_hair_place + head_dy + hair_dy) + cosmetic_head_y;
@@ -6177,7 +6441,8 @@ function add_character(data, me) {
 	if (npc && npc.type == "static") stype = "static";
 	else if (npc && npc.type != "fullstatic") stype = "emote";
 	if (log_flags.entities) console.log("add character " + data.id);
-	var cscale = (me && manual_centering && 2) || 1;
+	// "me" is added directly to stage (not the scaled "map" container, see manual_centering), so it needs to match "scale" manually
+	var cscale = (me && manual_centering && scale) || 1;
 	if (!XYWH[data.skin]) data.skin = "naked";
 	var sprite = new_sprite(data.skin, stype);
 	if (cscale != 1) sprite.scale = new PIXI.Point(cscale, cscale);
@@ -6247,8 +6512,7 @@ function add_character(data, me) {
 		// sprite.on('rightdown',player_right_click); - so simple, yet doesn't work since there is no propagation between siblings [07/09/16]
 	}
 	if (me) {
-		sprite.explanation =
-			"Hey Adventurer! This is your very own character that is a PIXI.Sprite Object. Adventure Land uses PIXI to draw things. You can learn more about it: https://www.pixijs.com/ and draw your own stuff via CODE! (Technical) Since your character is a special object, it doesn't get drawn like other entities, therefore your real character object has static x and y values. The character object in Code is an Object that mimics and extends your actual character Object. It's kinda complicated, but the only difference is that your real character object has different x and y values.";
+		sprite.explanation = phrase("game.character.sprite_explanation");
 		if (mode.ltbl && 0) {
 			var lightbulb = new PIXI.Graphics();
 			var rr = 100;
@@ -6272,6 +6536,8 @@ function add_character(data, me) {
 }
 
 function add_chest(data) {
+	if (no_graphics) { chests[data.id] = Object.assign({type:"chest"},data); return; }
+	if (chests[data.id]) return;
 	var chest = new_sprite(data.chest, "v_animation"); // previously a new texture was created each time [01/04/17]
 	chest.parentGroup = chest.displayGroup = chest_layer;
 	chest.x = round(data.x);
@@ -6284,6 +6550,7 @@ function add_chest(data) {
 	chest.cursor = "help";
 	chest.map = data.map;
 	chest.id = data.id;
+	if (data.chest === "cavechest") decorate_cave_chest(chest);
 	var chest_click = function () {
 		// sfx("open",chest.x,chest.y);
 		open_chest(data.id);
@@ -6335,19 +6602,15 @@ function add_machine(machine) {
 		sprite.shuffle_speed = 100;
 	}
 
+	if (machine.type == "wheel") wheel_map_attach(sprite);
+	if (machine.type == "slots") slots_map_attach(sprite);
+	if (machine.type == "poker") poker_map_attach(sprite);
+
 	function machine_click(event) {
 		if (machine.type == "dice") render_dice(); // add_log("Curious device","gray");//
-		if (machine.type == "wheel") add_log("The hostess isn't around", "gray");
-		if (machine.type == "slots")
-			render_interaction({
-				auto: true,
-				skin: character.skin,
-				message: "Hmm. This machine seems broken. Still give it a try? [1,000,000 gold]",
-				button: "YES!",
-				onclick: function () {
-					socket.emit("bet", { type: "slots" });
-				},
-			});
+		if (machine.type == "wheel") render_wheel();
+		if (machine.type == "slots") render_slot_machine();
+		if (machine.type == "poker") render_poker();
 		try {
 			if (event) event.stopPropagation();
 		} catch (e) {}
@@ -6375,7 +6638,7 @@ function add_door(door) {
 	function door_right_click(event) {
 		if (event) event.stopPropagation();
 		// if(distance(character,{x:door[0]+door[2]/2,y:door[1]+door[3]/2})>100) {add_log("Get closer","gray"); return;}
-		if (is_electron && electron_data.platform == "mas" && door[4] == "tavern") return show_alert("You can't enter the Tavern from Mac App Store :|");
+		if (is_electron && electron_data.platform == "mas" && door[4] == "tavern") return show_alert(phrase.html("game.you_can_t_enter_the_tavern_from_mac_app"));
 		if (door[7] == "key") {
 			if (character.party) {
 				for (var p in party) {
@@ -6388,7 +6651,7 @@ function add_door(door) {
 				}
 			}
 			setTimeout(function () {
-				show_confirm("Enter " + G.maps[door[4]].name + "? [Consumes a key!]", ["#D06631", "Yes"], "No!", function () {
+				show_confirm(phrase.html("game.door.confirm_key", { map: G.maps[door[4]].name }), ["#D06631", phrase.html("game.door.accept")], phrase.html("game.door.cancel"), function () {
 					push_deferred("enter");
 					socket.emit("enter", { place: door[4] });
 					hide_modal(true);
@@ -6397,15 +6660,17 @@ function add_door(door) {
 			return;
 		}
 		if (!is_door_close(character.map, door, character.real_x, character.real_y) || !can_use_door(character.map, door, character.real_x, character.real_y)) {
-			add_log("Get closer", "gray");
+			add_log(phrase.html("game.get_closer"), "gray");
 			return;
 		}
+		if (cave_door_locked(door)) { render_cave_stairs(); return; }
 		push_deferred("transport");
 		socket.emit("transport", { to: door[4], s: door[5] });
 	}
 	if (is_mobile) sprite.on("mousedown", door_right_click).on("touchstart", door_right_click);
 	sprite.on("rightdown", door_right_click);
 	sprite.onrclick = door_right_click;
+	decorate_cave_door(sprite,door);
 	return sprite;
 }
 
@@ -6422,16 +6687,18 @@ function add_quirk(quirk) {
 	sprite.hitArea = new PIXI.Rectangle(-round(quirk[2] * 0.5), -round(quirk[3] * 1), round(quirk[2]), round(quirk[3]));
 	sprite.type = "quirk";
 	function quirk_right_click(event) {
-		if (quirk[4] == "sign") add_log('Sign reads: "' + quirk[5] + '"', "gray");
-		else if (quirk[4] == "note") add_log('Note reads: "' + quirk[5] + '"', "gray");
+		var quirk_index = (G.maps[current_map].quirks || []).indexOf(quirk);
+		var quirk_text = phrase.definition("map", current_map, "quirks." + quirk_index + ".5", quirk[5]);
+		if (quirk[4] == "sign") add_log(phrase.html("game.sign_reads", { value: quirk_text }), "gray");
+		else if (quirk[4] == "note") add_log(phrase.html("game.note_reads", { value: quirk_text }), "gray");
 		else if (quirk[4] == "tavern_info") socket.emit("tavern", { event: "info" });
 		else if (quirk[4] == "mainframe") render_mainframe();
 		else if (quirk[4] == "the_lever") the_lever();
-		else if (quirk[4] == "log") add_log(quirk[5], "gray");
+		else if (quirk[4] == "log") add_log(quirk_text, "gray");
 		else if (quirk[4] == "upgrade") render_upgrade_shrine(1);
 		else if (quirk[4] == "compound") render_compound_shrine(1);
 		else if (quirk[4] == "list_pvp") socket.emit("list_pvp");
-		else if (quirk[4] == "invisible_statue") (render_none_shrine(), add_log("An invisible statue!", "gray"));
+		else if (quirk[4] == "invisible_statue") (render_none_shrine(), add_log(phrase.html("game.an_invisible_statue"), "gray"));
 		try {
 			if (event) event.stopPropagation();
 		} catch (e) {}
@@ -6443,15 +6710,26 @@ function add_quirk(quirk) {
 }
 
 function add_animatable(name, data) {
+	if (no_graphics) return;
 	var animatable = new_sprite(data.position, "animatable");
 	animatable.x = data.x;
 	animatable.y = data.y;
 	animatable.anchor.set(0.5, 1);
 	animatable.type = "animatable";
+	if (name === "dreams_gate") decorate_cave_gate(animatable);
+	if (data.role) {
+		animatable.role = data.role;
+		animatable.interactive = animatable.buttonMode = true;
+		animatable.on("rightdown", npc_right_click);
+		animatable.onrclick = npc_right_click;
+		if (is_mobile) animatable.on("mousedown", npc_right_click).on("touchstart", npc_right_click);
+	}
 	return animatable;
 }
 
 function create_map() {
+	if (no_graphics && G.maps[current_map].generated) { drawn_map = current_map; return; }
+	var cached_map = window.cached_map && !G.maps[current_map].generated;
 	var start = new Date();
 	pvp = G.maps[current_map].pvp || is_pvp;
 	if (paused) return;
@@ -6464,7 +6742,7 @@ function create_map() {
 			if (chest.map == window.map.map_name) map.removeChild(chest);
 		}
 		// #IDEA: Destroy sprites too, otherwise they stack up
-		if (!cached_map && map_tiles.length && map.children) map.removeChildren(map.children.indexOf(map_tiles[0]), map.children.indexOf(map_tiles[map_tiles.length - 1])); // [06/03/20]
+		if (!map.cached && map_tiles.length && map.children) map.removeChildren(map.children.indexOf(map_tiles[0]), map.children.indexOf(map_tiles[map_tiles.length - 1])); // [06/03/20]
 		free_children(map); // #PIXI: https://github.com/pixijs/pixi.js/pull/2995#issuecomment-248974419
 
 		map.destroy();
@@ -6502,6 +6780,7 @@ function create_map() {
 
 	map = new PIXI.Container();
 	map.map_name = current_map;
+	map.cached = cached_map;
 	//var filter=new PIXI.filters.ColorMatrixFilter()
 	//filter.desaturate(0.2);
 	//map.filters=[filter];
@@ -6831,7 +7110,7 @@ function create_map() {
 	if (log_flags.map) console.log("Map created: " + current_map);
 
 	animatables = {};
-	for (var id in map_info.animatables || {}) {
+	for (var id in (!no_graphics && map_info.animatables) || {}) {
 		animatables[id] = add_animatable(id, map_info.animatables[id]);
 		map.addChild(animatables[id]);
 		map_entities.push(animatables[id]);
@@ -6878,7 +7157,8 @@ function create_map() {
 }
 
 function retile_the_map() {
-	if (paused) return;
+	if (no_graphics || paused) return;
+	var cached_map = map.cached;
 	if (cached_map) {
 		if (dtile_size && (dtile_width < width || dtile_height < height)) recreate_dtextures();
 		if (wtile && (wtile_width < width || wtile_height < height)) recreate_wtextures();
@@ -7058,6 +7338,7 @@ function calculate_fps() {
 }
 
 function load_game(c) {
+	if (!no_graphics && pixel_fonts.defer("A", function () { load_game(c); })) return;
 	loader.load(function (loader, resources) {
 		//PIXI.ticker.shared.autoStart = false;
 		//PIXI.ticker.shared.stop(); https://github.com/pixijs/pixi.js/issues/2843#issuecomment-241682589 no observable effect
@@ -7078,6 +7359,7 @@ function load_game(c) {
 			if (in_arr(s_def.type, ["tail"])) ((col_num = 4), (s_type = s_def.type));
 			if (in_arr(s_def.type, ["v_animation", "head", "hair", "hat", "s_wings", "face", "makeup", "beard"])) ((col_num = 1), (s_type = s_def.type));
 			if (in_arr(s_def.type, ["a_makeup", "a_hat"])) ((col_num = s_def.frames || 3), (s_type = s_def.type));
+			if (s_def.type == "head" && s_def.frames) col_num = s_def.frames;
 			if (in_arr(s_def.type, ["wings", "body", "armor", "skin", "character"])) s_type = s_def.type;
 			if (in_arr(s_def.type, ["emblem", "gravestone"])) ((row_num = 1), (col_num = 1), (s_type = s_def.type));
 			var matrix = s_def.matrix;
@@ -7103,7 +7385,7 @@ function load_game(c) {
 
 		for (name in G.animations) generate_textures(name, "animation");
 
-		set_status("Resources Loaded");
+		set_status(phrase.html("game.status.resources_loaded"));
 
 		resources_loaded = true;
 
@@ -7121,7 +7403,7 @@ function launch_game() {
 
 	if (!draws) draw();
 
-	if (!mode.dom_tests_pixi && inside != "payments" && !window.fps_counter) {
+	if (!no_graphics && !mode.dom_tests_pixi && inside != "payments" && !window.fps_counter) {
 		// fps_counter = new PIXI.Text("0",{fontFamily:"Arial",fontSize:32,fill:"green"});
 		fps_counter = new PIXI.Text("0", { fontFamily: "Pixel", fontSize: 40, fill: "green" });
 		fps_counter.position.set(10, 10);
@@ -7138,14 +7420,14 @@ function launch_game() {
 }
 
 function on_resize() {
-	width = $(window).width();
-	height = $(window).height();
+	width = viewport_width();
+	height = viewport_height();
 	if (window.renderer) {
 		renderer.resize(width, height);
 		renderer.antialias = antialias;
 		if (window.map) map.last_max_y = undefined;
 	}
-	$("#pagewrapped").css("margin-top", Math.floor(($(window).height() - $("#pagewrapped").outerHeight()) / 2) + "px");
+	$("#pagewrapped").css("margin-top", Math.floor((viewport_height() - $("#pagewrapped").outerHeight()) / 2) + "px");
 	reposition_ui();
 	position_modals();
 	force_draw_on = future_s(1);
@@ -7206,6 +7488,7 @@ function draw(arg1, manual_draw) {
 	// cframe_ms=min(2000,cframe_ms); // so the game won't freeze after a lengthy sleep - no need [26/07/16]
 	//console.log(cframe_ms); console.log(map.x+" "+map.y);
 	if (cframe_ms > ((Dev && 200) || 10000)) console.log("cframe_ms is " + cframe_ms);
+	if (character?.cave?.paused) cframe_ms = mframe_ms = 0;
 	while (cframe_ms > 0) {
 		if (character && character.moving) {
 			moved = true;
@@ -7271,6 +7554,8 @@ function draw(arg1, manual_draw) {
 	});
 	for (var id in chests) if (chests[id].openning) update_sprite(chests[id]);
 	for (var id in map_animations) update_sprite(map_animations[id]);
+	draw_cave_entrance();
+	draw_cave_chests();
 	stop_timer("draw", "sprites");
 
 	stop_timer("draw", "before_render");
@@ -7307,7 +7592,7 @@ function merrit_gift_feedback(data) {
 	if (!data || typeof data.id !== "string" || !character || merrit_seen_gifts.indexOf(data.id) !== -1) return;
 	merrit_seen_gifts.push(data.id);
 	if (merrit_seen_gifts.length > 20) merrit_seen_gifts.shift();
-	add_log("Merrit gave you 1 Market Parcel" + (data.receipt && data.receipt.shells ? " and 1 SHELL" : "") + " for keeping your shop on the square.", "#DDB979");
+	add_log(phrase.html(data.receipt && data.receipt.shells ? "npc.merrit.gift_with_shell" : "npc.merrit.gift"), "#DDB979");
 	call_code_function("trigger_character_event", "merrit", { item: "marketparcel", quantity: 1, shells: (data.receipt && data.receipt.shells) || 0 });
 	if (no_graphics) return;
 	draw_trigger(function () {

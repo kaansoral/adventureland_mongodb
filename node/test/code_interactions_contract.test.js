@@ -80,6 +80,8 @@ function runnerContext() {
 		Promise,
 		RESOLVE_ALL: false,
 		character: { map: "main", s: {} },
+		G: { games: { wheel: { sides: ["sun", "moon"] } } },
+		in_arr: (value, array) => array.includes(value),
 		clearTimeout,
 		is_function: (value) => typeof value === "function",
 		is_number: (value) => typeof value === "number" && Number.isFinite(value),
@@ -115,6 +117,14 @@ function runnerContext() {
 		"get_tavern_info",
 		"bet_dice",
 		"play_slots",
+		"bet_wheel",
+		"poker_request",
+		"get_poker_table",
+		"poker_join",
+		"poker_leave",
+		"poker_act",
+		"poker_sit_out",
+		"poker_sit_in",
 		"destat_item",
 	];
 	vm.runInContext(names.map((name) => extractFunction(runnerSource, name)).join("\n"), context);
@@ -134,6 +144,12 @@ test("runner methods emit only their established socket events and correlate ter
 		["enter_duel", ["duel-id"], "duel", "game_response", "duel"],
 		["bet_dice", ["down", 55, 10000], "bet", "game_response", "dice"],
 		["play_slots", [], "bet", "game_response", "slots"],
+		["bet_wheel", ["sun", 10000], "bet", "game_response", "wheel"],
+		["poker_join", [800000000, 1], "poker", "game_response", "poker"],
+		["poker_leave", [], "poker", "game_response", "poker"],
+		["poker_act", ["raise", 60000000], "poker", "game_response", "poker"],
+		["poker_sit_out", [], "poker", "game_response", "poker"],
+		["poker_sit_in", [], "poker", "game_response", "poker"],
 		["destat_item", [0], "destat", "game_response", "destat"],
 	];
 
@@ -212,8 +228,13 @@ test("server retains legacy payloads while adding opt-in request completion", ()
 	assert.match(server, /socket\.emit\("lostandfound", cfound\)/);
 	assert.match(server, /event: "chellenge"/);
 	assert.match(server, /data == "the_lever" \|\| data\.type == "the_lever"/);
-	assert.match(server, /else player\.socket\.emit\("game_response", "slots_success"\)/);
-	assert.match(server, /else player\.socket\.emit\("game_response", "slots_fail"\)/);
+	const slotsLogic = fs.readFileSync(path.join(root, "node/logic/tavern_slots.js"), "utf8");
+	assert.match(slotsLogic, /else player\.socket\.emit\("game_response", ref\.won \? "slots_success" : "slots_fail"\)/);
+	assert.match(server, /return tavern_slots_bet\(player, data, bet_failure, request_id\)/);
+	assert.match(server, /tavern_poker_request\(player, data\)/);
+	const pokerLogic = fs.readFileSync(path.join(root, "node/logic/tavern_poker.js"), "utf8");
+	assert.match(pokerLogic, /place: "poker", success: true/);
+	assert.match(pokerLogic, /place: "poker", failed: true/);
 	assert.match(server, /socket\.emit\("pvp_list", \{ code: data && data\.code, list: plist \}\)/);
 	assert.match(server, /if \(data\.request_id\) success_response\("data", "mainframe", mainframe_result\)/);
 	assert.match(serverFunctions, /place: "dice"/);
@@ -237,6 +258,13 @@ test("all added public methods have directory entries and function pages", () =>
 		"get_tavern_info",
 		"bet_dice",
 		"play_slots",
+		"bet_wheel",
+		"get_poker_table",
+		"poker_join",
+		"poker_leave",
+		"poker_act",
+		"poker_sit_out",
+		"poker_sit_in",
 	];
 	for (const method of methods) {
 		assert.match(directory, new RegExp('"' + method + '"'));

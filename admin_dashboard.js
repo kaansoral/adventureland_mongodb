@@ -315,7 +315,7 @@ async function admin_refresh_steam_data(args) {
 		if (keys.steam_publisher_web_apikey && (args.force || (await admin_sync_is_stale("microtransactions", 5 * 60 * 1000)))) {
 			tasks.push(admin_run_sync("microtransactions", admin_refresh_microtransactions));
 		}
-		if (keys.steam_financial_web_apikey && (args.force || (await admin_sync_is_stale("financials", 60 * 60 * 1000)))) {
+		if (keys.steam_financial_web_apikey && (args.force || (await admin_sync_is_stale("financials", 5 * 60 * 1000)))) {
 			tasks.push(
 				admin_run_sync("financials", function () {
 					return admin_refresh_financials(args.financial_batch || 31);
@@ -384,7 +384,7 @@ function admin_summarize_financial_documents(documents) {
 	(documents || []).forEach(function (document) {
 		var discount_names = {};
 		(document.discounts || []).forEach(function (discount) {
-			discount_names["" + discount.combined_discount_id] = discount.combined_discount_name || "Discount " + discount.combined_discount_id;
+			discount_names["" + discount.combined_discount_id] = discount;
 		});
 		(document.rows || []).forEach(function (row) {
 			if (!admin_financial_row_is_adventure_land(row)) return;
@@ -398,9 +398,14 @@ function admin_summarize_financial_documents(documents) {
 			var platform = row.platform || "Unknown";
 			summary.countries[country] = admin_number(summary.countries[country]) + admin_number(row.net_sales_usd);
 			summary.platforms[platform] = admin_number(summary.platforms[platform]) + admin_number(row.net_units_sold);
-			if (row.combined_discount_id) {
-				var discount_id = "" + row.combined_discount_id;
-				var discount_name = discount_names[discount_id] || "Discount " + discount_id;
+			var discount = discount_names["" + row.combined_discount_id] || {};
+			var percentage = admin_number(row.total_discount_percentage || discount.total_discount_percentage);
+			if (!percentage && admin_number(row.base_price) > admin_number(row.sale_price) && row.sale_price !== undefined) {
+				percentage = Math.round((1 - admin_number(row.sale_price) / admin_number(row.base_price)) * 100);
+			}
+			if (row.combined_discount_id || percentage > 0) {
+				var discount_name = discount.combined_discount_name || (row.combined_discount_id ? "Discount " + row.combined_discount_id : "Sale");
+				if (percentage > 0) discount_name += " (" + percentage + "% off)";
 				summary.discounts[discount_name] = admin_number(summary.discounts[discount_name]) + admin_number(row.net_sales_usd);
 			}
 		});
@@ -526,6 +531,88 @@ async function admin_get_recent_steam_purchases() {
 	});
 }
 
+function admin_users_cursor(value) {
+	if (!value) return null;
+	if (typeof value !== "string" || value.length > 120) throw new Error("invalid_users_cursor");
+	var parts = /^(\d{1,15}):(US_[A-Za-z0-9_]{1,80})$/.exec(value);
+	if (!parts || !Number.isFinite(new Date(Number(parts[1])).getTime())) throw new Error("invalid_users_cursor");
+	return { created: new Date(Number(parts[1])), id: parts[2] };
+}
+
+async function admin_get_users(days, before) {
+	var query = {},
+		cutoff = admin_range_cutoff(days),
+		page_size = 50;
+	if (cutoff) query.created = { $gte: cutoff };
+	if (before) query.$or = [{ created: { $lt: before.created } }, { created: before.created, _id: { $lt: before.id } }];
+	var users = await db
+		.collection("user")
+		.find(query, {
+			projection: { name: 1, email: 1, created: 1, last_online: 1, platform: 1, "info.email": 1, "info.country": 1 },
+			maxTimeMS: 5000,
+		})
+		.sort({ created: -1, _id: -1 })
+		.limit(page_size + 1)
+		.toArray();
+	var more = users.length > page_size;
+	users = users.slice(0, page_size);
+	var characters = users.length
+		? await db
+				.collection("character")
+				.find(
+					{
+						owner: {
+							$in: users.map(function (user) {
+								return user._id;
+							}),
+						},
+					},
+					{
+						projection: { owner: 1, name: 1, type: 1, level: 1, last_online: 1, "info.name": 1, "info.map": 1 },
+						maxTimeMS: 5000,
+					},
+				)
+				.sort({ owner: 1, level: -1, _id: 1 })
+				.limit(page_size * 40)
+				.toArray()
+		: [];
+	var by_owner = {};
+	characters.forEach(function (character) {
+		if (!by_owner[character.owner]) by_owner[character.owner] = [];
+		by_owner[character.owner].push(character);
+	});
+	var last = users[users.length - 1];
+	return {
+		range: days,
+		range_label: admin_range_label(days),
+		next: more ? "/admin/users?days=" + days + "&before=" + encodeURIComponent(new Date(last.created).getTime() + ":" + last._id) : "",
+		users: users.map(function (user) {
+			var info = user.info || {},
+				owned = by_owner[user._id] || [],
+				last_seen = new Date(user.last_online || user.created).getTime();
+			owned.forEach(function (character) {
+				last_seen = Math.max(last_seen || 0, new Date(character.last_online || 0).getTime() || 0);
+			});
+			return {
+				name: user.name || user._id,
+				email: info.email || (Array.isArray(user.email) ? user.email[0] : user.email) || "No email",
+				created: admin_date(user.created),
+				last_seen: admin_date(last_seen),
+				platform: user.platform || "Web",
+				country: info.country || "—",
+				characters: owned.map(function (character) {
+					return {
+						name: (character.info && character.info.name) || character.name,
+						type: character.type || "Unknown",
+						level: admin_integer(character.level),
+						map: (character.info && character.info.map) || "Unknown",
+					};
+				}),
+			};
+		}),
+	};
+}
+
 async function admin_get_dashboard(days) {
 	var cutoff = admin_range_cutoff(days);
 	var financial_query = {};
@@ -560,6 +647,13 @@ async function admin_get_dashboard(days) {
 		build_sync: admin_date(states.builds && states.builds.updated),
 		microtxn_sync: admin_date(states.microtransactions && states.microtransactions.updated),
 		financial_sync: admin_date(financial_state.updated),
+		financial_latest:
+			results[2]
+				.map(function (document) {
+					return document._id;
+				})
+				.sort()
+				.pop() || "No reports yet",
 		financial_backfill: (financial_state.pending_dates || []).length,
 		build_error: (states.builds && states.builds.last_error) || "",
 		microtxn_error: (states.microtransactions && states.microtransactions.last_error) || "",
@@ -606,9 +700,30 @@ app.get("/admin", async function (req, res) {
 	domain.title = "Adventure Land Admin";
 	res.set("Cache-Control", "no-store");
 	res.set("X-Robots-Tag", "noindex, nofollow");
-	admin_refresh_steam_data({ force: false }).catch(function () {});
+	await admin_refresh_steam_data({ force: false, financial_batch: 3 });
 	var dashboard = await admin_get_dashboard(days);
 	return res.status(200).send(nunjucks.render("htmls/admin.html", { domain: domain, user: user, dashboard: dashboard }));
+});
+
+app.get("/admin/users", async function (req, res) {
+	res.set("Cache-Control", "no-store").set("X-Robots-Tag", "noindex, nofollow");
+	var user = await get_user(req);
+	if (!is_admin(user)) return res.status(403).send("No Auth");
+	var before;
+	try {
+		before = admin_users_cursor(req.query.before);
+	} catch (e) {
+		return res.status(400).send("Invalid page cursor");
+	}
+	try {
+		var domain = await get_domain(req, user);
+		domain.title = "New Signups — Adventure Land Admin";
+		var signups = await admin_get_users(admin_range_from_request(req), before);
+		return res.status(200).send(nunjucks.render("htmls/admin_users.html", { domain: domain, signups: signups }));
+	} catch (e) {
+		console.error("Admin users query failed");
+		return res.status(503).send("Could not load signups. Please try again.");
+	}
 });
 
 app.post("/admin/refresh", async function (req, res) {

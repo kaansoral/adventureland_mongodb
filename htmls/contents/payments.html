@@ -8,9 +8,6 @@
 		color: #6ecf28;
 		box-shadow: 0 0 10px rgba(110, 207, 40, 0.35);
 	}
-	.steam-pbutton:hover {
-		background: #183818;
-	}
 	.steam-pbutton.pfail {
 		border-color: #ac393e !important;
 		background: #2a1012;
@@ -23,9 +20,9 @@
 		color: #6ecf28;
 	}
 </style>
-<div style="width: 600px; display: inline-block" class="{%if inside=='payments'%}modal imodal{%endif%}">
-	<div style="/*margin-top: 5px; */ text-align: left">
-		<div class="inline-block vtop">
+<div style="width: max-content; display: inline-block" class="{%if inside=='payments'%}modal imodal{%endif%}">
+	<div style="display: flex; gap: 5px; align-items: flex-start; text-align: left">
+		<div class="inline-block vtop" style="flex-shrink: 0">
 			{# Retained for payment testing; hidden from the website and in-game purchase UIs.
 			<div
 				class="gamebutton block mb5"
@@ -46,7 +43,7 @@
 					set_pamount(10);
 				"
 			>
-				$10 <span style="color: gray">for</span><br />800 <span style="/*color: #6ECF28*/">SHELLS</span>
+				{{ phrase_html("pages.contents.payments.10-for-800-shells") }}
 			</div>
 			<div
 				class="gamebutton block mb5"
@@ -56,7 +53,7 @@
 					set_pamount(25);
 				"
 			>
-				$25 <span style="color: gray">[<span style="color: #2e6db4">+8%</span>]</span><br />2,160 <span style="/*color: #6ECF28*/">SHELLS</span>
+				{{ phrase_html("pages.contents.payments.25-8-2-160-shells") }}
 			</div>
 			{# 2000 #}
 			<div
@@ -67,7 +64,7 @@
 					set_pamount(100);
 				"
 			>
-				$100 <span style="color: gray">[<span style="color: #f3c300">+16%</span>]</span><br />9,280 <span style="/*color: #6ECF28*/">SHELLS</span>
+				{{ phrase_html("pages.contents.payments.100-16-9-280-shells") }}
 			</div>
 			{# 8000 #}
 			<div
@@ -78,7 +75,7 @@
 					set_pamount(500);
 				"
 			>
-				$500 <span style="color: gray">[<span style="color: #df0024">+24%</span>]</span><br />49,600 <span style="/*color: #6ECF28*/">SHELLS</span>
+				{{ phrase_html("pages.contents.payments.500-24-49-600-shells") }}
 			</div>
 			{# 40000 #}
 			<div
@@ -89,7 +86,7 @@
 				"
 				style="color: #5dac40; /*#43C7D1*/"
 			>
-				About<br />SHELLS
+				{{ phrase_html("pages.contents.payments.about-shells") }}
 			</div>
 			{#
 			<div
@@ -103,15 +100,15 @@
 			</div>
 			#}
 		</div>
-		<div class="inline-block vtop" style="width: 392px">
+		<div class="inline-block vtop" style="width: 436px; flex-shrink: 0">
 			{% if domain.tauri %}
 			<div style="padding: 20px; background: black; font-size: 32px; border: 4px solid #47867d; width: 388px" class="pui mainpui">
 				<div style="color: #66c0f4">Steam</div>
-				<div style="font-size: 24px; color: #b5c7c5; margin-top: 8px">The purchase opens in a Steam checkout window.</div>
-				<div style="border: 4px solid gray; text-align: center; padding: 10px 0px; margin-top: 12px" class="clickable pbutton steam-pbutton" onclick="steam_pay(event)">Buy $25 with Steam</div>
+				<div style="font-size: 24px; color: #b5c7c5; margin-top: 8px">{{ phrase("pages.contents.payments.the-purchase-opens-in-a-steam-checkout-window") }}</div>
+				<div style="border: 4px solid gray; text-align: center; padding: 10px 0px; margin-top: 12px" class="clickable pbutton steam-pbutton" onclick="steam_pay(event)">{{ phrase("pages.contents.payments.buy-25-with-steam") }}</div>
 			</div>
 			<div class="pui mainpui" style="border: 4px solid #47867d; padding: 12px; background: #071513; font-size: 24px; color: #b5c7c5; text-align: left; margin-top: 5px; width: 404px">
-				Steam handles the payment. Adventure Land never sees your payment details.
+				{{ phrase("pages.contents.payments.steam-handles-the-payment-adventure-land-never-sees") }}
 				<div id="plog"></div>
 			</div>
 			{% else %}
@@ -119,27 +116,26 @@
 				{#
 				<div>Credit Card</div>
 				#}
-				<div>Owner: <input type="text" class="ccinput stripe-name" placeholder="Name Surname" style="width: 280px" autocomplete="cc-name" /></div>
+				<div>{{ phrase("pages.contents.payments.owner") }} <input type="text" class="ccinput stripe-name" placeholder="{{ phrase("pages.contents.payments.label-name-surname") }}" style="width: 280px" autocomplete="cc-name" /></div>
 				<div>
-					Number: <input type="text" class="ccinput stripe-number" placeholder="4444 4444 4444 4444" onchange="$(this).payment('formatCardNumber')" style="width: 270px" autocomplete="cc-number" />
+					{{ phrase("pages.contents.payments.number") }} <input type="text" class="ccinput stripe-number" placeholder="4444 4444 4444 4444" onchange="$(this).payment('formatCardNumber')" style="width: 270px" autocomplete="cc-number" />
 				</div>
 				<div>
 					<div class="inline-block vtop">
-						Expiry: <input type="text" class="ccinput stripe-month" placeholder="08" style="width: 30px" autocomplete="cc-exp-month" /> {{'/'}}
+						{{ phrase("pages.contents.payments.expiry") }} <input type="text" class="ccinput stripe-month" placeholder="08" style="width: 30px" autocomplete="cc-exp-month" /> {{'/'}}
 						<input type="text" class="ccinput ccsmall stripe-year" placeholder="18" style="width: 30px" autocomplete="cc-exp-year" />
 					</div>
-					<div class="inline-block vtop" style="margin-left: 10px">CVC: <input type="text" class="ccinput ccsmall2 stripe-cvc" placeholder="123" style="width: 40px" autocomplete="cc-csc" /></div>
+					<div class="inline-block vtop" style="margin-left: 10px">{{ phrase("pages.contents.payments.cvc") }} <input type="text" class="ccinput ccsmall2 stripe-cvc" placeholder="123" style="width: 40px" autocomplete="cc-csc" /></div>
 				</div>
-				<div class="ccpostcode hidden">Postcode: <input type="text" class="ccinput" placeholder="Optional" style="width: 200px" /></div>
+				<div class="ccpostcode hidden">{{ phrase("pages.contents.payments.postcode") }} <input type="text" class="ccinput" placeholder="{{ phrase("pages.contents.payments.label-optional") }}" style="width: 200px" /></div>
 				{% if not user %}
-				<div style="border: 4px solid gray; text-align: center; padding: 6px 0px 6px 0px; margin-top: 12px" class="pbutton">Please Login First!</div>
+				<div style="border: 4px solid gray; text-align: center; padding: 6px 0px 6px 0px; margin-top: 12px" class="pbutton">{{ phrase("pages.contents.payments.please-login-first") }}</div>
 				{% else %}
-				<div style="border: 4px solid gray; text-align: center; padding: 6px 0px 6px 0px; margin-top: 12px" class="clickable pbutton" onclick="stripe_pay()">Pay $25</div>
+				<div style="border: 4px solid gray; text-align: center; padding: 6px 0px 6px 0px; margin-top: 12px" class="clickable pbutton" onclick="stripe_pay()">{{ phrase("pages.contents.payments.pay-25") }}</div>
 				{% endif %}
 			</div>
 			<div class="pui mainpui" style="border: 4px solid gray; padding: 12px; background: black; font-size: 24px; color: gray; text-align: left; margin-top: 5px; width: 404px">
-				Adventure Land uses <a href="https://stripe.com/about" target="_blank" style="color: #cfcfcf; text-decoration: none" onclick="stpr(event)">Stripe</a> to handle payments, the leader in payments
-				processing. Your credit card information never touches Adventure Land's servers.
+				{{ phrase("pages.contents.payments.adventure-land-uses") }} <a href="https://stripe.com/about" target="_blank" style="color: #cfcfcf; text-decoration: none" onclick="stpr(event)">{{ phrase("pages.contents.payments.stripe") }}</a> {{ phrase("pages.contents.payments.to-handle-payments-the-leader-in-payments-processing") }}
 				<div id="plog"></div>
 			</div>
 			{% endif %}
@@ -155,30 +151,29 @@
 			</script>
 			{% if extra_shells %}
 			<div class="pui mainpui" style="border: 4px solid gray; padding: 12px; background: black; font-size: 36px; color: gray; text-align: left; margin-top: 5px; width: 404px; color: white">
-				<span style="color: #50b795">Event Bonus:</span> <span style="color: #008e3a">{{extra_shells}}%</span> Extra Shells with Every Purchase! {#<span style="color: #7c89a7">Cyber Days Bonus:</span>
+				<span style="color: #50b795">{{ phrase("pages.contents.payments.event-bonus") }}</span> <span style="color: #008e3a">{{extra_shells}}%</span> {{ phrase("pages.contents.payments.extra-shells-with-every-purchase") }} {#<span style="color: #7c89a7">Cyber Days Bonus:</span>
 				<span style="color: #008e3a">{{extra_shells}}%</span> Extra Shells with Every Purchase!#}
 			</div>
 			{% endif %}
 			<div class="hidden pui aboutpui" style="border: 4px solid gray; padding: 12px; background: black; font-size: 24px; color: white; text-align: left; width: 400px">
-				<div class="mb5">SHELLS are Adventure Land's rare, purchasable currency. Unlike many other games, you can find SHELLS in-game too. They drop from gems and monsters. They are rare.</div>
+				<div class="mb5">{{ phrase("pages.contents.payments.shells-are-adventure-land-s-rare-purchasable-currency") }}</div>
 				<div class="mb5">
-					This creates equal opportunities for all players. You can only purchase non-essentials with SHELLS, like cosmetics and extra bank storage, to ensure the game is not pay-to-win.
+					{{ phrase("pages.contents.payments.this-creates-equal-opportunities-for-all-players-you") }}
 				</div>
-				<div style="color: #bdd8b0">You can support Adventure Land's development by buying SHELLS and hopefully enjoy the game more, faster, to your hearts desire!</div>
+				<div style="color: #bdd8b0">{{ phrase("pages.contents.payments.you-can-support-adventure-land-s-development-by") }}</div>
 			</div>
 			<div style="padding: 20px; background: black; font-size: 32px; border: 4px solid gray; width: 388px; text-align: center" class="pui alternativepui clickable hidden" onclick="show_ppayments()">
-				Alternative Payments
+				{{ phrase("pages.contents.payments.alternative-payments") }}
 			</div>
 			<div
 				style="padding: 20px; background: black; font-size: 32px; border: 4px solid gray; width: 388px; margin-top: 5px; text-align: center"
 				class="pui alternativepui clickable hidden"
 				onclick="show_poffers()"
 			>
-				Offers
+				{{ phrase("pages.contents.payments.offers") }}
 			</div>
 			<div class="pui alternativepui hidden" style="border: 4px solid gray; padding: 12px; background: black; font-size: 24px; color: gray; text-align: left; margin-top: 5px; width: 404px">
-				Adventure Land uses <a href="https://www.paymentwall.com/en/about-us" target="_blank" style="color: #cfcfcf; text-decoration: none">Paymentwall</a> for alternative payments and offers. There
-				are various localised payment methods, and offers to receive free SHELLS.
+				{{ phrase_html("pages.contents.payments.adventure-land-uses-paymentwall-for-alternative-payments-and") }}
 			</div>
 		</div>
 	</div>

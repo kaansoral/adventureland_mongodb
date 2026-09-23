@@ -1,0 +1,1368 @@
+{
+  "level": 50,
+  "target": "boar",
+  "classes": {
+    "warrior": {
+      "stat": "str",
+      "rows": [
+        {
+          "slots": {
+            "mainhand": {
+              "name": "blade",
+              "level": 0
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 0
+            },
+            "chest": {
+              "name": "coat",
+              "level": 0
+            },
+            "pants": {
+              "name": "pants",
+              "level": 0
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 0
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 0
+            },
+            "ring1": {
+              "name": "strring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "strring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "strearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "strearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "stramulet",
+              "level": 0
+            }
+          },
+          "attack": 138,
+          "hit": 125.11,
+          "dps": 105.4,
+          "interval": 1187,
+          "attribute": 84
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "blade",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7
+            },
+            "ring1": {
+              "name": "strring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "strring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "strearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "strearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "stramulet",
+              "level": 0
+            }
+          },
+          "attack": 289,
+          "hit": 261,
+          "dps": 219.88,
+          "interval": 1187,
+          "attribute": 84
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "blade",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "ring1": {
+              "name": "strring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "strring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "strearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "strearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "stramulet",
+              "level": 0
+            }
+          },
+          "attack": 388,
+          "hit": 350.09,
+          "dps": 294.94,
+          "interval": 1187,
+          "attribute": 129
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "blade",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "ring1": {
+              "name": "strring",
+              "level": 2
+            },
+            "ring2": {
+              "name": "strring",
+              "level": 2
+            },
+            "earring1": {
+              "name": "strearring",
+              "level": 2
+            },
+            "earring2": {
+              "name": "strearring",
+              "level": 2
+            },
+            "amulet": {
+              "name": "stramulet",
+              "level": 2
+            }
+          },
+          "attack": 436,
+          "hit": 393.31,
+          "dps": 331.35,
+          "interval": 1187,
+          "attribute": 151
+        }
+      ]
+    },
+    "paladin": {
+      "stat": "str",
+      "rows": [
+        {
+          "slots": {
+            "mainhand": {
+              "name": "mace",
+              "level": 0
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 0
+            },
+            "chest": {
+              "name": "coat",
+              "level": 0
+            },
+            "pants": {
+              "name": "pants",
+              "level": 0
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 0
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 0
+            },
+            "ring1": {
+              "name": "strring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "strring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "strearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "strearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "stramulet",
+              "level": 0
+            }
+          },
+          "attack": 199,
+          "hit": 180,
+          "dps": 136.26,
+          "interval": 1321,
+          "attribute": 84
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "mace",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7
+            },
+            "ring1": {
+              "name": "strring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "strring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "strearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "strearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "stramulet",
+              "level": 0
+            }
+          },
+          "attack": 401,
+          "hit": 361.8,
+          "dps": 273.88,
+          "interval": 1321,
+          "attribute": 84
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "mace",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "ring1": {
+              "name": "strring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "strring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "strearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "strearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "stramulet",
+              "level": 0
+            }
+          },
+          "attack": 511,
+          "hit": 460.79,
+          "dps": 348.82,
+          "interval": 1321,
+          "attribute": 129
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "mace",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7,
+              "stat_type": "str"
+            },
+            "ring1": {
+              "name": "strring",
+              "level": 2
+            },
+            "ring2": {
+              "name": "strring",
+              "level": 2
+            },
+            "earring1": {
+              "name": "strearring",
+              "level": 2
+            },
+            "earring2": {
+              "name": "strearring",
+              "level": 2
+            },
+            "amulet": {
+              "name": "stramulet",
+              "level": 2
+            }
+          },
+          "attack": 565,
+          "hit": 509.39,
+          "dps": 385.61,
+          "interval": 1321,
+          "attribute": 151
+        }
+      ]
+    },
+    "rogue": {
+      "stat": "dex",
+      "rows": [
+        {
+          "slots": {
+            "mainhand": {
+              "name": "claw",
+              "level": 0
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 0
+            },
+            "chest": {
+              "name": "coat",
+              "level": 0
+            },
+            "pants": {
+              "name": "pants",
+              "level": 0
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 0
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 0
+            },
+            "ring1": {
+              "name": "dexring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "dexring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "dexearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "dexearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "dexamulet",
+              "level": 0
+            }
+          },
+          "attack": 97,
+          "hit": 88.19,
+          "dps": 78.95,
+          "interval": 1117,
+          "attribute": 84
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "claw",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7
+            },
+            "ring1": {
+              "name": "dexring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "dexring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "dexearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "dexearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "dexamulet",
+              "level": 0
+            }
+          },
+          "attack": 211,
+          "hit": 190.78,
+          "dps": 170.8,
+          "interval": 1117,
+          "attribute": 84
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "claw",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "ring1": {
+              "name": "dexring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "dexring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "dexearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "dexearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "dexamulet",
+              "level": 0
+            }
+          },
+          "attack": 283,
+          "hit": 255.61,
+          "dps": 246.96,
+          "interval": 1035,
+          "attribute": 129
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "claw",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "ring1": {
+              "name": "dexring",
+              "level": 2
+            },
+            "ring2": {
+              "name": "dexring",
+              "level": 2
+            },
+            "earring1": {
+              "name": "dexearring",
+              "level": 2
+            },
+            "earring2": {
+              "name": "dexearring",
+              "level": 2
+            },
+            "amulet": {
+              "name": "dexamulet",
+              "level": 2
+            }
+          },
+          "attack": 319,
+          "hit": 288,
+          "dps": 288,
+          "interval": 1000,
+          "attribute": 151
+        }
+      ]
+    },
+    "ranger": {
+      "stat": "dex",
+      "rows": [
+        {
+          "slots": {
+            "mainhand": {
+              "name": "bow",
+              "level": 0
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 0
+            },
+            "chest": {
+              "name": "coat",
+              "level": 0
+            },
+            "pants": {
+              "name": "pants",
+              "level": 0
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 0
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 0
+            },
+            "ring1": {
+              "name": "dexring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "dexring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "dexearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "dexearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "dexamulet",
+              "level": 0
+            }
+          },
+          "attack": 175,
+          "hit": 158.39,
+          "dps": 134.8,
+          "interval": 1175,
+          "attribute": 84
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "bow",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7
+            },
+            "ring1": {
+              "name": "dexring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "dexring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "dexearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "dexearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "dexamulet",
+              "level": 0
+            }
+          },
+          "attack": 362,
+          "hit": 326.71,
+          "dps": 278.05,
+          "interval": 1175,
+          "attribute": 84
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "bow",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "ring1": {
+              "name": "dexring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "dexring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "dexearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "dexearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "dexamulet",
+              "level": 0
+            }
+          },
+          "attack": 499,
+          "hit": 450,
+          "dps": 414.36,
+          "interval": 1086,
+          "attribute": 129
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "bow",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7,
+              "stat_type": "dex"
+            },
+            "ring1": {
+              "name": "dexring",
+              "level": 2
+            },
+            "ring2": {
+              "name": "dexring",
+              "level": 2
+            },
+            "earring1": {
+              "name": "dexearring",
+              "level": 2
+            },
+            "earring2": {
+              "name": "dexearring",
+              "level": 2
+            },
+            "amulet": {
+              "name": "dexamulet",
+              "level": 2
+            }
+          },
+          "attack": 567,
+          "hit": 511.19,
+          "dps": 488.25,
+          "interval": 1047,
+          "attribute": 151
+        }
+      ]
+    },
+    "mage": {
+      "stat": "int",
+      "rows": [
+        {
+          "slots": {
+            "mainhand": {
+              "name": "staff",
+              "level": 0
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 0
+            },
+            "chest": {
+              "name": "coat",
+              "level": 0
+            },
+            "pants": {
+              "name": "pants",
+              "level": 0
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 0
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 0
+            },
+            "ring1": {
+              "name": "intring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "intring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "intearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "intearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "intamulet",
+              "level": 0
+            }
+          },
+          "attack": 160,
+          "hit": 160.5,
+          "dps": 117.41,
+          "interval": 1367,
+          "attribute": 84
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "staff",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7
+            },
+            "ring1": {
+              "name": "intring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "intring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "intearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "intearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "intamulet",
+              "level": 0
+            }
+          },
+          "attack": 347,
+          "hit": 347.5,
+          "dps": 254.21,
+          "interval": 1367,
+          "attribute": 84
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "staff",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "ring1": {
+              "name": "intring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "intring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "intearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "intearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "intamulet",
+              "level": 0
+            }
+          },
+          "attack": 484,
+          "hit": 484.5,
+          "dps": 368.44,
+          "interval": 1315,
+          "attribute": 129
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "staff",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "ring1": {
+              "name": "intring",
+              "level": 2
+            },
+            "ring2": {
+              "name": "intring",
+              "level": 2
+            },
+            "earring1": {
+              "name": "intearring",
+              "level": 2
+            },
+            "earring2": {
+              "name": "intearring",
+              "level": 2
+            },
+            "amulet": {
+              "name": "intamulet",
+              "level": 2
+            }
+          },
+          "attack": 552,
+          "hit": 552.5,
+          "dps": 427.63,
+          "interval": 1292,
+          "attribute": 151
+        }
+      ]
+    },
+    "priest": {
+      "stat": "int",
+      "rows": [
+        {
+          "slots": {
+            "mainhand": {
+              "name": "staff",
+              "level": 0
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 0
+            },
+            "chest": {
+              "name": "coat",
+              "level": 0
+            },
+            "pants": {
+              "name": "pants",
+              "level": 0
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 0
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 0
+            },
+            "ring1": {
+              "name": "intring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "intring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "intearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "intearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "intamulet",
+              "level": 0
+            }
+          },
+          "attack": 102,
+          "hit": 102.5,
+          "dps": 74.98,
+          "interval": 1367,
+          "attribute": 84
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "staff",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7
+            },
+            "ring1": {
+              "name": "intring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "intring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "intearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "intearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "intamulet",
+              "level": 0
+            }
+          },
+          "attack": 222,
+          "hit": 222.5,
+          "dps": 162.77,
+          "interval": 1367,
+          "attribute": 84
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "staff",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "ring1": {
+              "name": "intring",
+              "level": 0
+            },
+            "ring2": {
+              "name": "intring",
+              "level": 0
+            },
+            "earring1": {
+              "name": "intearring",
+              "level": 0
+            },
+            "earring2": {
+              "name": "intearring",
+              "level": 0
+            },
+            "amulet": {
+              "name": "intamulet",
+              "level": 0
+            }
+          },
+          "attack": 310,
+          "hit": 310.5,
+          "dps": 236.12,
+          "interval": 1315,
+          "attribute": 129
+        },
+        {
+          "slots": {
+            "mainhand": {
+              "name": "staff",
+              "level": 7
+            },
+            "helmet": {
+              "name": "helmet",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "chest": {
+              "name": "coat",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "pants": {
+              "name": "pants",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "gloves": {
+              "name": "gloves",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "shoes": {
+              "name": "shoes",
+              "level": 7,
+              "stat_type": "int"
+            },
+            "ring1": {
+              "name": "intring",
+              "level": 2
+            },
+            "ring2": {
+              "name": "intring",
+              "level": 2
+            },
+            "earring1": {
+              "name": "intearring",
+              "level": 2
+            },
+            "earring2": {
+              "name": "intearring",
+              "level": 2
+            },
+            "amulet": {
+              "name": "intamulet",
+              "level": 2
+            }
+          },
+          "attack": 353,
+          "hit": 353.5,
+          "dps": 273.61,
+          "interval": 1292,
+          "attribute": 151
+        }
+      ]
+    }
+  }
+}

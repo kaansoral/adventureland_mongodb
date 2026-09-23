@@ -1,0 +1,9 @@
+{
+  "navigation.hub": "Hub",
+  "navigation.github": "GitHub",
+	"language.choose": "Lingua",
+	"language.select": "Usa {language}",
+	"language.save_failed": "Impossibile salvare la lingua. Riprova.",
+	"language.saving": "Salvataggio…",
+	"navigation.communicator_short": "COM"
+}

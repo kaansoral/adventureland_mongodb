@@ -1,4 +1,5 @@
 var dimensions={ //by trial+error using game.js/border_mode=true
+	"rimedjinn":[42,49,0],
 	//width, height, width-disp, base.h, base.v
 	// sprite: [3] positive-> goes left | negative-> goes right
 	"default_character":[26,35],
@@ -65,6 +66,14 @@ dimensions["goldenbat"]=dimensions["bat"];
 dimensions["pppompom"]=dimensions["minimush"]; dimensions["pppompom"][2]=-1;
 
 var positions={
+	// Menu previews only; these skins are not playable items.
+	"teaser_witch":["teasers",0,0],
+	"teaser_blackwake":["teasers",1,0],
+	"teaser_werdars":["teasers",2,0],
+	"teaser_rare":["teasers",3,0],
+	"encouragement_new":["rawitems",14,3],
+	"encouragement_lonewolf":["rawitems",15,3],
+	"encouragement_returning":["rawitems",16,3],
 	//UI
 	"textures":["stone","stand0_texture","standx_texture","standg_texture","cstand_texture","wstand_texture","fstand_texture"], // these are loaded into textures{} in load_game [07/02/17]
 	"stone":["outside",672,104,16,20],
@@ -82,6 +91,7 @@ var positions={
 		["custom",128,8*16,32,32],
 		["custom",160,8*16,32,32],
 	],
+	"dreams_gate":[["outside",512,80,32,32]],
 	"lever0":[
 		["puzzle",6*16,4*16+8,16,24],
 		["puzzle",7*16,4*16+8,16,24],
@@ -965,6 +975,7 @@ var positions={
 	"spearofthedead":["",13,7],
 	"mace":["",14,11],
 	"wbasher":["",13,11],
+	"waxe":["rawitems",19,4],
 	"fcape":["",9,6],
 	"test_orb":["",14,49],
 	//"fieldgen0x":["custom",0,2],
@@ -1028,7 +1039,7 @@ var positions={
 	"ratkingbuckler":["items40",8,0],
 	"stormquiver":["items40",9,0],
 	"thistlequiver":["items40",0,1],
-	"scribeorb":["items40",1,1],
+	"scribeorb":["rawitems",10,3],
 	"mossheart":["items40",2,1],
 	"emberseal":["items40",3,1],
 	"glacierseal":["items40",4,1],
@@ -1071,14 +1082,14 @@ var positions={
 	"waybill":["rawitems",0,3],
 	"surety":["rawitems",1,3],
 	"nighttill":["rawitems",2,3],
-	"marketparcel":["rawitems",17,2],
+	"marketparcel":["rawitems",0,4],
 	"softstepgloves":["rawitems",0,0],
 	"valourdirk":["rawitems",1,0],
-	"knifebelt":["rawitems",2,0],
+	"knifebelt":["rawitems",9,3],
 	"gloampendant":["rawitems",3,0],
 	"sapstone":["rawitems",4,0],
 	"fanofknives":["rawitems",5,0],
-	"worldrootcrook":["rawitems",6,0],
+	"worldrootcrook":["rawitems",8,3],
 	"cinderwand_r":["rawitems",7,0],
 	"cosmo5":["rawitems",8,0],
 	"emote_fart":["rawitems",9,0],
@@ -1093,6 +1104,8 @@ var positions={
 	"emote_pocketstorm":["rawitems",18,0],
 	"emote_mirrordance":["rawitems",19,0],
 	"skill_arcane_needle":["rawitems",0,1],
+	"skill_mfrenzy":["rawitems",17,3],
+	"skill_pickpocket":["rawitems",18,3],
 	"vowkeepergloves":["rawitems",2,1],
 	"oathplate":["rawitems",16,1],
 	"concordmace":["rawitems",4,1],
@@ -1107,13 +1120,13 @@ var positions={
 	"paladin_aura_warding":["rawitems",13,1],
 	"skill_aether_shield":["rawitems",17,1],
 	"skill_shield_slam":["rawitems",15,1],
-	"candleward":["rawitems",18,1],
+	"candleward":["rawitems",13,3],
 	"guestbook":["rawitems",19,1],
 	"paradequiver":["rawitems",0,2],
 	"homecominghelm":["rawitems",1,2],
 	"homecomingcoat":["rawitems",2,2],
 	"homecomingcape":["rawitems",3,2],
-	"reunionbow":["rawitems",4,2],
+	"reunionbow":["rawitems",12,3],
 	"keepsakependant":["rawitems",5,2],
 	"slice_strawberry":["rawitems",6,2],
 	"slice_citrus":["rawitems",7,2],
@@ -1131,7 +1144,19 @@ var positions={
 	//"claw":["",13,42],
 
 	"friendtoken":["",15,33],
+	"rimeglass":["rawitems",1,4],
+	"djinncrown":["rawitems",2,4],
+	"covemantle":["rawitems",3,4],
+	"stillwaterlens":["rawitems",4,4],
 	"patronsgrace":["custom",5,0],
+	"schedule_clock":["rawitems",18,4],
 };
 
+Object.assign(positions, {"cave_locktooth": ["rawitems", 5, 4], "cave_counterweight": ["rawitems", 6, 4], "cave_mothsteps": ["rawitems", 13, 4], "cave_loaded_die": ["rawitems", 8, 4]});
+for (var pair of [["cave_bat","bat"],["cave_rat","rat"],["cave_wolf","wolf"],["cave_sentinel","stoneworm"]]) dimensions[pair[0]] = dimensions[pair[1]].slice();
+
 if(typeof module!=="undefined") module.exports={dimensions,positions};
+
+Object.assign(positions, {"cave_blackstaff": ["rawitems", 9, 4], "cave_backstabber": ["rawitems", 10, 4], "cave_amber": ["rawitems", 11, 4], "cave_info": ["rawitems", 12, 4]});
+
+Object.assign(positions, {"cave_tunnelaxe": ["rawitems", 14, 4], "cave_reedscythe": ["rawitems", 15, 4], "cave_deepaxe": ["rawitems", 16, 4], "cave_ambercoat": ["rawitems", 17, 4]});

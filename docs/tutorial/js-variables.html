@@ -1,0 +1,68 @@
+<p>{{ phrase_html("docs.tutorial.js-variables.idea") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.task") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-variables.task") }}</p>
+
+<p>{{ phrase("docs.tutorial.javascript.practice") }}</p>
+
+<div class="tutorial-code" data-lesson="variables">
+	<!-- prettier-ignore -->
+	<div class="code executeb">let potions = 3;
+game_log(potions);
+potions = 2;
+game_log(potions);</div>
+
+	<div class="tutorial-code-result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.hint") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-variables.hint") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.solution") }}</div>
+
+<!-- prettier-ignore -->
+<div class="code readonly">let potions = 3;
+game_log(potions);
+potions = potions + 2;
+game_log(potions);</div>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.variation") }}</div>
+
+<p>{{ phrase_html("docs.tutorial.js-variables.variation") }}</p>
+
+<div class="title">{{ phrase("docs.tutorial.javascript.transfer") }}</div>
+
+<p>{{ phrase("docs.tutorial.javascript.copy") }}</p>
+
+<p>{{ phrase_html("docs.tutorial.js-variables.transfer") }}</p>
+
+<div class="divider"></div>
+
+<div class="title">{{ phrase("docs.tutorial.js-variables.reading_title") }}</div>
+
+{{ phrase_html("docs.tutorial.js-variables.reading_before") }}
+
+<!-- prettier-ignore -->
+<div class="code readonly">let count = 3;
+count += 2;
+game_log(count);
+count -= 1;
+game_log(count);</div>
+
+{{ phrase_html("docs.tutorial.js-variables.reading_after") }} {{ phrase_html("docs.tutorial.js-variables.reading_var_before") }}
+
+<!-- prettier-ignore -->
+<div class="code readonly">{
+    var greeting = "Ready";
+    let count = 3;
+    game_log(count);
+}
+game_log(greeting);</div>
+
+{{ phrase_html("docs.tutorial.js-variables.reading_var_after") }}
+
+<p><span class="rlabel clickable" onclick="load_documentation('game_log')">game_log</span></p>

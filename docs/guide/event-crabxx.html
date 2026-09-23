@@ -1,24 +1,24 @@
 <div style='width: 600px'>
-	<p style='font-size: 32px; color: #8A203A; text-decoration: underline dotted #B30B1A'>Giga Crab Beach Event</p>
+	<p style='font-size: 32px; color: #8A203A; text-decoration: underline dotted #B30B1A'>{{ phrase("docs.guide.event-crabxx.giga-crab-beach-event") }}</p>
 
 	<p>
-		<span class='spcrabxx'></span> Giga Crab is a challenging server event boss. As long as there are Huge Crabs around, Giga Crab only receives one damage! The entire server needs to get together to continually clear all the Huge Crabs that spawn. The event lasts 40 minutes but as long as Giga Crab is being engaged, the event goes on!
+		{{ phrase_html("docs.guide.event-crabxx.giga-crab-is-a-challenging-server-event-boss") }}
 	</p>
 
 	<p>
-		Giga Crab's ID is <span class='dlabel'>"crabxx"</span> - It spawns regular Huge Crab's <span class='dlabel'>"crabx"</span>
+		{{ phrase_html("docs.guide.event-crabxx.giga-crab-s-id-is-crabxx-it-spawns") }}
 	</p>
 
 
 	<div style='margin-bottom: 24x'></div>
 
-	<div class='gamebutton' onclick="btc(event); join('crabxx'); hide_modal();">Join the Event!</div>
+	<div class='gamebutton' onclick="btc(event); join('crabxx'); hide_modal();">{{ phrase("docs.guide.event-crabxx.join-the-event") }}</div>
 
 	<script>
 		$(".spcrabxx").html(sprite("crabxx",{width:120,height:75,scale:3}));	
 	</script>
 
-<p style='font-size: 32px; color: #216D25; text-decoration: underline dotted #B30B1A; margin-bottom: 10px'>Snippets</p>
+<p style='font-size: 32px; color: #216D25; text-decoration: underline dotted #B30B1A; margin-bottom: 10px'>{{ phrase("docs.guide.event-crabxx.snippets") }}</p>
 
 <div class='code'>
 	if(server.status.crabxx && !get_nearest_monster({type:'crabxx'}))

@@ -1465,6 +1465,90 @@ var monsters={
 
 };
 
+monsters.rimedjinn={
+	"name": "Rime Djinn",
+	"skin": "rimedjinn",
+	"hp": 640000,
+	"mp": 12800,
+	"xp": 512000,
+	"attack": 960,
+	"damage_type": "magical",
+	"frequency": 0.8,
+	"range": 200,
+	"speed": 18,
+	"charge": 40,
+	"armor": 320,
+	"resistance": 160,
+	"rpiercing": 80,
+	"aggro": 1,
+	"rage": 0,
+	"respawn": 12,
+	"gold": 360,
+	"difficulty": 3,
+	"projectile": "rimehelix",
+	"achievements": [
+		[
+			1,
+			"stat",
+			"mp",
+			5
+		],
+		[
+			10,
+			"stat",
+			"mp",
+			10
+		],
+		[
+			100,
+			"stat",
+			"mp",
+			15
+		],
+		[
+			1000,
+			"stat",
+			"resistance",
+			2
+		],
+		[
+			10000,
+			"stat",
+			"resistance",
+			3
+		],
+		[
+			25000,
+			"stat",
+			"int",
+			1
+		],
+		[
+			50000,
+			"stat",
+			"vit",
+			1
+		],
+		[
+			100000,
+			"stat",
+			"resistance",
+			5
+		]
+	],
+	"cooperative": true,
+	"explanation": "Its shell cracks under a sudden flurry of blows.",
+	"abilities": {
+		"rimeshell": {
+			"threshold": 0.5,
+			"duration": 3000,
+			"break_fraction": 0.05,
+			"targets": 3,
+			"range": 260,
+			"exposed_duration": 5000
+		}
+	}
+};
 for(var m of ["puppy1","puppy2","puppy3","puppy3"]){
 	monsters[m]["pet"]={
 		"level":{
@@ -1502,3 +1586,26 @@ for(var name in monsters){
 }
 
 if(typeof module!=="undefined") module.exports={monsters,monster_gold};
+
+
+// Instance residents use normal monster movement, projectiles and humanoid cosmetics.
+monsters.cave_npc={name:"Cave Traveler",skin:"marmor6f",hp:1200,attack:35,range:40,speed:45,frequency:1,damage_type:"physical",armor:10,resistance:10,xp:0,respawn:-1,aggro:0,passive:true,humanoid:true,stationary:true,unlist:true};
+monsters.cave_darkmage={name:"Dark Mage",skin:"mbody6b",hp:1000,attack:100000,range:320,speed:25,frequency:0.25,damage_type:"magical",projectile:"magic",armor:0,resistance:0,xp:0,respawn:-1,aggro:0,passive:true,immune:true,humanoid:true,stationary:true,unlist:true};
+monsters.cave_rogue=Object.assign({},monsters.cave_npc,{name:"Cornered Rogue",skin:"marmor6e",speed:70,frequency:2});
+for(var pair of [["cave_bat","bat"],["cave_rat","rat"],["cave_crab","crab"],["cave_wolf","wolf"],["cave_spider","spider"],["cave_scorpion","scorpion"],["cave_snake","osnake"]]) {
+ monsters[pair[0]]=Object.assign({},monsters[pair[1]],{name:"Cave "+pair[1][0].toUpperCase()+pair[1].slice(1),skin:monsters[pair[1]].skin||pair[1],respawn:-1,aggro:0,passive:true,stationary:true,cooperative:false,announce:false,spawns:null,abilities:null,global:false,unlist:true});
+}
+monsters.cave_guard=Object.assign({},monsters.cave_npc,{name:"Cave Guard",skin:"marmor10d",xp:100,slots:{mainhand:{name:"blade",level:0}}});
+monsters.cave_lockbreaker=Object.assign({},monsters.cave_npc,{name:"Lockbreaker",skin:"asoldier",hp:12000,attack:100,armor:300,frequency:0.6});
+monsters.cave_sentinel=Object.assign({},monsters.cave_npc,{name:"Counterweight Sentinel",skin:"stoneworm",hp:16000,attack:140,armor:500,frequency:0.5,humanoid:false});
+monsters.cave_mothkeeper=Object.assign({},monsters.cave_npc,{name:"Moth Keeper",skin:"mbody3f",hp:14000,attack:90,range:240,damage_type:"magical",projectile:"magic",frequency:0.7});
+
+monsters.cave_broodmother=Object.assign({},monsters.cave_spider,{name:"Amber Broodmother",hp:8000,attack:80,speed:28});
+
+// Cave packs have distinct movement and attack rhythms. Regular species keep their own progression.
+for (var pace of [["cave_rat",42,1.2],["cave_bat",70,1.3],["cave_crab",26,0.65],
+ ["cave_wolf",80,1.1],["cave_spider",44,1],["cave_scorpion",38,0.8],["cave_snake",52,1.4]]) {
+ Object.assign(monsters[pace[0]],{speed:pace[1],frequency:pace[2],achievements:[]});
+}
+monsters.cave_snake.name="Cave Snake";
+monsters.cave_broodmother.achievements=[];

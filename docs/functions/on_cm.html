@@ -1,11 +1,12 @@
 <p><span class='dlabel'>on_cm(name,data)</span></p>
-<p>Backward-compatible override point called for an incoming CODE message.</p>
-<p><b>Returns:</b> Return value is ignored.</p>
-<p><b>Notes:</b> character.on("cm", callback) is the newer event form.</p>
-<p><b>Example:</b></p>
+<p>{{ phrase("docs.functions.on_cm.backward-compatible-override-point-called-for-an-incoming") }}</p>
+<p>{{ phrase_html("docs.functions.on_cm.returns-return-value-is-ignored") }}</p>
+<p>{{ phrase_html("docs.functions.on_cm.notes-character-on-cm-callback-is-the-newer") }}</p>
+<p>{{ phrase_html("docs.code_settings.cm") }}</p>
+<p>{{ phrase_html("docs.functions.on_cm.example") }}</p>
 <div class='code'>function on_cm(name, data) {
 	game_log(name + " sent " + JSON.stringify(data));
 }</div>
 
 <p></p>
-<span class='redlabel'>"source"</span>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>
