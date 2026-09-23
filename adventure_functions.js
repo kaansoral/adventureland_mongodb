@@ -1456,7 +1456,7 @@ async function character_eval(character, code, data) {
 	if (!data) data = {};
 	if (character.server) {
 		var server = await get(character.server);
-		if (server) await server_eval_safe(server, "var player=players[name_to_id['" + character.info.name + "']]; if(player) { " + code + "; }", data);
+		if (server) await server_eval_safe(server, "var player=players[name_to_id[" + JSON.stringify(character.info.name) + "]]; if(player) { " + code + "; }", data);
 	}
 }
 
