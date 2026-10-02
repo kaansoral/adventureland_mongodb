@@ -313,9 +313,12 @@ function send_password_reminder_email(domain, user) {
 
 // ==================== PASSWORD ====================
 
+var PASSWORD_HASH_ITERATIONS = 600000;
+var PASSWORD_HASH_DIGEST = "sha256";
+
 function hash_password(password, salt) {
 	password = password.replace(/ /g, "");
-	return crypto.pbkdf2Sync(Buffer.from(password, "utf8"), Buffer.from(salt, "utf8"), 160, 24, "sha1").toString("hex");
+	return crypto.pbkdf2Sync(Buffer.from(password, "utf8"), Buffer.from(salt, "utf8"), PASSWORD_HASH_ITERATIONS, 24, PASSWORD_HASH_DIGEST).toString("hex");
 }
 
 function get_new_auth(user) {
