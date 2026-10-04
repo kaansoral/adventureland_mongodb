@@ -3,3 +3,4 @@ precomputed={};precomputed.images={"/images/cosmetics/makeup/stormhead_anim.png"
 
 // Raw item sheet content revision for the rare drops; native dimensions remain 400x800.
 precomputed.rawitems_revision = 31;
+precomputed.images["/images/cosmetics/makeup/makeup120_anim.png"]={"height":120,"width":81,"type":"png"};

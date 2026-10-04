@@ -35,6 +35,14 @@ var sprites = {
 		type: "head",
 		matrix: [[]], //looped below
 	},
+	makeup120: {
+		file: "/images/cosmetics/makeup/makeup120_anim.png?v=1",
+		rows: 1,
+		columns: 1,
+		type: "head",
+		frames: 3,
+		matrix: [["makeup120"]],
+	},
 	lavaglass: {
 		file: "/images/cosmetics/makeup/lavaglass_anim.png?v=1",
 		rows: 1,
@@ -1185,6 +1193,7 @@ for (var i = 0; i < 42; i++) {
 	sprites["makeup1"]["matrix"][0].push("makeup1" + ("0" + i).slice(-2));
 }
 sprites.makeup1.matrix[0].push("cyclops0", "eyehead0", "mimichead0", "slimehead0", "lanternhead0");
+sprites.makeup1.matrix[0][20] = null; // makeup120 uses its animated sheet; keep all other head cells in place.
 
 //for(var i=0;i<25;i++)
 //	sprites["hairdo2"]["matrix"][0].push("hair2"+("0"+i).slice(-2));
