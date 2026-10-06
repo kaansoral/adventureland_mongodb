@@ -1,4 +1,6 @@
 {
+	"update.06_10_26.anniversary_crafting.title": "Jubiläumsrezepte",
+	"update.06_10_26.anniversary_crafting.anniversary_crafting": "Jubiläumsrezepte sind nach dem Event bei Cole verfügbar.",
 	"update.13_09_26.login_recovery": "Ein Fehler wurde behoben, durch den Charaktere nach einer fehlgeschlagenen Anmeldung online bleiben und eine erneute Verbindung verhindern konnten.",
 	"update.09_09_26.steam_clients_include_game_images_and_remember_your_language": "Die Steam-Clients enthalten jetzt Spielgrafiken, um Downloads zu reduzieren, und merken sich deine Sprache.",
 	"update.08_09_26.communicator_now_opens_with_server_chat_keeps_private_conversations": "Hub öffnet sich mit dem Serverchat, hält private Gespräche zusammen und lässt dich unter dem Namen eines beliebigen deiner Charaktere chatten, auch wenn dieser offline ist.",

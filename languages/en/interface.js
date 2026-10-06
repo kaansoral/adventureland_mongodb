@@ -1,4 +1,10 @@
 module.exports = {
+	// Shared anniversary guide paragraph. Seasonal crafting moves to Cole; Xyn exchanges remain available. Preserve Mira, Cole, Xyn and Anniversary Gifts.
+	"interface.anniversary.offseason_crafting": "Mira crafts anniversary recipes during the event. After she leaves, Cole crafts them instead. Cakes and Anniversary Gifts can still be opened at Xyn.",
+	// Crafting hint. {name} is Mira or Cole. Computer access permits remote crafting; keep Computer unchanged.
+	"interface.anniversary.crafter_distance": "Stay near {name} to craft, unless you have Computer access.",
+	// Travel button. {name} is the active crafter, Mira during the event or Cole afterward; keep the name unchanged.
+	"interface.anniversary.visit_crafter": "Visit {name}",
 	// Uppercase upgrade-shrine action for an offering without a scroll. Match RESET and UPGRADE casing; adds grace, not an item level.
 	"interface.upgrade_shrine.add_grace": "ADD GRACE",
 	// Short uppercase tag under a monster's picture in a guide: the monster seen from the front.
@@ -146,7 +152,7 @@ module.exports = {
 	// js/html.js anniversary_event_html; event monster drops. Preserve the item name Anniversary Gift; slices is an ordinary noun for the six cake flavors.
 	"interface.anniversary_event_html.monsters_can_drop_slices_and_gifts_too": "Monsters can drop slices and Anniversary Gifts, too.",
 	// js/html.js anniversary_event_status_html; expired-event message. Preserve the item name Anniversary Gift; cakes is an ordinary category noun.
-	"interface.anniversary_event_status_html.the_anniversary_event_has_ended_you_can_still_open_your": "The anniversary event has ended. You can still open your cakes and Anniversary Gifts.",
+	"interface.anniversary_event_status_html.the_anniversary_event_has_ended_you_can_still_open_your": "The anniversary event has ended. Cole still crafts anniversary recipes, and Xyn still opens cakes and Anniversary Gifts.",
 	// js/html.js anniversary_event_status_html; authored interface text.
 	"interface.anniversary_event_status_html.i_kiss_you": "I Kiss You",
 	// js/html.js anniversary_event_status_html; authored interface text.
@@ -1580,8 +1586,8 @@ module.exports = {
 	"interface.anniversary_event_html.make_a_wish": "Make a Wish",
 	// js/html.js anniversary_event_html; authored display label or status.
 	"interface.anniversary_event_html.i_kiss_you": "I Kiss You",
-	// js/html.js anniversary_event_html; Make a Wish jar acquisition. Preserve Mira and the full item name Anniversary Gift.
-	"interface.anniversary_event_html.an_emote_to_keep_craft_its_jar_with_mira_or_find_it_in_a_gift": "An emote to keep. Craft its jar with Mira, or find it in an Anniversary Gift.",
+	// Make a Wish jar acquisition remains available after the event. Preserve the full item name Anniversary Gift.
+	"interface.anniversary_event_html.an_emote_to_keep_craft_its_jar_with_mira_or_find_it_in_a_gift": "An emote to keep. Craft its jar or find it in an Anniversary Gift.",
 	// js/html.js anniversary_event_html; I Kiss You jar acquisition. Preserve the item name Anniversary Gift; cakes is an ordinary category noun.
 	"interface.anniversary_event_html.rewarded_visits_can_drop_its_permanent_jar_cakes_and_gifts_can_hold_it_too":
 		"Rewarded visits can drop its permanent jar. Cakes and Anniversary Gifts can hold it too.",

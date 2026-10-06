@@ -13,7 +13,7 @@ const functions = fs.readFileSync(path.join(root, "node/server_functions.js"), "
 const shared = fs.readFileSync(path.join(root, "js/old_common_functions.js"), "utf8");
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const design = localize(vm.createContext({ console: { log() {} } }));
-for (const name of ["multipliers", "conditions", "items", "npcs", "drops", "recipes"])
+for (const name of ["multipliers", "conditions", "items", "npcs", "drops", "recipes", "maps"])
 	vm.runInContext(fs.readFileSync(path.join(root, "design", name + ".js"), "utf8"), design, { filename: name });
 
 test("seasonal tick follows the manual switch and keeps Mira available on PvP", () => {
@@ -1301,11 +1301,12 @@ function craftHarness(name = "sixcake") {
 		socket: { emit: (...args) => emitted.push(args) },
 	});
 	const context = {
-		G: { craft: design.craft, items: design.items, titles: { shiny: {} } },
+		G: { craft: design.craft, items: design.items, maps: design.maps, titles: { shiny: {} } },
 		D: {},
 		socket: { id: "crafter", on: (name, callback) => (handler = callback) },
 		players: { crafter: p },
 		npcs: { anniversary_baker: player("Mira") },
+		events: { anniversary: true },
 		B: { sell_dist: 100 },
 		anniversary_is_active: () => true,
 		distance: (a, b) => (a.in !== b.in || a.map !== b.map ? 999999 : Math.hypot(a.x - b.x, a.y - b.y)),
@@ -1323,7 +1324,7 @@ function craftHarness(name = "sixcake") {
 		fail_response: (...args) => failures.push(args),
 	};
 	localize(vm.createContext(context));
-	for (const name of ["can_stack", "can_add_item"]) vm.runInContext(definition(shared, name), context);
+	for (const name of ["can_stack", "can_add_item", "crafting_npc"]) vm.runInContext(definition(shared, name), context);
 	for (const name of ["create_new_item", "consume", "add_item"]) vm.runInContext(definition(source, name), context);
 	const mapStart = functions.indexOf("D.craftmap = {};");
 	vm.runInContext(functions.slice(mapStart, functions.indexOf("process_game_data();", mapStart)), context);
@@ -1383,7 +1384,6 @@ test("native crafting stacks only matching CX Jars and retains leftover ingredie
 });
 test("craft failures cannot consume gold or ingredients", () => {
 	for (const alter of [
-		(h) => (h.context.anniversary_is_active = () => false),
 		(h) => (h.p.x = 101),
 		(h) => h.p.gold--,
 		(h) => (h.p.items[0].l = "l"),
@@ -1407,6 +1407,94 @@ test("craft failures cannot consume gold or ingredients", () => {
 	h.p.x = 1000;
 	h.craft();
 	assert.equal(h.p.gold, 0, "existing remote-computer crafting remains available");
+});
+test("ending the event moves every anniversary recipe to Cole without changing its costs", () => {
+	for (const [name, recipe] of Object.entries(design.craft).filter(
+		([, recipe]) => recipe.quest === "anniversary_baker",
+	)) {
+		const h = craftHarness(name);
+		h.context.events.anniversary = false;
+		delete h.context.npcs.anniversary_baker;
+		h.context.get_npc_coords = (id) => {
+			assert.equal(id, "craftsman");
+			return player("Cole");
+		};
+		h.craft();
+		assert.deepEqual(h.failures, [], name);
+		assert.equal(h.p.gold, 0, name);
+		assert.equal(h.p.items.filter(Boolean).length, 1, name);
+		assert.equal(h.p.items[0].name, recipe.output?.name || name);
+	}
+	for (const remote of [false, true]) {
+		const h = craftHarness();
+		h.context.events.anniversary = false;
+		delete h.context.npcs.anniversary_baker;
+		h.p.x = 101;
+		h.p.computer = remote;
+		const before = plain({ gold: h.p.gold, items: h.p.items });
+		h.craft();
+		if (remote) assert.equal(h.p.gold, 0);
+		else {
+			assert.equal(h.failures[0][0], "distance");
+			assert.deepEqual(plain({ gold: h.p.gold, items: h.p.items }), before);
+		}
+	}
+});
+test("native CODE and the recipe directory follow the same event flag as crafting", async () => {
+	for (const active of [false, true]) {
+		const h = craftHarness();
+		h.context.events.anniversary = active;
+		const visible = [];
+		let resolveCraft;
+		const client = localize(
+			vm.createContext({
+				G: { ...h.context.G, npcs: design.npcs },
+				S: { anniversary: { active } },
+				character: h.p,
+				push_deferred: () => new Promise((resolve) => (resolveCraft = resolve)),
+				socket: {
+					emit(event, data) {
+						assert.equal(event, "craft");
+						h.request(plain(data));
+						assert.deepEqual(h.failures, []);
+						resolveCraft(h.emitted.at(-1)[1]);
+					},
+				},
+				r_page: {},
+				next_side_interaction: null,
+				tut() {},
+				reset_inventory() {},
+				render_ui_panel() {},
+				object_sort: (object) => Object.entries(object),
+				randomStr: () => "test",
+				html_escape: String,
+				to_pretty_num: String,
+				clone: plain,
+				sprite: () => "",
+				item_container: (_options, item) => {
+					if (item) visible.push(item.name);
+					return "";
+				},
+			}),
+		);
+		load(client, "js/old_common_functions.js", ["crafting_npc"]);
+		load(client, "js/functions.js", ["anniversary_ingredient_count", "anniversary_recipe_state", "auto_craft"]);
+		load(client, "js/html.js", ["render_recipes", "anniversary_collection_html", "anniversary_ui_button"]);
+		assert.equal(client.anniversary_recipe_state("sixcake").ready, true);
+		const collection = client.anniversary_collection_html();
+		assert(collection.includes('smart_smart_move("npc","' + (active ? "anniversary_baker" : "craftsman") + '")'));
+		assert.doesNotMatch(collection, / disabled/);
+		visible.length = 0;
+		client.render_recipes("", "sixcake");
+		assert.equal(visible.includes("sixcake"), !active, "Cole lists the recipe when Mira is away");
+		visible.length = 0;
+		client.render_recipes("anniversary_baker", "sixcake");
+		assert.equal(visible.includes("sixcake"), active);
+		const result = await client.auto_craft("sixcake", true);
+		assert.equal(result.name, "sixcake");
+		assert.equal(h.p.gold, 0);
+		assert.equal(h.p.items[0].name, "sixcake");
+	}
 });
 test("ordinary crafting keeps nine-slot recipes, exact levels and inherited item properties", () => {
 	const h = craftHarness("basketofeggs");

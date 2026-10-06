@@ -419,6 +419,23 @@ function can_stack(a,b,d,args)
 	return false;
 }
 
+function crafting_npc(recipe,status)
+{
+	var id=recipe.quest;
+	if(!id) return "craftsman";
+	for(var name in G.maps)
+	{
+		var npcs=G.maps[name].seasonal_npcs||[];
+		for(var i=0;i<npcs.length;i++)
+		{
+			if(npcs[i].id!=id || !npcs[i].event) continue;
+			var event=status&&status[npcs[i].event];
+			return event===true || event&&event.active ? id : "craftsman";
+		}
+	}
+	return id;
+}
+
 function can_add_item(player,new_item,args) // long requested feature [18/10/18]
 {
 	if(!args) args={};

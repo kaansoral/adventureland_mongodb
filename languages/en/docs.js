@@ -4433,8 +4433,8 @@ module.exports = {
 	"docs.guide.event-anniversary.cake-drops-one-prize": "Cake drops — one prize",
 	// docs/guide/event-anniversary.html:110; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.event-anniversary.check-inventory-gold-and-cosmetics-for-your-rewards": "Check inventory, gold and cosmetics for your rewards; not all rewards appear in the returned result.",
-	// docs/guide/event-anniversary.html:68; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE","Mira"].
-	"docs.guide.event-anniversary.code-craft-with-mira": "CODE: Craft with Mira",
+	// Anniversary guide heading. The CODE example chooses Mira or Cole from server.status.anniversary. Preserve CODE.
+	"docs.guide.event-anniversary.code-craft-with-mira": "CODE: Craft anniversary recipes",
 	// docs/guide/event-anniversary.html:36; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.guide.event-anniversary.code-find-and-kiss": "CODE: Find and kiss",
 	// docs/guide/event-anniversary.html:95; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE","Anniversary Gift"].
@@ -4443,9 +4443,9 @@ module.exports = {
 	// docs/guide/event-anniversary.html:111; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["smart_move","auto_craft","exchange","compound","upgrade","use_skill"]. Keep names: ["CODE"].
 	"docs.guide.event-anniversary.code-reference-smart-move-auto-craft-exchange-compound":
 		'CODE reference: <span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">auto_craft</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">exchange</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">compound</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">upgrade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">use_skill</span>.',
-	// docs/guide/event-anniversary.html:32; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Mira"].
+	// Anniversary crafting requirements, during and after the event. Preserve Mira, Cole and Computer.
 	"docs.guide.event-anniversary.crafting-needs-the-listed-unlocked-ingredients-gold-and":
-		"Crafting needs the listed unlocked ingredients, gold, and room for the result. Stay near Mira unless you have Computer access. Mira leaves when the event ends; your items and emotes stay.",
+		"Crafting needs the listed unlocked ingredients, gold and room for the result. Stay near Mira during the event, or Cole afterward, unless you have Computer access. Your items and emotes stay.",
 	// docs/guide/event-anniversary.html:27; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.event-anniversary.event-details": "Event details",
 	// Anniversary guide: all servers can start rounds, but a reachable target outside PvP is required. Only other eligible players online at selection receive a Visit. Preserve the three bold spans.
@@ -4461,9 +4461,9 @@ module.exports = {
 	// docs/guide/event-anniversary.html:30; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.event-anniversary.if-the-featured-player-disconnects-or-becomes-unreachable":
 		"If the featured player disconnects or becomes unreachable, their place stays reserved until the round ends. They can return during the same five minutes. The timer does not restart.",
-	// docs/guide/event-anniversary.html:88; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["show_json(G.craft)","find_npc(\"anniversary_baker\")"]. Keep names: ["Mira"].
+	// CODE ingredient inspection. Preserve the span markup and show_json(G.craft) exactly.
 	"docs.guide.event-anniversary.inspect-ingredients-with-show-json-g-craft-find":
-		'Inspect ingredients with <span class="dlabel">show_json(G.craft)</span>. Find Mira with <span class="dlabel">find_npc("anniversary_baker")</span>.',
+		"Inspect ingredients with <span class=\"dlabel\">show_json(G.craft)</span>.",
 	// docs/guide/event-anniversary.html:34; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Mira"].
 	"docs.guide.event-anniversary.make-a-wish-s-jar-costs-one-cake":
 		"Make a Wish's jar costs one cake + 250,000 gold at Mira. The emote uses 50 MP and has a four-minute cooldown. The rare I Kiss You jar unlocks kisses outside the event. Kisses without an Anniversary Visit give no rewards or buff.",

@@ -6569,21 +6569,20 @@ function init_socket_io(socket_server, server_index) {
 				return fail_response("craft_cant");
 			}
 			var name = D.craftmap[key];
-			if (G.craft[name].quest === "anniversary_baker" && (!anniversary_is_active() || !npcs.anniversary_baker)) {
-				return fail_response("craft_cant");
-			}
+			var crafter = crafting_npc(G.craft[name], events);
+			if (crafter === "anniversary_baker" && !npcs[crafter]) return fail_response("craft_cant");
 			var enough = true;
 			if (
 				!player.computer &&
-				!G.craft[name].quest &&
+				crafter === "craftsman" &&
 				simple_distance(get_npc_coords("craftsman"), player) > B.sell_dist
 			) {
 				return fail_response("distance");
 			}
 			if (
 				!player.computer &&
-				G.craft[name].quest &&
-				distance(npcs[G.craft[name].quest] || get_npc_coords(G.craft[name].quest), player) > B.sell_dist
+				crafter !== "craftsman" &&
+				distance(npcs[crafter] || get_npc_coords(crafter), player) > B.sell_dist
 			) {
 				return fail_response("distance");
 			}

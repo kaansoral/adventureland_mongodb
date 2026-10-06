@@ -444,7 +444,7 @@ function anniversary_event_html() {
 				: phrase.html("interface.anniversary_event_html.rewarded_visits_can_drop_its_permanent_jar_cakes_and_gifts_can_hold_it_too")) + "</div></div>";
 	});
 	html += "</div></div></div><div style='border-top:2px solid #555;margin-top:14px;padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap'>";
-	html += "<span style='color:#AAA;font-size:22px'>" + phrase.html("interface.anniversary_event_html.monsters_can_drop_slices_and_gifts_too") + "</span>";
+	if (typeof S != "undefined" && S.anniversary && S.anniversary.active) html += "<span style='color:#AAA;font-size:22px'>" + phrase.html("interface.anniversary_event_html.monsters_can_drop_slices_and_gifts_too") + "</span>";
 	html += anniversary_ui_button(phrase("interface.anniversary.event_guide"), 'open_guide("event-anniversary","/docs/ref/event-anniversary")');
 	return html + "</div></div></div>";
 }
@@ -514,7 +514,8 @@ function anniversary_collection_html() {
 		owned = rows.filter(function (row) {
 			return row.count >= row.needed;
 		}).length,
-		npc = G.npcs.anniversary_baker,
+		crafter = crafting_npc(G.craft.sixcake, typeof S != "undefined" ? S : {}),
+		npc = G.npcs[crafter],
 		html =
 			"<div style='display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap'><span style='color:#F0B742'>" +
 			phrase.html("interface.anniversary_collection_html.put_the_cake_together") +
@@ -544,7 +545,7 @@ function anniversary_collection_html() {
 	if (npc) html += "<div style='flex:none'>" + sprite(npc.skin, { cx: clone(npc.cx || {}), cosmetic_head_y: npc.cosmetic_head_y, width: 52, height: 72, scale: 2 }) + "</div>";
 	html +=
 		"<div style='flex:1;min-width:0'><span style='color:#FFE2A0'>" +
-		phrase.html("interface.anniversary_collection_html.mira") +
+		html_escape(npc.name) +
 		"</span> <span style='color:#AAA'>" +
 		phrase.html("interface.anniversary_collection_html.mainland") +
 		"</span><div style='font-size:22px;line-height:24px;margin:4px 0 8px'>" +
@@ -553,10 +554,10 @@ function anniversary_collection_html() {
 		"<span style='color:#F0B742'>" +
 		phrase.html("interface.anniversary_collection_html.gold", { cost: to_pretty_num(state ? state.recipe.cost : G.craft.sixcake.cost) }) +
 		"</span>.</div>";
-	html += anniversary_ui_button(phrase("interface.anniversary.visit_mira"), 'smart_smart_move("npc","anniversary_baker")', !(typeof S != "undefined" && S.anniversary && S.anniversary.active));
+	html += anniversary_ui_button(phrase("interface.anniversary.visit_crafter", { name: npc.name }), 'smart_smart_move("npc","' + crafter + '")');
 	html +=
-		" " + anniversary_ui_button(phrase("interface.anniversary.combine_cake"), 'hide_modal();render_anniversary_baker("combine")', !(typeof S != "undefined" && S.anniversary && S.anniversary.active));
-	html += "<div style='font-size:20px;line-height:22px;color:#AAA;margin-top:6px'>" + phrase.html("interface.anniversary_collection_html.mira_is_at_64_88_choose_cake_to_combine_slices") + "</div>";
+		" " + anniversary_ui_button(phrase("interface.anniversary.combine_cake"), 'hide_modal();render_anniversary_baker("combine")');
+	html += "<div style='font-size:20px;line-height:22px;color:#AAA;margin-top:6px'>" + phrase.html("interface.anniversary.crafter_distance", { name: npc.name }) + "</div>";
 	return html + "</div></div>";
 }
 
@@ -1988,12 +1989,14 @@ function render_craftsman() {
 
 function render_anniversary_baker(service) {
 	if (no_html || !character || !G.npcs.anniversary_baker) return;
+	var type = crafting_npc(G.craft.sixcake, typeof S != "undefined" ? S : {});
+	if (type == "craftsman") type = "";
 	if (service == "combine") {
-		render_recipes("anniversary_baker", "sixcake");
-		render_recipe(true, "anniversary_baker", "sixcake");
+		render_recipes(type, "sixcake");
+		render_recipe(true, type, "sixcake");
 		return;
 	}
-	if (service == "gifts") return render_recipes("anniversary_baker");
+	if (service == "gifts" || !type) return render_recipes(type);
 	var npc = G.npcs.anniversary_baker;
 	if (service == "exchange")
 		return render_interaction({
@@ -2142,7 +2145,7 @@ function render_recipes(type, only) {
 		});
 	} else {
 		object_sort(G.craft, "gold_value").forEach(function (e) {
-			if ((e[1].quest || "") != type || (only && e[0] != only)) return;
+			if (crafting_npc(e[1], typeof S != "undefined" ? S : {}) != (type || "craftsman") || (only && e[0] != only)) return;
 			items.push(e[0]);
 		});
 	}
@@ -3006,8 +3009,10 @@ function render_item_help(container, name, level, pure) {
 			((display_phrase = phrase.html("interface.item_help.obtainable_from")), (npc = G.npcs.mcollector), (id = "mcollector"), (rphrase = phrase.html("interface.item_help.materials")));
 		if (G.craft[name].quest == "witch")
 			((display_phrase = phrase.html("interface.item_help.concocted_at")), (npc = G.npcs.witch), (id = "witch"), (rphrase = phrase.html("interface.item_help.materials")));
-		if (G.craft[name].quest == "anniversary_baker")
-			((display_phrase = phrase.html("interface.item_help.craftable_during_the_anniversary")), (npc = G.npcs.anniversary_baker), (id = "anniversary_baker"));
+		if (G.craft[name].quest == "anniversary_baker") {
+			id = crafting_npc(G.craft[name], typeof S != "undefined" ? S : {});
+			npc = G.npcs[id];
+		}
 		html += "<div style='color:#DDDDDD'>" + display_phrase + ":</div>";
 		html +=
 			"<div style='display:inline-block; text-align: center' class='clickable' onclick='smart_smart_move(\"npc\",\"" +

@@ -1,5 +1,6 @@
 <div class="anniversary-guide" style="width:600px;max-width:100%;font-size:24px;line-height:1.3">
 	<div style="font-size:32px;color:#8B642E">{{ phrase("docs.guide.event-anniversary.10-years-of-adventure") }}</div>
+	<p>{{ phrase("interface.anniversary.offseason_crafting") }}</p>
 	<p>{{ phrase_html("docs.guide.event-anniversary.every-30-minutes-a-player-is-featured-on") }}</p>
 	<div class="anniversary-guide-divider"></div>
 	<div style="color:#8B642E">{{ phrase("docs.guide.event-anniversary.how-to-kiss") }}</div>
@@ -72,24 +73,23 @@ visit_featured_player().catch(show_json);</div>
 	<div class="anniversary-guide-divider"></div>
 	<div style="color:#8B642E">{{ phrase("docs.guide.event-anniversary.code-craft-with-mira") }}</div>
 	<p>{{ phrase("docs.guide.event-anniversary.bring-the-ingredients-and-gold-required-quantities-must") }}</p>
-<div class="code">async function craft_with_mira(recipe) {
+<div class="code">async function craft_anniversary_recipe(recipe) {
 	var event = server.status.anniversary;
-	if (!event || !event.active) return game_log("Mira's workshop is closed");
 
-	await smart_move("anniversary_baker");
+	await smart_move(event &amp;&amp; event.active ? "anniversary_baker" : "craftsman");
 	var result = await auto_craft(recipe);
 	show_json(result);
 }
 
 // One of each slice + 100,000 gold:
-craft_with_mira("sixcake").catch(show_json);
+craft_anniversary_recipe("sixcake").catch(show_json);
 
 // Inspect other recipes before spending your cakes:
 // show_json(G.craft.homecomingcape);
-// craft_with_mira("homecomingcape").catch(show_json);
+// craft_anniversary_recipe("homecomingcape").catch(show_json);
 
 // One cake + 250,000 gold; the result is a CX Jar:
-// craft_with_mira("makeawishjar").catch(show_json);</div>
+// craft_anniversary_recipe("makeawishjar").catch(show_json);</div>
 	<p>{{ phrase_html("docs.guide.event-anniversary.inspect-ingredients-with-show-json-g-craft-find") }}</p>
 	<p>{{ phrase("docs.guide.event-anniversary.to-combine-guestbooks-or-pendants-visit-the-compound") }}</p>
 <div class="code">// Preview only; nothing is spent:

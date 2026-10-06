@@ -28,6 +28,7 @@ module.exports = [
 			},
 		],
 		changes: [
+			{ fixed: "anniversary_crafting", phrase: "update.06_10_26.anniversary_crafting.anniversary_crafting", note: "Anniversary recipes are available at Cole after the event ends." },
 			{ improved: "anniversary_end", phrase: "update.04_10_26.mail.anniversary_end", note: "The anniversary event has ended." },
 			{ fixed: "bank_gold_operation", phrase: "update.04_10_26.mail.bank_gold_operation", note: "Bank gold responses now identify deposits and withdrawals." },
 			{ fixed: "cooperative_online", phrase: "update.04_10_26.mail.cooperative_online", note: "Offline characters no longer inflate cooperative monster drops." },

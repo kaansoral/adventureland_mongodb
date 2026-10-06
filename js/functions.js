@@ -3826,7 +3826,7 @@ function anniversary_ingredient_count(name, level) {
 function anniversary_recipe_state(name) {
 	var recipe = G.craft && G.craft[name];
 	if (!recipe || recipe.quest != "anniversary_baker") return null;
-	var ready = !!(typeof S != "undefined" && S.anniversary && S.anniversary.active),
+	var ready = true,
 		rows = [];
 	(recipe.items || []).forEach(function (ingredient) {
 		var count = anniversary_ingredient_count(ingredient[1], ingredient[2]);
@@ -3840,7 +3840,6 @@ function anniversary_recipe_state(name) {
 function auto_craft(name, code) {
 	var issue = null;
 	if (!Object.prototype.hasOwnProperty.call(G.craft, name)) issue = "recipe";
-	else if (G.craft[name].quest == "anniversary_baker" && !(typeof S != "undefined" && S.anniversary && S.anniversary.active)) issue = "season";
 	else if (G.craft[name].cost > character.gold) issue = "gold";
 	else {
 		G.craft[name].items.forEach(function (i) {
@@ -3854,7 +3853,6 @@ function auto_craft(name, code) {
 	}
 	if (issue) {
 		if (issue == "recipe") add_log(phrase.html("client.auto_craft.can_t_craft_that_item"), "gray");
-		else if (issue == "season") add_log(phrase.html("client.auto_craft.mira_s_anniversary_workshop_is_closed"), "gray");
 		else if (issue == "gold") add_log(phrase.html("client.auto_craft.not_enough_gold"), "gray");
 		else if (issue == "items") add_log(phrase.html("client.auto_craft.don_t_have_the_required_items"), "gray");
 		if (code) return rejecting_promise({ reason: issue });

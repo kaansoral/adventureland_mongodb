@@ -1,5 +1,9 @@
 // Release highlights. Dates, item/character names and CODE identifiers stay unchanged.
 module.exports = {
+	// Anniversary crafting release text. Preserve Cole.
+	"update.06_10_26.anniversary_crafting.title": "Anniversary Crafting",
+	// Anniversary crafting release text. Preserve Cole.
+	"update.06_10_26.anniversary_crafting.anniversary_crafting": "Anniversary recipes are available at Cole after the event ends.",
 	// Release note announcing that the anniversary event has ended.
 	"update.04_10_26.mail.anniversary_end": "The anniversary event has ended.",
 	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
