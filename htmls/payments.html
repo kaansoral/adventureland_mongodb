@@ -16,7 +16,7 @@
 			<script src="/js/pixi/{{domain.pixi_version}}/pixi.min.js"></script>
 		{% endif %}
 		<script src="/js/pixi-layers/{{domain.pixi_layers_version}}/pixi-layers.js"></script>
-		<script src="/js/socket.io/1.4.5/socket.io.js"></script>
+		<script src="/js/socket.io/{{domain.io_version}}/socket.io.min.js"></script>
 		<script src="/js/jquery/jquery-{{domain.jquery_version}}.min.js"{%if domain.electron%} onload="if(typeof require!=='undefined') window.$=window.jQuery=module.exports;"{%endif%}></script>
 		<script src="/js/howler/{{domain.howler_version}}/howler.min.js"></script>
 		<script src="/js/libraries/bowser/bowser.16.08.16.js"{%if domain.electron%} onload="if(typeof require!=='undefined') window.bowser=module.exports;"{%endif%}></script>

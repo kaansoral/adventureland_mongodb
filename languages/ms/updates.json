@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Berjalan berhampiran meja poker di Tavern dan beberapa tempat lain tidak lagi menghantar anda ke penjara.",
 	"update.29_09_26.chat_spam": "Mesej berulang dalam sembang awam kini tidak diteruskan ke Discord atau disimpan dalam sejarah sembang.",
 	"update.29_09_26.monster_combat_bounds": "Semakan jarak raksasa dalam CODE kini sepadan dengan pelayan, termasuk bagi Tiny Crab.",
-	"update.29_09_26.character_shells": "Slot watak yang disertakan dengan akaun tidak lagi menggunakan cangkerang. Perubahan pada watak tidak lagi boleh menyebabkan baki cangkerang anda menjadi negatif."
+	"update.29_09_26.character_shells": "Slot watak yang disertakan dengan akaun tidak lagi menggunakan cangkerang. Perubahan pada watak tidak lagi boleh menyebabkan baki cangkerang anda menjadi negatif.",
+	"update.04_10_26.mail.bank_gold_operation": "Respons transaksi emas di bank kini mengenal pasti deposit dan pengeluaran.",
+	"update.04_10_26.mail.cooperative_online": "Watak luar talian tidak lagi menambah rampasan daripada raksasa kerjasama.",
+	"update.04_10_26.mail.stun_refresh": "Mengenakan semula kesan terpegun yang singkat tidak lagi memendekkan kesan terpegun lebih lama yang masih aktif.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Raksasa yang diracun kini menerima 25% penyembuhan biasa, seperti yang dinyatakan dalam penerangan keadaan.",
+	"update.04_10_26.mail.browser_connections": "Sambungan pelayar dan halaman pembayaran dikemas kini agar serasi dengan pelayan permainan.",
+	"update.04_10_26.mail.gilded_horse_cape": "Horse Leather Cape berwarna emas kini dinamakan Gilded Horse Leather Cape."
 }

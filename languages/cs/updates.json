@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Chůze u pokerového stolu v Tavern a na několika dalších místech tě už nepošle do vězení.",
 	"update.29_09_26.chat_spam": "Opakované zprávy z veřejného chatu se nyní filtrují a nepřeposílají se na Discord ani neukládají do historie chatu.",
 	"update.29_09_26.monster_combat_bounds": "Kontroly dosahu na nestvůry v CODE nyní odpovídají serveru, a to i pro Tiny Crab.",
-	"update.29_09_26.character_shells": "Místa pro postavy zahrnutá v účtu už nestojí mušle. Změny postav už nemohou způsobit záporný zůstatek mušlí."
+	"update.29_09_26.character_shells": "Místa pro postavy zahrnutá v účtu už nestojí mušle. Změny postav už nemohou způsobit záporný zůstatek mušlí.",
+	"update.04_10_26.mail.bank_gold_operation": "Odpovědi na operace se zlatem v bance nyní rozlišují vklady a výběry.",
+	"update.04_10_26.mail.cooperative_online": "Offline postavy už nezvyšují kořist z kooperativních monster.",
+	"update.04_10_26.mail.stun_refresh": "Opětovné použití krátkého omráčení už nezkracuje déle trvající aktivní omráčení.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Otrávená monstra nyní dostávají 25% běžného léčení, jak uvádí popis stavu.",
+	"update.04_10_26.mail.browser_connections": "Připojení prohlížeče a platební stránky byla aktualizována pro kompatibilitu s herními servery.",
+	"update.04_10_26.mail.gilded_horse_cape": "Zlatý Horse Leather Cape se nyní jmenuje Gilded Horse Leather Cape."
 }

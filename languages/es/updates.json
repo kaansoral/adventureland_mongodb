@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Caminar junto a la mesa de póker de la Tavern y por algunos otros sitios ya no te manda a la cárcel.",
 	"update.29_09_26.chat_spam": "Los mensajes repetidos del chat público ya no se envían a Discord ni se guardan en el historial del chat.",
 	"update.29_09_26.monster_combat_bounds": "Las comprobaciones de alcance contra monstruos en CODE ahora coinciden con las del servidor, también para Tiny Crab.",
-	"update.29_09_26.character_shells": "Las ranuras de personaje incluidas ya no cuestan conchas. Los cambios de personaje ya no pueden dejar tu saldo de conchas en negativo."
+	"update.29_09_26.character_shells": "Las ranuras de personaje incluidas ya no cuestan conchas. Los cambios de personaje ya no pueden dejar tu saldo de conchas en negativo.",
+	"update.04_10_26.mail.bank_gold_operation": "Las respuestas de las operaciones de oro del banco ahora indican si se trata de un depósito o una retirada.",
+	"update.04_10_26.mail.cooperative_online": "Los personajes desconectados ya no aumentan el botín de los monstruos cooperativos.",
+	"update.04_10_26.mail.stun_refresh": "Aplicar un aturdimiento corto ya no acorta uno más largo que siga activo.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Los monstruos envenenados ahora reciben el 25% de la curación normal, como indica la descripción del estado.",
+	"update.04_10_26.mail.browser_connections": "Se han actualizado las conexiones del navegador y de la página de pago para que sean compatibles con los servidores del juego.",
+	"update.04_10_26.mail.gilded_horse_cape": "La Horse Leather Cape dorada ahora se llama Gilded Horse Leather Cape."
 }

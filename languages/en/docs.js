@@ -1,5 +1,7 @@
 // English documentation catalog. IDs identify source meaning and usage.
 module.exports = {
+	// Bank gold response metadata. Preserve operation, deposit, withdraw and gold as CODE.
+	"docs.functions.bank_gold.operation": "The result's <span class='dlabel'>operation</span> is <span class='dlabel'>\"deposit\"</span> or <span class='dlabel'>\"withdraw\"</span>; <span class='dlabel'>gold</span> is the amount moved.",
 	// Golden Bat guide paragraph after its spawn line; the drop list with exact rates follows. Item names fixed; 24,000 exact.
 	"docs.guide.golden-bat.intro": "It flies around the cave until someone catches it. With 24,000 HP, it only sometimes attacks and never hits back.",
 	// Cute Bee guide paragraph after its spawn line; the drop list follows. Fun Token is a fixed name; 300 and 16 exact.

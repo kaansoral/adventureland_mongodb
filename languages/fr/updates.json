@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Marcher près de la table de poker de la Tavern et à quelques autres endroits ne vous envoie plus en prison.",
 	"update.29_09_26.chat_spam": "Les messages répétés du chat public ne sont désormais plus transmis à Discord ni enregistrés dans l’historique du chat.",
 	"update.29_09_26.monster_combat_bounds": "Les vérifications de portée contre les monstres dans CODE correspondent désormais à celles du serveur, y compris pour Tiny Crab.",
-	"update.29_09_26.character_shells": "Les emplacements de personnage inclus ne coûtent plus de coquillages. Les modifications de personnage ne peuvent plus rendre ton solde de coquillages négatif."
+	"update.29_09_26.character_shells": "Les emplacements de personnage inclus ne coûtent plus de coquillages. Les modifications de personnage ne peuvent plus rendre ton solde de coquillages négatif.",
+	"update.04_10_26.mail.bank_gold_operation": "Les réponses aux opérations d'or à la banque précisent désormais s'il s'agit d'un dépôt ou d'un retrait.",
+	"update.04_10_26.mail.cooperative_online": "Les personnages hors ligne n'augmentent plus le butin des monstres coopératifs.",
+	"update.04_10_26.mail.stun_refresh": "Réappliquer un étourdissement court ne raccourcit plus un étourdissement plus long déjà actif.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Les monstres empoisonnés reçoivent désormais 25% des soins normaux, comme indiqué dans la description de l'état.",
+	"update.04_10_26.mail.browser_connections": "Les connexions du navigateur et de la page de paiement ont été mises à jour pour être compatibles avec les serveurs du jeu.",
+	"update.04_10_26.mail.gilded_horse_cape": "La Horse Leather Cape dorée s'appelle désormais Gilded Horse Leather Cape."
 }

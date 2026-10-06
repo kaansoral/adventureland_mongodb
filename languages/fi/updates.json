@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Tavernin pokeripöydän vieressä ja muutamassa muussa paikassa käveleminen ei enää lähetä sinua vankilaan.",
 	"update.29_09_26.chat_spam": "Julkisen chatin toistuvia viestejä ei enää välitetä Discordiin eikä tallenneta chat-historiaan.",
 	"update.29_09_26.monster_combat_bounds": "CODEn hirviöiden kantamatarkistukset vastaavat nyt palvelimen tarkistuksia, myös Tiny Crabille.",
-	"update.29_09_26.character_shells": "Tiliin sisältyvät hahmopaikat eivät enää maksa simpukoita. Hahmoihin tehtävät muutokset eivät enää voi laskea simpukkasaldoasi miinukselle."
+	"update.29_09_26.character_shells": "Tiliin sisältyvät hahmopaikat eivät enää maksa simpukoita. Hahmoihin tehtävät muutokset eivät enää voi laskea simpukkasaldoasi miinukselle.",
+	"update.04_10_26.mail.bank_gold_operation": "Pankin kultatapahtumien vastaukset kertovat nyt, onko kyse talletuksesta vai nostosta.",
+	"update.04_10_26.mail.cooperative_online": "Offline-hahmot eivät enää kasvata yhteistyöhirviöiden saalista.",
+	"update.04_10_26.mail.stun_refresh": "Uusi lyhyt tainnutus ei enää lyhennä jo voimassa olevaa pidempää tainnutusta.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Myrkytetyt hirviöt saavat nyt 25% normaalista parannuksesta, kuten tilan kuvauksessa kerrotaan.",
+	"update.04_10_26.mail.browser_connections": "Selaimen ja maksusivun yhteydet on päivitetty yhteensopiviksi pelipalvelinten kanssa.",
+	"update.04_10_26.mail.gilded_horse_cape": "Kultainen Horse Leather Cape on nyt nimeltään Gilded Horse Leather Cape."
 }

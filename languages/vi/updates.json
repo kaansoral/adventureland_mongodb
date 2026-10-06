@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Đi ngang bàn poker ở Tavern và vài chỗ khác sẽ không còn khiến bạn bị tống vào tù nữa.",
 	"update.29_09_26.chat_spam": "Tin nhắn lặp lại trong trò chuyện công khai giờ đây sẽ không được chuyển đến Discord hoặc lưu vào lịch sử trò chuyện.",
 	"update.29_09_26.monster_combat_bounds": "Việc kiểm tra tầm đánh quái vật trong CODE giờ khớp với máy chủ, kể cả với Tiny Crab.",
-	"update.29_09_26.character_shells": "Các ô nhân vật có sẵn trong tài khoản không còn tốn vỏ sò. Các thao tác thay đổi nhân vật cũng không còn khiến số dư vỏ sò bị âm."
+	"update.29_09_26.character_shells": "Các ô nhân vật có sẵn trong tài khoản không còn tốn vỏ sò. Các thao tác thay đổi nhân vật cũng không còn khiến số dư vỏ sò bị âm.",
+	"update.04_10_26.mail.bank_gold_operation": "Phản hồi giao dịch vàng ở ngân hàng giờ cho biết đó là gửi hay rút vàng.",
+	"update.04_10_26.mail.cooperative_online": "Nhân vật ngoại tuyến không còn làm tăng lượng vật phẩm rơi từ quái vật hợp tác.",
+	"update.04_10_26.mail.stun_refresh": "Áp dụng lại choáng ngắn không còn rút ngắn hiệu ứng choáng dài hơn đang có.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Quái vật trúng độc giờ nhận 25% lượng hồi máu bình thường, đúng như mô tả trạng thái.",
+	"update.04_10_26.mail.browser_connections": "Đã cập nhật kết nối của trình duyệt và trang thanh toán để tương thích với máy chủ trò chơi.",
+	"update.04_10_26.mail.gilded_horse_cape": "Horse Leather Cape màu vàng giờ có tên là Gilded Horse Leather Cape."
 }

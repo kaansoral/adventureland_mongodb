@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Tavernのポーカーテーブルのそばなど、いくつかの場所を歩いても牢屋に送られなくなりました。",
 	"update.29_09_26.chat_spam": "公開チャットの繰り返しメッセージは、Discordへの転送とチャット履歴への保存の対象外になりました。",
 	"update.29_09_26.monster_combat_bounds": "CODE のモンスターに対する射程判定が、Tiny Crab を含めサーバーと一致するようになりました。",
-	"update.29_09_26.character_shells": "アカウントに含まれるキャラクター枠でシェルが消費されなくなりました。キャラクターの変更操作でシェル残高がマイナスになることもなくなりました。"
+	"update.29_09_26.character_shells": "アカウントに含まれるキャラクター枠でシェルが消費されなくなりました。キャラクターの変更操作でシェル残高がマイナスになることもなくなりました。",
+	"update.04_10_26.mail.bank_gold_operation": "銀行のゴールド取引の応答に、預け入れか引き出しかが示されるようになりました。",
+	"update.04_10_26.mail.cooperative_online": "オフラインのキャラクターが協力型モンスターのドロップ量を増やす不具合を修正しました。",
+	"update.04_10_26.mail.stun_refresh": "短いスタンを再付与しても、すでにかかっている長いスタンが短縮されなくなりました。",
+	"update.04_10_26.mail.poisoned_monster_healing": "毒状態のモンスターが受ける回復量が、状態の説明どおり通常の25%になりました。",
+	"update.04_10_26.mail.browser_connections": "ブラウザと支払いページの接続をゲームサーバーに合わせて更新しました。",
+	"update.04_10_26.mail.gilded_horse_cape": "金色のHorse Leather Capeの名前がGilded Horse Leather Capeになりました。"
 }

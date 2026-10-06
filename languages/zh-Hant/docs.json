@@ -2698,5 +2698,6 @@
 	"docs.functions.trade_swap.returns-promise-resolving-with-the-trade-response-or": "<b>回傳：</b>Promise，成功時以交易回應兌現，失敗時以結構化失敗物件拒絕。",
 	"docs.articles.events-game.swap": "<span class=\"dlabel\" data-event=\"swap\">swap</span>",
 	"docs.functions.say.spam_filter": "公開聊天中的重複訊息和洗版訊息不會轉發到 Discord，也不會儲存至公開聊天紀錄。如果持續洗版，你的帳號在該伺服器上的這兩項功能會暫時停用，直到你連續 10 分鐘不傳送公開訊息。你的訊息仍會顯示在遊戲內的即時聊天中。",
-	"docs.articles.4.g-geometry.monster-combat-bounds": "對於已識別的怪物，distance 會使用伺服器的戰鬥判定邊界：採用該怪物類型的尺寸（未指定時為24×24），若有設定大小倍率，就乘以該倍率後四捨五入。精靈圖尺寸與外觀別名不會決定對怪物的攻擊距離。is_in_range() 和 can_attack() 也適用此規則；顯示大小與移動時的碰撞邊界維持不變。"
+	"docs.articles.4.g-geometry.monster-combat-bounds": "對於已識別的怪物，distance 會使用伺服器的戰鬥判定邊界：採用該怪物類型的尺寸（未指定時為24×24），若有設定大小倍率，就乘以該倍率後四捨五入。精靈圖尺寸與外觀別名不會決定對怪物的攻擊距離。is_in_range() 和 can_attack() 也適用此規則；顯示大小與移動時的碰撞邊界維持不變。",
+	"docs.functions.bank_gold.operation": "結果中的<span class='dlabel'>operation</span>為<span class='dlabel'>\"deposit\"</span>或<span class='dlabel'>\"withdraw\"</span>；<span class='dlabel'>gold</span>為轉移的金幣數量。"
 }

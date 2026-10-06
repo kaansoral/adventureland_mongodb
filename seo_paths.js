@@ -7,6 +7,8 @@ const DOCS_PATHS = [
 	"/docs/code/character/reference",
 	"/docs/code/data",
 	"/docs/code/functions",
+	"/docs/code/functions/bank_deposit",
+	"/docs/code/functions/bank_withdraw",
 	"/docs/code/functions/bank_store",
 	"/docs/code/functions/bank_retrieve",
 	"/docs/code/functions/auto_craft",

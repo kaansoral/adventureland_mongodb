@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Berjalan di dekat meja poker di Tavern dan beberapa tempat lain tidak lagi mengirimmu ke penjara.",
 	"update.29_09_26.chat_spam": "Pesan berulang di obrolan publik kini tidak diteruskan ke Discord atau disimpan dalam riwayat obrolan.",
 	"update.29_09_26.monster_combat_bounds": "Pemeriksaan jangkauan monster di CODE kini sesuai dengan server, termasuk untuk Tiny Crab.",
-	"update.29_09_26.character_shells": "Slot karakter bawaan akun tidak lagi menghabiskan kerang. Perubahan karakter tidak lagi dapat membuat saldo kerangmu negatif."
+	"update.29_09_26.character_shells": "Slot karakter bawaan akun tidak lagi menghabiskan kerang. Perubahan karakter tidak lagi dapat membuat saldo kerangmu negatif.",
+	"update.04_10_26.mail.bank_gold_operation": "Respons transaksi emas di bank kini menunjukkan apakah transaksi tersebut berupa setoran atau penarikan.",
+	"update.04_10_26.mail.cooperative_online": "Karakter offline tidak lagi menambah jarahan dari monster kooperatif.",
+	"update.04_10_26.mail.stun_refresh": "Penerapan ulang efek terpana singkat tidak lagi memperpendek efek terpana yang lebih lama dan masih aktif.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Monster yang terkena racun kini menerima 25% penyembuhan normal, sesuai deskripsi kondisi.",
+	"update.04_10_26.mail.browser_connections": "Koneksi browser dan halaman pembayaran diperbarui agar kompatibel dengan server game.",
+	"update.04_10_26.mail.gilded_horse_cape": "Horse Leather Cape berwarna emas kini bernama Gilded Horse Leather Cape."
 }

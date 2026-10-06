@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Tavern'deki poker masasının yanında ve birkaç yerde daha yürümek artık seni hapse göndermiyor.",
 	"update.29_09_26.chat_spam": "Tekrarlanan genel sohbet mesajları artık Discord'a iletilmiyor ve sohbet geçmişine kaydedilmiyor.",
 	"update.29_09_26.monster_combat_bounds": "CODE'daki canavar menzil kontrolleri artık Tiny Crab dâhil sunucuyla eşleşiyor.",
-	"update.29_09_26.character_shells": "Hesabınıza dahil olan karakter yuvaları artık deniz kabuğu harcamıyor. Karakter işlemleri artık deniz kabuğu bakiyenizi eksiye düşüremiyor."
+	"update.29_09_26.character_shells": "Hesabınıza dahil olan karakter yuvaları artık deniz kabuğu harcamıyor. Karakter işlemleri artık deniz kabuğu bakiyenizi eksiye düşüremiyor.",
+	"update.04_10_26.mail.bank_gold_operation": "Bankadaki altın işlemlerinin yanıtları artık yatırma ve çekme işlemlerini belirtiyor.",
+	"update.04_10_26.mail.cooperative_online": "Çevrimdışı karakterler artık ortaklaşa kesilen canavarların ganimetini artırmıyor.",
+	"update.04_10_26.mail.stun_refresh": "Kısa süreli sersemletmeler artık mevcut daha uzun sersemletmeyi kısaltmıyor.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Zehirlenmiş canavarlar artık durum açıklamasında belirtildiği gibi normal iyileştirmenin %25'ini alıyor.",
+	"update.04_10_26.mail.browser_connections": "Tarayıcı ve ödeme sayfası bağlantıları oyun sunucularıyla uyumlu olacak şekilde güncellendi.",
+	"update.04_10_26.mail.gilded_horse_cape": "Altın renkli Horse Leather Cape'in adı artık Gilded Horse Leather Cape."
 }

@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Wenn du neben dem Pokertisch in der Tavern oder an ein paar anderen Stellen läufst, landest du nicht mehr im Gefängnis.",
 	"update.29_09_26.chat_spam": "Wiederholte Nachrichten aus dem öffentlichen Chat werden jetzt weder an Discord weitergeleitet noch im Chatverlauf gespeichert.",
 	"update.29_09_26.monster_combat_bounds": "Reichweitenprüfungen für Monster in CODE stimmen jetzt mit dem Server überein, auch bei Tiny Crab.",
-	"update.29_09_26.character_shells": "Enthaltene Charakterplätze kosten keine Muscheln mehr. Änderungen an Charakteren können deinen Muschelbestand nicht mehr ins Minus bringen."
+	"update.29_09_26.character_shells": "Enthaltene Charakterplätze kosten keine Muscheln mehr. Änderungen an Charakteren können deinen Muschelbestand nicht mehr ins Minus bringen.",
+	"update.04_10_26.mail.bank_gold_operation": "Antworten auf Goldtransaktionen bei der Bank geben jetzt an, ob Gold eingezahlt oder abgehoben wurde.",
+	"update.04_10_26.mail.cooperative_online": "Offline-Charaktere erhöhen nicht mehr die Beute von kooperativen Monstern.",
+	"update.04_10_26.mail.stun_refresh": "Eine erneut angewandte kurze Betäubung verkürzt keine bereits bestehende längere Betäubung mehr.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Vergiftete Monster erhalten jetzt wie in der Zustandsbeschreibung angegeben 25% der normalen Heilung.",
+	"update.04_10_26.mail.browser_connections": "Die Verbindungen im Browser und auf der Zahlungsseite wurden an die Spielserver angepasst.",
+	"update.04_10_26.mail.gilded_horse_cape": "Der goldene Horse Leather Cape heißt jetzt Gilded Horse Leather Cape."
 }

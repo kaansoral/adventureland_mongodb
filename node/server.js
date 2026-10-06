@@ -2725,6 +2725,7 @@ function issue_monster_awards(monster) {
 		}
 	}
 	for (var name in monster.points) {
+		if (!players[name_to_id[name]]) continue;
 		var share = Math.pow(max(0, monster.points[name]), 0.65) / total;
 		if (share > 0.0008) {
 			total_characters += 1;
@@ -9267,13 +9268,13 @@ function init_socket_io(socket_server, server_index) {
 				var amount = max(0, min(parseInt(data.amount) || 0, player.user.gold));
 				player.user.gold -= amount;
 				player.gold += amount;
-				success = { response: "bank_withdraw", gold: amount, cevent: true };
+				success = { response: "bank_withdraw", operation: "withdraw", gold: amount, cevent: true };
 			}
 			if (data.operation == "deposit") {
 				var amount = max(0, min(parseInt(data.amount) || 0, player.gold));
 				player.user.gold += amount;
 				player.gold -= amount;
-				success = { response: "bank_store", gold: amount, cevent: true };
+				success = { response: "bank_store", operation: "deposit", gold: amount, cevent: true };
 			}
 			if (data.operation == "unlock") {
 				if (!bank_packs[data.pack]) {
@@ -14099,7 +14100,7 @@ function update_instance(instance) {
 					var hp = monster.hp;
 					var heal = monster.a.self_healing.heal;
 					if (monster.s.poisoned) {
-						heal /= 2;
+						heal = round(heal * G.conditions.poisoned.healm);
 					}
 					monster.hp = min(monster.max_hp, monster.hp + heal);
 					if (hp != monster.hp) {
@@ -14114,7 +14115,7 @@ function update_instance(instance) {
 					var hp = target.hp;
 					var heal = monster.a.healing.heal;
 					if (target.s.poisoned) {
-						heal /= 2;
+						heal = round(heal * G.conditions.poisoned.healm);
 					}
 					target.hp = min(target.max_hp, target.hp + heal);
 					if (hp != target.hp) {

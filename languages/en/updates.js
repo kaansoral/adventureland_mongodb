@@ -1,5 +1,17 @@
 // Release highlights. Dates, item/character names and CODE identifiers stay unchanged.
 module.exports = {
+	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
+	"update.04_10_26.mail.bank_gold_operation": "Bank gold responses now identify deposits and withdrawals.",
+	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
+	"update.04_10_26.mail.cooperative_online": "Offline characters no longer inflate cooperative monster drops.",
+	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
+	"update.04_10_26.mail.stun_refresh": "Short stun refreshes no longer shorten a longer stun.",
+	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
+	"update.04_10_26.mail.poisoned_monster_healing": "Poisoned monsters now receive 25% of normal healing, as the condition describes.",
+	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
+	"update.04_10_26.mail.browser_connections": "Updated browser and payment-page connections to match the game servers.",
+	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
+	"update.04_10_26.mail.gilded_horse_cape": "The golden Horse Leather Cape is now named Gilded Horse Leather Cape.",
 	// Fixed bug listed in the [29/09/26] update post "Cave Fixes and Orb Compounding". Keep names from the game and CODE identifiers unchanged.
 	"update.29_09_26.character_shells": "Included character slots no longer cost shells. Character changes can no longer overdraw your shell balance.",
 	// Fixed bug listed in the [29/09/26] update post "Cave Fixes and Orb Compounding". Keep names from the game and CODE identifiers unchanged.

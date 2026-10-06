@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Lopen langs de pokertafel in de Tavern en op een paar andere plekken stuurt je niet meer naar de gevangenis.",
 	"update.29_09_26.chat_spam": "Herhaalde berichten uit de openbare chat worden nu niet meer doorgestuurd naar Discord of opgeslagen in de chatgeschiedenis.",
 	"update.29_09_26.monster_combat_bounds": "Bereikcontroles voor monsters in CODE komen nu overeen met die van de server, ook voor Tiny Crab.",
-	"update.29_09_26.character_shells": "Inbegrepen personageslots kosten geen schelpen meer. Wijzigingen aan personages kunnen je schelpensaldo niet meer negatief maken."
+	"update.29_09_26.character_shells": "Inbegrepen personageslots kosten geen schelpen meer. Wijzigingen aan personages kunnen je schelpensaldo niet meer negatief maken.",
+	"update.04_10_26.mail.bank_gold_operation": "Antwoorden op goudtransacties bij de bank geven nu aan of het om een storting of opname gaat.",
+	"update.04_10_26.mail.cooperative_online": "Offline personages verhogen de buit van coöperatieve monsters niet meer.",
+	"update.04_10_26.mail.stun_refresh": "Een opnieuw toegepaste korte verdoving verkort een bestaande langere verdoving niet meer.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Vergiftigde monsters ontvangen nu 25% van de normale genezing, zoals de toestandbeschrijving aangeeft.",
+	"update.04_10_26.mail.browser_connections": "De verbindingen van de browser en betaalpagina zijn bijgewerkt om met de gameservers te werken.",
+	"update.04_10_26.mail.gilded_horse_cape": "De gouden Horse Leather Cape heet nu Gilded Horse Leather Cape."
 }

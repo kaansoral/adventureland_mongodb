@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Hindi ka na mapupunta sa kulungan kapag naglakad ka malapit sa poker table sa Tavern at sa ilang iba pang lugar.",
 	"update.29_09_26.chat_spam": "Hindi na ipinapasa sa Discord o sine-save sa chat history ang mga paulit-ulit na mensahe sa pampublikong chat.",
 	"update.29_09_26.monster_combat_bounds": "Tugma na sa server ang mga pagsusuri ng abot sa mga halimaw sa CODE, pati para sa Tiny Crab.",
-	"update.29_09_26.character_shells": "Hindi na nagkakahalaga ng kabibe ang mga slot ng karakter na kasama sa account. Hindi na rin maaaring maging negatibo ang balanse mong kabibe dahil sa mga pagbabago sa karakter."
+	"update.29_09_26.character_shells": "Hindi na nagkakahalaga ng kabibe ang mga slot ng karakter na kasama sa account. Hindi na rin maaaring maging negatibo ang balanse mong kabibe dahil sa mga pagbabago sa karakter.",
+	"update.04_10_26.mail.bank_gold_operation": "Ipinapakita na ng mga tugon sa transaksiyon ng ginto sa bangko kung deposito o pag-withdraw ang ginawa.",
+	"update.04_10_26.mail.cooperative_online": "Hindi na pinaparami ng mga offline na karakter ang loot mula sa mga cooperative monster.",
+	"update.04_10_26.mail.stun_refresh": "Ang muling pagpapataw ng maikling pagkatigilan ay hindi na nagpapaikli ng mas mahabang pagkatigilan na aktibo pa.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Tumatanggap na ang mga nalason na monster ng 25% ng normal na healing, gaya ng nakasaad sa paglalarawan ng kondisyon.",
+	"update.04_10_26.mail.browser_connections": "Na-update ang mga koneksiyon ng browser at payment page para tumugma sa mga game server.",
+	"update.04_10_26.mail.gilded_horse_cape": "Gilded Horse Leather Cape na ang pangalan ng ginintuang Horse Leather Cape."
 }

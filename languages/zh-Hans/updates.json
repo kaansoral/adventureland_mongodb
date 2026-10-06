@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "在 Tavern 的扑克桌旁和其他几处走动，不会再被送进监狱。",
 	"update.29_09_26.chat_spam": "公开聊天中的重复消息现在不会再转发到 Discord，也不会保存到聊天记录中。",
 	"update.29_09_26.monster_combat_bounds": "CODE 中对怪物的距离判定现已与服务器一致，包括 Tiny Crab。",
-	"update.29_09_26.character_shells": "账户自带的角色栏位不再消耗贝壳。角色变更操作也不会再让贝壳余额变成负数。"
+	"update.29_09_26.character_shells": "账户自带的角色栏位不再消耗贝壳。角色变更操作也不会再让贝壳余额变成负数。",
+	"update.04_10_26.mail.bank_gold_operation": "银行金币操作的响应现在会标明是存款还是取款。",
+	"update.04_10_26.mail.cooperative_online": "离线角色不再增加合作型怪物的掉落数量。",
+	"update.04_10_26.mail.stun_refresh": "重新施加较短的眩晕不再缩短已有的较长眩晕。",
+	"update.04_10_26.mail.poisoned_monster_healing": "中毒怪物现在获得正常治疗量的25%，与状态说明一致。",
+	"update.04_10_26.mail.browser_connections": "已更新浏览器和支付页面的连接，使其与游戏服务器兼容。",
+	"update.04_10_26.mail.gilded_horse_cape": "金色的Horse Leather Cape现已更名为Gilded Horse Leather Cape。"
 }

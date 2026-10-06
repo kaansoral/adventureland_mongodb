@@ -169,3 +169,5 @@ All 32 languages include the required current-game phrases. The remaining histor
 | Filipino | 701 | 386 |
 
 The earlier twelve languages have no missing archive translations. Historical translation can resume by language and section without changing the current-game completion status.
+
+October 6 PR fixes: six release notes and the shared bank-result paragraph are translated and proofread in all 32 languages. Deposit and withdrawal fields, the 25% healing value, stun terminology and fixed cape names were checked. Both bank examples pass native CODE and Mainframe checks.

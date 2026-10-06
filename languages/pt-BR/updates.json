@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Andar perto da mesa de pôquer da Tavern e de alguns outros lugares não te manda mais para a cadeia.",
 	"update.29_09_26.chat_spam": "Mensagens repetidas do chat público agora são filtradas e não são enviadas ao Discord nem salvas no histórico do chat.",
 	"update.29_09_26.monster_combat_bounds": "As verificações de alcance contra monstros no CODE agora correspondem às do servidor, inclusive para Tiny Crab.",
-	"update.29_09_26.character_shells": "Os espaços de personagem incluídos não custam mais conchas. As alterações de personagem não podem mais deixar seu saldo de conchas negativo."
+	"update.29_09_26.character_shells": "Os espaços de personagem incluídos não custam mais conchas. As alterações de personagem não podem mais deixar seu saldo de conchas negativo.",
+	"update.04_10_26.mail.bank_gold_operation": "As respostas das operações de ouro no banco agora identificam depósitos e saques.",
+	"update.04_10_26.mail.cooperative_online": "Personagens desconectados não aumentam mais os espólios dos monstros cooperativos.",
+	"update.04_10_26.mail.stun_refresh": "Reaplicar um atordoamento curto não reduz mais a duração de um atordoamento mais longo já ativo.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Monstros envenenados agora recebem 25% da cura normal, como indicado na descrição da condição.",
+	"update.04_10_26.mail.browser_connections": "As conexões do navegador e da página de pagamento foram atualizadas para serem compatíveis com os servidores do jogo.",
+	"update.04_10_26.mail.gilded_horse_cape": "A Horse Leather Cape dourada agora se chama Gilded Horse Leather Cape."
 }

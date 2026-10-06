@@ -2698,5 +2698,6 @@
 	"docs.functions.trade_swap.returns-promise-resolving-with-the-trade-response-or": "<b>返回：</b>Promise，成功时以交易响应兑现，失败时以结构化失败对象拒绝。",
 	"docs.articles.events-game.swap": "<span class=\"dlabel\" data-event=\"swap\">swap</span>",
 	"docs.functions.say.spam_filter": "公开聊天中的重复消息和刷屏消息不会转发到 Discord，也不会保存到公开聊天记录中。如果持续刷屏，你的账号在该服务器上的这两项功能会暂时停用，直到你连续 10 分钟不发送公开消息。你的消息仍会显示在游戏内的实时聊天中。",
-	"docs.articles.4.g-geometry.monster-combat-bounds": "对于已识别的怪物，distance 使用服务器的战斗判定边界：取该怪物类型的尺寸（未指定时为24×24），若设置了大小倍率则乘以该倍率，再四舍五入。精灵图尺寸和外观别名不会决定对怪物的攻击距离。这也适用于 is_in_range() 和 can_attack()；显示大小和移动碰撞边界保持不变。"
+	"docs.articles.4.g-geometry.monster-combat-bounds": "对于已识别的怪物，distance 使用服务器的战斗判定边界：取该怪物类型的尺寸（未指定时为24×24），若设置了大小倍率则乘以该倍率，再四舍五入。精灵图尺寸和外观别名不会决定对怪物的攻击距离。这也适用于 is_in_range() 和 can_attack()；显示大小和移动碰撞边界保持不变。",
+	"docs.functions.bank_gold.operation": "结果中的<span class='dlabel'>operation</span>为<span class='dlabel'>\"deposit\"</span>或<span class='dlabel'>\"withdraw\"</span>；<span class='dlabel'>gold</span>为转移的金币数量。"
 }

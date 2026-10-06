@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Tavern의 포커 테이블 옆과 몇몇 다른 곳을 걸어도 이제 감옥에 가지 않아요.",
 	"update.29_09_26.chat_spam": "이제 공개 채팅의 반복 메시지는 Discord로 전달되거나 채팅 기록에 저장되지 않습니다.",
 	"update.29_09_26.monster_combat_bounds": "CODE의 몬스터 사거리 판정이 이제 Tiny Crab을 포함해 서버와 일치합니다.",
-	"update.29_09_26.character_shells": "기본 제공 캐릭터 슬롯에 더 이상 조개가 소모되지 않아요. 캐릭터 변경으로 조개 잔액이 마이너스가 되는 문제도 수정했어요."
+	"update.29_09_26.character_shells": "기본 제공 캐릭터 슬롯에 더 이상 조개가 소모되지 않아요. 캐릭터 변경으로 조개 잔액이 마이너스가 되는 문제도 수정했어요.",
+	"update.04_10_26.mail.bank_gold_operation": "은행 골드 거래 응답에 입금인지 출금인지 표시됩니다.",
+	"update.04_10_26.mail.cooperative_online": "오프라인 캐릭터가 협동 몬스터의 전리품을 늘리지 않도록 수정했습니다.",
+	"update.04_10_26.mail.stun_refresh": "짧은 기절을 다시 적용해도 기존의 더 긴 기절 시간이 줄어들지 않습니다.",
+	"update.04_10_26.mail.poisoned_monster_healing": "중독된 몬스터는 이제 상태 설명대로 일반 회복량의 25%만 받습니다.",
+	"update.04_10_26.mail.browser_connections": "브라우저와 결제 페이지의 연결을 게임 서버에 맞게 업데이트했습니다.",
+	"update.04_10_26.mail.gilded_horse_cape": "금색 Horse Leather Cape의 이름이 Gilded Horse Leather Cape로 변경되었습니다."
 }

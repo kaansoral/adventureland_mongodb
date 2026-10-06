@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Ha a Tavern pókerasztala mellett vagy néhány más helyen sétálsz, már nem kerülsz börtönbe.",
 	"update.29_09_26.chat_spam": "A nyilvános csevegés ismétlődő üzenetei mostantól nem kerülnek át a Discord felületére, és nem mentődnek a csevegési előzményekbe.",
 	"update.29_09_26.monster_combat_bounds": "A CODE szörnyekre vonatkozó hatótávellenőrzései most már egyeznek a szerverével, Tiny Crab esetében is.",
-	"update.29_09_26.character_shells": "A fiókhoz járó karakterhelyek már nem kerülnek kagylóba. A karakterek módosítása már nem viheti mínuszba a kagylóegyenlegedet."
+	"update.29_09_26.character_shells": "A fiókhoz járó karakterhelyek már nem kerülnek kagylóba. A karakterek módosítása már nem viheti mínuszba a kagylóegyenlegedet.",
+	"update.04_10_26.mail.bank_gold_operation": "A banki aranyműveletek válaszai most már jelzik, hogy befizetés vagy felvétel történt.",
+	"update.04_10_26.mail.cooperative_online": "Az offline karakterek már nem növelik az együttműködésben legyőzött szörnyek zsákmányát.",
+	"update.04_10_26.mail.stun_refresh": "Egy rövid kábítás újbóli alkalmazása már nem rövidíti le a meglévő, hosszabb kábítást.",
+	"update.04_10_26.mail.poisoned_monster_healing": "A megmérgezett szörnyek most a szokásos gyógyítás 25%-át kapják, az állapot leírásának megfelelően.",
+	"update.04_10_26.mail.browser_connections": "A böngésző és a fizetési oldal kapcsolatai frissültek, hogy kompatibilisek legyenek a játékszerverekkel.",
+	"update.04_10_26.mail.gilded_horse_cape": "Az aranyszínű Horse Leather Cape neve mostantól Gilded Horse Leather Cape."
 }

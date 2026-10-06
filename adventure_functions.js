@@ -569,7 +569,7 @@ async function get_domain(req, user) {
 
 	domain.https = false;
 	domain.secure_base_url = domain.base_url.replace("http://", "https://");
-	domain.io_version = "4.2.0";
+	domain.io_version = "4.8.3";
 	domain.cm_version = "5.65.1";
 	domain.jquery_version = "3.2.0";
 	domain.howler_version = "2.0.13";

@@ -2698,5 +2698,6 @@
 	"docs.functions.trade_swap.returns-promise-resolving-with-the-trade-response-or": "<b>القيمة المعادة:</b> Promise يتم الوفاء به باستجابة التجارة، أو يرفض بكائن فشل منظم.",
 	"docs.articles.events-game.swap": "<span class=\"dlabel\" data-event=\"swap\">swap</span>",
 	"docs.functions.say.spam_filter": "لا تُنقل الرسائل المتكررة ولا سيل الرسائل في الدردشة العامة إلى Discord، ولا تُحفظ في سجل الدردشة العامة. إذا استمر الإزعاج، يتوقف نقل رسائل حسابك وحفظها مؤقتًا على ذلك الخادم، حتى تمر 10 دقائق دون أن ترسل أي رسالة عامة. تظل رسائلك ظاهرة في دردشة اللعبة المباشرة.",
-	"docs.articles.4.g-geometry.monster-combat-bounds": "للوحوش المعروفة، تستخدم distance حدود القتال على الخادم: أبعاد نوع الوحش (24 × 24 إن لم تُحدَّد)، مضروبة في معامل حجمه إن كان محددًا، ثم تُقرَّب. لا تحدد أبعاد الرسم ولا الأسماء البديلة للمظهر مدى الهجمات على الوحوش. ينطبق هذا أيضًا على is_in_range() وcan_attack()؛ ويظل الحجم الظاهر وحدود التصادم أثناء الحركة كما هما."
+	"docs.articles.4.g-geometry.monster-combat-bounds": "للوحوش المعروفة، تستخدم distance حدود القتال على الخادم: أبعاد نوع الوحش (24 × 24 إن لم تُحدَّد)، مضروبة في معامل حجمه إن كان محددًا، ثم تُقرَّب. لا تحدد أبعاد الرسم ولا الأسماء البديلة للمظهر مدى الهجمات على الوحوش. ينطبق هذا أيضًا على is_in_range() وcan_attack()؛ ويظل الحجم الظاهر وحدود التصادم أثناء الحركة كما هما.",
+	"docs.functions.bank_gold.operation": "تكون قيمة <span class='dlabel'>operation</span> في النتيجة <span class='dlabel'>\"deposit\"</span> أو <span class='dlabel'>\"withdraw\"</span>؛ أما <span class='dlabel'>gold</span> فهو مقدار الذهب المنقول."
 }

@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Chodzenie obok stołu do pokera w Tavern i w kilku innych miejscach nie kończy się już więzieniem.",
 	"update.29_09_26.chat_spam": "Powtarzające się wiadomości z czatu publicznego nie są już przekazywane do Discord ani zapisywane w historii czatu.",
 	"update.29_09_26.monster_combat_bounds": "Sprawdzanie zasięgu do potworów w CODE jest teraz zgodne z serwerem, także dla Tiny Crab.",
-	"update.29_09_26.character_shells": "Miejsca na postacie dostępne w ramach konta nie kosztują już muszli. Zmiany dotyczące postaci nie mogą już spowodować ujemnego salda muszli."
+	"update.29_09_26.character_shells": "Miejsca na postacie dostępne w ramach konta nie kosztują już muszli. Zmiany dotyczące postaci nie mogą już spowodować ujemnego salda muszli.",
+	"update.04_10_26.mail.bank_gold_operation": "Odpowiedzi na operacje złotem w banku wskazują teraz, czy była to wpłata, czy wypłata.",
+	"update.04_10_26.mail.cooperative_online": "Postacie offline nie zwiększają już łupów z potworów kooperacyjnych.",
+	"update.04_10_26.mail.stun_refresh": "Ponowne nałożenie krótkiego ogłuszenia nie skraca już trwającego dłuższego ogłuszenia.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Zatrute potwory otrzymują teraz 25% normalnego leczenia, zgodnie z opisem stanu.",
+	"update.04_10_26.mail.browser_connections": "Połączenia przeglądarki i strony płatności zaktualizowano, aby były zgodne z serwerami gry.",
+	"update.04_10_26.mail.gilded_horse_cape": "Złoty Horse Leather Cape nazywa się teraz Gilded Horse Leather Cape."
 }

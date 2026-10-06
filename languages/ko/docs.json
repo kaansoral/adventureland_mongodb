@@ -2698,5 +2698,6 @@
 	"docs.functions.trade_swap.returns-promise-resolving-with-the-trade-response-or": "<b>반환값:</b> 거래 응답으로 이행되거나 구조화된 실패 객체로 거부되는 Promise.",
 	"docs.articles.events-game.swap": "<span class=\"dlabel\" data-event=\"swap\">swap</span>",
 	"docs.functions.say.spam_filter": "공개 채팅의 반복 메시지와 도배 메시지는 Discord로 전달되거나 공개 채팅 기록에 저장되지 않습니다. 스팸이 계속되면 해당 서버에서 계정의 메시지 전달과 저장이 일시적으로 중단됩니다. 공개 메시지를 보내지 않고 10분이 지나면 해제됩니다. 게임 내 실시간 채팅에는 메시지가 계속 표시됩니다.",
-	"docs.articles.4.g-geometry.monster-combat-bounds": "인식된 몬스터에 대해 distance는 서버의 전투 판정 영역을 사용합니다. 몬스터 종류의 크기(지정되지 않으면 24×24)에 크기 배율이 설정되어 있으면 이를 곱한 뒤 반올림합니다. 스프라이트 크기와 외형 별칭은 몬스터를 공격할 수 있는 사거리를 결정하지 않습니다. is_in_range()와 can_attack()에도 동일하게 적용되며, 표시 크기와 이동 시 충돌 판정 영역은 바뀌지 않습니다."
+	"docs.articles.4.g-geometry.monster-combat-bounds": "인식된 몬스터에 대해 distance는 서버의 전투 판정 영역을 사용합니다. 몬스터 종류의 크기(지정되지 않으면 24×24)에 크기 배율이 설정되어 있으면 이를 곱한 뒤 반올림합니다. 스프라이트 크기와 외형 별칭은 몬스터를 공격할 수 있는 사거리를 결정하지 않습니다. is_in_range()와 can_attack()에도 동일하게 적용되며, 표시 크기와 이동 시 충돌 판정 영역은 바뀌지 않습니다.",
+	"docs.functions.bank_gold.operation": "결과의 <span class='dlabel'>operation</span> 값은 <span class='dlabel'>\"deposit\"</span> 또는 <span class='dlabel'>\"withdraw\"</span>이며, <span class='dlabel'>gold</span>는 이동한 골드의 양입니다."
 }

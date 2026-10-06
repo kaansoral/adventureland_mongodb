@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Å gå forbi pokerbordet i Tavern og noen få andre steder sender deg ikke lenger i fengsel.",
 	"update.29_09_26.chat_spam": "Gjentatte meldinger i den offentlige chatten blir nå filtrert bort fra Discord og lagret chattehistorikk.",
 	"update.29_09_26.monster_combat_bounds": "Rekkeviddesjekker for monstre i CODE samsvarer nå med serverens, også for Tiny Crab.",
-	"update.29_09_26.character_shells": "Figurplassene som er inkludert, koster ikke lenger skjell. Endringer av figurer kan ikke lenger gjøre skjellsaldoen din negativ."
+	"update.29_09_26.character_shells": "Figurplassene som er inkludert, koster ikke lenger skjell. Endringer av figurer kan ikke lenger gjøre skjellsaldoen din negativ.",
+	"update.04_10_26.mail.bank_gold_operation": "Svar på gulltransaksjoner i banken viser nå om det er et innskudd eller et uttak.",
+	"update.04_10_26.mail.cooperative_online": "Frakoblede figurer øker ikke lenger byttet fra samarbeidsmonstre.",
+	"update.04_10_26.mail.stun_refresh": "En ny kort bedøvelse forkorter ikke lenger en lengre bedøvelse som allerede er aktiv.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Forgiftede monstre får nå 25% av normal helbredelse, som angitt i tilstandsbeskrivelsen.",
+	"update.04_10_26.mail.browser_connections": "Tilkoblingene i nettleseren og på betalingssiden er oppdatert for å være kompatible med spillserverne.",
+	"update.04_10_26.mail.gilded_horse_cape": "Den gylne Horse Leather Cape heter nå Gilded Horse Leather Cape."
 }

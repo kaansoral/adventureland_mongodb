@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Mersul pe lângă masa de poker din Tavern și prin alte câteva locuri nu te mai trimite la închisoare.",
 	"update.29_09_26.chat_spam": "Mesajele repetate din chatul public nu mai sunt trimise pe Discord și nici salvate în istoricul chatului.",
 	"update.29_09_26.monster_combat_bounds": "Verificările razei de atac asupra monștrilor din CODE corespund acum celor de pe server, inclusiv pentru Tiny Crab.",
-	"update.29_09_26.character_shells": "Locurile pentru personaje incluse nu mai costă scoici. Modificările personajelor nu mai pot face ca soldul tău de scoici să devină negativ."
+	"update.29_09_26.character_shells": "Locurile pentru personaje incluse nu mai costă scoici. Modificările personajelor nu mai pot face ca soldul tău de scoici să devină negativ.",
+	"update.04_10_26.mail.bank_gold_operation": "Răspunsurile la operațiunile cu aur din bancă indică acum dacă este vorba de o depunere sau o retragere.",
+	"update.04_10_26.mail.cooperative_online": "Personajele offline nu mai măresc prada monștrilor cooperativi.",
+	"update.04_10_26.mail.stun_refresh": "Reaplicarea unei asomări scurte nu mai scurtează o asomare mai lungă deja activă.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Monștrii otrăviți primesc acum 25% din vindecarea normală, conform descrierii stării.",
+	"update.04_10_26.mail.browser_connections": "Conexiunile browserului și ale paginii de plată au fost actualizate pentru a fi compatibile cu serverele jocului.",
+	"update.04_10_26.mail.gilded_horse_cape": "Horse Leather Cape aurie se numește acum Gilded Horse Leather Cape."
 }

@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Att gå förbi pokerbordet i Tavern och på några andra ställen skickar dig inte längre till fängelset.",
 	"update.29_09_26.chat_spam": "Upprepade meddelanden i den offentliga chatten filtreras nu bort från Discord och sparad chatthistorik.",
 	"update.29_09_26.monster_combat_bounds": "Räckviddskontroller för monster i CODE stämmer nu med serverns, även för Tiny Crab.",
-	"update.29_09_26.character_shells": "Karaktärsplatser som ingår kostar inte längre snäckor. Ändringar av karaktärer kan inte längre ge ett negativt snäcksaldo."
+	"update.29_09_26.character_shells": "Karaktärsplatser som ingår kostar inte längre snäckor. Ändringar av karaktärer kan inte längre ge ett negativt snäcksaldo.",
+	"update.04_10_26.mail.bank_gold_operation": "Svar på guldtransaktioner på banken visar nu om det är en insättning eller ett uttag.",
+	"update.04_10_26.mail.cooperative_online": "Offlinekaraktärer ökar inte längre bytet från samarbetsmonster.",
+	"update.04_10_26.mail.stun_refresh": "En ny kort bedövning förkortar inte längre en längre bedövning som redan pågår.",
+	"update.04_10_26.mail.poisoned_monster_healing": "Förgiftade monster får nu 25% av normal läkning, enligt tillståndets beskrivning.",
+	"update.04_10_26.mail.browser_connections": "Webbläsarens och betalningssidans anslutningar har uppdaterats för att vara kompatibla med spelservrarna.",
+	"update.04_10_26.mail.gilded_horse_cape": "Den gyllene Horse Leather Cape heter nu Gilded Horse Leather Cape."
 }

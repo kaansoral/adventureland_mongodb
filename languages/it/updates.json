@@ -813,5 +813,11 @@
 	"update.24_09_26.rare_drops.false_jail": "Camminare vicino al tavolo da poker della Tavern e in pochi altri punti non ti manda più in prigione.",
 	"update.29_09_26.chat_spam": "I messaggi ripetuti della chat pubblica ora vengono filtrati e non vengono inoltrati a Discord né salvati nella cronologia della chat.",
 	"update.29_09_26.monster_combat_bounds": "I controlli della portata contro i mostri in CODE ora coincidono con quelli del server, anche per Tiny Crab.",
-	"update.29_09_26.character_shells": "Gli slot personaggio inclusi non costano più conchiglie. Le modifiche ai personaggi non possono più portare il saldo delle conchiglie in negativo."
+	"update.29_09_26.character_shells": "Gli slot personaggio inclusi non costano più conchiglie. Le modifiche ai personaggi non possono più portare il saldo delle conchiglie in negativo.",
+	"update.04_10_26.mail.bank_gold_operation": "Le risposte alle operazioni in oro in banca ora indicano se si tratta di un deposito o di un prelievo.",
+	"update.04_10_26.mail.cooperative_online": "I personaggi offline non aumentano più il bottino dei mostri cooperativi.",
+	"update.04_10_26.mail.stun_refresh": "Riapplicare uno stordimento breve non accorcia più uno stordimento più lungo già attivo.",
+	"update.04_10_26.mail.poisoned_monster_healing": "I mostri avvelenati ora ricevono il 25% delle cure normali, come indicato nella descrizione della condizione.",
+	"update.04_10_26.mail.browser_connections": "Le connessioni del browser e della pagina di pagamento sono state aggiornate per essere compatibili con i server di gioco.",
+	"update.04_10_26.mail.gilded_horse_cape": "La Horse Leather Cape dorata ora si chiama Gilded Horse Leather Cape."
 }

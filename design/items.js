@@ -195,7 +195,7 @@ var items={
 		"gold":3,
 		"stat":5,
 		"speed":1,
-		"name":"Horse Leather Cape",
+		"name":"Gilded Horse Leather Cape",
 		"upgrade":{
 			"armor":2,
 			"resistance":2,

@@ -2698,5 +2698,6 @@
 	"docs.functions.trade_swap.returns-promise-resolving-with-the-trade-response-or": "<b>戻り値:</b> 取引の応答で解決するPromise。失敗時は構造化された失敗オブジェクトで拒否されます。",
 	"docs.articles.events-game.swap": "<span class=\"dlabel\" data-event=\"swap\">swap</span>",
 	"docs.functions.say.spam_filter": "公開チャットの繰り返しメッセージや大量の連続投稿は、Discordに転送されず、公開チャット履歴にも保存されません。スパムが続くと、そのサーバーではアカウントからのメッセージの転送と保存が一時的に停止されます。公開メッセージを送らずに10分経過すると解除されます。ゲーム内のリアルタイムチャットには、引き続きメッセージが表示されます。",
-	"docs.articles.4.g-geometry.monster-combat-bounds": "認識されたモンスターに対して、distance はサーバーの戦闘用の判定範囲を使います。モンスター種別の寸法（未指定なら24×24）に、大きさの倍率が設定されていればそれを掛け、四捨五入します。スプライトの寸法や外見の別名は、モンスターへの攻撃射程を決めるものではありません。これは is_in_range() と can_attack() にも適用されます。見た目の大きさと移動時の衝突判定範囲は変わりません。"
+	"docs.articles.4.g-geometry.monster-combat-bounds": "認識されたモンスターに対して、distance はサーバーの戦闘用の判定範囲を使います。モンスター種別の寸法（未指定なら24×24）に、大きさの倍率が設定されていればそれを掛け、四捨五入します。スプライトの寸法や外見の別名は、モンスターへの攻撃射程を決めるものではありません。これは is_in_range() と can_attack() にも適用されます。見た目の大きさと移動時の衝突判定範囲は変わりません。",
+	"docs.functions.bank_gold.operation": "結果の<span class='dlabel'>operation</span>は<span class='dlabel'>\"deposit\"</span>または<span class='dlabel'>\"withdraw\"</span>で、<span class='dlabel'>gold</span>は移動したゴールドの額です。"
 }

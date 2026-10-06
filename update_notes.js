@@ -28,6 +28,12 @@ module.exports = [
 			},
 		],
 		changes: [
+			{ fixed: "bank_gold_operation", phrase: "update.04_10_26.mail.bank_gold_operation", note: "Bank gold responses now identify deposits and withdrawals." },
+			{ fixed: "cooperative_online", phrase: "update.04_10_26.mail.cooperative_online", note: "Offline characters no longer inflate cooperative monster drops." },
+			{ fixed: "stun_refresh", phrase: "update.04_10_26.mail.stun_refresh", note: "Short stun refreshes no longer shorten a longer stun." },
+			{ fixed: "poisoned_monster_healing", phrase: "update.04_10_26.mail.poisoned_monster_healing", note: "Poisoned monsters now receive 25% of normal healing, as the condition describes." },
+			{ fixed: "browser_connections", phrase: "update.04_10_26.mail.browser_connections", note: "Updated browser and payment-page connections to match the game servers." },
+			{ changed: "item:horsecapeg", phrase: "update.04_10_26.mail.gilded_horse_cape", fields: { name: ["Horse Leather Cape", "Gilded Horse Leather Cape"] }, note: "The golden Horse Leather Cape is now named Gilded Horse Leather Cape." },
 			{ fixed: "character_shells", phrase: "update.29_09_26.character_shells", note: "Included character slots no longer cost shells. Character changes can no longer overdraw your shell balance." },
 			{ fixed: "monster_combat_bounds", phrase: "update.29_09_26.monster_combat_bounds", note: "Monster range checks in CODE now match the server, including for Tiny Crab." },
 			{ fixed: "encouragement_loot", phrase: "update.29_09_26.encouragement_loot", note: "Encouragement drops now appear in CODE’s loot event." },

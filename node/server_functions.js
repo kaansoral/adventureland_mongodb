@@ -3327,10 +3327,10 @@ function add_condition(target, condition, args) {
 		C.s = min((target.is_monster && 20) || 5, (target.s.woven && target.s.woven.s + 1) || 1);
 		C.speed = -3 * C.s;
 	}
-	duration = max((target.s[condition] && target.s[condition].ms) || 0, duration);
 	if (target.stresistance && def && def.debuff) {
 		duration *= (100 - target.stresistance) / 100.0;
 	}
+	duration = max((target.s[condition] && target.s[condition].ms) || 0, duration);
 	target.s[condition] = C;
 	C.ms = response.duration = duration;
 	server_log(C);
