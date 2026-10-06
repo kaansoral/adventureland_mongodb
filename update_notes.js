@@ -28,6 +28,7 @@ module.exports = [
 			},
 		],
 		changes: [
+			{ improved: "anniversary_end", phrase: "update.04_10_26.mail.anniversary_end", note: "The anniversary event has ended." },
 			{ fixed: "bank_gold_operation", phrase: "update.04_10_26.mail.bank_gold_operation", note: "Bank gold responses now identify deposits and withdrawals." },
 			{ fixed: "cooperative_online", phrase: "update.04_10_26.mail.cooperative_online", note: "Offline characters no longer inflate cooperative monster drops." },
 			{ fixed: "stun_refresh", phrase: "update.04_10_26.mail.stun_refresh", note: "Short stun refreshes no longer shorten a longer stun." },

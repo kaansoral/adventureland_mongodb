@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "لم تعد إعادة تطبيق حالة الذهول القصيرة تقلل مدة حالة ذهول أطول ما زالت سارية.",
 	"update.04_10_26.mail.poisoned_monster_healing": "تتلقى الوحوش المسمومة الآن 25% من الشفاء العادي، كما يوضح وصف الحالة.",
 	"update.04_10_26.mail.browser_connections": "حُدّثت اتصالات المتصفح وصفحة الدفع لتتوافق مع خوادم اللعبة.",
-	"update.04_10_26.mail.gilded_horse_cape": "أصبح اسم Horse Leather Cape الذهبي هو Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "أصبح اسم Horse Leather Cape الذهبي هو Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "انتهت فعالية الذكرى السنوية."
 }

@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Een opnieuw toegepaste korte verdoving verkort een bestaande langere verdoving niet meer.",
 	"update.04_10_26.mail.poisoned_monster_healing": "Vergiftigde monsters ontvangen nu 25% van de normale genezing, zoals de toestandbeschrijving aangeeft.",
 	"update.04_10_26.mail.browser_connections": "De verbindingen van de browser en betaalpagina zijn bijgewerkt om met de gameservers te werken.",
-	"update.04_10_26.mail.gilded_horse_cape": "De gouden Horse Leather Cape heet nu Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "De gouden Horse Leather Cape heet nu Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "Het jubileumevenement is afgelopen."
 }

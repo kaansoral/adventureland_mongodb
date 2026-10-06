@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Penerapan ulang efek terpana singkat tidak lagi memperpendek efek terpana yang lebih lama dan masih aktif.",
 	"update.04_10_26.mail.poisoned_monster_healing": "Monster yang terkena racun kini menerima 25% penyembuhan normal, sesuai deskripsi kondisi.",
 	"update.04_10_26.mail.browser_connections": "Koneksi browser dan halaman pembayaran diperbarui agar kompatibel dengan server game.",
-	"update.04_10_26.mail.gilded_horse_cape": "Horse Leather Cape berwarna emas kini bernama Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "Horse Leather Cape berwarna emas kini bernama Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "Acara ulang tahun telah berakhir."
 }

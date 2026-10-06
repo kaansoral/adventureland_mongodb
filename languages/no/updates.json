@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "En ny kort bedøvelse forkorter ikke lenger en lengre bedøvelse som allerede er aktiv.",
 	"update.04_10_26.mail.poisoned_monster_healing": "Forgiftede monstre får nå 25% av normal helbredelse, som angitt i tilstandsbeskrivelsen.",
 	"update.04_10_26.mail.browser_connections": "Tilkoblingene i nettleseren og på betalingssiden er oppdatert for å være kompatible med spillserverne.",
-	"update.04_10_26.mail.gilded_horse_cape": "Den gylne Horse Leather Cape heter nå Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "Den gylne Horse Leather Cape heter nå Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "Jubileumsarrangementet er avsluttet."
 }

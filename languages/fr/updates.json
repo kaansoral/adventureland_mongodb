@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Réappliquer un étourdissement court ne raccourcit plus un étourdissement plus long déjà actif.",
 	"update.04_10_26.mail.poisoned_monster_healing": "Les monstres empoisonnés reçoivent désormais 25% des soins normaux, comme indiqué dans la description de l'état.",
 	"update.04_10_26.mail.browser_connections": "Les connexions du navigateur et de la page de paiement ont été mises à jour pour être compatibles avec les serveurs du jeu.",
-	"update.04_10_26.mail.gilded_horse_cape": "La Horse Leather Cape dorée s'appelle désormais Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "La Horse Leather Cape dorée s'appelle désormais Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "L’événement anniversaire est terminé."
 }

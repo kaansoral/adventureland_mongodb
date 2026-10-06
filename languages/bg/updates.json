@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Повторното кратко зашеметяване вече не съкращава по-дълго зашеметяване, което е още активно.",
 	"update.04_10_26.mail.poisoned_monster_healing": "Отровените чудовища вече получават 25% от нормалното лечение, както е посочено в описанието на състоянието.",
 	"update.04_10_26.mail.browser_connections": "Връзките на браузъра и страницата за плащане са обновени за съвместимост с игровите сървъри.",
-	"update.04_10_26.mail.gilded_horse_cape": "Златистият Horse Leather Cape вече се казва Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "Златистият Horse Leather Cape вече се казва Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "Юбилейното събитие приключи."
 }

@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "重新施加較短的暈眩不再縮短原有較長的暈眩。",
 	"update.04_10_26.mail.poisoned_monster_healing": "中毒怪物現在獲得正常治療量的25%，與狀態說明一致。",
 	"update.04_10_26.mail.browser_connections": "已更新瀏覽器和付款頁面的連線，使其與遊戲伺服器相容。",
-	"update.04_10_26.mail.gilded_horse_cape": "金色的Horse Leather Cape現已更名為Gilded Horse Leather Cape。"
+	"update.04_10_26.mail.gilded_horse_cape": "金色的Horse Leather Cape現已更名為Gilded Horse Leather Cape。",
+	"update.04_10_26.mail.anniversary_end": "週年慶活動已結束。"
 }

@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Eine erneut angewandte kurze Betäubung verkürzt keine bereits bestehende längere Betäubung mehr.",
 	"update.04_10_26.mail.poisoned_monster_healing": "Vergiftete Monster erhalten jetzt wie in der Zustandsbeschreibung angegeben 25% der normalen Heilung.",
 	"update.04_10_26.mail.browser_connections": "Die Verbindungen im Browser und auf der Zahlungsseite wurden an die Spielserver angepasst.",
-	"update.04_10_26.mail.gilded_horse_cape": "Der goldene Horse Leather Cape heißt jetzt Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "Der goldene Horse Leather Cape heißt jetzt Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "Das Jubiläumsevent ist beendet."
 }

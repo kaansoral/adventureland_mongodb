@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Opětovné použití krátkého omráčení už nezkracuje déle trvající aktivní omráčení.",
 	"update.04_10_26.mail.poisoned_monster_healing": "Otrávená monstra nyní dostávají 25% běžného léčení, jak uvádí popis stavu.",
 	"update.04_10_26.mail.browser_connections": "Připojení prohlížeče a platební stránky byla aktualizována pro kompatibilitu s herními servery.",
-	"update.04_10_26.mail.gilded_horse_cape": "Zlatý Horse Leather Cape se nyní jmenuje Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "Zlatý Horse Leather Cape se nyní jmenuje Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "Výroční událost skončila."
 }

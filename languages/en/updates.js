@@ -1,5 +1,7 @@
 // Release highlights. Dates, item/character names and CODE identifiers stay unchanged.
 module.exports = {
+	// Release note announcing that the anniversary event has ended.
+	"update.04_10_26.mail.anniversary_end": "The anniversary event has ended.",
 	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
 	"update.04_10_26.mail.bank_gold_operation": "Bank gold responses now identify deposits and withdrawals.",
 	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.

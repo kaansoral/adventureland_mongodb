@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "การติดสถานะมึนงงระยะสั้นซ้ำจะไม่ลดเวลาของสถานะมึนงงเดิมที่ยาวกว่าอีกต่อไป",
 	"update.04_10_26.mail.poisoned_monster_healing": "มอนสเตอร์ที่ติดพิษได้รับการรักษา 25% ของปกติแล้ว ตามคำอธิบายสถานะ",
 	"update.04_10_26.mail.browser_connections": "อัปเดตการเชื่อมต่อของเบราว์เซอร์และหน้าชำระเงินให้เข้ากันได้กับเซิร์ฟเวอร์เกม",
-	"update.04_10_26.mail.gilded_horse_cape": "Horse Leather Cape สีทองเปลี่ยนชื่อเป็น Gilded Horse Leather Cape แล้ว"
+	"update.04_10_26.mail.gilded_horse_cape": "Horse Leather Cape สีทองเปลี่ยนชื่อเป็น Gilded Horse Leather Cape แล้ว",
+	"update.04_10_26.mail.anniversary_end": "กิจกรรมฉลองครบรอบสิ้นสุดแล้ว"
 }

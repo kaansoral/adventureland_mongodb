@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Aplicar un aturdimiento corto ya no acorta uno más largo que siga activo.",
 	"update.04_10_26.mail.poisoned_monster_healing": "Los monstruos envenenados ahora reciben el 25% de la curación normal, como indica la descripción del estado.",
 	"update.04_10_26.mail.browser_connections": "Se han actualizado las conexiones del navegador y de la página de pago para que sean compatibles con los servidores del juego.",
-	"update.04_10_26.mail.gilded_horse_cape": "La Horse Leather Cape dorada ahora se llama Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "La Horse Leather Cape dorada ahora se llama Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "El evento de aniversario ha terminado."
 }

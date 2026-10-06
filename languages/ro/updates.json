@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Reaplicarea unei asomări scurte nu mai scurtează o asomare mai lungă deja activă.",
 	"update.04_10_26.mail.poisoned_monster_healing": "Monștrii otrăviți primesc acum 25% din vindecarea normală, conform descrierii stării.",
 	"update.04_10_26.mail.browser_connections": "Conexiunile browserului și ale paginii de plată au fost actualizate pentru a fi compatibile cu serverele jocului.",
-	"update.04_10_26.mail.gilded_horse_cape": "Horse Leather Cape aurie se numește acum Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "Horse Leather Cape aurie se numește acum Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "Evenimentul aniversar s-a încheiat."
 }

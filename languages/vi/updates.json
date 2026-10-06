@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Áp dụng lại choáng ngắn không còn rút ngắn hiệu ứng choáng dài hơn đang có.",
 	"update.04_10_26.mail.poisoned_monster_healing": "Quái vật trúng độc giờ nhận 25% lượng hồi máu bình thường, đúng như mô tả trạng thái.",
 	"update.04_10_26.mail.browser_connections": "Đã cập nhật kết nối của trình duyệt và trang thanh toán để tương thích với máy chủ trò chơi.",
-	"update.04_10_26.mail.gilded_horse_cape": "Horse Leather Cape màu vàng giờ có tên là Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "Horse Leather Cape màu vàng giờ có tên là Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "Sự kiện kỷ niệm đã kết thúc."
 }

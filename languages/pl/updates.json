@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Ponowne nałożenie krótkiego ogłuszenia nie skraca już trwającego dłuższego ogłuszenia.",
 	"update.04_10_26.mail.poisoned_monster_healing": "Zatrute potwory otrzymują teraz 25% normalnego leczenia, zgodnie z opisem stanu.",
 	"update.04_10_26.mail.browser_connections": "Połączenia przeglądarki i strony płatności zaktualizowano, aby były zgodne z serwerami gry.",
-	"update.04_10_26.mail.gilded_horse_cape": "Złoty Horse Leather Cape nazywa się teraz Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "Złoty Horse Leather Cape nazywa się teraz Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "Wydarzenie rocznicowe dobiegło końca."
 }

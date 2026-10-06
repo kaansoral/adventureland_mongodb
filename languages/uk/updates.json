@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Повторне коротке приголомшення більше не скорочує вже активне довше приголомшення.",
 	"update.04_10_26.mail.poisoned_monster_healing": "Отруєні монстри тепер отримують 25% звичайного зцілення, як зазначено в описі стану.",
 	"update.04_10_26.mail.browser_connections": "З'єднання браузера та сторінки оплати оновлено для сумісності з ігровими серверами.",
-	"update.04_10_26.mail.gilded_horse_cape": "Золотистий Horse Leather Cape тепер має назву Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "Золотистий Horse Leather Cape тепер має назву Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "Ювілейна подія завершилася."
 }

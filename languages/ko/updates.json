@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "짧은 기절을 다시 적용해도 기존의 더 긴 기절 시간이 줄어들지 않습니다.",
 	"update.04_10_26.mail.poisoned_monster_healing": "중독된 몬스터는 이제 상태 설명대로 일반 회복량의 25%만 받습니다.",
 	"update.04_10_26.mail.browser_connections": "브라우저와 결제 페이지의 연결을 게임 서버에 맞게 업데이트했습니다.",
-	"update.04_10_26.mail.gilded_horse_cape": "금색 Horse Leather Cape의 이름이 Gilded Horse Leather Cape로 변경되었습니다."
+	"update.04_10_26.mail.gilded_horse_cape": "금색 Horse Leather Cape의 이름이 Gilded Horse Leather Cape로 변경되었습니다.",
+	"update.04_10_26.mail.anniversary_end": "주년 기념 이벤트가 종료되었습니다."
 }

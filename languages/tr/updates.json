@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Kısa süreli sersemletmeler artık mevcut daha uzun sersemletmeyi kısaltmıyor.",
 	"update.04_10_26.mail.poisoned_monster_healing": "Zehirlenmiş canavarlar artık durum açıklamasında belirtildiği gibi normal iyileştirmenin %25'ini alıyor.",
 	"update.04_10_26.mail.browser_connections": "Tarayıcı ve ödeme sayfası bağlantıları oyun sunucularıyla uyumlu olacak şekilde güncellendi.",
-	"update.04_10_26.mail.gilded_horse_cape": "Altın renkli Horse Leather Cape'in adı artık Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "Altın renkli Horse Leather Cape'in adı artık Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "Yıl dönümü etkinliği sona erdi."
 }

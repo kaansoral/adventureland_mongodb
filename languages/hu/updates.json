@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Egy rövid kábítás újbóli alkalmazása már nem rövidíti le a meglévő, hosszabb kábítást.",
 	"update.04_10_26.mail.poisoned_monster_healing": "A megmérgezett szörnyek most a szokásos gyógyítás 25%-át kapják, az állapot leírásának megfelelően.",
 	"update.04_10_26.mail.browser_connections": "A böngésző és a fizetési oldal kapcsolatai frissültek, hogy kompatibilisek legyenek a játékszerverekkel.",
-	"update.04_10_26.mail.gilded_horse_cape": "Az aranyszínű Horse Leather Cape neve mostantól Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "Az aranyszínű Horse Leather Cape neve mostantól Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "Az évfordulós esemény véget ért."
 }

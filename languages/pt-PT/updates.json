@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Reaplicar um atordoamento curto já não reduz a duração de um atordoamento mais longo que esteja ativo.",
 	"update.04_10_26.mail.poisoned_monster_healing": "Os monstros envenenados passam a receber 25% da cura normal, como indica a descrição da condição.",
 	"update.04_10_26.mail.browser_connections": "As ligações do navegador e da página de pagamento foram atualizadas para serem compatíveis com os servidores do jogo.",
-	"update.04_10_26.mail.gilded_horse_cape": "A Horse Leather Cape dourada passa a chamar-se Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "A Horse Leather Cape dourada passa a chamar-se Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "O evento de aniversário terminou."
 }

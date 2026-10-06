@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Η επανάληψη μιας σύντομης ζάλης δεν συντομεύει πλέον μια μεγαλύτερης διάρκειας που είναι ήδη ενεργή.",
 	"update.04_10_26.mail.poisoned_monster_healing": "Τα δηλητηριασμένα τέρατα λαμβάνουν πλέον το 25% της κανονικής θεραπείας, όπως αναφέρει η περιγραφή της κατάστασης.",
 	"update.04_10_26.mail.browser_connections": "Οι συνδέσεις του προγράμματος περιήγησης και της σελίδας πληρωμής ενημερώθηκαν για συμβατότητα με τους διακομιστές του παιχνιδιού.",
-	"update.04_10_26.mail.gilded_horse_cape": "Το χρυσό Horse Leather Cape ονομάζεται πλέον Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "Το χρυσό Horse Leather Cape ονομάζεται πλέον Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "Η επετειακή εκδήλωση ολοκληρώθηκε."
 }

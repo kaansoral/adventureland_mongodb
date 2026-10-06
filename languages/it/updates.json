@@ -819,5 +819,6 @@
 	"update.04_10_26.mail.stun_refresh": "Riapplicare uno stordimento breve non accorcia più uno stordimento più lungo già attivo.",
 	"update.04_10_26.mail.poisoned_monster_healing": "I mostri avvelenati ora ricevono il 25% delle cure normali, come indicato nella descrizione della condizione.",
 	"update.04_10_26.mail.browser_connections": "Le connessioni del browser e della pagina di pagamento sono state aggiornate per essere compatibili con i server di gioco.",
-	"update.04_10_26.mail.gilded_horse_cape": "La Horse Leather Cape dorata ora si chiama Gilded Horse Leather Cape."
+	"update.04_10_26.mail.gilded_horse_cape": "La Horse Leather Cape dorata ora si chiama Gilded Horse Leather Cape.",
+	"update.04_10_26.mail.anniversary_end": "L’evento dell’anniversario è terminato."
 }
