@@ -300,7 +300,7 @@ var mode = {
 	implicit_targets: 0, // Do skills that don't have an explicit target, such as self-buffing skills, trigger mana restoring effects with increased chances?
 };
 var events = {
-	anniversary: true, // Remains on until manually disabled.
+	anniversary: false, // Ended 06/10/26.
 	// SEASONS
 	holidayseason: false,
 	lunarnewyear: false,

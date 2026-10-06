@@ -263,14 +263,16 @@ test("account flavor is deterministic, bounded and independent of character or r
 	}
 	for (const count of counts.values()) assert(count > 850 && count < 1150);
 });
-test("anniversary defaults on and has no automatic date cutoff or reactivation", () => {
+test("anniversary defaults off and has no automatic date cutoff or reactivation", () => {
 	const start = source.indexOf("var events = {");
 	assert(start >= 0);
 	const context = { is_pvp: false };
 	localize(vm.createContext(context));
 	vm.runInContext(source.slice(start, source.indexOf("\n};", start) + 3), context);
 	vm.runInContext(definition(functions, "anniversary_is_active"), context);
-	assert.equal(context.anniversary_is_active(), true, "no launch-date configuration is needed");
+	assert.equal(context.anniversary_is_active(), false, "the event stays ended across restarts");
+	context.events.anniversary = true;
+	assert.equal(context.anniversary_is_active(), true, "the manual switch can enable the event");
 	context.options = { anniversary: { starts_at: "2000-01-01", ends_at: "2000-01-15" } };
 	assert.equal(context.anniversary_is_active(), true, "old dates cannot end the event");
 	context.is_pvp = true;
