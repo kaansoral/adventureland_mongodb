@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "Ve hře je další postava, která není obchodníkem.",
 	"interface.encouragement.away": "Vrať se po více než 60 dnech nepřítomnosti a získej bonus Vítej zpět.",
 	"interface.recipes.crafting_and_collecting": "Výroba a sbírání",
-	"interface.mail.confirm_delete": "Smazat zprávu?",
+	"interface.mail.confirm_delete": "Smazat svou kopii tohoto dopisu?",
 	"interface.cosmetics.default_position": " výchozí poloha",
 	"interface.cosmetics.move_left": " [posunout doleva o {pixels}px]",
 	"interface.cosmetics.move_right": " [posunout doprava o {pixels}px]",
@@ -973,7 +973,7 @@
 	"interface.cavalry.call": "PŘIVOLAT CAVALRY!",
 	"interface.cavalry.coming": "Cavalry je na cestě!",
 	"interface.cavalry.queued": "Cavalry má práci. Tvé volání čeká.",
-	"interface.cavalry.tracker": "K přivolání Cavalry u sebe měj Tracktrix.",
+	"interface.cavalry.tracker": "Pro přivolání Cavalry měj u sebe Tracktrix nebo Super Computer.",
 	"interface.cavalry.no_monsters": "V okolí nejsou vhodné příšery na úrovni 3+.",
 	"interface.cavalry.cooldown": "Cavalry bude moci znovu odpovědět za {minutes} min.",
 	"interface.cavalry.unavailable": "Cavalry teď nemůže odpovědět.",
@@ -997,5 +997,8 @@
 	"interface.trade_offer.no_match": "Nemáš žádný odpovídající předmět",
 	"interface.trade_offer.choose": "Vyber předmět, který dáš",
 	"interface.trade_offer.trade": "VYMĚNIT",
-	"interface.upgrade_shrine.add_grace": "PŘIDAT PŘÍZEŇ"
+	"interface.upgrade_shrine.add_grace": "PŘIDAT PŘÍZEŇ",
+	"interface.item.scroll_consumed": "Svitek se spotřebuje, ať pokus uspěje, nebo selže.",
+	"interface.skill.gold_output": "Zisk zlata",
+	"interface.upgrade_shrine.grace_hint": "Přidá {amount} přízně. Nezvýší úroveň předmětu."
 }

@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "另一个非商人角色正在运行。",
 	"interface.encouragement.away": "离开超过60天后再回来，即可获得欢迎回来状态。",
 	"interface.recipes.crafting_and_collecting": "制作与收集",
-	"interface.mail.confirm_delete": "删除这封邮件？",
+	"interface.mail.confirm_delete": "删除你自己的这封邮件副本吗？",
 	"interface.cosmetics.default_position": " 默认位置",
 	"interface.cosmetics.move_left": " [向左移动{pixels}px]",
 	"interface.cosmetics.move_right": " [向右移动{pixels}px]",
@@ -964,7 +964,7 @@
 	"interface.cavalry.call": "呼叫CAVALRY！",
 	"interface.cavalry.coming": "Cavalry正在赶来！",
 	"interface.cavalry.queued": "Cavalry正在忙碌。你的呼叫已排队。",
-	"interface.cavalry.tracker": "携带Tracktrix才能呼叫Cavalry。",
+	"interface.cavalry.tracker": "携带 Tracktrix 或 Super Computer 才能呼叫 Cavalry。",
 	"interface.cavalry.no_monsters": "附近没有符合救援条件的3级及以上怪物。",
 	"interface.cavalry.cooldown": "{minutes}分钟后可再次呼叫Cavalry。",
 	"interface.cavalry.unavailable": "Cavalry现在无法响应。",
@@ -988,5 +988,8 @@
 	"interface.trade_offer.no_match": "你没有符合条件的物品",
 	"interface.trade_offer.choose": "选择要给予的物品",
 	"interface.trade_offer.trade": "交换",
-	"interface.upgrade_shrine.add_grace": "添加恩泽"
+	"interface.upgrade_shrine.add_grace": "添加恩泽",
+	"interface.item.scroll_consumed": "无论尝试成功还是失败，卷轴都会被消耗。",
+	"interface.skill.gold_output": "金币返还比例",
+	"interface.upgrade_shrine.grace_hint": "添加{amount}恩泽，不会提升物品等级。"
 }

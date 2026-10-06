@@ -455,5 +455,6 @@
 	"response.trade_offer_invalid": "لا يمكن طلب هذا الغرض",
 	"response.trade_swap_match": "هذا الغرض لا يطابق العرض",
 	"response.trade_swap_space": "لا مساحة لدى التاجر",
-	"game.trade_history.traded": "- قايضت '{item}' مع {player} مقابل '{received}'"
+	"game.trade_history.traded": "- قايضت '{item}' مع {player} مقابل '{received}'",
+	"response.transport_need_items": "تحتاج إلى: {items}"
 }

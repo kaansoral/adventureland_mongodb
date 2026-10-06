@@ -108,12 +108,44 @@ async function encouragement_load(player, previous_online) {
 	return group.pending;
 }
 
+function encouragement_eligibility(group) {
+	var now = Date.now();
+	return JSON.stringify([
+		group.oldest,
+		group.return_until,
+		!!group.blocked,
+		group.characters
+			.map(function (character) {
+				// Merchant location is irrelevant; combat characters still affect Lone Wolf.
+				var active =
+					character.type !== "merchant" && character.server && now - +new Date(character.last_sync) < 120 * 60000;
+				return [character._id, character.type, active ? character.server : ""];
+			})
+			.sort(function (a, b) {
+				return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0;
+			}),
+	]);
+}
+
 // Authentication calls this on other occupied realms before admitting a sibling.
 // Retain the notice even when that realm is still loading the first character.
 function encouragement_foreign_login(data) {
+	var group = encouragement_groups.get(data.group);
+	// A verified merchant move changes no bonus rules. Keep the original cache deadline.
+	if (
+		data.type === "merchant" &&
+		group &&
+		group.until > Date.now() &&
+		!group.pending &&
+		!group.blocked &&
+		group.characters.some(function (character) {
+			return character._id === data.id && character.type === "merchant";
+		}) &&
+		data.eligibility === encouragement_eligibility(group)
+	)
+		return true;
 	if (data.type !== "merchant")
 		encouragement_visits.set(data.group, { id: data.id, until: Date.now() + encouragement_cache_ms });
-	var group = encouragement_groups.get(data.group);
 	if (group) {
 		group.until = 0;
 		group.next = 0;
@@ -151,6 +183,7 @@ async function encouragement_login(player, previous_online) {
 						group: identity.key,
 						id: player.real_id,
 						type: player.type,
+						eligibility: player.type === "merchant" ? encouragement_eligibility(group) : undefined,
 					},
 					5000,
 				)) !== true

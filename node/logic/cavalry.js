@@ -191,7 +191,8 @@ async function cavalry_interaction(player, data, socket) {
 	var response = { response: "data", place: "interaction", interaction: "cavalry", request_id: data.request_id };
 	var reason;
 	if (!cavalry_player_active(player) || !player.owner) reason = "unavailable";
-	else if (!player.items.some((item) => item && item.name === "tracker")) reason = "tracker";
+	else if (!player.items.some((item) => item && (item.name === "tracker" || item.name === "supercomputer")))
+		reason = "tracker";
 	else if (!instances[player.in] || G.maps[player.map].generated) reason = "location";
 	else if (cavalry_pending.has(player.owner)) reason = "unavailable";
 	else {
@@ -200,7 +201,10 @@ async function cavalry_interaction(player, data, socket) {
 			cavalry_pending.add(player.owner);
 			try {
 				call = await cavalry_reserve(player);
-				if (!cavalry_player_active(player) || !player.items.some((item) => item && item.name === "tracker"))
+				if (
+					!cavalry_player_active(player) ||
+					!player.items.some((item) => item && (item.name === "tracker" || item.name === "supercomputer"))
+				)
 					reason = "unavailable";
 				else if (!cavalry_call_active(call)) reason = "no_monsters";
 				else if (!cavalry_monsters(call).some((monster) => !cavalry_guarded(monster))) reason = "guarded";

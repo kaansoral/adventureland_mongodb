@@ -455,5 +455,6 @@
 	"response.trade_offer_invalid": "Ezt a tárgyat nem kérheted",
 	"response.trade_swap_match": "Ez a tárgy nem felel meg az ajánlatnak",
 	"response.trade_swap_space": "A kereskedőnél nincs hely",
-	"game.trade_history.traded": "- Csere: '{item}', partner: {player}, kapott: '{received}'"
+	"game.trade_history.traded": "- Csere: '{item}', partner: {player}, kapott: '{received}'",
+	"response.transport_need_items": "Szükséges: {items}"
 }

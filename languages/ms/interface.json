@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "Watak lain yang bukan pedagang sedang aktif.",
 	"interface.encouragement.away": "Kembali setelah lebih 60 hari tidak bermain untuk menerima Selamat Kembali.",
 	"interface.recipes.crafting_and_collecting": "Pembuatan dan Pengumpulan",
-	"interface.mail.confirm_delete": "Padam e-mel ini?",
+	"interface.mail.confirm_delete": "Padamkan salinan surat ini milik anda?",
 	"interface.cosmetics.default_position": " kedudukan lalai",
 	"interface.cosmetics.move_left": " [gerak ke kiri {pixels}px]",
 	"interface.cosmetics.move_right": " [gerak ke kanan {pixels}px]",
@@ -964,7 +964,7 @@
 	"interface.cavalry.call": "PANGGIL CAVALRY!",
 	"interface.cavalry.coming": "Cavalry sedang dalam perjalanan!",
 	"interface.cavalry.queued": "Cavalry sedang sibuk. Panggilan anda sedang menunggu.",
-	"interface.cavalry.tracker": "Bawa Tracktrix untuk memanggil Cavalry.",
+	"interface.cavalry.tracker": "Bawa Tracktrix atau Super Computer untuk memanggil Cavalry.",
 	"interface.cavalry.no_monsters": "Tiada raksasa tahap 3+ yang memenuhi syarat berdekatan.",
 	"interface.cavalry.cooldown": "Cavalry boleh dipanggil semula dalam {minutes} min.",
 	"interface.cavalry.unavailable": "Cavalry tidak dapat menjawab sekarang.",
@@ -988,5 +988,8 @@
 	"interface.trade_offer.no_match": "Anda tiada item yang sepadan",
 	"interface.trade_offer.choose": "Pilih item untuk diberikan",
 	"interface.trade_offer.trade": "TUKAR",
-	"interface.upgrade_shrine.add_grace": "TAMBAH IHSAN"
+	"interface.upgrade_shrine.add_grace": "TAMBAH IHSAN",
+	"interface.item.scroll_consumed": "Skrol digunakan habis sama ada percubaan berjaya atau gagal.",
+	"interface.skill.gold_output": "Pulangan emas",
+	"interface.upgrade_shrine.grace_hint": "Menambah {amount} ihsan. Tidak menaikkan tahap item."
 }

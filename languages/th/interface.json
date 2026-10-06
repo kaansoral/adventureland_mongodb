@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "มีตัวละครอื่นที่ไม่ใช่พ่อค้ากำลังเล่นอยู่",
 	"interface.encouragement.away": "กลับมาหลังห่างหายไปนานกว่า 60 วันเพื่อรับโบนัสยินดีต้อนรับกลับ",
 	"interface.recipes.crafting_and_collecting": "การสร้างและสะสม",
-	"interface.mail.confirm_delete": "ลบจดหมายนี้ไหม?",
+	"interface.mail.confirm_delete": "ลบสำเนาจดหมายฉบับนี้ของคุณไหม?",
 	"interface.cosmetics.default_position": " ตำแหน่งเริ่มต้น",
 	"interface.cosmetics.move_left": " [เลื่อนซ้าย {pixels}px]",
 	"interface.cosmetics.move_right": " [เลื่อนขวา {pixels}px]",
@@ -964,7 +964,7 @@
 	"interface.cavalry.call": "เรียก CAVALRY!",
 	"interface.cavalry.coming": "Cavalry กำลังมา!",
 	"interface.cavalry.queued": "Cavalry กำลังช่วยคนอื่น คำเรียกของคุณอยู่ในคิว",
-	"interface.cavalry.tracker": "พก Tracktrix เพื่อเรียก Cavalry",
+	"interface.cavalry.tracker": "พก Tracktrix หรือ Super Computer เพื่อเรียก Cavalry",
 	"interface.cavalry.no_monsters": "ไม่มีมอนสเตอร์เลเวล 3 ขึ้นไปที่เข้าเงื่อนไขอยู่ใกล้ ๆ",
 	"interface.cavalry.cooldown": "เรียก Cavalry ได้อีกครั้งในอีก {minutes} นาที",
 	"interface.cavalry.unavailable": "Cavalry ยังตอบรับไม่ได้ในตอนนี้",
@@ -988,5 +988,8 @@
 	"interface.trade_offer.no_match": "คุณไม่มีไอเทมที่ตรงเงื่อนไข",
 	"interface.trade_offer.choose": "เลือกไอเทมที่จะให้",
 	"interface.trade_offer.trade": "แลกเปลี่ยน",
-	"interface.upgrade_shrine.add_grace": "เพิ่มแต้มเมตตา"
+	"interface.upgrade_shrine.add_grace": "เพิ่มแต้มเมตตา",
+	"interface.item.scroll_consumed": "ม้วนคัมภีร์จะถูกใช้หมดไม่ว่าการลองครั้งนั้นจะสำเร็จหรือล้มเหลว",
+	"interface.skill.gold_output": "ทองที่ได้รับคืน",
+	"interface.upgrade_shrine.grace_hint": "เพิ่มแต้มเมตตา {amount} โดยไม่เพิ่มระดับไอเทม"
 }

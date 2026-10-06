@@ -102,3 +102,18 @@ if (target && target.visible && !target.dead) attack(target);</div>
 show_json(G.maps.main.monsters);</div>
 
 <p>{{ phrase_html("docs.articles.data-monster.g-maps-map-monsters-describes-spawn-packs-and") }}</p>
+<div class="divider"></div>
+<p>{{ phrase("docs.articles.data-monster.spawn_boundaries") }}</p>
+<div class="code">function monster_spawn_areas(type) {
+	var areas = [];
+	for (var map in G.maps) {
+		for (var pack of G.maps[map].monsters || []) {
+			if (pack.type !== type) continue;
+			var boundaries = pack.boundaries || (pack.boundary ? [[map].concat(pack.boundary)] : []);
+			for (var b of boundaries) areas.push({ map: b[0], x1: b[1], y1: b[2], x2: b[3], y2: b[4] });
+		}
+	}
+	return areas;
+}
+
+show_json(monster_spawn_areas("goo"));</div>

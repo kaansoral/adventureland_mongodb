@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "Está a ser executada outra personagem que não é mercador.",
 	"interface.encouragement.away": "Regressa após mais de 60 dias de ausência para receberes Bom Regresso.",
 	"interface.recipes.crafting_and_collecting": "Fabrico e Recolha",
-	"interface.mail.confirm_delete": "Eliminar a mensagem de correio?",
+	"interface.mail.confirm_delete": "Apagar a tua cópia desta mensagem?",
 	"interface.cosmetics.default_position": " posição predefinida",
 	"interface.cosmetics.move_left": " [mover {pixels}px para a esquerda]",
 	"interface.cosmetics.move_right": " [mover {pixels}px para a direita]",
@@ -965,7 +965,7 @@
 	"interface.cavalry.call": "CHAMAR A CAVALRY!",
 	"interface.cavalry.coming": "A Cavalry está a caminho!",
 	"interface.cavalry.queued": "A Cavalry está ocupada. A tua chamada está em espera.",
-	"interface.cavalry.tracker": "Traz um Tracktrix contigo para chamares a Cavalry.",
+	"interface.cavalry.tracker": "Traz contigo Tracktrix ou Super Computer para chamar a Cavalry.",
 	"interface.cavalry.no_monsters": "Não há monstros de nível 3+ que cumpram os requisitos por perto.",
 	"interface.cavalry.cooldown": "A Cavalry poderá responder novamente dentro de {minutes} min.",
 	"interface.cavalry.unavailable": "A Cavalry não pode responder agora.",
@@ -989,5 +989,8 @@
 	"interface.trade_offer.no_match": "Não tens nenhum item correspondente",
 	"interface.trade_offer.choose": "Escolhe o item que vais dar",
 	"interface.trade_offer.trade": "TROCAR",
-	"interface.upgrade_shrine.add_grace": "ADICIONAR GRAÇA"
+	"interface.upgrade_shrine.add_grace": "ADICIONAR GRAÇA",
+	"interface.item.scroll_consumed": "O pergaminho é consumido quer a tentativa tenha sucesso quer falhe.",
+	"interface.skill.gold_output": "Retorno em ouro",
+	"interface.upgrade_shrine.grace_hint": "Adiciona {amount} de graça. Não aumenta o nível do objeto."
 }

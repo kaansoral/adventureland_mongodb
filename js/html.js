@@ -2386,9 +2386,12 @@ function render_upgrade_shrine(explicit) {
 	html += core;
 	html += "</div>";
 	html += "<div class='gamebutton clickable' onclick='draw_trigger(function(){ render_upgrade_shrine(1); reset_inventory(); });'>" + phrase.html("interface.upgrade_shrine.reset") + "</div>";
-	html += "<div class='gamebutton clickable ml5' onclick='upgrade(u_item,u_scroll,u_offering);'>" + phrase.html("interface.upgrade_shrine.upgrade") + "</div>";
+	html += "<div class='gamebutton clickable ml5 upgradeaction' onclick='upgrade(u_item,u_scroll,u_offering);'>" + phrase.html(def && def.grace_added ? "interface.upgrade_shrine.add_grace" : "interface.upgrade_shrine.upgrade") + "</div>";
 	html += "</div>";
-	if (already) $("#core").html(core);
+	if (already) {
+		$("#core").html(core);
+		$(".upgradeaction").html(phrase.html(def && def.grace_added ? "interface.upgrade_shrine.add_grace" : "interface.upgrade_shrine.upgrade"));
+	}
 	else render_ui_panel("#topleftcornerui", html);
 	if (character.q.upgrade) {
 		$(".loadertheuitem" + rid).css("opacity", 0.8);
@@ -3411,8 +3414,8 @@ function render_skill(selector, skill_name, args) {
 			}
 			(skill.levels || []).forEach(function (lv) {
 				var level = lv[0],
-					value = lv[1];
-				html += bold_prop_line(phrase.html("interface.skill.output"), level > 0 ? phrase.html("interface.skill.value_at_level", { value: value, level: level }) : value, "gray");
+					value = skill_name == "alchemy" ? Math.round(lv[1] * 100) + "%" : lv[1];
+				html += bold_prop_line(phrase.html(skill_name == "alchemy" ? "interface.skill.gold_output" : "interface.skill.output"), level > 0 ? phrase.html("interface.skill.value_at_level", { value: value, level: level }) : value, "gray");
 			});
 			(skill.mp_return_levels || []).forEach(function (lv) {
 				html += bold_prop_line(phrase.html("interface.skill.hp_loss_to_mp"), phrase.html("interface.skill.value_at_level", { value: Math.round(lv[1] * 100) + "%", level: lv[0] }), colors.mp);
@@ -3541,7 +3544,8 @@ function docs_link_click(event) {
 	var link = event.target && event.target.closest && event.target.closest("a[href]"),
 		url = link && link.getAttribute("href"),
 		match = url && url.match(/^\/docs\/(?:code\/functions|guide(?:\/[\w-]+)*)\/([\w-]+)$/);
-	if (url == "/docs/code/monster/reference") open_article("data-monster", url);
+	if (url == "/docs/code/character/reference") open_article("data-character", url);
+	else if (url == "/docs/code/monster/reference") open_article("data-monster", url);
 	else if (match && url.indexOf("/docs/code/functions/") == 0) load_documentation(match[1]);
 	else if (match && get_guide_url(match[1]) == url) open_guide(match[1], url);
 	else return;
@@ -5057,6 +5061,8 @@ function render_item(selector, args) {
 		} else if (item.type == "material") {
 			html += "<div style='color: #C3C3C3'>" + phrase.html("interface.item.an_unknown_material_as_in_you_have_no_idea_what") + "</div>";
 		}
+		if (item.type == "uscroll" || item.type == "cscroll")
+			html += "<div style='color: #C3C3C3'>" + phrase.html("interface.item.scroll_consumed") + "</div>";
 		if (item.multiplier && item.multiplier != 1) html += bold_prop_line(phrase.html("interface.item.multiplier"), item.multiplier, "gray");
 		if (prop.set) {
 			html +=
@@ -5202,15 +5208,15 @@ function render_item(selector, args) {
 			html +=
 				"<div><span class='gold clickable' onclick='$(\".sellprice\").focus()'>" +
 				phrase.html((actual.q || 1) > 1 ? "interface.price.gold_each" : "interface.price.gold") +
-				"</span> <div class='inline-block sellprice editable' contenteditable=true>" +
+				"</span> <div class='inline-block sellprice editable' contenteditable='plaintext-only' inputmode='numeric'>" +
 				to_pretty_num(svalue) +
 				"</div></div>";
 			html +=
-				"<div><span class='clickable' onclick='trade(\"" +
+				"<div><span class='clickable' onclick='trade_form(\"" +
 				args.slot +
 				'","' +
 				args.num +
-				'",$(".sellprice").shtml(),$(".tradenum").shtml())\'>' +
+				'")\'>' +
 				phrase.html("interface.item.put_up_for_sale") +
 				"</span></div>"; // style='color:#A99A5B'
 			html +=
@@ -5481,7 +5487,7 @@ function render_item(selector, args) {
 					phrase.definition("item", name, "action", item.action) +
 					"</span></div>";
 			}
-			if (name == "tracker" && !args.from_player) {
+			if ((name == "tracker" || name == "supercomputer") && !args.from_player) {
 				html += "<div class='clickable' onclick='socket.emit(\"interaction\",{type:\"cavalry\"}); $(this).parent().remove()' style=\"color: #C6AA62\">" + phrase.html("interface.cavalry.call") + "</div>";
 			}
 			if (item.type == "computer") {
@@ -5494,7 +5500,7 @@ function render_item(selector, args) {
 				html += '<div class=\'clickable\' onclick=\'socket.emit("unlock",{name:"code",num:"' + args.num + '"});\' style="color: #BA61A4">' + phrase.html("interface.item.unlock") + "</div>";
 			}
 			if (item.type == "computer") {
-				html += "<div class='clickable' onclick='render_computer($(this).parent())' style=\"color: #32A3B0\">" + phrase.html("interface.item.network") + "</div>";
+				html += "<div class='clickable' onclick='render_computer($(this).parent(),\"" + name + '","' + args.num + '")\' style="color: #32A3B0">' + phrase.html("interface.item.network") + "</div>";
 			}
 			if (item.type == "stand" && !character.stand) {
 				html += "<div class='clickable' onclick='open_merchant(\"" + args.num + '"); $(this).parent().remove()\' style="color: #8E5E2C">' + phrase.html("interface.item.open") + "</div>";
@@ -5594,7 +5600,11 @@ function render_item_by_name(name) {
 }
 
 function wishlist_form(num, name) {
-	wishlist(num, name, $(".wprice").shtml(), $(".wnumq").shtml(), $(".wlevel").shtml());
+	var price = trade_offer_number($(".wprice").text()),
+		q = trade_offer_number($(".wnumq").text()),
+		level = $(".wlevel").length ? trade_offer_number($(".wlevel").text()) : "0";
+	if (!price || +price < 1 || +price > 99999999999 || !q || +q < 1 || level === null || +level > 12) return d_text(phrase("client.floating.invalid"), character);
+	return wishlist(num, name, price, q, level);
 }
 
 function render_wishlist_item(name, num) {
@@ -5616,7 +5626,7 @@ function render_wishlist_item(name, num) {
 	html +=
 		"<div><span class='gold clickable' onclick='$(\".wprice\").cfocus()'>" +
 		phrase.html(def.s ? "interface.price.gold_each" : "interface.price.gold") +
-		"</span> <div class='inline-block wprice editable' contenteditable=true>" +
+		"</span> <div class='inline-block wprice editable' contenteditable='plaintext-only' inputmode='numeric'>" +
 		(calculate_item_value({ name: name }) + 1) +
 		"</div></div>";
 	if (def.compound || def.upgrade)
@@ -6150,7 +6160,7 @@ function item_container(item, actual) {
 			ccolor = "#299C4C",
 			roll = "#00.00";
 		if (item.pui.chance) {
-			var res = set_uchance(item.pui.chance, true);
+			var res = set_uchance(item.pui.chance, true, item.pui.grace_added);
 			ccolor = res[0];
 			chance = res[1];
 			roll = set_uroll(item.pui, true);
@@ -6160,7 +6170,7 @@ function item_container(item, actual) {
 		html +=
 			"<div style='position: absolute; top: -2px; left: 52px; font-size: 24px; width: 50px; border: 2px solid gray; line-height: 16px; text-align: right; padding: 2px; color: " +
 			ccolor +
-			"' class='uchance'>" +
+			"' class='uchance' title='" + (item.pui.grace_added ? html_escape(phrase("interface.upgrade_shrine.grace_hint", { amount: item.pui.grace_added })) : "") + "'>" +
 			chance +
 			"</div>";
 		html +=
@@ -7476,7 +7486,7 @@ function render_mail(id) {
 	if (mail.item) {
 		var item = JSON.parse(mail.item);
 		var take = "";
-		if (!mail.taken)
+		if (!mail.taken && mail.can_take)
 			take =
 				" <span class='clickable takeitem' style='color: #6DAD47' onclick='parent.socket.emit(\"mail_take_item\",{id:\"" + id + "\"})'>" + " " + phrase.html("interface.mail.take") + " " + "</span>";
 		html +=

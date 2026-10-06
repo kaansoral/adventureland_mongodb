@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "Un alt personaj care nu este negustor este în joc.",
 	"interface.encouragement.away": "Revino după o absență de peste 60 de zile pentru a primi Bine ai revenit.",
 	"interface.recipes.crafting_and_collecting": "Fabricare și colecționare",
-	"interface.mail.confirm_delete": "Ștergi mesajul?",
+	"interface.mail.confirm_delete": "Ștergi copia ta a acestui mesaj?",
 	"interface.cosmetics.default_position": " poziție implicită",
 	"interface.cosmetics.move_left": " [mută la stânga {pixels}px]",
 	"interface.cosmetics.move_right": " [mută la dreapta {pixels}px]",
@@ -969,7 +969,7 @@
 	"interface.cavalry.call": "CHEAMĂ CAVALRY!",
 	"interface.cavalry.coming": "Cavalry este pe drum!",
 	"interface.cavalry.queued": "Cavalry este ocupată. Chemarea ta așteaptă.",
-	"interface.cavalry.tracker": "Poartă un Tracktrix pentru a chema Cavalry.",
+	"interface.cavalry.tracker": "Poartă Tracktrix sau Super Computer pentru a chema Cavalry.",
 	"interface.cavalry.no_monsters": "Nu sunt monștri eligibili de nivel 3+ în apropiere.",
 	"interface.cavalry.cooldown": "Cavalry va putea răspunde din nou peste {minutes} min.",
 	"interface.cavalry.unavailable": "Cavalry nu poate răspunde acum.",
@@ -993,5 +993,8 @@
 	"interface.trade_offer.no_match": "Nu ai niciun obiect potrivit",
 	"interface.trade_offer.choose": "Alege obiectul pe care îl dai",
 	"interface.trade_offer.trade": "SCHIMBĂ",
-	"interface.upgrade_shrine.add_grace": "ADAUGĂ HAR"
+	"interface.upgrade_shrine.add_grace": "ADAUGĂ HAR",
+	"interface.item.scroll_consumed": "Pergamentul se consumă indiferent dacă încercarea reușește sau eșuează.",
+	"interface.skill.gold_output": "Aur obținut",
+	"interface.upgrade_shrine.grace_hint": "Adaugă {amount} har. Nu crește nivelul obiectului."
 }

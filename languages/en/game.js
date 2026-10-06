@@ -1,4 +1,6 @@
 module.exports = {
+	// Entrance error naming missing keys. {items} is a list of quantities and proper item names; preserve the placeholder.
+	"response.transport_need_items": "Need {items}",
 	// js/game.js, add_log display.
 	"game.reload_synced": "Reload Synced",
 	// js/game.js, add_log display. Parameters: value.

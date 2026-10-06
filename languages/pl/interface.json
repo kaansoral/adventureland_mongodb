@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "Działa inna postać niebędąca kupcem.",
 	"interface.encouragement.away": "Wróć po ponad 60 dniach nieobecności, aby otrzymać Witaj ponownie.",
 	"interface.recipes.crafting_and_collecting": "Wytwarzanie i zbieranie",
-	"interface.mail.confirm_delete": "Usunąć wiadomość?",
+	"interface.mail.confirm_delete": "Usunąć twoją kopię tej wiadomości?",
 	"interface.cosmetics.default_position": " domyślne położenie",
 	"interface.cosmetics.move_left": " [przesuń w lewo o {pixels}px]",
 	"interface.cosmetics.move_right": " [przesuń w prawo o {pixels}px]",
@@ -977,7 +977,7 @@
 	"interface.cavalry.call": "WEZWIJ CAVALRY!",
 	"interface.cavalry.coming": "Cavalry już nadciąga!",
 	"interface.cavalry.queued": "Cavalry jest zajęta. Twoje wezwanie czeka.",
-	"interface.cavalry.tracker": "Noś przy sobie Tracktrix, aby wezwać Cavalry.",
+	"interface.cavalry.tracker": "Miej przy sobie Tracktrix lub Super Computer, aby wezwać Cavalry.",
 	"interface.cavalry.no_monsters": "W pobliżu nie ma odpowiednich potworów na poziomie 3+.",
 	"interface.cavalry.cooldown": "Cavalry będzie mogła odpowiedzieć za {minutes} min.",
 	"interface.cavalry.unavailable": "Cavalry nie może teraz odpowiedzieć.",
@@ -1001,5 +1001,8 @@
 	"interface.trade_offer.no_match": "Nie masz pasującego przedmiotu",
 	"interface.trade_offer.choose": "Wybierz przedmiot do oddania",
 	"interface.trade_offer.trade": "WYMIEŃ",
-	"interface.upgrade_shrine.add_grace": "DODAJ ŁASKĘ"
+	"interface.upgrade_shrine.add_grace": "DODAJ ŁASKĘ",
+	"interface.item.scroll_consumed": "Zwój zużywa się niezależnie od tego, czy próba się powiedzie.",
+	"interface.skill.gold_output": "Uzysk złota",
+	"interface.upgrade_shrine.grace_hint": "Dodaje {amount} łaski. Nie podnosi poziomu przedmiotu."
 }

@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "هناك شخصية أخرى غير تاجرة قيد التشغيل.",
 	"interface.encouragement.away": "عد بعد غياب يزيد على 60 يوما لتحصل على «أهلا بعودتك».",
 	"interface.recipes.crafting_and_collecting": "الصناعة والجمع",
-	"interface.mail.confirm_delete": "هل تريد حذف الرسالة البريدية؟",
+	"interface.mail.confirm_delete": "هل تريد حذف نسختك من هذه الرسالة؟",
 	"interface.cosmetics.default_position": " الموضع الافتراضي",
 	"interface.cosmetics.move_left": " [تحرك لليسار {pixels}px]",
 	"interface.cosmetics.move_right": " [تحرك لليمين {pixels}px]",
@@ -964,7 +964,7 @@
 	"interface.cavalry.call": "استدعاء CAVALRY!",
 	"interface.cavalry.coming": "Cavalry في الطريق!",
 	"interface.cavalry.queued": "Cavalry مشغولة. استدعاؤك قيد الانتظار.",
-	"interface.cavalry.tracker": "احمل Tracktrix لاستدعاء Cavalry.",
+	"interface.cavalry.tracker": "احمل Tracktrix أو Super Computer لاستدعاء Cavalry.",
 	"interface.cavalry.no_monsters": "لا توجد وحوش مؤهلة بمستوى 3 أو أعلى بالقرب منك.",
 	"interface.cavalry.cooldown": "يمكن استدعاء Cavalry مجددًا بعد {minutes} د.",
 	"interface.cavalry.unavailable": "لا تستطيع Cavalry الاستجابة الآن.",
@@ -988,5 +988,8 @@
 	"interface.trade_offer.no_match": "ليس لديك غرض مطابق",
 	"interface.trade_offer.choose": "اختر الغرض الذي ستعطيه",
 	"interface.trade_offer.trade": "قايض",
-	"interface.upgrade_shrine.add_grace": "إضافة نعمة"
+	"interface.upgrade_shrine.add_grace": "إضافة نعمة",
+	"interface.item.scroll_consumed": "تُستهلك اللفافة سواء نجحت المحاولة أم فشلت.",
+	"interface.skill.gold_output": "الذهب المسترد",
+	"interface.upgrade_shrine.grace_hint": "يضيف {amount} من النعمة. لا يرفع مستوى العنصر."
 }

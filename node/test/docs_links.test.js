@@ -63,6 +63,14 @@ test("in the game, docs links open their page in the game", () => {
 		calls: [["open_guide", "mimic", "/docs/guide/world/mimic"]],
 		prevented: true,
 	});
+	assert.deepEqual(click(game, "/docs/code/functions/get_progression"), {
+		calls: [["load_documentation", "get_progression"]],
+		prevented: true,
+	});
+	assert.deepEqual(click(game, "/docs/code/character/reference"), {
+		calls: [["open_article", "data-character", "/docs/code/character/reference"]],
+		prevented: true,
+	});
 	assert.deepEqual(click(game, "/docs/code/monster/reference"), {
 		calls: [["open_article", "data-monster", "/docs/code/monster/reference"]],
 		prevented: true,

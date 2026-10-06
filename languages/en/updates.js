@@ -1,7 +1,55 @@
 // Release highlights. Dates, item/character names and CODE identifiers stay unchanged.
 module.exports = {
-	// Anniversary crafting release text. Preserve Cole.
-	"update.06_10_26.anniversary_crafting.title": "Anniversary Crafting",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.capacity": "Loot and reward space checks now count stacks correctly.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.slots": "Invalid inventory slots no longer act on the first item.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.spawns": "Monster documentation now explains both spawn-boundary formats.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.promises": "Upgrade and compound CODE results no longer wait for a redraw.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.exchange": "Exchanges now work with a full inventory when they consume the whole stack.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.split": "Splitting a stack in an overflowing inventory no longer loses items.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.grace": "Offerings used without a scroll now show the grace they add instead of an upgrade chance.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.throw": "Failed throws no longer consume items.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.send": "Sending items now checks space using their titles, markings, and contents.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.entry": "Entrances now name the missing key.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.stunned_items": "Items and potions can no longer be used while stunned.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.alchemy_tooltip": "Alchemy now shows the percentage of an item’s gold value returned.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.numeric_names": "Player-only skills now work on characters with all-numeric names, even when a monster has the same ID.",
+	// Fixed bug listed in the [04/10/26] update post "Invite Friends and Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.cavalry_computer": "Super Computer menus now use the selected inventory item. The Network menu now includes Cavalry when opened from the Super Computer.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.movement_buttons": "Direction buttons now move one 50-pixel step per click. Held arrow keys release correctly when focus changes.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.docs_links": "Character Objects links now open in the game’s documentation panel.",
+	// Improvement listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.scroll_consumption": "Upgrade and compound scrolls now say they are consumed on every attempt, whether it succeeds or fails.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.trade_prices": "Invalid stand prices are now rejected instead of becoming 1-gold listings. Price fields now accept plain text only.",
+	// Fixed bug listed in the [04/10/26] update post "Mail, Bank, Cave and Combat Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.self_splash": "Self-inflicted splash damage no longer prevents XP loss when a monster kills you or gives you loot from your own death.",
+	// Fixed bug listed in the [04/10/26] update post "Mail, Bank and Cave Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.cave_walls": "Cave votes no longer leave characters stuck in walls. Logging out from a blocked position no longer prevents returning to the run.",
+	// Fixed bug listed in the [04/10/26] update post "Mail, Bank and Bonus Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.bank_keys": "Using either bank floor key now makes its first item pack available immediately, without leaving and re-entering.",
+	// Fixed bug listed in the [04/10/26] update post "Mail, Bank and Bonus Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.bank_overflow": "Items in extra inventory rows can now be banked without moving the wrong item.",
+	// Fixed bug listed in the [04/10/26] update post "Mail and Bonus Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.merchant_bonuses": "Switching servers on a merchant no longer interrupts other characters’ encouragement bonuses.",
+	// Fixed bug listed in the [04/10/26] update post "Mail Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.mail_ownership": "Mail attachments can now be collected only by the receiving account. Deleting mail removes only your copy.",
+	// Fixed bug listed in the [04/10/26] update post "Mail and Server Menu Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.server_menu": "Event cards no longer cover the server menu.",
 	// Anniversary crafting release text. Preserve Cole.
 	"update.06_10_26.anniversary_crafting.anniversary_crafting": "Anniversary recipes are available at Cole after the event ends.",
 	// Release note announcing that the anniversary event has ended.

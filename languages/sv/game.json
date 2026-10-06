@@ -455,5 +455,6 @@
 	"response.trade_offer_invalid": "Du kan inte be om det föremålet",
 	"response.trade_swap_match": "Föremålet passar inte anbudet",
 	"response.trade_swap_space": "Handlaren har ingen plats",
-	"game.trade_history.traded": "- Bytte '{item}' med {player} mot '{received}'"
+	"game.trade_history.traded": "- Bytte '{item}' med {player} mot '{received}'",
+	"response.transport_need_items": "Behöver: {items}"
 }

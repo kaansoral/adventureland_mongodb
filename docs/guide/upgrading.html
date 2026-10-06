@@ -45,11 +45,20 @@
 	<div>{{ phrase_html("docs.guide.upgrading.primordial-essence-a-stronger-offering-preview-its-exact") }}</div>
 </div>
 <p>{{ phrase("docs.guide.upgrading.upgrade-and-compound-history-can-build-grace-the") }}</p>
+<p>{{ phrase("docs.upgrading.grace_only") }}</p>
 <p>{{ phrase_html("docs.guide.upgrading.stat-scrolls-are-different-they-replace-the-selected") }}</p>
 <div class="guide-note">{{ phrase("docs.guide.upgrading.exalted-means-the-item-has-reached-the-end") }}</div>
 
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
+<div class="code">async function preview_grace() {
+	var item = locate_item("coat");
+	var offering = locate_item("offeringp");
+	if (item === -1 || offering === -1) return;
+	return await upgrade(item, null, offering, true);
+}
+
+preview_grace();</div>
 <p>{{ phrase_html("docs.guide.upgrading.pass-inventory-positions-to-upgrade-use-calculation-mode") }}</p>
 <div class="code">async function upgrade_item(item_name, scroll_name, minimum_chance) {
 	var item = locate_item(item_name);

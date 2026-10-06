@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "別の商人以外のキャラクターが稼働しています。",
 	"interface.encouragement.away": "60日を超える不在期間の後に戻ると「おかえりなさい」を受け取れます。",
 	"interface.recipes.crafting_and_collecting": "製作と収集",
-	"interface.mail.confirm_delete": "メールを削除しますか？",
+	"interface.mail.confirm_delete": "このメールの自分のコピーを削除しますか？",
 	"interface.cosmetics.default_position": " 標準位置",
 	"interface.cosmetics.move_left": " [左へ{pixels}px移動]",
 	"interface.cosmetics.move_right": " [右へ{pixels}px移動]",
@@ -964,7 +964,7 @@
 	"interface.cavalry.call": "CAVALRYを呼ぶ！",
 	"interface.cavalry.coming": "Cavalryが向かっています！",
 	"interface.cavalry.queued": "Cavalryは出動中です。要請は順番待ちです。",
-	"interface.cavalry.tracker": "Cavalryを呼ぶにはTracktrixを所持してください。",
+	"interface.cavalry.tracker": "Cavalryを呼ぶには、TracktrixかSuper Computerを持っていてください。",
 	"interface.cavalry.no_monsters": "近くに救援対象となるレベル3以上のモンスターがいません。",
 	"interface.cavalry.cooldown": "Cavalryを再び呼べるまであと{minutes}分です。",
 	"interface.cavalry.unavailable": "Cavalryは今は応答できません。",
@@ -988,5 +988,8 @@
 	"interface.trade_offer.no_match": "条件に合うアイテムがありません",
 	"interface.trade_offer.choose": "渡すアイテムを選んでください",
 	"interface.trade_offer.trade": "交換する",
-	"interface.upgrade_shrine.add_grace": "恩恵を追加"
+	"interface.upgrade_shrine.add_grace": "恩恵を追加",
+	"interface.item.scroll_consumed": "試行の成功・失敗にかかわらず、巻物は消費されます。",
+	"interface.skill.gold_output": "ゴールド還元率",
+	"interface.upgrade_shrine.grace_hint": "恩恵を{amount}追加します。アイテムのレベルは上がりません。"
 }

@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "Egy másik, nem kereskedő karakter is fut.",
 	"interface.encouragement.away": "Térj vissza több mint 60 nap távollét után az Üdv újra! bónuszért.",
 	"interface.recipes.crafting_and_collecting": "Készítés és gyűjtés",
-	"interface.mail.confirm_delete": "Törlöd a levelet?",
+	"interface.mail.confirm_delete": "Törlöd a levél saját példányát?",
 	"interface.cosmetics.default_position": " alaphelyzet",
 	"interface.cosmetics.move_left": " [mozgatás balra {pixels}px]",
 	"interface.cosmetics.move_right": " [mozgatás jobbra {pixels}px]",
@@ -964,7 +964,7 @@
 	"interface.cavalry.call": "CAVALRY HÍVÁSA!",
 	"interface.cavalry.coming": "A Cavalry már úton van!",
 	"interface.cavalry.queued": "A Cavalry elfoglalt. A hívásod várakozik.",
-	"interface.cavalry.tracker": "Legyen nálad Tracktrix, hogy hívhasd a Cavalry csapatát.",
+	"interface.cavalry.tracker": "Legyen nálad Tracktrix vagy Super Computer a Cavalry hívásához.",
 	"interface.cavalry.no_monsters": "Nincs a közelben megfelelő, legalább 3. szintű szörny.",
 	"interface.cavalry.cooldown": "A Cavalry {minutes} perc múlva hívható újra.",
 	"interface.cavalry.unavailable": "A Cavalry most nem tud válaszolni.",
@@ -988,5 +988,8 @@
 	"interface.trade_offer.no_match": "Nincs megfelelő tárgyad",
 	"interface.trade_offer.choose": "Válaszd ki, melyik tárgyat adod",
 	"interface.trade_offer.trade": "CSERE",
-	"interface.upgrade_shrine.add_grace": "KEGYELEM HOZZÁADÁSA"
+	"interface.upgrade_shrine.add_grace": "KEGYELEM HOZZÁADÁSA",
+	"interface.item.scroll_consumed": "A tekercs elfogy, akár sikerül a próbálkozás, akár nem.",
+	"interface.skill.gold_output": "Aranyhozam",
+	"interface.upgrade_shrine.grace_hint": "{amount} kegyelmet ad hozzá. Nem növeli a tárgy szintjét."
 }

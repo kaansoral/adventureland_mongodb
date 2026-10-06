@@ -455,5 +455,6 @@
 	"response.trade_offer_invalid": "Tätä esinettä ei voi pyytää",
 	"response.trade_swap_match": "Esine ei vastaa tarjousta",
 	"response.trade_swap_space": "Kauppiaalla ei ole tilaa",
-	"game.trade_history.traded": "- Vaihdoit '{item}', vaihtaja: {player}, sait: '{received}'"
+	"game.trade_history.traded": "- Vaihdoit '{item}', vaihtaja: {player}, sait: '{received}'",
+	"response.transport_need_items": "Tarvitaan: {items}"
 }

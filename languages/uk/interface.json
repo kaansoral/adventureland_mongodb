@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "У грі вже є інший персонаж, який не є торговцем.",
 	"interface.encouragement.away": "Повернися після понад 60 днів відсутності, щоб отримати «З поверненням».",
 	"interface.recipes.crafting_and_collecting": "Виготовлення та збирання",
-	"interface.mail.confirm_delete": "Видалити лист?",
+	"interface.mail.confirm_delete": "Видалити вашу копію цього листа?",
 	"interface.cosmetics.default_position": " початкове положення",
 	"interface.cosmetics.move_left": " [зсунути ліворуч на {pixels}px]",
 	"interface.cosmetics.move_right": " [зсунути праворуч на {pixels}px]",
@@ -977,7 +977,7 @@
 	"interface.cavalry.call": "ВИКЛИКАТИ CAVALRY!",
 	"interface.cavalry.coming": "Cavalry вже в дорозі!",
 	"interface.cavalry.queued": "Cavalry зайнята. Ваш виклик чекає в черзі.",
-	"interface.cavalry.tracker": "Носіть із собою Tracktrix, щоб викликати Cavalry.",
+	"interface.cavalry.tracker": "Носіть із собою Tracktrix або Super Computer, щоб викликати Cavalry.",
 	"interface.cavalry.no_monsters": "Поблизу немає відповідних монстрів рівня 3+.",
 	"interface.cavalry.cooldown": "Cavalry знову зможе відповісти через {minutes} хв.",
 	"interface.cavalry.unavailable": "Cavalry зараз не може відповісти.",
@@ -1001,5 +1001,8 @@
 	"interface.trade_offer.no_match": "У тебе немає відповідного предмета",
 	"interface.trade_offer.choose": "Обери предмет, який віддаси",
 	"interface.trade_offer.trade": "ОБМІНЯТИ",
-	"interface.upgrade_shrine.add_grace": "ДОДАТИ БЛАГОДАТЬ"
+	"interface.upgrade_shrine.add_grace": "ДОДАТИ БЛАГОДАТЬ",
+	"interface.item.scroll_consumed": "Сувій витрачається незалежно від того, чи вдалася спроба.",
+	"interface.skill.gold_output": "Вихід золота",
+	"interface.upgrade_shrine.grace_hint": "Додає {amount} благодаті. Не підвищує рівень предмета."
 }

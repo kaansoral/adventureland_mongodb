@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "Karakter lain yang bukan pedagang sedang aktif.",
 	"interface.encouragement.away": "Kembali setelah pergi lebih dari 60 hari untuk menerima Selamat Datang Kembali.",
 	"interface.recipes.crafting_and_collecting": "Pembuatan dan Pengumpulan",
-	"interface.mail.confirm_delete": "Hapus surat ini?",
+	"interface.mail.confirm_delete": "Hapus salinan surat ini milikmu?",
 	"interface.cosmetics.default_position": " posisi bawaan",
 	"interface.cosmetics.move_left": " [geser ke kiri {pixels}px]",
 	"interface.cosmetics.move_right": " [geser ke kanan {pixels}px]",
@@ -964,7 +964,7 @@
 	"interface.cavalry.call": "PANGGIL CAVALRY!",
 	"interface.cavalry.coming": "Cavalry sedang menuju ke sini!",
 	"interface.cavalry.queued": "Cavalry sedang sibuk. Panggilanmu menunggu.",
-	"interface.cavalry.tracker": "Bawa Tracktrix untuk memanggil Cavalry.",
+	"interface.cavalry.tracker": "Bawa Tracktrix atau Super Computer untuk memanggil Cavalry.",
 	"interface.cavalry.no_monsters": "Tidak ada monster level 3+ yang memenuhi syarat di sekitar.",
 	"interface.cavalry.cooldown": "Cavalry bisa dipanggil lagi dalam {minutes} menit.",
 	"interface.cavalry.unavailable": "Cavalry belum bisa menjawab sekarang.",
@@ -988,5 +988,8 @@
 	"interface.trade_offer.no_match": "Kamu tidak punya item yang cocok",
 	"interface.trade_offer.choose": "Pilih item yang akan diberikan",
 	"interface.trade_offer.trade": "TUKAR",
-	"interface.upgrade_shrine.add_grace": "TAMBAH ANUGERAH"
+	"interface.upgrade_shrine.add_grace": "TAMBAH ANUGERAH",
+	"interface.item.scroll_consumed": "Gulungan habis dipakai, baik percobaan berhasil maupun gagal.",
+	"interface.skill.gold_output": "Emas yang diperoleh",
+	"interface.upgrade_shrine.grace_hint": "Menambah {amount} anugerah. Tidak menaikkan level item."
 }

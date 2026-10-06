@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "Er is nog een personage actief dat geen handelaar is.",
 	"interface.encouragement.away": "Kom na meer dan 60 dagen afwezigheid terug om Welkom terug te ontvangen.",
 	"interface.recipes.crafting_and_collecting": "Maken en verzamelen",
-	"interface.mail.confirm_delete": "Het bericht verwijderen?",
+	"interface.mail.confirm_delete": "Jouw exemplaar van deze brief verwijderen?",
 	"interface.cosmetics.default_position": " standaardpositie",
 	"interface.cosmetics.move_left": " [verplaats {pixels}px naar links]",
 	"interface.cosmetics.move_right": " [verplaats {pixels}px naar rechts]",
@@ -965,7 +965,7 @@
 	"interface.cavalry.call": "ROEP CAVALRY OP!",
 	"interface.cavalry.coming": "Cavalry is onderweg!",
 	"interface.cavalry.queued": "Cavalry is bezig. Je oproep staat in de wacht.",
-	"interface.cavalry.tracker": "Draag een Tracktrix bij je om Cavalry op te roepen.",
+	"interface.cavalry.tracker": "Draag Tracktrix of Super Computer bij je om de Cavalry op te roepen.",
 	"interface.cavalry.no_monsters": "Geen geschikte monsters van niveau 3+ in de buurt.",
 	"interface.cavalry.cooldown": "Cavalry kan over {minutes} min. weer reageren.",
 	"interface.cavalry.unavailable": "Cavalry kan nu niet reageren.",
@@ -989,5 +989,8 @@
 	"interface.trade_offer.no_match": "Je hebt geen passend voorwerp",
 	"interface.trade_offer.choose": "Kies het voorwerp dat je geeft",
 	"interface.trade_offer.trade": "RUILEN",
-	"interface.upgrade_shrine.add_grace": "GENADE TOEVOEGEN"
+	"interface.upgrade_shrine.add_grace": "GENADE TOEVOEGEN",
+	"interface.item.scroll_consumed": "De rol wordt verbruikt, of de poging nu slaagt of mislukt.",
+	"interface.skill.gold_output": "Goudopbrengst",
+	"interface.upgrade_shrine.grace_hint": "Voegt {amount} genade toe. Verhoogt het voorwerpniveau niet."
 }

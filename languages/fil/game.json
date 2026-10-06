@@ -455,5 +455,6 @@
 	"response.trade_offer_invalid": "Hindi mahihingi ang gamit na iyan",
 	"response.trade_swap_match": "Hindi tugma ang gamit na iyan sa alok",
 	"response.trade_swap_space": "Walang puwang ang mangangalakal",
-	"game.trade_history.traded": "- Ipinagpalit ang '{item}' kay {player} para sa '{received}'"
+	"game.trade_history.traded": "- Ipinagpalit ang '{item}' kay {player} para sa '{received}'",
+	"response.transport_need_items": "Kailangan: {items}"
 }

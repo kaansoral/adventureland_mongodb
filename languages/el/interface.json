@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "Είναι ενεργός άλλος χαρακτήρας που δεν είναι έμπορος.",
 	"interface.encouragement.away": "Επέστρεψε μετά από απουσία άνω των 60 ημερών για να λάβεις το Καλώς επέστρεψες.",
 	"interface.recipes.crafting_and_collecting": "Κατασκευή και συλλογή",
-	"interface.mail.confirm_delete": "Να διαγραφεί η επιστολή;",
+	"interface.mail.confirm_delete": "Να διαγραφεί το δικό σου αντίγραφο αυτού του μηνύματος;",
 	"interface.cosmetics.default_position": " προεπιλεγμένη θέση",
 	"interface.cosmetics.move_left": " [μετακίνηση αριστερά {pixels}px]",
 	"interface.cosmetics.move_right": " [μετακίνηση δεξιά {pixels}px]",
@@ -965,7 +965,7 @@
 	"interface.cavalry.call": "ΚΑΛΕΣΕ ΤΗΝ CAVALRY!",
 	"interface.cavalry.coming": "Η Cavalry έρχεται!",
 	"interface.cavalry.queued": "Η Cavalry είναι απασχολημένη. Η κλήση σου περιμένει.",
-	"interface.cavalry.tracker": "Έχε μαζί σου ένα Tracktrix για να καλέσεις την Cavalry.",
+	"interface.cavalry.tracker": "Έχε μαζί σου Tracktrix ή Super Computer για να καλέσεις την Cavalry.",
 	"interface.cavalry.no_monsters": "Δεν υπάρχουν κατάλληλα τέρατα επιπέδου 3+ κοντά.",
 	"interface.cavalry.cooldown": "Η Cavalry θα μπορεί να απαντήσει ξανά σε {minutes} λεπ.",
 	"interface.cavalry.unavailable": "Η Cavalry δεν μπορεί να απαντήσει τώρα.",
@@ -989,5 +989,8 @@
 	"interface.trade_offer.no_match": "Δεν έχεις κατάλληλο αντικείμενο",
 	"interface.trade_offer.choose": "Επίλεξε το αντικείμενο που δίνεις",
 	"interface.trade_offer.trade": "ΑΝΤΑΛΛΑΓΗ",
-	"interface.upgrade_shrine.add_grace": "ΠΡΟΣΘΗΚΗ ΕΥΝΟΙΑΣ"
+	"interface.upgrade_shrine.add_grace": "ΠΡΟΣΘΗΚΗ ΕΥΝΟΙΑΣ",
+	"interface.item.scroll_consumed": "Ο πάπυρος καταναλώνεται είτε η προσπάθεια πετύχει είτε αποτύχει.",
+	"interface.skill.gold_output": "Απόδοση χρυσού",
+	"interface.upgrade_shrine.grace_hint": "Προσθέτει {amount} εύνοια. Δεν αυξάνει το επίπεδο του αντικειμένου."
 }

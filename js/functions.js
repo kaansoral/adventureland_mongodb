@@ -1730,6 +1730,11 @@ function on_skill(key, event) {
 	} else if (name == "blink") {
 		if (event) blink_pressed = true;
 		last_blink_pressed = new Date();
+	} else if (!event && ["move_up", "move_down", "move_left", "move_right"].includes(name)) {
+		if (!window.socket || !window.character || !options.move_with_arrows || !can_walk(character)) return;
+		var step = { move_up: [0, -50], move_down: [0, 50], move_left: [-50, 0], move_right: [50, 0] }[name];
+		next_minteraction = name.slice(5);
+		move(character.real_x + step[0], character.real_y + step[1]);
 	} else if (name == "move_up") {
 		arrow_up = true;
 		next_minteraction = "up";
@@ -3264,6 +3269,13 @@ function wishlist(slot, name, price, q, level) {
 	return promise;
 }
 
+function trade_form(slot, num) {
+	var price = trade_offer_number($(".sellprice").text()),
+		q = $(".tradenum").length ? trade_offer_number($(".tradenum").text()) : "1";
+	if (!price || +price < 1 || +price > 99999999999 || !q || +q < 1) return d_text(phrase("client.floating.invalid"), character);
+	return trade(slot, num, price, q);
+}
+
 function trade(slot, num, price, q) {
 	q = q || 1;
 	var promise = push_deferred("equip");
@@ -3985,10 +3997,22 @@ function exchange_animation_logic() {
 
 var u_valid = false,
 	last_uchance = null,
+	last_ugrace = 0,
 	last_uchance_for = "upgrade_or_compound";
-function set_uchance(dchance, html) {
+function set_uchance(dchance, html, grace_added) {
 	last_uchance = dchance;
+	last_ugrace = grace_added || 0;
 	last_uchance_for = rendered_target; // retains calculations during reopen's [17/06/19]
+	if (!html) {
+		$(".uchance").attr("title", grace_added ? phrase("interface.upgrade_shrine.grace_hint", { amount: grace_added }) : "");
+		$(".upgradeaction").html(phrase.html(grace_added ? "interface.upgrade_shrine.add_grace" : "interface.upgrade_shrine.upgrade"));
+	}
+	if (grace_added) {
+		u_valid = true;
+		if (html) return ["#31C760", "+" + grace_added];
+		$(".uchance").css("color", "#31C760").text("+" + grace_added);
+		return;
+	}
 	if (dchance == "?") {
 		$(".uchance").css("color", "#299C4C");
 		$(".uchance").html("%??.??");
@@ -4162,7 +4186,7 @@ function reopen() {
 		suppress_calculations = true;
 		var ocheck = false;
 		for (var i = 0; i < originals.length; i++) if (originals[i] !== null) on_rclick($("#citem" + originals[i])[0]), (ocheck = true);
-		if (ocheck && last_uchance !== null && last_uchance_for == rendered_target) set_uchance(last_uchance);
+		if (ocheck && last_uchance !== null && last_uchance_for == rendered_target) set_uchance(last_uchance, false, last_ugrace);
 		suppress_calculations = false;
 
 		if (rendered_target != "upgrade") u_item = u_scroll = u_offering = null;

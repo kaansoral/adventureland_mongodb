@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "Toinen hahmo, joka ei ole kauppias, on käynnissä.",
 	"interface.encouragement.away": "Palaa yli 60 päivän poissaolon jälkeen saadaksesi Tervetuloa takaisin -bonuksen.",
 	"interface.recipes.crafting_and_collecting": "Valmistaminen ja keräily",
-	"interface.mail.confirm_delete": "Poistetaanko viesti?",
+	"interface.mail.confirm_delete": "Poistetaanko oma kappaleesi tästä kirjeestä?",
 	"interface.cosmetics.default_position": " oletussijainti",
 	"interface.cosmetics.move_left": " [siirrä vasemmalle {pixels}px]",
 	"interface.cosmetics.move_right": " [siirrä oikealle {pixels}px]",
@@ -964,7 +964,7 @@
 	"interface.cavalry.call": "KUTSU CAVALRY!",
 	"interface.cavalry.coming": "Cavalry on matkalla!",
 	"interface.cavalry.queued": "Cavalry on varattu. Kutsusi odottaa.",
-	"interface.cavalry.tracker": "Pidä Tracktrix mukana kutsuaksesi Cavalryn.",
+	"interface.cavalry.tracker": "Pidä mukanasi Tracktrix tai Super Computer kutsuaksesi Cavalryn.",
 	"interface.cavalry.no_monsters": "Lähellä ei ole sopivia vähintään tason 3 hirviöitä.",
 	"interface.cavalry.cooldown": "Cavalry voi vastata uudelleen {minutes} min kuluttua.",
 	"interface.cavalry.unavailable": "Cavalry ei voi vastata juuri nyt.",
@@ -988,5 +988,8 @@
 	"interface.trade_offer.no_match": "Sinulla ei ole sopivaa esinettä",
 	"interface.trade_offer.choose": "Valitse annettava esine",
 	"interface.trade_offer.trade": "VAIHDA",
-	"interface.upgrade_shrine.add_grace": "LISÄÄ ARMOA"
+	"interface.upgrade_shrine.add_grace": "LISÄÄ ARMOA",
+	"interface.item.scroll_consumed": "Käärö kuluu riippumatta siitä, onnistuuko yritys vai ei.",
+	"interface.skill.gold_output": "Kultatuotto",
+	"interface.upgrade_shrine.grace_hint": "Lisää {amount} armoa. Ei nosta esineen tasoa."
 }

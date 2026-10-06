@@ -1,7 +1,7 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
 const vm = require("node:vm");
-const { load, read, transactions } = require("./helpers/server_vm");
+const { load, read, socketHandler, transactions } = require("./helpers/server_vm");
 
 function mail(id, receiver = "US_reader", sender = "US_sender") {
 	return {
@@ -69,6 +69,14 @@ function fixture(mails, beforeCommit) {
 			};
 		},
 		async updateOne(query, update, options) {
+			if (name === "mail") {
+				const saved = store.records.get(query._id);
+				if (!saved?.owner.includes(query.owner)) return { matchedCount: 0, modifiedCount: 0 };
+				assert.equal(update.$pull.owner, query.owner);
+				saved.owner = saved.owner.filter((owner) => owner !== query.owner);
+				store.versions.set(query._id, store.versions.get(query._id) + 1);
+				return { matchedCount: 1, modifiedCount: 1 };
+			}
 			assert.equal(name, "infoelement");
 			assert.deepEqual(Object.keys(update.$set), ["info.mail"]);
 			let saved = store.records.get(query._id);
@@ -91,6 +99,50 @@ function fixture(mails, beforeCommit) {
 			const result = await context[method + "_api"]({ user, res, ...args });
 			return { result, infs: res.infs, unread: res.infs.find((info) => info.type === "unread")?.count };
 		},
+	};
+}
+
+function parcel(id, receiver = "US_reader", sender = "US_sender", extra = {}) {
+	const letter = Object.assign(mail(id, receiver, sender), { item: true, taken: false }, extra);
+	letter.info.item = JSON.stringify({ name: "sword", level: 12 });
+	return letter;
+}
+
+function claimCharacters(h) {
+	const c = h.context;
+	let serial = 0;
+	Object.assign(c, {
+		players: {},
+		mode: {},
+		G: { items: { sword: {} } },
+		randomStr: () => "claim-" + ++serial,
+		can_add_item: (player) => !player.full,
+		add_item: (player, item) => player.items.push(item),
+		cache_item: (item) => item,
+		resend() {},
+	});
+	return function character(id, owner = "US_reader") {
+		const pending = new Map();
+		c.socket = {
+			id,
+			emit(event, data) {
+				assert.equal(event, "game_response");
+				pending.get(data.request_id)?.(data);
+				pending.delete(data.request_id);
+			},
+		};
+		const player = (c.players[id] = { owner, real_id: "CH_" + id, items: [] });
+		const handler = socketHandler(c, "mail_take_item");
+		return {
+			player,
+			claim(mailId) {
+				const request_id = "request-" + ++serial;
+				return new Promise((resolve) => {
+					pending.set(request_id, resolve);
+					handler({ id: mailId, request_id });
+				});
+			},
+		};
 	};
 }
 
@@ -277,13 +329,164 @@ test("sent and received history retain attachments and stable pagination without
 	assert(!ids.includes("ML_private"));
 });
 
-test("deletion repairs both cached counts, keeps authorization and leaves attachments untouched when denied", async () => {
+test("deleting either mailbox copy preserves the other copy and its attachment", async () => {
+	for (const first of ["US_sender", "US_reader"]) {
+		const gift = parcel("one");
+		const h = fixture([gift]);
+		const second = first === "US_sender" ? "US_reader" : "US_sender";
+		const result = await h.call("delete_mail", { mid: gift._id, user: { _id: first } });
+		assert.equal(result.result.success, true);
+		assert.equal(result.unread, 0);
+		assert.deepEqual(h.records.get(gift._id).owner, [second]);
+		assert.equal(h.records.get(gift._id).info.item, gift.info.item);
+		assert.equal(h.records.get(gift._id).taken, false);
+		const page = (await h.call("pull_mail", { user: { _id: second } })).infs[0];
+		assert.deepEqual(
+			Array.from(page.mail, (entry) => entry.id),
+			[gift._id],
+		);
+		assert.equal((await h.call("pull_mail", { user: { _id: first } })).infs[0].mail.length, 0);
+		await h.call("delete_mail", { mid: gift._id, user: { _id: second } });
+		assert.deepEqual(h.records.get(gift._id).owner, [], "keep the record so deleting a reward cannot recreate it");
+	}
+});
+
+test("delete accepts only visible mail IDs and cannot delete other records", async () => {
 	const h = fixture([mail("one"), mail("private", "US_other", "US_stranger")]);
+	const character = { _id: "CH_reader", owner: ["US_reader"], info: { items: ["valuable"] } };
+	h.records.set(character._id, character);
+	for (const mid of ["CH_reader", { $ne: null }, null, "ML_missing"])
+		assert.equal((await h.call("delete_mail", { mid })).result.failed, true);
+	assert.deepEqual(h.records.get(character._id), character);
 	assert.equal((await h.call("delete_mail", { mid: "ML_private" })).result.failed, true);
 	assert(h.records.has("ML_private"));
-	assert.equal((await h.call("delete_mail", { mid: "ML_one" })).unread, 0);
-	assert.equal(h.records.get("IE_userdata-US_sender").info.mail, 0);
-	assert(!h.records.has("ML_one"));
+});
+
+test("concurrent deletions hide both copies and self-mail removes every matching owner", async () => {
+	const h = fixture([mail("one"), mail("self", "US_reader", "US_reader")]);
+	const results = await Promise.all(
+		["US_sender", "US_reader"].map((_id) => h.call("delete_mail", { mid: "ML_one", user: { _id } })),
+	);
+	assert(results.every((response) => response.result.success));
+	assert.deepEqual(h.records.get("ML_one").owner, []);
+	await h.call("delete_mail", { mid: "ML_self" });
+	assert.deepEqual(h.records.get("ML_self").owner, []);
+	await h.call("read_mail", { mail: "ML_self" });
+	assert.equal(h.records.get("ML_self").read, false, "a hidden copy cannot be marked read");
+});
+
+test("only the receiving account can claim ordinary mail, giveaway prizes and system gifts", async () => {
+	for (const extra of [
+		{},
+		{ fro: "Giveaway from Sender" },
+		{ tracktrix_gift: true },
+		{ cave_award: true, character: "CH_reader" },
+	]) {
+		const gift = parcel("gift", "US_reader", "US_sender", extra);
+		const h = fixture([gift]);
+		const character = claimCharacters(h),
+			sender = character("sender", "US_sender"),
+			reader = character("reader");
+		assert.equal((await sender.claim(gift._id)).reason, "not_owner");
+		assert.equal(h.records.get(gift._id).taken, false);
+		if (gift.character) assert.equal((await character("alternate").claim(gift._id)).reason, "wrong_character");
+		assert.equal((await reader.claim(gift._id)).success, true);
+		assert.equal(sender.player.items.length, 0);
+		assert.equal(reader.player.items[0].level, 12);
+		assert.equal(h.records.get(gift._id).taken, true);
+	}
+});
+
+test("self-mail and legacy receiver fields work, but a missing recipient cannot authorize a claim", async () => {
+	const self = parcel("self", "US_reader", "US_reader"),
+		legacy = parcel("legacy"),
+		missing = parcel("missing");
+	legacy.receiver = legacy.info.receiver;
+	delete legacy.info.receiver;
+	delete missing.info.receiver;
+	const h = fixture([self, legacy, missing]),
+		reader = claimCharacters(h)("reader");
+	assert.equal((await reader.claim(self._id)).success, true);
+	assert.equal((await reader.claim(legacy._id)).success, true);
+	assert.equal((await reader.claim(missing._id)).reason, "not_owner");
+	assert.equal(reader.player.items.length, 2);
+	for (const id of [null, { $ne: null }, "CH_reader"]) assert.equal((await reader.claim(id)).reason, "invalid_mail");
+});
+
+test("concurrent claims deliver one item; sender and duplicate claims cannot collect it", async () => {
+	const h = fixture([parcel("race")]),
+		character = claimCharacters(h);
+	const sender = character("sender", "US_sender"),
+		first = character("first"),
+		second = character("second");
+	const results = await Promise.all([sender.claim("ML_race"), first.claim("ML_race"), second.claim("ML_race")]);
+	assert.equal(results[0].reason, "not_owner");
+	assert.equal(results.filter((result) => result.success).length, 1);
+	assert.equal(first.player.items.length + second.player.items.length + sender.player.items.length, 1);
+	assert.equal(h.records.get("ML_race").taken, true);
+	assert.equal((await second.claim("ML_race")).reason, "already_taken");
+});
+
+test("a sender deleting mail during claim or settlement cannot steal or duplicate its attachment", async () => {
+	for (const phase of ["claim", "settlement"]) {
+		let deleted = false;
+		const h = fixture([parcel("race")], async ({ session }) => {
+			const pending = session.pending.get("ML_race");
+			if (deleted || !pending || (phase === "claim" ? typeof pending.taken !== "string" : pending.taken !== true))
+				return;
+			deleted = true;
+			await h.call("delete_mail", { mid: "ML_race", user: { _id: "US_sender" } });
+		});
+		const character = claimCharacters(h),
+			reader = character("reader"),
+			sender = character("sender", "US_sender");
+		assert.equal((await reader.claim("ML_race")).success, true);
+		assert(deleted);
+		assert.deepEqual(h.records.get("ML_race").owner, ["US_reader"]);
+		assert.equal(h.records.get("ML_race").taken, true);
+		assert.equal((await sender.claim("ML_race")).reason, "not_owner");
+		assert.equal((await reader.claim("ML_race")).reason, "already_taken");
+		assert.equal(reader.player.items.length, 1);
+	}
+});
+
+test("deleting the recipient copy before claim commit cancels delivery without giving the sender access", async () => {
+	let deleted = false;
+	const h = fixture([parcel("race")], async ({ session }) => {
+		if (deleted || !session.pending.has("ML_race")) return;
+		deleted = true;
+		await h.call("delete_mail", { mid: "ML_race" });
+	});
+	const character = claimCharacters(h),
+		reader = character("reader"),
+		sender = character("sender", "US_sender");
+	assert.equal((await reader.claim("ML_race")).reason, "not_owner");
+	assert.equal((await sender.claim("ML_race")).reason, "not_owner");
+	assert.equal(reader.player.items.length + sender.player.items.length, 0);
+	assert.equal(h.records.get("ML_race").taken, false);
+});
+
+test("the mailbox and its actual renderer offer TAKE only to the recipient", async () => {
+	const h = fixture([parcel("gift")]),
+		c = h.context;
+	let html;
+	Object.assign(c, {
+		G: { items: { sword: {} } },
+		window: {},
+		html_escape: (value) => value,
+		item_container: () => "<item>",
+		show_modal: (value) => (html = value),
+		api_call() {},
+	});
+	vm.runInContext("String.prototype.replace_all = function(a,b) { return this.split(a).join(b); };", c);
+	load(c, "js/html.js", ["render_mail"]);
+	for (const owner of ["US_sender", "US_reader"]) {
+		const entry = (await h.call("pull_mail", { user: { _id: owner } })).infs[0].mail[0];
+		assert.equal(entry.can_take, owner === "US_reader");
+		c.window.mail = { [entry.id]: entry };
+		c.render_mail(entry.id);
+		assert.equal(html.includes("takeitem"), owner === "US_reader");
+	}
 });
 
 test("the badge keeps its existing 100-message cap", async () => {

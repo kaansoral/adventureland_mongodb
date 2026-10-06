@@ -1235,7 +1235,7 @@ async function read_mail_api(args) {
 	var R = await tx(
 		async () => {
 			var mail = await tx_get(A.mail_id);
-			if (mail && !mail.read && gf(mail, "receiver") === get_id(A.user)) {
+			if (mail && !mail.read && mail.owner?.includes(get_id(A.user)) && gf(mail, "receiver") === get_id(A.user)) {
 				mail.read = true;
 				await tx_save(mail);
 			}
@@ -1290,6 +1290,7 @@ async function pull_mail_api(args) {
 		if (mail.item) {
 			mail_data.item = simplify_item(mail.info.item);
 			mail_data.taken = mail.taken;
+			mail_data.can_take = gf(mail, "receiver") === get_id(user);
 		}
 		data.mail.push(mail_data);
 	}
@@ -1300,13 +1301,11 @@ async function pull_mail_api(args) {
 
 async function delete_mail_api(args) {
 	var user = args.user;
-	var mail = await get(args.mid);
-	if (!user || !mail || !mail.owner || mail.owner.indexOf(get_id(user)) === -1) return { failed: true, reason: "cant_delete" };
-	await remove(mail);
-	for (var owner of new Set(mail.owner)) {
-		var count = await update_mail_count(owner);
-		if (owner === get_id(user)) args.res.infs.push({ type: "unread", count: count });
-	}
+	if (!user || typeof args.mid !== "string" || !args.mid.startsWith("ML_")) return { failed: true, reason: "cant_delete" };
+	// Each account removes its own copy. Retain the claim record even when both copies are hidden.
+	var result = await db.collection("mail").updateOne({ _id: args.mid, owner: get_id(user) }, { $pull: { owner: get_id(user) } });
+	if (!result.matchedCount) return { failed: true, reason: "cant_delete" };
+	args.res.infs.push({ type: "unread", count: await update_mail_count(user) });
 	args.res.infs.push({ type: "message", message: phrase_html("server.api.mail_deleted") });
 	return { success: true };
 }

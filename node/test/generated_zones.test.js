@@ -640,9 +640,10 @@ test("a cave gold letter can be claimed once by its assigned character", async (
 		cave_award: true,
 		item: true,
 		taken: false,
-		info: { item: JSON.stringify({ gold: 1234 }) },
+		info: { sender: p.owner, receiver: p.owner, item: JSON.stringify({ gold: 1234 }) },
 	};
 	const store = transactions(c, [mail]);
+	load(c, "adventure_functions.js", ["gf"]);
 	c.get = async (id) => clone(store.records.get(id));
 	const handler = socketHandler(c, "mail_take_item");
 	handler({ id: mail._id, request_id: "one" });
@@ -1143,6 +1144,8 @@ test("cave disconnect and recovery save an alive character outside while retaini
 	assert.ok(run.exit_spawn >= 0);
 	Object.assign(c, {
 		clone: structuredClone,
+		smap_data: { zone_a: -1 },
+		can_move: () => true,
 		release_frozen_player() {},
 		cave_settle_purse() {},
 		db: { collection: () => ({ updateOne: async (...args) => writes.push(args) }) },
@@ -1154,6 +1157,8 @@ test("cave disconnect and recovery save an alive character outside while retaini
 		"generated_recover_login",
 	]);
 	Object.assign(p, {
+		x: 100,
+		y: 100,
 		hp: 0,
 		max_hp: 123,
 		mp: 0,

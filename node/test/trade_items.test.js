@@ -71,6 +71,7 @@ function fixture() {
 		"add_item_property",
 		"is_same",
 		"trade_swap_xp",
+		"trade_price",
 	]);
 	load(c, "node/server.js", ["create_new_item", "create_new_sitem", "consume", "add_item"]);
 	load(c, "js/old_common_functions.js", [
@@ -108,6 +109,73 @@ const variants = [
 	{ name: "blade", level: 7, p: "glitched", ps: ["glitched"], stat_type: "str" },
 ];
 const quantity = (items, name) => items.reduce((sum, item) => sum + (item?.name === name ? item.q || 1 : 0), 0);
+
+test("sale and wishlist prices reject malformed or out-of-range values without moving items or gold", () => {
+	for (const price of [
+		undefined,
+		null,
+		false,
+		[],
+		[100],
+		{},
+		"",
+		" ",
+		"<img src=x>100000",
+		"100000<img src=x>",
+		"100gold",
+		"1e6",
+		"0x100",
+		"1,000",
+		"1.5",
+		-1,
+		0,
+		1.5,
+		100000000000,
+	]) {
+		for (const event of ["equip", "trade_wishlist"]) {
+			const h = fixture();
+			h.put(h.seller, { name: "wand", level: 7 });
+			const before = h.snapshot();
+			h.run(event, "Seller", { num: 0, slot: "trade1", name: "staff", price, q: 1 });
+			assert.deepEqual(h.failures, ["invalid"], event + " " + JSON.stringify(price));
+			assert.deepEqual(h.snapshot(), before);
+		}
+	}
+});
+
+test("sale and wishlist prices preserve whole gold amounts including the maximum", () => {
+	for (const price of [1, 100000, 99999999999, "100000", " 100000 "]) {
+		for (const event of ["equip", "trade_wishlist"]) {
+			const h = fixture();
+			h.put(h.seller, { name: "wand", level: 7 });
+			h.run(event, "Seller", { num: 0, slot: "trade1", name: "staff", price, q: 1 });
+			assert.deepEqual(h.failures, []);
+			assert.equal(h.seller.slots.trade1.price, Number(price));
+		}
+	}
+});
+
+test("giveaways still list without a sale price", () => {
+	const h = fixture();
+	h.put(h.seller, { name: "cake", q: 3 });
+	h.run("equip", "Seller", { num: 0, slot: "trade1", q: 2, giveaway: true, minutes: 5 });
+	assert.deepEqual(h.failures, []);
+	assert.equal(h.seller.slots.trade1.giveaway, 5);
+	assert.equal(h.seller.slots.trade1.q, 2);
+	assert.equal(h.seller.items[0].q, 1);
+});
+
+test("sale and giveaway requests cannot consume an item after the stand closes", () => {
+	for (const request of [{ price: 100 }, { price: "<img src=x>100" }, { giveaway: true }]) {
+		const h = fixture();
+		h.seller.p.trades = false;
+		h.put(h.seller, { name: "elixirstr0", q: 1 });
+		const before = h.snapshot();
+		h.run("equip", "Seller", { num: 0, slot: "trade1", q: 1, ...request });
+		assert.deepEqual(h.failures, ["invalid"]);
+		assert.deepEqual(h.snapshot(), before);
+	}
+});
 
 test("listing, withdrawal and repeated purchases conserve ordinary and titled items", () => {
 	for (const original of variants)

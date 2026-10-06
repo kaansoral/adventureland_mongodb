@@ -455,5 +455,6 @@
 	"response.trade_offer_invalid": "Không thể yêu cầu vật phẩm đó",
 	"response.trade_swap_match": "Vật phẩm này không khớp với đề nghị",
 	"response.trade_swap_space": "Thương nhân hết chỗ",
-	"game.trade_history.traded": "- Đã đổi '{item}' với {player} lấy '{received}'"
+	"game.trade_history.traded": "- Đã đổi '{item}' với {player} lấy '{received}'",
+	"response.transport_need_items": "Cần: {items}"
 }

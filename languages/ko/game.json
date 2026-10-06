@@ -455,5 +455,6 @@
 	"response.trade_offer_invalid": "그 아이템은 요청할 수 없어요",
 	"response.trade_swap_match": "그 아이템은 제안 조건에 맞지 않아요",
 	"response.trade_swap_space": "상인의 가방에 공간이 없어요",
-	"game.trade_history.traded": "- {player}님과 교환: '{item}' 주고 '{received}' 받음"
+	"game.trade_history.traded": "- {player}님과 교환: '{item}' 주고 '{received}' 받음",
+	"response.transport_need_items": "필요한 아이템: {items}"
 }

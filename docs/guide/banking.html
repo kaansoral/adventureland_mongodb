@@ -23,6 +23,7 @@
 	<div class="guide-flow-node">{{ phrase_html("docs.guide.banking.shared-bank-pack") }}</div>
 </div>
 <p>{{ phrase("docs.guide.banking.open-an-item-teller-then-drag-an-inventory") }}</p>
+<p>{{ phrase("docs.guide.banking.overflow_items") }}</p>
 <p>{{ phrase("docs.guide.banking.items-cannot-be-equipped-sold-upgraded-or-sent") }}</p>
 <div class="guide-note">{{ phrase("docs.guide.banking.leave-at-least-one-inventory-space-before-retrieving") }}</div>
 
@@ -30,6 +31,7 @@
 <div class="title mt15">{{ phrase("docs.guide.banking.opening-more-space") }}</div>
 <p>{{ phrase("docs.guide.banking.walk-up-to-a-closed-teller-to-see") }}</p>
 <p>{{ phrase("docs.guide.banking.the-bank-key-opens-the-basement-the-underground") }}</p>
+<p>{{ phrase("docs.guide.banking.key_pack") }}</p>
 <div class="guide-card-grid">
 	<div class="guide-card">{{ phrase_html("docs.guide.banking.basement-key-unlocks-the-door-from-the-bank") }}</div>
 	<div class="guide-card">{{ phrase_html("docs.guide.banking.underground-key-unlocks-the-deeper-underground-floor") }}</div>
@@ -50,6 +52,10 @@
 	// No pack: prefer an existing stack, then the first free slot.
 	var potions = locate_item("hpot0");
 	if (potions !== -1) await bank_store(potions);
+
+	for (var i = character.isize; i < character.items.length; i++) {
+		if (character.items[i]) await bank_store(i);
+	}
 
 	// Explicit pack and positions:
 	// await bank_store(0, "items0", 5);

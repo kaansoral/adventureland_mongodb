@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "Tüccar olmayan başka bir karakter çalışıyor.",
 	"interface.encouragement.away": "Tekrar Hoş Geldin etkisini almak için 60 günden uzun bir aradan sonra dön.",
 	"interface.recipes.crafting_and_collecting": "Üretim ve Toplama",
-	"interface.mail.confirm_delete": "Posta silinsin mi?",
+	"interface.mail.confirm_delete": "Bu postanın sizdeki kopyası silinsin mi?",
 	"interface.cosmetics.default_position": " varsayılan konum",
 	"interface.cosmetics.move_left": " [sola {pixels}px kaydır]",
 	"interface.cosmetics.move_right": " [sağa {pixels}px kaydır]",
@@ -964,7 +964,7 @@
 	"interface.cavalry.call": "CAVALRY’Yİ ÇAĞIR!",
 	"interface.cavalry.coming": "Cavalry yolda!",
 	"interface.cavalry.queued": "Cavalry meşgul. Çağrın sırada bekliyor.",
-	"interface.cavalry.tracker": "Cavalry’yi çağırmak için yanında bir Tracktrix taşı.",
+	"interface.cavalry.tracker": "Cavalry'yi çağırmak için yanında Tracktrix veya Super Computer taşı.",
 	"interface.cavalry.no_monsters": "Yakında yardıma uygun, seviye 3+ canavar yok.",
 	"interface.cavalry.cooldown": "Cavalry {minutes} dk. sonra yeniden yanıt verebilir.",
 	"interface.cavalry.unavailable": "Cavalry şu anda yanıt veremiyor.",
@@ -988,5 +988,8 @@
 	"interface.trade_offer.no_match": "Uygun eşyan yok",
 	"interface.trade_offer.choose": "Vereceğin eşyayı seç",
 	"interface.trade_offer.trade": "TAKAS ET",
-	"interface.upgrade_shrine.add_grace": "LÜTUF EKLE"
+	"interface.upgrade_shrine.add_grace": "LÜTUF EKLE",
+	"interface.item.scroll_consumed": "Deneme başarılı da olsa başarısız da olsa parşömen tüketilir.",
+	"interface.skill.gold_output": "Altın getirisi",
+	"interface.upgrade_shrine.grace_hint": "{amount} lütuf ekler. Eşyanın seviyesini yükseltmez."
 }

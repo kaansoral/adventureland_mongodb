@@ -498,7 +498,7 @@ var conditions = {
 		debuff: true,
 		defense: "phresistance",
 		duration: 3200,
-		explanation: "Cannot move, attack, heal, or use skills.",
+		explanation: "Cannot move, attack, heal, use skills, or use items.",
 	},
 	deepfreezed: {
 		name: "Deepfreezed",

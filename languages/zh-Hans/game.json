@@ -455,5 +455,6 @@
 	"response.trade_offer_invalid": "无法求取该物品",
 	"response.trade_swap_match": "该物品不符合交换条件",
 	"response.trade_swap_space": "商人没有空位",
-	"game.trade_history.traded": "- 与{player}交换，以'{item}'换得'{received}'"
+	"game.trade_history.traded": "- 与{player}交换，以'{item}'换得'{received}'",
+	"response.transport_need_items": "需要：{items}"
 }

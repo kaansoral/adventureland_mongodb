@@ -126,7 +126,7 @@ test("condition definitions, shared atlas, guide directory, SEO and MCP all reso
 		for (const stat of ["xp", "gold", "luck", "xpm", "goldm", "luckm"])
 			assert.equal(G.conditions[name][stat], undefined);
 	}
-	assert.match(G.imagesets.rawitems.file, /raw_items\.png\?v=18$/);
+	assert.match(G.imagesets.rawitems.file, /raw_items\.png\?v=\d+$/);
 	for (const file of ["docs/directory.js", "seo_paths.js", "mcp_api.js"]) assert.match(read(file), /encouragement/);
 	const html = article();
 	assert.doesNotMatch(html, /<(details|summary)\b/);

@@ -1,5 +1,27 @@
 // English documentation catalog. IDs identify source meaning and usage.
 module.exports = {
+	// Items guide and upgrade CODE reference. Preserve Primling, CODE, null and grace_added. A preview consumes nothing.
+	"docs.upgrading.grace_only": "At the upgrade shrine, use an offering such as Primling without a scroll to add 0.5 grace. The offering is consumed; the item keeps its level. In CODE, pass null for the scroll. Calculation mode consumes nothing and returns grace_added.",
+	// Entry CODE reference. Preserve CODE, transport_cant_item and items; the keys in items are executable item IDs.
+	"docs.functions.enter.missing_key": "If an entrance requires a key, the error names the missing key. In CODE, a transport_cant_item rejection includes items, mapping each required item ID to its quantity.",
+	// Monster reference. Preserve boundary and boundaries, the two CODE data fields. Definitions do not prove current sightings.
+	"docs.articles.data-monster.spawn_boundaries": "A spawn pack can use boundary for one rectangle on its map, or boundaries for rectangles that include their own map names. Scan every map when looking for a monster’s spawn areas: one pack can span several maps. These are possible spawn areas, not live sightings.",
+	// Item use and recovery requests during stun, in the Items guide and CODE references. Preserve HP/MP, CODE, reason and "disabled". Passive recovery continues.
+	"docs.items.stunned_use": "Consumables, item activations, thrown items, and HP/MP recovery requests are blocked while you are stunned. These CODE actions reject with reason: \"disabled\".",
+	// CODE trade and wishlist price limits. Preserve price, reason and the failure reason "invalid".
+	"docs.trade.valid_price": "Use a whole gold amount from 1 to 99,999,999,999 for price. Invalid prices reject with reason: \"invalid\".",
+	// Items guide, beside PvP item markings. Self-inflicted splash still hurts, but never counts as an opponent or awards a self-kill or self-loot. Preserve PvP.
+	"docs.guide.items.self_damage": "Your own splash damage can hurt you in PvP areas. It does not count as another player attacking you, give you a PvP kill or let you loot your own death.",
+	// Cave return: preserve the current floor, progress, health and fallen state.
+	"docs.cave.safe_return": "If a wall blocks your saved position, returning places you at a safe point on the same floor, or at that floor’s entrance. Your cave progress and health are kept; fallen characters remain fallen.",
+	// Banking guide: Bank Key and Underground Key each grant their floor's first pack as well as its entrance. This does not describe Diamond Key or purchasing a pack.
+	"docs.guide.banking.key_pack": "Each floor key also unlocks its first item pack, which is available immediately.",
+	// Banking and anniversary guides, plus bank_store reference: overflow keeps real reward items without increasing capacity. Keep bank_store() unchanged. Index means the zero-based position in character.items.
+	"docs.guide.banking.overflow_items": "Rewards can appear in an extra inventory row when your bag is full. These items are kept, but the row does not add capacity. At the bank, drag an item from that row into a pack, or use bank_store() with its inventory index.",
+	// Encouragement guide introduction. Existing merchants can move between realms without interrupting other characters' bonuses; normal account eligibility and character limits still apply.
+	"docs.guide.encouragement.merchant_realms": "Merchants can change realms without interrupting your other characters’ encouragement bonuses.",
+	// Mail tutorial and send_mail/take_mail_item references. Receiving account owns the attachment, including self-mail; deletion hides only the caller's copy.
+	"docs.mail.ownership": "Only the receiving account can collect an attachment. Senders cannot take it back. Deleting mail removes only your copy.",
 	// Bank gold response metadata. Preserve operation, deposit, withdraw and gold as CODE.
 	"docs.functions.bank_gold.operation": "The result's <span class='dlabel'>operation</span> is <span class='dlabel'>\"deposit\"</span> or <span class='dlabel'>\"withdraw\"</span>; <span class='dlabel'>gold</span> is the amount moved.",
 	// Golden Bat guide paragraph after its spawn line; the drop list with exact rates follows. Item names fixed; 24,000 exact.
@@ -73,13 +95,13 @@ module.exports = {
 	// Home guide. condition is the translated Hop Sickness name. Keep XP, PvP and Bean. Level 60+, non-PvP, 12 online minutes; reconnect preserves time and returning/changing home clears it.
 	"docs.guide.events-and-home.hop-sickness": "{condition} lowers XP, gold, luck and attack power after a character of level 60 or above enters another non-PvP server away from home. The base duration is 12 minutes of online play. Reconnecting to that server preserves the remaining time. Returning to the saved home or changing home with Bean clears it immediately.",
 	// Public CODE requirements and Promise fields. Preserve Tracktrix, Cavalry, Cave of Many Dreams, assigned, queued, next_call, cooldown_ms, reason and 0–4.
-	"docs.cavalry.code": "Carry Tracktrix and follow the rescue rules. Call once. Results include assigned (0–4), queued, next_call and cooldown_ms; failures reject with reason. Cavalry cannot enter the Cave of Many Dreams.",
+	"docs.cavalry.code": "Carry Tracktrix or Super Computer and follow the rescue rules. Call interact(\"cavalry\") once. Results include assigned (0–4), queued, next_call and cooldown_ms; failures reject with reason. Cavalry cannot be called from generated maps, including Cave of Many Dreams.",
 	// Four Cavalry NPCs shared per game server, distributed 4 / 2+2 / 2+1+1 / 1+1+1+1. Calls within 160 normal game range share a fight. Priority uses current caller character level, then call age; lower-level calls can take sentries from higher-level ones.
 	"docs.cavalry.dispatch": "Four sentries are shared per server. Separate fights split them 4, 2+2, 2+1+1 or 1+1+1+1. Calls within 160 game range share one fight. Lower CURRENT character level gets priority; older calls break ties. Extra fights wait, and sentries may move to a lower-level caller.",
 	// Cavalry guide class behavior and unchanged rewards. Translate class names using established terms. Keep Cavalry, Tracktrix and XP; monsters do not target Cavalry.
 	"docs.cavalry.combat": "The Warrior stays charged. The Mage fires up to three projectiles and sometimes blinks. The Priest heals wounded nearby players; the Paladin heals and protects nearby allies. Monsters never target Cavalry. Assisted kills keep normal XP, loot and Tracktrix credit.",
 	// Cavalry guide manual action. Tracktrix must be in inventory; action is the translated call label including its exclamation mark. Keep Tracktrix, Cavalry and Cave of Many Dreams.
-	"docs.cavalry.manual": "Carry Tracktrix, click it, and choose {action} You must be alive and connected. Cavalry cannot be called from generated maps, including Cave of Many Dreams.",
+	"docs.cavalry.manual": "Carry Tracktrix or Super Computer, click it, and choose {action} You must be alive and connected. Cavalry cannot be called from generated maps, including Cave of Many Dreams.",
 	// Guide introduction; preserve Wizard's Crib, translate class labels using established terms.
 	"docs.cavalry.intro": "Four sentries wait in Wizard's Crib: a Paladin, Mage, Warrior and Priest. Click one to inspect their equipment.",
 	// Guide introduction. Rime Djinn, Frozen Cove and Harpy are fixed game names. Ordinary aggro=1 permits passing attacks without target acquisition.

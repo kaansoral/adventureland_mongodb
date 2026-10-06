@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "В игра е друг герой, който не е търговец.",
 	"interface.encouragement.away": "Върни се след отсъствие от повече от 60 дни, за да получиш „Отново сред нас“.",
 	"interface.recipes.crafting_and_collecting": "Изработване и събиране",
-	"interface.mail.confirm_delete": "Да се изтрие ли писмото?",
+	"interface.mail.confirm_delete": "Да се изтрие ли твоето копие на това писмо?",
 	"interface.cosmetics.default_position": " позиция по подразбиране",
 	"interface.cosmetics.move_left": " [премести наляво с {pixels}px]",
 	"interface.cosmetics.move_right": " [премести надясно с {pixels}px]",
@@ -965,7 +965,7 @@
 	"interface.cavalry.call": "ПОВИКАЙ CAVALRY!",
 	"interface.cavalry.coming": "Cavalry е на път!",
 	"interface.cavalry.queued": "Cavalry е заета. Повикването ти чака.",
-	"interface.cavalry.tracker": "Носи Tracktrix, за да повикаш Cavalry.",
+	"interface.cavalry.tracker": "Носете Tracktrix или Super Computer, за да повикате Cavalry.",
 	"interface.cavalry.no_monsters": "Няма подходящи чудовища от ниво 3+ наблизо.",
 	"interface.cavalry.cooldown": "Cavalry ще може да отговори отново след {minutes} мин.",
 	"interface.cavalry.unavailable": "Cavalry не може да отговори в момента.",
@@ -989,5 +989,8 @@
 	"interface.trade_offer.no_match": "Нямаш подходящ предмет",
 	"interface.trade_offer.choose": "Избери предмета, който даваш",
 	"interface.trade_offer.trade": "РАЗМЕНИ",
-	"interface.upgrade_shrine.add_grace": "ДОБАВИ БЛАГОВОЛЕНИЕ"
+	"interface.upgrade_shrine.add_grace": "ДОБАВИ БЛАГОВОЛЕНИЕ",
+	"interface.item.scroll_consumed": "Свитъкът се изразходва независимо дали опитът е успешен.",
+	"interface.skill.gold_output": "Добив на злато",
+	"interface.upgrade_shrine.grace_hint": "Добавя {amount} благоволение. Не повишава нивото на предмета."
 }

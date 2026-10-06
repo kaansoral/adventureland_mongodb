@@ -455,5 +455,6 @@
 	"response.trade_offer_invalid": "O tento předmět nelze žádat",
 	"response.trade_swap_match": "Tento předmět neodpovídá nabídce",
 	"response.trade_swap_space": "Obchodník nemá místo",
-	"game.trade_history.traded": "- Vyměněno '{item}' s hráčem {player} za '{received}'"
+	"game.trade_history.traded": "- Vyměněno '{item}' s hráčem {player} za '{received}'",
+	"response.transport_need_items": "Potřebuješ: {items}"
 }

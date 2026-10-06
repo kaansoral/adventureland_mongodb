@@ -455,5 +455,6 @@
 	"response.trade_offer_invalid": "Δεν μπορείς να ζητήσεις αυτό το αντικείμενο",
 	"response.trade_swap_match": "Το αντικείμενο δεν ταιριάζει με την προσφορά",
 	"response.trade_swap_space": "Ο έμπορος δεν έχει χώρο",
-	"game.trade_history.traded": "- Αντάλλαξες '{item}' με {player} για '{received}'"
+	"game.trade_history.traded": "- Αντάλλαξες '{item}' με {player} για '{received}'",
+	"response.transport_need_items": "Χρειάζεσαι: {items}"
 }

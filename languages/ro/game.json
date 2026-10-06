@@ -458,5 +458,6 @@
 	"response.trade_offer_invalid": "Nu poți cere acest obiect",
 	"response.trade_swap_match": "Obiectul nu corespunde ofertei",
 	"response.trade_swap_space": "Negustorul nu are loc",
-	"game.trade_history.traded": "- Ai schimbat '{item}' cu {player} pe '{received}'"
+	"game.trade_history.traded": "- Ai schimbat '{item}' cu {player} pe '{received}'",
+	"response.transport_need_items": "Ai nevoie de: {items}"
 }

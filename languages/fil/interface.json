@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "May ibang karakter na hindi mangangalakal na aktibo sa laro.",
 	"interface.encouragement.away": "Bumalik matapos ang mahigit 60 araw na pagkawala upang makatanggap ng Maligayang Pagbabalik.",
 	"interface.recipes.crafting_and_collecting": "Paggawa at Pangongolekta",
-	"interface.mail.confirm_delete": "Burahin ang liham?",
+	"interface.mail.confirm_delete": "Burahin ang kopya mo ng liham na ito?",
 	"interface.cosmetics.default_position": " default na posisyon",
 	"interface.cosmetics.move_left": " [ilipat pakaliwa nang {pixels}px]",
 	"interface.cosmetics.move_right": " [ilipat pakanan nang {pixels}px]",
@@ -964,7 +964,7 @@
 	"interface.cavalry.call": "TAWAGIN ANG CAVALRY!",
 	"interface.cavalry.coming": "Paparating na ang Cavalry!",
 	"interface.cavalry.queued": "Abala ang Cavalry. Naghihintay ang tawag mo.",
-	"interface.cavalry.tracker": "Magdala ng Tracktrix para matawag ang Cavalry.",
+	"interface.cavalry.tracker": "Magdala ng Tracktrix o Super Computer para tumawag ng Cavalry.",
 	"interface.cavalry.no_monsters": "Walang malapit na halimaw na level 3+ na pasok sa mga kundisyon.",
 	"interface.cavalry.cooldown": "Maaaring tawagin muli ang Cavalry pagkalipas ng {minutes} min.",
 	"interface.cavalry.unavailable": "Hindi makasagot ang Cavalry sa ngayon.",
@@ -988,5 +988,8 @@
 	"interface.trade_offer.no_match": "Wala kang katugmang gamit",
 	"interface.trade_offer.choose": "Piliin ang gamit na ibibigay",
 	"interface.trade_offer.trade": "IPAGPALIT",
-	"interface.upgrade_shrine.add_grace": "MAGDAGDAG NG BIYAYA"
+	"interface.upgrade_shrine.add_grace": "MAGDAGDAG NG BIYAYA",
+	"interface.item.scroll_consumed": "Nauubos ang balumbon matagumpay man o hindi ang pagsubok.",
+	"interface.skill.gold_output": "Gintong makukuha",
+	"interface.upgrade_shrine.grace_hint": "Nagdaragdag ng {amount} biyaya. Hindi itinataas ang level ng item."
 }

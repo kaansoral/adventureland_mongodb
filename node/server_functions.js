@@ -339,6 +339,11 @@ function calculate_xvalue(arr, rec, divide, mult) {
 	return value;
 }
 
+function trade_price(value) {
+	if (typeof value === "string" && /^\d+$/.test(value.trim())) value = Number(value.trim());
+	return Number.isSafeInteger(value) && value >= 1 && value <= 99999999999 ? value : null;
+}
+
 function add_to_trade_history(player, event, name, item, price, received) {
 	if (!player.p.trade_history) {
 		player.p.trade_history = [];

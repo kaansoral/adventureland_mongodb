@@ -455,5 +455,6 @@
 	"response.trade_offer_invalid": "Du kan ikke bede om den genstand",
 	"response.trade_swap_match": "Genstanden passer ikke til tilbuddet",
 	"response.trade_swap_space": "Købmanden har ikke plads",
-	"game.trade_history.traded": "- Byttede '{item}' med {player} for '{received}'"
+	"game.trade_history.traded": "- Byttede '{item}' med {player} for '{received}'",
+	"response.transport_need_items": "Kræver: {items}"
 }

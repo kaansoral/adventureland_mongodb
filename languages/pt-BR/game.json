@@ -455,5 +455,6 @@
 	"response.trade_offer_invalid": "Não é possível pedir esse item",
 	"response.trade_swap_match": "Esse item não corresponde à oferta",
 	"response.trade_swap_space": "O mercador está sem espaço",
-	"game.trade_history.traded": "- Trocou '{item}' com {player} por '{received}'"
+	"game.trade_history.traded": "- Trocou '{item}' com {player} por '{received}'",
+	"response.transport_need_items": "Você precisa de: {items}"
 }

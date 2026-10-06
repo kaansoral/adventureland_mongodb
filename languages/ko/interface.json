@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "상인이 아닌 다른 캐릭터가 실행 중이에요.",
 	"interface.encouragement.away": "60일 넘게 쉬고 돌아오면 '돌아오신 걸 환영해요' 효과를 받을 수 있어요.",
 	"interface.recipes.crafting_and_collecting": "제작과 수집",
-	"interface.mail.confirm_delete": "편지를 삭제할까요?",
+	"interface.mail.confirm_delete": "이 우편의 내 사본을 삭제할까요?",
 	"interface.cosmetics.default_position": " 기본 위치",
 	"interface.cosmetics.move_left": " [왼쪽으로 {pixels}px 이동]",
 	"interface.cosmetics.move_right": " [오른쪽으로 {pixels}px 이동]",
@@ -964,7 +964,7 @@
 	"interface.cavalry.call": "CAVALRY 호출!",
 	"interface.cavalry.coming": "Cavalry가 오고 있습니다!",
 	"interface.cavalry.queued": "Cavalry가 다른 곳을 돕고 있습니다. 요청이 대기 중입니다.",
-	"interface.cavalry.tracker": "Cavalry를 부르려면 Tracktrix를 소지하세요.",
+	"interface.cavalry.tracker": "Cavalry를 부르려면 Tracktrix 또는 Super Computer를 소지하세요.",
 	"interface.cavalry.no_monsters": "근처에 지원 대상인 레벨 3 이상 몬스터가 없습니다.",
 	"interface.cavalry.cooldown": "{minutes}분 후에 Cavalry를 다시 부를 수 있습니다.",
 	"interface.cavalry.unavailable": "Cavalry는 지금 응답할 수 없습니다.",
@@ -988,5 +988,8 @@
 	"interface.trade_offer.no_match": "조건에 맞는 아이템이 없어요",
 	"interface.trade_offer.choose": "줄 아이템을 고르세요",
 	"interface.trade_offer.trade": "교환",
-	"interface.upgrade_shrine.add_grace": "은총 추가"
+	"interface.upgrade_shrine.add_grace": "은총 추가",
+	"interface.item.scroll_consumed": "시도의 성공 여부와 관계없이 주문서는 소모됩니다.",
+	"interface.skill.gold_output": "골드 환원율",
+	"interface.upgrade_shrine.grace_hint": "은총을 {amount} 추가합니다. 아이템 레벨은 오르지 않습니다."
 }

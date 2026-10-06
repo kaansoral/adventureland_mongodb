@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "Ein anderer Nicht-Händler-Charakter läuft.",
 	"interface.encouragement.away": "Kehre nach mehr als 60 Tagen Pause zurück, um Willkommen zurück zu erhalten.",
 	"interface.recipes.crafting_and_collecting": "Herstellen und Sammeln",
-	"interface.mail.confirm_delete": "Brief löschen?",
+	"interface.mail.confirm_delete": "Deine Kopie dieses Briefs löschen?",
 	"interface.cosmetics.default_position": " Standardposition",
 	"interface.cosmetics.move_left": " [{pixels}px nach links]",
 	"interface.cosmetics.move_right": " [{pixels}px nach rechts]",
@@ -965,7 +965,7 @@
 	"interface.cavalry.call": "CAVALRY RUFEN!",
 	"interface.cavalry.coming": "Cavalry ist unterwegs!",
 	"interface.cavalry.queued": "Cavalry ist beschäftigt. Dein Ruf wartet.",
-	"interface.cavalry.tracker": "Trage einen Tracktrix bei dir, um Cavalry zu rufen.",
+	"interface.cavalry.tracker": "Trage Tracktrix oder Super Computer bei dir, um die Cavalry zu rufen.",
 	"interface.cavalry.no_monsters": "Keine geeigneten Monster ab Stufe 3 in der Nähe.",
 	"interface.cavalry.cooldown": "Cavalry kann in {minutes} Min. wieder antworten.",
 	"interface.cavalry.unavailable": "Cavalry kann gerade nicht antworten.",
@@ -989,5 +989,8 @@
 	"interface.trade_offer.no_match": "Du hast keinen passenden Gegenstand",
 	"interface.trade_offer.choose": "Wähle den Gegenstand, den du gibst",
 	"interface.trade_offer.trade": "TAUSCHEN",
-	"interface.upgrade_shrine.add_grace": "GNADE HINZUFÜGEN"
+	"interface.upgrade_shrine.add_grace": "GNADE HINZUFÜGEN",
+	"interface.item.scroll_consumed": "Die Schriftrolle wird verbraucht, ob der Versuch gelingt oder scheitert.",
+	"interface.skill.gold_output": "Goldertrag",
+	"interface.upgrade_shrine.grace_hint": "Fügt {amount} Gnade hinzu. Erhöht nicht die Gegenstandsstufe."
 }

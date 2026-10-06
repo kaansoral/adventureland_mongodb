@@ -1852,14 +1852,16 @@ function init_socket(args) {
 		if (character.role == "cx" && !is_bot) insert_cx_tuners();
 	});
 	socket.on("correction", function (data) {
-		if (can_move({ map: character.map, x: character.real_x, y: character.real_y, going_x: data.x, going_y: data.y, base: character.base })) {
+		var cave = data.cave && G.maps[character.map]?.generated?.run === data.cave;
+		if (cave || can_move({ map: character.map, x: character.real_x, y: character.real_y, going_x: data.x, going_y: data.y, base: character.base })) {
 			add_log(phrase.html("game.location_corrected"), "gray");
 			console.log("Character correction");
 			character.real_x = parseFloat(data.x);
 			character.real_y = parseFloat(data.y);
-			// character.moving=false; character.vx=character.vy=0;
-			recalculate_vxy(character);
-			// resolve_deferreds("move",{reason:"correction"});
+			if (cave) {
+				character.moving = false;
+				character.vx = character.vy = 0;
+			} else recalculate_vxy(character);
 		}
 	});
 	socket.on("players", function (data) {
@@ -2069,6 +2071,47 @@ function init_socket(args) {
 			if (Dev) console.error(e);
 		}
 		if (response == "upgrade_success" || response == "upgrade_fail") u_retain_t = options.retain_upgrades;
+		// CODE results must not depend on drawing or UI callbacks.
+		if (response == "compound_success") {
+			if (!data.stale) resolve_deferred("compound", { success: true, level: data.level, num: data.num });
+		} else if (response == "compound_fail") {
+			if (!data.stale) resolve_deferred("compound", { success: false, level: data.level, num: data.num });
+		} else if (response == "compound_no_scroll") {
+			reject_deferred("compound", { reason: "no_scroll" });
+		} else if (response == "compound_invalid_offering") {
+			reject_deferred("compound", { reason: "offering" });
+		} else if (response == "compound_mismatch") {
+			reject_deferred("compound", { reason: "mismatch" });
+		} else if (response == "compound_cant") {
+			reject_deferred("compound", { reason: "not_combinable" });
+		} else if (response == "compound_incompatible_scroll") {
+			reject_deferred("compound", { reason: "scroll" });
+		} else if (response == "upgrade_success") {
+			if (!data.stale) resolve_deferred("upgrade", { success: true, level: data.level, num: data.num });
+		} else if (response == "upgrade_fail") {
+			if (!data.stale) resolve_deferred("upgrade", { failed: true, success: false, level: data.level, num: data.num });
+		} else if (response == "upgrade_success_stat") {
+			if (!data.stale) resolve_deferred("upgrade", { stat: true, stat_type: data.stat_type, num: data.num });
+		} else if (response == "upgrade_offering_success") {
+			if (!data.stale) resolve_deferred("upgrade", { success: true });
+		} else if (response == "upgrade_no_item") {
+			reject_deferred("upgrade", { reason: "no_item" });
+		} else if (response == "upgrade_in_progress") {
+			reject_deferred("upgrade", { reason: "in_progress" });
+		} else if (response == "upgrade_no_scroll") {
+			reject_deferred("upgrade", { reason: "no_scroll" });
+		} else if (response == "upgrade_mismatch") {
+			reject_deferred("upgrade", { reason: "mismatch" });
+		} else if (response == "upgrade_invalid_offering") {
+			reject_deferred("upgrade", { reason: "offering" });
+		} else if (response == "upgrade_cant") {
+			reject_deferred("upgrade", { reason: "not_upgradeable" });
+		} else if (response == "upgrade_incompatible_scroll") {
+			reject_deferred("upgrade", { reason: "scroll" });
+		} else if (response == "upgrade_scroll_q") {
+			reject_deferred("upgrade", { reason: "scroll_quantity", need: data.q, have: data.h });
+		}
+
 		draw_trigger(function () {
 			if (response == "elixir") {
 				ui_log(phrase.html("response.elixir"), "gray");
@@ -2106,49 +2149,34 @@ function init_socket(args) {
 			else if (response == "compound_success") {
 				tut("compound");
 				ui_log(phrase.html("response.compound_success"), (data.up && "#1ABEFF") || "white");
-				if (!data.stale) resolve_deferred("compound", { success: true, level: data.level, num: data.num });
 			} else if (response == "compound_fail") {
 				tut("compound");
 				ui_error(phrase.html("response.compound_fail"));
-				if (!data.stale) resolve_deferred("compound", { success: false, level: data.level, num: data.num });
-			} else if (response == "compound_no_scroll") {
-				reject_deferred("compound", { reason: "no_scroll" });
 			} else if (response == "compound_in_progress") {
 				ui_log(phrase.html("response.compound_in_progress"), "gray");
 			} else if (response == "compound_invalid_offering") {
 				ui_log(phrase.html("response.compound_invalid_offering"), "gray");
-				reject_deferred("compound", { reason: "offering" });
 			} else if (response == "compound_mismatch") {
 				ui_log(phrase.html("response.compound_mismatch"), "gray");
-				reject_deferred("compound", { reason: "mismatch" });
 			} else if (response == "compound_cant") {
 				ui_log(phrase.html("response.compound_cant"), "gray");
-				reject_deferred("compound", { reason: "not_combinable" });
 			} else if (response == "compound_incompatible_scroll") {
 				set_uchance("?");
 				ui_log(phrase.html("response.compound_incompatible_scroll"), "gray");
-				reject_deferred("compound", { reason: "scroll" });
 			} else if (response == "misc_fail") {
 				ui_log(":)", "#FF5D54");
 			} else if (response == "upgrade_success") {
 				tut("upgrade");
 				ui_log(phrase.html("response.upgrade_success"), "white");
-				if (!data.stale) resolve_deferred("upgrade", { success: true, level: data.level, num: data.num });
 			} else if (response == "upgrade_fail") {
 				tut("upgrade");
 				ui_error(phrase.html("response.upgrade_fail"));
-				if (!data.stale) resolve_deferred("upgrade", { failed: true, success: false, level: data.level, num: data.num });
 			} else if (response == "upgrade_success_stat") {
 				tut("addstats");
-				if (!data.stale) resolve_deferred("upgrade", { stat: true, stat_type: data.stat_type, num: data.num });
 			} else if (response == "upgrade_offering_success") {
 				ui_log(phrase.html("response.upgrade_offering_success"), "white");
-				if (!data.stale) resolve_deferred("upgrade", { success: true });
-			} else if (response == "upgrade_no_item") {
-				reject_deferred("upgrade", { reason: "no_item" });
 			} else if (response == "upgrade_in_progress") {
 				ui_log(phrase.html("response.upgrade_in_progress"), "gray");
-				reject_deferred("upgrade", { reason: "in_progress" });
 			} else if (response == "mail_sending") {
 				ui_log(phrase.html("response.mail_sending"), "gray");
 				hide_modal(true);
@@ -2170,25 +2198,17 @@ function init_socket(args) {
 					api_call("pull_mail");
 				}, 2000);
 				$(".takeitem").hide();
-			} else if (response == "upgrade_no_scroll") {
-				reject_deferred("upgrade", { reason: "no_scroll" });
-			} else if (response == "upgrade_mismatch") {
-				reject_deferred("upgrade", { reason: "mismatch" });
 			} else if (response == "upgrade_invalid_offering") {
 				ui_log(phrase.html("response.upgrade_invalid_offering"), "gray");
-				reject_deferred("upgrade", { reason: "offering" });
 			} else if (response == "upgrade_cant") {
 				ui_log(phrase.html("response.upgrade_cant"), "gray");
-				reject_deferred("upgrade", { reason: "not_upgradeable" });
 			} else if (response == "upgrade_incompatible_scroll") {
 				set_uchance("?");
 				ui_log(phrase.html("response.upgrade_incompatible_scroll"), "gray");
-				reject_deferred("upgrade", { reason: "scroll" });
 			} else if (response == "upgrade_scroll_q") {
 				ui_log(phrase.html("response.upgrade_scroll_q", { q: data.q }), "gray");
-				reject_deferred("upgrade", { reason: "scroll_quantity", need: data.q, have: data.h });
 			} else if (response == "upgrade_chance" || response == "compound_chance") {
-				set_uchance(data.chance);
+				set_uchance(data.chance, false, data.grace_added);
 			} else if (response == "max_level") {
 				set_uchance("?");
 				ui_log(phrase.html("response.max_level", { level: data.level }), "white");
@@ -2378,7 +2398,10 @@ function init_socket(args) {
 				ui_log(phrase.html("response.transport_cant_invalid"), "gray");
 				transporting = false;
 			} else if (response == "transport_cant_item") {
-				ui_log(phrase.html("response.transport_cant_item"), "gray");
+				var needed_items = Object.entries(data.items || {}).filter(function (entry) {
+					return G.items[entry[0]] && Number.isInteger(entry[1]) && entry[1] > 0;
+				}).map(function (entry) { return entry[1] + " × " + G.items[entry[0]].name; }).join(", ");
+				ui_log(needed_items ? phrase.html("response.transport_need_items", { items: needed_items }) : phrase.html("response.transport_cant_item"), "gray");
 				transporting = false;
 			} else if (response == "transport_cant_dampened") {
 				ui_log(phrase.html("response.transport_cant_dampened"), "#A772D0");

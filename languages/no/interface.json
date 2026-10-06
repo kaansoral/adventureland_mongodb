@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "En annen figur som ikke er kjøpmann, er aktiv.",
 	"interface.encouragement.away": "Kom tilbake etter mer enn 60 dagers fravær for å få Velkommen tilbake.",
 	"interface.recipes.crafting_and_collecting": "Fremstilling og samling",
-	"interface.mail.confirm_delete": "Vil du slette brevet?",
+	"interface.mail.confirm_delete": "Slette din kopi av dette brevet?",
 	"interface.cosmetics.default_position": " standardplassering",
 	"interface.cosmetics.move_left": " [flytt {pixels}px til venstre]",
 	"interface.cosmetics.move_right": " [flytt {pixels}px til høyre]",
@@ -965,7 +965,7 @@
 	"interface.cavalry.call": "TILKALL CAVALRY!",
 	"interface.cavalry.coming": "Cavalry er på vei!",
 	"interface.cavalry.queued": "Cavalry er opptatt. Anropet ditt venter.",
-	"interface.cavalry.tracker": "Ha en Tracktrix med deg for å tilkalle Cavalry.",
+	"interface.cavalry.tracker": "Ha med deg Tracktrix eller Super Computer for å tilkalle Cavalry.",
 	"interface.cavalry.no_monsters": "Det finnes ingen egnede monstre på nivå 3+ i nærheten.",
 	"interface.cavalry.cooldown": "Cavalry kan svare igjen om {minutes} min.",
 	"interface.cavalry.unavailable": "Cavalry kan ikke svare akkurat nå.",
@@ -989,5 +989,8 @@
 	"interface.trade_offer.no_match": "Du har ingen passende gjenstand",
 	"interface.trade_offer.choose": "Velg gjenstanden du gir",
 	"interface.trade_offer.trade": "BYTT",
-	"interface.upgrade_shrine.add_grace": "LEGG TIL GUNST"
+	"interface.upgrade_shrine.add_grace": "LEGG TIL GUNST",
+	"interface.item.scroll_consumed": "Rullen brukes opp enten forsøket lykkes eller mislykkes.",
+	"interface.skill.gold_output": "Gullutbytte",
+	"interface.upgrade_shrine.grace_hint": "Legger til {amount} gunst. Øker ikke gjenstandens nivå."
 }

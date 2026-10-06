@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "En annan karaktär som inte är handlare är igång.",
 	"interface.encouragement.away": "Kom tillbaka efter mer än 60 dagars frånvaro för att få Välkommen tillbaka.",
 	"interface.recipes.crafting_and_collecting": "Tillverkning och samlande",
-	"interface.mail.confirm_delete": "Ta bort brevet?",
+	"interface.mail.confirm_delete": "Radera din kopia av det här brevet?",
 	"interface.cosmetics.default_position": " standardposition",
 	"interface.cosmetics.move_left": " [flytta {pixels}px åt vänster]",
 	"interface.cosmetics.move_right": " [flytta {pixels}px åt höger]",
@@ -965,7 +965,7 @@
 	"interface.cavalry.call": "KALLA IN CAVALRY!",
 	"interface.cavalry.coming": "Cavalry är på väg!",
 	"interface.cavalry.queued": "Cavalry är upptagen. Ditt anrop väntar.",
-	"interface.cavalry.tracker": "Ha en Tracktrix med dig för att kalla på Cavalry.",
+	"interface.cavalry.tracker": "Bär med dig Tracktrix eller Super Computer för att kalla på Cavalry.",
 	"interface.cavalry.no_monsters": "Det finns inga lämpliga monster på nivå 3+ i närheten.",
 	"interface.cavalry.cooldown": "Cavalry kan svara igen om {minutes} min.",
 	"interface.cavalry.unavailable": "Cavalry kan inte svara just nu.",
@@ -989,5 +989,8 @@
 	"interface.trade_offer.no_match": "Du har inget föremål som passar",
 	"interface.trade_offer.choose": "Välj föremålet du ger",
 	"interface.trade_offer.trade": "BYT",
-	"interface.upgrade_shrine.add_grace": "LÄGG TILL NÅD"
+	"interface.upgrade_shrine.add_grace": "LÄGG TILL NÅD",
+	"interface.item.scroll_consumed": "Rullen förbrukas oavsett om försöket lyckas eller misslyckas.",
+	"interface.skill.gold_output": "Guldutbyte",
+	"interface.upgrade_shrine.grace_hint": "Lägger till {amount} nåd. Höjer inte föremålets nivå."
 }

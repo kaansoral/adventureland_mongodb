@@ -8,6 +8,16 @@ function freeze_instance(instance, now) {
 	var actors = [...Object.values(instance.players), ...Object.values(instance.monsters)];
 	instance.frozen = { at: now, actors: new Set(actors) };
 	for (var actor of actors) {
+		if (!actor.is_monster && !actor.npc && generated_entry(actor)) {
+			var point = generated_safe_point(actor);
+			if (point && (point.x !== actor.x || point.y !== actor.y)) {
+				actor.x = point.x;
+				actor.y = point.y;
+				actor.abs = true;
+				pmap_move(actor);
+				actor.socket.emit("correction", { x: actor.x, y: actor.y, cave: generated_entry(actor).record.key });
+			}
+		}
 		actor.moving = false;
 		actor.vx = actor.vy = 0;
 		actor.going_x = actor.x;

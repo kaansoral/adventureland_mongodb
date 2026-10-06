@@ -463,24 +463,32 @@ function can_add_item(player,new_item,args) // long requested feature [18/10/18]
 function can_add_items(player,items,args)
 {
 	if(!args) args={};
-	var needed=items.length,overhead=[];
-	if(player.esize+(args.space||0)>=needed || !needed) return true;
-	items.forEach(function(new_item){
+	var space=player.esize+(args.space||0),slots=player.items.slice();
+	if(space>=items.length || !items.length) return true;
+	for(var n=0;n<items.length;n++)
+	{
+		var new_item=items[n],stack=-1;
 		if(G.items[new_item.name].s)
 		{
-			for(var i=0;i<player.items.length;i++)
+			for(var i=0;i<slots.length;i++)
 			{
-				var item=player.items[i];
-				if(can_stack(item,new_item,overhead[i]||0))
+				if(can_stack(slots[i],new_item))
 				{
-					overhead[i]=(overhead[i]||0)+new_item.q;
-					needed--;
+					stack=i;
+					break;
 				}
 			}
 		}
-	});
-	if(player.esize+(args.space||0)>=needed) return true;
-	return false;
+		if(stack>=0) slots[stack]=Object.assign({},slots[stack],{q:slots[stack].q+new_item.q});
+		else
+		{
+			if(space<=0) return false;
+			space--;
+			var empty=slots.findIndex(function(item){ return !item; });
+			slots[empty<0?slots.length:empty]=Object.assign({},new_item);
+		}
+	}
+	return true;
 }
 
 function trade_want_normalize(want) // what a trade offer asks for: name, level (the lowest accepted), p, q - an unset level or title accepts any

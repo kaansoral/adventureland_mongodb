@@ -879,3 +879,66 @@ test("Cavalry action packets reach headless CODE through the native socket handl
 	assert.ok(fake.Sprite);
 	assert.equal(attacker.entity_strike, undefined);
 });
+
+test("Super Computer satisfies both checks in the real Cavalry interaction", async () => {
+	const { c, player, monster, advance } = fixture(),
+		p = player("ComputerOwner");
+	monster("m");
+	p.items = [{ name: "supercomputer" }];
+	c.socket = p.socket;
+	const handler = socketHandler(c, "interaction"),
+		replies = [];
+	p.socket.emit = (event, data) => replies.push(data);
+	await handler({ type: "cavalry", request_id: "computer-call" });
+	assert.equal(replies.at(-1).success, true);
+	assert.equal(replies.at(-1).assigned, 4);
+	assert.equal(replies.at(-1).request_id, "computer-call");
+	advance(100000);
+	await handler({ type: "cavalry", request_id: "again" });
+	assert.equal(replies.at(-1).reason, "cooldown");
+});
+
+test("Cavalry requires a tracking item still present after its account lookup", async () => {
+	for (const initial of ["tracker", "supercomputer"]) {
+		const { c, player, monster, call } = fixture(),
+			p = player(initial);
+		monster("m");
+		p.items = [{ name: initial }];
+		const collection = c.db.collection;
+		c.db.collection = (name) => {
+			const result = collection(name);
+			if (name === "character")
+				result.find = () => ({
+					sort() {
+						return this;
+					},
+					limit() {
+						return this;
+					},
+					maxTimeMS() {
+						return this;
+					},
+					async next() {
+						p.items = [{ name: "computer" }];
+						return { level: 20 };
+					},
+				});
+			return result;
+		};
+		assert.equal((await call(p)).reason, "unavailable");
+		assert.equal(c.cavalry_calls.size, 0);
+		assert.ok(Object.values(c.npcs).every((npc) => !npc.cavalry_call));
+	}
+});
+
+test("Ancient Computer and stale tracking flags cannot authorize Cavalry", async () => {
+	const { player, monster, call, storage } = fixture(),
+		p = player("ComputerOwner");
+	monster("m");
+	p.tracker = true;
+	for (const items of [[{ name: "computer" }], []]) {
+		p.items = items;
+		assert.equal((await call(p)).reason, "tracker");
+		assert.equal(storage.marks.size, 0);
+	}
+});

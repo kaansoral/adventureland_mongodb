@@ -103,7 +103,7 @@ function keyboard_logic()
 			//console.log("KEYUP "+event.keyCode);
 			pressed[event.keyCode]=0;
 			if(event.target && event.target.hasAttribute("contenteditable") && !$(event.target).html()) $(event.target).html(" ");
-			if($('input:focus').length>0 || $('textarea:focus').length>0 || event.target && event.target.hasAttribute("contenteditable")) return;
+			var editing=$('input:focus').length>0 || $('textarea:focus').length>0 || event.target && event.target.hasAttribute("contenteditable");
 			if(event.keyCode==37 || window.map_editor && event.keyCode==65) { left_pressed=0; }
 			if(event.keyCode==38 || window.map_editor && event.keyCode==87) { up_pressed=0; }
 			if(event.keyCode==39 || window.map_editor && event.keyCode==68) { right_pressed=0; }
@@ -121,6 +121,7 @@ function keyboard_logic()
 			if(event.keyCode==66) { b_pressed=0; }
 			if(event.keyCode==91 || event.keyCode==17) cmd_pressed=false;
 			if(window.character && K[event.keyCode]) on_skill_up(K[event.keyCode]);
+			if(editing) return;
 			if(!cmd_pressed && window.stkp) stkp(event);
 		}, false
 	);
@@ -144,7 +145,8 @@ function keyboard_logic()
 	$(window).blur(function(){
 		// cmd_pressed logic can be removed now [20/07/18]
 		up_pressed=0,down_pressed=0,left_pressed=0,right_pressed=0,z_pressed=0,x_pressed=0,y_pressed=0,cmd_pressed=0,c_pressed=0,f_pressed=0,n_pressed=0,v_pressed=0,l_pressed=0,t_pressed=0,a_pressed=0,b_pressed=0;
-		for(var name in K) if(pressed[name]) on_skill_up(K[event.keyCode]);
+		if(window.character) for(var name in K) if(pressed[name]) on_skill_up(K[name]);
+		pressed={};
 	});
 	$(window).focus(function(){
 		if(window.sounds && window.sounds.empty && sounds.empty.cplaying) sounds.empty.stop(),sounds.empty.play();

@@ -541,7 +541,7 @@ module.exports = {
 	// design/conditions.js; stoned name, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"condition.stoned.name": "Stoned",
 	// design/conditions.js; stunned explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
-	"condition.stunned.explanation": "Cannot move, attack, heal, or use skills.",
+	"condition.stunned.explanation": "Cannot move, attack, heal, use skills, or use items.",
 	// design/conditions.js; stunned name, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"condition.stunned.name": "Stunned",
 	// design/conditions.js; sugarrush explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.

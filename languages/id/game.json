@@ -455,5 +455,6 @@
 	"response.trade_offer_invalid": "Item itu tidak bisa diminta",
 	"response.trade_swap_match": "Item itu tidak cocok dengan penawaran",
 	"response.trade_swap_space": "Tas pedagang penuh",
-	"game.trade_history.traded": "- Menukar '{item}' dengan {player} untuk '{received}'"
+	"game.trade_history.traded": "- Menukar '{item}' dengan {player} untuk '{received}'",
+	"response.transport_need_items": "Perlu: {items}"
 }

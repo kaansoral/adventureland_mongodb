@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "Một nhân vật khác không phải thương nhân đang chạy.",
 	"interface.encouragement.away": "Quay lại sau hơn 60 ngày vắng mặt để nhận Chào mừng trở lại.",
 	"interface.recipes.crafting_and_collecting": "Chế tạo và thu thập",
-	"interface.mail.confirm_delete": "Xóa thư này?",
+	"interface.mail.confirm_delete": "Xóa bản sao thư này trong hộp thư của bạn?",
 	"interface.cosmetics.default_position": " vị trí mặc định",
 	"interface.cosmetics.move_left": " [sang trái {pixels}px]",
 	"interface.cosmetics.move_right": " [sang phải {pixels}px]",
@@ -964,7 +964,7 @@
 	"interface.cavalry.call": "GỌI CAVALRY!",
 	"interface.cavalry.coming": "Cavalry đang đến!",
 	"interface.cavalry.queued": "Cavalry đang bận. Lời gọi của bạn đang chờ.",
-	"interface.cavalry.tracker": "Mang theo Tracktrix để gọi Cavalry.",
+	"interface.cavalry.tracker": "Mang theo Tracktrix hoặc Super Computer để gọi Cavalry.",
 	"interface.cavalry.no_monsters": "Không có quái vật cấp 3+ đủ điều kiện ở gần.",
 	"interface.cavalry.cooldown": "Có thể gọi lại Cavalry sau {minutes} phút.",
 	"interface.cavalry.unavailable": "Cavalry hiện không thể đáp lại.",
@@ -988,5 +988,8 @@
 	"interface.trade_offer.no_match": "Bạn không có vật phẩm phù hợp",
 	"interface.trade_offer.choose": "Chọn vật phẩm để đưa",
 	"interface.trade_offer.trade": "ĐỔI",
-	"interface.upgrade_shrine.add_grace": "THÊM ÂN HUỆ"
+	"interface.upgrade_shrine.add_grace": "THÊM ÂN HUỆ",
+	"interface.item.scroll_consumed": "Cuộn giấy bị tiêu hao dù lần thử thành công hay thất bại.",
+	"interface.skill.gold_output": "Vàng thu về",
+	"interface.upgrade_shrine.grace_hint": "Thêm {amount} ân huệ. Không tăng cấp vật phẩm."
 }

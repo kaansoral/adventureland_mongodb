@@ -801,7 +801,7 @@
 	"interface.encouragement.another_character": "En anden figur, som ikke er købmand, er i spil.",
 	"interface.encouragement.away": "Vend tilbage efter mere end 60 dages fravær for at få Velkommen tilbage.",
 	"interface.recipes.crafting_and_collecting": "Fremstilling og indsamling",
-	"interface.mail.confirm_delete": "Slet brevet?",
+	"interface.mail.confirm_delete": "Slet din kopi af dette brev?",
 	"interface.cosmetics.default_position": " standardplacering",
 	"interface.cosmetics.move_left": " [flyt {pixels}px til venstre]",
 	"interface.cosmetics.move_right": " [flyt {pixels}px til højre]",
@@ -965,7 +965,7 @@
 	"interface.cavalry.call": "TILKALD CAVALRY!",
 	"interface.cavalry.coming": "Cavalry er på vej!",
 	"interface.cavalry.queued": "Cavalry er optaget. Dit kald venter.",
-	"interface.cavalry.tracker": "Hav en Tracktrix på dig for at tilkalde Cavalry.",
+	"interface.cavalry.tracker": "Hav Tracktrix eller Super Computer med dig for at tilkalde Cavalry.",
 	"interface.cavalry.no_monsters": "Der er ingen egnede monstre på niveau 3+ i nærheden.",
 	"interface.cavalry.cooldown": "Cavalry kan svare igen om {minutes} min.",
 	"interface.cavalry.unavailable": "Cavalry kan ikke svare lige nu.",
@@ -989,5 +989,8 @@
 	"interface.trade_offer.no_match": "Du har ingen passende genstand",
 	"interface.trade_offer.choose": "Vælg den genstand, du giver",
 	"interface.trade_offer.trade": "BYT",
-	"interface.upgrade_shrine.add_grace": "TILFØJ NÅDE"
+	"interface.upgrade_shrine.add_grace": "TILFØJ NÅDE",
+	"interface.item.scroll_consumed": "Rullen bruges op, uanset om forsøget lykkes eller mislykkes.",
+	"interface.skill.gold_output": "Guldudbytte",
+	"interface.upgrade_shrine.grace_hint": "Tilføjer {amount} nåde. Hæver ikke genstandens niveau."
 }

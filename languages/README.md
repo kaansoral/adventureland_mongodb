@@ -175,3 +175,9 @@ The earlier twelve languages have no missing archive translations. Historical tr
 October 6 PR fixes: six release notes and the shared bank-result paragraph are translated and proofread in all 32 languages. Deposit and withdrawal fields, the 25% healing value, stun terminology and fixed cape names were checked. Both bank examples pass native CODE and Mainframe checks.
 
 Button casing (October 6): the grace action uses uppercase in every language with letter case, including ADD GRACE and Turkish LÜTUF EKLE. Existing translations and uncased scripts are preserved. The Cavalry action is CALL IN CAVALRY! in English; other translations retain their meaning.
+
+October 5 bug fixes: 15 phrases covering Super Computer cavalry access, movement buttons, documentation links, numeric character names, Alchemy gold output, stunned item use, scroll consumption and merchant price validation are translated and proofread in all 32 languages. Fixed names, CODE identifiers, placeholders and the existing release entries are preserved.
+
+Stunned item use (October 5): the revised condition tooltip, replacement fix note and shared Items/CODE paragraph are translated and proofread in all 32 languages. The existing disabled response, passive recovery and ordinary equipment swaps remain unchanged.
+
+Super Computer menus (October 5): the revised release note is translated and proofread in all 32 languages. Both Network entry paths reuse existing translated controls; the selected item, Tracker and Cavalry actions were checked in every language.

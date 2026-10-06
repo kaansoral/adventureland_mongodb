@@ -1,4 +1,10 @@
 module.exports = {
+	// Upgrade-shrine chance tooltip for grace-only offerings. {amount} is the added grace (currently 0.5), not a percentage.
+	"interface.upgrade_shrine.grace_hint": "Adds {amount} grace. Does not raise the item level.",
+	// Alchemy tooltip label for the percentage of the item's gold value returned. This is not damage.
+	"interface.skill.gold_output": "Gold return",
+	// Upgrade/compound scroll tooltips, Items guide and CODE references. Each actual attempt consumes its scroll on success or failure; a chance preview is not an attempt.
+	"interface.item.scroll_consumed": "The scroll is consumed whether the attempt succeeds or fails.",
 	// Shared anniversary guide paragraph. Seasonal crafting moves to Cole; Xyn exchanges remain available. Preserve Mira, Cole, Xyn and Anniversary Gifts.
 	"interface.anniversary.offseason_crafting": "Mira crafts anniversary recipes during the event. After she leaves, Cole crafts them instead. Cakes and Anniversary Gifts can still be opened at Xyn.",
 	// Crafting hint. {name} is Mira or Cole. Computer access permits remote crafting; keep Computer unchanged.
@@ -30,7 +36,7 @@ module.exports = {
 	// No ordinary monsters meet the rescue rules. The monster level, not the player level, must be at least 3.
 	"interface.cavalry.no_monsters": "No eligible level 3+ monsters nearby.",
 	// Missing required inventory item. Tracktrix and Cavalry are fixed names.
-	"interface.cavalry.tracker": "Carry a Tracktrix to call the Cavalry.",
+	"interface.cavalry.tracker": "Carry Tracktrix or Super Computer to call the Cavalry.",
 	// Call accepted but no sentry is assigned yet.
 	"interface.cavalry.queued": "Cavalry is busy. Your call is waiting.",
 	// Successful call feedback; keep Cavalry unchanged.
@@ -1862,7 +1868,7 @@ module.exports = {
 	// Authored interface sentence or label; names and CODE identifiers remain unchanged.
 	"interface.recipes.crafting_and_collecting": "Crafting and Collecting",
 	// Confirm deleting a mail message.
-	"interface.mail.confirm_delete": "Delete the mail?",
+	"interface.mail.confirm_delete": "Delete your copy of this mail?",
 	// Authored interface sentence or label; names and CODE identifiers remain unchanged.
 	"interface.cosmetics.default_position": " default position",
 	// Authored interface sentence or label; names and CODE identifiers remain unchanged.
