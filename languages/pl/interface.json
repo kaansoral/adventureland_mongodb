@@ -997,5 +997,6 @@
 	"interface.trade_offer.or_higher_any_title": "Lub wyższy, dowolny tytuł",
 	"interface.trade_offer.no_match": "Nie masz pasującego przedmiotu",
 	"interface.trade_offer.choose": "Wybierz przedmiot do oddania",
-	"interface.trade_offer.trade": "WYMIEŃ"
+	"interface.trade_offer.trade": "WYMIEŃ",
+	"interface.upgrade_shrine.add_grace": "DODAJ ŁASKĘ"
 }

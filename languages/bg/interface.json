@@ -985,5 +985,6 @@
 	"interface.trade_offer.or_higher_any_title": "Или по-високо, всяка титла",
 	"interface.trade_offer.no_match": "Нямаш подходящ предмет",
 	"interface.trade_offer.choose": "Избери предмета, който даваш",
-	"interface.trade_offer.trade": "РАЗМЕНИ"
+	"interface.trade_offer.trade": "РАЗМЕНИ",
+	"interface.upgrade_shrine.add_grace": "ДОБАВИ БЛАГОВОЛЕНИЕ"
 }

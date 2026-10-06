@@ -993,5 +993,6 @@
 	"interface.trade_offer.or_higher_any_title": "Nebo vyšší, libovolný titul",
 	"interface.trade_offer.no_match": "Nemáš žádný odpovídající předmět",
 	"interface.trade_offer.choose": "Vyber předmět, který dáš",
-	"interface.trade_offer.trade": "VYMĚNIT"
+	"interface.trade_offer.trade": "VYMĚNIT",
+	"interface.upgrade_shrine.add_grace": "PŘIDAT PŘÍZEŇ"
 }

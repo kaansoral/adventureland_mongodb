@@ -173,3 +173,5 @@ All 32 languages include the required current-game phrases. The remaining histor
 The earlier twelve languages have no missing archive translations. Historical translation can resume by language and section without changing the current-game completion status.
 
 October 6 PR fixes: six release notes and the shared bank-result paragraph are translated and proofread in all 32 languages. Deposit and withdrawal fields, the 25% healing value, stun terminology and fixed cape names were checked. Both bank examples pass native CODE and Mainframe checks.
+
+Button casing (October 6): the grace action uses uppercase in every language with letter case, including ADD GRACE and Turkish LÜTUF EKLE. Existing translations and uncased scripts are preserved. The Cavalry action is CALL IN CAVALRY! in English; other translations retain their meaning.

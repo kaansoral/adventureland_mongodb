@@ -997,5 +997,6 @@
 	"interface.trade_offer.or_higher_any_title": "Або вище, будь-який титул",
 	"interface.trade_offer.no_match": "У тебе немає відповідного предмета",
 	"interface.trade_offer.choose": "Обери предмет, який віддаси",
-	"interface.trade_offer.trade": "ОБМІНЯТИ"
+	"interface.trade_offer.trade": "ОБМІНЯТИ",
+	"interface.upgrade_shrine.add_grace": "ДОДАТИ БЛАГОДАТЬ"
 }

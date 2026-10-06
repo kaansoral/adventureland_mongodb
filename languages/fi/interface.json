@@ -984,5 +984,6 @@
 	"interface.trade_offer.or_higher_any_title": "Tai korkeampi, mikä tahansa titteli",
 	"interface.trade_offer.no_match": "Sinulla ei ole sopivaa esinettä",
 	"interface.trade_offer.choose": "Valitse annettava esine",
-	"interface.trade_offer.trade": "VAIHDA"
+	"interface.trade_offer.trade": "VAIHDA",
+	"interface.upgrade_shrine.add_grace": "LISÄÄ ARMOA"
 }

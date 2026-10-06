@@ -986,5 +986,6 @@
 	"interface.trade_offer.or_higher_any_title": "O superior, cualquier título",
 	"interface.trade_offer.no_match": "No tienes ningún objeto que coincida",
 	"interface.trade_offer.choose": "Elige el objeto que entregas",
-	"interface.trade_offer.trade": "INTERCAMBIAR"
+	"interface.trade_offer.trade": "INTERCAMBIAR",
+	"interface.upgrade_shrine.add_grace": "AÑADIR GRACIA"
 }

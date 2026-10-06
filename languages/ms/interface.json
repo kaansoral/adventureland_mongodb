@@ -984,5 +984,6 @@
 	"interface.trade_offer.or_higher_any_title": "Atau lebih tinggi, sebarang gelaran",
 	"interface.trade_offer.no_match": "Anda tiada item yang sepadan",
 	"interface.trade_offer.choose": "Pilih item untuk diberikan",
-	"interface.trade_offer.trade": "TUKAR"
+	"interface.trade_offer.trade": "TUKAR",
+	"interface.upgrade_shrine.add_grace": "TAMBAH IHSAN"
 }

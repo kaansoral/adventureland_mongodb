@@ -985,5 +985,6 @@
 	"interface.trade_offer.or_higher_any_title": "Oder höher, jeder Titel",
 	"interface.trade_offer.no_match": "Du hast keinen passenden Gegenstand",
 	"interface.trade_offer.choose": "Wähle den Gegenstand, den du gibst",
-	"interface.trade_offer.trade": "TAUSCHEN"
+	"interface.trade_offer.trade": "TAUSCHEN",
+	"interface.upgrade_shrine.add_grace": "GNADE HINZUFÜGEN"
 }

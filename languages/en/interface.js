@@ -1,4 +1,6 @@
 module.exports = {
+	// Uppercase upgrade-shrine action for an offering without a scroll. Match RESET and UPGRADE casing; adds grace, not an item level.
+	"interface.upgrade_shrine.add_grace": "ADD GRACE",
 	// Short uppercase tag under a monster's picture in a guide: the monster seen from the front.
 	"interface.monster_views.front": "FRONT",
 	// Short uppercase tag under a monster's picture in a guide: the monster facing left.
@@ -28,7 +30,7 @@ module.exports = {
 	// Successful call feedback; keep Cavalry unchanged.
 	"interface.cavalry.coming": "Cavalry is on the way!",
 	// Tracktrix action and guide references. Uppercase action label with an exclamation mark, including the team name CAVALRY; use the locale’s punctuation.
-	"interface.cavalry.call": "CALL IN THE CAVALRY!",
+	"interface.cavalry.call": "CALL IN CAVALRY!",
 	// Character selection destination and own-condition tooltip. server is the full realm name, e.g. Americas II. Short label.
 	"interface.selection.destination": "Server: {server}",
 	// Character hover, condition tooltip and log. server is the saved home, e.g. Americas II.

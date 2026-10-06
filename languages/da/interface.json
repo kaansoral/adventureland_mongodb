@@ -985,5 +985,6 @@
 	"interface.trade_offer.or_higher_any_title": "Eller højere, alle titler",
 	"interface.trade_offer.no_match": "Du har ingen passende genstand",
 	"interface.trade_offer.choose": "Vælg den genstand, du giver",
-	"interface.trade_offer.trade": "BYT"
+	"interface.trade_offer.trade": "BYT",
+	"interface.upgrade_shrine.add_grace": "TILFØJ NÅDE"
 }

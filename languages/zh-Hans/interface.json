@@ -984,5 +984,6 @@
 	"interface.trade_offer.or_higher_any_title": "或更高，称号不限",
 	"interface.trade_offer.no_match": "你没有符合条件的物品",
 	"interface.trade_offer.choose": "选择要给予的物品",
-	"interface.trade_offer.trade": "交换"
+	"interface.trade_offer.trade": "交换",
+	"interface.upgrade_shrine.add_grace": "添加恩泽"
 }

@@ -989,5 +989,6 @@
 	"interface.trade_offer.or_higher_any_title": "Sau mai mare, orice titlu",
 	"interface.trade_offer.no_match": "Nu ai niciun obiect potrivit",
 	"interface.trade_offer.choose": "Alege obiectul pe care îl dai",
-	"interface.trade_offer.trade": "SCHIMBĂ"
+	"interface.trade_offer.trade": "SCHIMBĂ",
+	"interface.upgrade_shrine.add_grace": "ADAUGĂ HAR"
 }

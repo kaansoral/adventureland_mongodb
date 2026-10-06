@@ -3335,6 +3335,12 @@ function render_computer($element, type = "computer", slot = 0) {
 		phrase.html("interface.computer.premium") +
 		"</div>";
 
+	if (type == "supercomputer")
+		html +=
+			"<div onclick='socket.emit(\"interaction\",{type:\"cavalry\"}); $(this).parent().remove()' class='clickable' style='color: #E4E4E4'><span style='color: #BA61A4'>&gt;</span> " +
+			phrase.html("interface.cavalry.call") +
+			"</div>";
+
 	$element.html(html);
 }
 

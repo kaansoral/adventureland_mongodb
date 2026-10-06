@@ -984,5 +984,6 @@
 	"interface.trade_offer.or_higher_any_title": "Veya üstü, her unvan",
 	"interface.trade_offer.no_match": "Uygun eşyan yok",
 	"interface.trade_offer.choose": "Vereceğin eşyayı seç",
-	"interface.trade_offer.trade": "TAKAS ET"
+	"interface.trade_offer.trade": "TAKAS ET",
+	"interface.upgrade_shrine.add_grace": "LÜTUF EKLE"
 }

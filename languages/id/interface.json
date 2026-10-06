@@ -984,5 +984,6 @@
 	"interface.trade_offer.or_higher_any_title": "Atau lebih tinggi, gelar apa saja",
 	"interface.trade_offer.no_match": "Kamu tidak punya item yang cocok",
 	"interface.trade_offer.choose": "Pilih item yang akan diberikan",
-	"interface.trade_offer.trade": "TUKAR"
+	"interface.trade_offer.trade": "TUKAR",
+	"interface.upgrade_shrine.add_grace": "TAMBAH ANUGERAH"
 }

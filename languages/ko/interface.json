@@ -984,5 +984,6 @@
 	"interface.trade_offer.or_higher_any_title": "이상, 칭호 상관없음",
 	"interface.trade_offer.no_match": "조건에 맞는 아이템이 없어요",
 	"interface.trade_offer.choose": "줄 아이템을 고르세요",
-	"interface.trade_offer.trade": "교환"
+	"interface.trade_offer.trade": "교환",
+	"interface.upgrade_shrine.add_grace": "은총 추가"
 }

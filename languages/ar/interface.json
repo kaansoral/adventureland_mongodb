@@ -984,5 +984,6 @@
 	"interface.trade_offer.or_higher_any_title": "أو أعلى، بأي لقب",
 	"interface.trade_offer.no_match": "ليس لديك غرض مطابق",
 	"interface.trade_offer.choose": "اختر الغرض الذي ستعطيه",
-	"interface.trade_offer.trade": "قايض"
+	"interface.trade_offer.trade": "قايض",
+	"interface.upgrade_shrine.add_grace": "إضافة نعمة"
 }

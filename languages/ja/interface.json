@@ -984,5 +984,6 @@
 	"interface.trade_offer.or_higher_any_title": "以上・称号指定なし",
 	"interface.trade_offer.no_match": "条件に合うアイテムがありません",
 	"interface.trade_offer.choose": "渡すアイテムを選んでください",
-	"interface.trade_offer.trade": "交換する"
+	"interface.trade_offer.trade": "交換する",
+	"interface.upgrade_shrine.add_grace": "恩恵を追加"
 }

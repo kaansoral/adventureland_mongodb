@@ -984,5 +984,6 @@
 	"interface.trade_offer.or_higher_any_title": "或更高，稱號不限",
 	"interface.trade_offer.no_match": "你沒有符合條件的物品",
 	"interface.trade_offer.choose": "選擇要給予的物品",
-	"interface.trade_offer.trade": "交換"
+	"interface.trade_offer.trade": "交換",
+	"interface.upgrade_shrine.add_grace": "增加恩澤"
 }

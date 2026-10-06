@@ -985,5 +985,6 @@
 	"interface.trade_offer.or_higher_any_title": "Ή υψηλότερο, οποιοσδήποτε τίτλος",
 	"interface.trade_offer.no_match": "Δεν έχεις κατάλληλο αντικείμενο",
 	"interface.trade_offer.choose": "Επίλεξε το αντικείμενο που δίνεις",
-	"interface.trade_offer.trade": "ΑΝΤΑΛΛΑΓΗ"
+	"interface.trade_offer.trade": "ΑΝΤΑΛΛΑΓΗ",
+	"interface.upgrade_shrine.add_grace": "ΠΡΟΣΘΗΚΗ ΕΥΝΟΙΑΣ"
 }

@@ -984,5 +984,6 @@
 	"interface.trade_offer.or_higher_any_title": "O mas mataas, kahit anong titulo",
 	"interface.trade_offer.no_match": "Wala kang katugmang gamit",
 	"interface.trade_offer.choose": "Piliin ang gamit na ibibigay",
-	"interface.trade_offer.trade": "IPAGPALIT"
+	"interface.trade_offer.trade": "IPAGPALIT",
+	"interface.upgrade_shrine.add_grace": "MAGDAGDAG NG BIYAYA"
 }

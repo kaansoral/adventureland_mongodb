@@ -984,5 +984,6 @@
 	"interface.trade_offer.or_higher_any_title": "Hoặc cao hơn, mọi danh hiệu",
 	"interface.trade_offer.no_match": "Bạn không có vật phẩm phù hợp",
 	"interface.trade_offer.choose": "Chọn vật phẩm để đưa",
-	"interface.trade_offer.trade": "ĐỔI"
+	"interface.trade_offer.trade": "ĐỔI",
+	"interface.upgrade_shrine.add_grace": "THÊM ÂN HUỆ"
 }
