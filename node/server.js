@@ -4026,7 +4026,20 @@ function complete_attack(attacker, target, info) {
 				}
 				if (def.purify) {
 					for (var name in target.s) {
-						if (
+						if (name == "stack") {
+							var player_party = attacker.party || attacker.name;
+							if (target.s.stack.data[player_party]) {
+								delete target.s.stack.data[player_party];
+								target.s.stack.count--;
+								if (target.s.stack.count == 0) {
+									delete target.s.stack;
+								}
+								attack += 400;
+								info.first_attack += 400;
+								target.cid++;
+								target.u = true;
+							}
+						} else if (
 							(G.conditions[name] &&
 								(G.conditions[name].buff || G.conditions[name].debuff) &&
 								!G.conditions[name].persistent) ||
