@@ -12531,6 +12531,21 @@ function init_socket_io(socket_server, server_index) {
 			}
 			success_response({});
 		});
+		socket.on("tarot", function (data) {
+			var player = players[socket.id];
+			if (!player) {
+				return;
+			}
+			var npc = G.maps[player.map].ref.twitch;
+			if (!npc || simple_distance(npc, player) > 500) {
+				return socket.emit("game_response", "distance");
+			}
+			for (var name in player.s) {
+				if (name.startsWith("tarot")) {
+					return socket.emit("game_response", "tarot_exists");
+				}
+			}
+		});
 		socket.on("bet", function (data) {
 			var request_id = data.request_id;
 			var bet_place = data.type == "slots" ? "slots" : data.type == "wheel" ? "wheel" : "dice";
