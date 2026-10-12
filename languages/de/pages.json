@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Steam-Anmeldung: <span style=\"color: green\">EIN</span>",
+	"pages.steam_signin.off": "> Steam-Anmeldung: <span style=\"color: #F54423\">AUS</span>",
+	"pages.steam_signin.title": "Mit Steam anmelden",
+	"pages.steam_signin.intro": "Bestätige dein Steam-Konto und wähle dann ein Adventure Land-Konto zur Anmeldung aus.",
+	"pages.steam_signin.continue": "Weiter zu Steam",
+	"pages.steam_signin.choose": "Konto auswählen",
+	"pages.steam_signin.choose_help": "Wähle ein Adventure Land-Konto, das mit diesem Steam-Konto verknüpft ist.",
+	"pages.steam_signin.identity": "Bestätigtes Steam-Konto mit den Endziffern {digits}",
+	"pages.steam_signin.account": "Konto {name}",
+	"pages.steam_signin.action": "Bei diesem Konto anmelden",
+	"pages.steam_signin.empty": "Für dieses Steam-Konto sind keine Adventure Land-Konten verfügbar.",
+	"pages.steam_signin.email": "Mit E-Mail anmelden",
+	"pages.steam_signin.next": "Weitere Konten",
+	"pages.steam_signin.signup_label": "> Registrieren",
 	"pages.steam_signup.client_help": "Diese Funktion hilft Spielern, die Probleme beim Starten des Spielclients haben.",
 	"pages.steam_signup.title": "Mit Steam registrieren",
 	"pages.steam_signup.intro": "Besitzt du Adventure Land auf Steam? Bestätige deinen Kauf, um ein Konto zu erstellen und im Browser zu spielen.",
@@ -1482,5 +1496,6 @@
 	"pages.vscode.the-marketplace-page-is-not-live-yet-the": "Die Marketplace-Seite ist noch nicht online. Der direkte VSIX-Download erscheint hier, sobald das Paket auf diesem Server verfügbar ist.",
 	"pages.vscode.use-in-vs-code-or-cursor-it-replaces": "Nutze <span class=\"shell\">{id}</span> in VS Code oder Cursor. Die Erweiterung ersetzt den bisherigen Ordnerabgleich des Clients durch automatische Synchronisierung über die API. So funktioniert sie mit Steam, dem Browser und gewöhnlichen Desktopeditoren.",
 	"pages.vscode.your-token": "Dein Token",
-	"pages.contents.announcement_email.holiday_code_example": "PS 3. Hier ist ein <a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a>, der die Weihnachtsstärkung automatisiert.\n\t\t\t\t\tPS 4. Es gibt auch neue Dinge und Fähigkeiten!"
+	"pages.contents.announcement_email.holiday_code_example": "PS 3. Hier ist ein <a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a>, der die Weihnachtsstärkung automatisiert.\n\t\t\t\t\tPS 4. Es gibt auch neue Dinge und Fähigkeiten!",
+	"pages.contents.selection.slots-in-use": "Alle deine Charakterplätze sind belegt."
 }

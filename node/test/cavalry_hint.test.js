@@ -41,6 +41,7 @@ function fixture() {
 		render_event_announcements() {},
 		anniversary_live_event: () => null,
 		anniversary_can_visit: () => false,
+		release_update_button_html: () => "",
 		cave_info_available: () => false,
 		tutorial_npc() {},
 		tut() {},

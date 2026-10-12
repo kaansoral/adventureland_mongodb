@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "石化！",
+	"server.floating.frenzy": "狂亂！",
 	"server.party.joined": "{player}加入了隊伍",
 	"server.party.joined_with_invite": "{player}接受{inviter}的邀請加入了隊伍",
 	"server.party.left": "{player}離開了隊伍",
@@ -393,5 +395,8 @@
 	"server.cave.amber_limit": "本次進入可出現的{amount}個Cave Amber已全部出現。你仍可找到物品並獲得XP。",
 	"server.game_error.poker_hand_active": "你的這手牌仍在另一個伺服器上進行。請等牌局結束，或重新連線至該伺服器。",
 	"server.tracktrix.mail_subject": "你的Tracktrix",
-	"server.tracktrix.mail_body": "為下次狩獵送上一點幫助。記得隨身帶著這個Tracktrix！"
+	"server.tracktrix.mail_body": "為下次狩獵送上一點幫助。記得隨身帶著這個Tracktrix！",
+  "server.game_log.offered_for": "已上架{item}，換取{want}",
+  "server.game_log.offered_for_or_higher": "已上架{item}，換取{want}或更高",
+  "server.game_log.traded_for": "與{player}交換，以{item}換得{received}"
 }

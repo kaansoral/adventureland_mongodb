@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "حجر!",
+	"server.floating.frenzy": "هياج!",
 	"server.party.joined": "انضم اللاعب {player} إلى الفريق",
 	"server.party.joined_with_invite": "انضم اللاعب {player} إلى الفريق بدعوة من {inviter}",
 	"server.party.left": "غادر اللاعب {player} الفريق",
@@ -399,5 +401,8 @@
 	"server.cave.amber_limit": "ظهرت كل كمية Cave Amber المتاحة لهذه الزيارة، وعددها {amount}. لا يزال بإمكانك العثور على عناصر وكسب XP.",
 	"server.game_error.poker_hand_active": "ما زالت يد البوكر الخاصة بك جارية على خادم آخر. انتظر نهايتها أو أعد الاتصال بذلك الخادم.",
 	"server.tracktrix.mail_subject": "Tracktrix لك",
-	"server.tracktrix.mail_body": "مساعدة صغيرة لرحلة صيدك القادمة. احتفظ بهذا Tracktrix معك!"
+	"server.tracktrix.mail_body": "مساعدة صغيرة لرحلة صيدك القادمة. احتفظ بهذا Tracktrix معك!",
+  "server.game_log.offered_for": "تم عرض {item} للمقايضة مقابل {want}",
+  "server.game_log.offered_for_or_higher": "تم عرض {item} للمقايضة مقابل {want} أو أعلى",
+  "server.game_log.traded_for": "قايضت {item} مع {player} مقابل {received}"
 }

@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Вхід через Steam: <span style=\"color: green\">УВІМК.</span>",
+	"pages.steam_signin.off": "> Вхід через Steam: <span style=\"color: #F54423\">ВИМК.</span>",
+	"pages.steam_signin.title": "Увійти через Steam",
+	"pages.steam_signin.intro": "Підтвердь свій обліковий запис Steam, а потім вибери обліковий запис Adventure Land для входу.",
+	"pages.steam_signin.continue": "Перейти до Steam",
+	"pages.steam_signin.choose": "Вибери обліковий запис",
+	"pages.steam_signin.choose_help": "Вибери обліковий запис Adventure Land, пов’язаний із цим обліковим записом Steam.",
+	"pages.steam_signin.identity": "Підтверджений обліковий запис Steam з останніми цифрами {digits}",
+	"pages.steam_signin.account": "Обліковий запис {name}",
+	"pages.steam_signin.action": "Увійти в цей обліковий запис",
+	"pages.steam_signin.empty": "Для цього облікового запису Steam немає доступних облікових записів Adventure Land.",
+	"pages.steam_signin.email": "Увійти за допомогою пошти",
+	"pages.steam_signin.next": "Інші облікові записи",
+	"pages.steam_signin.signup_label": "> Реєстрація",
 	"pages.steam_signup.client_help": "Ця функція допомагає гравцям, які мають проблеми із запуском клієнта гри.",
 	"pages.steam_signup.title": "Зареєструватися через Steam",
 	"pages.steam_signup.intro": "Маєш Adventure Land у Steam? Підтвердь покупку, щоб створити обліковий запис і грати в браузері.",
@@ -1482,5 +1496,6 @@
 	"pages.logs.working-on-an-improved-movement-and-visibility-system": "Працюю над поліпшеною системою руху та видимості. Нинішня система трохи заплутана, це вже 4-й чи 5-й виток, і мені дуже хочеться вигадати час і перейти до 6-го.",
 	"pages.logs.working-on-the-orb-design-3x-orb-s": "Працюю над задумом сфер. 3 Orb якось не тішать, надто ліниво; з'явилася думка перетворити одну сферу на комірку для еліксиру — це буде тривала підсилювальна настоянка.",
 	"pages.logs.wow-just-realised-it-has-been-a-month": "ОГО, щойно усвідомив, що від запуску минув місяць. Ми пройшли довгий шлях, і тепер я бачу гру як спільноту: познайомився з багатьма людьми, завів чимало друзів, усе моє бачення змінилося, і не лише щодо гри, а й щодо життя загалом і щодо розробки. Скажімо так: тепер я налаштований надійніше, і то щодо багатьох речей :)",
-	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Завершую виправлення, дослідження та випробування."
+	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Завершую виправлення, дослідження та випробування.",
+	"pages.contents.selection.slots-in-use": "Усі твої місця для персонажів зайняті."
 }

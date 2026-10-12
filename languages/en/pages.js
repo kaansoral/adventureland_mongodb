@@ -1,5 +1,35 @@
 // English page catalog. Usage notes protect code, names and dynamic parameters.
 module.exports = {
+	// Character creation, below the existing 200-shell price. All included or purchased slots are occupied; the total varies by account. No fixed count.
+	"pages.contents.selection.slots-in-use": "All your character slots are in use.",
+	// Existing account-menu toggle; ON. Steam login defaults to ON. Keep Steam and the leading arrow; preserve span markup.
+	"pages.steam_signin.on": "> Steam sign-in: <span style=\"color: green\">ON</span>",
+	// Existing account-menu toggle; OFF. Steam login defaults to ON. Keep Steam and the leading arrow; preserve span markup.
+	"pages.steam_signin.off": "> Steam sign-in: <span style=\"color: #F54423\">OFF</span>",
+	// Browser Steam login title; signs into an existing account. Keep Steam unchanged.
+	"pages.steam_signin.title": "Sign In with Steam",
+	// Steam identity verification precedes the Adventure Land account chooser. Keep both proper names unchanged.
+	"pages.steam_signin.intro": "Verify your Steam account, then choose an Adventure Land account to sign in to.",
+	// Button leaving Adventure Land to verify identity on Steam. It does not yet sign into the game.
+	"pages.steam_signin.continue": "Continue to Steam",
+	// Heading and accessible name for the account radio group.
+	"pages.steam_signin.choose": "Choose an account",
+	// Accounts associated with the verified Steam identity appear by default unless opted out. Keep Adventure Land and Steam unchanged.
+	"pages.steam_signin.choose_help": "Choose an Adventure Land account linked to this Steam account.",
+	// Verified Steam identity summary; {digits} is the last four decimal digits of its ID. Preserve placeholder and Steam.
+	"pages.steam_signin.identity": "Verified Steam account ending in {digits}",
+	// Chooser account label; {name} is raw account display text. Preserve placeholder; do not translate its value.
+	"pages.steam_signin.account": "Account {name}",
+	// Final button signs into the account explicitly selected above.
+	"pages.steam_signin.action": "Sign in to this account",
+	// No account is available for the verified identity. This also covers accounts that opted out. Keep Adventure Land and Steam unchanged.
+	"pages.steam_signin.empty": "No Adventure Land accounts are available for this Steam account.",
+	// Opens the existing email/password login form.
+	"pages.steam_signin.email": "Sign in with email",
+	// Shows the next page of eligible game accounts, never a public account search.
+	"pages.steam_signin.next": "More accounts",
+	// Compact signup link next to Steam Login on the entry panel. Preserve the leading > navigation arrow.
+	"pages.steam_signin.signup_label": "> Sign Up",
 	// Browser signup page and entry button. Creates a NEW Adventure Land account, not a Steam login to an existing account. Keep Steam unchanged.
 	"pages.steam_signup.title": "Sign Up with Steam",
 	// Browser signup introduction. Steam verifies ownership before the player chooses Adventure Land credentials. Keep Adventure Land and Steam unchanged.

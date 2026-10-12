@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Pag-log in gamit ang Steam: <span style=\"color: green\">NAKA-ON</span>",
+	"pages.steam_signin.off": "> Pag-log in gamit ang Steam: <span style=\"color: #F54423\">NAKA-OFF</span>",
+	"pages.steam_signin.title": "Mag-log in gamit ang Steam",
+	"pages.steam_signin.intro": "I-verify ang iyong Steam account, pagkatapos piliin ang Adventure Land account na gusto mong pasukan.",
+	"pages.steam_signin.continue": "Magpatuloy sa Steam",
+	"pages.steam_signin.choose": "Pumili ng account",
+	"pages.steam_signin.choose_help": "Pumili ng Adventure Land account na naka-link sa Steam account na ito.",
+	"pages.steam_signin.identity": "Na-verify na Steam account na nagtatapos sa {digits}",
+	"pages.steam_signin.account": "Account na {name}",
+	"pages.steam_signin.action": "Mag-log in sa account na ito",
+	"pages.steam_signin.empty": "Walang Adventure Land account na magagamit sa Steam account na ito.",
+	"pages.steam_signin.email": "Mag-log in gamit ang email",
+	"pages.steam_signin.next": "Iba pang account",
+	"pages.steam_signin.signup_label": "> Mag-sign up",
 	"pages.steam_signup.client_help": "Tinutulungan ng feature na ito ang mga manlalarong nahihirapang patakbuhin ang game client.",
 	"pages.steam_signup.title": "Magparehistro gamit ang Steam",
 	"pages.steam_signup.intro": "May Adventure Land ka sa Steam? I-verify ang pagbili mo para gumawa ng account at maglaro sa browser.",
@@ -1482,5 +1496,6 @@
 	"pages.logs.working-on-an-improved-movement-and-visibility-system": "Gumagawa ako ng pinabuting sistema ng paggalaw at paningin. Medyo masalimuot ang kasalukuyan, ito na ang ikaapat o ikalimang bersiyon, at gusto ko talagang maghanap ng panahon para lumipat sa ikaanim.",
 	"pages.logs.working-on-the-orb-design-3x-orb-s": "Gumagawa ako ng disenyo ng orb; hindi maganda ang 3 Orb, masyadong tamad, at naisip kong gawing puwang ng elixir ang isang orb: magiging matagal na inuming pampalakas ito.",
 	"pages.logs.wow-just-realised-it-has-been-a-month": "WOW, katatanto ko lang na isang buwan na mula nang ilunsad; malayo na ang narating namin mula noon, at nakikita ko na ngayon ang laro bilang isang pamayanan: marami akong nakilalang tao, maraming naging kaibigan, nagbago ang buong pananaw ko, at hindi lamang tungkol sa laro kundi tungkol din sa buhay sa kabuuan at sa paggawa. Masasabi kong mas puno ako ng pag-asa ngayon, sa maraming bagay :)",
-	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Tinatapos ko na ang mga pag-aayos, ang pagsasaliksik at ang pagsubok."
+	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Tinatapos ko na ang mga pag-aayos, ang pagsasaliksik at ang pagsubok.",
+	"pages.contents.selection.slots-in-use": "Gamit na ang lahat ng slot mo para sa mga karakter."
 }

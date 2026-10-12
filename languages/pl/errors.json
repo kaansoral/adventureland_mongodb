@@ -80,5 +80,8 @@
 	"error.save_failed": "Nie udało się zapisać. Spróbuj ponownie.",
 	"error.invalid_language": "Wybierz język z listy.",
 	"error.cant_copy_over_map_in_use": "Nie można nadpisać mapy, która jest używana.",
-	"error.cant_delete_map_in_use": "Nie można usunąć mapy, która jest używana."
+	"error.cant_delete_map_in_use": "Nie można usunąć mapy, która jest używana.",
+	"error.code_too_large": "Ten skrypt jest zbyt duży. Każdy slot CODE mieści do 1 MiB (1 048 576 bajtów) tekstu UTF-8.",
+	"error.code_storage_full": "Pamięć CODE jest pełna. Wyeksportuj i usuń nieużywane skrypty, zanim zapiszesz kolejny kod.",
+	"error.code_rate_limited": "Zapisujesz CODE zbyt często. Poczekaj chwilę i spróbuj ponownie."
 }

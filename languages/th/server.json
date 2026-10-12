@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "หิน!",
+	"server.floating.frenzy": "คลั่ง!",
 	"server.party.joined": "{player} เข้าร่วมปาร์ตี้แล้ว",
 	"server.party.joined_with_invite": "{player} เข้าร่วมปาร์ตี้ตามคำเชิญของ {inviter}",
 	"server.party.left": "{player} ออกจากปาร์ตี้แล้ว",
@@ -393,5 +395,8 @@
 	"server.cave.amber_limit": "Cave Amber ทั้งหมด {amount} สำหรับการเข้าครั้งนี้ปรากฏแล้ว คุณยังหาไอเทมและรับ XP ได้",
 	"server.game_error.poker_hand_active": "มือโป๊กเกอร์ของคุณยังเล่นอยู่บนเซิร์ฟเวอร์อื่น รอให้จบหรือเชื่อมต่อกลับไปที่เซิร์ฟเวอร์นั้น",
 	"server.tracktrix.mail_subject": "Tracktrix ของคุณ",
-	"server.tracktrix.mail_body": "ตัวช่วยเล็กน้อยสำหรับการล่าครั้งหน้า พก Tracktrix ชิ้นนี้ติดตัวไว้นะ!"
+	"server.tracktrix.mail_body": "ตัวช่วยเล็กน้อยสำหรับการล่าครั้งหน้า พก Tracktrix ชิ้นนี้ติดตัวไว้นะ!",
+  "server.game_log.offered_for": "ตั้งแลก {item} กับ {want} แล้ว",
+  "server.game_log.offered_for_or_higher": "ตั้งแลก {item} กับ {want} หรือสูงกว่าแล้ว",
+  "server.game_log.traded_for": "แลก {item} กับ {player} ได้ {received}"
 }

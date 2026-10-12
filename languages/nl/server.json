@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "STEEN!",
+	"server.floating.frenzy": "RAZERNIJ!",
 	"server.party.joined": "{player} heeft zich bij de groep aangesloten",
 	"server.party.joined_with_invite": "{player} heeft zich bij de groep aangesloten op uitnodiging van {inviter}",
 	"server.party.left": "{player} heeft de groep verlaten",
@@ -396,5 +398,8 @@
 	"server.cave.amber_limit": "Alle {amount} Cave Amber voor dit bezoek zijn verschenen. Je kunt nog steeds voorwerpen vinden en XP verdienen.",
 	"server.game_error.poker_hand_active": "Je pokerhand loopt nog op een andere server. Wacht tot die is afgelopen of verbind opnieuw met die server.",
 	"server.tracktrix.mail_subject": "Jouw Tracktrix",
-	"server.tracktrix.mail_body": "Een beetje hulp voor je volgende jacht. Houd deze Tracktrix bij je!"
+	"server.tracktrix.mail_body": "Een beetje hulp voor je volgende jacht. Houd deze Tracktrix bij je!",
+  "server.game_log.offered_for": "{item} aangeboden in ruil voor {want}",
+  "server.game_log.offered_for_or_higher": "{item} aangeboden in ruil voor {want} of hoger",
+  "server.game_log.traded_for": "{item} geruild met {player} voor {received}"
 }

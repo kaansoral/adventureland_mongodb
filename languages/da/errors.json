@@ -80,5 +80,8 @@
 	"error.save_failed": "Kunne ikke gemme. Prøv igen.",
 	"error.invalid_language": "Vælg et sprog fra listen.",
 	"error.cant_copy_over_map_in_use": "Et kort, der er i brug, kan ikke overskrives.",
-	"error.cant_delete_map_in_use": "Et kort, der er i brug, kan ikke slettes."
+	"error.cant_delete_map_in_use": "Et kort, der er i brug, kan ikke slettes.",
+	"error.code_too_large": "Dette script er for stort. Hver CODE-plads kan rumme op til 1 MiB (1.048.576 byte) UTF-8-tekst.",
+	"error.code_storage_full": "Dit CODE-lager er fuldt. Eksportér og slet ubrugte scripts, før du gemmer mere kode.",
+	"error.code_rate_limited": "Du gemmer CODE for ofte. Vent et øjeblik, og prøv igen."
 }

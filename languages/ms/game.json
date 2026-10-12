@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "Meja poker ditutup buat masa ini",
 	"response.tavern_closing": "Permainan Kedai Minuman ditutup semasa pelayan dimulakan semula",
 	"response.poker_stool_far": "Berdiri di sebelah kerusi kosong untuk duduk",
-	"response.poker_saving": "Meja poker sedang dikemas kini. Cuba lagi sebentar nanti."
+	"response.poker_saving": "Meja poker sedang dikemas kini. Cuba lagi sebentar nanti.",
+	"response.trade_offer_invalid": "Item itu tidak boleh diminta",
+	"response.trade_swap_match": "Item itu tidak sepadan dengan tawaran",
+	"response.trade_swap_space": "Pedagang tiada ruang",
+	"game.trade_history.traded": "- Menukar '{item}' dengan {player} untuk '{received}'",
+	"response.transport_need_items": "Perlu: {items}"
 }

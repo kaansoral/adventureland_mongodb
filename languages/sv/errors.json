@@ -80,5 +80,8 @@
 	"error.save_failed": "Kunde inte spara. Försök igen.",
 	"error.invalid_language": "Välj ett språk i listan.",
 	"error.cant_copy_over_map_in_use": "En karta som används kan inte skrivas över.",
-	"error.cant_delete_map_in_use": "En karta som används kan inte tas bort."
+	"error.cant_delete_map_in_use": "En karta som används kan inte tas bort.",
+	"error.code_too_large": "Det här skriptet är för stort. Varje CODE-plats rymmer upp till 1 MiB (1 048 576 byte) UTF-8-text.",
+	"error.code_storage_full": "Ditt CODE-utrymme är fullt. Exportera och radera oanvända skript innan du sparar mer kod.",
+	"error.code_rate_limited": "Du sparar CODE för ofta. Vänta en stund och försök igen."
 }

@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Steamログイン: <span style=\"color: green\">オン</span>",
+	"pages.steam_signin.off": "> Steamログイン: <span style=\"color: #F54423\">オフ</span>",
+	"pages.steam_signin.title": "Steamでログイン",
+	"pages.steam_signin.intro": "Steamアカウントを認証してから、ログインするAdventure Landアカウントを選んでください。",
+	"pages.steam_signin.continue": "Steamへ進む",
+	"pages.steam_signin.choose": "アカウントを選択",
+	"pages.steam_signin.choose_help": "このSteamアカウントに紐づくAdventure Landアカウントを選んでください。",
+	"pages.steam_signin.identity": "認証済みSteamアカウント：末尾{digits}",
+	"pages.steam_signin.account": "アカウント {name}",
+	"pages.steam_signin.action": "このアカウントにログイン",
+	"pages.steam_signin.empty": "このSteamアカウントでログインできるAdventure Landアカウントはありません。",
+	"pages.steam_signin.email": "メールアドレスでログイン",
+	"pages.steam_signin.next": "ほかのアカウント",
+	"pages.steam_signin.signup_label": "> 新規登録",
 	"pages.steam_signup.client_help": "ゲームクライアントの起動に問題があるプレイヤーをサポートするための機能です。",
 	"pages.steam_signup.title": "Steamで新規登録",
 	"pages.steam_signup.intro": "SteamでAdventure Landをお持ちですか？購入を確認してアカウントを作成すれば、ブラウザーでプレイできます。",
@@ -1482,5 +1496,6 @@
 	"pages.vscode.the-marketplace-page-is-not-live-yet-the": "Marketplaceのページはまだ公開されていません。このサーバーでパッケージが利用可能になると、ここにVSIXの直接ダウンロードが表示されます。",
 	"pages.vscode.use-in-vs-code-or-cursor-it-replaces": "VS CodeまたはCursorで<span class=\"shell\">{id}</span>を使ってください。旧クライアントのフォルダー同期をAPIによる自動同期に置き換えるため、Steam、ブラウザー、通常のデスクトップエディターから利用できます。",
 	"pages.vscode.your-token": "自分のトークン",
-	"pages.contents.announcement_email.holiday_code_example": "追伸3：クリスマスの強化効果を自動で受け取る<a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a>です。\n\t\t\t\t\t追伸4：他にも新しいものやスキルがあります！"
+	"pages.contents.announcement_email.holiday_code_example": "追伸3：クリスマスの強化効果を自動で受け取る<a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a>です。\n\t\t\t\t\t追伸4：他にも新しいものやスキルがあります！",
+	"pages.contents.selection.slots-in-use": "キャラクター枠はすべて使用中です。"
 }

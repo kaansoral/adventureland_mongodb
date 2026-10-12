@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "Pokerový stůl je teď zavřený",
 	"response.tavern_closing": "Hry v hospodě jsou zavřené, dokud se server restartuje",
 	"response.poker_stool_far": "Postav se vedle volné stoličky, aby ses posadil",
-	"response.poker_saving": "Pokerový stůl se aktualizuje. Zkus to za chvíli znovu."
+	"response.poker_saving": "Pokerový stůl se aktualizuje. Zkus to za chvíli znovu.",
+	"response.trade_offer_invalid": "O tento předmět nelze žádat",
+	"response.trade_swap_match": "Tento předmět neodpovídá nabídce",
+	"response.trade_swap_space": "Obchodník nemá místo",
+	"game.trade_history.traded": "- Vyměněno '{item}' s hráčem {player} za '{received}'",
+	"response.transport_need_items": "Potřebuješ: {items}"
 }

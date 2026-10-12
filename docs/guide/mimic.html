@@ -1,0 +1,32 @@
+<div class="title">Mimic</div>
+<div class="guide-views mimic-views"></div>
+<div class="divider"></div>
+<div class="guide-spawn mimic-spawn"></div>
+<p>{{ phrase("monster.mimic.explanation") }}</p>
+<div style="overflow-x:auto"><div style="position:relative;width:499px;height:221px;margin:10px auto 0"><img src="/images/guide/mimic-habitat.webp?v=39b5a16f" width="499" height="221" alt="Underground Cliffs" style="image-rendering:pixelated;display:block"><svg width="499" height="221" style="position:absolute;left:0;top:0"><rect x="368.3" y="115.3" width="109.7" height="85" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="21.3" y="21.3" width="88.7" height="76" fill="none" stroke="#73FFAC" stroke-width="2"/></svg></div></div>
+<p>{{ phrase("docs.guide.mimic.about") }}</p>
+<div class="divider"></div>
+<div class="title">{{ phrase("interface.monster_info.drops") }}</div>
+<div class="guide-drops mimic-drops"></div>
+<div class="divider"></div>
+<div class="title">CODE</div>
+<p>{{ phrase("docs.guide.mimic.code") }}</p>
+<!-- prettier-ignore -->
+<div class="code" id="mimic-code">async function open_the_mimic() {
+    var mimic = get_nearest_monster({ type: "mimic" });
+    if (character.rip || !mimic || !can_attack(mimic)) return;
+    if (character.hp &lt; character.max_hp) return;
+    return await attack(mimic);
+}
+
+open_the_mimic().catch(show_json);</div>
+<p><a href="/docs/code/functions/get_nearest_monster" target="_blank">get_nearest_monster</a> · <a href="/docs/code/functions/can_attack" target="_blank">can_attack</a> · <a href="/docs/code/functions/attack" target="_blank">attack</a></p>
+<style>
+	.title { color: #467956; font-size: 36px; margin-top: 15px; }
+	.divider { margin: 15px -26px 0; height: 5px; background-color: #a2a2a2; }
+</style>
+<script>
+	$(".mimic-views").html(guide_monster_views("mimic"));
+	$(".mimic-spawn").html(["kobold"].map(function(name) { return guide_monster_tile(name, 0); }).join("") + "<span class='guide-count'>×" + to_pretty_num(12000) + "</span><span class='guide-arrow'></span>" + guide_monster_tile("mimic", 0));
+	$(".mimic-drops").html(G.drops.monsters.mimic.map(function(drop) { return render_drop(drop, 1, "#858B8E"); }).join(""));
+</script>

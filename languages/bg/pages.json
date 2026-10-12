@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Вход чрез Steam: <span style=\"color: green\">ВКЛ.</span>",
+	"pages.steam_signin.off": "> Вход чрез Steam: <span style=\"color: #F54423\">ИЗКЛ.</span>",
+	"pages.steam_signin.title": "Вход чрез Steam",
+	"pages.steam_signin.intro": "Потвърди акаунта си в Steam, след което избери акаунта в Adventure Land, в който искаш да влезеш.",
+	"pages.steam_signin.continue": "Продължи към Steam",
+	"pages.steam_signin.choose": "Избери акаунт",
+	"pages.steam_signin.choose_help": "Избери акаунт в Adventure Land, свързан с този Steam акаунт.",
+	"pages.steam_signin.identity": "Потвърден Steam акаунт с последни цифри {digits}",
+	"pages.steam_signin.account": "Акаунт {name}",
+	"pages.steam_signin.action": "Влез в този акаунт",
+	"pages.steam_signin.empty": "Няма налични акаунти в Adventure Land за този Steam акаунт.",
+	"pages.steam_signin.email": "Вход с имейл",
+	"pages.steam_signin.next": "Още акаунти",
+	"pages.steam_signin.signup_label": "> Регистрация",
 	"pages.steam_signup.client_help": "Тази функция помага на играчи, които имат проблеми със стартирането на клиента на играта.",
 	"pages.steam_signup.title": "Регистрация чрез Steam",
 	"pages.steam_signup.intro": "Имаш Adventure Land в Steam? Потвърди покупката си, за да създадеш акаунт и да играеш в браузъра.",
@@ -1482,5 +1496,6 @@
 	"pages.logs.working-on-an-improved-movement-and-visibility-system": "Работя по подобрена система за движение и видимост. Сегашната е малко сложна, това е четвъртата или петата версия, и много ми се иска да намеря време да мина към шеста.",
 	"pages.logs.working-on-the-orb-design-3x-orb-s": "Работя по замисъла на сферите; 3 Orb просто не изглеждат добре, прекалено лениво е, и ми хрумна да превърна една сфера в място за елексир: ще бъде продължително подсилващо питие.",
 	"pages.logs.wow-just-realised-it-has-been-a-month": "УАУ, тъкмо осъзнах, че е минал месец от пускането; оттогава сме извървели дълъг път и вече виждам играта като общност: запознах се с много хора, сприятелих се с мнозина, цялата ми представа се промени, и не само за играта, а и за живота изобщо и за разработването. Да кажем, че сега съм по-изпълнен с надежда, за много неща :)",
-	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Приключвам с поправките, проучването и изпробването."
+	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Приключвам с поправките, проучването и изпробването.",
+	"pages.contents.selection.slots-in-use": "Всички твои места за герои са заети."
 }

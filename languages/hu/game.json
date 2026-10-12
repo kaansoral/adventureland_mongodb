@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "A pókerasztal most zárva van",
 	"response.tavern_closing": "A fogadó játékai zárva vannak, amíg a szerver újraindul",
 	"response.poker_stool_far": "Állj egy szabad szék mellé, hogy leülhess",
-	"response.poker_saving": "A pókerasztal frissül. Próbáld újra egy kis idő múlva."
+	"response.poker_saving": "A pókerasztal frissül. Próbáld újra egy kis idő múlva.",
+	"response.trade_offer_invalid": "Ezt a tárgyat nem kérheted",
+	"response.trade_swap_match": "Ez a tárgy nem felel meg az ajánlatnak",
+	"response.trade_swap_space": "A kereskedőnél nincs hely",
+	"game.trade_history.traded": "- Csere: '{item}', partner: {player}, kapott: '{received}'",
+	"response.transport_need_items": "Szükséges: {items}"
 }

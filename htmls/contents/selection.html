@@ -92,9 +92,9 @@
 			>
 				{{ phrase("pages.contents.selection.create") }}
 			</div>
-			{% if user.info.slots <= user.info.characters|length %}
+			{% if character_slots <= characters|length and characters|length < 18 %}
 			<div style="color: #5dac40; margin-top: 4px">{{ phrase("pages.contents.selection.cost-200-shells") }}</div>
-			<div style="color: gray">{{ phrase("pages.contents.selection.you-ve-reached-the-free-limit-of-8") }}</div>
+			<div style="color: gray">{{ phrase("pages.contents.selection.slots-in-use") }}</div>
 			{% endif %}
 			<div style="margin-top: 10px"></div>
 		</div>
@@ -106,6 +106,8 @@
 			<div class="textbutton mt5" onclick="if(bc(this)) return; api_call_l('settings',{setting:'email',value:'1'},{disable:$(this)})">{{ phrase_html("pages.contents.selection.emails-off") }}</div>
 			{% endif %}
 			<div class="textbutton mt5 mb5" onclick="if(bc(this)) return; $('.accountui').hide(); $('.passwordui').show(); resize();">{{ phrase_html("pages.contents.selection.change-password") }}</div>
+			{% set steam_enabled = not user.steam_login or user.steam_login.enabled != false %}
+			<div class="textbutton mt5" onclick="if(bc(this)) return; api_call_l('settings',{setting:'steam_login',value:{{ 'false' if steam_enabled else 'true' }}},{disable:$(this)})">{{ phrase_html("pages.steam_signin.on" if steam_enabled else "pages.steam_signin.off") }}</div>
 			<div class="textbutton mt5" onclick="if(bc(this)) return; $('.accountui').hide(); $('.emailcui').show(); resize();">
 				<span style="color: #df6b81">*</span> {% if not user.info.verified%}{{ phrase("pages.contents.selection.re-verify-email") }}{%else%}{{ phrase("pages.contents.selection.change-email") }}{% endif %}
 			</div>
@@ -311,7 +313,7 @@
 	</div>
 	{% include "htmls/contents/account_help.html" %}
 </div>
-<div class="menu disableclicks" style="position: fixed; top: 0px; right: 0px; z-index: 201">
+<div class="menu disableclicks" style="position: fixed; top: 0px; right: 0px; z-index: 301">
 	<!-- .disableclicks as .menu overlays character selection -->
 	<div class="selection-controls">
 		{% set buttons="music"%} {% include "htmls/contents/section_buttons.html" %} {% set buttons="essentials"%} {% include "htmls/contents/section_buttons.html" %} {% set buttons="musts"%} {% include

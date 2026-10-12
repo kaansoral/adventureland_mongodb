@@ -1,0 +1,32 @@
+<div class="title">Many Eye</div>
+<div class="guide-views many-eye-views"></div>
+<div class="divider"></div>
+<div class="guide-spawn many-eye-spawn"></div>
+<p>{{ phrase("monster.manyeye.explanation") }}</p>
+<div style="overflow-x:auto"><div style="position:relative;width:367px;height:442px;margin:10px auto 0"><img src="/images/guide/many-eye-habitat.webp?v=ddc198ef" width="367" height="442" alt="Underground West" style="image-rendering:pixelated;display:block"><svg width="367" height="442" style="position:absolute;left:0;top:0"><rect x="64" y="64" width="239" height="314" fill="none" stroke="#73FFAC" stroke-width="2"/></svg></div></div>
+<p>{{ phrase("docs.guide.many-eye.about") }}</p>
+<div class="divider"></div>
+<div class="title">{{ phrase("interface.monster_info.drops") }}</div>
+<div class="guide-drops many-eye-drops"></div>
+<div class="divider"></div>
+<div class="title">CODE</div>
+<p>{{ phrase("docs.guide.many-eye.code") }}</p>
+<!-- prettier-ignore -->
+<div class="code" id="many-eye-code">async function face_many_eye() {
+    if (character.rip || character.s.stoned) return;
+    var target = get_nearest_monster({ type: "manyeye" });
+    if (!target || !can_attack(target)) return;
+    return await attack(target);
+}
+
+face_many_eye().catch(show_json);</div>
+<p><a href="/docs/code/functions/get_nearest_monster" target="_blank">get_nearest_monster</a> · <a href="/docs/code/functions/can_attack" target="_blank">can_attack</a> · <a href="/docs/code/functions/attack" target="_blank">attack</a></p>
+<style>
+	.title { color: #467956; font-size: 36px; margin-top: 15px; }
+	.divider { margin: 15px -26px 0; height: 5px; background-color: #a2a2a2; }
+</style>
+<script>
+	$(".many-eye-views").html(guide_monster_views("manyeye"));
+	$(".many-eye-spawn").html(["oneeye"].map(function(name) { return guide_monster_tile(name, 0); }).join("") + "<span class='guide-count'>×" + to_pretty_num(15000) + "</span><span class='guide-arrow'></span>" + guide_monster_tile("manyeye", 0));
+	$(".many-eye-drops").html(G.drops.monsters.manyeye.map(function(drop) { return render_drop(drop, 1, "#858B8E"); }).join(""));
+</script>

@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "โต๊ะโป๊กเกอร์ปิดอยู่ในตอนนี้",
 	"response.tavern_closing": "เกมของโรงเตี๊ยมปิดอยู่ระหว่างที่เซิร์ฟเวอร์รีสตาร์ท",
 	"response.poker_stool_far": "ยืนข้างเก้าอี้ว่างเพื่อนั่งลง",
-	"response.poker_saving": "โต๊ะโป๊กเกอร์กำลังอัปเดต กรุณาลองอีกครั้งในอีกสักครู่"
+	"response.poker_saving": "โต๊ะโป๊กเกอร์กำลังอัปเดต กรุณาลองอีกครั้งในอีกสักครู่",
+	"response.trade_offer_invalid": "ขอไอเทมนี้ไม่ได้",
+	"response.trade_swap_match": "ไอเทมนี้ไม่ตรงกับข้อเสนอ",
+	"response.trade_swap_space": "พ่อค้าไม่มีที่ว่าง",
+	"game.trade_history.traded": "- แลก '{item}' กับ {player} ได้ '{received}'",
+	"response.transport_need_items": "ต้องมี: {items}"
 }

@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "La mesa de póquer está cerrada por ahora",
 	"response.tavern_closing": "Los juegos de la taberna están cerrados mientras el servidor se reinicia",
 	"response.poker_stool_far": "Párate junto a un banco libre para sentarte",
-	"response.poker_saving": "La mesa de póquer se está actualizando. Inténtalo de nuevo en un momento."
+	"response.poker_saving": "La mesa de póquer se está actualizando. Inténtalo de nuevo en un momento.",
+	"response.trade_offer_invalid": "No puedes pedir ese objeto",
+	"response.trade_swap_match": "Ese objeto no coincide con la oferta",
+	"response.trade_swap_space": "El mercader no tiene espacio",
+	"game.trade_history.traded": "- Intercambiaste '{item}' con {player} por '{received}'",
+	"response.transport_need_items": "Necesitas: {items}"
 }

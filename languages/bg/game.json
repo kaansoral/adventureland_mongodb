@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "Покер масата е затворена в момента",
 	"response.tavern_closing": "Игрите на кръчмата са затворени, докато сървърът се рестартира",
 	"response.poker_stool_far": "Застани до свободно столче, за да седнеш",
-	"response.poker_saving": "Покер масата се обновява. Опитай отново след малко."
+	"response.poker_saving": "Покер масата се обновява. Опитай отново след малко.",
+	"response.trade_offer_invalid": "Не можеш да поискаш този предмет",
+	"response.trade_swap_match": "Този предмет не отговаря на офертата",
+	"response.trade_swap_space": "Търговецът няма място",
+	"game.trade_history.traded": "- Размени '{item}' с {player} срещу '{received}'",
+	"response.transport_need_items": "Нужно е: {items}"
 }

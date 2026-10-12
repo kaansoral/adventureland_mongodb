@@ -13,7 +13,13 @@ f.execso = f.execso_required;
 
 console.log("Update machines started | mode: " + (mode || "default"));
 
-f.execso("node ~/adventureland/scripts/deploy.js" + ((mode && " " + mode) || ""));
+try {
+	f.execso("node ~/adventureland/scripts/deploy.js" + ((mode && " " + mode) || ""));
+} catch (error) {
+	// deploy.js has already printed why it stopped.
+	console.error("Update stopped: nothing reached the machines.");
+	process.exit(1);
+}
 console.log("\nDeploy package prepared");
 
 var first = false;

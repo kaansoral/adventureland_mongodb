@@ -479,8 +479,10 @@
 					}
 				}
 			}
-			player.monster_stats = {};
-			if (player.tracker) {
+			if (!player.tracker) {
+				player.monster_stats = {};
+			} else if (player.monster_stats_dirty || !player.monster_stats_cache) {
+				var monster_stats = {};
 				for (var name in G.monsters) {
 					var mx = max((player.p.stats.monsters[name] || 0) + (player.p.stats.monsters_diff[name] || 0), (player.max_stats.monsters[name] || [0, 0])[0]);
 					if (!mx || !G.monsters[name].achievements) {
@@ -491,10 +493,15 @@
 							return;
 						}
 						if (def[1] == "stat") {
-							player.monster_stats[def[2]] = (player.monster_stats[def[2]] || 0) + def[3];
+							monster_stats[def[2]] = (monster_stats[def[2]] || 0) + def[3];
 						}
 					});
 				}
+				player.monster_stats_cache = monster_stats;
+				player.monster_stats_dirty = false;
+				player.monster_stats = monster_stats;
+			} else {
+				player.monster_stats = player.monster_stats_cache;
 			}
 			character_slots.forEach(function (slot) {
 				var current = player.slots[slot];

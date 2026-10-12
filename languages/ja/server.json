@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "石化！",
+	"server.floating.frenzy": "狂乱！",
 	"server.party.joined": "{player}がパーティーに参加しました",
 	"server.party.joined_with_invite": "{inviter}の招待で{player}がパーティーに参加しました",
 	"server.party.left": "{player}がパーティーを抜けました",
@@ -393,5 +395,8 @@
 	"server.cave.amber_limit": "今回の訪問で出現するCave Amber {amount}個は、すべて出現しました。アイテムの入手とXPの獲得は引き続き可能です。",
 	"server.game_error.poker_hand_active": "別のサーバーであなたのポーカーのハンドが続いています。終了を待つか、そのサーバーに再接続してください。",
 	"server.tracktrix.mail_subject": "あなたへのTracktrix",
-	"server.tracktrix.mail_body": "次の狩りに、ちょっとした助けを。このTracktrixを持ち歩いてね！"
+	"server.tracktrix.mail_body": "次の狩りに、ちょっとした助けを。このTracktrixを持ち歩いてね！",
+  "server.game_log.offered_for": "{item}を{want}との交換に出しました",
+  "server.game_log.offered_for_or_higher": "{item}を{want}以上との交換に出しました",
+  "server.game_log.traded_for": "{player}と{item}を{received}に交換しました"
 }

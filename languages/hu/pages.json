@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Steam-bejelentkezés: <span style=\"color: green\">BE</span>",
+	"pages.steam_signin.off": "> Steam-bejelentkezés: <span style=\"color: #F54423\">KI</span>",
+	"pages.steam_signin.title": "Bejelentkezés Steammel",
+	"pages.steam_signin.intro": "Igazold a Steam-fiókodat, majd válaszd ki, melyik Adventure Land-fiókba szeretnél bejelentkezni.",
+	"pages.steam_signin.continue": "Tovább a Steamre",
+	"pages.steam_signin.choose": "Válassz fiókot",
+	"pages.steam_signin.choose_help": "Válassz egy ehhez a Steam-fiókhoz kapcsolt Adventure Land-fiókot.",
+	"pages.steam_signin.identity": "Igazolt Steam-fiók, utolsó számjegyek: {digits}",
+	"pages.steam_signin.account": "Fiók: {name}",
+	"pages.steam_signin.action": "Bejelentkezés ebbe a fiókba",
+	"pages.steam_signin.empty": "Ehhez a Steam-fiókhoz nem érhető el Adventure Land-fiók.",
+	"pages.steam_signin.email": "Bejelentkezés e-mail-címmel",
+	"pages.steam_signin.next": "További fiókok",
+	"pages.steam_signin.signup_label": "> Regisztráció",
 	"pages.steam_signup.client_help": "Ez a funkció azoknak a játékosoknak segít, akiknek gondot okoz a játékkliens futtatása.",
 	"pages.steam_signup.title": "Regisztráció Steammel",
 	"pages.steam_signup.intro": "Megvan az Adventure Land a Steamen? Igazold a vásárlást, hozz létre fiókot, és játssz a böngésződben.",
@@ -1482,5 +1496,6 @@
 	"pages.logs.working-on-an-improved-movement-and-visibility-system": "Egy továbbfejlesztett mozgás- és láthatósági rendszeren dolgozom. A mostani kissé bonyolult, ez a negyedik vagy ötödik változat, és nagyon szeretnék időt szakítani a hatodikra.",
 	"pages.logs.working-on-the-orb-design-3x-orb-s": "Az orbok tervén dolgozom; a 3 Orb valahogy nem tetszik, túl kényelmes megoldás, és felmerült bennem, hogy az egyik orbot elixírhellyé alakítom: hosszan tartó erősítő ital lesz.",
 	"pages.logs.wow-just-realised-it-has-been-a-month": "HŰHA, most jöttem rá, hogy egy hónap telt el az indulás óta; azóta hosszú utat tettünk meg, és a játékot már közösségként látom: sok emberrel ismerkedtem meg, sok barátot szereztem, az egész látásmódom megváltozott, és nemcsak a játékkal kapcsolatban, hanem az élettel és a fejlesztéssel kapcsolatban is. Mondjuk úgy, hogy most reményteljesebb vagyok, sok mindenben :)",
-	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Lezárom a javításokat, a kutatást és a próbákat."
+	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Lezárom a javításokat, a kutatást és a próbákat.",
+	"pages.contents.selection.slots-in-use": "Az összes karakterhelyed foglalt."
 }

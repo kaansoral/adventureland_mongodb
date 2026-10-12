@@ -419,6 +419,23 @@ function can_stack(a,b,d,args)
 	return false;
 }
 
+function crafting_npc(recipe,status)
+{
+	var id=recipe.quest;
+	if(!id) return "craftsman";
+	for(var name in G.maps)
+	{
+		var npcs=G.maps[name].seasonal_npcs||[];
+		for(var i=0;i<npcs.length;i++)
+		{
+			if(npcs[i].id!=id || !npcs[i].event) continue;
+			var event=status&&status[npcs[i].event];
+			return event===true || event&&event.active ? id : "craftsman";
+		}
+	}
+	return id;
+}
+
 function can_add_item(player,new_item,args) // long requested feature [18/10/18]
 {
 	if(!args) args={};
@@ -446,24 +463,65 @@ function can_add_item(player,new_item,args) // long requested feature [18/10/18]
 function can_add_items(player,items,args)
 {
 	if(!args) args={};
-	var needed=items.length,overhead=[];
-	if(player.esize+(args.space||0)>=needed || !needed) return true;
-	items.forEach(function(new_item){
+	var space=player.esize+(args.space||0),slots=player.items.slice();
+	if(space>=items.length || !items.length) return true;
+	for(var n=0;n<items.length;n++)
+	{
+		var new_item=items[n],stack=-1;
 		if(G.items[new_item.name].s)
 		{
-			for(var i=0;i<player.items.length;i++)
+			for(var i=0;i<slots.length;i++)
 			{
-				var item=player.items[i];
-				if(can_stack(item,new_item,overhead[i]||0))
+				if(can_stack(slots[i],new_item))
 				{
-					overhead[i]=(overhead[i]||0)+new_item.q;
-					needed--;
+					stack=i;
+					break;
 				}
 			}
 		}
-	});
-	if(player.esize+(args.space||0)>=needed) return true;
-	return false;
+		if(stack>=0) slots[stack]=Object.assign({},slots[stack],{q:slots[stack].q+new_item.q});
+		else
+		{
+			if(space<=0) return false;
+			space--;
+			var empty=slots.findIndex(function(item){ return !item; });
+			slots[empty<0?slots.length:empty]=Object.assign({},new_item);
+		}
+	}
+	return true;
+}
+
+function trade_want_normalize(want) // what a trade offer asks for: name, level (the lowest accepted), p, q - an unset level or title accepts any
+{
+	if(is_string(want)) want={name:want};
+	if(!want || !is_string(want.name) || !Object.prototype.hasOwnProperty.call(G.items,want.name) || want.name=="placeholder") return null;
+	var def=G.items[want.name],result={name:want.name},level=parseInt(want.level);
+	if((def.upgrade || def.compound) && level>0) result.level=min(12,level);
+	if(want.p!==undefined && want.p!==null && want.p!=="")
+	{
+		if(!is_string(want.p) || !G.titles || !Object.prototype.hasOwnProperty.call(G.titles,want.p)) return null;
+		result.p=want.p;
+	}
+	if(def.s) result.q=min(def.s===true&&9999||def.s,max(1,parseInt(want.q)||1));
+	return result;
+}
+
+function trade_want_matches(want,item) // the server and the stand UI accept the same items: a higher level, or any title when none is set
+{
+	if(!want || !item || item.name!=want.name) return false;
+	if(want.level && (item.level||0)<want.level) return false;
+	if(want.p && item.p!=want.p) return false;
+	if((item.q||1)<(want.q||1)) return false;
+	return true;
+}
+
+function trade_lot_name(item) // "Shiny Staff +8" or "20 Candy Pop"
+{
+	var name=G.items[item.name].name;
+	if(item.p && G.titles && Object.prototype.hasOwnProperty.call(G.titles,item.p)) name=G.titles[item.p].title+" "+name;
+	if(item.level) name+=" +"+item.level;
+	if((item.q||1)>1) name=item.q+" "+name;
+	return name;
 }
 
 var RESOLVE_ALL=false;
@@ -655,6 +713,22 @@ function within_xy_range(observer,entity)
 	return false;
 }
 
+// Combat bounds use the monster type, not its visual skin or sprite dimensions.
+function get_monster_dimensions(type) {
+	var dimensions = G.dimensions[type] || [24, 24];
+	var width = dimensions[0], height = dimensions[1];
+	if (G.monsters[type].size) {
+		width = Math.round(width * G.monsters[type].size);
+		height = Math.round(height * G.monsters[type].size);
+	}
+	return [width, height];
+}
+
+function get_combat_dimensions(entity) {
+	if (entity.type === "monster" && typeof entity.mtype === "string" && Object.prototype.hasOwnProperty.call(G.monsters, entity.mtype)) return get_monster_dimensions(entity.mtype);
+	return [get_width(entity), get_height(entity)];
+}
+
 function distance(a, b) {
 	// https://discord.com/channels/238332476743745536/1025784763958693958
 	if (!a || !b) return 99999999;
@@ -666,10 +740,12 @@ function distance(a, b) {
 	const b_x = get_x(b);
 	const b_y = get_y(b);
 
-	const aHalfWidth = get_width(a) / 2;
-	const aHeight = get_height(a);
-	const bHalfWidth = get_width(b) / 2;
-	const bHeight = get_height(b);
+	const aDimensions = get_combat_dimensions(a);
+	const bDimensions = get_combat_dimensions(b);
+	const aHalfWidth = aDimensions[0] / 2;
+	const aHeight = aDimensions[1];
+	const bHalfWidth = bDimensions[0] / 2;
+	const bHeight = bDimensions[1];
 
 	// Compute bounds of each rectangle
 	const aLeft = a_x - aHalfWidth;

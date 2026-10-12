@@ -1,0 +1,31 @@
+<div class="title">Cute Bee</div>
+<div class="guide-views cute-bee-views"></div>
+<div class="divider"></div>
+<div class="guide-spawn cute-bee-spawn"></div>
+<p>{{ phrase("monster.cutebee.explanation") }}</p>
+<div style="overflow-x:auto"><div style="position:relative;width:630px;height:608px;margin:10px auto 0"><img src="/images/guide/cute-bee-habitat.webp?v=51303690" width="630" height="608" alt="Mainland" style="image-rendering:pixelated;display:block"><svg width="630" height="608" style="position:absolute;left:0;top:0"><rect x="12.8" y="143.6" width="60.2" height="75.2" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="12.8" y="219.6" width="71" height="118.4" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="12.8" y="219.6" width="71" height="118.4" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="12.8" y="338.4" width="91.4" height="159.2" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="12.8" y="338.4" width="91.4" height="159.2" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="32.2" y="498.4" width="108.8" height="96.8" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="32.2" y="498.4" width="108.8" height="96.8" fill="none" stroke="#73FFAC" stroke-width="2"/><circle cx="169.2" cy="259" r="4" fill="none" stroke="#73FFAC" stroke-width="2"/><circle cx="225.4" cy="250.4" r="4" fill="none" stroke="#73FFAC" stroke-width="2"/><circle cx="229.4" cy="250.4" r="4" fill="none" stroke="#73FFAC" stroke-width="2"/><circle cx="233.4" cy="250.4" r="4" fill="none" stroke="#73FFAC" stroke-width="2"/><circle cx="237.4" cy="250.4" r="4" fill="none" stroke="#73FFAC" stroke-width="2"/><circle cx="241.4" cy="250.4" r="4" fill="none" stroke="#73FFAC" stroke-width="2"/><circle cx="253.4" cy="274.4" r="4" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="227" y="334.8" width="100" height="34" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="368.2" y="397.2" width="48.8" height="18" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="367" y="393.2" width="30.4" height="42.8" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="293.8" y="479.6" width="40" height="24.4" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="373" y="333.2" width="28.8" height="23.6" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="419" y="329.6" width="23.6" height="17.6" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="231" y="434" width="56.4" height="64.8" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="422.6" y="494" width="42" height="84.8" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="358.6" y="533.6" width="60" height="60" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="232.6" y="556.8" width="68.8" height="35.6" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="503.4" y="226.4" width="97.2" height="35.2" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="423.4" y="138" width="99.2" height="55.2" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="580.4" y="116.4" width="37" height="88.8" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="191.4" y="12.8" width="40" height="39.6" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="191.4" y="12.8" width="40" height="39.6" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="191.4" y="12.8" width="40" height="39.6" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="130.2" y="408.8" width="24.6" height="27.6" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="130.2" y="408.8" width="24.6" height="27.6" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="130.2" y="408.8" width="24.6" height="27.6" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="130.2" y="408.8" width="24.6" height="27.6" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="130.2" y="408.8" width="24.6" height="27.6" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="130.2" y="408.8" width="24.6" height="27.6" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="130.2" y="408.8" width="24.6" height="27.6" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="130.2" y="408.8" width="24.6" height="27.6" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="259.8" y="131" width="22.6" height="14" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="259.8" y="131" width="22.6" height="14" fill="none" stroke="#73FFAC" stroke-width="2"/></svg></div></div>
+<p>{{ phrase("docs.guide.cute-bee.intro") }}</p>
+<div class="divider"></div>
+<div class="title">{{ phrase("interface.monster_info.drops") }}</div>
+<div class="guide-drops cute-bee-drops"></div>
+<div class="divider"></div>
+<div class="title">CODE</div>
+<p>{{ phrase("docs.guide.cute-bee.code") }}</p>
+<!-- prettier-ignore -->
+<div class="code" id="cute-bee-code">async function catch_cute_bee() {
+    var bee = get_nearest_monster({ type: "cutebee" });
+    if (character.rip || !bee || !can_attack(bee)) return;
+    return await attack(bee);
+}
+
+catch_cute_bee().catch(show_json);</div>
+<p><a href="/docs/code/functions/get_nearest_monster" target="_blank">get_nearest_monster</a> · <a href="/docs/code/functions/can_attack" target="_blank">can_attack</a> · <a href="/docs/code/functions/attack" target="_blank">attack</a></p>
+<style>
+	.title { color: #467956; font-size: 36px; margin-top: 15px; }
+	.divider { margin: 15px -26px 0; height: 5px; background-color: #a2a2a2; }
+</style>
+<script>
+	$(".cute-bee-views").html(guide_monster_views("cutebee"));
+	$(".cute-bee-spawn").html(["bee"].map(function(name) { return guide_monster_tile(name, 0); }).join("") + "<span class='guide-count'>×" + to_pretty_num(480000) + "</span><span class='guide-arrow'></span>" + guide_monster_tile("cutebee", 0));
+	$(".cute-bee-drops").html(G.drops.monsters.cutebee.map(function(drop) { return render_drop(drop, 1, "#858B8E"); }).join(""));
+</script>

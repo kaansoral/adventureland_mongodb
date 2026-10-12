@@ -133,6 +133,9 @@ canvas { display:block; } /*replaces the overflow: hidden solution [07/07/16] */
 .igu{
 	color:#D96EDC;
 }
+.iou{ /*trade offer*/
+	color:#3E9ACD;
+}
 .ixu{
 	color:#5C5D5E;
 	color:#B3AFB4;
@@ -801,6 +804,52 @@ canvas { display:block; } /*replaces the overflow: hidden solution [07/07/16] */
 	box-sizing: border-box;
 	width: min(1018px, calc(100vw * var(--browser-zoom-inverse, 1) - 80px));
 }
+/* Guide pictures: a monster from four labelled sides, a spawn rule as sprites, and drops side by side */
+.guide-article .guide-views,
+.guide-article .guide-spawn{
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: 10px;
+}
+.guide-article .guide-views{
+	align-items: flex-end;
+}
+.guide-article .guide-spawn{
+	align-items: center;
+}
+.guide-article .guide-view{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 5px;
+}
+.guide-article .guide-view-label{
+	font-size: 18px;
+	line-height: 18px;
+	letter-spacing: 2px;
+	color: #62727E;
+}
+.guide-article .guide-count{
+	color: #467956;
+	margin: 0 4px 0 6px;
+}
+.guide-article .guide-arrow{
+	width: 0;
+	height: 0;
+	border-top: 12px solid transparent;
+	border-bottom: 12px solid transparent;
+	border-left: 18px solid #467956;
+	margin: 0 8px;
+}
+.guide-article .guide-drops{
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px 6px;
+}
+.guide-article .guide-drops > div{
+	min-width: 176px;
+}
 .tutorial-article p{
 	margin: 20px 0;
 	line-height: 1.35;
@@ -1196,6 +1245,63 @@ a.gamebutton{
 .update-notes-footer{
 	margin-top: 22px;
 	text-align: center;
+}
+/* Release posts in the Update Notes modal (js/functions.js release_*) */
+.release-view .release-head{color: #929292; font-size: 20px; line-height: 24px}
+.release-title{color: #F1EFE9; font-size: 36px; line-height: 40px; margin-top: 4px}
+.release-summary{margin-top: 10px}
+.release-divider{margin: 18px -24px 14px; height: 5px; background: gray}
+.release-section{color: #F1C054; font-size: 32px; line-height: 32px; margin-bottom: 6px}
+.release-section.release-all{color: #F1EFE9}
+.release-show{display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; margin: 10px 0}
+.release-image{margin: 10px 0; line-height: 0; overflow-x: auto}
+.release-image img{image-rendering: crisp-edges; image-rendering: pixelated}
+.release-group{color: #69BE86; font-size: 26px; line-height: 26px; margin: 16px 0 4px; border-bottom: 2px dashed #3E3E3E; padding-bottom: 4px}
+.release-row{display: flex; gap: 12px; align-items: center; margin: 8px 0}
+.release-icon{flex: none; min-width: 58px; text-align: center}
+.release-body{flex: 1; min-width: 0}
+.release-side{flex: none; display: flex; align-items: center; gap: 4px}
+.release-name{color: #F1EFE9}
+.release-id{color: #EF7A4D; font-size: 20px}
+.release-tag{display: inline-block; vertical-align: middle; margin-left: 8px; border: 2px solid; font-size: 16px; line-height: 14px; padding: 2px 4px 1px}
+.release-meta{color: #929292; font-size: 20px; line-height: 22px}
+.release-meta + .release-tile, .release-meta + .clickable{margin-left: 6px}
+.release-flavor, .release-fields{color: #C3C3C3; font-size: 20px; line-height: 22px}
+.release-fields{line-height: 24px; margin-top: 2px}
+.release-old, .release-lost{color: #929292}
+.release-lost{opacity: 0.6}
+.release-path{color: #EF7A4D}
+.release-skin{display: flex; align-items: center; gap: 6px}
+.release-tile{display: inline-block; vertical-align: middle; background-color: #575983; border: 2px solid #9F9FB0; line-height: 0}
+.release-spawn{display: inline-flex; align-items: center; gap: 6px; vertical-align: middle}
+.release-show .release-spawn{flex: 0 0 330px}
+.release-count{color: #69BE86}
+.release-arrow{display: inline-block; width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 14px solid #69BE86; margin: 0 2px}
+.release-grid{display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 6px 0}
+.release-drops{display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 4px 0}
+.release-set{display: inline-block; white-space: nowrap}
+.release-info{padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px; vertical-align: middle}
+.release-info-mark{font-size: 32px; line-height: 42px; color: #69BE86}
+.release-info-label{color: #69BE86; margin-top: 1px}
+.release-code-mark{color: #D6D135}
+.release-line{margin: 6px 0; color: #E4E4E4}
+.release-bullet{color: #69BE86}
+.release-footer{margin-top: 0}
+.release-archive-row{align-items: center}
+.release-archive{display: flex; align-items: center; gap: 10px}
+.release-cover{padding: 6px 8px; line-height: 0; flex: none}
+.release-cover-item{margin: -1px -3px 0}
+.release-archive-title{color: #F1C054}
+/* Arabic post text reads right to left, like guide articles; sprite rows, IDs and changed values stay left to right. */
+html:lang(ar) .release-title,
+html:lang(ar) .release-summary,
+html:lang(ar) .release-section,
+html:lang(ar) .release-note,
+html:lang(ar) .release-line,
+html:lang(ar) .release-archive-title{
+	direction: rtl;
+	text-align: start;
+	unicode-bidi: isolate;
 }
 .gamebutton-active.gamebutton-small{
 	border: 2px solid #EAF1EC;

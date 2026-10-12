@@ -82,6 +82,81 @@ function runtime() {
 	return { context, state, style };
 }
 
+test("character scale stays numeric through blink with the page's string settings", () => {
+	const game = read("js/game.js");
+	const pixi = read("js/pixi/4.8.2-roundpixels/pixi.js");
+	const dimensions = {};
+	for (const name of ["width", "height"]) {
+		const start = pixi.indexOf("key: '" + name + "',", pixi.indexOf("_createClass(Sprite, ["));
+		const end = pixi.indexOf("}, {", start);
+		// Use PIXI's real accessors: assigning height changes scale and coerces the result to a number.
+		dimensions[name] = vm.runInNewContext("({" + pixi.slice(start, end) + "})", { _utils: { sign: Math.sign } });
+	}
+	const context = vm.createContext({
+		G: { npcs: {} },
+		XYWH: { mage: true },
+		log_flags: {},
+		mode: {},
+		pvp: false,
+		player_layer: {},
+		round: Math.round,
+		phrase: () => "",
+		player_click() {},
+		mouseover() {},
+		mouseout() {},
+		is_hidden: () => false,
+		draw_timeout() {},
+		cosmetics_logic() {},
+		adopt_soft_properties: Object.assign,
+		PIXI: {
+			Point: class {
+				constructor(x, y) {
+					Object.assign(this, { x, y });
+				}
+			},
+		},
+		new_sprite: () =>
+			Object.defineProperties(
+				{
+					texture: { width: 27, height: 36 },
+					_texture: { orig: { width: 27, height: 36 } },
+					scale: { x: 1, y: 1 },
+					anchor: { set() {} },
+					on() {
+						return this;
+					},
+				},
+				dimensions,
+			),
+	});
+	vm.runInContext(extract(game, "add_character"), context);
+	for (const name of ["fade_out_blink", "restore_dimensions"])
+		vm.runInContext(extract(read("js/functions.js"), name), context);
+	// Match index.html: game.js runs first, then base_script overwrites scale with quoted text.
+	vm.runInContext(game.match(/^var scale = parseInt\(scale\);/m)[0], context);
+	const setting = read("htmls/base_script.html").match(/var cached_map=[^\n]+/)[0];
+	for (const scale of [1, 2, 3, 4]) {
+		vm.runInContext(nunjucks.renderString(setting, { domain: { scale } }), context);
+		for (const manual of [true, false])
+			for (const me of [true, false]) {
+				context.manual_centering = manual;
+				const sprite = context.add_character({ id: "Mage", skin: "mage", x: 0, y: 0 }, me);
+				const expectedScale = me && manual ? scale : 1;
+				assert.equal(sprite.cscale, expectedScale);
+				const height = sprite.height;
+				context.character = sprite;
+				sprite.fading_out = true;
+				for (let step = 0; step < 3; step++) {
+					context.fade_out_blink(step, sprite)();
+					assert.equal(sprite.height, height + expectedScale * (step + 1));
+					assert.ok(Math.abs(sprite.real_alpha - (1 - 0.1 * (step + 1))) < 1e-9);
+				}
+				context.restore_dimensions(sprite);
+				assert.equal(sprite.height, height);
+			}
+	}
+});
+
 test("zoom restores all four saved values and updates the selected choice and viewport measurements", () => {
 	for (const value of [-25, 0, 25, 50]) {
 		const { context, state, style } = runtime();

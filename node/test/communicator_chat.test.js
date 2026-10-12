@@ -69,6 +69,7 @@ function fixture(options = {}) {
 			cost += value;
 		},
 		get_call_cost: () => 0,
+		instance_block_action: () => false,
 		round: Math.round,
 		is_string: (value) => typeof value === "string",
 		is_object: (value) => value && typeof value === "object",
@@ -143,6 +144,19 @@ test("mute and the native chat cooldown reject sends without broadcasting", asyn
 	assert.equal((await f.send()).reason, "chat_slowdown");
 	assert.equal(f.relayed.length, 0);
 	assert.equal(f.logs.length, 0);
+});
+
+test("native chat and Communicator share duplicate suppression before Discord and history", async () => {
+	const f = fixture();
+	assert.equal((await f.send()).success, true);
+	await new Promise(setImmediate);
+	const count = f.logs.length;
+	f.socket.listeners("say")[0]({ message: "Hello" });
+	await new Promise(setImmediate);
+	assert.equal(f.logs.length, count);
+	assert.equal(f.relayed.length, 1);
+	assert.equal(f.output.filter((event) => event.event === "chat_log" && event.broadcast).length, 2);
+	assert.ok(f.output.some((event) => event.event === "game_response" && event.data.success));
 });
 
 test("sender ownership is checked in both HTTP and the live server; recipients and destination are validated", async () => {

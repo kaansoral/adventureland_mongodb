@@ -5,16 +5,111 @@ const NAMESPACE = "http://specs.openid.net/auth/2.0";
 const COOKIE = "al_steam_signup";
 const LIFETIME = 20 * 60 * 1000;
 
-// Steam-only OpenID verification: fixed provider, direct signature verification,
-// browser-bound state and a one-use grant consumed by the signup transaction.
-function create_steam_signup({ key, get_user, render, signup, purify_email, local_origin, request = fetch, now = Date.now }) {
-	const attempts = new Map();
+// Shared fixed-provider verifier. Identity is accepted only from Steam's signed response.
+function create_steam_verifier({ key, local_origin, request = fetch, now = Date.now }) {
 	function origin(req) {
 		const host = req.get("host");
 		if (["adventure.land", "www.adventure.land", "cloudflare.adventure.land"].includes(host)) return "https://" + host;
 		if (local_origin && host === new URL(local_origin).host) return new URL(local_origin).origin;
-		throw new Error("invalid_origin");
+		throw new Error("failed");
 	}
+	async function steam_request(url, options = {}) {
+		const controller = new AbortController();
+		const timeout = setTimeout(() => controller.abort(), 8000);
+		try {
+			const response = await request(url, { ...options, redirect: "error", signal: controller.signal });
+			if (!response.ok) throw new Error();
+			let text = "";
+			if (response.body && response.body.getReader) {
+				const reader = response.body.getReader(),
+					chunks = [];
+				let size = 0;
+				try {
+					for (;;) {
+						const part = await reader.read();
+						if (part.done) break;
+						size += part.value.byteLength;
+						if (size > 65536) {
+							controller.abort();
+							throw new Error();
+						}
+						chunks.push(Buffer.from(part.value));
+					}
+					text = Buffer.concat(chunks).toString("utf8");
+				} finally {
+					reader.releaseLock();
+				}
+			} else text = await response.text();
+			if (Buffer.byteLength(text) > 65536) throw new Error();
+			return text;
+		} catch (_) {
+			throw new Error("unavailable");
+		} finally {
+			clearTimeout(timeout);
+		}
+	}
+	async function ownership(steamid) {
+		if (!key()) throw new Error("unavailable");
+		const query = new URLSearchParams({ key: key(), appid: "777150", steamid });
+		let result;
+		try {
+			result = JSON.parse(await steam_request("https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v4/?" + query));
+		} catch (_) {
+			throw new Error("unavailable");
+		}
+		if (!result || !result.appownership || typeof result.appownership.ownsapp !== "boolean") throw new Error("unavailable");
+		if (!result.appownership.ownsapp || result.appownership.usercanceled === true) throw new Error("not_owned");
+	}
+	function start(return_to, realm) {
+		return (
+			ENDPOINT +
+			"?" +
+			new URLSearchParams({
+				"openid.ns": NAMESPACE,
+				"openid.mode": "checkid_setup",
+				"openid.return_to": return_to,
+				"openid.realm": realm + "/",
+				"openid.identity": NAMESPACE + "/identifier_select",
+				"openid.claimed_id": NAMESPACE + "/identifier_select",
+			})
+		);
+	}
+	async function verify(req, return_to, lifetime = LIFETIME) {
+		const query = new URL(req.originalUrl, origin(req)).searchParams,
+			names = [...query.keys()];
+		if (new Set(names).size !== names.length || names.length > 20 || req.originalUrl.length > 8192) throw new Error("failed");
+		if (query.get("openid.ns") !== NAMESPACE || query.get("openid.mode") !== "id_res" || query.get("openid.op_endpoint") !== ENDPOINT || query.get("openid.return_to") !== return_to)
+			throw new Error("failed");
+		const identity = query.get("openid.claimed_id") || "",
+			match = /^https?:\/\/steamcommunity\.com\/openid\/id\/([0-9]{16,20})$/.exec(identity);
+		if (!match || query.get("openid.identity") !== identity) throw new Error("failed");
+		const signed = (query.get("openid.signed") || "").split(",");
+		if (!["op_endpoint", "claimed_id", "identity", "return_to", "response_nonce", "assoc_handle"].every((name) => signed.includes(name))) throw new Error("failed");
+		const nonce = query.get("openid.response_nonce") || "",
+			time = Date.parse(nonce.slice(0, 20));
+		if (nonce.length > 255 || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z[!-~]+$/.test(nonce) || !Number.isFinite(time) || now() - time >= lifetime || time > now() + 60000) throw new Error("failed");
+		const body = new URLSearchParams([...query].filter(([name]) => name.startsWith("openid.")));
+		body.set("openid.mode", "check_authentication");
+		const lines = (await steam_request(ENDPOINT, { method: "POST", body })).trim().split(/\r?\n/);
+		const fields = lines.map((line) => line.slice(0, line.indexOf(":")));
+		if (
+			new Set(fields).size !== fields.length ||
+			fields.some((field) => !["ns", "is_valid", "invalidate_handle"].includes(field)) ||
+			!lines.includes("ns:" + NAMESPACE) ||
+			!lines.includes("is_valid:true")
+		)
+			throw new Error("failed");
+		return { steamid: match[1], nonce };
+	}
+	return { origin, ownership, start, verify };
+}
+
+// Steam-only OpenID verification: fixed provider, direct signature verification,
+// browser-bound state and a one-use grant consumed by the signup transaction.
+function create_steam_signup({ key, get_user, render, signup, purify_email, local_origin, request = fetch, now = Date.now }) {
+	const verifier = create_steam_verifier({ key, local_origin, request, now });
+	const attempts = new Map();
+	const origin = verifier.origin;
 	function mac(value) {
 		if (!key()) throw new Error("unavailable");
 		return crypto
@@ -57,33 +152,7 @@ function create_steam_signup({ key, get_user, render, signup, purify_email, loca
 		}
 		return ++entry.count > 20;
 	}
-	async function steam_request(url, options = {}) {
-		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), 8000);
-		try {
-			const response = await request(url, { ...options, redirect: "error", signal: controller.signal });
-			if (!response.ok) throw new Error("unavailable");
-			const text = await response.text();
-			if (text.length > 65536) throw new Error("unavailable");
-			return text;
-		} catch (_) {
-			// Never propagate request URLs, publisher keys or Steam response bodies.
-			throw new Error("unavailable");
-		} finally {
-			clearTimeout(timeout);
-		}
-	}
-	async function ownership(steamid) {
-		const query = new URLSearchParams({ key: key(), appid: "777150", steamid });
-		let result;
-		try {
-			result = JSON.parse(await steam_request("https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v4/?" + query));
-		} catch (_) {
-			throw new Error("unavailable");
-		}
-		if (!result || !result.appownership || typeof result.appownership.ownsapp !== "boolean") throw new Error("unavailable");
-		if (!result.appownership.ownsapp || result.appownership.usercanceled === true) throw new Error("not_owned");
-	}
+	const ownership = verifier.ownership;
 	function callback_url(state) {
 		return state.origin + "/steam-signup/callback?state=" + state.id;
 	}
@@ -123,40 +192,15 @@ function create_steam_signup({ key, get_user, render, signup, purify_email, loca
 			if (limited(req)) throw new Error("unavailable");
 			const next = { id: crypto.randomBytes(32).toString("hex"), time: now(), origin: origin(req) };
 			save(req, res, next);
-			const query = new URLSearchParams({
-				"openid.ns": NAMESPACE,
-				"openid.mode": "checkid_setup",
-				"openid.return_to": callback_url(next),
-				"openid.realm": next.origin + "/",
-				"openid.identity": NAMESPACE + "/identifier_select",
-				"openid.claimed_id": NAMESPACE + "/identifier_select",
-			});
-			res.redirect(303, ENDPOINT + "?" + query);
+			res.redirect(303, verifier.start(callback_url(next), next.origin));
 		}),
 		callback: guard(async (req, res) => {
 			const state = read(req),
 				query = new URL(req.originalUrl, origin(req)).searchParams;
 			if (!state || state.steamid || query.get("state") !== state.id || limited(req)) throw new Error("failed");
-			const names = [...query.keys()];
-			if (new Set(names).size !== names.length || names.length > 20 || req.originalUrl.length > 8192) throw new Error("failed");
-			if (query.get("openid.ns") !== NAMESPACE || query.get("openid.mode") !== "id_res" || query.get("openid.op_endpoint") !== ENDPOINT) throw new Error("failed");
-			if (query.get("openid.return_to") !== callback_url(state)) throw new Error("failed");
-			const identity = query.get("openid.claimed_id") || "";
-			const match = /^https?:\/\/steamcommunity\.com\/openid\/id\/([0-9]{16,20})$/.exec(identity);
-			if (!match || query.get("openid.identity") !== identity) throw new Error("failed");
-			const signed = (query.get("openid.signed") || "").split(",");
-			if (!["op_endpoint", "claimed_id", "identity", "return_to", "response_nonce", "assoc_handle"].every((name) => signed.includes(name))) throw new Error("failed");
-			const nonce = query.get("openid.response_nonce") || "";
-			const time = Date.parse(nonce.slice(0, 20));
-			if (nonce.length > 255 || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z[!-~]+$/.test(nonce) || !Number.isFinite(time) || now() - time >= LIFETIME || time > now() + 60000) throw new Error("failed");
-			const body = new URLSearchParams([...query].filter(([name]) => name.startsWith("openid.")));
-			body.set("openid.mode", "check_authentication");
-			const checked = await steam_request(ENDPOINT, { method: "POST", body });
-			const lines = checked.trim().split(/\r?\n/);
-			if (lines.filter((line) => line === "is_valid:true").length !== 1 || lines.some((line) => line.startsWith("is_valid:") && line !== "is_valid:true")) throw new Error("failed");
-			await ownership(match[1]);
-			// Bind the verified identity to this browser, never a client-supplied pid.
-			save(req, res, { ...state, steamid: match[1] });
+			const checked = await verifier.verify(req, callback_url(state));
+			await ownership(checked.steamid);
+			save(req, res, { ...state, steamid: checked.steamid });
 			res.redirect(303, "/steam-signup");
 		}),
 		complete: guard(async (req, res) => {
@@ -185,4 +229,4 @@ function create_steam_signup({ key, get_user, render, signup, purify_email, loca
 	};
 }
 
-module.exports = { create_steam_signup };
+module.exports = { create_steam_signup, create_steam_verifier };

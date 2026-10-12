@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Conectare cu Steam: <span style=\"color: green\">ACTIVATĂ</span>",
+	"pages.steam_signin.off": "> Conectare cu Steam: <span style=\"color: #F54423\">DEZACTIVATĂ</span>",
+	"pages.steam_signin.title": "Conectare cu Steam",
+	"pages.steam_signin.intro": "Verifică-ți contul Steam, apoi alege contul Adventure Land în care vrei să te conectezi.",
+	"pages.steam_signin.continue": "Continuă către Steam",
+	"pages.steam_signin.choose": "Alege un cont",
+	"pages.steam_signin.choose_help": "Alege un cont Adventure Land asociat acestui cont Steam.",
+	"pages.steam_signin.identity": "Cont Steam verificat, cu ultimele cifre {digits}",
+	"pages.steam_signin.account": "Contul {name}",
+	"pages.steam_signin.action": "Conectează-te la acest cont",
+	"pages.steam_signin.empty": "Nu există conturi Adventure Land disponibile pentru acest cont Steam.",
+	"pages.steam_signin.email": "Conectare cu e-mail",
+	"pages.steam_signin.next": "Mai multe conturi",
+	"pages.steam_signin.signup_label": "> Înregistrare",
 	"pages.steam_signup.client_help": "Această funcție ajută jucătorii care au probleme cu rularea clientului de joc.",
 	"pages.steam_signup.title": "Înscriere prin Steam",
 	"pages.steam_signup.intro": "Ai Adventure Land pe Steam? Verifică achiziția pentru a crea un cont și a juca în browser.",
@@ -1482,5 +1496,6 @@
 	"pages.logs.working-on-an-improved-movement-and-visibility-system": "Lucrez la un sistem îmbunătățit de mișcare și vizibilitate. Cel de acum e cam complicat, e a patra sau a cincea versiune, și chiar aș vrea să găsesc timp să trec la a șasea.",
 	"pages.logs.working-on-the-orb-design-3x-orb-s": "Lucrez la proiectul sferelor; 3 Orb pur și simplu nu arată bine, e prea comod, și mi-a venit ideea să transform o sferă într-un loc de elixir: va fi o poțiune de întărire cu durată lungă.",
 	"pages.logs.wow-just-realised-it-has-been-a-month": "UAU, tocmai mi-am dat seama că a trecut o lună de la lansare; de atunci am făcut un drum lung, iar acum văd jocul ca pe o comunitate: am cunoscut mulți oameni, mi-am făcut mulți prieteni, întreaga mea viziune s-a schimbat, și nu doar despre joc, ci și despre viață în general și despre dezvoltare. Să zicem că acum sunt mai plin de speranță, în multe privințe :)",
-	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Închei reparațiile, documentarea și încercările."
+	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Închei reparațiile, documentarea și încercările.",
+	"pages.contents.selection.slots-in-use": "Toate locurile tale pentru personaje sunt ocupate."
 }

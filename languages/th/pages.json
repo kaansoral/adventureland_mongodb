@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> การเข้าสู่ระบบด้วย Steam: <span style=\"color: green\">เปิด</span>",
+	"pages.steam_signin.off": "> การเข้าสู่ระบบด้วย Steam: <span style=\"color: #F54423\">ปิด</span>",
+	"pages.steam_signin.title": "เข้าสู่ระบบด้วย Steam",
+	"pages.steam_signin.intro": "ยืนยันบัญชี Steam ของคุณ แล้วเลือกบัญชี Adventure Land ที่ต้องการเข้าสู่ระบบ",
+	"pages.steam_signin.continue": "ไปยัง Steam",
+	"pages.steam_signin.choose": "เลือกบัญชี",
+	"pages.steam_signin.choose_help": "เลือกบัญชี Adventure Land ที่เชื่อมโยงกับบัญชี Steam นี้",
+	"pages.steam_signin.identity": "ยืนยันบัญชี Steam ที่ลงท้ายด้วย {digits} แล้ว",
+	"pages.steam_signin.account": "บัญชี {name}",
+	"pages.steam_signin.action": "เข้าสู่ระบบบัญชีนี้",
+	"pages.steam_signin.empty": "ไม่มีบัญชี Adventure Land ที่เข้าสู่ระบบได้ด้วยบัญชี Steam นี้",
+	"pages.steam_signin.email": "เข้าสู่ระบบด้วยอีเมล",
+	"pages.steam_signin.next": "บัญชีเพิ่มเติม",
+	"pages.steam_signin.signup_label": "> สมัครสมาชิก",
 	"pages.steam_signup.client_help": "ฟีเจอร์นี้ช่วยผู้เล่นที่มีปัญหาในการเปิดไคลเอนต์เกม",
 	"pages.steam_signup.title": "สมัครสมาชิกด้วย Steam",
 	"pages.steam_signup.intro": "มี Adventure Land บน Steam อยู่แล้วใช่ไหม? ยืนยันการซื้อเพื่อสร้างบัญชีและเล่นผ่านเบราว์เซอร์ได้เลย",
@@ -1482,5 +1496,6 @@
 	"pages.logs.working-on-an-improved-movement-and-visibility-system": "ผมกำลังทำระบบการเคลื่อนที่และการมองเห็นที่ดีขึ้น ระบบปัจจุบันค่อนข้างซับซ้อน เป็นรุ่นที่สี่หรือห้า และผมอยากหาเวลาขยับไปรุ่นที่หกจริง ๆ",
 	"pages.logs.working-on-the-orb-design-3x-orb-s": "ผมกำลังทำแบบของออร์บ การมี 3 Orb ดูไม่สวยเลย มันขี้เกียจเกินไป ผมจึงเกิดความคิดที่จะเปลี่ยนออร์บหนึ่งช่องเป็นช่องยาอายุวัฒนะ มันจะเป็นยาเสริมพลังที่ออกฤทธิ์ยาวนาน",
 	"pages.logs.wow-just-realised-it-has-been-a-month": "ว้าว เพิ่งรู้ตัวว่าผ่านมาหนึ่งเดือนแล้วตั้งแต่เปิดตัว เรามาไกลมากตั้งแต่นั้น และตอนนี้ผมมองเกมเป็นชุมชน ผมได้รู้จักผู้คนมากมาย ได้เพื่อนเยอะ มุมมองทั้งหมดของผมเปลี่ยนไป ไม่ใช่แค่เรื่องเกม แต่รวมถึงชีวิตโดยรวมและงานพัฒนาด้วย พูดได้ว่าตอนนี้ผมมีความหวังมากขึ้น ในหลาย ๆ เรื่อง :)",
-	"pages.logs.wrapping-up-the-bugfixes-research-testing": "กำลังเก็บงานแก้ไข ค้นคว้า และทดสอบให้เรียบร้อย"
+	"pages.logs.wrapping-up-the-bugfixes-research-testing": "กำลังเก็บงานแก้ไข ค้นคว้า และทดสอบให้เรียบร้อย",
+	"pages.contents.selection.slots-in-use": "ช่องตัวละครของคุณเต็มแล้ว"
 }

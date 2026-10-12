@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Вход через Steam: <span style=\"color: green\">ВКЛ</span>",
+	"pages.steam_signin.off": "> Вход через Steam: <span style=\"color: #F54423\">ВЫКЛ</span>",
+	"pages.steam_signin.title": "Войти через Steam",
+	"pages.steam_signin.intro": "Подтверди свою учётную запись Steam, затем выбери учётную запись Adventure Land для входа.",
+	"pages.steam_signin.continue": "Перейти в Steam",
+	"pages.steam_signin.choose": "Выбери учётную запись",
+	"pages.steam_signin.choose_help": "Выбери учётную запись Adventure Land, связанную с этой учётной записью Steam.",
+	"pages.steam_signin.identity": "Подтверждена учётная запись Steam с последними цифрами {digits}",
+	"pages.steam_signin.account": "Учётная запись {name}",
+	"pages.steam_signin.action": "Войти в эту учётную запись",
+	"pages.steam_signin.empty": "Для этой учётной записи Steam нет доступных учётных записей Adventure Land.",
+	"pages.steam_signin.email": "Войти с помощью почты",
+	"pages.steam_signin.next": "Другие учётные записи",
+	"pages.steam_signin.signup_label": "> Регистрация",
 	"pages.steam_signup.client_help": "Эта функция помогает игрокам, у которых возникают проблемы с запуском клиента игры.",
 	"pages.steam_signup.title": "Зарегистрироваться через Steam",
 	"pages.steam_signup.intro": "У тебя есть Adventure Land в Steam? Подтверди покупку, чтобы создать аккаунт и играть в браузере.",
@@ -1482,5 +1496,6 @@
 	"pages.vscode.the-marketplace-page-is-not-live-yet-the": "Страница Marketplace пока недоступна. Прямая загрузка VSIX появится здесь, когда пакет станет доступен на этом сервере.",
 	"pages.vscode.use-in-vs-code-or-cursor-it-replaces": "Используйте <span class=\"shell\">{id}</span> в VS Code или Cursor. Расширение заменяет старую синхронизацию папки клиента автосинхронизацией через API, поэтому работает со Steam, браузером и обычными настольными редакторами.",
 	"pages.vscode.your-token": "Ваш токен доступа",
-	"pages.contents.announcement_email.holiday_code_example": "P. S. 3. Вот <a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a>, который автоматизирует рождественское усиление.\n\t\t\t\t\tP. S. 4. Ещё появились новые вещи и умения!"
+	"pages.contents.announcement_email.holiday_code_example": "P. S. 3. Вот <a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a>, который автоматизирует рождественское усиление.\n\t\t\t\t\tP. S. 4. Ещё появились новые вещи и умения!",
+	"pages.contents.selection.slots-in-use": "Все ваши места для персонажей заняты."
 }

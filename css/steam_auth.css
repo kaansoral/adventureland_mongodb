@@ -1,0 +1,73 @@
+html,
+body {
+	margin: 0;
+	height: auto;
+	min-height: 100%;
+	overflow: auto;
+	background: black;
+	color: white;
+	font-family: var(--pixel-font, pixel);
+	font-size: 28px;
+}
+main {
+	max-width: 520px;
+	margin: 8vh auto;
+	padding: 16px;
+}
+main .selectioninput {
+	box-sizing: border-box;
+	width: 100%;
+}
+main .gamebutton {
+	box-sizing: border-box;
+	width: 100%;
+	font-family: inherit;
+	white-space: normal;
+}
+main .textbutton {
+	font-family: inherit;
+}
+main button.textbutton {
+	border: 0;
+	padding: 0;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+}
+main fieldset {
+	border: 0;
+	padding: 0;
+	margin: 20px 0 16px;
+	min-width: 0;
+}
+.steam-account {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	margin-bottom: 12px;
+	text-align: left;
+	cursor: pointer;
+}
+.steam-account input {
+	margin: 5px 0 0;
+	width: 18px;
+	height: 18px;
+	flex: 0 0 18px;
+}
+.steam-account span {
+	display: block;
+	overflow-wrap: anywhere;
+}
+.steam-account .gray {
+	margin-top: 6px;
+}
+.steam-account:has(input:checked) {
+	border-color: #a9d6ed;
+}
+.steam-account:focus-within {
+	outline: 2px solid white;
+	outline-offset: 3px;
+}
+.steam-error {
+	color: #e57878;
+}

@@ -96,6 +96,14 @@ character.remove(listener);</div>
 
 <p>{{ phrase("docs.articles.events-character.emitted-for-chests-opened-by-you-or-your") }}</p>
 
+<p>{{ phrase_html("docs.articles.events-character.encouragement-items") }}</p>
+
+<p>{{ phrase_html("docs.articles.events-character.encouragement-reserved") }}</p>
+
+<div class="code">character.on('loot', (data) => {
+	show_json(data);
+});</div>
+
 <p>{{ phrase_html("docs.articles.events-character.cm-pm-and-partym") }}</p>
 
 <div class="code">// cm

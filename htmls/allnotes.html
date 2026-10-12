@@ -81,7 +81,16 @@
 			<div class="update-notes-title">{{ phrase("pages.allnotes.update-notes") }}</div>
 			<div class="update-notes-subtitle">{{ phrase("pages.allnotes.last-update", {"last_deploy": domain.last_deploy|escape}) }}</div>
 			{% for entry in update_notes %}
-				<div class="update-notes-entry"><span class="update-notes-date">{{ entry.date|escape }}</span><span>{{ phrase(entry.phrase) if entry.phrase else entry.note }}</span></div>
+				{% if entry.title_text %}
+					<div class="update-notes-entry"><span class="update-notes-date">{{ entry.deployed or entry.date }}</span><span>
+						<span class="release-archive-title">{{ entry.title_text }}</span>
+						{% if entry.text %}<br><span class="release-note">{{ entry.text }}</span>{% endif %}
+						{% for highlight in entry.highlights %}<br><span class="release-archive-title">{{ highlight.title_text }}</span>{% if highlight.text %} <span class="release-note">{{ highlight.text }}</span>{% endif %}{% endfor %}
+						{% for group in entry.groups %}<br><span class="release-count">{{ group.label }}:</span> {{ group.lines|join(", ") }}{% endfor %}
+					</span></div>
+				{% else %}
+					<div class="update-notes-entry"><span class="update-notes-date">{{ entry.date }}</span><span class="release-note">{{ entry.text }}</span></div>
+				{% endif %}
 			{% endfor %}
 		</div>
 	</body>

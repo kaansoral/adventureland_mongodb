@@ -1462,7 +1462,63 @@ var monsters={
 			"degen":{"amount":20,"cooldown":200},
 		},
 	}
-
+,
+	// Kobolds roam Underground Cliffs; the Mimic, Pale Dino and Many Eye appear through the
+	// kill-counter spawner (events/edges) like the Golden Bat and Golden Bot.
+	"kobold":{
+		"skin":"cobold","name":"Kobold","speed":40,"hp":640000,"xp":680000,"armor":320,"resistance":220,"attack":1400,"damage_type":"physical","respawn":8,"range":30,"frequency":1.2,"aggro":0.6,"rage":0.5,
+		"achievements":[
+			[1,"stat","hp",25],
+			[100,"stat","armor",5],
+			[1000,"stat","str",1],
+			[10000,"stat","attack",5],
+			[100000,"stat","resistance",5],
+			[1000000,"stat","for",1],
+			[10000000,"stat","attack",50],
+		]
+	},
+	"mimic":{
+		"skin":"chestx","name":"Mimic","speed":30,"hp":2240000,"xp":1900000,"armor":450,"resistance":450,"attack":2600,"damage_type":"physical","respawn":-1,"range":24,"frequency":1,"aggro":0,"rage":1,"gold":120000,
+		"phresistance":70,
+		"explanation":"Spawns among the Kobolds in Underground Cliffs around every 12,000 Kobold spawns",
+		"achievements":[
+			[1,"stat","gold",1],
+			[10,"stat","luck",1],
+			[100,"stat","gold",2],
+			[1000,"stat","luck",2],
+			[2000,"stat","armor",5],
+			[5000,"stat","gold",5],
+		]
+	},
+	"paledino":{
+		"skin":"wdino","name":"Pale Dino","speed":32,"hp":1320000,"xp":1200000,"armor":280,"resistance":160,"attack":1800,"damage_type":"physical","respawn":-1,"range":50,"frequency":1.2,"aggro":1,"rage":1,"gold":120000,
+		"phresistance":70,
+		"explanation":"Spawns among the Dinos in Mystical Forest around every 30,000 Dino spawns",
+		"achievements":[
+			[1,"stat","hp",50],
+			[10,"stat","str",1],
+			[100,"stat","attack",5],
+			[1000,"stat","speed",1],
+			[2000,"stat","frequency",1],
+			[5000,"stat","attack",25],
+		]
+	},
+	"manyeye":{
+		"skin":"manyeye","name":"Many Eye","speed":24,"hp":2520000,"xp":3000000,"armor":240,"resistance":240,"attack":800,"damage_type":"physical","respawn":-1,"range":40,"frequency":3,"aggro":1,"rage":1,"gold":120000,
+		"phresistance":70,
+		"explanation":"Spawns among the One Eyes in Underground West around every 15,000 One Eye spawns",
+		"abilities":{
+			"stone":{"cooldown":6400}
+		},
+		"achievements":[
+			[1,"stat","hp",50],
+			[10,"stat","int",1],
+			[100,"stat","resistance",5],
+			[1000,"stat","evasion",1],
+			[2000,"stat","range",1],
+			[5000,"stat","int",5],
+		]
+	},
 };
 
 monsters.rimedjinn={

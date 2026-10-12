@@ -80,5 +80,8 @@
 	"error.save_failed": "Tallennus epäonnistui. Yritä uudelleen.",
 	"error.invalid_language": "Valitse kieli luettelosta.",
 	"error.cant_copy_over_map_in_use": "Käytössä olevaa karttaa ei voi korvata.",
-	"error.cant_delete_map_in_use": "Käytössä olevaa karttaa ei voi poistaa."
+	"error.cant_delete_map_in_use": "Käytössä olevaa karttaa ei voi poistaa.",
+	"error.code_too_large": "Tämä skripti on liian suuri. Kuhunkin CODE-paikkaan mahtuu enintään 1 MiB (1 048 576 tavua) UTF-8-tekstiä.",
+	"error.code_storage_full": "CODE-tallennustilasi on täynnä. Vie käyttämättömät skriptit talteen ja poista ne ennen uuden koodin tallentamista.",
+	"error.code_rate_limited": "Tallennat CODEa liian usein. Odota hetki ja yritä uudelleen."
 }

@@ -138,14 +138,15 @@ function to_legacy_filename(name) {
 }
 
 function find_code_slot(code_list, name) {
+	if (Object.prototype.hasOwnProperty.call(code_list, String(name))) return String(name);
 	var filename = to_filename(name);
-	for (var slot in code_list) {
+	for (var slot of Object.keys(code_list)) {
 		if ("" + slot === filename || ("" + code_list[slot][0]).toLowerCase() === filename.toLowerCase()) return slot;
 	}
 
 	var legacy_filename = to_legacy_filename(filename);
 	if (legacy_filename === filename) return null;
-	for (var legacy_slot in code_list) {
+	for (var legacy_slot of Object.keys(code_list)) {
 		if (("" + code_list[legacy_slot][0]).toLowerCase() === legacy_filename.toLowerCase()) return legacy_slot;
 	}
 	return null;
@@ -158,6 +159,16 @@ function gf(element, name, def) {
 	if (element.info && typeof element.info === "object" && name in element.info) return element.info[name];
 	if (name in element) return element[name];
 	return def;
+}
+
+function get_character_slots(user) {
+	var included = user && user.pid ? 8 : 5;
+	var slots = gf(user, "slots", included);
+	return Math.min(18, Math.max(included, Number.isSafeInteger(slots) ? slots : included));
+}
+
+function can_spend_shells(balance, amount) {
+	return Number.isSafeInteger(balance) && Number.isSafeInteger(amount) && amount >= 0 && (amount === 0 || balance >= amount);
 }
 
 function item_value(item) {
@@ -318,12 +329,36 @@ function hash_password(password, salt) {
 }
 
 function get_new_auth(user) {
-	var auth = random_string(20);
+	var auth = crypto.randomBytes(32).toString("hex");
 	user.info.auths = user.info.auths || [];
 	user.info.last_auth = new Date();
-	if (user.info.auths.length >= 200) user.info.auths = [];
+	if (user.info.auths.length >= 200) {
+		user.info.auths = [];
+		user.info.steam_auths = [];
+	}
 	user.info.auths.push(auth);
 	return auth;
+}
+
+function get_steam_login_id(user) {
+	if (!user || user.steam_login?.enabled === false) return "";
+	var id = user.steam_login?.steamid || (user.platform === "steam" ? user.pid : "");
+	return typeof id === "string" && /^[0-9]{16,20}$/.test(id) ? id : "";
+}
+
+function set_steam_login(user, enabled) {
+	if (typeof enabled !== "boolean") throw new Error("Invalid Steam setting");
+	const previous = user.steam_login || {},
+		sessions = new Set(user.info.steam_auths || []);
+	user.info.auths = (user.info.auths || []).filter((auth) => !sessions.has(auth));
+	user.info.steam_auths = [];
+	user.steam_auth_revision = crypto.randomBytes(32).toString("hex");
+	user.steam_login = {
+		...previous,
+		enabled,
+		version: crypto.randomBytes(32).toString("hex"),
+		changed_at: new Date(),
+	};
 }
 
 // ==================== USER / AUTH ====================
@@ -534,7 +569,7 @@ async function get_domain(req, user) {
 
 	domain.https = false;
 	domain.secure_base_url = domain.base_url.replace("http://", "https://");
-	domain.io_version = "4.2.0";
+	domain.io_version = "4.8.3";
 	domain.cm_version = "5.65.1";
 	domain.jquery_version = "3.2.0";
 	domain.howler_version = "2.0.13";
@@ -1456,7 +1491,7 @@ async function character_eval(character, code, data) {
 	if (!data) data = {};
 	if (character.server) {
 		var server = await get(character.server);
-		if (server) await server_eval_safe(server, "var player=players[name_to_id['" + character.info.name + "']]; if(player) { " + code + "; }", data);
+		if (server) await server_eval_safe(server, "var player=players[name_to_id[" + JSON.stringify(character.info.name) + "]]; if(player) { " + code + "; }", data);
 	}
 }
 
@@ -1584,6 +1619,7 @@ async function render_selection(req, res, user, domain, level, server) {
 			servers: servers,
 			total: total,
 			characters: characters,
+			character_slots: get_character_slots(user),
 		}),
 	);
 }
@@ -1602,6 +1638,7 @@ async function selection_info(req, user, domain) {
 			server: server,
 			servers: servers,
 			characters: characters,
+			character_slots: get_character_slots(user),
 		}),
 	};
 }
@@ -1614,6 +1651,7 @@ function set_cookie(res, name, value, domain_host) {
 		path: "/",
 		domain: "." + domain_host,
 		secure: secure_cookies,
+		sameSite: "lax",
 	});
 }
 

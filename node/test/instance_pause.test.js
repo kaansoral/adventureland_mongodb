@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const { DueQueue } = require("../logic/due_queue.js");
 const test = require("node:test");
 const vm = require("node:vm");
 const { load, read } = require("./helpers/server_vm");
@@ -50,6 +51,11 @@ function fixture() {
 		last_update: new Date(now - 40),
 	};
 	const shot = { attacker: rat, target: a, eta: new Date(now - 1) };
+	const seeded_due = (projectile) => {
+		const queue = new DueQueue();
+		queue.push(+projectile.eta, "shot");
+		return queue;
+	};
 	const run = {
 		key: "run",
 		members: [{ character: "A" }, { character: "B" }],
@@ -65,6 +71,8 @@ function fixture() {
 		Map,
 		instances: { one, two },
 		projectiles: { shot },
+		// projectiles_loop walks the due queue, so the fixture seeds it the way commence_attack does
+		projectiles_due: seeded_due(shot),
 		generated_maps: {},
 		player_to_client: (p) => ({ id: p.id, moving: p.moving }),
 		monster_to_client: (p) => ({ id: p.id, moving: p.moving }),

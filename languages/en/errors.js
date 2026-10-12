@@ -165,3 +165,8 @@ module.exports = {
 	// Account/API error cant_delete_map_in_use; shown after a failed manual action, never used as a protocol value.
 	"error.cant_delete_map_in_use": "A map that is in use cannot be deleted.",
 };
+
+// CODE save failures shown by the editor. MiB denotes 1,048,576 bytes; exporting alone does not free remote storage.
+module.exports["error.code_too_large"] = "This script is too large. Each CODE slot can hold up to 1 MiB (1,048,576 bytes) of UTF-8 text.";
+module.exports["error.code_storage_full"] = "Your CODE storage is full. Export and delete unused scripts before saving more code.";
+module.exports["error.code_rate_limited"] = "You're saving CODE too quickly. Wait a moment and try again.";

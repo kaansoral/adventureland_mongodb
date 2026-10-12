@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "De pokertafel is op dit moment gesloten",
 	"response.tavern_closing": "De spellen van de taverne zijn gesloten terwijl de server herstart",
 	"response.poker_stool_far": "Ga naast een vrije kruk staan om te gaan zitten",
-	"response.poker_saving": "De pokertafel wordt bijgewerkt. Probeer het zo nog eens."
+	"response.poker_saving": "De pokertafel wordt bijgewerkt. Probeer het zo nog eens.",
+	"response.trade_offer_invalid": "Om dat voorwerp kun je niet vragen",
+	"response.trade_swap_match": "Dat voorwerp past niet bij het aanbod",
+	"response.trade_swap_space": "Handelaar heeft geen plek",
+	"game.trade_history.traded": "- '{item}' geruild met {player} voor '{received}'",
+	"response.transport_need_items": "Nodig: {items}"
 }

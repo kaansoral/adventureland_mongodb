@@ -52,6 +52,7 @@ function inventoryFixture(recipeName) {
 		cache_item: plain,
 		resend() {},
 		xy_emit() {},
+		remove_entity_emit() {},
 		success_response: (...args) => messages.push(args),
 		fail_response: (...args) => failures.push(args),
 	});

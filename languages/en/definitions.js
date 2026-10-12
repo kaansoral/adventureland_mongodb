@@ -1,5 +1,71 @@
 // English display text from loaded game definitions. Canonical G is not localized.
 module.exports = {
+	// Tooltip of the INFO button near the Underground Cliffs entrance; opens the Mimic guide. The Mimic looks like a chest and never starts a fight.
+	"interaction.mimic.summary": "Not every chest down here is a chest. This one bites back.",
+	// Tooltip of the INFO button near the Underground West entrance; opens the Many Eye guide. Many Eye and One Eye are fixed names; its stare petrifies.
+	"interaction.manyeye.summary": "Sometimes a Many Eye opens among the One Eyes. Its stare turns you to stone.",
+	// Tooltip of the INFO button near the Mystical Forest entrance; opens the Pale Dino guide. Pale Dino and Dino are fixed names.
+	"interaction.paledino.summary": "A Pale Dino sometimes runs with the Dinos, faster and harder-hitting.",
+	// Tooltip of the INFO button near the Cave of Darkness entrance; opens the Golden Bat guide. Golden Bat is a fixed name.
+	"interaction.goldenbat.summary": "A Golden Bat sometimes flits through these caves. Catch it if you can.",
+	// Tooltip of the INFO button near the Mainland spawn; opens the Cute Bee guide. Cute Bee, Bee and Mainland are fixed names.
+	"interaction.cutebee.summary": "Once in a very long while, a Cute Bee joins the Bees of Mainland.",
+	// Tooltip of the INFO button near the Underground Hills entrance; opens the Golden Bot guide. Golden Bot, Targetron and Spark Bot are fixed names.
+	"interaction.goldenbot.summary": "A Golden Bot sometimes rolls out among the Targetrons and Spark Bots.",
+	// Rare drop tooltip flavor under Stonegaze Ring; one short in-world line. Item and monster names stay fixed.
+	"item.stonegaze.explanation": "Some staring contests end in statues.",
+	// Rare drop tooltip flavor under Mummy's Hex; one short in-world line. Item and monster names stay fixed.
+	"item.mummyhex.explanation": "Something dead still has a bone to pick.",
+	// Rare drop tooltip flavor under Harpy's Echo; one short in-world line. Item and monster names stay fixed.
+	"item.harpyecho.explanation": "A scream that leaves wards in pieces.",
+	// Rare drop tooltip flavor under The Can Opener; one short in-world line. Item and monster names stay fixed.
+	"item.canopener.explanation": "Leaves a crack for everyone else.",
+	// Rare drop tooltip flavor under Blightcap Stud; one short in-world line. Item and monster names stay fixed.
+	"item.blightcap.explanation": "Even good medicine struggles with this rot.",
+	// Rare drop tooltip flavor under Gnomish Capacitor; one short in-world line. Item and monster names stay fixed.
+	"item.gnomecap.explanation": "One spark in. Two sparks out.",
+	// Rare drop tooltip flavor under Kobold's Backbone; one short in-world line. Item and monster names stay fixed.
+	"item.koboldbelt.explanation": "Plenty of spine. Some of it sticks out.",
+	// Rare drop tooltip flavor under Frostfang Earring; one short in-world line. Item and monster names stay fixed.
+	"item.frostfang.explanation": "A small fang with a cruel bite.",
+	// Rare drop tooltip flavor under Paleclaw Totem; one short in-world line. Item and monster names stay fixed.
+	"item.paleclaw.explanation": "Your heart races. Something older takes over.",
+	// Rare drop tooltip flavor under Mimic's Grin; one short in-world line. Item and monster names stay fixed.
+	"item.mimicgrin.explanation": "It still grins when you count your coins.",
+	// Rare drop tooltip flavor under Scorpion Seal; one short in-world line. Item and monster names stay fixed.
+	"item.scorpionseal.explanation": "It answers only to those who fight up close.",
+	// Rare drop tooltip flavor under Watcher's Earring; one short in-world line. Item and monster names stay fixed.
+	"item.watchersearring.explanation": "One eye is watching. Wear the other.",
+	// Rare drop tooltip flavor under Graveglass Lens; one short in-world line. Item and monster names stay fixed.
+	"item.graveglass.explanation": "The dead show up clearly through it.",
+	// Rare drop tooltip flavor under Heartwood Locket; one short in-world line. Item and monster names stay fixed.
+	"item.heartwoodlocket.explanation": "A little of the forest's patience, kept close.",
+	// Rare drop tooltip flavor under Grounding Strap; one short in-world line. Item and monster names stay fixed.
+	"item.groundingstrap.explanation": "Feet on the ground, whatever hits you.",
+	// Set tooltip for Watcher's Eyes (two Watcher's Earrings: +15 range, +15 Status Resistance, +2% evasion). Set and item names stay fixed.
+	"set.watchers.explanation": "Two watching eyes miss very little.",
+	// Monster tooltip; same pattern as Golden Bat. Many Eye, One Eye and Underground West are fixed names; keep 15,000 exact.
+	"monster.manyeye.explanation": "Spawns among the One Eyes in Underground West around every 15,000 One Eye spawns",
+	// Monster tooltip; same pattern as Golden Bat. Mimic, Kobold and Underground Cliffs are fixed names; keep 12,000 exact.
+	"monster.mimic.explanation": "Spawns among the Kobolds in Underground Cliffs around every 12,000 Kobold spawns",
+	// Monster tooltip; same pattern as Golden Bat. Pale Dino, Dino and Mystical Forest are fixed names; keep 30,000 exact.
+	"monster.paledino.explanation": "Spawns among the Dinos in Mystical Forest around every 30,000 Dino spawns",
+	// Condition name: a target's Resistance is reduced by 240 for 5 seconds (Harpy's Echo). Use the same term as the Shatter tooltip and guide.
+	"condition.exposed.name": "Exposed",
+	// Condition tooltip for Exposed; quantities exact.
+	"condition.exposed.explanation": "Resistance is reduced by 240 for 5 seconds.",
+	// Condition name: a target's Armor is reduced by 200 for 5 seconds (The Can Opener). Use the same term as the Sunder tooltip and guide.
+	"condition.sundered.name": "Sundered",
+	// Condition tooltip for Sundered; quantities exact.
+	"condition.sundered.explanation": "Armor is reduced by 200 for 5 seconds.",
+	// Condition name on the wearer: +40 attack speed for 6 seconds (Paleclaw Totem). Same wording as the Primal Frenzy ability label.
+	"condition.frenzied.name": "Primal Frenzy",
+	// Condition tooltip for Primal Frenzy; quantities exact.
+	"condition.frenzied.explanation": "Attack speed is increased by 40 for 6 seconds.",
+	// Hidden condition: after a Stonegaze stone the target cannot be petrified again for a while (14 seconds from the stone). Use the same term in the guide.
+	"condition.stonebreak.name": "Crumbling",
+	// Tooltip for Crumbling.
+	"condition.stonebreak.explanation": "Recently turned to stone. It can't be petrified again until this fades.",
 	// Fixed name of the four-sentry team.
 	"interaction.cavalry.title": "Cavalry",
 	// Fixed name of the four-sentry team.
@@ -475,7 +541,7 @@ module.exports = {
 	// design/conditions.js; stoned name, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"condition.stoned.name": "Stoned",
 	// design/conditions.js; stunned explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
-	"condition.stunned.explanation": "Cannot move, attack, heal, or use skills.",
+	"condition.stunned.explanation": "Cannot move, attack, heal, use skills, or use items.",
 	// design/conditions.js; stunned name, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"condition.stunned.name": "Stunned",
 	// design/conditions.js; sugarrush explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
@@ -2143,6 +2209,48 @@ module.exports = {
 	"npc.ornaments.says": "Hmm. Hmm. Hmm.",
 	// design/npcs.js; pete says, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"npc.pete.says": "Purr",
+	// design/npcs.js; pokerdealer says: greeting floated above Venn, the Tavern poker dealer, when a player right-clicks him; the table view opens next. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.says.0": "Take a seat, partner.",
+	// design/npcs.js; pokerdealer says: greeting floated above Venn, the Tavern poker dealer, when a player right-clicks him; the table view opens next. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.says.1": "Cards are waiting.",
+	// design/npcs.js; pokerdealer says: greeting floated above Venn, the Tavern poker dealer, when a player right-clicks him; the table view opens next. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.says.2": "Fancy a hand?",
+	// design/npcs.js; pokerdealer idle: idle line floated above Venn, the Tavern poker dealer, while the table is empty and someone is nearby. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.idle.0": "Five seats, no heroes.",
+	// design/npcs.js; pokerdealer idle: idle line floated above Venn, the Tavern poker dealer, while the table is empty and someone is nearby. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.idle.1": "These cards look lonely.",
+	// design/npcs.js; pokerdealer idle: idle line floated above Venn, the Tavern poker dealer, while the table is empty and someone is nearby. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.idle.2": "Pick a card. Kidding.",
+	// design/npcs.js; pokerdealer idle: idle line floated above Venn, the Tavern poker dealer, while the table is empty and someone is nearby. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.idle.3": "Still got all fifty-two.",
+	// design/npcs.js; pokerdealer idle: idle line floated above Venn, the Tavern poker dealer, while the table is empty and someone is nearby. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.idle.4": "Watch this one closely.",
+	// design/npcs.js; pokerdealer idle: idle line floated above Venn, the Tavern poker dealer, while the table is empty and someone is nearby. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.idle.5": "Empty chairs tell no tales.",
+	// design/npcs.js; pokerdealer idle: idle line floated above Venn, the Tavern poker dealer, while the table is empty and someone is nearby. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.idle.6": "I can shuffle all day.",
+	// design/npcs.js; pokerdealer idle: idle line floated above Venn, the Tavern poker dealer, while the table is empty and someone is nearby. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.idle.7": "The river misses you.",
+	// design/npcs.js; pokerdealer invite: line floated above Venn, the Tavern poker dealer, while one player sits alone waiting for a second. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.invite.0": "One more makes a game.",
+	// design/npcs.js; pokerdealer invite: line floated above Venn, the Tavern poker dealer, while one player sits alone waiting for a second. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.invite.1": "Got room for company.",
+	// design/npcs.js; pokerdealer invite: line floated above Venn, the Tavern poker dealer, while one player sits alone waiting for a second. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.invite.2": "One chair taken. Who's next?",
+	// design/npcs.js; pokerdealer deal: line floated above Venn, the Tavern poker dealer, as a new hand is dealt. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.deal.0": "Cards are in the air.",
+	// design/npcs.js; pokerdealer deal: line floated above Venn, the Tavern poker dealer, as a new hand is dealt. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.deal.1": "Here we go.",
+	// design/npcs.js; pokerdealer allin: line floated above Venn, the Tavern poker dealer, when a player goes all in. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.allin.0": "All in. No turning back.",
+	// design/npcs.js; pokerdealer allin: line floated above Venn, the Tavern poker dealer, when a player goes all in. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.allin.1": "Everything's on the felt.",
+	// design/npcs.js; pokerdealer win: line floated above Venn, the Tavern poker dealer, when a pot is awarded; {name} is the winning character's name. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.win.0": "Pot goes to {name}.",
+	// design/npcs.js; pokerdealer win: line floated above Venn, the Tavern poker dealer, when a pot is awarded; {name} is the winning character's name. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.win.1": "{name} takes the pot.",
+	// design/npcs.js; pokerdealer split: line floated above Venn, the Tavern poker dealer, when a pot is split between players. Floating text, keep it as short as the English (2 to 6 words). Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
+	"npc.pokerdealer.split.0": "Split pot. Share nicely.",
 	// design/npcs.js; pots says, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"npc.pots.says": "Oh, Hello",
 	// design/npcs.js; premium says, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.

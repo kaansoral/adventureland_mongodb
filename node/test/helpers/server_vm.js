@@ -66,6 +66,7 @@ function extract(source, name) {
 }
 
 function localize(context) {
+	if (!context.crypto) context.crypto = require("node:crypto");
 	if (!context.localization) context.localization = localization;
 	if (!context.phrase) context.phrase = phrase;
 	if (!context.phrase_html) context.phrase_html = localization.phrase_html;
@@ -78,6 +79,12 @@ function localize(context) {
 	if (!context.in_arr) vm.runInContext(extract(read("js/old_common_functions.js"), "in_arr"), context);
 	for (const name of ["startswith_an", "item_message", "kill_message"])
 		if (!context[name]) vm.runInContext(extract(read("node/server_functions.js"), name), context);
+	// Client fixtures can load a single socket callback without game.js's globals.
+	if ("current_map" in context) {
+		context.entities ||= {};
+		context.entities_map ??= null;
+		context.entities_in ??= null;
+	}
 	return context;
 }
 
@@ -154,7 +161,8 @@ function transactions(context, documents, beforeCommit) {
 					if (beforeCommit) await beforeCommit({ records, versions, stats, session: this, conflict });
 					for (const id of this.pending.keys()) if (versions.get(id) !== this.versions.get(id)) throw conflict();
 					for (const [id, value] of this.pending) {
-						records.set(id, structuredClone(value));
+						if (value === null) records.delete(id);
+						else records.set(id, structuredClone(value));
 						versions.set(id, (versions.get(id) || 0) + 1);
 						stats.writes++;
 					}
@@ -172,10 +180,15 @@ function transactions(context, documents, beforeCommit) {
 		collection() {
 			return {
 				async findOne(query, { session }) {
-					return structuredClone(session.pending.get(query._id) || session.snapshot.get(query._id) || null);
+					return structuredClone(
+						session.pending.has(query._id) ? session.pending.get(query._id) : session.snapshot.get(query._id) || null,
+					);
 				},
 				async replaceOne(query, entity, { session }) {
 					session.pending.set(query._id, structuredClone(entity));
+				},
+				async deleteOne(query, { session }) {
+					session.pending.set(query._id, null);
 				},
 			};
 		},

@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Steam-kirjautuminen: <span style=\"color: green\">PÄÄLLÄ</span>",
+	"pages.steam_signin.off": "> Steam-kirjautuminen: <span style=\"color: #F54423\">POIS</span>",
+	"pages.steam_signin.title": "Kirjaudu Steamilla",
+	"pages.steam_signin.intro": "Vahvista Steam-tilisi ja valitse sitten Adventure Land -tili, jolle haluat kirjautua.",
+	"pages.steam_signin.continue": "Jatka Steamiin",
+	"pages.steam_signin.choose": "Valitse tili",
+	"pages.steam_signin.choose_help": "Valitse tähän Steam-tiliin liitetty Adventure Land -tili.",
+	"pages.steam_signin.identity": "Vahvistettu Steam-tili, jonka loppunumerot ovat {digits}",
+	"pages.steam_signin.account": "Tili {name}",
+	"pages.steam_signin.action": "Kirjaudu tälle tilille",
+	"pages.steam_signin.empty": "Tälle Steam-tilille ei ole käytettävissä Adventure Land -tilejä.",
+	"pages.steam_signin.email": "Kirjaudu sähköpostilla",
+	"pages.steam_signin.next": "Näytä lisää tilejä",
+	"pages.steam_signin.signup_label": "> Rekisteröidy",
 	"pages.steam_signup.client_help": "Tämä toiminto auttaa pelaajia, joilla on vaikeuksia peliohjelman käytössä.",
 	"pages.steam_signup.title": "Rekisteröidy Steamilla",
 	"pages.steam_signup.intro": "Omistatko pelin Adventure Land Steamissa? Vahvista ostoksesi, luo tili ja pelaa selaimessa.",
@@ -1482,5 +1496,6 @@
 	"pages.logs.working-on-an-improved-movement-and-visibility-system": "Työstän parannettua liikkumis- ja näkyvyysjärjestelmää. Nykyinen on hieman monimutkainen, se on neljäs tai viides versio, ja haluaisin todella löytää aikaa siirtyä kuudenteen.",
 	"pages.logs.working-on-the-orb-design-3x-orb-s": "Työstän pallojen suunnittelua; 3 Orb ei vain tunnu hyvältä, se on liian laiskaa, ja sain ajatuksen muuttaa yhden pallon eliksiiripaikaksi: siitä tulee pitkäkestoinen tehostejuoma.",
 	"pages.logs.wow-just-realised-it-has-been-a-month": "HUH, tajusin juuri, että julkaisusta on kulunut kuukausi; olemme tulleet pitkän matkan sen jälkeen, ja näen pelin nyt yhteisönä: olen tavannut paljon ihmisiä, saanut monta ystävää, koko näkemykseni on muuttunut, eikä vain pelistä vaan myös elämästä yleensä ja kehittämisestä. Sanotaan vaikka, että olen nyt toiveikkaampi, monen asian suhteen :)",
-	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Viimeistelen korjauksia, selvitystyötä ja testausta."
+	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Viimeistelen korjauksia, selvitystyötä ja testausta.",
+	"pages.contents.selection.slots-in-use": "Kaikki hahmopaikkasi ovat käytössä."
 }

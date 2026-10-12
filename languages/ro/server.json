@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "PIATRĂ!",
+	"server.floating.frenzy": "FRENEZIE!",
 	"server.party.joined": "{player} s-a alăturat grupului",
 	"server.party.joined_with_invite": "{player} s-a alăturat grupului la invitația de la {inviter}",
 	"server.party.left": "{player} a părăsit grupul",
@@ -399,5 +401,8 @@
 	"server.cave.amber_limit": "Au apărut toate cele {amount} Cave Amber pentru această vizită. Încă poți găsi obiecte și câștiga XP.",
 	"server.game_error.poker_hand_active": "Mâna ta de poker se joacă încă pe alt server. Așteaptă să se termine sau reconectează-te acolo.",
 	"server.tracktrix.mail_subject": "Tracktrix pentru tine",
-	"server.tracktrix.mail_body": "Un mic ajutor pentru următoarea vânătoare. Ține acest Tracktrix la tine!"
+	"server.tracktrix.mail_body": "Un mic ajutor pentru următoarea vânătoare. Ține acest Tracktrix la tine!",
+  "server.game_log.offered_for": "Ai oferit {item} la schimb pentru {want}",
+  "server.game_log.offered_for_or_higher": "Ai oferit {item} la schimb pentru {want} sau mai mare",
+  "server.game_log.traded_for": "Ai schimbat {item} cu {player} pe {received}"
 }

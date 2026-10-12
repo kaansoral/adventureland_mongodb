@@ -80,5 +80,8 @@
 	"error.save_failed": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
 	"error.invalid_language": "Wähle eine Sprache aus der Liste.",
 	"error.cant_copy_over_map_in_use": "Eine verwendete Karte kann nicht überschrieben werden.",
-	"error.cant_delete_map_in_use": "Eine verwendete Karte kann nicht gelöscht werden."
+	"error.cant_delete_map_in_use": "Eine verwendete Karte kann nicht gelöscht werden.",
+	"error.code_too_large": "Dieses Skript ist zu groß. Jeder CODE-Slot kann bis zu 1 MiB (1.048.576 Bytes) UTF-8-Text enthalten.",
+	"error.code_storage_full": "Dein CODE-Speicher ist voll. Exportiere und lösche ungenutzte Skripte, bevor du weiteren Code speicherst.",
+	"error.code_rate_limited": "Du speicherst CODE zu häufig. Warte kurz und versuche es erneut."
 }

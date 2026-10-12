@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Steam-login: <span style=\"color: green\">TIL</span>",
+	"pages.steam_signin.off": "> Steam-login: <span style=\"color: #F54423\">FRA</span>",
+	"pages.steam_signin.title": "Log ind med Steam",
+	"pages.steam_signin.intro": "Bekræft din Steam-konto, og vælg derefter en Adventure Land-konto at logge ind på.",
+	"pages.steam_signin.continue": "Fortsæt til Steam",
+	"pages.steam_signin.choose": "Vælg en konto",
+	"pages.steam_signin.choose_help": "Vælg en Adventure Land-konto, der er knyttet til denne Steam-konto.",
+	"pages.steam_signin.identity": "Bekræftet Steam-konto med slutcifrene {digits}",
+	"pages.steam_signin.account": "Konto {name}",
+	"pages.steam_signin.action": "Log ind på denne konto",
+	"pages.steam_signin.empty": "Der er ingen tilgængelige Adventure Land-konti for denne Steam-konto.",
+	"pages.steam_signin.email": "Log ind med e-mail",
+	"pages.steam_signin.next": "Flere konti",
+	"pages.steam_signin.signup_label": "> Opret konto",
 	"pages.steam_signup.client_help": "Denne funktion hjælper spillere, der har problemer med at køre spilklienten.",
 	"pages.steam_signup.title": "Opret konto med Steam",
 	"pages.steam_signup.intro": "Ejer du Adventure Land på Steam? Bekræft dit køb for at oprette en konto og spille i din browser.",
@@ -1482,5 +1496,6 @@
 	"pages.logs.working-on-an-improved-movement-and-visibility-system": "Jeg arbejder på et forbedret bevægelses- og synlighedssystem. Det nuværende er lidt indviklet, det er den fjerde eller femte udgave, og jeg vil meget gerne finde tid til at gå videre til en sjette.",
 	"pages.logs.working-on-the-orb-design-3x-orb-s": "Jeg arbejder på designet af sfærerne; 3 Orb virker bare ikke godt, det er for dovent, og jeg fik idéen at lave en sfære om til en elixirplads: det bliver en langtidsvirkende styrkedrik.",
 	"pages.logs.wow-just-realised-it-has-been-a-month": "HOLD DA OP, jeg har lige opdaget, at der er gået en måned siden lanceringen; vi er nået langt siden da, og nu ser jeg spillet som et fællesskab: jeg har mødt mange mennesker, fået mange venner, hele mit syn har ændret sig, og ikke kun på spillet, men også på livet i det hele taget og på udvikling. Lad os sige, at jeg er mere håbefuld nu, om mange ting :)",
-	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Jeg runder rettelserne, undersøgelserne og afprøvningen af."
+	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Jeg runder rettelserne, undersøgelserne og afprøvningen af.",
+	"pages.contents.selection.slots-in-use": "Alle dine figurpladser er optaget."
 }

@@ -23,8 +23,8 @@
 			<div class="gamebutton mb5 vtop" onclick="if(bc(this)) return; $('.nchb').click()" style='text-align: left; width: 160px'>
 				<span class='cskin' data-skin="thehelmet" style="float:left; margin-right: 5px; margin-top: -5px; margin-left: -4px; margin-bottom: -5px"></span>
 				{% set slot_name = phrase("pages.contents.selection_characters.available-slot") %}
-				{% if c < user.info.slots %}{% set slot_name = phrase("pages.contents.selection_characters.free-slot") %}{% endif %}
-				<span class="selection-slot-label" title="{{ slot_name|e }}" style="display:block; overflow:hidden; white-space:nowrap; {% if c >= user.info.slots %}color:gray;{% endif %}">{{ slot_name }}</span>
+				{% if c < character_slots %}{% set slot_name = phrase("pages.contents.selection_characters.free-slot") %}{% endif %}
+				<span class="selection-slot-label" title="{{ slot_name|e }}" style="display:block; overflow:hidden; white-space:nowrap; {% if c >= character_slots %}color:gray;{% endif %}">{{ slot_name }}</span>
 				{% set unused = phrase("pages.contents.selection_characters.unused") %}
 				<span class="gray selection-slot-label" title="{{ unused|e }}" style="display:block; overflow:hidden; white-space:nowrap">{{ unused }}</span>
 			</div>
@@ -35,7 +35,7 @@
 	<div class="gamebutton pgbt pgbt1" style='width: 62px' onclick="$('.page2').hide(); $('.page3').hide(); $('.page1').show(); $('.pgbt').css('color','gray'); $('.pgbt1').css('color','white');">{{ phrase("pages.contents.selection_characters.page-1") }}</div>
 	<div class="gamebutton pgbt pgbt2" style='width: 61px; color: gray' onclick="$('.page1').hide(); $('.page3').hide(); $('.page2').show(); $('.pgbt').css('color','gray'); $('.pgbt2').css('color','white');">{{ phrase("pages.contents.selection_characters.page-2") }}</div>
 	<div class="gamebutton pgbt pgbt3" style='width: 61px; color: gray' onclick="$('.page1').hide(); $('.page2').hide(); $('.page3').show(); $('.pgbt').css('color','gray'); $('.pgbt3').css('color','white');">{{ phrase("pages.contents.selection_characters.page-3") }}</div>
-	<div class="gamebutton {%if not user.info.characters %}mt5{%endif%} mb5 nchb" style='text-align: center; width: 62px' {% if user.info.character|length < 18 %}onclick="pcs(); $('.menu').hide(); $('.salesui').hide(); $('.newcharacter').show(); load_class_info('rogue','male'); resize(); chartype='',gendertype='';"{% endif %}><span style='{% if user.info.character|length >= 18 %}color:gray{% endif %}'>{{ phrase("pages.contents.selection_characters.new") }}</span></div>
+	<div class="gamebutton {%if not characters %}mt5{%endif%} mb5 nchb" style='text-align: center; width: 62px' {% if characters|length < 18 %}onclick="pcs(); $('.menu').hide(); $('.salesui').hide(); $('.newcharacter').show(); load_class_info('rogue','male'); resize(); chartype='',gendertype='';"{% endif %}><span style='{% if characters|length >= 18 %}color:gray{% endif %}'>{{ phrase("pages.contents.selection_characters.new") }}</span></div>
 </div>
 <script>
 	user_id="{{user and user._id or ''}}";

@@ -105,9 +105,11 @@ test("login and both logout handlers use matching auth names, domains and root p
 			assert.equal(result.success, true);
 			const name = f.context.options.cookie_key;
 			const cookie = attributes([].concat(login.getHeader("Set-Cookie"))[0]);
-			assert.equal(cookie[name], "US_fixture-fixtureauthnew");
+			assert.match(cookie[name], /^US_fixture-[a-f0-9]{64}$/);
+			assert.equal(cookie[name], "US_fixture-" + f.records.get(f.user._id).info.auths.at(-1));
 			assert.equal(cookie.domain, domain);
 			assert.equal(cookie.path, "/");
+			assert.equal(cookie.samesite, "Lax");
 			assert.equal("secure" in cookie, !dev);
 			assert.equal(Number(cookie["max-age"]), 86400 * 365 * 5);
 
@@ -133,7 +135,14 @@ test("login and both logout handlers use matching auth names, domains and root p
 			}
 			assert.deepEqual(f.req.cookies, preferences);
 			const expected = structuredClone(before);
-			if (method === "logout_everywhere_api") expected.info.auths = [];
+			if (method === "logout_everywhere_api") {
+				expected.info.auths = [];
+				expected.info.steam_auths = [];
+				const revision = f.records.get(f.user._id).steam_auth_revision;
+				assert.match(revision, /^[a-f0-9]{64}$/);
+				assert.notEqual(revision, before.steam_auth_revision);
+				expected.steam_auth_revision = revision;
+			}
 			assert.deepEqual(f.records.get(f.user._id), expected);
 		}
 	}

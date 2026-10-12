@@ -775,7 +775,8 @@ async function mcp_api_list_code_methods(args) {
 
 function mcp_api_find_code(code_list, identifier) {
 	identifier = "" + identifier;
-	for (var slot in code_list) {
+	if (Object.prototype.hasOwnProperty.call(code_list, identifier)) return { slot: identifier, name: code_list[identifier][0], version: code_list[identifier][1] };
+	for (var slot of Object.keys(code_list)) {
 		if (slot === identifier || ("" + code_list[slot][0]).toLowerCase() === identifier.toLowerCase()) {
 			return { slot: slot, name: code_list[slot][0], version: code_list[slot][1] };
 		}
@@ -787,7 +788,7 @@ async function mcp_api_list_codes(args) {
 	var data = await get_user_data(args.user);
 	var code_list = gf(data, "code_list", {});
 	var codes = [];
-	for (var slot in code_list) {
+	for (var slot of Object.keys(code_list)) {
 		codes.push({ slot: slot, name: code_list[slot][0], version: code_list[slot][1] });
 	}
 	return { success: true, codes: codes };
@@ -1107,7 +1108,7 @@ function mcp_api_public_item(item, trade) {
 	// Keep in sync with cache_item in node/server_functions.js. New saved fields
 	// stay private until reviewed against the normal client payload.
 	var fields = ["name", "level", "q", "stat_type", "p", "ps", "l", "ld", "m", "v", "r", "skin", "charges", "data", "expires", "gift", "acl"];
-	if (trade) fields = fields.concat(["price", "b", "rid", "giveaway", "gf"]);
+	if (trade) fields = fields.concat(["price", "want", "b", "rid", "giveaway", "gf"]);
 	if (trade && item.giveaway) fields.push("list");
 	var result = {};
 	fields.forEach(function (name) {
@@ -2344,6 +2345,54 @@ var MCP_RESOURCE_GUIDES = [
 		description: "Frozen Cove cooperative combat, shell conditions, drops, crafting, and CODE examples.",
 		article: "rime-djinn",
 		priority: 0.7,
+	},
+	{
+		uri: "adventureland://guide/mimic",
+		name: "mimic",
+		title: "Mimic",
+		description: "The Mimic among the Kobolds: how it appears, how it fights back, drops and a CODE example.",
+		article: "mimic",
+		priority: 0.5,
+	},
+	{
+		uri: "adventureland://guide/many-eye",
+		name: "many-eye",
+		title: "Many Eye",
+		description: "The Many Eye among the One Eyes of Underground West: its stone stare, drops and a CODE example.",
+		article: "many-eye",
+		priority: 0.5,
+	},
+	{
+		uri: "adventureland://guide/pale-dino",
+		name: "pale-dino",
+		title: "Pale Dino",
+		description: "The Pale Dino among the Dinos of Mystical Forest: how it appears, drops and a CODE example.",
+		article: "pale-dino",
+		priority: 0.5,
+	},
+	{
+		uri: "adventureland://guide/golden-bat",
+		name: "golden-bat",
+		title: "Golden Bat",
+		description: "The Golden Bat of Cave of Darkness: how it appears, drops and a CODE example.",
+		article: "golden-bat",
+		priority: 0.5,
+	},
+	{
+		uri: "adventureland://guide/cute-bee",
+		name: "cute-bee",
+		title: "Cute Bee",
+		description: "The Cute Bee of Mainland: how it appears, drops and a CODE example.",
+		article: "cute-bee",
+		priority: 0.5,
+	},
+	{
+		uri: "adventureland://guide/golden-bot",
+		name: "golden-bot",
+		title: "Golden Bot",
+		description: "The Golden Bot of Underground Hills: how it appears, drops and a CODE example.",
+		article: "golden-bot",
+		priority: 0.5,
 	},
 	{
 		uri: "adventureland://guide/encouragement",

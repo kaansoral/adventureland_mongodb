@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Přihlášení přes Steam: <span style=\"color: green\">ZAP</span>",
+	"pages.steam_signin.off": "> Přihlášení přes Steam: <span style=\"color: #F54423\">VYP</span>",
+	"pages.steam_signin.title": "Přihlásit se přes Steam",
+	"pages.steam_signin.intro": "Ověř svůj účet Steam a potom vyber účet Adventure Land, ke kterému se chceš přihlásit.",
+	"pages.steam_signin.continue": "Pokračovat na Steam",
+	"pages.steam_signin.choose": "Vyber účet",
+	"pages.steam_signin.choose_help": "Vyber účet Adventure Land propojený s tímto účtem Steam.",
+	"pages.steam_signin.identity": "Ověřený účet Steam s posledními číslicemi {digits}",
+	"pages.steam_signin.account": "Účet {name}",
+	"pages.steam_signin.action": "Přihlásit se k tomuto účtu",
+	"pages.steam_signin.empty": "Pro tento účet Steam nejsou k dispozici žádné účty Adventure Land.",
+	"pages.steam_signin.email": "Přihlásit se e-mailem",
+	"pages.steam_signin.next": "Další účty",
+	"pages.steam_signin.signup_label": "> Zaregistrovat se",
 	"pages.steam_signup.client_help": "Tato funkce pomáhá hráčům, kteří mají potíže se spuštěním herního klienta.",
 	"pages.steam_signup.title": "Zaregistrovat se přes Steam",
 	"pages.steam_signup.intro": "Máš Adventure Land na Steamu? Ověř svůj nákup, vytvoř si účet a hraj v prohlížeči.",
@@ -1482,5 +1496,6 @@
 	"pages.logs.working-on-an-improved-movement-and-visibility-system": "Pracuju na vylepšeném systému pohybu a viditelnosti. Ten současný je trochu složitý, je to čtvrtá nebo pátá verze, a moc bych si přál najít čas a přejít na šestou.",
 	"pages.logs.working-on-the-orb-design-3x-orb-s": "Pracuju na návrhu orbů; 3 Orb prostě nepůsobí pěkně, je to příliš líné, a napadlo mě proměnit jeden orb v místo pro lektvar: bude to dlouhotrvající posilující nápoj.",
 	"pages.logs.wow-just-realised-it-has-been-a-month": "PANE, zrovna mi došlo, že od spuštění uplynul měsíc; od té doby jsme ušli velký kus cesty a hru teď vnímám jako komunitu: poznal jsem spoustu lidí, získal hodně přátel, celý můj pohled se změnil, a nejen na hru, ale i na život obecně a na vývoj. Řekněme, že jsem teď plný naděje, a to v mnoha ohledech :)",
-	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Dokončuju opravy, průzkum a zkoušení."
+	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Dokončuju opravy, průzkum a zkoušení.",
+	"pages.contents.selection.slots-in-use": "Všechna tvá místa pro postavy jsou obsazená."
 }

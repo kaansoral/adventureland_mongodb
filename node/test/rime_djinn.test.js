@@ -1,5 +1,6 @@
 "use strict";
 const assert = require("node:assert/strict");
+const { DueQueue } = require("../logic/due_queue.js");
 const test = require("node:test");
 const vm = require("node:vm");
 const G = require("./helpers/design");
@@ -148,6 +149,7 @@ test("Rime Shatter launches fixed 20,000 damage through the real attack handler"
 		Math,
 		mode: {},
 		projectiles: {},
+		projectiles_due: new DueQueue(),
 		distance: G.distance,
 		instance_is_frozen: () => false,
 		cavalry_attack_valid: () => true,

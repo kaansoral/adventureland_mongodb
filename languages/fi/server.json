@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "KIVI!",
+	"server.floating.frenzy": "VIMMA!",
 	"server.party.joined": "{player} liittyi ryhmään",
 	"server.party.joined_with_invite": "{player} liittyi ryhmään pelaajan {inviter} kutsusta",
 	"server.party.left": "{player} poistui ryhmästä",
@@ -396,5 +398,8 @@
 	"server.cave.amber_limit": "Kaikki tämän käynnin {amount} Cave Amber ovat ilmestyneet. Voit yhä löytää esineitä ja ansaita XP:tä.",
 	"server.game_error.poker_hand_active": "Pokerijakosi on yhä kesken toisella palvelimella. Odota sen päättymistä tai yhdistä uudelleen sille palvelimelle.",
 	"server.tracktrix.mail_subject": "Sinun Tracktrixisi",
-	"server.tracktrix.mail_body": "Pieni apu seuraavaan metsästykseesi. Pidä tämä Tracktrix mukanasi!"
+	"server.tracktrix.mail_body": "Pieni apu seuraavaan metsästykseesi. Pidä tämä Tracktrix mukanasi!",
+  "server.game_log.offered_for": "Tarjottu vaihtoon: {item}, pyydetty: {want}",
+  "server.game_log.offered_for_or_higher": "Tarjottu vaihtoon: {item}, pyydetty: {want} tai korkeampi",
+  "server.game_log.traded_for": "Vaihdettu: {item}, vaihtaja: {player}, saatu: {received}"
 }

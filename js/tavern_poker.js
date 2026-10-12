@@ -49,7 +49,11 @@ function poker_card_html(card, big) {
 		"<span class='pk-card" +
 		(big ? " pk-big" : "") +
 		(card ? "" : " pk-back") +
-		"' style='--pk-card-x:" + -xy[0] * tavern_poker_card_w + "px;--pk-card-y:" + -xy[1] * tavern_poker_card_h + "px;background-position: " +
+		"' style='--pk-card-x:" +
+		-xy[0] * tavern_poker_card_w +
+		"px;--pk-card-y:" +
+		-xy[1] * tavern_poker_card_h +
+		"px;background-position: " +
 		-xy[0] * tavern_poker_card_w * scale +
 		"px " +
 		-xy[1] * tavern_poker_card_h * scale +
@@ -294,7 +298,8 @@ function poker_actions_html() {
 			phrase.html("interface.poker.call", { amount: poker_pretty(Math.min(to_call, me.stack)) }) +
 			"</div>";
 	else html += "<div class='gamebutton clickable pk-call' style='border-color: #A7C16D' onclick='poker_action(\"check\")'>" + phrase.html("interface.poker.check") + "</div>";
-	if (me.can_raise !== false || max <= hand.bet) html += "<div class='gamebutton clickable pk-allin' style='border-color: #FFE737' onclick='poker_action(\"allin\")'>" + phrase.html("interface.poker.all_in") + "</div>";
+	if (me.can_raise !== false || max <= hand.bet)
+		html += "<div class='gamebutton clickable pk-allin' style='border-color: #FFE737' onclick='poker_action(\"allin\")'>" + phrase.html("interface.poker.all_in") + "</div>";
 	html += "</div>";
 	if (max <= hand.bet || me.can_raise === false) return html + "</div>";
 	// The raise box: type an amount or pick a preset, then RAISE sends it.
@@ -348,14 +353,7 @@ function poker_preset(element) {
 
 function poker_html() {
 	var state = poker_state();
-	if (!state)
-		return (
-			"<div class='pk'><div class='pk-title'>" +
-			phrase.html("interface.poker.title") +
-			"</div><div class='pk-actions gray'>" +
-			phrase.html("interface.poker.loading") +
-			"</div></div>"
-		);
+	if (!state) return "<div class='pk'><div class='pk-title'>" + phrase.html("interface.poker.title") + "</div><div class='pk-actions gray'>" + phrase.html("interface.poker.loading") + "</div></div>";
 	var hand = state.hand,
 		me = poker_me(),
 		board = "";
@@ -635,6 +633,9 @@ function poker_event(data) {
 		tavern_poker.shown = hand.n;
 		poker_win_fx(data);
 	}
+	// Venn deals what the server dealt: hole cards around the table for a new hand, then each new board card.
+	if (previous && hand && !hand.over && (!previous.hand || previous.hand.n != hand.n)) poker_dealer_deal(data);
+	else if (previous && hand && previous.hand && previous.hand.n == hand.n && hand.board.length > previous.hand.board.length) poker_dealer_board(hand, previous.hand.board.length);
 	poker_map_show();
 	poker_refresh();
 }
@@ -735,7 +736,8 @@ function poker_walk(index) {
 
 // The table on the Tavern floor: tiny cards on the felt for everyone in view, the dealer button and a blink for the
 // seat whose turn it is. Textures come from the deck sheet once it has loaded.
-var tavern_poker_map = { sprite: null, board: null, seats: null, button: null };
+var tavern_poker_map = { sprite: null, board: null, seats: null, button: null, flights: [], hold: {}, hold_board: {} },
+	tavern_poker_hands = [-4, -46]; // where Venn's cards leave from and return to, relative to the table's anchor
 
 function poker_texture(card) {
 	if (no_graphics) return null;
@@ -796,7 +798,7 @@ function poker_map_attach(sprite) {
 		.on("mouseout", function () {
 			sprite.tint = 0xffffff;
 		});
-	tavern_poker_map = { sprite: sprite, board: board, seats: seats, button: button };
+	tavern_poker_map = { sprite: sprite, board: board, seats: seats, button: button, flights: [], hold: {}, hold_board: {} };
 	poker_texture(null);
 	poker_map_show();
 	if (typeof socket != "undefined" && socket) socket.emit("poker", { event: "info" });
@@ -810,7 +812,7 @@ function poker_map_show() {
 	for (var i = 0; i < 5; i++) {
 		var seat = state && state.seats[i],
 			pair = m.seats[i],
-			show = !!(seat && hand && seat.cards && !(hand.over && seat.folded));
+			show = !!(seat && hand && seat.cards && !(hand.over && seat.folded)) && !(m.hold[i] > performance.now());
 		for (var k = 0; k < 2; k++) {
 			var texture = show ? poker_texture(seat.shown ? seat.shown[k] : null) : null;
 			pair[k].visible = !!texture;
@@ -819,7 +821,7 @@ function poker_map_show() {
 		}
 		var community = m.board[i],
 			card = hand && hand.board[i],
-			ctexture = card ? poker_texture(card) : null;
+			ctexture = card && !(m.hold_board[i] > performance.now()) ? poker_texture(card) : null;
 		community.visible = !!ctexture;
 		if (ctexture) community.texture = ctexture;
 	}
@@ -834,12 +836,186 @@ function poker_map_show() {
 function poker_map_update(sprite) {
 	var m = tavern_poker_map,
 		state = poker_state();
-	if (no_graphics || !m.sprite || m.sprite != sprite || !state) return;
+	if (no_graphics || !m.sprite || m.sprite != sprite) return;
+	if (m.flights.length) poker_flights_update();
+	if (!state) return;
 	var hand = state.hand,
 		blink = hand && !hand.over && hand.acting >= 0 ? Math.floor(performance.now() / 350) % 2 == 0 : false;
 	for (var i = 0; i < 5; i++) {
 		var pair = m.seats[i],
 			active = hand && !hand.over && hand.acting == i;
 		for (var k = 0; k < 2; k++) pair[k].tint = active && blink ? 0xffe737 : 0xffffff;
+	}
+}
+
+// Cards in flight on the table: each is a floor-sized card sprite that walks through segments ({to, duration, arc},
+// {hold}, optional {card} to turn it) and is removed after the last one. Advanced by poker_map_update every frame.
+function poker_fly(card, from, segments, delay, done) {
+	var m = tavern_poker_map;
+	if (no_graphics || !m.sprite || m.sprite._destroyed) return null;
+	var texture = poker_texture(card || null);
+	if (!texture) return null;
+	var sprite = new PIXI.Sprite(texture);
+	sprite.scale.set(0.25, 0.25);
+	sprite.x = from[0];
+	sprite.y = from[1];
+	sprite.visible = false;
+	m.sprite.addChild(sprite);
+	var flight = { sprite: sprite, x: from[0], y: from[1], segments: segments, index: 0, applied: -1, start: performance.now() + (delay || 0), done: done };
+	m.flights.push(flight);
+	return flight;
+}
+
+function poker_flights_update() {
+	var m = tavern_poker_map,
+		now = performance.now();
+	m.flights = m.flights.filter(function (flight) {
+		var sprite = flight.sprite;
+		if (sprite._destroyed) return false;
+		while (true) {
+			var segment = flight.segments[flight.index];
+			if (!segment) {
+				if (sprite.parent) sprite.parent.removeChild(sprite);
+				sprite.destroy();
+				if (flight.done) flight.done();
+				return false;
+			}
+			var elapsed = now - flight.start;
+			if (elapsed < 0) return true;
+			if (flight.applied != flight.index) {
+				flight.applied = flight.index;
+				sprite.visible = true;
+				if (segment.card !== undefined) {
+					var texture = poker_texture(segment.card);
+					if (texture) sprite.texture = texture;
+				}
+			}
+			var duration = segment.duration || segment.hold || 0;
+			if (elapsed < duration && segment.to) {
+				var t = elapsed / duration,
+					eased = 1 - (1 - t) * (1 - t);
+				sprite.x = Math.round(flight.x + (segment.to[0] - flight.x) * eased);
+				sprite.y = Math.round(flight.y + (segment.to[1] - flight.y) * eased - (segment.arc || 0) * Math.sin(Math.PI * t));
+				return true;
+			}
+			if (elapsed < duration) return true;
+			if (segment.to) {
+				flight.x = sprite.x = segment.to[0];
+				flight.y = sprite.y = segment.to[1];
+			}
+			if (segment.land) segment.land();
+			flight.index++;
+			flight.start += duration;
+		}
+	});
+}
+
+// Venn, the dealer behind the table. The server picks each act so everyone nearby sees the same one.
+function poker_dealer_line(line, params) {
+	var def = G.npcs && G.npcs.pokerdealer,
+		parts = ("" + line).split("."),
+		pool = def && def[parts[0]],
+		fallback = pool && pool[parseInt(parts[1])];
+	if (!fallback) return null;
+	var text = phrase.definition("npc", "pokerdealer", line, fallback, params);
+	return typeof text == "string" ? text.replace("{name}", (params && params.name) || "") : null;
+}
+
+function poker_dealer_act(data) {
+	if (no_graphics || typeof PIXI == "undefined" || !data || current_map != "tavern") return;
+	var dealer = typeof get_npc == "function" ? get_npc("pokerdealer") : null;
+	if (!dealer) return;
+	if (data.delay) {
+		var later = Object.assign({}, data, { delay: 0 });
+		return draw_timeout(function () {
+			poker_dealer_act(later);
+		}, data.delay);
+	}
+	if (data.act == "say") {
+		var text = poker_dealer_line(data.line, { name: data.name || "" });
+		if (text) d_text(text, dealer, { color: (G.npcs.pokerdealer && G.npcs.pokerdealer.color) || "#E6B16B" });
+		return;
+	}
+	if (data.act == "emote") {
+		if (typeof play_cosmetic_emote == "function" && G.skills[data.emote] && G.skills[data.emote].emote) play_cosmetic_emote(dealer, data.emote, null, { silent: true });
+		return;
+	}
+	if (data.act == "shuffle") poker_dealer_shuffle();
+	else if (data.act == "mock") poker_dealer_mock(data.seats || []);
+	else if (data.act == "flourish") poker_dealer_flourish(data.card);
+}
+
+// A riffle: backs hop between two small stacks in Venn's hands.
+function poker_dealer_shuffle() {
+	var left = [tavern_poker_hands[0] - 6, tavern_poker_hands[1]],
+		right = [tavern_poker_hands[0] + 6, tavern_poker_hands[1]];
+	for (var i = 0; i < 8; i++)
+		poker_fly(
+			null,
+			i % 2 ? right : left,
+			[
+				{ to: i % 2 ? left : right, duration: 160, arc: 5 },
+				{ to: tavern_poker_hands, duration: 120 },
+			],
+			i * 110,
+		);
+}
+
+// Two face-down cards to every empty seat, a moment on the felt, then everything back to the dealer.
+function poker_dealer_mock(seats) {
+	var land = 280,
+		gap = 110,
+		count = seats.length * 2,
+		all = (count - 1) * gap + land + 1600;
+	seats.forEach(function (seat, order) {
+		for (var k = 0; k < 2; k++) {
+			var index = k * seats.length + order,
+				spot = [tavern_poker_floor[seat][0] + k * 9, tavern_poker_floor[seat][1]];
+			poker_fly(null, tavern_poker_hands, [{ to: spot, duration: land, arc: 6 }, { hold: all - index * gap - land }, { to: tavern_poker_hands, duration: 240 + order * 40, arc: 4 }], index * gap);
+		}
+	});
+}
+
+// A card leaps from Venn's hand, turns face up at the top of its arc, lands in the middle of the felt, then goes home.
+function poker_dealer_flourish(card) {
+	var top = [tavern_poker_hands[0], tavern_poker_hands[1] - 22],
+		felt = [-4, -32];
+	poker_fly(null, tavern_poker_hands, [{ to: top, duration: 260 }, { card: card, to: felt, duration: 320, arc: 4 }, { hold: 1800 }, { card: null, to: tavern_poker_hands, duration: 260, arc: 5 }]);
+}
+
+// A real deal: one card at a time around the table, twice, from the button's left; each seat's own cards appear
+// once its second card has landed.
+function poker_dealer_deal(state) {
+	var m = tavern_poker_map,
+		hand = state.hand,
+		order = [];
+	if (no_graphics || !m.sprite || m.sprite._destroyed) return;
+	for (var step = 1; step <= 5; step++) {
+		var index = (state.button + step) % 5,
+			seat = state.seats[index];
+		if (seat && seat.cards) order.push(index);
+	}
+	var now = performance.now(),
+		gap = 100,
+		land = 260;
+	order.forEach(function (index, position) {
+		for (var k = 0; k < 2; k++) {
+			var delay = (k * order.length + position) * gap,
+				spot = [tavern_poker_floor[index][0] + k * 9, tavern_poker_floor[index][1]];
+			m.hold[index] = now + delay + land + (k ? 0 : order.length * gap);
+			poker_fly(null, tavern_poker_hands, [{ to: spot, duration: land, arc: 5 }], delay, k ? poker_map_show : null);
+		}
+	});
+}
+
+// New community cards slide from Venn to their place on the board, face up.
+function poker_dealer_board(hand, from) {
+	var m = tavern_poker_map,
+		now = performance.now();
+	if (no_graphics || !m.sprite || m.sprite._destroyed) return;
+	for (var i = from; i < hand.board.length; i++) {
+		var delay = (i - from) * 140;
+		m.hold_board[i] = now + delay + 300;
+		poker_fly(null, tavern_poker_hands, [{ card: hand.board[i], to: [-22 + i * 9, -36], duration: 300, arc: 5 }], delay, poker_map_show);
 	}
 }

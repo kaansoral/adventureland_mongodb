@@ -33,6 +33,9 @@ var edges = {
 	next_goldenbat: 80000,
 	next_cutebee: 480000,
 	next_goldenbot: 100000,
+	next_manyeye: 15000,
+	next_mimic: 12000,
+	next_paledino: 30000,
 };
 var NPC_prefix = "NPC0000000000000000NPC";
 
@@ -336,12 +339,24 @@ function calculate_xvalue(arr, rec, divide, mult) {
 	return value;
 }
 
-function add_to_trade_history(player, event, name, item, price) {
+function trade_price(value) {
+	if (typeof value === "string" && /^\d+$/.test(value.trim())) value = Number(value.trim());
+	return Number.isSafeInteger(value) && value >= 1 && value <= 99999999999 ? value : null;
+}
+
+function add_to_trade_history(player, event, name, item, price, received) {
 	if (!player.p.trade_history) {
 		player.p.trade_history = [];
 	}
 	var last = player.p.trade_history[player.p.trade_history.length - 1];
-	if (last && last[0] == event && last[1] == name && last[2].name == item.name && last[2].level == item.level) {
+	if (
+		!received &&
+		last &&
+		last[0] == event &&
+		last[1] == name &&
+		last[2].name == item.name &&
+		last[2].level == item.level
+	) {
 		last[2].q = (last[2].q || 1) + (item.q || 1);
 		last[3] += price;
 		return;
@@ -349,7 +364,8 @@ function add_to_trade_history(player, event, name, item, price) {
 	if (player.p.trade_history.length >= 40) {
 		player.p.trade_history.shift();
 	}
-	player.p.trade_history.push([event, name, item, price]);
+	// A swap records both sides: [event, name, given, 0, received]
+	player.p.trade_history.push(received ? [event, name, item, price, received] : [event, name, item, price]);
 }
 
 function add_to_history(player, event) {
@@ -536,6 +552,7 @@ function reset_player(player, soft) {
 	if (!player.p.hardcore) {
 		player.p = { hardcore: true, dt: {} };
 		player.max_stats = { monsters: {} };
+		player.monster_stats_dirty = true; // the kill tallies just changed wholesale
 	}
 	player.xp = 0;
 	if (soft) {
@@ -738,6 +755,29 @@ function merchant_xp_logic(player, seller, price, tax) {
 	player.xp += tax * 3.2;
 }
 
+function trade_swap_xp(player, partner, value) {
+	// A trade offer teaches a merchant below level 70 what selling the item at its value would.
+	// No gold changes hands, so each partner account adds at most one level's worth every five days.
+	if (player.type != "merchant" || player.level >= 70 || is_same(player, partner)) {
+		return 0;
+	}
+	if (!player.p.swapxp || !player.p.dt || !player.p.dt.swapxp || hsince(player.p.dt.swapxp) > 5 * 24) {
+		player.p.swapxp = {};
+		player.p.dt = player.p.dt || {};
+		player.p.dt.swapxp = new Date();
+	}
+	var known = Object.prototype.hasOwnProperty.call(player.p.swapxp, partner.owner);
+	if (!known && Object.keys(player.p.swapxp).length >= 120) {
+		return 0;
+	}
+	// The allowance is one level's worth at the merchant's current level, so it grows with a level-up in the window
+	var earned = (known && player.p.swapxp[partner.owner]) || 0;
+	var xp = max(0, min(round(value * player.tax * 3.2), G.levels[player.level] - earned));
+	player.p.swapxp[partner.owner] = earned + xp;
+	player.xp += xp;
+	return xp;
+}
+
 function normalise(data) {
 	// normalise(data,["gold","gold"],["num","inv"])
 	for (var i = 1; i < arguments.length; i++) {
@@ -811,6 +851,7 @@ function quick_hash(str) {
 
 function verify_steam_ticket(player, ticket) {
 	try {
+		if (!mode.legacy_steam_auth) return false;
 		if (typeof ticket !== "string" || ticket.length > 8192 || !/^(?:[0-9a-f]{2})+$/i.test(ticket)) return false;
 		if (!/^[0-9a-f]{64}$/i.test(keys.steam_key || "")) return false;
 		var encoded = Buffer.from(ticket, "hex");
@@ -1722,7 +1763,7 @@ function transport_npc_to(npc, destination, point, effect) {
 	if (!npc.is_npc || !instance || !point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return false;
 	if (destination !== npc.in) {
 		if (previous) {
-			xy_emit(npc, "disappear", { id: npc.id, reason: "transport", effect: effect ? 1 : 0 });
+			remove_entity_emit(npc, "disappear", { id: npc.id, reason: "transport", effect: effect ? 1 : 0 });
 			delete previous.players[npc.id];
 			previous.npcs--;
 		}
@@ -2140,6 +2181,24 @@ function spawn_special_monster(type) {
 		new_monster(pack.i, pack);
 		// broadcast("game_event",{name:"goldenbot",map:pack.i});
 	}
+	if (type == "manyeye" || type == "mimic" || type == "paledino") {
+		// Rare variants appear inside a random pack boundary of the monster they replace.
+		var parent = { manyeye: "oneeye", mimic: "kobold", paledino: "odino" }[type];
+		var packs = [];
+		for (var m in G.maps) {
+			(G.maps[m].monsters || []).forEach(function (p) {
+				if (!p.boundaries && p.type === parent) {
+					// The Mimic waits in place like a chest; the others wander their pack's area.
+					packs.push({ type: type, boundary: p.boundary, count: 1, i: m, roam: type != "mimic" });
+				}
+			});
+		}
+		if (packs.length) {
+			var pack = packs[floor(Math.random() * packs.length)];
+			pack.gold = D.monster_gold[type];
+			new_monster(pack.i, pack);
+		}
+	}
 	if (type == "cutebee") {
 		var packs = [];
 		["main"].forEach(function (m) {
@@ -2274,6 +2333,9 @@ function anniversary_tick() {
 			npc.cid++;
 		} else if (!active && npc) {
 			instance_emit(instance, "disappear", { id: npc.id, reason: "left" });
+			// everyone in the instance was just told, forget it in seen too [26/09/26]
+			for (var pid in instance.players) if (instance.players[pid].seen) delete instance.players[pid].seen[npc.id];
+			for (var oid in instance.observers) if (instance.observers[oid].seen) delete instance.observers[oid].seen[npc.id];
 			if (instance.pmap[npc.last_hash]) delete instance.pmap[npc.last_hash][npc.id];
 			delete instance.players[key];
 			delete npcs.anniversary_baker;
@@ -2365,7 +2427,7 @@ function event_loop() {
 						}
 					}
 				if (should_warp) {
-					xy_emit(s, "disappear", { id: s.id });
+					remove_entity_emit(s, "disappear", { id: s.id });
 					delete instances[s.in].monsters[s.id];
 					s.oin = s.in = s.map = random_one(["spookytown", "halloween", "cave"]);
 					instances[s.in].monsters[s.id] = s;
@@ -2410,7 +2472,7 @@ function event_loop() {
 					!player.s.hopsickness &&
 					player.p.home == region + server_name
 				) {
-					xy_emit(m, "disappear", { id: m.id });
+					remove_entity_emit(m, "disappear", { id: m.id });
 					delete instances[m.in].monsters[m.id];
 					m.oin = m.in = m.map = player.map;
 					instances[m.in].monsters[m.id] = m;
@@ -2557,6 +2619,18 @@ function event_loop() {
 			edges.next_cutebee += parseInt(events.cutebee * Math.random());
 			spawn_special_monster("cutebee");
 		}
+
+		// One of each rare variant at a time: an unkilled 2M+ HP variant should not pile up on its farm.
+		[
+			["manyeye", "oneeye"],
+			["mimic", "kobold"],
+			["paledino", "odino"],
+		].forEach(function (v) {
+			if (events[v[0]] && stats.kills[v[1]] > edges["next_" + v[0]]) {
+				edges["next_" + v[0]] += parseInt(events[v[0]] * Math.random());
+				if (!monster_c[v[0]]) spawn_special_monster(v[0]);
+			}
+		});
 
 		if (!events.holidayseason && events.snowman && !monster_c.snowman) {
 			if (!timers.snowman) {
@@ -3258,10 +3332,10 @@ function add_condition(target, condition, args) {
 		C.s = min((target.is_monster && 20) || 5, (target.s.woven && target.s.woven.s + 1) || 1);
 		C.speed = -3 * C.s;
 	}
-	duration = max((target.s[condition] && target.s[condition].ms) || 0, duration);
 	if (target.stresistance && def && def.debuff) {
 		duration *= (100 - target.stresistance) / 100.0;
 	}
+	duration = max((target.s[condition] && target.s[condition].ms) || 0, duration);
 	target.s[condition] = C;
 	C.ms = response.duration = duration;
 	server_log(C);
@@ -3297,7 +3371,13 @@ function consume_mp(player, mp, target) {
 	if (target && target.humanoid) {
 		mult = 5;
 	}
-	if (player.a.restore_mp && Math.random() < (player.a.restore_mp.attr0 * mult) / 100.0) {
+	var restore_chance = player.a.restore_mp ? player.a.restore_mp.attr0 * mult : 0;
+	if (player.a.restore_mp && player.a.restore_mp.attr1) {
+		// attr1 is the share (Gnomish Capacitor) that may lift the final chance to at most 20%;
+		// other sources such as Mana Gloves keep their own chance, even above 20%.
+		restore_chance = max(restore_chance - player.a.restore_mp.attr1 * mult, min(20, restore_chance));
+	}
+	if (player.a.restore_mp && Math.random() < restore_chance / 100.0) {
 		player.mp += mp * 2;
 		xy_emit(player, "ui", { id: player.id, type: "restore_mp", amount: mp * 2 });
 	} else {
@@ -3603,35 +3683,78 @@ function delete_observer(socket) {
 function send_all_xy(observer, args) {
 	var data = { players: [], monsters: [], type: "all", in: observer.in, map: observer.map };
 	var instance = instances[observer.in];
-	if (!instance) {
-		if (args && args.raw) return data;
-		return;
-	}
-	for (var id in instance.players) {
-		if (!instance.players[id].s.invis && within_xy_range(observer, instance.players[id])) {
-			data.players.push(player_to_client(instance.players[id], 1));
+	var previous = observer.seen;
+	var seen = (observer.seen = Object.create(null));
+	if (instance) {
+		for (var id in instance.players) {
+			var player = instance.players[id];
+			if (!player.dead && !is_invis(player) && within_xy_range(observer, player)) {
+				data.players.push(player_to_client(player, 1));
+				seen[player.id] = 1;
+			}
+		}
+		for (var id in instance.monsters) {
+			var monster = instance.monsters[id];
+			if (!monster.dead && !is_invis(monster) && within_xy_range(observer, monster)) {
+				data.monsters.push(monster_to_client(monster));
+				seen[monster.id] = 1;
+			}
 		}
 	}
-	for (var id in instance.monsters) {
-		if (within_xy_range(observer, instance.monsters[id])) {
-			data.monsters.push(monster_to_client(instance.monsters[id]));
-		}
+	// #performance spree [26/09/26]: a full refresh re-baselines seen - whatever the client held that isn't in the new set gets a disappear
+	// the same event browsers and Mainframe already handle, sent before the snapshot (inside new_map too)
+	for (var id in previous) {
+		if (!seen[id] && id !== observer.id) observer.socket.emit("disappear", { id: id, outside: true });
 	}
+	observer.xy_resync = false;
+	observer.last_upush = [observer.x, observer.y];
 	observer.last_ux = observer.x;
 	observer.last_uy = observer.y;
-	if (observer.moving && mode.xyinf) {
-		data.xy = { x: observer.x, y: observer.y };
+	if (observer.moving && mode.xyinf) data.xy = { x: observer.x, y: observer.y };
+	if (args && args.raw) return data;
+	if (instance) observer.socket.emit("entities", data);
+}
+
+// #performance spree [26/09/26]: xy_emit sends one identical payload to many sockets - a room broadcast is encoded once per endpoint instead of once per socket
+// every socket sits in a room named by its id, so the exact recipient list still applies
+function collect_fanout(fanout, player) {
+	var socket = player.socket;
+	if (!socket || !socket.id || !socket.connected) {
+		// false_socket and anything already gone keep the old direct-emit behaviour
+		if (socket && socket.emit) fanout = fanout || { direct: [], byServer: null };
+		if (socket && socket.emit) fanout.direct.push(socket);
+		return fanout;
 	}
-	if (args && args.raw) {
-		return data;
+	fanout = fanout || { direct: [], byServer: null };
+	fanout.byServer = fanout.byServer || [];
+	var index = socket.al_server_index || 0;
+	(fanout.byServer[index] = fanout.byServer[index] || []).push(socket.id);
+	return fanout;
+}
+
+function emit_fanout(fanout, event, data) {
+	if (!fanout) {
+		return;
 	}
-	observer.socket.emit("entities", data);
+	for (var i = 0; i < fanout.direct.length; i++) fanout.direct[i].emit(event, data);
+	if (!fanout.byServer) {
+		return;
+	}
+	for (var index = 0; index < fanout.byServer.length; index++) {
+		var ids = fanout.byServer[index];
+		if (!ids || !ids.length) {
+			continue;
+		}
+		game_ios[index].to(ids).emit(event, data);
+	}
 }
 
 function xy_emit(entity, event, data, must) {
 	var x = entity.x;
 	var y = entity.y;
 	var owners = {};
+	// same recipients as before, one encode instead of one per socket (collect_fanout) [26/09/26]
+	var fanout = null;
 	for (var id in instances[entity.in].players) {
 		var player = instances[entity.in].players[id];
 		if (player.npc) {
@@ -3650,10 +3773,10 @@ function xy_emit(entity, event, data, must) {
 				player.socket.emit("light", { name: data.name, affected: 1 });
 				resend(player, "u");
 			} else if ((event == "upgrade" || event == "ui") && entity.name != player.name) {
-				player.socket.emit(event, data);
+				fanout = collect_fanout(fanout, player);
 			} //volatile. [02/02/18]
 			else {
-				player.socket.emit(event, data);
+				fanout = collect_fanout(fanout, player);
 				if (event == "chat_log" && data.p) {
 					owners[player.owner] = owners[player.owner] || [];
 					owners[player.owner].push(player.name);
@@ -3670,17 +3793,10 @@ function xy_emit(entity, event, data, must) {
 			player.y - player.vision[1] < y &&
 			y < player.y + player.vision[1]
 		) {
-			if (event == "upgrade") {
-				player.socket.emit(event, data);
-			} //volatile. [02/02/18]
-			else if (!data.nv && in_arr(event, ["disappearing_text", "upgrade"])) {
-				player.socket.emit(event, data);
-			} //volatile.
-			else {
-				player.socket.emit(event, data);
-			}
+			fanout = collect_fanout(fanout, player);
 		}
 	}
+	emit_fanout(fanout, event, data);
 	if (event == "chat_log" && data.p) {
 		(async function () {
 			try {
@@ -3705,6 +3821,55 @@ function xy_emit(entity, event, data, must) {
 				console.error("log_chat ambient error", e);
 			}
 		})();
+	}
+}
+
+// bytes waiting on a socket - engine.io's writeBuffer too, packets queue there while the transport isn't writable (and for polling) [26/09/26]
+function socket_backlog(socket, limit) {
+	var conn = socket && socket.conn;
+	if (!conn) return 0;
+	var bytes = conn.transport?.socket?.bufferedAmount || 0;
+	for (var packet of conn.writeBuffer || []) {
+		var data = packet.data;
+		bytes += 1 + (typeof data === "string" ? Buffer.byteLength(data) : data?.byteLength || 0);
+		if (limit !== undefined && bytes > limit) break;
+	}
+	return bytes;
+}
+
+// #performance spree [26/09/26]: the phantom entities fix - xy_emit only told whoever could see the entity right now, a client whose copy had drifted never heard it was gone
+// now: everyone who was sent it (player.seen, any instance - a player who walked into a cave still holds what it saw outside) + everyone who can see it, once each
+function remove_entity_emit(entity, event, data, args) {
+	var id = entity.id;
+	var instance = instances[entity.in];
+	var quiet = args && args.quiet; // only tell clients that were told; no vision-scoped broadcast
+	var tables = [players, observers];
+	for (var t = 0; t < tables.length; t++) {
+		var table = tables[t];
+		for (var key in table) {
+			var observer = table[key];
+			if (!observer || observer.is_npc || observer.npc || !observer.socket) {
+				continue;
+			}
+			var knew = observer.seen && observer.seen[id];
+			if (knew) {
+				delete observer.seen[id];
+			}
+			if (!knew && (quiet || observer.in != entity.in || !within_xy_range(observer, entity))) {
+				continue;
+			}
+			observer.socket.emit(event, data);
+		}
+	}
+	// NPCs are entities too, and they live in instance.players rather than the global table
+	if (instance && !quiet) {
+		for (var nkey in instance.players) {
+			var npc = instance.players[nkey];
+			if (!npc.is_npc || !npc.seen || !npc.seen[id]) {
+				continue;
+			}
+			delete npc.seen[id];
+		}
 	}
 }
 
@@ -3736,6 +3901,9 @@ function xy_upush_logic(element) {
 	} else if (abs(element.last_upush[0] - element.x) > B.u_vision) {
 		u = true;
 	} else if (abs(element.last_upush[1] - element.y) > B.u_vision) {
+		u = true;
+	} else if (!element.moving) {
+		// arrival - even a short trip back can make the client drop entities locally, sweep so they're resent [26/09/26]
 		u = true;
 	}
 
@@ -4032,6 +4200,7 @@ var item_p_ignore = {
 	giveaway: true,
 	gf: true,
 	price: true,
+	want: true,
 	b: true,
 	rid: true,
 	list: true,
@@ -4064,6 +4233,7 @@ var item_trade_p_ignore = { grace: true, o: true, oo: true, src: true };
 
 // TRADE
 // .rid
+// .want -> trade offer, the item asked for in return {name, level, p, q}
 // .b -> buy order #CLASH
 // .r -> for rent
 // .giveaway
@@ -4096,6 +4266,25 @@ function cache_item(current, trade, override) {
 		}
 	}
 	return item;
+}
+
+function seen_item_matches(item, seen) {
+	// seen is the item as its owner's client received it (cache_item); only the stack size may differ since
+	if (!seen || typeof seen != "object" || Array.isArray(seen)) {
+		return false;
+	}
+	var shown = cache_item(item);
+	for (var p in shown) {
+		if (p != "q" && JSON.stringify(shown[p]) !== JSON.stringify(seen[p])) {
+			return false;
+		}
+	}
+	for (var p in seen) {
+		if (p != "q" && Object.prototype.hasOwnProperty.call(seen, p) && !Object.prototype.hasOwnProperty.call(shown, p)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 function get_trade_slots(player) {

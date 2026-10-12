@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "석화!",
+	"server.floating.frenzy": "광란!",
 	"server.party.joined": "{player}님이 파티에 가입했어요",
 	"server.party.joined_with_invite": "{inviter}님의 초대로 {player}님이 파티에 가입했어요",
 	"server.party.left": "{player}님이 파티를 떠났어요",
@@ -393,5 +395,8 @@
 	"server.cave.amber_limit": "이번 방문에서 나올 Cave Amber {amount}개가 모두 나타났습니다. 아이템을 찾고 XP를 얻는 것은 계속할 수 있습니다.",
 	"server.game_error.poker_hand_active": "다른 서버에서 포커 핸드가 아직 진행 중입니다. 끝날 때까지 기다리거나 해당 서버에 다시 접속하세요.",
 	"server.tracktrix.mail_subject": "당신을 위한 Tracktrix",
-	"server.tracktrix.mail_body": "다음 사냥에 작은 도움이 되길. 이 Tracktrix를 가지고 다니세요!"
+	"server.tracktrix.mail_body": "다음 사냥에 작은 도움이 되길. 이 Tracktrix를 가지고 다니세요!",
+  "server.game_log.offered_for": "교환 등록: {item}, 희망 {want}",
+  "server.game_log.offered_for_or_higher": "교환 등록: {item}, 희망 {want} 이상",
+  "server.game_log.traded_for": "{player}님과 교환: {item} 주고 {received} 받음"
 }

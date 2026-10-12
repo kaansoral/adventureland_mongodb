@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const vm = require("node:vm");
 const nunjucks = require("nunjucks");
-const { root, read } = require("./helpers/server_vm");
+const { root, read, extract } = require("./helpers/server_vm");
 const localization = require("../../languages");
 
 test("the server list accepts scrollbar input while its surrounding menu stays click-through", () => {
@@ -42,6 +42,7 @@ test("empty slot labels use the same single-line fitting as character classes in
 			domain: { language: code },
 			user: { info: { slots: 8, auths: [], characters: [] } },
 			characters: [],
+			character_slots: 8,
 		});
 		const labels = [
 			...html.matchAll(/<span class="(?:gray )?selection-slot-label" title="([^"]*)" style="([^"]*)">([^<]*)<\/span>/g),
@@ -53,6 +54,51 @@ test("empty slot labels use the same single-line fitting as character classes in
 			assert.equal(label[1], expected, code);
 			assert.equal(label[3], expected, code);
 			assert.match(label[2], /display:block; overflow:hidden; white-space:nowrap/, code);
+		}
+	}
+});
+
+test("character creation prices and empty slots use the account allowance in every language", () => {
+	const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(root), { autoescape: true });
+	const context = vm.createContext({ env, nunjucks, localization, to_pretty_num: String });
+	for (const name of ["gf", "get_character_slots"])
+		vm.runInContext(extract(read("adventure_functions.js"), name), context);
+	vm.runInContext(read("filters.js"), context);
+	for (const { code } of localization.languages) {
+		for (const [pid, slots, count, free, charged] of [
+			["steam", 5, 5, 3, false],
+			["steam", 5, 7, 1, false],
+			["steam", 8, 8, 0, true],
+			["", 5, 5, 0, true],
+			["steam", 9, 8, 1, false],
+			["steam", 18, 18, 0, false],
+		]) {
+			const characters = Array.from({ length: count }, (_, index) => ({
+				_id: "CH_" + index,
+				type: "rogue",
+				level: 1,
+				info: { name: "Player" + index, skin: "rogue", p: {} },
+			}));
+			const user = { pid, info: { slots, characters, auths: [] } };
+			const html = env.render("htmls/contents/selection.html", {
+				domain: { language: code, languages: [] },
+				user,
+				characters,
+				character_slots: context.get_character_slots(user),
+				servers: [],
+			});
+			const price = nunjucks.lib.escape(localization.phrase("pages.contents.selection.cost-200-shells", {}, code));
+			const notice = nunjucks.lib.escape(localization.phrase("pages.contents.selection.slots-in-use", {}, code));
+			assert.equal(html.includes(price), charged, code + ": " + count);
+			assert.equal(html.includes(notice), charged, code + ": " + count);
+			const label = nunjucks.lib.escape(localization.phrase("pages.contents.selection_characters.free-slot", {}, code));
+			assert.equal(
+				[...html.matchAll(/class="selection-slot-label" title="([^"]*)"/g)].filter((match) => match[1] === label)
+					.length,
+				free,
+				code,
+			);
+			if (count === 18) assert.doesNotMatch(html.match(/<div class="gamebutton [^"]*nchb"[^>]*>/)[0], /onclick=/);
 		}
 	}
 });

@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Accesso con Steam: <span style=\"color: green\">SÌ</span>",
+	"pages.steam_signin.off": "> Accesso con Steam: <span style=\"color: #F54423\">NO</span>",
+	"pages.steam_signin.title": "Accedi con Steam",
+	"pages.steam_signin.intro": "Verifica il tuo account Steam, poi scegli l’account Adventure Land a cui accedere.",
+	"pages.steam_signin.continue": "Continua su Steam",
+	"pages.steam_signin.choose": "Scegli un account",
+	"pages.steam_signin.choose_help": "Scegli un account Adventure Land collegato a questo account Steam.",
+	"pages.steam_signin.identity": "Account Steam verificato con cifre finali {digits}",
+	"pages.steam_signin.account": "Account {name}",
+	"pages.steam_signin.action": "Accedi a questo account",
+	"pages.steam_signin.empty": "Non ci sono account Adventure Land disponibili per questo account Steam.",
+	"pages.steam_signin.email": "Accedi con email",
+	"pages.steam_signin.next": "Altri account",
+	"pages.steam_signin.signup_label": "> Registrati",
 	"pages.steam_signup.client_help": "Questa funzione aiuta i giocatori che hanno difficoltà ad avviare il client di gioco.",
 	"pages.steam_signup.title": "Registrati con Steam",
 	"pages.steam_signup.intro": "Hai Adventure Land su Steam? Verifica il tuo acquisto per creare un account e giocare nel browser.",
@@ -1482,5 +1496,6 @@
 	"pages.logs.working-on-an-improved-movement-and-visibility-system": "Sto lavorando a un sistema di movimento e visibilità migliorato. Quello attuale è un po' complesso, è la quarta o quinta versione, e vorrei proprio trovare il tempo di passare a una sesta.",
 	"pages.logs.working-on-the-orb-design-3x-orb-s": "Sto lavorando al progetto degli orb; 3 Orb non mi convincono, è troppo pigro, e mi è venuta l'idea di trasformare un orb in uno spazio per un elisir: sarà una pozione potenziante di lunga durata.",
 	"pages.logs.wow-just-realised-it-has-been-a-month": "CAVOLO, mi sono appena accorto che è passato un mese dal lancio; da allora abbiamo fatto tanta strada e ora vedo il gioco come una comunità: ho conosciuto molte persone, ho fatto tante amicizie, tutta la mia visione è cambiata, e non solo sul gioco, anche sulla vita in generale e sullo sviluppo. Diciamo che ora sono più fiducioso, su molte cose :)",
-	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Sto chiudendo le correzioni, la ricerca e le prove."
+	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Sto chiudendo le correzioni, la ricerca e le prove.",
+	"pages.contents.selection.slots-in-use": "Tutti i tuoi slot personaggio sono occupati."
 }

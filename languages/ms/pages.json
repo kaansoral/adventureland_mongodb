@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Log masuk dengan Steam: <span style=\"color: green\">AKTIF</span>",
+	"pages.steam_signin.off": "> Log masuk dengan Steam: <span style=\"color: #F54423\">TIDAK AKTIF</span>",
+	"pages.steam_signin.title": "Log masuk dengan Steam",
+	"pages.steam_signin.intro": "Sahkan akaun Steam anda, kemudian pilih akaun Adventure Land untuk log masuk.",
+	"pages.steam_signin.continue": "Teruskan ke Steam",
+	"pages.steam_signin.choose": "Pilih akaun",
+	"pages.steam_signin.choose_help": "Pilih akaun Adventure Land yang dipautkan kepada akaun Steam ini.",
+	"pages.steam_signin.identity": "Akaun Steam yang disahkan berakhir dengan {digits}",
+	"pages.steam_signin.account": "Akaun {name}",
+	"pages.steam_signin.action": "Log masuk ke akaun ini",
+	"pages.steam_signin.empty": "Tiada akaun Adventure Land yang tersedia untuk akaun Steam ini.",
+	"pages.steam_signin.email": "Log masuk dengan e-mel",
+	"pages.steam_signin.next": "Lagi akaun",
+	"pages.steam_signin.signup_label": "> Daftar",
 	"pages.steam_signup.client_help": "Ciri ini membantu pemain yang menghadapi masalah menjalankan aplikasi permainan.",
 	"pages.steam_signup.title": "Daftar dengan Steam",
 	"pages.steam_signup.intro": "Sudah memiliki Adventure Land di Steam? Sahkan pembelian anda untuk mencipta akaun dan bermain dalam pelayar.",
@@ -1482,5 +1496,6 @@
 	"pages.logs.working-on-an-improved-movement-and-visibility-system": "Saya sedang mengusahakan sistem pergerakan dan penglihatan yang lebih baik. Yang sekarang agak rumit, ini versi keempat atau kelima, dan saya benar-benar mahu mencari masa untuk beralih ke versi keenam.",
 	"pages.logs.working-on-the-orb-design-3x-orb-s": "Saya sedang mengusahakan reka bentuk orb; 3 Orb nampak tidak elok, terlalu mudah, dan saya terfikir untuk menukar satu orb menjadi petak eliksir: ia akan menjadi ramuan penguat bertahan lama.",
 	"pages.logs.wow-just-realised-it-has-been-a-month": "WAH, baru saya sedar sudah sebulan sejak pelancaran; sejak itu kami telah melalui perjalanan jauh, dan kini saya melihat permainan ini sebagai komuniti: saya bertemu banyak orang, mendapat ramai kawan, seluruh pandangan saya berubah, bukan sahaja tentang permainan, tetapi juga tentang kehidupan secara umum dan tentang pembangunan. Katakanlah saya kini lebih penuh harapan, dalam banyak perkara :)",
-	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Sedang menyudahkan pembetulan, kajian dan ujian."
+	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Sedang menyudahkan pembetulan, kajian dan ujian.",
+	"pages.contents.selection.slots-in-use": "Semua slot watak anda sedang digunakan."
 }

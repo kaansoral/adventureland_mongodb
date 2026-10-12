@@ -1,5 +1,67 @@
 // English documentation catalog. IDs identify source meaning and usage.
 module.exports = {
+	// Items guide and upgrade CODE reference. Preserve Primling, CODE, null and grace_added. A preview consumes nothing.
+	"docs.upgrading.grace_only": "At the upgrade shrine, use an offering such as Primling without a scroll to add 0.5 grace. The offering is consumed; the item keeps its level. In CODE, pass null for the scroll. Calculation mode consumes nothing and returns grace_added.",
+	// Entry CODE reference. Preserve CODE, transport_cant_item and items; the keys in items are executable item IDs.
+	"docs.functions.enter.missing_key": "If an entrance requires a key, the error names the missing key. In CODE, a transport_cant_item rejection includes items, mapping each required item ID to its quantity.",
+	// Monster reference. Preserve boundary and boundaries, the two CODE data fields. Definitions do not prove current sightings.
+	"docs.articles.data-monster.spawn_boundaries": "A spawn pack can use boundary for one rectangle on its map, or boundaries for rectangles that include their own map names. Scan every map when looking for a monster’s spawn areas: one pack can span several maps. These are possible spawn areas, not live sightings.",
+	// Item use and recovery requests during stun, in the Items guide and CODE references. Preserve HP/MP, CODE, reason and "disabled". Passive recovery continues.
+	"docs.items.stunned_use": "Consumables, item activations, thrown items, and HP/MP recovery requests are blocked while you are stunned. These CODE actions reject with reason: \"disabled\".",
+	// CODE trade and wishlist price limits. Preserve price, reason and the failure reason "invalid".
+	"docs.trade.valid_price": "Use a whole gold amount from 1 to 99,999,999,999 for price. Invalid prices reject with reason: \"invalid\".",
+	// Items guide, beside PvP item markings. Self-inflicted splash still hurts, but never counts as an opponent or awards a self-kill or self-loot. Preserve PvP.
+	"docs.guide.items.self_damage": "Your own splash damage can hurt you in PvP areas. It does not count as another player attacking you, give you a PvP kill or let you loot your own death.",
+	// Cave return: preserve the current floor, progress, health and fallen state.
+	"docs.cave.safe_return": "If a wall blocks your saved position, returning places you at a safe point on the same floor, or at that floor’s entrance. Your cave progress and health are kept; fallen characters remain fallen.",
+	// Banking guide: Bank Key and Underground Key each grant their floor's first pack as well as its entrance. This does not describe Diamond Key or purchasing a pack.
+	"docs.guide.banking.key_pack": "Each floor key also unlocks its first item pack, which is available immediately.",
+	// Banking and anniversary guides, plus bank_store reference: overflow keeps real reward items without increasing capacity. Keep bank_store() unchanged. Index means the zero-based position in character.items.
+	"docs.guide.banking.overflow_items": "Rewards can appear in an extra inventory row when your bag is full. These items are kept, but the row does not add capacity. At the bank, drag an item from that row into a pack, or use bank_store() with its inventory index.",
+	// Encouragement guide introduction. Existing merchants can move between realms without interrupting other characters' bonuses; normal account eligibility and character limits still apply.
+	"docs.guide.encouragement.merchant_realms": "Merchants can change realms without interrupting your other characters’ encouragement bonuses.",
+	// Mail tutorial and send_mail/take_mail_item references. Receiving account owns the attachment, including self-mail; deletion hides only the caller's copy.
+	"docs.mail.ownership": "Only the receiving account can collect an attachment. Senders cannot take it back. Deleting mail removes only your copy.",
+	// Bank gold response metadata. Preserve operation, deposit, withdraw and gold as CODE.
+	"docs.functions.bank_gold.operation": "The result's <span class='dlabel'>operation</span> is <span class='dlabel'>\"deposit\"</span> or <span class='dlabel'>\"withdraw\"</span>; <span class='dlabel'>gold</span> is the amount moved.",
+	// Golden Bat guide paragraph after its spawn line; the drop list with exact rates follows. Item names fixed; 24,000 exact.
+	"docs.guide.golden-bat.intro": "It flies around the cave until someone catches it. With 24,000 HP, it only sometimes attacks and never hits back.",
+	// Cute Bee guide paragraph after its spawn line; the drop list follows. Fun Token is a fixed name; 300 and 16 exact.
+	"docs.guide.cute-bee.intro": "It wanders Mainland with only 300 HP, stinging anyone nearby for a mighty 16 damage.",
+	// Golden Bot guide paragraph after its spawn line; the drop list with exact rates follows. Item names fixed; 500,000 exact.
+	"docs.guide.golden-bot.intro": "It wanders Underground Hills until someone stops it. It has 500,000 HP, but rarely attacks and never hits back.",
+	// CODE caption above the Mimic example: attacks the nearest Mimic in range once per call, only at full HP.
+	"docs.guide.mimic.code": "The Mimic only bites back. This attacks the nearest Mimic in range once per call, but only while your HP is full.",
+	// CODE caption above the Many Eye example: does nothing while stoned; otherwise attacks once per call.
+	"docs.guide.many-eye.code": "Stone can't swing. This does nothing while you are stoned; otherwise it attacks the nearest Many Eye in range once per call.",
+	// CODE caption above the Pale Dino example: attacks once per call while above half HP.
+	"docs.guide.pale-dino.code": "The Pale Dino hits hard. This attacks the nearest one in range once per call, but only while you have more than half your HP.",
+	// CODE caption above the Golden Bat example: targets it as soon as it is visible, attacks once in range.
+	"docs.guide.golden-bat.code": "This targets the nearest Golden Bat as soon as one is visible, then attacks once when it is in range and your attack is ready.",
+	// CODE caption above the Cute Bee example: attacks the nearest Cute Bee in range once per call.
+	"docs.guide.cute-bee.code": "This attacks the nearest Cute Bee in range once per call.",
+	// CODE caption above the Golden Bot example: attacks once per call; 500,000 exact.
+	"docs.guide.golden-bot.code": "This attacks the nearest Golden Bot in range once per call. Bring friends: it has 500,000 HP.",
+	// Many Eye guide paragraph, above its drops. One Eye, Many Eye and Watcher's Earring are fixed names; Status Resistance is the stat label. Quantities exact.
+	"docs.guide.many-eye.about": "Its gaze is One Eye's: every 6.4 seconds it turns its current target to stone for 4 seconds. Status Resistance shortens the stone; a pair of Watcher's Earrings grants 15. Bring a party: Many Eye has 2,520,000 HP and hits hard and fast.",
+	// Mimic guide paragraph, below its habitat map and above its drops. Kobolds is a fixed name. Quantities exact.
+	"docs.guide.mimic.about": "It waits among the Kobolds like a treasure chest and never starts a fight. Attack it, though, and it bites back for 2,600 physical damage per hit. It has 2,240,000 HP, 450 Armor and 450 Resistance.",
+	// Pale Dino guide paragraph, above its drops. Dino is a fixed name. Quantities exact.
+	"docs.guide.pale-dino.about": "A pale Dino with 1,320,000 HP, faster and harder-hitting than the rest.",
+	// Accepted calls start account cooldown immediately, including while queued. An unanswered call releases its own cooldown only when it ends. Refusals add none; once any sentry answers cooldown stays even without a kill.
+	"docs.cavalry.unanswered": "Cooldown starts when the call is accepted, including while queued. Refused calls add no new cooldown. If no sentry answers, it is cleared when the call ends. Once answered, the cooldown remains even without a kill.",
+	// Only an individual ordinary respawn resets to level 1 following Cavalry damage during a still-valid below-80 ACCOUNT rescue, with no living connected CURRENT-character-level 80+ player within 150 pixels at death. Temporary growth monsters never respawn. Keep Cavalry.
+	"docs.cavalry.delevel": "During a valid below-80 rescue, an ordinary respawning monster damaged by Cavalry respawns at level 1 if it dies with no living, connected CURRENT-level-80+ character within 150 pixels. Only that monster resets. Temporary growth monsters do not respawn.",
+	// Rescue duration starts at acceptance, including queue time. Repeat calls do not extend it or add targets. Caller must stay alive, connected and in same instance within 320 normal game range of original call. Keep Cavalry.
+	"docs.cavalry.departure": "The timer starts when the call is accepted, including queue time. Repeat calls do not extend it or add targets. Cavalry leaves when time runs out, no selected monster still qualifies, or the caller dies, disconnects, changes map or instance, or moves beyond 320 game range of the original calling spot.",
+	// Per-monster guard: any living connected CURRENT-character-level 80+ player within 150 center-to-center pixels blocks Cavalry damage to that monster, including caller and other parties. All initially guarded means refusal; a later guard pauses affected attacks without pausing the timer. Keep Cavalry.
+	"docs.cavalry.guarded": "A monster is guarded whenever any living, connected character whose CURRENT level is 80+ is within 150 pixels of that monster, including the caller, party members or strangers. Cavalry cannot hit that monster. If every initial candidate is guarded, the call is refused. If one becomes guarded later, that fight pauses while other selected monsters may continue; the timer keeps running.",
+	// Both rescue groups: ordinary living level 3+ monsters within 320 normal game range of the original call, same instance, respawn strictly under 5 minutes. Target group never expands. Existing ordinary spawn-growth temporary monsters are eligible, later spawns and monsters targeting outsiders are not. Keep Cavalry.
+	"docs.cavalry.targets": "Targets must already be living ordinary level-3+ monsters in the same map and instance, within 320 game range of the original calling spot. Nearest are preferred. Their normal respawn must be under 5 minutes. Bosses, special/event/co-op monsters, pets, traps, peaceful creatures and summoned monsters are excluded. Cavalry never takes monsters targeting someone outside your party. Temporary ordinary growth monsters already present can qualify. Selection is fixed when called; later spawns and respawns never join.",
+	// Cavalry guide: ACCOUNT highest recorded level at least 80. At most 3 selected targets and 15 seconds. Must already target the living connected caller or party member.
+	"docs.cavalry.veteran": "ACCOUNT level 80+: up to 3 monsters for up to 15 seconds. Only monsters already attacking you or a living, connected party member qualify. Idle monsters do not.",
+	// Cavalry guide: ACCOUNT highest recorded level below 80. At most 24 selected targets and 90 seconds from acceptance, including waiting. Idle or active caller/party targets qualify.
+	"docs.cavalry.newcomer": "ACCOUNT level below 80: up to 24 monsters for up to 90 seconds. Idle monsters qualify, as do monsters attacking you or a living, connected party member.",
 	// Cosmetics guide: New Misc. rewards and the halo hat slot. Preserve Haila and New Misc.
 	"docs.guide.looks.misc-box": "Give New Misc. to Haila for an emote, a gravestone or a glowing halo. Equip the halo in the hat slot in Cosmetics.",
 	// Cosmetics guide: New Accessory and Haila are proper names. Cosmetics is the existing wardrobe control; one box grants one random accessory.
@@ -18,10 +80,10 @@ module.exports = {
 	"docs.functions.use_skill.regeneration_output": "Read each regeneration ability's recovery amount from its <span class=\"dlabel\">output</span> field.",
 	// Nearby guide hint, based on the current character’s level, not account level. button is the localized short CALL label. Leveled means the monster has gained levels. Only the button is hidden at level 60+, not access to the guide. Keep Cavalry.
 	"docs.cavalry.hint": "Below level 60, when a nearby leveled monster looks dangerous, you may see {button} beside the Cavalry's familiar sprite. Click it to open this guide. At level 60 and above, the button is hidden.",
-	// Saved account-wide cooldown; nearby means 150 pixels from the caller or captured monsters. The veteran check also runs at attack and impact, for all parties. Keep Cavalry.
-	"docs.cavalry.cooldown": "The account shares a cooldown across characters and servers: 10 minutes plus one minute per level, using the highest account or nearby player level. Cavalry stops attacking monsters whenever a level-80+ player is within 150 pixels.",
-	// Rescue eligibility uses the account’s highest recorded character level, including other characters and earlier calls. A lower-level character on a veteran account still has the veteran restrictions. Existing ordinary population growth is allowed; later spawns are not. Assisted newcomer kills reset a replacement spawn to level 1 after ordinary rewards; temporary monsters do not respawn. Keep Cavalry and all quantities and restrictions.
-	"docs.cavalry.rescue": "Cavalry uses your account's highest recorded character level. Accounts below level 80 get up to 90 seconds against up to 24 nearby level 3+ monsters. Assisted monsters that respawn return at level 1. Other accounts get up to 15 seconds against three monsters already attacking you or your party. Bosses, rare monsters and monsters that appear after the call are excluded.",
+	// Cooldown uses highest account recorded level, living connected players within 150 center-to-center pixels of caller or ANY otherwise eligible candidate before guard filtering/target cap, and players attacked by those candidates even outside 150. Shared account-wide across characters and game servers; 10 minutes plus 1 minute per level.
+	"docs.cavalry.cooldown": "Cooldown is shared across all characters and servers: 10 minutes plus 1 minute per level. Use the highest of your account's recorded maximum; living, connected players within 150 pixels of you or any otherwise qualifying monster, even if that monster is not selected; and players those monsters are attacking, including party members outside that range.",
+	// Rescue eligibility uses the highest recorded level across the whole account, including other characters and recorded earlier levels, not only the calling character.
+	"docs.cavalry.rescue": "Rescue limits use your ACCOUNT's highest recorded character level, including other characters and past recorded levels. A lower-level character does not lower it.",
 	// Mail lesson. {take} is the existing localized TAKE button. The one gift is shared by all characters on an account; claiming it is optional for tutorial completion. Keep Daisy and Tracktrix.
 	"docs.tutorial.mail.take": "Open Daisy's letter and choose {take} to collect Tracktrix. Any character on your account can take it. Collecting it is optional for this lesson.",
 	// Mail lesson. {com} is the localized COM menu label; Mail is its existing mailbox tab. Opening an empty mailbox counts.
@@ -33,13 +95,13 @@ module.exports = {
 	// Home guide. condition is the translated Hop Sickness name. Keep XP, PvP and Bean. Level 60+, non-PvP, 12 online minutes; reconnect preserves time and returning/changing home clears it.
 	"docs.guide.events-and-home.hop-sickness": "{condition} lowers XP, gold, luck and attack power after a character of level 60 or above enters another non-PvP server away from home. The base duration is 12 minutes of online play. Reconnecting to that server preserves the remaining time. Returning to the saved home or changing home with Bean clears it immediately.",
 	// Public CODE requirements and Promise fields. Preserve Tracktrix, Cavalry, Cave of Many Dreams, assigned, queued, next_call, cooldown_ms, reason and 0–4.
-	"docs.cavalry.code": "Carry Tracktrix and follow the rescue rules. Call once. Results include assigned (0–4), queued, next_call and cooldown_ms; failures reject with reason. Cavalry cannot enter the Cave of Many Dreams.",
-	// Sentries share nearby calls, split among separate rescues and return home when no assignment remains.
-	"docs.cavalry.dispatch": "They split between calls, helping lower-level adventurers first. They leave when the rescue ends, its monsters are gone, or the caller dies, disconnects, changes maps or leaves the calling area.",
-	// Class behavior and unchanged rewards. Tracker is the fixed item name; XP is experience.
-	"docs.cavalry.combat": "The Warrior stays charged. The Mage fires three projectiles and blinks. The Priest heals wounded players; the Paladin heals and protects nearby allies. Assisted kills keep normal XP, loot and Tracktrix credit.",
-	// Manual item-popup action. action is the translated uppercase action label and already ends with an exclamation mark. Keep Tracktrix and Cavalry.
-	"docs.cavalry.manual": "Carry Tracktrix, click it, and choose {action} Cavalry arrives within 320 range of your calling spot.",
+	"docs.cavalry.code": "Carry Tracktrix or Super Computer and follow the rescue rules. Call interact(\"cavalry\") once. Results include assigned (0–4), queued, next_call and cooldown_ms; failures reject with reason. Cavalry cannot be called from generated maps, including Cave of Many Dreams.",
+	// Four Cavalry NPCs shared per game server, distributed 4 / 2+2 / 2+1+1 / 1+1+1+1. Calls within 160 normal game range share a fight. Priority uses current caller character level, then call age; lower-level calls can take sentries from higher-level ones.
+	"docs.cavalry.dispatch": "Four sentries are shared per server. Separate fights split them 4, 2+2, 2+1+1 or 1+1+1+1. Calls within 160 game range share one fight. Lower CURRENT character level gets priority; older calls break ties. Extra fights wait, and sentries may move to a lower-level caller.",
+	// Cavalry guide class behavior and unchanged rewards. Translate class names using established terms. Keep Cavalry, Tracktrix and XP; monsters do not target Cavalry.
+	"docs.cavalry.combat": "The Warrior stays charged. The Mage fires up to three projectiles and sometimes blinks. The Priest heals wounded nearby players; the Paladin heals and protects nearby allies. Monsters never target Cavalry. Assisted kills keep normal XP, loot and Tracktrix credit.",
+	// Cavalry guide manual action. Tracktrix must be in inventory; action is the translated call label including its exclamation mark. Keep Tracktrix, Cavalry and Cave of Many Dreams.
+	"docs.cavalry.manual": "Carry Tracktrix or Super Computer, click it, and choose {action} You must be alive and connected. Cavalry cannot be called from generated maps, including Cave of Many Dreams.",
 	// Guide introduction; preserve Wizard's Crib, translate class labels using established terms.
 	"docs.cavalry.intro": "Four sentries wait in Wizard's Crib: a Paladin, Mage, Warrior and Priest. Click one to inspect their equipment.",
 	// Guide introduction. Rime Djinn, Frozen Cove and Harpy are fixed game names. Ordinary aggro=1 permits passing attacks without target acquisition.
@@ -410,7 +472,7 @@ module.exports = {
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
 	"docs.tutorial.new.shop_code": "With a Merchant Stand in inventory, this opens the stand. Add your first listing manually so you can inspect the item and price before offering it to other players.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
-	"docs.tutorial.new.xp_trade": "Player trading: merchants gain XP from eligible purchases and sales through player stands. The XP is based on the trade's tax. Trades between your own characters do not qualify.",
+	"docs.tutorial.new.xp_trade": "Player trading: merchants gain XP from eligible purchases and sales made through player stands and, below level 70, from completed trade offers. The XP is based on the trade's tax. Trades between your own characters do not qualify.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
 	"docs.tutorial.new.xp_donate": "For donations, enter Wizard's Crib west of Mainland's town square and talk to Ron at Lost & Found. Choose Donate, enter a gold amount, and read the XP preview before confirming. The rate depends on the server's treasury. This spends your gold; it is optional, so keep your potion money first.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
@@ -1715,6 +1777,12 @@ module.exports = {
 	// docs/articles/events-character.html:97; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.articles.events-character.emitted-for-chests-opened-by-you-or-your":
 		"Emitted for chests opened by you or your party. Item entries may include additional item properties and PVP loot markers.",
+	// docs/articles/events-character.html; Loot event reward fields and delivery outside the opener's party. Preserve HTML and the CODE identifiers loot, items and looter.
+	"docs.articles.events-character.encouragement-items":
+		'The <span class="dlabel">loot</span> event includes encouragement items in <span class="dlabel">items</span>, with <span class="dlabel">looter</span> naming the recipient. If someone outside your current party opens the chest, you still receive a private <span class="dlabel">loot</span> event for your own encouragement rewards.',
+	// docs/articles/events-character.html; Full-inventory bonus rewards appear in loot only when the reserved chest is collected. Preserve HTML and the CODE identifier loot.
+	"docs.articles.events-character.encouragement-reserved":
+		'If your inventory is full, those rewards wait in a reserved chest and appear in <span class="dlabel">loot</span> when you collect it.',
 	// docs/articles/events-character.html:51; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["hit"].
 	"docs.articles.events-character.emitted-when-an-action-is-sent-toward-your":
 		'Emitted when an action is sent toward your character. It describes the launch; use <span class="dlabel">hit</span> for the resolved result.',
@@ -1813,6 +1881,11 @@ module.exports = {
 		"These are visible ambient transfer events. Your own transfer completion is also reported once through the corresponding character event.",
 	// docs/articles/events-game.html:150; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.articles.events-game.this-mirrors-the-character-event-after-your-client": "This mirrors the character event after your client enters a new map.",
+	// docs/articles/events-game.html:85; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["swap"].
+	"docs.articles.events-game.swap": '<span class="dlabel" data-event="swap">swap</span>',
+	// docs/articles/events-game.html:97; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Locked inline code: ["item","received","num","snum","trade","sale"].
+	"docs.articles.events-game.swap-is-emitted-when-a-trade-offer-completes":
+		"Emitted when a trade offer completes nearby. item is what the merchant gave and received is what it got; num is the buyer's new inventory slot and snum the merchant's. No gold moves, so trade and sale are not emitted.",
 	// docs/articles/events-game.html:72; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["trade","sale"].
 	"docs.articles.events-game.trade-and-sale": '<span class="dlabel" data-event="trade">trade</span> and <span class="dlabel" data-event="sale">sale</span>',
 	// docs/articles/events-game.html:21; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["wait_for_event(game, event, timeout, filter)"].
@@ -3441,6 +3514,8 @@ module.exports = {
 		"<b>Returns:</b> Promise resolving with the chat response, or rejecting with a structured failure object. An empty message resolves with success:false and reason empty.",
 	// docs/functions/say.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.functions.say.sends-a-message-to-public-chat": "Sends a message to public chat.",
+	// say() documentation. Only Discord forwarding and saved public histories are muted on this server; live chat still works. Recovery requires ten minutes without public messages. Keep Discord unchanged.
+	"docs.functions.say.spam_filter": "Repeated public messages and chat floods are not sent to Discord or saved in public chat history. Continued spam temporarily mutes your account from both on that server until you go 10 minutes without sending a public message. Your messages still appear in live game chat.",
 	// docs/functions/seal_item.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.seal_item.example": "<b>Example:</b>",
 	// docs/functions/seal_item.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["failed: true","reason","mode_resolve_all()"].
@@ -3750,6 +3825,18 @@ module.exports = {
 		"<b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.",
 	// docs/functions/trade_buy.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.trade_buy.returns-promise-resolving-with-the-trade-response-or": "<b>Returns:</b> Promise resolving with the trade response, or rejecting with a structured failure object.",
+	// docs/functions/trade_offer.html:6; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
+	"docs.functions.trade_offer.example": "<b>Example:</b>",
+	// docs/functions/trade_offer.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
+	"docs.functions.trade_offer.lists-an-inventory-item-for-another-item": "Lists an inventory item in one of your merchant trade slots for another item instead of gold. One nearby player can take the whole offer once. Merchants below level 70 on either side gain the XP a sale at the items' value would give; each partner account adds at most one level's worth every five days.",
+	// docs/functions/trade_offer.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["failed: true","reason","mode_resolve_all()"].
+	"docs.functions.trade_offer.promise-failures-unless-a-function-specific-note-says":
+		"<b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.",
+	// docs/functions/trade_offer.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
+	"docs.functions.trade_offer.returns-promise-resolving-with-the-listing-response-or": "<b>Returns:</b> Promise resolving with the listing response, or rejecting with a structured failure object.",
+	// docs/functions/trade_offer.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["want","name","level","p","q","quantity"].
+	"docs.functions.trade_offer.want-is-an-item-key-or-an-object":
+		"<b>want</b> is an item key, or an object with <span class='dlabel'>name</span> and optional <span class='dlabel'>level</span> (the lowest level accepted), <span class='dlabel'>p</span> (title) and <span class='dlabel'>q</span> (quantity, for stackable items). A missing level or title accepts any level or title, so titled items qualify too. <span class='dlabel'>quantity</span> is how many of the inventory stack you offer.",
 	// docs/functions/trade_sell.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.trade_sell.example": "<b>Example:</b>",
 	// docs/functions/trade_sell.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["failed: true","reason","mode_resolve_all()"].
@@ -3759,6 +3846,18 @@ module.exports = {
 	"docs.functions.trade_sell.returns-promise-resolving-with-the-trade-response-or": "<b>Returns:</b> Promise resolving with the trade response, or rejecting with a structured failure object.",
 	// docs/functions/trade_sell.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.functions.trade_sell.sells-an-inventory-item-into-a-visible-player": "Sells an inventory item into a visible player's current buy listing, including its listing ID.",
+	// docs/functions/trade_swap.html:6; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
+	"docs.functions.trade_swap.example": "<b>Example:</b>",
+	// docs/functions/trade_swap.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
+	"docs.functions.trade_swap.gives-an-inventory-item-for-the-item-in": "Gives an inventory item for the item in a visible player's trade offer, including its listing ID so a changed offer is refused.",
+	// docs/functions/trade_swap.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["failed: true","reason","mode_resolve_all()"].
+	"docs.functions.trade_swap.promise-failures-unless-a-function-specific-note-says":
+		"<b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.",
+	// docs/functions/trade_swap.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
+	"docs.functions.trade_swap.returns-promise-resolving-with-the-trade-response-or": "<b>Returns:</b> Promise resolving with the trade response, or rejecting with a structured failure object.",
+	// docs/functions/trade_swap.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["target.slots[trade_slot].want","num","trade_swap_match"].
+	"docs.functions.trade_swap.the-item-must-satisfy-the-listing-s-want":
+		"<b>Notes:</b> The item at <span class='dlabel'>num</span> must satisfy <span class='dlabel'>target.slots[trade_slot].want</span>: the same item, at least the requested level, the requested title when one is set, and enough quantity in that one stack. Nothing is chosen for you. If your inventory changed after you picked the item, the trade fails with <span class='dlabel'>trade_swap_match</span>.",
 	// docs/functions/transport.html:6; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.transport.example": "<b>Example:</b>",
 	// docs/functions/transport.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
@@ -4356,8 +4455,8 @@ module.exports = {
 	"docs.guide.event-anniversary.cake-drops-one-prize": "Cake drops — one prize",
 	// docs/guide/event-anniversary.html:110; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.event-anniversary.check-inventory-gold-and-cosmetics-for-your-rewards": "Check inventory, gold and cosmetics for your rewards; not all rewards appear in the returned result.",
-	// docs/guide/event-anniversary.html:68; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE","Mira"].
-	"docs.guide.event-anniversary.code-craft-with-mira": "CODE: Craft with Mira",
+	// Anniversary guide heading. The CODE example chooses Mira or Cole from server.status.anniversary. Preserve CODE.
+	"docs.guide.event-anniversary.code-craft-with-mira": "CODE: Craft anniversary recipes",
 	// docs/guide/event-anniversary.html:36; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.guide.event-anniversary.code-find-and-kiss": "CODE: Find and kiss",
 	// docs/guide/event-anniversary.html:95; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE","Anniversary Gift"].
@@ -4366,9 +4465,9 @@ module.exports = {
 	// docs/guide/event-anniversary.html:111; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["smart_move","auto_craft","exchange","compound","upgrade","use_skill"]. Keep names: ["CODE"].
 	"docs.guide.event-anniversary.code-reference-smart-move-auto-craft-exchange-compound":
 		'CODE reference: <span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">auto_craft</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">exchange</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">compound</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">upgrade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">use_skill</span>.',
-	// docs/guide/event-anniversary.html:32; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Mira"].
+	// Anniversary crafting requirements, during and after the event. Preserve Mira, Cole and Computer.
 	"docs.guide.event-anniversary.crafting-needs-the-listed-unlocked-ingredients-gold-and":
-		"Crafting needs the listed unlocked ingredients, gold, and room for the result. Stay near Mira unless you have Computer access. Mira leaves when the event ends; your items and emotes stay.",
+		"Crafting needs the listed unlocked ingredients, gold and room for the result. Stay near Mira during the event, or Cole afterward, unless you have Computer access. Your items and emotes stay.",
 	// docs/guide/event-anniversary.html:27; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.event-anniversary.event-details": "Event details",
 	// Anniversary guide: all servers can start rounds, but a reachable target outside PvP is required. Only other eligible players online at selection receive a Visit. Preserve the three bold spans.
@@ -4384,9 +4483,9 @@ module.exports = {
 	// docs/guide/event-anniversary.html:30; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.event-anniversary.if-the-featured-player-disconnects-or-becomes-unreachable":
 		"If the featured player disconnects or becomes unreachable, their place stays reserved until the round ends. They can return during the same five minutes. The timer does not restart.",
-	// docs/guide/event-anniversary.html:88; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["show_json(G.craft)","find_npc(\"anniversary_baker\")"]. Keep names: ["Mira"].
+	// CODE ingredient inspection. Preserve the span markup and show_json(G.craft) exactly.
 	"docs.guide.event-anniversary.inspect-ingredients-with-show-json-g-craft-find":
-		'Inspect ingredients with <span class="dlabel">show_json(G.craft)</span>. Find Mira with <span class="dlabel">find_npc("anniversary_baker")</span>.',
+		"Inspect ingredients with <span class=\"dlabel\">show_json(G.craft)</span>.",
 	// docs/guide/event-anniversary.html:34; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Mira"].
 	"docs.guide.event-anniversary.make-a-wish-s-jar-costs-one-cake":
 		"Make a Wish's jar costs one cake + 250,000 gold at Mira. The emote uses 50 MP and has a four-minute cooldown. The rare I Kiss You jar unlocks kisses outside the event. Kisses without an Anniversary Visit give no rewards or buff.",
@@ -4937,12 +5036,12 @@ module.exports = {
 	"docs.guide.markets-and-trading.markets-trading": "Markets & Trading",
 	// docs/guide/markets-and-trading.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Ponty","Ron"].
 	"docs.guide.markets-and-trading.merchant-stands-hold-player-priced-sales-buy-orders":
-		"Merchant stands hold player-priced sales, buy orders, and giveaways. Ponty and Ron run separate recovered-item markets whose listings can disappear when another adventurer buys first.",
+		"Merchant stands hold player-priced sales, buy orders, trade offers, and giveaways. Ponty and Ron run separate recovered-item markets whose listings can disappear when another adventurer buys first.",
 	// docs/guide/markets-and-trading.html:92; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep names: ["Merrit"].
 	"docs.guide.markets-and-trading.merrit-s-visits-keep-an-open-stocked-stand": "<b>Merrit’s visits:</b> Keep an open, stocked stand in the same place for two minutes. Your account can receive one parcel per hour. Stay more than 40px from fixed NPCs and leave room between shops; the shop set up first keeps its place. <span class=\"rlabel\" onclick=\"render_merrit_info()\">Merrit: full rules and exchange chances</span>.",
 	// docs/guide/markets-and-trading.html:9; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.markets-and-trading.nearby-players-open-a-visible-merchant-s-stand":
-		'<span class="guide-card-icon market-stand"></span><b>Nearby Players</b>Open a visible merchant\'s stand to buy, fill a wishlist, or join a giveaway.',
+		'<span class="guide-card-icon market-stand"></span><b>Nearby Players</b>Open a visible merchant\'s stand to buy, fill a wishlist, answer a trade offer, or join a giveaway.',
 	// docs/guide/markets-and-trading.html:7; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep names: ["Ponty"].
 	"docs.guide.markets-and-trading.ponty-browse-equipment-sold-back-into-the-ordinary":
 		'<span class="guide-card-icon market-ponty"></span><b>Ponty</b>Browse equipment sold back into the ordinary second-hand market.',
@@ -4952,9 +5051,9 @@ module.exports = {
 	// docs/guide/markets-and-trading.html:75; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["get_secondhands","buy_secondhand","get_lost_and_found","buy_lost_and_found"].
 	"docs.guide.markets-and-trading.recovered-market-references-get-secondhands-buy-secondhand-get":
 		'Recovered-market references: <span class="rlabel" onclick="render_function_reference($(this).html())">get_secondhands</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">buy_secondhand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">get_lost_and_found</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">buy_lost_and_found</span>.',
-	// docs/guide/markets-and-trading.html:59; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["open_stand","close_stand","trade","wishlist","trade_buy","trade_sell","giveaway","join_giveaway"].
+	// docs/guide/markets-and-trading.html:59; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["open_stand","close_stand","trade","wishlist","trade_buy","trade_sell","trade_offer","trade_swap","giveaway","join_giveaway"].
 	"docs.guide.markets-and-trading.references-open-stand-close-stand-trade-wishlist-trade":
-		'References: <span class="rlabel" onclick="render_function_reference($(this).html())">open_stand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">close_stand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">wishlist</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_buy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_sell</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">giveaway</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">join_giveaway</span>.',
+		'References: <span class="rlabel" onclick="render_function_reference($(this).html())">open_stand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">close_stand</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">wishlist</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_buy</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_sell</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_offer</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">trade_swap</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">giveaway</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">join_giveaway</span>.',
 	// docs/guide/markets-and-trading.html:8; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep names: ["Ron"].
 	"docs.guide.markets-and-trading.ron-browse-items-recovered-from-unlooted-chests-after":
 		'<span class="guide-card-icon market-ron"></span><b>Ron</b>Browse items recovered from unlooted chests after a qualifying reserve donation.',
@@ -4977,6 +5076,14 @@ module.exports = {
 		"<b>Stay open</b>The character's stand must remain open for its listings to operate. Close it when you are done managing the market.",
 	// docs/guide/markets-and-trading.html:1; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.markets-and-trading.the-player-economy": "THE PLAYER ECONOMY",
+	// docs/guide/markets-and-trading.html:32; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. WANTS and TRADE quote the in-game labels interface.trade_offer.wants (without its colon) and interface.trade_offer.trade; use their translations.
+	"docs.guide.markets-and-trading.a-trade-offer-lists-the-item-it-wants":
+		"A trade offer shows the item it wants under WANTS. Your items that qualify appear beneath it: pick the one to give, then press TRADE. One player completes each offer.",
+	// docs/guide/markets-and-trading.html:17; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
+	"docs.guide.markets-and-trading.trade-item-level-title": '<span class="guide-flow-icon market-trade"></span><span class="guide-flow-label">TRADE · Item, Level &amp; Title</span>',
+	// docs/guide/markets-and-trading.html:24; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. OFFER FOR TRADE, TITLE and ANY quote the in-game labels interface.item.offer_for_trade, interface.trade_offer.title and interface.trade_offer.any; use their translations.
+	"docs.guide.markets-and-trading.trade-offer-put-an-item-on-the-stand":
+		"<b>Trade offer</b>Put an item on the stand, choose OFFER FOR TRADE and pick the item you want back. Higher levels also qualify, and TITLE on ANY accepts plain and titled items. Merchants below level 70 gain XP from completed offers.",
 	// docs/guide/markets-and-trading.html:23; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.markets-and-trading.wishlist-name-the-item-and-level-you-will":
 		"<b>Wishlist</b>Name the item and level you will accept, the quantity wanted, and the gold paid for each. This is a buy order, not a sale.",
@@ -5369,6 +5476,8 @@ module.exports = {
 	"docs.guide.tavern-games.four-betting-streets": "<span class=\"guide-flow-icon tavern-choice\">CALL</span><span class=\"guide-flow-label\">Four Betting Streets</span>",
 	// docs/guide/tavern-games.html; Flow node. Fixed HTML: preserve every tag and attribute; translate the label only.
 	"docs.guide.tavern-games.showdown-rake-from-each-pot": "<span class=\"guide-flow-icon tavern-even\">2%</span><span class=\"guide-flow-label\">Showdown · Rake From Each Pot</span>",
+	// docs/guide/tavern-games.html; Hold'em paragraph introducing Venn, the NPC dealer behind the table. Keep Venn unchanged.
+	"docs.guide.tavern-games.venn-deals": "Venn deals every hand from behind the table and keeps the room entertained between games. Stand beside a free stool, then right-click the table or Venn to sit down.",
 	// docs/guide/tavern-games.html; Guide paragraph. Hold'em is the poker variant; keep the numbers.
 	"docs.guide.tavern-games.the-tavern-has-one-five-seat-no-limit": "The Tavern has one five-seat no-limit Hold'em table. Buy in for 40 to 200 big blinds. Each decision allows 20 seconds, with one extra 30-second time bank per hand. The house takes 2% from each awarded pot, capped at 10 big blinds.",
 	// docs/guide/tavern-games.html; Blinds table column heading.
@@ -6197,3 +6306,10 @@ module.exports["docs.cave.return_code"] = "Use cave_enter() beside Dorr to retur
 
 // Cave rewards guide. Explicit exits and run completion settle shared Amber; disconnecting does not. Keep Amber and MAIL unchanged.
 module.exports["docs.cave.disconnect_purse"] = "Disconnecting does not pay out the shared purse. Amber stays in the cave until an explicit exit or the run ends. Each payout names the recipient and says whether it went to their bag or MAIL.";
+
+// CODE guide and upload_code reference. Exact owned slots only; limits also count legacy records. CODE writes share a ten-request allowance, refilling by one every two seconds. Preserve CODE, UTF-8, MiB, code_rate_limited and retry_after_ms.
+module.exports["docs.code.storage_limits"] = "Save to a numbered slot from 1 to 100 or the default slot of a character you currently own. Each newly saved script can use up to 1 MiB (1,048,576 bytes) of UTF-8 text. An account can store up to 118 scripts and 128 MiB in total. Older scripts remain available to load, export, or delete.";
+module.exports["docs.code.save_rate"] = "You can make up to 10 CODE saves or deletions in quick succession. The allowance recovers by one request every 2 seconds and is shared across all clients on your account. If a request returns code_rate_limited, wait retry_after_ms milliseconds before trying again.";
+
+// Geometry article: recognized monster types use server combat rectangles, not sprite or skin dimensions. Default dimensions are 24 by 24; apply size only when set, then round. Keep distance, is_in_range() and can_attack() unchanged.
+module.exports["docs.articles.4.g-geometry.monster-combat-bounds"] = "For recognized monsters, distance uses the server combat bounds: the monster type's dimensions (24 by 24 when unspecified), multiplied by its size when set and rounded. Sprite dimensions and skin aliases do not determine monster attack range. This also applies to is_in_range() and can_attack(); visual sizing and movement collision bounds are unchanged.";

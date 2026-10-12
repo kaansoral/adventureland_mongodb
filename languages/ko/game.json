@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "포커 테이블이 지금은 닫혀 있습니다",
 	"response.tavern_closing": "서버가 재시작되는 동안 선술집의 게임은 닫혀 있습니다",
 	"response.poker_stool_far": "앉으려면 빈 의자 옆에 서세요",
-	"response.poker_saving": "포커 테이블을 업데이트하고 있습니다. 잠시 후 다시 시도하세요."
+	"response.poker_saving": "포커 테이블을 업데이트하고 있습니다. 잠시 후 다시 시도하세요.",
+	"response.trade_offer_invalid": "그 아이템은 요청할 수 없어요",
+	"response.trade_swap_match": "그 아이템은 제안 조건에 맞지 않아요",
+	"response.trade_swap_space": "상인의 가방에 공간이 없어요",
+	"game.trade_history.traded": "- {player}님과 교환: '{item}' 주고 '{received}' 받음",
+	"response.transport_need_items": "필요한 아이템: {items}"
 }

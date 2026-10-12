@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Steam-inloggen: <span style=\"color: green\">AAN</span>",
+	"pages.steam_signin.off": "> Steam-inloggen: <span style=\"color: #F54423\">UIT</span>",
+	"pages.steam_signin.title": "Inloggen met Steam",
+	"pages.steam_signin.intro": "Verifieer je Steam-account en kies daarna een Adventure Land-account om op in te loggen.",
+	"pages.steam_signin.continue": "Doorgaan naar Steam",
+	"pages.steam_signin.choose": "Kies een account",
+	"pages.steam_signin.choose_help": "Kies een Adventure Land-account dat aan dit Steam-account is gekoppeld.",
+	"pages.steam_signin.identity": "Geverifieerd Steam-account eindigend op {digits}",
+	"pages.steam_signin.account": "Account {name}",
+	"pages.steam_signin.action": "Inloggen op dit account",
+	"pages.steam_signin.empty": "Er zijn geen Adventure Land-accounts beschikbaar voor dit Steam-account.",
+	"pages.steam_signin.email": "Inloggen met e-mail",
+	"pages.steam_signin.next": "Meer accounts",
+	"pages.steam_signin.signup_label": "> Registreren",
 	"pages.steam_signup.client_help": "Deze functie helpt spelers die problemen hebben met het starten van de spelclient.",
 	"pages.steam_signup.title": "Registreren met Steam",
 	"pages.steam_signup.intro": "Heb je Adventure Land op Steam? Bevestig je aankoop om een account aan te maken en in je browser te spelen.",
@@ -1482,5 +1496,6 @@
 	"pages.vscode.the-marketplace-page-is-not-live-yet-the": "De Marketplace-pagina is nog niet beschikbaar. De rechtstreekse VSIX-download verschijnt hier zodra het pakket beschikbaar is op deze server.",
 	"pages.vscode.use-in-vs-code-or-cursor-it-replaces": "Gebruik <span class=\"shell\">{id}</span> in VS Code of Cursor. Deze extensie vervangt de oude mapsynchronisatie via de client door automatische synchronisatie via de API. Daardoor werkt ze vanuit Steam, de browser en gewone desktopeditors.",
 	"pages.vscode.your-token": "Je token",
-	"pages.contents.announcement_email.holiday_code_example": "Ps 3. Hier is <a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a> die de kerstbonus automatiseert\n\t\t\t\t\tPs 4. Er zijn ook wat nieuwe dingen en nieuwe vaardigheden!"
+	"pages.contents.announcement_email.holiday_code_example": "Ps 3. Hier is <a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a> die de kerstbonus automatiseert\n\t\t\t\t\tPs 4. Er zijn ook wat nieuwe dingen en nieuwe vaardigheden!",
+	"pages.contents.selection.slots-in-use": "Al je personageslots zijn bezet."
 }

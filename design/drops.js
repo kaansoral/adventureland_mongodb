@@ -218,6 +218,7 @@ var drops = {
 		oneeye: [
 			[1.0 / 500000, "amuletofm"],
 			[1.0 / 3000000, "mpxbelt"],
+			[1.0 / 250000, "stonegaze"],
 		],
 		crabx: [
 			[4.0 / 10000000, "suckerpunch"],
@@ -257,7 +258,10 @@ var drops = {
 			[1.0 / 1000, "seashell"],
 			[1.0 / 100, "reefglass"],
 		],
-		wolf: [[1.0 / 40, "leather"]],
+		wolf: [
+			[1.0 / 40, "leather"],
+			[1.0 / 560000, "frostfang"],
+		],
 		wolfie: [[1.0 / 50, "leather"]],
 		stompy: [
 			[1, "leather"],
@@ -314,6 +318,7 @@ var drops = {
 			[0.2, "electronics"],
 			[0.00001, "networkcard"],
 			[1.0 / 10000000, "mpxamulet"],
+			[1.0 / 42000, "gnomecap"],
 		],
 		bat: [
 			[4.0 / 1000, "wbook0"],
@@ -341,12 +346,17 @@ var drops = {
 			[0.00024, "vitscroll"],
 			[2.0 / 1000000, "glitch"],
 			[8.0 / 100000, "svenom"],
+			[1.0 / 280000, "scorpionseal"],
 		],
-		bscorpion: [[1.0 / 20, "offeringp"]],
+		bscorpion: [
+			[1.0 / 20, "offeringp"],
+			[1.0 / 70000, "canopener"],
+		],
 		//"ghost":[[0.001,"candy0"]],
 		ghost: [
 			[0.0002, "pmace"], //0.001 was tooooo high
 			[1.0 / 20, "drapes"],
+			[1.0 / 320000, "graveglass"],
 		],
 		booboo: [
 			[0.005, "essenceofether"],
@@ -356,6 +366,7 @@ var drops = {
 			[1.0 / 4000, "open", "weaponofthedead"],
 			[1.0 / 500, "bandages"],
 			[1.0 / 20, "drapes"],
+			[1.0 / 290000, "mummyhex"],
 		],
 		nerfedmummy: [[1.0 / 100, "drapes"]],
 		rimedjinn: [[0.6, "rimeglass"], [0.08, "essenceoffrost"], [0.0002, "frozenkey"], [0.005, "djinncrown"], [0.0033333333333333335, "covemantle"], [0.0016666666666666668, "stillwaterlens"]],
@@ -376,6 +387,7 @@ var drops = {
 		pppompom: [
 			[1.0 / 1000, "orbofint"],
 			[1.0 / 1000, "orbofvit"],
+			[1.0 / 420000, "blightcap"],
 		],
 		mrpumpkin: [
 			[100, "candy0", 5],
@@ -522,6 +534,7 @@ var drops = {
 			[0.01 / 600.0, "harpybow"],
 			[0.1, "essenceoffrost"],
 			[1.0 / 2000, "harbringer"],
+			[1.0 / 220000, "harpyecho"],
 		],
 		rharpy: [
 			[0.05, "feather1"],
@@ -625,6 +638,7 @@ var drops = {
 			[1.0 / 1200, "goldnugget"],
 			[1.0 / 6000, "bronzeingot"],
 			[1.0 / 700, "bronzenugget"],
+			[1.0 / 420000, "groundingstrap"],
 		],
 		targetron: [
 			[1.0 / 4000, "alloyquiver"],
@@ -643,11 +657,38 @@ var drops = {
 			[1.0 / 150, "ukey"],
 			[1.0 / 1000000, "goldenpowerglove"],
 		],
+		kobold: [
+			[1.0 / 84000, "koboldbelt"],
+			[0.05, "gemfragment"],
+			[1.0 / 350, "bronzenugget"],
+			[1.0 / 600, "goldnugget"],
+			[1.0 / 12500, "platinumnugget"],
+		],
+		mimic: [
+			[1.0 / 19, "mimicgrin"],
+			[1, "goldnugget"],
+			[0.25, "platinumnugget"],
+			[1, "gemfragment", 5],
+			[0.5, "open", "armorbox"],
+			[0.5, "open", "weaponbox"],
+		],
+		paledino: [
+			[1.0 / 30, "paleclaw"],
+			[1, "mbones", 5],
+			[0.5, "essenceofnature", 3],
+			[0.05, "sshield"],
+		],
+		manyeye: [
+			[1.0 / 17, "watchersearring"],
+			[1, "gemfragment", 3],
+			[0.25, "platinumnugget"],
+		],
 		dryad: [
 			[1.0 / 5000, "pclaw"],
 			[1.0 / 500, "essenceofnature"],
 			[1.0 / 550, "gem0"],
 			[1.0 / 25000, "elixirpnres"],
+			[1.0 / 390000, "heartwoodlocket"],
 		],
 		odino: [
 			[1.0 / 400, "mbones"],

@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "¡PIEDRA!",
+	"server.floating.frenzy": "¡FRENESÍ!",
 	"server.party.joined": "{player} se unió al grupo",
 	"server.party.joined_with_invite": "{player} se unió al grupo por invitación de {inviter}",
 	"server.party.left": "{player} dejó el grupo",
@@ -396,5 +398,8 @@
 	"server.cave.amber_limit": "Ya aparecieron los {amount} Cave Amber de esta visita. Todavía puedes encontrar objetos y ganar XP.",
 	"server.game_error.poker_hand_active": "Tu mano de póquer sigue en juego en otro servidor. Espera a que termine o conéctate de nuevo a ese servidor.",
 	"server.tracktrix.mail_subject": "Tu Tracktrix",
-	"server.tracktrix.mail_body": "Una pequeña ayuda para tu próxima cacería. ¡Lleva este Tracktrix contigo!"
+	"server.tracktrix.mail_body": "Una pequeña ayuda para tu próxima cacería. ¡Lleva este Tracktrix contigo!",
+  "server.game_log.offered_for": "Ofreciste {item} a cambio de {want}",
+  "server.game_log.offered_for_or_higher": "Ofreciste {item} a cambio de {want} o superior",
+  "server.game_log.traded_for": "Intercambiaste {item} con {player} por {received}"
 }

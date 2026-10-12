@@ -1,0 +1,14 @@
+<p><span class='dlabel'>trade_offer(num, trade_slot, want, quantity)</span></p>
+<p>{{ phrase("docs.functions.trade_offer.lists-an-inventory-item-for-another-item") }}</p>
+<p>{{ phrase_html("docs.functions.trade_offer.want-is-an-item-key-or-an-object") }}</p>
+<p>{{ phrase_html("docs.functions.trade_offer.returns-promise-resolving-with-the-listing-response-or") }}</p>
+<p>{{ phrase_html("docs.functions.trade_offer.promise-failures-unless-a-function-specific-note-says") }}</p>
+<p>{{ phrase_html("docs.functions.trade_offer.example") }}</p>
+<div class='code'>// inventory[0] for a Staff +8 or higher, any title
+trade_offer(0, "trade3", { name: "staff", level: 8 });
+
+// 20 of inventory[5] for any Staff
+trade_offer(5, "trade4", "staff", 20);</div>
+
+<p></p>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>

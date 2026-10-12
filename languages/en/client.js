@@ -211,6 +211,72 @@ module.exports = {
 	"client.update_notes.update_notes": "Update Notes",
 	// js/functions.js show_update_notes; authored interface text. Parameters: last_deploy.
 	"client.update_notes.last_update": "Last Update {last_deploy}",
+	// Update posts (js/functions.js release_*; UPDATE_NOTES.md). Compact uppercase label under a sprite on the in-game button that opens an unread update post. Same size as INFO: one short word.
+	"client.update_notes.update": "UPDATE",
+	// Small uppercase label above the title of an unread update post, on the card shown before entering the game.
+	"client.update_notes.new_update": "NEW UPDATE",
+	// Update post header: this update is not live yet (only seen on development servers).
+	"client.update_notes.pending": "Pending",
+	// Heading above the full list of changes in an update post.
+	"client.update_notes.all_changes": "All Changes",
+	// Small uppercase tag after a name in an update post's change list: added in this update.
+	"client.update_notes.tag.new": "NEW",
+	// Small uppercase tag after a name in an update post's change list: changed in this update.
+	"client.update_notes.tag.changed": "CHANGED",
+	// Small uppercase tag after a name in an update post's change list: removed in this update.
+	"client.update_notes.tag.removed": "REMOVED",
+	// Heading of a group in an update post's change list; also shown with a count, like "Maps 2". Game maps.
+	"client.update_notes.group.map": "Maps",
+	// Change list heading, also shown with a count: monsters.
+	"client.update_notes.group.monster": "Monsters",
+	// Change list heading, also shown with a count: non-player characters.
+	"client.update_notes.group.npc": "NPCs",
+	// Change list heading, also shown with a count: game events.
+	"client.update_notes.group.event": "Events",
+	// Change list heading, also shown with a count: items.
+	"client.update_notes.group.item": "Items",
+	// Change list heading, also shown with a count: item sets.
+	"client.update_notes.group.set": "Sets",
+	// Change list heading, also shown with a count: crafting recipes.
+	"client.update_notes.group.craft": "Recipes",
+	// Change list heading, also shown with a count: what items break down into when dismantled.
+	"client.update_notes.group.dismantle": "Dismantling",
+	// Change list heading, also shown with a count: drop tables of monsters, maps and boxes.
+	"client.update_notes.group.drop": "Drops",
+	// Change list heading, also shown with a count: character skills.
+	"client.update_notes.group.skill": "Skills",
+	// Change list heading, also shown with a count: buffs and debuffs.
+	"client.update_notes.group.condition": "Conditions",
+	// Change list heading, also shown with a count: cosmetic looks such as heads, hair and make-up.
+	"client.update_notes.group.cx": "Cosmetics",
+	// Change list heading, also shown with a count: item titles such as Cave-found.
+	"client.update_notes.group.title": "Titles",
+	// Change list heading, also shown with a count: token exchanges.
+	"client.update_notes.group.token": "Tokens",
+	// Change list heading, also shown with a count: character classes.
+	"client.update_notes.group.class": "Classes",
+	// Change list heading, also shown with a count: account achievements.
+	"client.update_notes.group.achievement": "Achievements",
+	// Change list heading, also shown with a count: games such as the Tavern's wheel and poker table.
+	"client.update_notes.group.game": "Games",
+	// Change list heading, also shown with a count: game-wide tables such as upgrade chances and the level table.
+	"client.update_notes.group.table": "Tables",
+	// Change list heading, also shown with a count: GUIDE articles and INFO guides.
+	"client.update_notes.group.guide": "Guides",
+	// Change list heading, also shown with a count: the Tutorial and its tasks.
+	"client.update_notes.group.doc": "Tutorial",
+	// Change list heading, also shown with a count: CODE functions. Keep CODE unchanged.
+	"client.update_notes.group.code": "CODE",
+	// Change list heading, also shown with a count: bug fixes.
+	"client.update_notes.group.fixed": "Fixes",
+	// Change list heading: improvements such as faster servers or new interface features.
+	"client.update_notes.group.improved": "Improvements",
+	// Label before the sprites of the monsters, NPCs or tokens an item comes from, in an update post.
+	"client.update_notes.from": "from",
+	// A stat that grows with each upgrade or compound level. stat is a translated stat name such as Dexterity.
+	"client.update_notes.per_level": "{stat} per level",
+	// Shown for a condition that does not appear on the condition bar.
+	"client.update_notes.hidden": "hidden",
 	// js/functions.js add_holiday_log; authored interface text.
 	"client.add_holiday_log.would_you_like_to_turn_on_the_holiday_tunes": "Would you like to turn on the Holiday Tunes?",
 	// js/functions.js add_holiday_log; authored interface text.

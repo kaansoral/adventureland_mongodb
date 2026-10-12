@@ -1,8 +1,8 @@
 <div id="pagewrapper">
 	<div id="pagewrapped" class="loginorselection hidewithmodals">
 		{% if domain.purchase_mode and not domain.electron and not domain.tauri %}
-			<div id="loginbuttons">
-				<a class="textbutton block mb4" href="/steam-signup">{{ phrase("pages.steam_signup.title") }}</a>
+			<div id="loginbuttons" {% if domain.login_mode %}style="display:none"{% endif %}>
+				<div class="whiteheader mb4">Steam: <a class="textbutton" href="/steam-signin">{{ phrase("pages.contents.login.login") }}</a> / <a class="textbutton" href="/steam-signup">{{ phrase("pages.steam_signin.signup_label") }}</a></div>
 				<div class="whiteheader mb4">{{ phrase_html("pages.contents.login.purchase-on-steam-live") }}</div>
 				<div class="whiteheader mb4">{{ phrase_html("pages.contents.login.purchase-on-mac-app-store-live") }}</div>
 				{% if domain.Dev %}
@@ -30,7 +30,7 @@
 				<div class="textbutton mt5 subutton" onclick="if(bc(this)) return; api_call_l('signup_or_login',{email:$('#email1').val(),password:$('#password1').val(),only_signup:true},{disable:$(this)})">{{ phrase("pages.contents.login.signup") }}</div>
 				<div class="textbutton mt5" onclick="$('#edusignup').hide(); $('#loginbuttons').show(); on_resize()">{{ phrase("pages.contents.login.back") }}</div>
 			</div>
-			<div id="loginlogin" style="display:none">
+			<div id="loginlogin" {% if not domain.login_mode %}style="display:none"{% endif %}>
 				<div class="whiteheader mb4">{{ phrase("pages.contents.login.email") }}</div>
 				<input class="selectioninput" id="email2" type="text"></input>
 				<div class="whiteheader mt5 mb4">{{ phrase("pages.contents.login.password") }}</div>

@@ -157,6 +157,22 @@ var npcs={
 		"name":"Jaqk",
 		"side_interaction":{"auto":true,"skin":"showoffi","message":"Hello there, partner! Care for a drink? Good luck on the games! Don't lose all your gold at once, heh."},
 	},
+	"pokerdealer":{
+		"name":"Venn",
+		"role":"pokerdealer",
+		"skin":"mbody4h",
+		"cx":{"head":"mmakeup01","hair":"hairdo311","hat":"hat214"},
+		"type":"fullstatic",
+		"color":"#E6B16B",
+		"citizen_behavior":"poker_dealer",
+		"says":["Take a seat, partner.","Cards are waiting.","Fancy a hand?"],
+		"idle":["Five seats, no heroes.","These cards look lonely.","Pick a card. Kidding.","Still got all fifty-two.","Watch this one closely.","Empty chairs tell no tales.","I can shuffle all day.","The river misses you."],
+		"invite":["One more makes a game.","Got room for company.","One chair taken. Who's next?"],
+		"deal":["Cards are in the air.","Here we go."],
+		"allin":["All in. No turning back.","Everything's on the felt."],
+		"win":["Pot goes to {name}.","{name} takes the pot."],
+		"split":["Split pot. Share nicely."],
+	},
 	"wbartender":{
 		"role":"merchant",
 		"items":[

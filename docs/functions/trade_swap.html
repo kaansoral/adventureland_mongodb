@@ -1,0 +1,18 @@
+<p><span class='dlabel'>trade_swap(target, trade_slot, num)</span></p>
+<p>{{ phrase("docs.functions.trade_swap.gives-an-inventory-item-for-the-item-in") }}</p>
+<p>{{ phrase_html("docs.functions.trade_swap.the-item-must-satisfy-the-listing-s-want") }}</p>
+<p>{{ phrase_html("docs.functions.trade_swap.returns-promise-resolving-with-the-trade-response-or") }}</p>
+<p>{{ phrase_html("docs.functions.trade_swap.promise-failures-unless-a-function-specific-note-says") }}</p>
+<p>{{ phrase_html("docs.functions.trade_swap.example") }}</p>
+<div class='code'>var merchant = get_player("Merchant");
+var listing = merchant &amp;&amp; merchant.slots.trade3;
+if (listing &amp;&amp; listing.want) {
+	// The stand uses the same check. Choose deliberately when the offer accepts any level.
+	var num = character.items.findIndex(function (item) {
+		return item &amp;&amp; !item.l &amp;&amp; trade_want_matches(listing.want, item);
+	});
+	if (num != -1) trade_swap(merchant, "trade3", num).then(show_json).catch(show_json);
+}</div>
+
+<p></p>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>

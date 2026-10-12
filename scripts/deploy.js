@@ -12,12 +12,30 @@ f.execs = f.execs_required;
 
 console.log("Deploy started | mode: " + (mode || "default") + " | folder: " + folder);
 
+// Runs a step that can stop the release; its own errors are already on stderr, so it ends with one plain line instead of a stack trace.
+function required_step(command, reason) {
+	try {
+		return f.execs(command);
+	} catch (error) {
+		console.error("\nDeploy stopped: " + reason + " Nothing was packaged or uploaded.");
+		process.exit(1);
+	}
+}
+
 if (mode != "staging") {
+	// Every changed definition needs its entry in the pending release before the notes are dated (UPDATE_NOTES.md).
+	required_step("node " + JSON.stringify(path.resolve(__dirname, "update_notes.js")) + " check", "the update notes are incomplete (see above). Run node scripts/update_notes.js sync, then check.");
+}
+
+required_step("node ~/adventureland/scripts/precompute_images.js", "precompute_images.js failed.");
+// Game servers move and jail players on this grid, so every release rebuilds it from the current map geometry.
+required_step("cd ~/adventureland/node && node precompute_bfs.js" + (mode ? " " + mode : ""), "the map precompute (node/precompute_bfs.js) failed.");
+
+if (mode != "staging") {
+	// The notes are dated last, after every step that can still stop the release.
 	var locked = lock_update_notes(path.resolve(__dirname, ".."));
 	console.log("Update notes locked | date: " + locked.date + " | notes: " + locked.notes);
 }
-
-f.execs("node ~/adventureland/scripts/precompute_images.js");
 
 f.execs("rm -rf ~/deploy/" + folder + "");
 f.execs("mkdir ~/deploy/" + folder + "");

@@ -1,6 +1,7 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const { DueQueue } = require("../logic/due_queue.js");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
@@ -36,6 +37,7 @@ function harness() {
 		mode: {},
 		B: { max_vision: 1000 },
 		projectiles: {},
+		projectiles_due: new DueQueue(),
 		now: 10000,
 		is_disabled: () => false,
 		is_silenced: () => false,

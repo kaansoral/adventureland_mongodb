@@ -1,0 +1,33 @@
+<div class="title">Golden Bat</div>
+<div class="guide-views golden-bat-views"></div>
+<div class="divider"></div>
+<div class="guide-spawn golden-bat-spawn"></div>
+<p>{{ phrase("monster.goldenbat.explanation") }}</p>
+<div style="overflow-x:auto"><div style="position:relative;width:486px;height:379px;margin:10px auto 0"><img src="/images/guide/golden-bat-habitat.webp?v=39602a4b" width="486" height="379" alt="Cave of Darkness" style="image-rendering:pixelated;display:block"><svg width="486" height="379" style="position:absolute;left:0;top:0"><rect x="16" y="188" width="101" height="66.5" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="160.5" y="16" width="70.8" height="87.5" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="369.5" y="101.5" width="91.8" height="79" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="381.5" y="303.5" width="88.5" height="52.5" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="356" y="339.2" width="72" height="24" fill="none" stroke="#73FFAC" stroke-width="2"/></svg></div></div>
+<p>{{ phrase("docs.guide.golden-bat.intro") }}</p>
+<div class="divider"></div>
+<div class="title">{{ phrase("interface.monster_info.drops") }}</div>
+<div class="guide-drops golden-bat-drops"></div>
+<div class="divider"></div>
+<div class="title">CODE</div>
+<p>{{ phrase("docs.guide.golden-bat.code") }}</p>
+<!-- prettier-ignore -->
+<div class="code" id="golden-bat-code">async function catch_golden_bat() {
+    var bat = get_nearest_monster({ type: "goldenbat" });
+    if (character.rip || !bat) return;
+    var current = get_targeted_monster();
+    if (!current || current.id !== bat.id) change_target(bat);
+    if (can_attack(bat)) return await attack(bat);
+}
+
+catch_golden_bat().catch(show_json);</div>
+<p><a href="/docs/code/functions/get_nearest_monster" target="_blank">get_nearest_monster</a> · <a href="/docs/code/functions/get_targeted_monster" target="_blank">get_targeted_monster</a> · <a href="/docs/code/functions/change_target" target="_blank">change_target</a> · <a href="/docs/code/functions/can_attack" target="_blank">can_attack</a> · <a href="/docs/code/functions/attack" target="_blank">attack</a></p>
+<style>
+	.title { color: #467956; font-size: 36px; margin-top: 15px; }
+	.divider { margin: 15px -26px 0; height: 5px; background-color: #a2a2a2; }
+</style>
+<script>
+	$(".golden-bat-views").html(guide_monster_views("goldenbat"));
+	$(".golden-bat-spawn").html(["bat"].map(function(name) { return guide_monster_tile(name, 0); }).join("") + "<span class='guide-count'>×" + to_pretty_num(80000) + "</span><span class='guide-arrow'></span>" + guide_monster_tile("goldenbat", 0));
+	$(".golden-bat-drops").html(G.drops.monsters.goldenbat.map(function(drop) { return render_drop(drop, 1, "#858B8E"); }).join(""));
+</script>

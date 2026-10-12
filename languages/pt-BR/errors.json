@@ -80,5 +80,8 @@
 	"error.save_failed": "Não foi possível salvar. Tente de novo.",
 	"error.invalid_language": "Escolha um idioma da lista.",
 	"error.cant_copy_over_map_in_use": "Um mapa em uso não pode ser sobrescrito.",
-	"error.cant_delete_map_in_use": "Um mapa em uso não pode ser excluído."
+	"error.cant_delete_map_in_use": "Um mapa em uso não pode ser excluído.",
+	"error.code_too_large": "Este script é grande demais. Cada slot CODE comporta até 1 MiB (1.048.576 bytes) de texto UTF-8.",
+	"error.code_storage_full": "Seu armazenamento de CODE está cheio. Exporte e exclua os scripts que não usa antes de salvar mais código.",
+	"error.code_rate_limited": "Você está salvando CODE com muita frequência. Aguarde um momento e tente novamente."
 }

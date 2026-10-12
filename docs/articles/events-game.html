@@ -82,6 +82,20 @@ game.remove(listener);</div>
 
 // sale: the same shape, emitted locally when your character is the seller</div>
 
+<p>{{ phrase_html("docs.articles.events-game.swap") }}</p>
+
+<div class="code">{
+	seller: "MerchantName",
+	buyer: "BuyerName",
+	item: { name: "wand", level: 7 },
+	received: { name: "staff", level: 8 },
+	slot: "trade3",
+	num: 5,
+	snum: 12,
+}</div>
+
+<p>{{ phrase("docs.articles.events-game.swap-is-emitted-when-a-trade-offer-completes") }}</p>
+
 <p>{{ phrase_html("docs.articles.events-game.buy-sell-sbuy-and-fbuy") }}</p>
 
 <div class="code">{
@@ -180,6 +194,7 @@ game.remove(listener);</div>
 <span data-event="hit">hit</span>
 <span data-event="trade">trade</span>
 <span data-event="sale">sale</span>
+<span data-event="swap">swap</span>
 <span data-event="buy">buy</span>
 <span data-event="sell">sell</span>
 <span data-event="sbuy">sbuy</span>

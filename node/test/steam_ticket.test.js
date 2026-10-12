@@ -21,7 +21,7 @@ const Ticket = protobuf.Root.fromJSON({
 	},
 }).lookupType("EncryptedAppTicket");
 
-function setup() {
+function setup(legacy_steam_auth) {
 	const key = crypto.randomBytes(32);
 	const oldKey = crypto.randomBytes(32);
 	const context = vm.createContext({
@@ -31,6 +31,11 @@ function setup() {
 		SteamAppTicket,
 		keys: { steam_key: key.toString("hex"), old_steam_key: oldKey.toString("hex") },
 	});
+	const source = read("node/server.js");
+	const start = source.indexOf("var mode = {");
+	assert.ok(start >= 0);
+	vm.runInContext(source.slice(start, source.indexOf("\n};", start) + 3), context);
+	if (legacy_steam_auth !== undefined) context.mode.legacy_steam_auth = legacy_steam_auth;
 	load(context, "node/server_functions.js", ["verify_steam_ticket", "symmetricDecrypt"]);
 	const player = () => ({ p: {}, s: { authfail: { ms: 1000 } } });
 	return { context, key, oldKey, player, verify: context.verify_steam_ticket };
@@ -76,8 +81,28 @@ function make_ticket(key, options = {}) {
 	).toString("hex");
 }
 
-test("legacy Steam accepts valid encrypted tickets with the current key", () => {
+test("legacy Steam authentication is disabled by default before decoding tickets", () => {
 	const f = setup();
+	assert.equal(f.context.mode.legacy_steam_auth, 0);
+	let decoded = 0;
+	f.context.EncryptedAppTicket = {
+		decode() {
+			decoded++;
+			throw new Error("unexpected decode");
+		},
+	};
+	for (const flag of [0, false, undefined]) {
+		f.context.mode.legacy_steam_auth = flag;
+		const player = f.player();
+		const before = structuredClone(player);
+		assert.equal(f.verify(player, make_ticket(f.key)), false);
+		assert.deepEqual(player, before);
+	}
+	assert.equal(decoded, 0);
+});
+
+test("legacy Steam accepts valid encrypted tickets with the current key when enabled", () => {
+	const f = setup(1);
 	for (const version of [1, 2]) {
 		const player = f.player();
 		assert.equal(f.verify(player, make_ticket(f.key, { version })), true);
@@ -89,7 +114,7 @@ test("legacy Steam accepts valid encrypted tickets with the current key", () => 
 });
 
 test("legacy Steam rejects retired keys, corrupt tickets, wrong apps and expired tickets without mutation", () => {
-	const f = setup();
+	const f = setup(1);
 	const now = Math.floor(Date.now() / 1000);
 	for (const ticket of [
 		make_ticket(f.oldKey),
@@ -113,10 +138,23 @@ test("legacy Steam rejects retired keys, corrupt tickets, wrong apps and expired
 });
 
 test("legacy Steam tolerates small clock differences and fails closed without a current key", () => {
-	const f = setup();
+	const f = setup(1);
 	assert.equal(f.verify(f.player(), make_ticket(f.key, { issued: Math.floor(Date.now() / 1000) + 60 })), true);
 	delete f.context.keys.steam_key;
 	assert.equal(f.verify(f.player(), make_ticket(f.oldKey)), false);
+});
+
+test("legacy Steam authentication can be toggled without changing existing player state", () => {
+	const f = setup(1);
+	const player = f.player();
+	const ticket = make_ticket(f.key);
+	assert.equal(f.verify(player, ticket), true);
+	const before = structuredClone(player);
+	f.context.mode.legacy_steam_auth = 0;
+	assert.equal(f.verify(player, ticket), false);
+	assert.deepEqual(player, before);
+	f.context.mode.legacy_steam_auth = 1;
+	assert.equal(f.verify(f.player(), ticket), true);
 });
 
 test("the login branch never persists a Steam link after a rejected ticket", async () => {
@@ -125,22 +163,26 @@ test("the login branch never persists a Steam link after a rejected ticket", asy
 	const end = source.indexOf('} else if (data.epl == "tauri_steam")', start);
 	assert.ok(start > 0 && end > start);
 	const branch = source.slice(source.indexOf("{", start) + 1, end);
-	for (const accepted of [false, true]) {
-		let writes = 0;
-		const player = { p: { steam_id: "76561198000000000" }, s: {} };
-		const context = vm.createContext({
-			player,
-			owner: {},
-			entity: {},
-			data: { auth: "fixture-auth", ticket: "fixture" },
-			verify_steam_ticket: () => accepted,
-			persist_tauri_steam_install: async () => {
-				writes++;
-				return true;
-			},
-		});
-		await vm.runInContext("(async () => {" + branch + "})()", context);
-		assert.equal(writes, accepted ? 1 : 0);
-		assert.equal(player.platform, accepted ? "steam" : "web");
+	for (const flag of [0, 1]) {
+		const f = setup(flag);
+		for (const current of [false, true]) {
+			const accepted = !!flag && current;
+			let writes = 0;
+			const player = f.player();
+			Object.assign(f.context, {
+				player,
+				owner: {},
+				entity: {},
+				data: { auth: "fixture-auth", ticket: make_ticket(current ? f.key : f.oldKey) },
+				persist_tauri_steam_install: async () => {
+					writes++;
+					return true;
+				},
+			});
+			await vm.runInContext("(async () => {" + branch + "})()", f.context);
+			assert.equal(writes, accepted ? 1 : 0);
+			assert.equal(player.platform, accepted ? "steam" : "web");
+			assert.equal(player.pid, accepted ? "76561198000000000" : undefined);
+		}
 	}
 });

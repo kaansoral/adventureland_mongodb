@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "扑克牌桌暂时关闭",
 	"response.tavern_closing": "服务器重启期间，酒馆的游戏已关闭",
 	"response.poker_stool_far": "站到空凳子旁边才能入座",
-	"response.poker_saving": "扑克桌正在更新。请稍后重试。"
+	"response.poker_saving": "扑克桌正在更新。请稍后重试。",
+	"response.trade_offer_invalid": "无法求取该物品",
+	"response.trade_swap_match": "该物品不符合交换条件",
+	"response.trade_swap_space": "商人没有空位",
+	"game.trade_history.traded": "- 与{player}交换，以'{item}'换得'{received}'",
+	"response.transport_need_items": "需要：{items}"
 }

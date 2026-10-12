@@ -19,6 +19,7 @@ module.exports = function (distance) {
 				!item.acl &&
 				!item.v &&
 				item.giveaway === undefined &&
+				!item.want &&
 				Number.isFinite(item.price) &&
 				item.price > 0 &&
 				(item.q === undefined || item.q > 0) &&

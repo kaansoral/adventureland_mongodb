@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "Pokerbordet er lukket lige nu",
 	"response.tavern_closing": "Kroens spil er lukket, mens serveren genstarter",
 	"response.poker_stool_far": "Stil dig ved siden af en ledig skammel for at sætte dig",
-	"response.poker_saving": "Pokerbordet opdateres. Prøv igen om lidt."
+	"response.poker_saving": "Pokerbordet opdateres. Prøv igen om lidt.",
+	"response.trade_offer_invalid": "Du kan ikke bede om den genstand",
+	"response.trade_swap_match": "Genstanden passer ikke til tilbuddet",
+	"response.trade_swap_space": "Købmanden har ikke plads",
+	"game.trade_history.traded": "- Byttede '{item}' med {player} for '{received}'",
+	"response.transport_need_items": "Kræver: {items}"
 }

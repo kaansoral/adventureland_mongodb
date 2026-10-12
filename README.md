@@ -151,6 +151,7 @@ adventureland/
   models.js                # MongoDB model definitions
   crons.js                 # Scheduled tasks
   filters.js               # Nunjucks template filters
+  update_notes.js          # Update posts shown in the game and at /allnotes
   node/
     server.js              # Game server (Socket.IO)
     server_functions.js    # Game logic
@@ -164,6 +165,7 @@ adventureland/
   sounds/                  # Sound effects and music
   scripts/
     seed_mongodb.js       # Bundled map geometry and guarded local database seeding
+    update_notes.js       # Release posts: sync, check and translate (see UPDATE_NOTES.md)
   common -> ../common      # Symlink to common_engine
   secretsandconfig -> ...  # Symlink to your config
 ```
@@ -183,6 +185,8 @@ With `Local: true` and `unsecure_admin: true`, all users are treated as admin au
 ## Contributing
 
 PRs are welcome! Please keep them **small and focused** — one fix or one feature per PR. Large PRs that touch many unrelated things are hard to review and likely to be rejected. If you're planning something big, open an issue or discuss it on Discord first.
+
+If your change adds or changes something players can see, add it to the pending update post with `node scripts/update_notes.js sync`. [UPDATE_NOTES.md](UPDATE_NOTES.md) explains the format.
 
 ## Discussion
 

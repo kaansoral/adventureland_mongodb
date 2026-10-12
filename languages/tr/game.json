@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "Poker masası şu an kapalı",
 	"response.tavern_closing": "Sunucu yeniden başlatılırken Taverna'nın oyunları kapalı",
 	"response.poker_stool_far": "Oturmak için boş bir taburenin yanında dur",
-	"response.poker_saving": "Poker masası güncelleniyor. Biraz sonra tekrar dene."
+	"response.poker_saving": "Poker masası güncelleniyor. Biraz sonra tekrar dene.",
+	"response.trade_offer_invalid": "Bu eşya istenemez",
+	"response.trade_swap_match": "Bu eşya teklife uymuyor",
+	"response.trade_swap_space": "Tüccarda yer yok",
+	"game.trade_history.traded": "- '{item}', {player} adlı oyuncuyla '{received}' karşılığında takas edildi",
+	"response.transport_need_items": "Gereken: {items}"
 }

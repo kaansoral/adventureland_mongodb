@@ -60,6 +60,7 @@ var cosmetics={
 		"headbones":["makeup132","makeup134","fmakeup12"],
 	},
 	"head_animation":{ // Milliseconds per frame, including while standing still.
+		"makeup120":160,
 		"lavaglasshead0":160,
 		"stormhead0":220,
 	},

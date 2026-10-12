@@ -80,5 +80,8 @@
 	"error.save_failed": "Uložení se nezdařilo. Zkus to znovu.",
 	"error.invalid_language": "Vyber jazyk ze seznamu.",
 	"error.cant_copy_over_map_in_use": "Používanou mapu nelze přepsat.",
-	"error.cant_delete_map_in_use": "Používanou mapu nelze smazat."
+	"error.cant_delete_map_in_use": "Používanou mapu nelze smazat.",
+	"error.code_too_large": "Tento skript je příliš velký. Každá pozice CODE pojme až 1 MiB (1 048 576 bajtů) textu UTF-8.",
+	"error.code_storage_full": "Úložiště CODE je plné. Než uložíš další kód, exportuj a smaž nepoužívané skripty.",
+	"error.code_rate_limited": "Ukládáš CODE příliš často. Chvíli počkej a zkus to znovu."
 }

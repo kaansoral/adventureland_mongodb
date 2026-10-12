@@ -649,28 +649,42 @@ function add_frequest(name) {
 function add_update_notes() {
 	var latest_note_deploy = update_notes.length && update_notes[0].deployed;
 	add_log(phrase.html("client.add_update_notes.last_update", { last_deploy: last_deploy }), "gray");
-	if (update_notes.length && latest_note_deploy != last_deploy)
-		add_log(phrase.html("client.notes.heading", { title: latest_note_deploy ? phrase("client.notes.latest", { date: latest_note_deploy }) : phrase("client.notes.pending") }), "gray");
-	update_notes.forEach(function (note) {
-		if (note.deployed != latest_note_deploy) return;
-		var color = "gray";
-		//if(note.note.indexOf("Happy New Year")!=-1) color="#C82F17";
-		if (note.note.indexOf("Holiday") != -1) color = "#C82F17";
-		if (note.note.indexOf("Duelland") != -1) color = "#3BB7CB";
-		if (note.note.indexOf("Lunar") != -1) color = "#B02B16";
-		if (note.note.indexOf("Valentine") != -1) color = "#C987B7"; // ,color="#85C76B"
-		if (note.note.indexOf("Halloween") != -1) color = "#DE6E37";
-		if (note.note.indexOf("Egg Hunt Event") != -1) color = "#DE5CB8";
-		add_log(note.text === undefined ? note.note : note.text, color);
-	});
+	if (update_notes.length && update_notes[0].title !== undefined) {
+		// The newest release: its title opens the post, then its summary.
+		var release = update_notes[0];
+		if (!release.deployed) add_log(phrase.html("client.notes.heading", { title: phrase("client.notes.pending") }), "gray");
+		add_log("<span class='clickable' style='color:#F1C054' onclick='show_release(0)'>" + release_text(release, "title") + "</span>", "#F1C054");
+		if (release.note !== undefined) add_log(release_text(release), "gray");
+	} else {
+		if (update_notes.length && latest_note_deploy != last_deploy)
+			add_log(phrase.html("client.notes.heading", { title: latest_note_deploy ? phrase("client.notes.latest", { date: latest_note_deploy }) : phrase("client.notes.pending") }), "gray");
+		update_notes.forEach(function (note) {
+			if (note.deployed != latest_note_deploy || note.title !== undefined) return;
+			var color = "gray",
+				text = note.note || "";
+			//if(text.indexOf("Happy New Year")!=-1) color="#C82F17";
+			if (text.indexOf("Holiday") != -1) color = "#C82F17";
+			if (text.indexOf("Duelland") != -1) color = "#3BB7CB";
+			if (text.indexOf("Lunar") != -1) color = "#B02B16";
+			if (text.indexOf("Valentine") != -1) color = "#C987B7"; // ,color="#85C76B"
+			if (text.indexOf("Halloween") != -1) color = "#DE6E37";
+			if (text.indexOf("Egg Hunt Event") != -1) color = "#DE5CB8";
+			add_log(note.text === undefined ? note.note : note.text, color);
+		});
+	}
 	if (!no_html) add_log("<span class='clickable' onclick='show_update_notes()'>" + phrase.html("client.add_update_notes.all_update_notes") + "</span>", "#E4E4E4");
 	if (!no_html) $("#gamelog").scrollTop(0);
 }
 
 function render_update_notes() {
 	var html = "";
-	update_notes.forEach(function (entry) {
-		html += "<div class='update-notes-entry'><span class='update-notes-date'>" + html_escape(entry.date) + "</span><span>" + html_escape(entry.text === undefined ? entry.note : entry.text) + "</span></div>";
+	update_notes.forEach(function (entry, index) {
+		if (entry.title !== undefined) {
+			// A release is one row: its cover, title and counts. It opens the post.
+			html += "<div class='update-notes-entry clickable release-archive-row' onclick='pcs(event); show_release(" + index + ")'><span class='update-notes-date'>" + html_escape(entry.deployed || entry.date) + "</span>";
+			html += "<span class='release-archive'><span class='gamebutton release-cover'>" + release_cover_html(entry) + "</span><span><span class='release-archive-title'>" + release_text(entry, "title") + "</span>";
+			html += "<br><span class='release-meta'>" + release_counts(entry) + "</span></span></span></div>";
+		} else html += "<div class='update-notes-entry'><span class='update-notes-date'>" + html_escape(entry.date) + "</span><span class='release-note'>" + html_escape(entry.text === undefined ? entry.note : entry.text) + "</span></div>";
 	});
 	if (update_notes_more) html += "<div class='update-notes-footer'><div class='gamebutton' onclick='load_more_update_notes()'>" + phrase.html("client.update_notes.load_more") + "</div></div>";
 	else html += "<div class='update-notes-footer update-notes-date'>" + phrase.html("client.update_notes.the_beginning") + "</div>";
@@ -698,6 +712,541 @@ function load_more_update_notes() {
 		.always(function () {
 			update_notes_loading = false;
 		});
+}
+
+// Release posts: a note with a title, highlights and a ledger of changed definitions. UPDATE_NOTES.md explains the format.
+var release_groups = ["map", "monster", "npc", "event", "item", "set", "craft", "dismantle", "drop", "skill", "condition", "cx", "title", "token", "class", "achievement", "game", "table", "guide", "doc", "code", "fixed", "improved"];
+var release_tag_colors = { new: "#85C76B", changed: "#F1C054", removed: "#E13758" };
+var release_seen = undefined;
+
+// The server sends translated text beside each English field: text for note, title_text for title.
+function release_text(object, field) {
+	if (field == "title") return html_escape(object.title_text !== undefined ? object.title_text : object.title || "");
+	if (field == "caption") return html_escape(object.caption_text !== undefined ? object.caption_text : object.caption || "");
+	// CODE names keep their parentheses in place inside right-to-left text.
+	return html_escape(object.text !== undefined ? object.text : object.note || "").replace(/\b[a-z_][\w.]*\(\)/g, "<bdi>$&</bdi>");
+}
+
+function release_article(name) {
+	var found = null;
+	(function find(entries) {
+		(entries || []).forEach(function (entry) {
+			if (found || !is_array(entry)) return;
+			if (is_array(entry[4])) find(entry[4]);
+			else if (entry[0] == name) found = entry;
+		});
+	})(G.docs.guide);
+	return found;
+}
+
+function release_parse(ref) {
+	var at = String(ref).indexOf(":"),
+		type = at == -1 ? "" : ref.slice(0, at),
+		id = at == -1 ? String(ref) : ref.slice(at + 1),
+		sections = { item: G.items, monster: G.monsters, map: G.maps, npc: G.npcs, event: G.events, skill: G.skills, condition: G.conditions, set: G.sets, craft: G.craft, dismantle: G.dismantle, title: G.titles, token: G.tokens, class: G.classes, achievement: G.achievements, game: G.games },
+		def = null;
+	if (sections[type]) def = sections[type][id] || null;
+	else if (type == "guide") def = (G.docs.interactions || {})[id] || null;
+	else if (type == "article") def = release_article(id);
+	else if (type == "code") def = in_arr(id, G.docs.functions || []) ? {} : null;
+	else if (type == "cx") def = ["head", "hair", "hat", "gravestone", "back", "prop", "bundle"].some(function (catalog) {
+		return G.cosmetics[catalog] && G.cosmetics[catalog][id] !== undefined;
+	}) ? {} : null;
+	else if (type == "doc" || type == "table" || type == "drop") def = {};
+	return { type: type, id: id, def: def };
+}
+
+function release_name(ref) {
+	var r = release_parse(ref),
+		def = r.def;
+	if (!def) return html_escape(r.id);
+	if (r.type == "craft" || r.type == "dismantle") return release_name("item:" + release_output(r));
+	if (r.type == "item") return html_escape((G.items[r.id] && G.items[r.id].name) || r.id);
+	if (r.type == "token") return html_escape((G.items[r.id] && G.items[r.id].name) || r.id);
+	if (r.type == "monster" || r.type == "map") return html_escape(def.name || r.id);
+	if (in_arr(r.type, ["npc", "event", "skill", "condition", "set", "class"])) return html_escape(phrase.definition(r.type, r.id, "name", def.name || r.id));
+	if (r.type == "title") return html_escape(phrase.definition("title", r.id, "title", def.title || r.id));
+	if (r.type == "guide") return html_escape(phrase.definition("interaction", r.id, "title", def.title || r.id));
+	if (r.type == "article") return html_escape(phrase.definition("directory", "guide." + r.id, "title", def[1] || r.id));
+	if (r.type == "achievement") return html_escape(phrase.definition("achievement", r.id, "name", def.name || r.id));
+	if (r.type == "code") return html_escape(r.id + "()");
+	if (r.type == "drop") {
+		var owner = release_drop_owner(r.id);
+		if (owner) return release_name(owner);
+	}
+	return html_escape(r.id);
+}
+
+// A recipe can make a different item than its key, like a jar holding an emote.
+function release_output(r) {
+	return (r.def && r.def.output && r.def.output.name) || r.id;
+}
+
+// A drop table belongs to a monster, a map or a box item.
+function release_drop_owner(id) {
+	var parts = id.split(".");
+	if (parts[0] == "monsters" && G.monsters[parts[1]]) return "monster:" + parts[1];
+	if (parts[0] == "maps" && G.maps[parts[1]]) return "map:" + parts[1];
+	if (parts.length == 1 && G.items[parts[0]]) return "item:" + parts[0];
+	return null;
+}
+
+// The window each thing already opens elsewhere in the game.
+function release_open(ref) {
+	var r = release_parse(ref);
+	if (!r.def) return "";
+	if (r.type == "item") return "render_item_info(\"" + r.id + "\")";
+	if (r.type == "craft") return "render_recipe(null,\"" + (r.def.quest || "") + "\",\"" + r.id + "\")";
+	if (r.type == "dismantle") return "render_recipe(null,\"dismantle\",\"" + r.id + "\")";
+	if (r.type == "monster") return "render_monster_info(\"" + r.id + "\")";
+	if (r.type == "skill") return "render_skill(\"\",\"" + r.id + "\")";
+	if (r.type == "condition") return "show_condition(\"" + r.id + "\")";
+	if (r.type == "set") return "render_set(\"" + r.id + "\")";
+	if (r.type == "guide") return "open_interaction_guide(\"" + r.id + "\")";
+	if (r.type == "article") return "open_guide(\"" + r.id + "\",get_guide_url(\"" + r.id + "\"))";
+	if (r.type == "event" && r.def.modal) return "open_event_announcement(\"" + r.id + "\")";
+	if (r.type == "code") return "load_documentation(\"" + r.id + "\")";
+	if (r.type == "token") return "render_item_info(\"" + r.id + "\")";
+	return "";
+}
+
+function release_clickable(ref, html) {
+	var open = release_open(ref);
+	if (!open) return html;
+	return "<span class='clickable' onclick='pcs(event); " + open + "'>" + html + "</span>";
+}
+
+// Each thing drawn with the renderer the game already uses for it: monster list tiles, item containers, the INFO button.
+function release_icon(ref, args) {
+	var r = release_parse(ref),
+		def = r.def,
+		html = "";
+	if (!args) args = {};
+	if (!def) return "";
+	if (r.type == "monster") return release_clickable(ref, "<span class='release-tile' title='" + release_name(ref) + "'>" + sprite(r.id, { full: true, scale: args.scale || 1.5 }) + "</span>");
+	if (r.type == "npc") return "<span class='release-tile' title='" + release_name(ref) + "'>" + sprite(def.skin, { cx: clone(def.cx || {}), full: true, scale: args.scale || 1 }) + "</span>";
+	if (r.type == "guide")
+		return (
+			"<div class='gamebutton release-info' onclick='pcs(event); " + release_open(ref) + "'>" +
+			(def.skin ? sprite(def.skin, { overflow: true, j: 0 }) : def.icon && G.items[def.icon] ? "<div class='release-cover-item'>" + item_container({ skin: G.items[def.icon].skin, bcolor: "black" }) + "</div>" : "<div class='release-info-mark'>?</div>") +
+			"<div class='release-info-label'>" + phrase.html("interface.server.info") + "</div></div>"
+		);
+	if (r.type == "article") return "<div class='gamebutton release-info' onclick='pcs(event); " + release_open(ref) + "'><div class='release-info-mark'>?</div></div>";
+	if (r.type == "code") return release_clickable(ref, "<span class='release-code-mark'>[F]</span>");
+	// A bundle (a set of head colors) shows its first look.
+	if (r.type == "cx") return "<span title='" + html_escape(r.id) + "'>" + cx_sprite(G.cosmetics.bundle[r.id] ? G.cosmetics.bundle[r.id][0] : r.id) + "</span>";
+	if (r.type == "set") {
+		def.items.forEach(function (item) {
+			if (G.items[item]) html += item_container({ skin: G.items[item].skin });
+		});
+		return release_clickable(ref, "<span class='release-set'>" + html + "</span>");
+	}
+	if (r.type == "event") {
+		var shown = def.sprite && G.items[def.sprite];
+		if (shown) return release_clickable(ref, item_container({ skin: shown.skin }));
+		return def.sprite ? release_clickable(ref, sprite(def.sprite, { overflow: true })) : "";
+	}
+	if (r.type == "game" && def.npc && G.npcs[def.npc]) return release_icon("npc:" + def.npc, args);
+	if (r.type == "drop") return release_drop_owner(r.id) ? release_icon(release_drop_owner(r.id), { scale: 1 }) : "";
+	var skin = def.skin;
+	if (r.type == "craft" || r.type == "dismantle") skin = G.items[release_output(r)] && G.items[release_output(r)].skin;
+	if (r.type == "token") skin = G.items[r.id] && G.items[r.id].skin;
+	if (!skin) return "";
+	return release_clickable(ref, item_container({ skin: skin }));
+}
+
+function release_tag(verb) {
+	return "<span class='release-tag' style='border-color:" + release_tag_colors[verb] + ";color:" + release_tag_colors[verb] + "'>" + phrase.html("client.update_notes.tag." + verb) + "</span>";
+}
+
+function release_id(ref) {
+	var r = release_parse(ref);
+	if (in_arr(r.type, ["code", "guide", "article"])) return "";
+	return " <span class='release-id'>" + html_escape(r.id) + "</span>";
+}
+
+// The guides' spawn line: parent ×N ▶ rare monster.
+function release_spawn(spawn, among, count, scale) {
+	return (
+		"<span class='release-spawn'>" + release_icon(among, { scale: scale ? scale / 2 : 1 }) + "<span class='release-count'>×" + to_pretty_num(count) + "</span><span class='release-arrow'></span>" +
+		release_icon(spawn, { scale: scale || 1 }) + "</span>"
+	);
+}
+
+// Acquisition comes from live definitions: monsters that drop it, the NPC that crafts or exchanges it, tokens that buy it.
+function release_sources(item) {
+	var sources = [],
+		recipe = G.craft[item];
+	function add(ref) {
+		if (!in_arr(ref, sources)) sources.push(ref);
+	}
+	for (var monster in G.drops.monsters)
+		(G.drops.monsters[monster] || []).forEach(function (row) {
+			if (row[1] == item) add("monster:" + monster);
+		});
+	// Boxes such as Market Parcels and cosmetic boxes
+	for (var box in G.drops)
+		if (G.items[box] && is_array(G.drops[box]))
+			G.drops[box].forEach(function (row) {
+				if (row[1] == item) add("item:" + box);
+			});
+	if (recipe)
+		for (var npc in G.npcs)
+			if ((recipe.quest && G.npcs[npc].quest == recipe.quest) || (!recipe.quest && G.npcs[npc].role == "craftsman")) {
+				add("npc:" + npc);
+				break;
+			}
+	for (var seller in G.npcs) if (in_arr(item, G.npcs[seller].items || [])) add("npc:" + seller);
+	for (var token in G.tokens) if (G.tokens[token][item] !== undefined && G.items[token]) add("item:" + token);
+	return sources;
+}
+
+function release_maps_of(type) {
+	var names = [];
+	object_sort(G.maps).forEach(function (io) {
+		if (io[1].ignore) return;
+		if ((io[1].monsters || []).some(function (pack) { return pack.type == type; }) && !in_arr(io[1].name, names)) names.push(io[1].name);
+	});
+	return names.map(html_escape);
+}
+
+function release_value(value) {
+	if (value === null || value === undefined) return "—";
+	if (typeof value == "object") {
+		var text = JSON.stringify(value);
+		return html_escape(text.length > 32 ? "…" : text);
+	}
+	return html_escape(value);
+}
+
+// Changed fields: stat lines in the item tooltip's own labels and colors, icons for skins, the raw path for the rest.
+function release_fields(fields, type) {
+	var labels = {
+			str: "interface.item.strength", int: "interface.item.intelligence", dex: "interface.item.dexterity", vit: "interface.item.vitality", for: "interface.item.fortitude",
+			hp: "stat.hp.name", mp: "stat.mp.name", armor: "interface.item.armor", resistance: "interface.item.resistance", attack: "interface.item.damage", range: "interface.item.range",
+			speed: "interface.item.speed", frequency: "interface.item.a_speed", crit: "interface.item.crit", critdamage: "interface.item.crit_damage", evasion: "interface.item.evasion",
+			reflection: "interface.item.reflection", lifesteal: "interface.item.lifesteal", manasteal: "interface.item.manasteal", mp_reduction: "interface.item.skill_mp_reduction",
+			apiercing: "interface.item.a_piercing", rpiercing: "interface.item.r_piercing", stresistance: "interface.item.status_res", luck: "interface.item.luck", gold: "interface.item.gold", xp: "stat.xp.name",
+			output: "interface.item.damage_output",
+		},
+		percent = { mp_reduction: 1, crit: 1, evasion: 1, reflection: 1, lifesteal: 1, manasteal: 1, luck: 1, gold: 1, output: 1 },
+		html = "";
+	for (var path in fields) {
+		var values = fields[path],
+			parts = path.split("."),
+			stat = parts[parts.length - 1],
+			per_level = parts.length == 2 && in_arr(parts[0], ["compound", "upgrade"]);
+		if (path == "skin" && type != "monster")
+			html += "<div class='release-skin'>" + item_container({ skin: values[0] }) + " → " + item_container({ skin: values[1] }) + "</div>";
+		else if (path == "items" && (is_array(values[0]) || is_array(values[1]))) {
+			// A shop's list: what it started and stopped selling
+			var sold = "";
+			(values[1] || []).forEach(function (item) {
+				if (!in_arr(item, values[0] || []) && G.items[item]) sold += release_icon("item:" + item);
+			});
+			(values[0] || []).forEach(function (item) {
+				if (!in_arr(item, values[1] || []) && G.items[item]) sold += "<span class='release-lost'>" + release_icon("item:" + item) + "</span>";
+			});
+			if (sold) html += "<div class='release-grid'>" + sold + "</div>";
+		} else if (labels[stat] && in_arr(type, ["item", "set", "monster", "condition"]) && (parts.length == 1 || per_level) && typeof values[0] != "object" && typeof values[1] != "object") {
+			var suffix = percent[stat] ? "%" : "",
+				label = phrase.html(labels[stat]);
+			if (per_level) label = phrase.html("client.update_notes.per_level", { stat: phrase(labels[stat]) });
+			html += bold_prop_line(label, "<span class='release-old'>" + release_value(values[0]) + suffix + "</span> → " + release_value(values[1]) + suffix, colors[stat] || "#C3C3C3");
+		} else html += "<div><span class='release-path'>" + html_escape(path) + "</span>: <span class='release-old'>" + release_value(values[0]) + "</span> → " + release_value(values[1]) + "</div>";
+	}
+	return html;
+}
+
+// Drop rows as the monster window draws them; lost rows are dimmed.
+function release_rows(rows) {
+	var html = "<div class='release-drops'>";
+	(rows[1] || []).forEach(function (row) {
+		html += render_drop(row, 1, "#858B8E");
+	});
+	(rows[0] || []).forEach(function (row) {
+		html += "<div class='release-lost'>" + render_drop(row, 1, "#858B8E") + "</div>";
+	});
+	return html + "</div>";
+}
+
+function release_ingredients(ref) {
+	var r = release_parse(ref),
+		html = "";
+	((r.def && r.def.items) || []).forEach(function (row) {
+		if (G.items[row[1]]) html += item_container({ skin: G.items[row[1]].skin }, { name: row[1], q: row[0] > 1 ? row[0] : undefined, level: row[2] });
+	});
+	return html;
+}
+
+// A map's new spawns, NPCs and INFO points drawn with their sprites; anything else as changed fields.
+function release_map_fields(fields) {
+	var html = "",
+		rest = {};
+	for (var path in fields) {
+		var values = fields[path];
+		if (!in_arr(path, ["monsters", "npcs", "quirks"]) || !is_array(values[1])) {
+			rest[path] = values;
+			continue;
+		}
+		var before = (values[0] || []).map(function (x) { return JSON.stringify(x); });
+		values[1].forEach(function (x) {
+			if (in_arr(JSON.stringify(x), before)) return;
+			if (path == "monsters" && G.monsters[x.type]) html += release_icon("monster:" + x.type, { scale: 1 });
+			else if (path == "npcs" && G.npcs[x.id]) html += release_icon("npc:" + x.id);
+			else if (path == "quirks") html += " <span class='release-path'>" + html_escape(x[4] || "") + "</span>";
+		});
+	}
+	return (html ? "<div class='release-grid'>" + html + "</div>" : "") + release_fields(rest, "map");
+}
+
+function release_row(entry, release) {
+	var verb = entry.new !== undefined ? "new" : entry.changed !== undefined ? "changed" : "removed",
+		ref = entry[verb],
+		r = release_parse(ref),
+		def = r.def,
+		meta = [],
+		lines = "",
+		side = "",
+		html = "<div class='release-row'>";
+	html += "<div class='release-icon'>" + (r.type == "set" || r.type == "craft" ? "" : release_icon(ref)) + "</div><div class='release-body'>";
+	html += "<div>" + release_clickable(ref, "<span class='release-name'>" + release_name(ref) + "</span>") + release_id(ref) + release_tag(verb) + "</div>";
+	if (def && r.type == "monster") {
+		meta.push(phrase.html("stat.hp.name") + " " + to_pretty_num(def.hp));
+		meta = meta.concat(release_maps_of(entry.among ? release_parse(entry.among).id : r.id));
+		if (entry.among) lines += "<div class='release-grid'>" + release_spawn(ref, entry.among, entry.count) + "</div>";
+		(G.drops.monsters[r.id] || []).forEach(function (row) {
+			if (release_lists(release, "new", "item:" + row[1])) side += release_icon("item:" + row[1]);
+		});
+		if (side) side = "<span class='release-meta'>" + phrase.html("interface.monster_info.drops") + "</span>" + side;
+	}
+	if (def && r.type == "item") {
+		meta.push(html_escape(def.type));
+		if (def["class"]) meta.push(def["class"].map(function (c) { return html_escape(phrase.definition("class", c, "name", G.classes[c].name)); }).join(", "));
+		var sources = release_sources(r.id);
+		sources.slice(0, 4).forEach(function (source) {
+			side += release_icon(source, { scale: 1 });
+		});
+		if (sources.length > 4) side += "<span class='release-meta'>+" + (sources.length - 4) + "</span>";
+		if (side) side = "<span class='release-meta'>" + phrase.html("client.update_notes.from") + "</span>" + side;
+	}
+	if (def && r.type == "skill") {
+		if (def.level) meta.push(phrase.html("stat.level.name") + " " + def.level);
+		if (def["class"]) meta.push(def["class"].map(function (c) { return html_escape(phrase.definition("class", c, "name", G.classes[c].name)); }).join(", "));
+		if (def.mp) meta.push(def.mp + " " + phrase.html("stat.mp.name"));
+	}
+	if (def && r.type == "condition" && !def.ui) meta.push(phrase.html("client.update_notes.hidden"));
+	if (def && r.type == "npc") {
+		object_sort(G.maps).forEach(function (io) {
+			if ((io[1].npcs || []).some(function (npc) { return npc.id == r.id; }) && !in_arr(html_escape(io[1].name), meta)) meta.push(html_escape(io[1].name));
+		});
+	}
+	if (def && r.type == "guide")
+		object_sort(G.maps).forEach(function (io) {
+			(io[1].quirks || []).forEach(function (quirk) {
+				if (quirk[4] == r.id + "_info" && !in_arr(html_escape(io[1].name), meta)) meta.push(html_escape(io[1].name));
+			});
+		});
+	if (def && (r.type == "craft" || r.type == "dismantle")) {
+		lines += "<div class='release-grid'>" + release_ingredients(ref) + "<span class='release-arrow'></span>" + release_icon(ref) + "</div>";
+		release_sources(r.id).forEach(function (source) {
+			if (release_parse(source).type == "npc") side += release_icon(source);
+		});
+	}
+	if (def && r.type == "set") lines += "<div>" + release_icon(ref) + "</div>";
+	if (meta.length) html += "<div class='release-meta'>" + meta.join(" · ") + "</div>";
+	html += lines;
+	if (verb == "new" && def) {
+		var explanation = null;
+		if (r.type == "item" && def.explanation) explanation = phrase.definition("item", r.id, "explanation", def.explanation);
+		if (in_arr(r.type, ["condition", "skill", "set"]) && def.explanation) explanation = phrase.definition(r.type, r.id, "explanation", def.explanation);
+		if (r.type == "guide" && def.summary) explanation = phrase.definition("interaction", r.id, "summary", def.summary);
+		if (r.type == "npc" && def.says && is_string(def.says)) explanation = phrase.definition("npc", r.id, "says", def.says);
+		if (explanation) html += "<div class='release-flavor release-note'>" + html_escape(explanation) + "</div>";
+	}
+	if (def && r.type == "set" && def[def.items.length]) html += "<div class='release-flavor'>" + render_item("html", { pure: true, item: def[def.items.length], prop: def[def.items.length] }) + "</div>";
+	if (entry.fields) html += "<div class='release-fields'>" + (r.type == "map" ? release_map_fields(entry.fields) : release_fields(entry.fields, r.type)) + "</div>";
+	if (entry.rows) html += release_rows(entry.rows);
+	if (entry.note !== undefined) html += "<div class='release-flavor release-note'>" + release_text(entry) + "</div>";
+	html += "</div>";
+	if (side) html += "<div class='release-side'>" + side + "</div>";
+	return html + "</div>";
+}
+
+function release_lists(release, verb, ref) {
+	return !!(release && (release.changes || []).some(function (entry) { return entry[verb] == ref; }));
+}
+
+function release_group(entry) {
+	if (entry.fixed !== undefined) return "fixed";
+	if (entry.improved !== undefined) return "improved";
+	var type = release_parse(entry.new !== undefined ? entry.new : entry.changed !== undefined ? entry.changed : entry.removed).type;
+	return type == "article" ? "guide" : type;
+}
+
+function release_counts(release, limit) {
+	var counts = {},
+		parts = [];
+	(release.changes || []).forEach(function (entry) {
+		var group = release_group(entry);
+		if (group != "improved") counts[group] = (counts[group] || 0) + 1;
+	});
+	release_groups.forEach(function (group) {
+		if (counts[group]) parts.push(phrase.html("client.update_notes.group." + group) + " " + counts[group]);
+	});
+	return parts.slice(0, limit || parts.length).join(" · ");
+}
+
+// A highlight's image: a native picture at its own size, per language when it has lettering.
+function release_image(image) {
+	var src = image.src;
+	if (image.localized && phrase.language && phrase.language != "en") src = src.replace(/\/([^\/]+)$/, "/" + phrase.language + "/$1");
+	return "<div class='release-image'><img src='" + html_escape(src) + "' width='" + image.width + "' height='" + image.height + "' alt=''>" + (image.caption !== undefined ? "<div class='release-meta'>" + release_text(image, "caption") + "</div>" : "") + "</div>";
+}
+
+function release_view_html(release) {
+	var html = "<div class='update-notes release-view'>",
+		groups = {};
+	html += "<div class='release-head'>" + phrase.html("client.update_notes.update_notes") + " · " + html_escape(release.deployed || release.date) + (release.deployed ? "" : " · " + phrase.html("client.update_notes.pending")) + "</div>";
+	html += "<div class='release-title'>" + release_text(release, "title") + "</div>";
+	if (release.note !== undefined) html += "<div class='release-summary'>" + release_text(release) + "</div>";
+	(release.highlights || []).forEach(function (highlight) {
+		html += "<div class='release-divider'></div>";
+		if (highlight.title !== undefined) html += "<div class='release-section'>" + release_text(highlight, "title") + "</div>";
+		if (highlight.show && highlight.show.length) {
+			html += "<div class='release-show'>";
+			highlight.show.forEach(function (show) {
+				if (is_object(show) && show.spawn) html += release_spawn(show.spawn, show.among, show.count, 3);
+				else html += release_icon(show, { scale: 3 });
+			});
+			html += "</div>";
+		}
+		if (highlight.image) html += release_image(highlight.image);
+		if (highlight.note !== undefined) html += "<div class='release-note'>" + release_text(highlight) + "</div>";
+	});
+	(release.changes || []).forEach(function (entry) {
+		var group = release_group(entry);
+		(groups[group] = groups[group] || []).push(entry);
+	});
+	if ((release.changes || []).length) {
+		html += "<div class='release-divider'></div><div class='release-section release-all'>" + phrase.html("client.update_notes.all_changes") + "</div>";
+		html += "<div class='release-meta'>" + release_counts(release) + "</div>";
+	}
+	release_groups.forEach(function (group) {
+		if (!groups[group]) return;
+		html += "<div class='release-group'>" + phrase.html("client.update_notes.group." + group) + "</div>";
+		if (group == "fixed" || group == "improved") {
+			groups[group].forEach(function (entry) {
+				html += "<div class='release-line'><span class='release-bullet'>•</span> " + release_text(entry) + "</div>";
+			});
+			return;
+		}
+		// Cosmetics come in dozens: new ones share one grid.
+		var grid = group == "cx" ? groups[group].filter(function (entry) { return entry.new !== undefined && entry.note === undefined; }) : [];
+		if (grid.length) {
+			html += "<div class='release-grid'>";
+			grid.forEach(function (entry) {
+				html += release_icon(entry.new);
+			});
+			html += "</div>";
+		}
+		groups[group].forEach(function (entry) {
+			if (!in_arr(entry, grid)) html += release_row(entry, release);
+		});
+	});
+	html += "<div class='release-divider'></div><div class='update-notes-footer release-footer'>";
+	html += "<div class='gamebutton' onclick='hide_modal(); if (!$(\".update-notes-list\").length) show_update_notes()'>" + phrase.html("client.add_update_notes.all_update_notes") + "</div>";
+	if (release.steam) html += " <a class='gamebutton eexternal' href='" + html_escape(release.steam) + "' target='_blank' rel='noopener noreferrer'>" + phrase.html("services.steam_news.read-on-steam") + "</a>";
+	return html + "</div></div>";
+}
+
+function show_release(index) {
+	var release = update_notes[index];
+	if (!release || release.title === undefined) return show_update_notes();
+	show_modal(release_view_html(release), { wwidth: min(760, viewport_width() - 52), hideinbackground: true, url: "/allnotes" });
+	mark_release_seen(release);
+}
+
+// The newest release with a title.
+function latest_release() {
+	for (var i = 0; i < update_notes.length; i++) if (update_notes[i].title !== undefined) return i;
+	return -1;
+}
+
+// 0 is a minor release, 1 the default, 2 a big one. Notes without a title never raise the UPDATE button.
+function release_priority(note) {
+	if (note.title === undefined) return 0;
+	return note.priority === undefined ? 1 : note.priority;
+}
+
+// The one release the UPDATE button shows: the highest priority since the release the viewer last opened, the newest on a tie.
+// A first visit only looks at the newest release.
+function release_unseen() {
+	var newest = latest_release(),
+		end = newest + 1,
+		best = -1;
+	if (newest == -1 || no_html) return -1;
+	if (release_seen === undefined) {
+		try {
+			release_seen = storage_get("update_seen") || null;
+		} catch (e) {
+			release_seen = null;
+		}
+	}
+	for (var i = 0; i < update_notes.length; i++) if (update_notes[i].phrase == release_seen) end = i;
+	for (var i = 0; i < end; i++) if (release_priority(update_notes[i]) > (best == -1 ? 0 : release_priority(update_notes[best]))) best = i;
+	return best;
+}
+
+// Opening the release the button shows marks every release up to the newest as seen.
+function mark_release_seen(release) {
+	if (update_notes.indexOf(release) != release_unseen()) return;
+	release_seen = update_notes[latest_release()].phrase;
+	try {
+		storage_set("update_seen", release_seen);
+	} catch (e) {}
+	$(".release-new").remove();
+	if (!$("#serverinfo").children().length) $("#serverinfo").hide();
+	if (!$("#event-announcements").children().length) $("#event-announcements").hide();
+}
+
+function release_cover_html(release) {
+	var r = release_parse(release.cover || "");
+	if (!r.def) return "";
+	if (r.type == "monster" || r.type == "npc") return sprite(r.type == "npc" ? r.def.skin : r.id, { overflow: true, cx: r.type == "npc" ? clone(r.def.cx || {}) : undefined });
+	var skin = r.type == "item" || r.type == "craft" ? G.items[r.id].skin : r.def.skin;
+	if (!skin) return "";
+	return "<div class='release-cover-item'>" + item_container({ skin: skin, bcolor: "black" }) + "</div>";
+}
+
+// In game: the first button of the server strip, drawn like INFO, EVENT and LIVE. Opening the post once removes it.
+function release_update_button_html() {
+	var index = release_unseen();
+	if (index == -1) return "";
+	return (
+		" <div class='gamebutton release-new' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); show_release(" + index + ")'>" +
+		release_cover_html(update_notes[index]) +
+		"<div style='color:#F1C054; margin-top: 1px'>" + phrase.html("client.update_notes.update") + "</div></div>"
+	);
+}
+
+// Before entering the game: the live event announcement card with the release's cover, title and top counts.
+function release_card_html() {
+	var index = release_unseen();
+	if (index == -1 || window.character || (typeof inside != "undefined" && inside == "game")) return "";
+	var release = update_notes[index],
+		r = release_parse(release.cover || "");
+	return event_announcement_html({
+		open: "show_release(" + index + ")",
+		sprite: r.def ? (r.type == "npc" ? r.def.skin : r.id) : "",
+		color: "#F1C054",
+		accent: "#69D6CF",
+		effect: "sparks",
+		classes: "release-new",
+		label: phrase("client.update_notes.new_update"),
+		title: release.title_text !== undefined ? release.title_text : release.title,
+		text: $("<div>").html(release_counts(release, 3)).text(),
+	});
 }
 
 var game_logs = [],
@@ -1181,6 +1730,11 @@ function on_skill(key, event) {
 	} else if (name == "blink") {
 		if (event) blink_pressed = true;
 		last_blink_pressed = new Date();
+	} else if (!event && ["move_up", "move_down", "move_left", "move_right"].includes(name)) {
+		if (!window.socket || !window.character || !options.move_with_arrows || !can_walk(character)) return;
+		var step = { move_up: [0, -50], move_down: [0, 50], move_left: [-50, 0], move_right: [50, 0] }[name];
+		next_minteraction = name.slice(5);
+		move(character.real_x + step[0], character.real_y + step[1]);
 	} else if (name == "move_up") {
 		arrow_up = true;
 		next_minteraction = "up";
@@ -1507,6 +2061,7 @@ function wishlist_item_click(name, num) {
 
 function wishlist_click(slot) {
 	var num = parseInt(slot.substr(5, 123));
+	wishlist_search = "";
 	render_wishlist(num, 0);
 }
 
@@ -2714,6 +3269,13 @@ function wishlist(slot, name, price, q, level) {
 	return promise;
 }
 
+function trade_form(slot, num) {
+	var price = trade_offer_number($(".sellprice").text()),
+		q = $(".tradenum").length ? trade_offer_number($(".tradenum").text()) : "1";
+	if (!price || +price < 1 || +price > 99999999999 || !q || +q < 1) return d_text(phrase("client.floating.invalid"), character);
+	return trade(slot, num, price, q);
+}
+
 function trade(slot, num, price, q) {
 	q = q || 1;
 	var promise = push_deferred("equip");
@@ -2748,6 +3310,118 @@ function trade_sell(slot, id, rid, q) {
 	socket.emit("trade_sell", { slot: slot, id: id, rid: rid, q: q || 1 });
 	$("#topleftcornerdialog").html("");
 	return promise;
+}
+
+function trade_offer(slot, num, want, q) {
+	var promise = push_deferred("equip");
+	// A missing want would vanish from the message and list the item for gold, so the server gets null and refuses it
+	socket.emit("equip", { q: q || 1, slot: slot, num: num, want: is_string(want) || (want && typeof want == "object") ? want : null });
+	$("#topleftcornerdialog").html("");
+	return promise;
+}
+
+function trade_swap(slot, id, rid, num, item) {
+	// item is the chosen item as this client saw it, like upgrade's clevel: after a reorder the server refuses a different one
+	var promise = push_deferred("trade_swap");
+	socket.emit("trade_swap", { slot: slot, id: id, rid: rid, num: num, item: item || character.items[num] || null });
+	$("#topleftcornerdialog").html("");
+	return promise;
+}
+
+var trade_offer_state = null,
+	trade_offer_view = null;
+function trade_offer_pick(slot, num, q) {
+	trade_offer_state = { slot: slot, num: parseInt(num), q: max(1, parseInt(q) || 1), name: null, p: null };
+	wishlist_search = "";
+	render_wishlist(parseInt(slot.substr(5, 123)), 0, true);
+}
+
+function trade_offer_item_click(name) {
+	trade_offer_state.name = name;
+	trade_offer_state.p = null;
+	render_trade_offer();
+}
+
+function trade_offer_level_focus(element) {
+	// typing replaces ANY
+	setTimeout(function () {
+		var range = document.createRange();
+		range.selectNodeContents(element);
+		window.getSelection().removeAllRanges();
+		window.getSelection().addRange(range);
+	}, 0);
+}
+
+function trade_offer_level_blur(element) {
+	if (!$(element).text().trim()) $(element).html(phrase.html("interface.trade_offer.any"));
+}
+
+function trade_offer_number(text) {
+	// A whole number as the player typed it: "" when empty, null when it is anything but a number.
+	// Full-width and Arabic-Indic digits count, and so do thousands groups of exactly three digits.
+	text = text
+		.trim()
+		.replace(/[\uff10-\uff19]/g, function (d) {
+			return d.charCodeAt(0) - 0xff10;
+		})
+		.replace(/[\u0660-\u0669]/g, function (d) {
+			return d.charCodeAt(0) - 0x0660;
+		})
+		.replace(/[\u06f0-\u06f9]/g, function (d) {
+			return d.charCodeAt(0) - 0x06f0;
+		});
+	if (!text) return "";
+	if (/^\+?\d+$/.test(text) || /^\d{1,3}([,.\s\u00a0\u202f]\d{3})+$/.test(text)) return text.replace(/\D/g, "");
+	return null;
+}
+
+function trade_offer_title() {
+	// TITLE cycles through ANY and the titles this item can carry
+	var def = G.items[trade_offer_state.name],
+		titles = [null];
+	for (var id in G.titles) {
+		var type = G.titles[id].type;
+		if (type == "all_items" || type == def.type || (type == "mainhand" && def.type == "weapon")) titles.push(id);
+	}
+	trade_offer_state.p = titles[(titles.indexOf(trade_offer_state.p) + 1) % titles.length];
+	$(".totitle").html(trade_offer_state.p ? html_escape(G.titles[trade_offer_state.p].title) : phrase.html("interface.trade_offer.any"));
+}
+
+function trade_offer_form() {
+	// The visible text counts: empty or ANY means any level, otherwise a whole number, or nothing is sent
+	var state = trade_offer_state,
+		want = { name: state.name },
+		shown = $(".tolevel").text().trim(),
+		level = shown == phrase("interface.trade_offer.any") ? "" : trade_offer_number(shown),
+		q = $(".toq").length ? trade_offer_number($(".toq").text()) : "1";
+	if (level === null || level > 12 || !q || q == 0) return d_text(phrase("client.floating.invalid"), character);
+	if (level) want.level = parseInt(level);
+	if (state.p) want.p = state.p;
+	if ($(".toq").length) want.q = parseInt(q);
+	trade_offer(state.slot, state.num, want, state.q);
+}
+
+function trade_offer_select(num) {
+	if (!trade_offer_view || !trade_offer_view.args) return;
+	// Choosing the chosen item again shows it in full
+	if (trade_offer_view.num === num && JSON.stringify(trade_offer_view.item) == JSON.stringify(character.items[num])) return trade_offer_inspect();
+	trade_offer_view.num = num;
+	trade_offer_view.item = clone(character.items[num]);
+	render_item("#topleftcornerdialog", trade_offer_view.args);
+}
+
+function trade_offer_inspect() {
+	// the chosen item as the inventory shows it: scrolls, jar contents and title included, and for a stack the part that goes
+	var item = trade_offer_view && trade_offer_view.item;
+	if (!item || !G.items[item.name]) return;
+	item = Object.assign({}, item, trade_offer_view.given);
+	show_modal(render_item("html", { item: G.items[item.name], actual: item, name: item.name, readonly: true }), { wrap: false, hideinbackground: true });
+}
+
+function trade_offer_give() {
+	// gives the item as it was when chosen
+	var view = trade_offer_view;
+	if (view && view.num !== null) trade_swap(view.slot, view.args.from_player, view.rid, view.num, view.item);
 }
 
 function secondhand_buy(rid) {
@@ -2970,7 +3644,7 @@ function say(message, code) {
 				add_chat("", phrase.html("client.say.number_can_be_from_1_to_100"));
 			} else {
 				if (!slot) slot = 1;
-				api_call("save_code", { code: codemirror_render.getValue(), slot: slot, name: name });
+				api_call_l("save_code", { code: codemirror_render.getValue(), slot: slot, name: name });
 			}
 		} else if (command == "loadcode" || command == "runcode") {
 			var args = rest.split(" "),
@@ -3164,7 +3838,7 @@ function anniversary_ingredient_count(name, level) {
 function anniversary_recipe_state(name) {
 	var recipe = G.craft && G.craft[name];
 	if (!recipe || recipe.quest != "anniversary_baker") return null;
-	var ready = !!(typeof S != "undefined" && S.anniversary && S.anniversary.active),
+	var ready = true,
 		rows = [];
 	(recipe.items || []).forEach(function (ingredient) {
 		var count = anniversary_ingredient_count(ingredient[1], ingredient[2]);
@@ -3178,7 +3852,6 @@ function anniversary_recipe_state(name) {
 function auto_craft(name, code) {
 	var issue = null;
 	if (!Object.prototype.hasOwnProperty.call(G.craft, name)) issue = "recipe";
-	else if (G.craft[name].quest == "anniversary_baker" && !(typeof S != "undefined" && S.anniversary && S.anniversary.active)) issue = "season";
 	else if (G.craft[name].cost > character.gold) issue = "gold";
 	else {
 		G.craft[name].items.forEach(function (i) {
@@ -3192,7 +3865,6 @@ function auto_craft(name, code) {
 	}
 	if (issue) {
 		if (issue == "recipe") add_log(phrase.html("client.auto_craft.can_t_craft_that_item"), "gray");
-		else if (issue == "season") add_log(phrase.html("client.auto_craft.mira_s_anniversary_workshop_is_closed"), "gray");
 		else if (issue == "gold") add_log(phrase.html("client.auto_craft.not_enough_gold"), "gray");
 		else if (issue == "items") add_log(phrase.html("client.auto_craft.don_t_have_the_required_items"), "gray");
 		if (code) return rejecting_promise({ reason: issue });
@@ -3325,10 +3997,22 @@ function exchange_animation_logic() {
 
 var u_valid = false,
 	last_uchance = null,
+	last_ugrace = 0,
 	last_uchance_for = "upgrade_or_compound";
-function set_uchance(dchance, html) {
+function set_uchance(dchance, html, grace_added) {
 	last_uchance = dchance;
+	last_ugrace = grace_added || 0;
 	last_uchance_for = rendered_target; // retains calculations during reopen's [17/06/19]
+	if (!html) {
+		$(".uchance").attr("title", grace_added ? phrase("interface.upgrade_shrine.grace_hint", { amount: grace_added }) : "");
+		$(".upgradeaction").html(phrase.html(grace_added ? "interface.upgrade_shrine.add_grace" : "interface.upgrade_shrine.upgrade"));
+	}
+	if (grace_added) {
+		u_valid = true;
+		if (html) return ["#31C760", "+" + grace_added];
+		$(".uchance").css("color", "#31C760").text("+" + grace_added);
+		return;
+	}
 	if (dchance == "?") {
 		$(".uchance").css("color", "#299C4C");
 		$(".uchance").html("%??.??");
@@ -3502,7 +4186,7 @@ function reopen() {
 		suppress_calculations = true;
 		var ocheck = false;
 		for (var i = 0; i < originals.length; i++) if (originals[i] !== null) on_rclick($("#citem" + originals[i])[0]), (ocheck = true);
-		if (ocheck && last_uchance !== null && last_uchance_for == rendered_target) set_uchance(last_uchance);
+		if (ocheck && last_uchance !== null && last_uchance_for == rendered_target) set_uchance(last_uchance, false, last_ugrace);
 		suppress_calculations = false;
 
 		if (rendered_target != "upgrade") u_item = u_scroll = u_offering = null;
@@ -5851,7 +6535,7 @@ function load_code_s(num) {
 
 function save_code_s() {
 	if (!$(".csharp").val()) return;
-	api_call("save_code", { code: codemirror_render.getValue(), slot: $(".csharp").val(), name: $(".codename").val(), log: 1 });
+	api_call_l("save_code", { code: codemirror_render.getValue(), slot: $(".csharp").val(), name: $(".codename").val(), log: 1 });
 }
 
 var last_servers_and_characters = new Date();

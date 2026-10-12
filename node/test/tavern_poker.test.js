@@ -248,7 +248,7 @@ test("the poker definition fixes one five-seat table with tiered blinds, a 40 to
 	assert.equal(sheet.readUInt32BE(16), 480);
 	assert.equal(sheet.readUInt32BE(20), 480);
 	assert.equal(fs.existsSync(path.join(__dirname, "../../images/cards/poker.png")), true);
-	assert.match(read("design/sprites.js"), /custom\.png\?v=16/);
+	assert.match(read("design/sprites.js"), /custom: \{ file: "\/images\/tiles\/map\/custom\.png\?v=\d+" \}/);
 });
 
 test("blinds follow the server tier and every other or PVP server plays the IV tier", () => {

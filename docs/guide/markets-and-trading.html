@@ -14,6 +14,7 @@
 	<div class="guide-flow-arrow">→</div>
 	<div class="guide-flow-node">{{ phrase_html("docs.guide.markets-and-trading.sale-set-quantity-price") }}</div>
 	<div class="guide-flow-node">{{ phrase_html("docs.guide.markets-and-trading.buy-name-level-price") }}</div>
+	<div class="guide-flow-node">{{ phrase_html("docs.guide.markets-and-trading.trade-item-level-title") }}</div>
 </div>
 
 <div class="divider"></div>
@@ -21,6 +22,7 @@
 <div class="guide-card-grid">
 	<div class="guide-card">{{ phrase_html("docs.guide.markets-and-trading.sale-listing-choose-the-exact-inventory-item-trade") }}</div>
 	<div class="guide-card">{{ phrase_html("docs.guide.markets-and-trading.wishlist-name-the-item-and-level-you-will") }}</div>
+	<div class="guide-card">{{ phrase_html("docs.guide.markets-and-trading.trade-offer-put-an-item-on-the-stand") }}</div>
 	<div class="guide-card">{{ phrase_html("docs.guide.markets-and-trading.giveaway-move-an-item-into-a-timed-stand") }}</div>
 	<div class="guide-card">{{ phrase_html("docs.guide.markets-and-trading.stay-open-the-character-s-stand-must-remain") }}</div>
 </div>
@@ -30,6 +32,7 @@
 <div class="title mt15">{{ phrase("docs.guide.markets-and-trading.buying-from-another-player") }}</div>
 <p>{{ phrase("docs.guide.markets-and-trading.stand-nearby-and-open-the-player-s-merchant") }}</p>
 <div class="guide-note">{{ phrase("docs.guide.markets-and-trading.prices-are-per-unit-before-confirming-a-stack") }}</div>
+<p>{{ phrase("docs.guide.markets-and-trading.a-trade-offer-lists-the-item-it-wants") }}</p>
 
 <div class="divider"></div>
 <div class="title mt15">{{ phrase("docs.guide.markets-and-trading.code-list-and-buy") }}</div>
@@ -45,6 +48,12 @@
 
 	// Offer 10,000,000 gold for one +9 staff in trade2.
 	await wishlist("trade2", "staff", 10000000, 9, 1);
+
+	var wand = locate_item("wand");
+	if (wand !== -1) {
+		// Trade a wand for a staff +8 or higher, any title. Leave out level to accept any staff.
+		await trade_offer(wand, "trade3", { name: "staff", level: 8 });
+	}
 }
 
 open_example_shop().catch(show_json);</div>
@@ -100,6 +109,7 @@ inspect_resale("secondhands").catch(show_json);</div>
 		$(".market-stand").html(item_container({ skin: G.items.stand0.skin }, { name: "stand0" }));
 		$(".market-staff").html(item_container({ skin: G.items.staff.skin }, { name: "staff", level: 9 }));
 		$(".market-wishlist").html(item_container({ skin: G.items.staff.skin }, { name: "staff", level: 9 }));
+		$(".market-trade").html(item_container({ skin: G.items.staff.skin }, { name: "staff", level: 8 }));
 	}
 </script>
 

@@ -42,6 +42,7 @@ function harness() {
 		sequence = 0,
 		records = [],
 		queries = [],
+		historyQueries = [],
 		writes = 0;
 	const histories = new Map();
 	const events = [],
@@ -96,6 +97,28 @@ function harness() {
 			collection(name) {
 				if (name === "mark")
 					return {
+						find(query, options) {
+							const request = { query, options };
+							historyQueries.push(request);
+							return {
+								limit(n) {
+									request.limit = n;
+									return this;
+								},
+								maxTimeMS(n) {
+									request.timeout = n;
+									return this;
+								},
+								async toArray() {
+									return structuredClone(
+										query._id.$in
+											.map((id) => histories.get(id))
+											.filter(Boolean)
+											.slice(0, request.limit),
+									);
+								},
+							};
+						},
 						async findOneAndUpdate(query, update, options) {
 							assert.equal(options.upsert, true);
 							assert.equal(options.returnDocument, "after");
@@ -352,6 +375,7 @@ function harness() {
 		inventory,
 		events,
 		queries,
+		historyQueries,
 		histories,
 		setRecords(list) {
 			records = list;
@@ -543,6 +567,7 @@ test("99% damage survives the real disconnect and retarget handlers before a lat
 		const h = harness(),
 			old = h.player("Veteran"),
 			m = h.monster(old);
+		old.vision = [700, 500];
 		Object.assign(h.c, {
 			sockets: { [old.id]: old.socket },
 			observers: {},
@@ -556,6 +581,8 @@ test("99% damage survives the real disconnect and retarget handlers before a lat
 			// Queue the normal logout without starting persistence or external services.
 			sync_loop() {},
 		});
+		load(h.c, "node/server_functions.js", ["remove_entity_emit"]);
+		load(h.c, "js/old_common_functions.js", ["get_x", "get_y", "within_xy_range"]);
 		load(h.c, "node/server.js", ["defeat_player", "restore_state", "stop_pursuit", "target_player"]);
 		load(h.c, "node/server_functions.js", ["pmap_remove", "server_tax"]);
 		load(h.c, "node/logic/tavern_wheel.js", ["tavern_wheel_disconnect"]);
@@ -659,6 +686,18 @@ test("opener, party changes and forged conditions cannot steal a sealed personal
 	assert.equal(p.gold, 140000);
 	assert.equal(h.inventory.get(p.real_id).length, 1);
 	assert.equal(h.inventory.get(opener.real_id).length, 1);
+	for (const current of [p, opener]) {
+		const opened = h.events.filter((e) => e.name === current.name && e.event === "chest_opened");
+		assert.equal(opened.length, 1);
+		assert.equal(opened[0].data.id, id);
+		assert.equal(opened[0].data.opener, opener.name);
+		assert.equal(opened[0].data.goldm, 10);
+		assert.equal(opened[0].data.gold, current.gold);
+		assert.deepEqual(
+			opened[0].data.items.map((item) => item.looter),
+			[current.name],
+		);
+	}
 	assert.deepEqual(
 		h.events.filter((e) => e.event === "game_log" && e.data.color === "gold").map((e) => [e.name, e.data.message]),
 		[
@@ -798,6 +837,7 @@ test("full inventory reserves one fixed result; another character and duplicate 
 	h.c.drop_something(p, m);
 	p.full = true;
 	h.open(other, Object.keys(h.c.chests)[0]);
+	assert.equal(h.events.filter((e) => e.name === p.name && e.event === "chest_opened").length, 0);
 	const id = Object.keys(h.c.chests)[0];
 	assert(h.c.chests[id].character === p.real_id);
 	h.open(other, id);
@@ -809,12 +849,142 @@ test("full inventory reserves one fixed result; another character and duplicate 
 	h.open(p, id);
 	assert.equal(p.gold, 14000);
 	assert.equal(h.inventory.get(p.real_id).length, 1);
+	const opened = h.events.filter((e) => e.name === p.name && e.event === "chest_opened" && !e.data.gone);
+	assert.equal(opened.length, 1);
+	assert.equal(opened[0].data.id, id);
+	assert.equal(opened[0].data.goldm, 1);
+	assert.equal(opened[0].data.gold, 14000);
+	assert.deepEqual(
+		opened[0].data.items.map((item) => [item.name, item.looter]),
+		[["ringsj", p.name]],
+	);
 	assert.deepEqual(
 		h.events
 			.filter((e) => e.name === p.name && e.event === "game_log" && e.data.color === "gold")
 			.map((e) => e.data.message),
 		["14000 gold"],
 	);
+});
+
+for (const party of [false, true])
+	for (const ordinaryDrop of [false, true])
+		test(`non-coop Bee loot event includes ${ordinaryDrop ? "normal and bonus" : "bonus-only"} drops ${party ? "for the party" : "solo"}`, () => {
+			const h = harness(),
+				p = h.player("Reporter", { goldm: 1.815 }),
+				other = h.player("Other");
+			h.eligible(p);
+			if (party) {
+				p.party = other.party = "team";
+				p.share = other.share = 0.5;
+				h.c.parties.team = [p.name, other.name];
+			}
+			assert(!G.monsters.bee.cooperative);
+			h.c.D.drops.monsters.bee = plain(G.drops.monsters.bee);
+			h.c.D.monster_gold.bee = G.monster_gold.bee;
+			const m = h.monster(p, { type: "bee", hp: 0, max_hp: G.monsters.bee.hp });
+			h.c.encouragement_points(m, p, m.max_hp);
+			h.roll(ordinaryDrop ? 0.005 : 0.5);
+			h.c.drop_something(p, m);
+			const id = Object.keys(h.c.chests)[0];
+			assert.equal(h.c.chests[id].items.length, ordinaryDrop ? 1 : 0);
+			h.roll(0.05);
+			h.open(p, id);
+			const received = h.inventory.get(p.real_id).slice();
+			assert.equal(received.length, ordinaryDrop ? 2 : 1);
+			for (const current of party ? [p, other] : [p]) {
+				const opened = h.events.filter((e) => e.name === current.name && e.event === "chest_opened");
+				assert.equal(opened.length, 1);
+				assert.equal(opened[0].data.gold, current.gold);
+				assert.deepEqual(
+					opened[0].data.items,
+					received.map((item) => ({ ...item, looter: p.name })),
+				);
+				assert(opened[0].data.items.every((item) => item.name === "beewings" && (item.q || 1) === 1));
+			}
+			h.open(p, id);
+			assert.equal(h.inventory.get(p.real_id).length, received.length);
+			assert.equal(h.events.filter((e) => e.name === p.name && e.event === "chest_opened" && !e.data.gone).length, 1);
+			assert.equal(h.queries.length, 0, "loot reporting does not query the database");
+		});
+
+test("loot caches only the awarded quantity when both drops join an existing stack", () => {
+	const h = harness(),
+		p = h.player();
+	h.eligible(p);
+	const source = read("node/server_functions.js");
+	vm.runInContext(source.slice(source.indexOf("var item_p_ignore ="), source.indexOf("function cache_item(")), h.c);
+	load(h.c, "node/server_functions.js", ["cache_item"]);
+	load(h.c, "node/server.js", ["add_item"]);
+	h.c.a_score = {};
+	h.c.can_stack = (a, b) => a && b && a.name === b.name;
+	p.items = [{ name: "beewings", q: 100 }];
+	p.citems = [];
+	p.esize = 41;
+	h.c.D.drops.monsters.bee = [[1, "beewings", 7]];
+	const m = h.monster(p, { type: "bee", hp: 0 });
+	h.c.encouragement_points(m, p, 1000);
+	h.c.drop_something(p, m);
+	h.open(p, Object.keys(h.c.chests)[0]);
+	assert.equal(p.items.length, 1);
+	assert.equal(p.items[0].q, 114);
+	const opened = h.events.find((e) => e.name === p.name && e.event === "chest_opened").data;
+	assert.equal(opened.items.length, 2);
+	for (const item of opened.items) assert.deepEqual(item, { name: "beewings", q: 7, looter: p.name });
+});
+
+test("party loot keeps each bonus item's recipient and does not report reserved items early", () => {
+	for (const full of [false, true]) {
+		const h = harness(),
+			p = h.player(),
+			other = h.player("Other");
+		h.eligible(p);
+		h.eligible(other);
+		p.party = other.party = "team";
+		p.share = other.share = 0.5;
+		h.c.parties.team = [p.name, other.name];
+		h.c.D.drops.monsters.goo = [[1, "ringsj"]];
+		const m = h.monster(p, { hp: 0 });
+		h.c.encouragement_points(m, p, 500);
+		h.c.encouragement_points(m, other, 500);
+		h.c.drop_something(p, m);
+		// The ordinary item fits, but the first recipient's next item may not.
+		h.c.can_add_items = (current) => !full || current !== p || !h.inventory.get(p.real_id).length;
+		h.roll(0);
+		h.open(p, Object.keys(h.c.chests)[0]);
+		for (const current of [p, other]) {
+			const opened = h.events.filter((e) => e.name === current.name && e.event === "chest_opened");
+			assert.equal(opened.length, 1);
+			assert.deepEqual(
+				opened[0].data.items.map((item) => item.looter),
+				full ? [p.name, other.name] : [p.name, p.name, other.name],
+			);
+		}
+		assert.equal(h.inventory.get(p.real_id).length, full ? 1 : 2);
+		assert.equal(h.inventory.get(other.real_id).length, 1);
+		assert.equal(Object.keys(h.c.chests).length, full ? 1 : 0);
+	}
+});
+
+test("outside-party receipts preserve dry/stale flags and omit empty item lists", () => {
+	for (const reward of ["gold", "none", "invalid"]) {
+		const h = harness(),
+			p = h.player(),
+			opener = h.player("Opener", { goldm: 100 });
+		h.eligible(p);
+		const m = h.monster(p, { hp: 0 });
+		h.c.encouragement_points(m, p, 1000);
+		h.c.drop_something(p, m);
+		const id = Object.keys(h.c.chests)[0];
+		if (reward === "none") h.c.chests[id].encouragement_gold = 0;
+		if (reward === "invalid") p.owner = "changed-owner";
+		h.c.simple_distance = () => 401;
+		h.time(h.now() + 9 * 60000);
+		h.open(opener, id);
+		const opened = h.events.filter((e) => e.name === p.name && e.event === "chest_opened");
+		assert.equal(opened.length, reward === "gold" ? 1 : 0);
+		if (reward === "gold")
+			assert.deepEqual(opened[0].data, { id, goldm: 1, opener: opener.name, gold: 14000, dry: true, stale: true });
+	}
 });
 
 test("PvP reduces both sides by the persistent XP maximum without awarding new encouragement", () => {
@@ -846,6 +1016,131 @@ test("ordinary drop paths keep seasonal, home, dynamic, global and bundle semant
 	);
 	assert.equal(h.inventory.get(p.real_id).find((i) => i.name === "hpot0").q, 7);
 	assert.equal(p.gold, 1000);
+});
+
+test("merchant realm changes preserve verified sibling bonuses without extending the cache", async () => {
+	for (const returning of [false, true]) {
+		const a = harness(),
+			b = harness();
+		const created = a.now() - (returning ? 100 : 1) * day;
+		const hero = a.player("Hero", { pid: "shared", created });
+		const merchant = b.player("Shop", { pid: "shared", type: "merchant", created });
+		b.c.server_id = "SR_US1";
+		a.eligible(hero, a.now() - created, returning ? a.now() + 10 * day : 0);
+		const group = a.c.encouragement_groups.get("pid:shared");
+		const records = [
+			a.record(hero, { server: "SR_EU1", info: { p: { encouragement: plain(hero.p.encouragement) } } }),
+			b.record(merchant),
+		];
+		group.characters = structuredClone(records);
+		b.setRecords(records.toReversed());
+		const before = plain(hero.s),
+			until = group.until,
+			next = group.next;
+		let notices = 0;
+		b.c.server_eval = async (_server, _code, data) => {
+			notices++;
+			return a.c.encouragement_foreign_login(data);
+		};
+		for (let hop = 0; hop < 3; hop++) {
+			a.time(a.now() + 1000);
+			b.time(a.now());
+			b.c.server_id = ["SR_US1", "SR_ASIA1", "SR_US2"][hop];
+			records[1].server = b.c.server_id;
+			b.setRecords(records.toReversed());
+			assert.equal(await b.c.encouragement_login(merchant, new Date(b.now())), true);
+			assert.deepEqual(plain(hero.s), before);
+			assert.equal(hero.encouragement.blocked, false);
+			assert.equal(group.until, until, "merchant logins cannot renew a cached eligibility check");
+			assert.equal(group.next, next);
+			assert.equal(a.c.encouragement_visits.has("pid:shared"), false);
+		}
+		assert.equal(notices, 3);
+		assert.equal(a.queries.length, 0, "unchanged merchant moves do not force another realm's character query");
+		assert.equal(merchant.s.encouragement_lonewolf, undefined);
+		b.c.server_eval = async () => false;
+		assert.equal(
+			await b.c.encouragement_login(merchant, new Date(b.now())),
+			false,
+			"merchant logins still need acknowledgement",
+		);
+	}
+});
+
+test("merchant logins still invalidate changed membership, age, return windows and character limits", async () => {
+	for (const change of [
+		"new_merchant",
+		"linked_owner",
+		"older_character",
+		"return_window",
+		"character_limit",
+		"combat_class",
+		"combat_activity",
+	]) {
+		const a = harness(),
+			b = harness();
+		const hero = a.player("Hero", { pid: "shared" }),
+			merchant = b.player("Shop", { pid: "shared", type: "merchant" });
+		b.c.server_id = "SR_US1";
+		a.eligible(hero);
+		const group = a.c.encouragement_groups.get("pid:shared");
+		const original = [a.record(hero, { server: "SR_EU1" }), b.record(merchant)];
+		if (change === "combat_activity") original.push(a.record(hero, { _id: "CH_other", type: "mage" }));
+		group.characters = structuredClone(change === "new_merchant" ? original.slice(0, 1) : original);
+		const fresh = structuredClone(original);
+		if (change === "linked_owner")
+			fresh.push(a.record(hero, { _id: "CH_linked", owner: "US_linked", type: "merchant" }));
+		if (change === "older_character") fresh[0].created = new Date(a.now() - 100 * day);
+		if (change === "return_window")
+			b.histories.set("MK_encouragement-pid:shared", {
+				oldest: hero.created,
+				last_online: b.now(),
+				return_until: b.now() + 10 * day,
+			});
+		if (change === "character_limit")
+			while (fresh.length < 25) fresh.push(a.record(hero, { _id: "CH_" + fresh.length, type: "merchant" }));
+		if (change === "combat_class") fresh[1].type = "mage";
+		if (change === "combat_activity") fresh[2].server = "SR_ASIA1";
+		b.setRecords(fresh);
+		a.setRecords(fresh);
+		b.c.server_eval = async (_server, _code, data) => a.c.encouragement_foreign_login(data);
+		assert.equal(await b.c.encouragement_login(merchant, new Date(b.now())), true, change);
+		assert.equal(group.until, 0, change);
+		assert.equal(group.next, 0, change);
+		assert.equal(hero.encouragement.blocked, true, change);
+		assert.equal(hero.s.encouragement_new, undefined, change);
+		assert.equal(hero.s.encouragement_lonewolf, undefined, change);
+		await a.c.encouragement_load(hero);
+		a.c.encouragement_update(hero, true);
+		if (change === "character_limit")
+			assert.equal(hero.encouragement.blocked, true, "merchants still count toward the 25-character cutoff");
+		if (change === "older_character")
+			assert.equal(hero.s.encouragement_new, undefined, "an older linked history must revoke New Player");
+	}
+});
+
+test("merchant notices cannot preserve expired, missing or invalidated eligibility", async () => {
+	for (const state of ["expired", "pending", "legacy"]) {
+		const a = harness(),
+			b = harness();
+		const hero = a.player("Hero", { pid: "shared" }),
+			merchant = b.player("Shop", { pid: "shared", type: "merchant" });
+		b.c.server_id = "SR_US1";
+		a.eligible(hero);
+		const group = a.c.encouragement_groups.get("pid:shared");
+		const records = [a.record(hero, { server: "SR_EU1" }), b.record(merchant)];
+		group.characters = structuredClone(records);
+		b.setRecords(records);
+		if (state === "expired") group.until = a.now();
+		if (state === "pending") group.pending = Promise.resolve();
+		b.c.server_eval = async (_server, _code, data) => {
+			if (state === "legacy") delete data.eligibility;
+			return a.c.encouragement_foreign_login(data);
+		};
+		assert.equal(await b.c.encouragement_login(merchant, new Date(b.now())), true);
+		assert.equal(hero.encouragement.blocked, true, state);
+		assert.equal(group.until, 0, state);
+	}
 });
 
 test("foreign login revokes cached bonuses before admission; missing acknowledgements fail closed", async () => {
@@ -886,6 +1181,167 @@ test("login keeps one shared return window; reconnects and siblings cannot exten
 	h.setRecords([h.record(p), h.record(other)]);
 	assert(await h.c.encouragement_login(other, new Date(h.now() - day)));
 	assert.equal(other.p.encouragement.return_until, until);
+});
+
+test("Steam linking preserves the earned owner bonus, including after saved character state is lost", async () => {
+	const h = harness(),
+		p = h.player("Return", { created: h.now() - 500 * day });
+	h.setRecords([h.record(p)]);
+	assert(await h.c.encouragement_login(p, new Date(h.now() - 400 * day)));
+	const until = p.p.encouragement.return_until;
+	assert.equal(until, h.now() + 90 * day);
+	assert.equal(h.historyQueries.length, 0);
+
+	h.time(h.now() + day);
+	p.pid = "shared-steam";
+	p.p.steam_id = p.pid;
+	h.setRecords([h.record(p, { info: { p: { encouragement: plain(p.p.encouragement) } } })]);
+	assert(await h.c.encouragement_login(p, new Date(h.now() - day)));
+	assert.equal(p.s.encouragement_returning.expires, until);
+	assert.equal(h.histories.get("MK_encouragement-owner:" + p.owner).return_until, until);
+	assert.equal(h.histories.get("MK_encouragement-pid:" + p.pid).return_until, until);
+	assert.deepEqual(plain(h.historyQueries[0].query), { _id: { $in: ["MK_encouragement-owner:" + p.owner] } });
+	assert.equal(h.historyQueries[0].limit, 25);
+	assert.equal(h.historyQueries[0].timeout, 3000);
+	assert.deepEqual(plain(h.historyQueries[0].options.projection), { oldest: 1, last_online: 1, return_until: 1 });
+
+	// Reproduce an already-stranded bonus: only the old owner mark still has it.
+	h.c.encouragement_groups.clear();
+	h.histories.get("MK_encouragement-pid:" + p.pid).return_until = 0;
+	delete p.p.encouragement;
+	h.time(h.now() + 60000);
+	h.setRecords([h.record(p)]);
+	assert(await h.c.encouragement_login(p, new Date(h.now() - 60000)));
+	assert.equal(p.s.encouragement_returning.expires, until);
+	assert.equal(h.historyQueries.length, 2);
+
+	h.time(h.now() + 5 * 60000);
+	await h.c.encouragement_load(p);
+	assert.equal(h.historyQueries.length, 2, "routine refreshes do not read owner marks");
+	assert.equal(p.p.encouragement.return_until, until);
+});
+
+test("linked accounts inherit the latest existing expiry without stacking or shortening it", async () => {
+	const h = harness(),
+		p = h.player("Recovered", { pid: "shared", created: h.now() - 500 * day }),
+		sibling = h.player("Secondary", { pid: "shared", created: h.now() - 400 * day });
+	const until = h.now() + 70 * day;
+	h.histories.set("MK_encouragement-owner:" + p.owner, {
+		oldest: p.created,
+		last_online: h.now() - 2 * day,
+		return_until: h.now() + 30 * day,
+	});
+	h.histories.set("MK_encouragement-owner:" + sibling.owner, {
+		oldest: sibling.created,
+		last_online: h.now() - day,
+		return_until: until,
+	});
+	h.setRecords([h.record(p), h.record(sibling), h.record(sibling, { _id: "CH_merchant", type: "merchant" })]);
+	assert(await h.c.encouragement_login(p, new Date(h.now() - 400 * day)));
+	assert.equal(p.s.encouragement_returning.expires, until);
+	assert.equal(h.historyQueries[0].query._id.$in.length, 2, "one lookup per distinct linked owner");
+	assert(await h.c.encouragement_login(sibling, new Date(h.now() - 60000)));
+	assert.equal(sibling.s.encouragement_returning.expires, until);
+
+	const longer = h.now() + 80 * day;
+	h.histories.get("MK_encouragement-pid:shared").return_until = longer;
+	h.c.encouragement_groups.clear();
+	h.time(h.now() + 60000);
+	assert(await h.c.encouragement_login(p, new Date(h.now() - 60000)));
+	assert.equal(p.s.encouragement_returning.expires, longer);
+	h.time(longer);
+	h.setRecords([h.record(p), h.record(sibling)]);
+	assert(await h.c.encouragement_login(p, new Date(h.now() - 60000)));
+	assert(!p.s.encouragement_returning, "expired owner marks cannot restart the bonus");
+});
+
+test("owner history prevents newcomer and returning bonuses from resetting after Steam linking", async () => {
+	const h = harness(),
+		p = h.player("Replacement", { pid: "shared" });
+	h.histories.set("MK_encouragement-owner:" + p.owner, {
+		oldest: h.now() - 500 * day,
+		last_online: h.now() - day,
+		return_until: 0,
+	});
+	h.setRecords([h.record(p)]);
+	assert(await h.c.encouragement_login(p, new Date(h.now() - 400 * day)));
+	assert(!p.s.encouragement_new);
+	assert(!p.s.encouragement_returning);
+	assert.equal(p.p.encouragement.oldest, h.now() - 500 * day);
+});
+
+test("migration reads only linked owner marks, never unrelated owners or previous platform bonuses", async () => {
+	const h = harness(),
+		p = h.player("Linked", { pid: "current", created: h.now() - 500 * day });
+	const saved = { oldest: p.created, last_online: h.now() - day, return_until: h.now() + 90 * day };
+	h.histories.set("MK_encouragement-owner:US_unrelated", saved);
+	h.histories.set("MK_encouragement-pid:previous", saved);
+	p.p.encouragement = { group: "pid:previous", oldest: p.created, return_until: saved.return_until };
+	h.setRecords([h.record(p, { info: { p: { encouragement: plain(p.p.encouragement) } } })]);
+	assert(await h.c.encouragement_login(p, new Date(h.now() - day)));
+	assert(!p.s.encouragement_returning);
+	assert.deepEqual(plain(h.historyQueries[0].query._id.$in), ["MK_encouragement-owner:" + p.owner]);
+});
+
+test("owner history cannot bypass the character limit or an empty platform roster", async () => {
+	for (const count of [0, 24, 25, 26]) {
+		const h = harness(),
+			p = h.player("Linked", { pid: "shared", created: h.now() - 500 * day });
+		h.histories.set("MK_encouragement-owner:" + p.owner, {
+			oldest: p.created,
+			last_online: h.now() - day,
+			return_until: h.now() + 70 * day,
+		});
+		h.setRecords(Array.from({ length: count }, (_, i) => h.record(p, { _id: i ? "CH_" + i : p.real_id })));
+		assert(await h.c.encouragement_login(p, new Date(h.now() - day)));
+		assert.equal(!!p.s.encouragement_returning, count === 24);
+		assert.equal(h.historyQueries.length, count === 24 ? 1 : 0);
+		assert.equal(p.encouragement.blocked, count !== 24);
+	}
+});
+
+test("a restored group mark reaches online characters and survives stale character saves", async () => {
+	const h = harness(),
+		p = h.player("Online", { pid: "shared", created: h.now() - 500 * day });
+	h.setRecords([h.record(p)]);
+	assert(await h.c.encouragement_login(p, new Date(h.now() - day)));
+	assert(!p.s.encouragement_returning);
+	const stale = plain(p.p.encouragement),
+		until = h.now() + 70 * day;
+	h.histories.get("MK_encouragement-pid:shared").return_until = until;
+	h.time(h.now() + 5 * 60000);
+	await h.c.encouragement_load(p);
+	h.c.encouragement_update(p, true);
+	assert.equal(p.s.encouragement_returning.expires, until);
+	assert.equal(h.historyQueries.length, 1);
+
+	h.time(h.now() + 5 * 60000);
+	p.p.encouragement = stale;
+	h.setRecords([h.record(p, { info: { p: { encouragement: stale } } })]);
+	h.c.encouragement_groups.clear();
+	assert(await h.c.encouragement_login(p, new Date(h.now() - 60000)));
+	assert.equal(p.s.encouragement_returning.expires, until);
+	assert.equal(h.histories.get("MK_encouragement-pid:shared").return_until, until);
+});
+
+test("an unavailable owner-history lookup cannot admit a character with unchecked bonuses", async () => {
+	const h = harness(),
+		p = h.player("Linked", { pid: "shared" }),
+		collection = h.c.db.collection;
+	h.setRecords([h.record(p)]);
+	h.c.db.collection = (name) => {
+		const result = collection(name);
+		if (name === "mark")
+			result.find = () => {
+				throw Error("fixture history unavailable");
+			};
+		return result;
+	};
+	h.c.log_trace = () => {};
+	assert.equal(await h.c.encouragement_login(p, new Date(h.now())), false);
+	assert.equal(h.writes(), 0);
+	assert(!p.s.encouragement_returning);
+	assert.equal(h.c.encouragement_groups.get("pid:shared").next, h.now() + 60000);
 });
 
 test("invalidation during a query cannot resurrect an older eligible snapshot", async () => {
@@ -1164,9 +1620,11 @@ test("a finalized personal receipt is consumed once, even if the completion help
 	h.c.encouragement_points(m, p, 1000);
 	h.c.drop_something(p, m);
 	const chest = Object.values(h.c.chests)[0];
-	h.c.encouragement_loot(chest, 1);
-	h.c.encouragement_loot(chest, 1);
+	const result = { id: chest.id, goldm: 1, opener: p.name, items: [] };
+	h.c.encouragement_loot(chest, result, [p.name]);
+	h.c.encouragement_loot(chest, result, [p.name]);
 	assert.equal(h.inventory.get(p.real_id).length, 1);
+	assert.equal(result.items.length, 1);
 	assert.equal(p.gold, 14000);
 });
 

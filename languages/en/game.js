@@ -1,4 +1,6 @@
 module.exports = {
+	// Entrance error naming missing keys. {items} is a list of quantities and proper item names; preserve the placeholder.
+	"response.transport_need_items": "Need {items}",
 	// js/game.js, add_log display.
 	"game.reload_synced": "Reload Synced",
 	// js/game.js, add_log display. Parameters: value.
@@ -354,6 +356,12 @@ module.exports = {
 	"response.distance": "Get closer",
 	// js/game.js, response trade_bspace.
 	"response.trade_bspace": "No space on buyer",
+	// js/game.js, response trade_offer_invalid: a trade offer asked for an unknown item or title.
+	"response.trade_offer_invalid": "Can't ask for that item",
+	// js/game.js, response trade_swap_match: the chosen item changed or doesn't satisfy the trade offer.
+	"response.trade_swap_match": "That item doesn't match the offer",
+	// js/game.js, response trade_swap_space: the merchant has no inventory room for your item. Mirrors "No space on buyer".
+	"response.trade_swap_space": "No space on merchant",
 	// js/game.js, response bank_restrictions.
 	"response.bank_restrictions": "You can't buy, trade or upgrade in the bank.",
 	// js/game.js, response tavern_too_late.
@@ -907,6 +915,8 @@ module.exports = {
 	"game.trade_history.gave_away": "- Gave away {quantity}'{item}' to {player}",
 	// Trade-history sale line. quantity is an optional formatted prefix; item and player are proper names; gold is already formatted.
 	"game.trade_history.sold": "- Sold {quantity}'{item}' to {player} for {gold} gold",
+	// Trade-history line for a completed trade offer. item is what this character gave and received what it got, both formatted item names with any quantity; player is a character name.
+	"game.trade_history.traded": "- Traded '{item}' to {player} for '{received}'",
 	// js/game.js limitdcreport socket handler. Player-facing explanatory paragraph in the existing show_json report after disconnecting for too many CODE calls. {cost} is the server's weighted call-cost LIMIT for a 4-second window, exceeded before disconnection; it is not the consumed cost; {total} is the number of calls, already formatted. These are different quantities. Translate the explanation clearly and concisely, retaining playful emphasis. Do not translate 'move', hello@adventure.land or Discord/#code_beginner. No HTML. Preserve {cost} and {total} once each.
 	"game.call_limit.report": "You exceeded the limit of {cost} call-cost units in 4 seconds. That's tooooo much! This usually happens when a function such as 'move' is called repeatedly. Some calls cost more than others. For help, email hello@adventure.land or ask in Discord/#code_beginner. You made {total} calls in total.",
 	// js/game.js hardcore-mode browser/tab title. Fierce is an emphatic adjective identifying the hardcore mode, not a proper game or character name. Keep {character} exactly; it contains the raw character name. Use a short natural title and avoid assumptions about the character's gender. No HTML.

@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "طاولة البوكر مغلقة حاليًا",
 	"response.tavern_closing": "ألعاب الحانة مغلقة أثناء إعادة تشغيل الخادم",
 	"response.poker_stool_far": "قف بجانب مقعد فارغ لتجلس",
-	"response.poker_saving": "جارٍ تحديث طاولة البوكر. حاول مرة أخرى بعد قليل."
+	"response.poker_saving": "جارٍ تحديث طاولة البوكر. حاول مرة أخرى بعد قليل.",
+	"response.trade_offer_invalid": "لا يمكن طلب هذا الغرض",
+	"response.trade_swap_match": "هذا الغرض لا يطابق العرض",
+	"response.trade_swap_space": "لا مساحة لدى التاجر",
+	"game.trade_history.traded": "- قايضت '{item}' مع {player} مقابل '{received}'",
+	"response.transport_need_items": "تحتاج إلى: {items}"
 }

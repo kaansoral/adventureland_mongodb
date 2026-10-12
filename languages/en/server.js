@@ -106,6 +106,10 @@ module.exports = {
 	"server.floating.stun": "STUN!",
 	// node/server.js:3851; floating authored display. Keep character, item, monster, map, and product names unchanged.
 	"server.floating.sugar_rush": "SUGAR RUSH!",
+	// node/server.js complete_attack; floating combat text when a Stonegaze Ring stone lands. Short shout like FREEZE!.
+	"server.floating.stone": "STONE!",
+	// node/server.js complete_attack; floating combat text over the player when Primal Frenzy starts. Short shout like SUGAR RUSH!.
+	"server.floating.frenzy": "FRENZY!",
 	// node/server.js:11642; game_chat authored display. Keep character, item, monster, map, and product names unchanged. Parameters: {player} = player.name.
 	"server.game_chat.joined_the_duel": "{player} joined the duel!",
 	// node/server.js:5106; game_chat authored display. Keep character, item, monster, map, and product names unchanged. Parameters: {target} = target.name.
@@ -212,6 +216,12 @@ module.exports = {
 	"server.game_log.listed_to_giveaway": "Listed {q} {item} to giveaway!",
 	// node/server.js:7477; game_log authored display. Keep character, item, monster, map, and product names unchanged. Parameters: {item} = item_name(player.slots[slot]).
 	"server.game_log.listed_to_giveaway_2": "Listed {item} to giveaway!",
+	// node/server.js equip; game_log after listing a trade offer. Keep item names unchanged. Parameters: {item} = trade_lot_name(offered item, with any quantity); {want} = trade_lot_name(requested item) without a level, naming a title only when the offer requires one.
+	"server.game_log.offered_for": "Offered {item} for {want}",
+	// node/server.js equip; game_log after listing a trade offer that asks for a minimum level. Keep item names unchanged. Parameters: {item} = trade_lot_name(offered item, with any quantity); {want} = trade_lot_name(requested item), ending in its minimum level such as +8.
+	"server.game_log.offered_for_or_higher": "Offered {item} for {want} or higher",
+	// node/server.js trade_swap; game_log for both characters after a trade offer completes. Keep item and character names unchanged. Parameters: {item} = what this character gave; {player} = the other character; {received} = what this character got.
+	"server.game_log.traded_for": "Traded {item} to {player} for {received}",
 	// node/server.js:2912; game_log authored display. Keep character, item, monster, map, and product names unchanged. Parameters: {amount} = to_pretty_num(gain_gold). node/server.js:2938; game_log authored display. Keep character, item, monster, map, and product names unchanged. Parameters: {amount} = to_pretty_num(gain_gold).
 	"server.game_log.looted_gold": "Looted {amount} gold",
 	// node/server.js:13125; game_log authored display. Keep character, item, monster, map, and product names unchanged.

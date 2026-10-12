@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "KŐ!",
+	"server.floating.frenzy": "ŐRJÖNGÉS!",
 	"server.party.joined": "{player} csatlakozott a csapathoz",
 	"server.party.joined_with_invite": "{player} csatlakozott a csapathoz {inviter} meghívására",
 	"server.party.left": "{player} kilépett a csapatból",
@@ -393,5 +395,8 @@
 	"server.cave.amber_limit": "A látogatás során megszerezhető Cave Amber teljes mennyisége megjelent: {amount}. Tárgyakat továbbra is találhatsz, és XP-t is szerezhetsz.",
 	"server.game_error.poker_hand_active": "A pókerleosztásod még tart egy másik szerveren. Várd meg a végét, vagy csatlakozz újra ahhoz a szerverhez.",
 	"server.tracktrix.mail_subject": "A Tracktrixed",
-	"server.tracktrix.mail_body": "Egy kis segítség a következő vadászathoz. Tartsd magadnál ezt a Tracktrixet!"
+	"server.tracktrix.mail_body": "Egy kis segítség a következő vadászathoz. Tartsd magadnál ezt a Tracktrixet!",
+  "server.game_log.offered_for": "Cserére kínálva: {item}, kért: {want}",
+  "server.game_log.offered_for_or_higher": "Cserére kínálva: {item}, kért: {want} vagy magasabb",
+  "server.game_log.traded_for": "Csere: {item}, partner: {player}, kapott: {received}"
 }

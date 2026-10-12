@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "Bàn poker hiện đang đóng",
 	"response.tavern_closing": "Các trò chơi của Quán Rượu đóng cửa trong lúc máy chủ khởi động lại",
 	"response.poker_stool_far": "Đứng cạnh một ghế trống để ngồi xuống",
-	"response.poker_saving": "Bàn poker đang cập nhật. Hãy thử lại sau giây lát."
+	"response.poker_saving": "Bàn poker đang cập nhật. Hãy thử lại sau giây lát.",
+	"response.trade_offer_invalid": "Không thể yêu cầu vật phẩm đó",
+	"response.trade_swap_match": "Vật phẩm này không khớp với đề nghị",
+	"response.trade_swap_space": "Thương nhân hết chỗ",
+	"game.trade_history.traded": "- Đã đổi '{item}' với {player} lấy '{received}'",
+	"response.transport_need_items": "Cần: {items}"
 }

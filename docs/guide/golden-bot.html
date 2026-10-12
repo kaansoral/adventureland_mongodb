@@ -1,0 +1,31 @@
+<div class="title">Golden Bot</div>
+<div class="guide-views golden-bot-views"></div>
+<div class="divider"></div>
+<div class="guide-spawn golden-bot-spawn"></div>
+<p>{{ phrase("monster.goldenbot.explanation") }}</p>
+<div style="overflow-x:auto"><div style="position:relative;width:446px;height:402px;margin:10px auto 0"><img src="/images/guide/golden-bot-habitat.webp?v=50117748" width="446" height="402" alt="Underground Hills" style="image-rendering:pixelated;display:block"><svg width="446" height="402" style="position:absolute;left:0;top:0"><rect x="64" y="64" width="318" height="237" fill="none" stroke="#73FFAC" stroke-width="2"/><rect x="126" y="64" width="256" height="274" fill="none" stroke="#73FFAC" stroke-width="2"/></svg></div></div>
+<p>{{ phrase("docs.guide.golden-bot.intro") }}</p>
+<div class="divider"></div>
+<div class="title">{{ phrase("interface.monster_info.drops") }}</div>
+<div class="guide-drops golden-bot-drops"></div>
+<div class="divider"></div>
+<div class="title">CODE</div>
+<p>{{ phrase("docs.guide.golden-bot.code") }}</p>
+<!-- prettier-ignore -->
+<div class="code" id="golden-bot-code">async function fight_golden_bot() {
+    var bot = get_nearest_monster({ type: "goldenbot" });
+    if (character.rip || !bot || !can_attack(bot)) return;
+    return await attack(bot);
+}
+
+fight_golden_bot().catch(show_json);</div>
+<p><a href="/docs/code/functions/get_nearest_monster" target="_blank">get_nearest_monster</a> · <a href="/docs/code/functions/can_attack" target="_blank">can_attack</a> · <a href="/docs/code/functions/attack" target="_blank">attack</a></p>
+<style>
+	.title { color: #467956; font-size: 36px; margin-top: 15px; }
+	.divider { margin: 15px -26px 0; height: 5px; background-color: #a2a2a2; }
+</style>
+<script>
+	$(".golden-bot-views").html(guide_monster_views("goldenbot"));
+	$(".golden-bot-spawn").html(["sparkbot", "targetron"].map(function(name) { return guide_monster_tile(name, 0); }).join("") + "<span class='guide-count'>×" + to_pretty_num(100000) + "</span><span class='guide-arrow'></span>" + guide_monster_tile("goldenbot", 0));
+	$(".golden-bot-drops").html(G.drops.monsters.goldenbot.map(function(drop) { return render_drop(drop, 1, "#858B8E"); }).join(""));
+</script>

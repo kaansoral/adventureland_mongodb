@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Đăng nhập bằng Steam: <span style=\"color: green\">BẬT</span>",
+	"pages.steam_signin.off": "> Đăng nhập bằng Steam: <span style=\"color: #F54423\">TẮT</span>",
+	"pages.steam_signin.title": "Đăng nhập bằng Steam",
+	"pages.steam_signin.intro": "Xác minh tài khoản Steam, rồi chọn tài khoản Adventure Land để đăng nhập.",
+	"pages.steam_signin.continue": "Tiếp tục đến Steam",
+	"pages.steam_signin.choose": "Chọn tài khoản",
+	"pages.steam_signin.choose_help": "Chọn một tài khoản Adventure Land được liên kết với tài khoản Steam này.",
+	"pages.steam_signin.identity": "Đã xác minh tài khoản Steam có đuôi {digits}",
+	"pages.steam_signin.account": "Tài khoản {name}",
+	"pages.steam_signin.action": "Đăng nhập vào tài khoản này",
+	"pages.steam_signin.empty": "Không có tài khoản Adventure Land nào có thể đăng nhập bằng tài khoản Steam này.",
+	"pages.steam_signin.email": "Đăng nhập bằng email",
+	"pages.steam_signin.next": "Xem thêm tài khoản",
+	"pages.steam_signin.signup_label": "> Đăng ký",
 	"pages.steam_signup.client_help": "Tính năng này giúp những người chơi gặp khó khăn khi chạy ứng dụng trò chơi.",
 	"pages.steam_signup.title": "Đăng ký bằng Steam",
 	"pages.steam_signup.intro": "Bạn có Adventure Land trên Steam? Xác minh giao dịch mua để tạo tài khoản và chơi trên trình duyệt.",
@@ -1482,5 +1496,6 @@
 	"pages.logs.working-on-an-improved-movement-and-visibility-system": "Tôi đang làm một hệ thống di chuyển và tầm nhìn tốt hơn. Hệ thống hiện tại hơi phức tạp, đây là bản thứ tư hay thứ năm, và tôi rất muốn dành thời gian để chuyển sang bản thứ sáu.",
 	"pages.logs.working-on-the-orb-design-3x-orb-s": "Tôi đang làm phần thiết kế cho các orb; 3 Orb trông không hay, lười quá, nên tôi nảy ra ý biến một orb thành ô đựng thuốc tiên: đó sẽ là một loại thuốc tăng cường có tác dụng dài.",
 	"pages.logs.wow-just-realised-it-has-been-a-month": "Ồ, tôi vừa nhận ra đã một tháng trôi qua kể từ khi ra mắt; từ đó đến nay chúng tôi đi được một chặng dài, và giờ tôi xem trò chơi như một cộng đồng: tôi gặp nhiều người, có thêm nhiều bạn, toàn bộ tầm nhìn của tôi đã thay đổi, và không chỉ về trò chơi mà còn về cuộc sống nói chung và về công việc phát triển. Cứ nói là giờ tôi nhiều hy vọng hơn, với rất nhiều thứ :)",
-	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Đang khép lại phần sửa lỗi, tìm hiểu và thử nghiệm."
+	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Đang khép lại phần sửa lỗi, tìm hiểu và thử nghiệm.",
+	"pages.contents.selection.slots-in-use": "Tất cả ô nhân vật của bạn đều đã được sử dụng."
 }

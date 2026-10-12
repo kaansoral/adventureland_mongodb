@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "HÓA ĐÁ!",
+	"server.floating.frenzy": "CUỒNG NỘ!",
 	"server.party.joined": "{player} đã tham gia tổ đội",
 	"server.party.joined_with_invite": "{player} đã tham gia tổ đội theo lời mời của {inviter}",
 	"server.party.left": "{player} đã rời tổ đội",
@@ -393,5 +395,8 @@
 	"server.cave.amber_limit": "Toàn bộ {amount} Cave Amber cho lượt vào này đã xuất hiện. Bạn vẫn có thể tìm vật phẩm và nhận XP.",
 	"server.game_error.poker_hand_active": "Ván poker của bạn vẫn đang diễn ra trên máy chủ khác. Hãy chờ ván kết thúc hoặc kết nối lại máy chủ đó.",
 	"server.tracktrix.mail_subject": "Tracktrix của bạn",
-	"server.tracktrix.mail_body": "Một chút trợ giúp cho chuyến săn tiếp theo. Hãy mang Tracktrix này bên mình!"
+	"server.tracktrix.mail_body": "Một chút trợ giúp cho chuyến săn tiếp theo. Hãy mang Tracktrix này bên mình!",
+  "server.game_log.offered_for": "Đã rao đổi {item} lấy {want}",
+  "server.game_log.offered_for_or_higher": "Đã rao đổi {item} lấy {want} hoặc cao hơn",
+  "server.game_log.traded_for": "Đã đổi {item} với {player} lấy {received}"
 }

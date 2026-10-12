@@ -80,5 +80,8 @@
 	"error.save_failed": "無法儲存，請重試。",
 	"error.invalid_language": "請從清單中選擇語言。",
 	"error.cant_copy_over_map_in_use": "無法覆寫正在使用的地圖。",
-	"error.cant_delete_map_in_use": "無法刪除正在使用的地圖。"
+	"error.cant_delete_map_in_use": "無法刪除正在使用的地圖。",
+	"error.code_too_large": "這份腳本太大了。每個CODE欄位最多可儲存1 MiB（1,048,576位元組）的UTF-8文字。",
+	"error.code_storage_full": "CODE儲存空間已滿。請先匯出並刪除不再使用的腳本，再儲存更多程式碼。",
+	"error.code_rate_limited": "你儲存CODE的次數太頻繁了。請稍候片刻再試。"
 }

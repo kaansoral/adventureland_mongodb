@@ -61,7 +61,7 @@ Object.defineProperty(character, "y", {
 	},
 	enumerable: true,
 });
-for (var p in parent.character) proxy(p); // Not all properties are sadly available right away, new properties are captured imperfectly
+proxy_all(); // Not all properties are sadly available right away, new properties are captured imperfectly
 // var character=parent.character; // Old [25/06/2018]
 
 var G = parent.G; // Game Data - Use show_json(Object.keys(G)); and inspect individual data with show_json(G.skills) and alike
@@ -1268,6 +1268,20 @@ function wishlist(trade_slot, name, price, level, quantity) {
 	// example: trade(0,"staff",10000000,9) Wishlists an +9 Staff for 10,000,000
 	if (!is_string(trade_slot) || !trade_slot.startsWith("trade")) trade_slot = "trade" + trade_slot;
 	return parent.wishlist(trade_slot, name, price, quantity || 1, level);
+}
+
+function trade_offer(num, trade_slot, want, quantity) {
+	// Offers inventory[num] for an item instead of gold, want: "staff" or {name:"staff",level:8,p:"shiny",q:1}
+	// A missing level or p accepts any, q is for stackable items, quantity is how many of inventory[num] you offer
+	// example: trade_offer(0,"trade3",{name:"staff",level:8}) offers the first item for a +8 Staff
+	if (!is_string(trade_slot) || !trade_slot.startsWith("trade")) trade_slot = "trade" + trade_slot;
+	return parent.trade_offer(trade_slot, num, want, quantity || 1);
+}
+
+function trade_swap(target, trade_slot, num) {
+	// Gives inventory[num] for the item in a target's trade offer, the item has to match target.slots[trade_slot].want
+	if (!target || !target.slots || !target.slots[trade_slot]) return rejecting_promise({ reason: "invalid_target" });
+	return parent.trade_swap(trade_slot, target.id, target.slots[trade_slot].rid, num);
 }
 
 function giveaway(slot, num, q, minutes) {
@@ -2827,12 +2841,20 @@ function proxy(name) {
 	});
 }
 
+// Mirrors the character's own properties. Its sprite also inherits PIXI methods such as listeners, on and once; mirroring
+// those replaced character.listeners and character.on and stopped every character event. The proxy's own members stay.
+function proxy_all() {
+	var real = parent.character;
+	if (!real) return;
+	for (var p in real) if (Object.prototype.hasOwnProperty.call(real, p) && !Object.prototype.hasOwnProperty.call(character, p)) proxy(p);
+}
+
 character.read_only.push(...["on", "once"]);
 ["bank", "user", "code", "angle", "direction", "target", "from_x", "from_y", "going_x", "going_y", "moving", "vx", "vy", "move_num"].forEach(function (p) {
 	proxy(p);
 });
 setInterval(function () {
-	for (var p in parent.character) proxy(p);
+	proxy_all();
 }, 50); // bottom of the barrel
 
 function eval_s(code) {

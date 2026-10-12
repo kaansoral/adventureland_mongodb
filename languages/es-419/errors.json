@@ -80,5 +80,8 @@
 	"error.save_failed": "No se pudo guardar. Vuelve a intentarlo.",
 	"error.invalid_language": "Elige un idioma de la lista.",
 	"error.cant_copy_over_map_in_use": "No se puede sobrescribir un mapa que está en uso.",
-	"error.cant_delete_map_in_use": "No se puede borrar un mapa que está en uso."
+	"error.cant_delete_map_in_use": "No se puede borrar un mapa que está en uso.",
+	"error.code_too_large": "Este script es demasiado grande. Cada ranura CODE admite hasta 1 MiB (1,048,576 bytes) de texto UTF-8.",
+	"error.code_storage_full": "Tu almacenamiento de CODE está lleno. Exporta y elimina los scripts que ya no uses antes de guardar más código.",
+	"error.code_rate_limited": "Estás guardando CODE muy seguido. Espera un momento y vuelve a intentarlo."
 }

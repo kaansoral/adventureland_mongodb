@@ -98,6 +98,13 @@ try {
 
 // ==================== ROUTES ====================
 
+// Auth callbacks bypass common's development URL logger: OpenID queries contain credentials.
+var steam_auth_app = express.Router();
+steam_auth_app.use(express.urlencoded({ extended: false, limit: "4kb" }));
+steam_auth_app.use(express.json({ limit: "4kb" }));
+steam_auth_app.use(cookieParser());
+steam_auth_app.use(localization.middleware((req) => get_user(req)));
+
 var steam_signup = require("./steam_signup").create_steam_signup({
 	key: () => keys.steam_publisher_web_apikey,
 	get_user,
@@ -112,15 +119,47 @@ var steam_signup = require("./steam_signup").create_steam_signup({
 		res.send(nunjucks.render("htmls/steam_signup.html", { domain, ...form }));
 	},
 });
-app.get("/steam-signup", steam_signup.page);
-app.post("/steam-signup/start", steam_signup.start);
-app.get("/steam-signup/callback", steam_signup.callback);
-app.post("/steam-signup/complete", steam_signup.complete);
+steam_auth_app.get("/steam-signup", steam_signup.page);
+steam_auth_app.post("/steam-signup/start", steam_signup.start);
+steam_auth_app.get("/steam-signup/callback", steam_signup.callback);
+steam_auth_app.post("/steam-signup/complete", steam_signup.complete);
+
+var steam_signin = require("./steam_signin").create_steam_signin({
+	client,
+	collection: db.collection("steam_auth"),
+	users: db.collection("user"),
+	get_user,
+	get_new_auth,
+	get_steam_id: get_steam_login_id,
+	set_enabled: set_steam_login,
+	auth_cookie: options.cookie_key,
+	local_origin: Local ? options.base_url : null,
+	preference(req, user) {
+		return localization.explicit_cookie(req) || !localization.initialized(user) ? localization.preference_fields(req, user) : {};
+	},
+	async finish_login(req, res, user, auth) {
+		localization.bind_user(req, user);
+		var domain = await get_domain(req, user);
+		set_cookie(res, options.cookie_key, get_id(user) + "-" + auth, domain.domain);
+	},
+	async render(req, res, form) {
+		var domain = await get_domain(req);
+		res.send(nunjucks.render("htmls/steam_signin.html", { domain, ...form }));
+	},
+});
+steam_auth_app.get("/steam-signin", steam_signin.page);
+steam_auth_app.post("/steam-signin/start", steam_signin.start);
+steam_auth_app.get("/steam-signin/callback", steam_signin.callback);
+steam_auth_app.get("/steam-signin/accounts", steam_signin.accounts);
+steam_auth_app.post("/steam-signin/accounts", steam_signin.accounts);
+steam_auth_app.post("/steam-signin/complete", steam_signin.complete);
+steam_auth_app.post("/steam-signin/cancel", steam_signin.cancel);
 
 // Main page / Selection
 app.get("/", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
+	domain.login_mode = req.query.login === "1";
 	await render_selection(req, res, user, domain);
 });
 
@@ -502,8 +541,8 @@ app.post("/map/:name/:suffix?", async (req, res, next) => {
 	var user = await get_user(req),
 		domain = await get_domain(req, user);
 	if (!user || !name.startsWith(get_id(user) + "_")) return res.status(403).send("");
-	var number = name.split("_")[1];
-	if (["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"].indexOf(number) === -1) return res.status(400).send("");
+	var number = name.slice((get_id(user) + "_").length);
+	if (!/^(?:[1-9]|10)$/.test(number)) return res.status(400).send("");
 	var map = await get("MP_" + name);
 	if (!map) map = { _id: "MP_" + name, created: new Date(), info: {}, blobs: ["info"] };
 	if (typeof data === "string") data = JSON.parse(data);
@@ -731,10 +770,47 @@ app.get("/macos", async (req, res, next) => {
 		domain = await get_domain(req, user);
 	res.status(200).send(nunjucks.render("htmls/macos.html", { domain: domain, user: user }));
 });
+// The web archive lists a release's changes as text: one line per group with names, for players without the game open.
+function release_archive_groups(release) {
+	var order = ["map", "monster", "npc", "event", "item", "set", "craft", "dismantle", "drop", "skill", "condition", "cx", "title", "token", "class", "achievement", "game", "table", "guide", "doc", "code", "fixed", "improved"],
+		sections = { item: items, craft: items, dismantle: items, token: items, monster: monsters, map: maps, npc: npcs, event: events, skill: skills, condition: conditions, set: sets, class: classes, achievement: achievements },
+		groups = {};
+	function name(ref) {
+		var at = ref.indexOf(":"),
+			type = ref.slice(0, at),
+			id = ref.slice(at + 1),
+			def = sections[type] && sections[type][id],
+			key = { npc: "name", event: "name", skill: "name", condition: "name", set: "name", class: "name", achievement: "name", guide: "title", article: "title" }[type],
+			phrase_id = type == "guide" ? "interaction." + id + ".title" : type == "article" ? "directory.guide." + id + ".title" : type + "." + id + "." + key;
+		if (key && phrase(phrase_id) !== phrase_id) return phrase(phrase_id);
+		if (type == "guide" && docs.interactions[id]) return docs.interactions[id].title;
+		if (type == "code") return id + "()";
+		return (def && def.name) || id;
+	}
+	(release.changes || []).forEach(function (entry) {
+		var ref = entry.new || entry.changed || entry.removed,
+			type = entry.fixed ? "fixed" : entry.improved ? "improved" : ref.slice(0, ref.indexOf(":")),
+			group = type == "article" ? "guide" : type,
+			line = ref ? name(ref) + (entry.new ? "" : " (" + phrase("client.update_notes.tag." + (entry.changed ? "changed" : "removed")) + ")") : entry.text;
+		(groups[group] = groups[group] || []).push(line);
+	});
+	return order
+		.filter(function (group) {
+			return groups[group];
+		})
+		.map(function (group) {
+			return { label: phrase("client.update_notes.group." + group), lines: groups[group] };
+		});
+}
+
 app.get("/allnotes", async (req, res, next) => {
 	var user = await get_user(req),
-		domain = await get_domain(req, user);
-	res.status(200).send(nunjucks.render("htmls/allnotes.html", { domain: domain, user: user, update_notes: update_notes }));
+		domain = await get_domain(req, user),
+		notes = localization.translate_notes(update_notes, domain.language).map(function (note) {
+			if (note.title !== undefined) note.groups = release_archive_groups(note);
+			return note;
+		});
+	res.status(200).send(nunjucks.render("htmls/allnotes.html", { domain: domain, user: user, update_notes: notes }));
 });
 app.get("/update-notes", function (req, res) {
 	var page_size = 20,
@@ -818,6 +894,10 @@ const PORT = process.env.PORT || options.port;
 const http_app = express();
 http_app.enable("trust proxy");
 http_app.use(web_assets.serve_static);
+http_app.use((req, res, next) => {
+	if (!/^\/steam-sign(?:in|up)(?:\/|$)/.test(req.url.split("?")[0])) return next();
+	steam_auth_app(req, res, (error) => res.status(error ? (error.status === 413 ? 413 : 503) : 404).end());
+});
 http_app.use(app);
 web_assets.start();
 const http_server = http_app.listen(PORT, () => {

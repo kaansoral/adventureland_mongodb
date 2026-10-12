@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "Покерний стіл зараз зачинено",
 	"response.tavern_closing": "Ігри таверни зачинені, поки сервер перезапускається",
 	"response.poker_stool_far": "Станьте поруч із вільним табуретом, щоб сісти",
-	"response.poker_saving": "Стан покерного столу оновлюється. Спробуйте ще раз трохи згодом."
+	"response.poker_saving": "Стан покерного столу оновлюється. Спробуйте ще раз трохи згодом.",
+	"response.trade_offer_invalid": "Цей предмет не можна запросити",
+	"response.trade_swap_match": "Цей предмет не відповідає пропозиції",
+	"response.trade_swap_space": "У торговця немає місця",
+	"game.trade_history.traded": "- Обміняно '{item}' з {player} на '{received}'",
+	"response.transport_need_items": "Потрібно: {items}"
 }

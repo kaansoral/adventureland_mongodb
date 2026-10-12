@@ -62,6 +62,7 @@ function setup(extra = {}) {
 		},
 		open_guide: (...args) => opened.push(args),
 		render_anniversary_event: () => opened.push(["anniversary-window"]),
+		release_card_html: () => "",
 		pcs() {},
 		event: {},
 		...extra,
@@ -113,6 +114,22 @@ test("cards use only connected server state, including seasonal waiting rounds",
 	context.render_event_announcements();
 	assert.equal(banner.visible, false);
 	assert.equal(banner.content, "");
+});
+
+test("an unread update post comes first and keeps the banner open on its own", () => {
+	let card = "<button class='gamebutton event-announcement release-new'>UPDATE</button>";
+	const { context, banner } = setup({ release_card_html: () => card });
+	context.render_event_announcements();
+	assert.equal(banner.visible, true, "no live event is needed");
+	assert.equal(banner.content, card);
+	context.S = { goobrawl: true };
+	context.render_event_announcements();
+	assert.ok(banner.content.startsWith(card), "the post comes before live events");
+	assert.match(banner.content, /Goo Brawl/);
+	card = "";
+	context.S = {};
+	context.render_event_announcements();
+	assert.equal(banner.visible, false, "once the post is opened, the banner closes");
 });
 
 test("live updates do not restart animations unless the visible event list changes", () => {

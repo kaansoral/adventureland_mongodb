@@ -42,6 +42,7 @@ function runtime() {
 		"hairdo6",
 		"burningeyes1",
 		"makeup1",
+		"makeup120",
 		"mbody4",
 		"lavaglass",
 		"stormhead",
@@ -229,10 +230,12 @@ test("hair with a built-in hat hides a second hat and restores it when removed",
 test("animated cosmetics remain harmless with fake PIXI and no graphics", () => {
 	const { context: c, actor } = runtime();
 	const s = actor("aniv2");
-	s.cx.head = "lavaglasshead0";
 	vm.runInContext(read("js/pixi/fake/pixi.min.js"), c);
 	c.no_graphics = true;
-	assert.doesNotThrow(() => c.cosmetics_logic(s));
+	for (const head of ["lavaglasshead0", "makeup120"]) {
+		s.cx.head = head;
+		assert.doesNotThrow(() => c.cosmetics_logic(s));
+	}
 	assert.equal(s.children.length, 0);
 });
 
@@ -241,6 +244,7 @@ test("heads with frame metadata animate independently of walking in all directio
 	for (const [id, frames, height, interval] of [
 		["headfixture3", 3, 30, 240],
 		["headfixture6", 6, 38, 220],
+		["makeup120", 3, 30, 160],
 		["lavaglasshead0", 8, 30, 160],
 		["stormhead0", 6, 30, 220],
 	]) {
@@ -263,4 +267,6 @@ test("heads with frame metadata animate independently of walking in all directio
 	}
 	c.generate_textures("makeup117", "head");
 	assert.equal(Array.isArray(c.textures.makeup117[0]), false, "static heads retain their texture shape");
+	assert.equal(c.G.sprites.makeup1.matrix[0][20], null, "the static sheet cannot overwrite makeup120's animated grid");
+	assert.equal(c.G.sprites.makeup1.matrix[0][21], "makeup121", "neighboring head cells keep their positions");
 });

@@ -243,6 +243,14 @@ test("bank destination guidance is translated and reaches both docs and MCP", as
 	}
 });
 
+// Releases carry text, title_text and caption_text beside each English field of the note and its highlights.
+function assert_translated(entry, language) {
+	for (const item of localization.note_phrases(entry)) {
+		const name = item.field === "title" ? "title_text" : item.field === "caption" ? "caption_text" : "text";
+		assert.equal(item.holder[name], localization.phrase(item.id, {}, language), `${language}: ${item.id}`);
+	}
+}
+
 test("initial and paginated update notes carry request-local text without changing canonical notes", async () => {
 	const before = JSON.stringify(notes);
 	let handler;
@@ -289,14 +297,19 @@ test("initial and paginated update notes carry request-local text without changi
 					const entry = domain.update_notes[index];
 					assert.equal(entry.note, notes[index].note);
 					assert.equal(entry.phrase, notes[index].phrase);
-					assert.equal(entry.text, localization.phrase(entry.phrase, {}, language));
+					assert_translated(entry, language);
 				}
+				assert.notEqual(
+					domain.update_notes[0].title_text,
+					notes[0].title,
+					`${language}: the newest release title is translated`,
+				);
 				for (const offset of [20, notes.length - 1, notes.length]) {
 					const res = response();
 					handler({ query: { offset } }, res);
 					assert.equal(res.body.notes.length, Math.min(20, notes.length - offset));
 					assert.equal(res.body.more, offset + res.body.notes.length < notes.length);
-					for (const entry of res.body.notes) assert.equal(entry.text, localization.phrase(entry.phrase, {}, language));
+					for (const entry of res.body.notes) assert_translated(entry, language);
 				}
 			}),
 		),
@@ -326,16 +339,27 @@ test("note renderers use delivered translations while retaining colors and safe 
 			scrollTop: (value) => scrolls.push({ selector, value }),
 		}),
 		position_modals: () => {},
+		release_cover_html: () => "",
+		release_counts: () => "",
 	});
 	vm.runInContext(read("js/phrases.js"), context);
 	context.phrase.load("tr", localization.browser_catalog("tr"));
-	for (const name of ["add_update_notes", "render_update_notes"])
+	for (const name of ["add_update_notes", "render_update_notes", "release_text"])
 		vm.runInContext(extract(read("js/functions.js"), name), context);
 	context.add_update_notes();
-	assert.ok(logs.some((entry) => entry.text === translated[0].text));
+	assert.ok(
+		logs.some((entry) => entry.text.includes(context.html_escape(translated[0].title_text))),
+		"the newest release title opens its post",
+	);
+	assert.ok(
+		logs.some((entry) => entry.text === context.html_escape(translated[0].text)),
+		"followed by its summary",
+	);
 	assert.deepEqual(scrolls, [{ selector: "#gamelog", value: 0 }]);
 	context.render_update_notes();
-	assert.ok(html.includes(context.html_escape(translated[0].text)));
+	const legacy = translated.find((entry) => entry.title === undefined);
+	assert.ok(html.includes(context.html_escape(translated[0].title_text)));
+	assert.ok(html.includes(context.html_escape(legacy.text)));
 	assert.ok(html.includes("load_more_update_notes()"));
 	context.update_notes = [{ note: "Holiday", text: "<b>Translated</b>", date: "<date>", deployed: null }];
 	context.last_deploy = null;

@@ -4,7 +4,17 @@ English phrases live in `en/*.js`. Each entry has a stable semantic identifier a
 
 Every new or changed player-facing feature must update its English phrases and every supported language in the same change. This includes the website, login, game UI, messages, descriptions, dialogue, tutorials, guides, public CODE documentation and player-facing tools. Developer-facing proposals, experiments, prototypes, internal scripts and operational logs are outside this scope. When prototype content enters the live product, the translation requirements apply.
 
+Steam sign-in: all 14 account-choice, default-on toggle and signup phrases are translated and proofread in all 32 supported languages. Toggle states, Steam/Adventure Land names, placeholders and markup were checked on 2026-09-22.
+
 Rime Djinn: all 20 new tooltip, interface, guide and release phrases are translated and proofread in all 32 supported languages. Canonical text and placeholders were checked on 2026-09-14. The stronger Rime Shatter and Cove Mantle map bonus were translated and checked on 2026-09-15.
+
+Cavalry guide: all 12 revised or added rule phrases are translated and proofread in all 32 languages. Account and character levels, targeting, rescue duration, nearby-player restrictions, respawns and cooldowns were checked against the current handlers on 2026-09-21.
+
+CODE storage: the three save errors and two guide/reference paragraphs are translated and proofread in all 32 supported languages. Storage limits, request timing and CODE identifiers were checked on 2026-09-25.
+
+Tavern dealer: Venn's 21 table lines (drafted in ChatGPT Chat, Medium) and the guide paragraph that introduces him are translated and proofread in all 32 supported languages. The {name} placeholder, Venn's name and each language's established pot, all in and river terms are kept.
+
+Trade offers: all 46 new or revised stand, message, trade-history, CODE reference, guide, tutorial and release phrases are translated and proofread in all 32 supported languages. The guide reuses each language's own OFFER FOR TRADE, WANTS, TITLE, ANY and TRADE labels; placeholders, markup and locked CODE were checked on 2026-09-26.
 
 ## Runtime
 
@@ -21,7 +31,7 @@ The server reads and caches the requested language with English fallback. The br
 | Docs, guides and tutorials | `docs` | Translated HTML when the article is requested |
 | Website and account page text | `pages` | Translated HTML from the page template |
 | HTTP response text and email | Other phrases in `server` | Translated on the server |
-| Update notes | `updates` | Translated `text` with the initial 20 notes and each requested batch; original `note` and metadata remain intact |
+| Update notes | `updates` | Translated `text`, `title_text` and `caption_text` beside each English field of the initial 20 notes and each requested batch; the English fields and metadata remain intact. `UPDATE_NOTES.md` explains the phrase IDs and the `translations`/`apply` worksheets |
 | Offline desktop loading text | `desktop` | The small generated Tauri catalogs |
 
 Two shared docs labels, `docs.guide.basics.move` and `docs.reference.source_code`, also serve client renderers and are explicitly included. Article prose stays out of the browser catalog. New shared UI labels belong in a browser domain.
@@ -66,7 +76,7 @@ Keep canonical definition descriptions and their English phrase values aligned. 
 
 ## Fonts
 
-Arabic uses the registered Arabic pixel-font subset, loaded when Arabic text is rendered. Do not replace it with a system-font override. Direction changes stay scoped to guide/tutorial articles; CODE blocks and native drop ratios remain left to right. Compact Arabic HUD counters isolate their numeric runs. The shared UI layout stays simple.
+Arabic uses the registered Arabic pixel-font subset, loaded when Arabic text is rendered. Do not replace it with a system-font override. Direction changes stay scoped to guide/tutorial articles and the text of update posts; CODE blocks, native drop ratios, sprite rows and changed values remain left to right. Compact Arabic HUD counters isolate their numeric runs. The shared UI layout stays simple.
 
 Existing lettering drawn into cosmetic emote artwork (JOY!, TA-DA!, BLOOM! and DISCO!) remains shared artwork. The emote controls and descriptions translate. Localized bitmap lettering is deferred; it needs suitable native glyphs and visual review rather than substitution into the current limited glyph table.
 
@@ -87,6 +97,16 @@ This prepares the small offline Tauri catalogs. The game itself still loads only
 Tauri reads the selected Steam game language once off the UI thread, with a 750 ms deadline and system-language fallback. It caches the result across launches. Account and picker choices update the native preference too; they never trigger another Steam lookup. Only a signed-out page can reload once to apply initial detection. See [desktop behavior and Steam settings](../tauri/TODO.md#language).
 
 ## Catalog status
+
+Anniversary event shutdown (October 6): ten UI, guide and release phrases are translated and proofread in all 32 languages. Cole's fallback, Computer access, NPC names, placeholders and CODE markup were checked.
+
+Character slots: the slot notice and shell-charge release note are translated and proofread in all 32 languages. Slot entitlements, existing prices and negative-balance wording were checked on 2026-10-02.
+
+Monster combat range: the geometry paragraph and release note are translated and proofread in all 32 languages. The default bounds, optional size multiplier, rounding and CODE identifiers were checked on 2026-10-02.
+
+Encouragement loot events: the two CODE documentation paragraphs and release note are translated and proofread in all 32 languages. Reward ownership, reserved-chest timing, markup and CODE identifiers were checked on 2026-09-30.
+
+Public chat filtering: the release note and `say()` documentation are translated and proofread in all 32 languages. Discord forwarding, saved history, the server scope and recovery after 10 minutes without public messages were checked on 2026-09-29.
 
 | Language | Code | Status |
 | --- | --- | --- |
@@ -151,3 +171,13 @@ All 32 languages include the required current-game phrases. The remaining histor
 | Filipino | 701 | 386 |
 
 The earlier twelve languages have no missing archive translations. Historical translation can resume by language and section without changing the current-game completion status.
+
+October 6 PR fixes: six release notes and the shared bank-result paragraph are translated and proofread in all 32 languages. Deposit and withdrawal fields, the 25% healing value, stun terminology and fixed cape names were checked. Both bank examples pass native CODE and Mainframe checks.
+
+Button casing (October 6): the grace action uses uppercase in every language with letter case, including ADD GRACE and Turkish LÜTUF EKLE. Existing translations and uncased scripts are preserved. The Cavalry action is CALL IN CAVALRY! in English; other translations retain their meaning.
+
+October 5 bug fixes: 15 phrases covering Super Computer cavalry access, movement buttons, documentation links, numeric character names, Alchemy gold output, stunned item use, scroll consumption and merchant price validation are translated and proofread in all 32 languages. Fixed names, CODE identifiers, placeholders and the existing release entries are preserved.
+
+Stunned item use (October 5): the revised condition tooltip, replacement fix note and shared Items/CODE paragraph are translated and proofread in all 32 languages. The existing disabled response, passive recovery and ordinary equipment swaps remain unchanged.
+
+Super Computer menus (October 5): the revised release note is translated and proofread in all 32 languages. Both Network entry paths reuse existing translated controls; the selected item, Tracker and Cavalry actions were checked in every language.

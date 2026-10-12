@@ -35,6 +35,14 @@ var sprites = {
 		type: "head",
 		matrix: [[]], //looped below
 	},
+	makeup120: {
+		file: "/images/cosmetics/makeup/makeup120_anim.png?v=1",
+		rows: 1,
+		columns: 1,
+		type: "head",
+		frames: 3,
+		matrix: [["makeup120"]],
+	},
 	lavaglass: {
 		file: "/images/cosmetics/makeup/lavaglass_anim.png?v=1",
 		rows: 1,
@@ -557,7 +565,7 @@ var sprites = {
 		rows: 2,
 		columns: 4,
 		matrix: [
-			["oneeye", null, null, null],
+			["oneeye", "manyeye", null, null],
 			[null, null, null, null],
 		],
 	},
@@ -1185,6 +1193,7 @@ for (var i = 0; i < 42; i++) {
 	sprites["makeup1"]["matrix"][0].push("makeup1" + ("0" + i).slice(-2));
 }
 sprites.makeup1.matrix[0].push("cyclops0", "eyehead0", "mimichead0", "slimehead0", "lanternhead0");
+sprites.makeup1.matrix[0][20] = null; // makeup120 uses its animated sheet; keep all other head cells in place.
 
 //for(var i=0;i<25;i++)
 //	sprites["hairdo2"]["matrix"][0].push("hair2"+("0"+i).slice(-2));
@@ -1246,7 +1255,7 @@ var imagesets = {
 		size: 20,
 		rows: 40,
 		columns: 20,
-		file: "/images/tiles/items/raw_items.png?v=30",
+		file: "/images/tiles/items/raw_items.png?v=31",
 		load: true,
 	},
 };
@@ -1254,7 +1263,7 @@ var tilesets = {
 	dreamsv3: { file: "/images/tiles/map/dreams-v3.png?v=3" },
 	castle: { file: "/images/tiles/map/castle.png?v=2" },
 	custom2: { file: "/images/tiles/map/custom2.png?v=14" },
-	custom: { file: "/images/tiles/map/custom.png?v=16" },
+	custom: { file: "/images/tiles/map/custom.png?v=17" },
 	custom_a: { frames: 3, frame_width: 16, file: "/images/tiles/map/custom_a.png?v=5" },
 	doors: { file: "/images/tiles/map/doors.png" },
 	dungeon: { file: "/images/tiles/map/dungeon.png?v=5" },

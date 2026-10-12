@@ -498,7 +498,7 @@ var conditions = {
 		debuff: true,
 		defense: "phresistance",
 		duration: 3200,
-		explanation: "Cannot move, attack, heal, or use skills.",
+		explanation: "Cannot move, attack, heal, use skills, or use items.",
 	},
 	deepfreezed: {
 		name: "Deepfreezed",
@@ -556,7 +556,8 @@ var conditions = {
 	},
 	stoned: {
 		name: "Stoned",
-		skin: "condition_neutral",
+		skin: "condition_stoned",
+		ui: true,
 		duration: 4000,
 		blocked: true,
 		debuff: true,
@@ -691,7 +692,8 @@ var conditions = {
 	},
 	cursed: {
 		name: "Cursed",
-		skin: "condition_bad",
+		skin: "skill_curse",
+		ui: true,
 		output: -20,
 		incdmgamp: 20,
 		speed: -20,
@@ -699,6 +701,41 @@ var conditions = {
 		debuff: true,
 		// "defense":"bmresistance",
 		explanation: "Reduces damage output by 20% and movement speed by 20. Increases damage taken by 20%.",
+	},
+	exposed: {
+		name: "Exposed",
+		skin: "condition_exposed",
+		resistance: -240,
+		duration: 5000,
+		ui: true,
+		debuff: true,
+		explanation: "Resistance is reduced by 240 for 5 seconds.",
+	},
+	sundered: {
+		name: "Sundered",
+		skin: "condition_sundered",
+		armor: -200,
+		duration: 5000,
+		ui: true,
+		debuff: true,
+		explanation: "Armor is reduced by 200 for 5 seconds.",
+	},
+	frenzied: {
+		name: "Primal Frenzy",
+		skin: "condition_frenzied",
+		frequency: 40,
+		duration: 6000,
+		ui: true,
+		buff: true,
+		explanation: "Attack speed is increased by 40 for 6 seconds.",
+	},
+	// Hidden crumble window after a Stonegaze stone: not a buff or debuff, so Status Resistance,
+	// Purify and Cleansing Light leave it alone.
+	stonebreak: {
+		name: "Crumbling",
+		skin: "condition_stoned",
+		duration: 14000,
+		explanation: "Recently turned to stone. It can't be petrified again until this fades.",
 	},
 	dampened: {
 		name: "Dampened",
@@ -821,23 +858,58 @@ var conditions = {
 // Cleansing Light removes short-lived combat afflictions only. Persistent,
 // account, travel, economy, cooldown, and target-stack states stay untouched.
 for (var cleansable of [
-	"tangled",
-	"weakness",
-	"woven",
-	"eburn",
-	"stunned",
-	"deepfreezed",
-	"frozen",
-	"burned",
-	"shocked",
-	"fingered",
-	"stoned",
-	"slowness",
-	"poisoned",
-	"cursed",
-	"dampened",
-	"charmed",
-	"marked",
-	"sleeping",
-])
-	conditions[cleansable].cleansable = true;
+	"tangled","weakness","woven","eburn","stunned","deepfreezed","frozen",
+	"burned","shocked","fingered","stoned","slowness","poisoned","cursed",
+	"dampened","charmed","marked","sleeping","exposed","sundered",
+]) conditions[cleansable].cleansable=true;
+
+// The tarot card condition generation block below was disabled in the original Python (if 0:)
+// It is preserved here as a comment for reference.
+//
+// if(false){
+// 	for(var name in games["tarot"]["cards"]){
+// 		conditions["tarot_"+name]={"skin":"tarot","name":"Tarot Card","type":"tarot","ui":true};
+// 		var num_vals=[["2",2],["3",3],["4",4],["5",5],["6",6],["7",7],["8",8],["9",9],["10",10],["ace",20],["king",15],["knight",17],["page",12],["queen",14]];
+// 		for(var i=0;i<num_vals.length;i++){
+// 			var num=num_vals[i][0], val=num_vals[i][1];
+// 			var color="";
+// 			if(name.indexOf(num)!==-1 && name.indexOf("swords")!==-1){
+// 				conditions["tarot_"+name]["str"]=val; color="swords";
+// 			}
+// 			if(name.indexOf(num)!==-1 && name.indexOf("wands")!==-1){
+// 				conditions["tarot_"+name]["int"]=val; color="wands";
+// 			}
+// 			if(name.indexOf(num)!==-1 && name.indexOf("cups")!==-1){
+// 				conditions["tarot_"+name]["dex"]=val; color="cups";
+// 			}
+// 			if(name.indexOf(num)!==-1 && name.indexOf("pentacles")!==-1){
+// 				conditions["tarot_"+name]["vit"]=-val; color="pentacles";
+// 			}
+// 			if(color){
+// 				conditions["tarot_"+name]["minor"]=num+"_"+color;
+// 				conditions["tarot_"+name]["card"]=color.charAt(0).toUpperCase()+color.slice(1)+" of "+num.charAt(0).toUpperCase()+num.slice(1);
+// 			}
+// 		}
+// 		if(name==="fool"){
+// 			conditions["tarot_"+name]["miss"]=50;
+// 		}
+// 		if(name==="chariot"){
+// 			conditions["tarot_"+name]["speed"]=16;
+// 		}
+// 		if(name==="death"){
+// 			conditions["tarot_"+name]["vit"]=-30;
+// 			conditions["tarot_"+name]["frequency"]=-30;
+// 			conditions["tarot_"+name]["speed"]=-20;
+// 		}
+// 		if(name==="devil"){
+// 			conditions["tarot_"+name]["xp"]=-99;
+// 			conditions["tarot_"+name]["luck"]=-99;
+// 			conditions["tarot_"+name]["vit"]=10;
+// 			conditions["tarot_"+name]["str"]=10;
+// 		}
+// 		if(!conditions["tarot_"+name]["minor"]){
+// 			conditions["tarot_"+name]["card"]=name.charAt(0).toUpperCase()+name.slice(1);
+// 			conditions["tarot_"+name]["major"]=name;
+// 		}
+// 	}
+// }

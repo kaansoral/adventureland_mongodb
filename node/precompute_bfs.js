@@ -1,7 +1,11 @@
 var Place = "bfs";
-var keys = require("../secretsandconfig/keys");
-var options = require("../secretsandconfig/options");
+// The grid is built from the map geometry of the release's own database: node precompute_bfs.js [production|staging]
+var database = process.argv[2] || "",
+	suffix = database ? "_" + database : "";
+var keys = require("../secretsandconfig/keys" + suffix);
+var options = require("../secretsandconfig/options" + suffix);
 var Dev = options.Dev;
+var Prod = options.Prod; // models.js reads it while loading
 var fs = require("fs");
 const path = require("node:path");
 var precomputed = null;
@@ -127,6 +131,38 @@ async function run() {
 		console.log("Precomputed: " + mname + " in " + mssince(cstart) + "ms");
 	}
 	console.log("Done: " + mssince(start) + "ms");
+
+	// A map that had a grid must keep one. An empty grid means the flood fill escaped through a gap in the map's walls,
+	// and game servers would lose that map's movement checks.
+	var previous = null;
+	try {
+		eval(
+			fs
+				.readFileSync(path.resolve(__dirname, "precomputed_map_data.js"), "utf8")
+				.replace("var precomputed_bfs=", "previous="),
+		);
+	} catch (e) {}
+	var lost = Object.keys((previous && previous.smap_data) || {}).filter(function (name) {
+		return (
+			G.maps[name] &&
+			!G.maps[name].ignore &&
+			Object.keys(previous.smap_data[name] || {}).length &&
+			!Object.keys(smap_data[name] || {}).length
+		);
+	});
+	if (lost.length) {
+		console.error(
+			"Not written: " +
+				lost.join(", ") +
+				" would lose " +
+				(lost.length == 1 ? "its" : "their") +
+				" movement grid. Close the gap in the walls of " +
+				keys.mongodb_name +
+				", then run this again.",
+		);
+		await client.close();
+		process.exit(1);
+	}
 
 	// Write BFS data to node/precomputed_map_data.js (design/precomputed_images.js has images)
 	var result = {};

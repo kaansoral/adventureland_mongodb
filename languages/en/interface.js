@@ -1,4 +1,26 @@
 module.exports = {
+	// Upgrade-shrine chance tooltip for grace-only offerings. {amount} is the added grace (currently 0.5), not a percentage.
+	"interface.upgrade_shrine.grace_hint": "Adds {amount} grace. Does not raise the item level.",
+	// Alchemy tooltip label for the percentage of the item's gold value returned. This is not damage.
+	"interface.skill.gold_output": "Gold return",
+	// Upgrade/compound scroll tooltips, Items guide and CODE references. Each actual attempt consumes its scroll on success or failure; a chance preview is not an attempt.
+	"interface.item.scroll_consumed": "The scroll is consumed whether the attempt succeeds or fails.",
+	// Shared anniversary guide paragraph. Seasonal crafting moves to Cole; Xyn exchanges remain available. Preserve Mira, Cole, Xyn and Anniversary Gifts.
+	"interface.anniversary.offseason_crafting": "Mira crafts anniversary recipes during the event. After she leaves, Cole crafts them instead. Cakes and Anniversary Gifts can still be opened at Xyn.",
+	// Crafting hint. {name} is Mira or Cole. Computer access permits remote crafting; keep Computer unchanged.
+	"interface.anniversary.crafter_distance": "Stay near {name} to craft, unless you have Computer access.",
+	// Travel button. {name} is the active crafter, Mira during the event or Cole afterward; keep the name unchanged.
+	"interface.anniversary.visit_crafter": "Visit {name}",
+	// Uppercase upgrade-shrine action for an offering without a scroll. Match RESET and UPGRADE casing; adds grace, not an item level.
+	"interface.upgrade_shrine.add_grace": "ADD GRACE",
+	// Short uppercase tag under a monster's picture in a guide: the monster seen from the front.
+	"interface.monster_views.front": "FRONT",
+	// Short uppercase tag under a monster's picture in a guide: the monster facing left.
+	"interface.monster_views.left": "LEFT",
+	// Short uppercase tag under a monster's picture in a guide: the monster facing right.
+	"interface.monster_views.right": "RIGHT",
+	// Short uppercase tag under a monster's picture in a guide: the monster seen from behind, not 'go back'.
+	"interface.monster_views.back": "BACK",
 	// Compact uppercase label below the Cavalry sprite on the nearby INFO button. Opens the Cavalry guide; does not summon. Translate as calling for help.
 	"interface.cavalry.call_short": "CALL",
 	// Refusal for an account at level 80+ with ordinary level-3+ monsters nearby but none attacking the caller or party. level is the account’s highest recorded character level as a string, which can be higher than the calling character’s level. Explain that the account level sets the rule. CODE reason remains no_monsters. Keep Cavalry.
@@ -14,13 +36,13 @@ module.exports = {
 	// No ordinary monsters meet the rescue rules. The monster level, not the player level, must be at least 3.
 	"interface.cavalry.no_monsters": "No eligible level 3+ monsters nearby.",
 	// Missing required inventory item. Tracktrix and Cavalry are fixed names.
-	"interface.cavalry.tracker": "Carry a Tracktrix to call the Cavalry.",
+	"interface.cavalry.tracker": "Carry Tracktrix or Super Computer to call the Cavalry.",
 	// Call accepted but no sentry is assigned yet.
 	"interface.cavalry.queued": "Cavalry is busy. Your call is waiting.",
 	// Successful call feedback; keep Cavalry unchanged.
 	"interface.cavalry.coming": "Cavalry is on the way!",
 	// Tracktrix action and guide references. Uppercase action label with an exclamation mark, including the team name CAVALRY; use the locale’s punctuation.
-	"interface.cavalry.call": "CALL IN THE CAVALRY!",
+	"interface.cavalry.call": "CALL IN CAVALRY!",
 	// Character selection destination and own-condition tooltip. server is the full realm name, e.g. Americas II. Short label.
 	"interface.selection.destination": "Server: {server}",
 	// Character hover, condition tooltip and log. server is the saved home, e.g. Americas II.
@@ -136,7 +158,7 @@ module.exports = {
 	// js/html.js anniversary_event_html; event monster drops. Preserve the item name Anniversary Gift; slices is an ordinary noun for the six cake flavors.
 	"interface.anniversary_event_html.monsters_can_drop_slices_and_gifts_too": "Monsters can drop slices and Anniversary Gifts, too.",
 	// js/html.js anniversary_event_status_html; expired-event message. Preserve the item name Anniversary Gift; cakes is an ordinary category noun.
-	"interface.anniversary_event_status_html.the_anniversary_event_has_ended_you_can_still_open_your": "The anniversary event has ended. You can still open your cakes and Anniversary Gifts.",
+	"interface.anniversary_event_status_html.the_anniversary_event_has_ended_you_can_still_open_your": "The anniversary event has ended. Cole still crafts anniversary recipes, and Xyn still opens cakes and Anniversary Gifts.",
 	// js/html.js anniversary_event_status_html; authored interface text.
 	"interface.anniversary_event_status_html.i_kiss_you": "I Kiss You",
 	// js/html.js anniversary_event_status_html; authored interface text.
@@ -1086,6 +1108,8 @@ module.exports = {
 	"interface.item.giveaway": "GIVEAWAY!",
 	// js/html.js render_item; authored interface text.
 	"interface.item.put_up_for_sale": "PUT UP FOR SALE",
+	// js/html.js render_item and render_trade_offer; action that lists the item for another item instead of gold. Compact uppercase action.
+	"interface.item.offer_for_trade": "OFFER FOR TRADE",
 	// js/html.js render_item; authored interface text.
 	"interface.item.empty_anomaly": "Empty / Anomaly",
 	// js/html.js render_item; authored interface text. Parameters: data.
@@ -1167,6 +1191,36 @@ module.exports = {
 	"interface.wishlist_item.level": "LEVEL:",
 	// js/html.js render_wishlist_item; authored interface text.
 	"interface.wishlist_item.wishlist_2": "WISHLIST",
+	// js/html.js render_wishlist; header of the item picker that chooses what a trade offer asks for in return.
+	"interface.trade_offer.trade_for": "Trade For",
+	// js/html.js render_trade_offer; header of the form that finishes a trade offer, like the Wishlist form header.
+	"interface.trade_offer.trade_offer": "Trade Offer",
+	// js/html.js render_trade_offer; label of the lowest upgrade level a trade offer accepts; higher levels also qualify. Keep the colon.
+	"interface.trade_offer.min_level": "MIN LEVEL:",
+	// js/html.js render_trade_offer; label of the item title (Shiny, Glitched...) a trade offer asks for. Keep the colon.
+	"interface.trade_offer.title": "TITLE:",
+	// js/html.js render_trade_offer; value of MIN LEVEL: and TITLE: while the offer accepts any level or any title. Compact uppercase value.
+	"interface.trade_offer.any": "ANY",
+	// js/html.js render_trade_offer and render_item; label before the item you hand over in a trade offer. Keep the colon.
+	"interface.trade_offer.give": "GIVE:",
+	// js/html.js trade_want_html; label above the item another character's trade offer asks for. Keep the colon.
+	"interface.trade_offer.wants": "WANTS:",
+	// js/html.js trade_want_html; the requested item may have any upgrade level and any title.
+	"interface.trade_offer.any_level_title": "Any level and title",
+	// js/html.js trade_want_html; the requested item may have any upgrade level.
+	"interface.trade_offer.any_level": "Any level",
+	// js/html.js trade_want_html; the requested item may have any title.
+	"interface.trade_offer.any_title": "Any title",
+	// js/html.js trade_want_html; shown under the requested item, e.g. Staff +8: that level or any higher one qualifies, and the title shown is required.
+	"interface.trade_offer.or_higher": "Or higher",
+	// js/html.js trade_want_html; shown under the requested item, e.g. Staff +8: that level or any higher one qualifies, with any title.
+	"interface.trade_offer.or_higher_any_title": "Or higher, any title",
+	// js/html.js render_item; a nearby player has nothing that satisfies the trade offer.
+	"interface.trade_offer.no_match": "You have no matching item",
+	// js/html.js render_item; several of your items satisfy the trade offer and none is chosen yet.
+	"interface.trade_offer.choose": "Choose the item to give",
+	// js/html.js render_item; action that completes a trade offer with your chosen item. Compact uppercase action.
+	"interface.trade_offer.trade": "TRADE",
 	// js/html.js render_set; authored interface text. Parameters: rep.
 	"interface.set.equipped": "[{rep} Equipped]",
 	// js/html.js render_skills; authored interface text.
@@ -1538,8 +1592,8 @@ module.exports = {
 	"interface.anniversary_event_html.make_a_wish": "Make a Wish",
 	// js/html.js anniversary_event_html; authored display label or status.
 	"interface.anniversary_event_html.i_kiss_you": "I Kiss You",
-	// js/html.js anniversary_event_html; Make a Wish jar acquisition. Preserve Mira and the full item name Anniversary Gift.
-	"interface.anniversary_event_html.an_emote_to_keep_craft_its_jar_with_mira_or_find_it_in_a_gift": "An emote to keep. Craft its jar with Mira, or find it in an Anniversary Gift.",
+	// Make a Wish jar acquisition remains available after the event. Preserve the full item name Anniversary Gift.
+	"interface.anniversary_event_html.an_emote_to_keep_craft_its_jar_with_mira_or_find_it_in_a_gift": "An emote to keep. Craft its jar or find it in an Anniversary Gift.",
 	// js/html.js anniversary_event_html; I Kiss You jar acquisition. Preserve the item name Anniversary Gift; cakes is an ordinary category noun.
 	"interface.anniversary_event_html.rewarded_visits_can_drop_its_permanent_jar_cakes_and_gifts_can_hold_it_too":
 		"Rewarded visits can drop its permanent jar. Cakes and Anniversary Gifts can hold it too.",
@@ -1625,6 +1679,28 @@ module.exports = {
 	"interface.item.charm": "Charm",
 	// js/html.js render_item; authored display label or status.
 	"interface.item.restore_mp": "Restore MP",
+	// js/html.js render_item; ability label for Stonegaze Ring.
+	"interface.item.petrify": "Petrify",
+	// js/html.js render_item; Stonegaze Ring. Parameters: value = chance per hit in percent. 4-second stone on any non-immune opponent; the same target cannot be petrified again for 10 seconds after it breaks.
+	"interface.item.turns_the_opponent_to_stone_with_a_chance": "Turns the opponent to stone for 4 seconds with a {value}% chance. It can't be petrified again for 10 seconds after the stone breaks.",
+	// js/html.js render_item; ability label for Mummy's Hex.
+	"interface.item.hex": "Hex",
+	// js/html.js render_item; Mummy's Hex. Parameters: value = chance per hit. Applies the existing Cursed condition, the same as the Priest skill Curse; use that skill's name.
+	"interface.item.curses_the_opponent_with_a_chance": "Curses the opponent for 5 seconds with a {value}% chance, like a Priest's Curse.",
+	// js/html.js render_item; ability label for Harpy's Echo.
+	"interface.item.shatter": "Shatter",
+	// js/html.js render_item; Harpy's Echo. Parameters: value = chance per magical hit. Exposed is condition.exposed.name.
+	"interface.item.magical_hits_expose_the_opponent_with_a_chance": "Magical hits leave the opponent Exposed with a {value}% chance: 240 less Resistance for 5 seconds.",
+	// js/html.js render_item; ability label for The Can Opener.
+	"interface.item.sunder": "Sunder",
+	// js/html.js render_item; The Can Opener. Parameters: value = chance per physical hit. Sundered is condition.sundered.name.
+	"interface.item.physical_hits_sunder_the_opponent_with_a_chance": "Physical hits leave the opponent Sundered with a {value}% chance: 200 less Armor for 5 seconds.",
+	// js/html.js render_item; ability label for Paleclaw Totem; same as condition.frenzied.name.
+	"interface.item.primal_frenzy": "Primal Frenzy",
+	// js/html.js render_item; Paleclaw Totem. Parameters: value = chance per hit that lands.
+	"interface.item.hits_trigger_a_primal_frenzy_with_a_chance": "Your hits send you into a Primal Frenzy with a {value}% chance: +40 attack speed for 6 seconds. Hits during the frenzy can refresh it.",
+	// js/html.js render_item; extra line under Restore MP on the Gnomish Capacitor: its part can lift the combined restore chance to at most 20%; Mana Gloves and other sources keep their own chance.
+	"interface.item.restore_mp_share_capped_at_20": "This item can raise the combined chance to at most 20%. Other sources keep their own chance.",
 	// js/html.js load_nearby; authored display label or status.
 	"interface.load_nearby.none": "None",
 	// js/html.js load_mainframe_list; authored display label or status.
@@ -1792,7 +1868,7 @@ module.exports = {
 	// Authored interface sentence or label; names and CODE identifiers remain unchanged.
 	"interface.recipes.crafting_and_collecting": "Crafting and Collecting",
 	// Confirm deleting a mail message.
-	"interface.mail.confirm_delete": "Delete the mail?",
+	"interface.mail.confirm_delete": "Delete your copy of this mail?",
 	// Authored interface sentence or label; names and CODE identifiers remain unchanged.
 	"interface.cosmetics.default_position": " default position",
 	// Authored interface sentence or label; names and CODE identifiers remain unchanged.

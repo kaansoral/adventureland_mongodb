@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "STEIN!",
+	"server.floating.frenzy": "RASERI!",
 	"server.party.joined": "{player} ble med i gruppen",
 	"server.party.joined_with_invite": "{player} ble med i gruppen etter invitasjon fra {inviter}",
 	"server.party.left": "{player} forlot gruppen",
@@ -395,5 +397,8 @@
 	"server.cave.amber_limit": "Alle {amount} Cave Amber for dette besøket har dukket opp. Du kan fortsatt finne gjenstander og tjene XP.",
 	"server.game_error.poker_hand_active": "Pokerhånden din pågår fortsatt på en annen server. Vent til den er ferdig, eller koble til den serveren igjen.",
 	"server.tracktrix.mail_subject": "Din Tracktrix",
-	"server.tracktrix.mail_body": "Litt hjelp til neste jakt. Ha denne Tracktrix med deg!"
+	"server.tracktrix.mail_body": "Litt hjelp til neste jakt. Ha denne Tracktrix med deg!",
+  "server.game_log.offered_for": "Tilbød {item} i bytte mot {want}",
+  "server.game_log.offered_for_or_higher": "Tilbød {item} i bytte mot {want} eller høyere",
+  "server.game_log.traded_for": "Byttet {item} med {player} mot {received}"
 }

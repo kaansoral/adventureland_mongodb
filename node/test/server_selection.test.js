@@ -27,7 +27,7 @@ function chooser(characters = [character("USII")]) {
 		nunjucks: { render: (template, data) => data },
 		console,
 	});
-	for (const name of ["select_server", "render_selection", "selection_info"])
+	for (const name of ["get_character_slots", "select_server", "render_selection", "selection_info"])
 		vm.runInContext(extract(read("adventure_functions.js"), name), context);
 	return context;
 }
@@ -75,6 +75,11 @@ test("initial pages and sign-in fragments load the authoritative homes before se
 	assert.equal(fragment.html.server, servers[1]);
 	assert.equal(fragment.html.domain.characters[0].info.p.home, "USII");
 	assert.equal(fragment.html.domain.servers, servers);
+	const linked = { pid: "fixture-steam", info: { slots: 5, characters: [] } };
+	await context.render_selection({}, response, linked, {});
+	assert.equal(page.character_slots, 8);
+	assert.equal((await context.selection_info({}, linked, {})).html.character_slots, 8);
+	assert.equal(linked.info.slots, 5, "rendering does not write account data");
 	await context.render_selection({}, response, {}, {}, 80, servers[0]);
 	assert.equal(page.server, servers[0]);
 	assert.equal(page.domain.server_explicit, true);

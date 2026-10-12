@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "Stół pokerowy jest teraz zamknięty",
 	"response.tavern_closing": "Gry tawerny są zamknięte, dopóki serwer się restartuje",
 	"response.poker_stool_far": "Stań obok wolnego stołka, aby usiąść",
-	"response.poker_saving": "Stół pokerowy jest aktualizowany. Spróbuj ponownie za chwilę."
+	"response.poker_saving": "Stół pokerowy jest aktualizowany. Spróbuj ponownie za chwilę.",
+	"response.trade_offer_invalid": "Nie można prosić o ten przedmiot",
+	"response.trade_swap_match": "Ten przedmiot nie pasuje do oferty",
+	"response.trade_swap_space": "Kupiec nie ma miejsca",
+	"game.trade_history.traded": "- Wymieniono '{item}' z graczem {player} na '{received}'",
+	"response.transport_need_items": "Potrzebujesz: {items}"
 }

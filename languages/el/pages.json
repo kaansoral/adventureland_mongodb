@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Σύνδεση μέσω Steam: <span style=\"color: green\">ΝΑΙ</span>",
+	"pages.steam_signin.off": "> Σύνδεση μέσω Steam: <span style=\"color: #F54423\">ΟΧΙ</span>",
+	"pages.steam_signin.title": "Σύνδεση μέσω Steam",
+	"pages.steam_signin.intro": "Επαλήθευσε τον λογαριασμό σου στο Steam και μετά διάλεξε τον λογαριασμό Adventure Land στον οποίο θέλεις να συνδεθείς.",
+	"pages.steam_signin.continue": "Συνέχεια στο Steam",
+	"pages.steam_signin.choose": "Διάλεξε λογαριασμό",
+	"pages.steam_signin.choose_help": "Διάλεξε έναν λογαριασμό Adventure Land που συνδέεται με αυτόν τον λογαριασμό Steam.",
+	"pages.steam_signin.identity": "Επαληθευμένος λογαριασμός Steam που τελειώνει σε {digits}",
+	"pages.steam_signin.account": "Λογαριασμός {name}",
+	"pages.steam_signin.action": "Σύνδεση σε αυτόν τον λογαριασμό",
+	"pages.steam_signin.empty": "Δεν υπάρχουν διαθέσιμοι λογαριασμοί Adventure Land για αυτόν τον λογαριασμό Steam.",
+	"pages.steam_signin.email": "Σύνδεση με email",
+	"pages.steam_signin.next": "Περισσότεροι λογαριασμοί",
+	"pages.steam_signin.signup_label": "> Εγγραφή",
 	"pages.steam_signup.client_help": "Αυτή η λειτουργία βοηθά παίκτες που δυσκολεύονται να εκτελέσουν την εφαρμογή του παιχνιδιού.",
 	"pages.steam_signup.title": "Εγγραφή μέσω Steam",
 	"pages.steam_signup.intro": "Έχεις το Adventure Land στο Steam; Επιβεβαίωσε την αγορά σου για να δημιουργήσεις λογαριασμό και να παίξεις στο πρόγραμμα περιήγησής σου.",
@@ -1482,5 +1496,6 @@
 	"pages.logs.working-on-an-improved-movement-and-visibility-system": "Δουλεύω σε ένα βελτιωμένο σύστημα κίνησης και ορατότητας. Το τωρινό είναι κάπως σύνθετο, είναι η τέταρτη ή πέμπτη εκδοχή, και θα ήθελα πολύ να βρω χρόνο να περάσω σε μια έκτη.",
 	"pages.logs.working-on-the-orb-design-3x-orb-s": "Δουλεύω τον σχεδιασμό των σφαιρών· τα 3 Orb απλώς δεν φαίνονται ωραία, είναι υπερβολικά εύκολη λύση, και μου ήρθε η ιδέα να μετατρέψω μια σφαίρα σε θέση ελιξιρίου: θα είναι ένα ενισχυτικό φίλτρο μεγάλης διάρκειας.",
 	"pages.logs.wow-just-realised-it-has-been-a-month": "ΠΩΠΩ, μόλις συνειδητοποίησα ότι πέρασε ένας μήνας από την κυκλοφορία· από τότε έχουμε διανύσει μεγάλο δρόμο, και τώρα βλέπω το παιχνίδι ως κοινότητα: γνώρισα πολλούς ανθρώπους, έκανα πολλούς φίλους, όλη μου η ματιά άλλαξε, και όχι μόνο για το παιχνίδι, αλλά και για τη ζωή γενικά και για την ανάπτυξη. Ας πούμε ότι τώρα είμαι πιο αισιόδοξος, για πολλά πράγματα :)",
-	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Ολοκληρώνω τις διορθώσεις, την έρευνα και τις δοκιμές."
+	"pages.logs.wrapping-up-the-bugfixes-research-testing": "Ολοκληρώνω τις διορθώσεις, την έρευνα και τις δοκιμές.",
+	"pages.contents.selection.slots-in-use": "Όλες οι θέσεις χαρακτήρων σου είναι κατειλημμένες."
 }

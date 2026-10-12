@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "BATU!",
+	"server.floating.frenzy": "AMUK!",
 	"server.party.joined": "{player} menyertai kumpulan",
 	"server.party.joined_with_invite": "{player} menyertai kumpulan melalui jemputan {inviter}",
 	"server.party.left": "{player} meninggalkan kumpulan",
@@ -393,5 +395,8 @@
 	"server.cave.amber_limit": "Semua {amount} Cave Amber untuk lawatan ini sudah muncul. Anda masih boleh menemui item dan memperoleh XP.",
 	"server.game_error.poker_hand_active": "Pusingan poker anda masih berlangsung di pelayan lain. Tunggu sehingga selesai atau sambung semula ke pelayan itu.",
 	"server.tracktrix.mail_subject": "Tracktrix anda",
-	"server.tracktrix.mail_body": "Sedikit bantuan untuk pemburuan anda yang seterusnya. Bawa Tracktrix ini bersama anda!"
+	"server.tracktrix.mail_body": "Sedikit bantuan untuk pemburuan anda yang seterusnya. Bawa Tracktrix ini bersama anda!",
+  "server.game_log.offered_for": "Menawarkan {item} untuk ditukar dengan {want}",
+  "server.game_log.offered_for_or_higher": "Menawarkan {item} untuk ditukar dengan {want} atau lebih tinggi",
+  "server.game_log.traded_for": "Menukar {item} dengan {player} untuk {received}"
 }

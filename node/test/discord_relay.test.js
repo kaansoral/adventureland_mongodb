@@ -254,12 +254,14 @@ test("the real say handler relays only accepted public chat", async () => {
 		broadcast: (...args) => delivered.push(args),
 		party_emit() {},
 		get_player: () => target,
+		get_id: (value) => value._id,
 		insert: async () => {},
 		random_string: () => "fixture",
 		console,
 		server_log() {},
 	});
 	load(context, "node/server_functions.js", ["discord_call"]);
+	vm.runInContext(read("node/logic/chat.js"), context);
 	const say = socketHandler(context, "say");
 	say({ message: "public" });
 	say({ message: "party secret", party: true });

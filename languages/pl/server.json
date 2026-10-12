@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "KAMIEŃ!",
+	"server.floating.frenzy": "SZAŁ!",
 	"server.party.joined": "{player} dołącza do drużyny",
 	"server.party.joined_with_invite": "{player} dołącza do drużyny na zaproszenie od {inviter}",
 	"server.party.left": "{player} opuszcza drużynę",
@@ -399,5 +401,8 @@
 	"server.cave.amber_limit": "Pojawiło się już całe Cave Amber dostępne podczas tej wizyty: {amount}. Nadal możesz znajdować przedmioty i zdobywać XP.",
 	"server.game_error.poker_hand_active": "Twoje rozdanie pokera nadal trwa na innym serwerze. Poczekaj na jego koniec lub połącz się ponownie z tamtym serwerem.",
 	"server.tracktrix.mail_subject": "Twój Tracktrix",
-	"server.tracktrix.mail_body": "Mała pomoc na następne polowanie. Noś ten Tracktrix przy sobie!"
+	"server.tracktrix.mail_body": "Mała pomoc na następne polowanie. Noś ten Tracktrix przy sobie!",
+  "server.game_log.offered_for": "Wystawiono {item} w zamian za {want}",
+  "server.game_log.offered_for_or_higher": "Wystawiono {item} w zamian za {want} lub wyższy",
+  "server.game_log.traded_for": "Wymieniono {item} z graczem {player} na {received}"
 }

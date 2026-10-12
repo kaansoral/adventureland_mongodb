@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Steam登录: <span style=\"color: green\">开启</span>",
+	"pages.steam_signin.off": "> Steam登录: <span style=\"color: #F54423\">关闭</span>",
+	"pages.steam_signin.title": "通过Steam登录",
+	"pages.steam_signin.intro": "验证你的Steam账号，然后选择要登录的Adventure Land账号。",
+	"pages.steam_signin.continue": "前往Steam",
+	"pages.steam_signin.choose": "选择账号",
+	"pages.steam_signin.choose_help": "选择一个与此Steam账号关联的Adventure Land账号。",
+	"pages.steam_signin.identity": "已验证的Steam账号，末尾数字为{digits}",
+	"pages.steam_signin.account": "账号 {name}",
+	"pages.steam_signin.action": "登录此账号",
+	"pages.steam_signin.empty": "此Steam账号没有可登录的Adventure Land账号。",
+	"pages.steam_signin.email": "使用邮箱登录",
+	"pages.steam_signin.next": "更多账号",
+	"pages.steam_signin.signup_label": "> 注册",
 	"pages.steam_signup.client_help": "此功能旨在帮助难以正常运行游戏客户端的玩家。",
 	"pages.steam_signup.title": "通过Steam注册",
 	"pages.steam_signup.intro": "你在Steam上拥有Adventure Land吗？验证购买后即可创建账号，在浏览器中游玩。",
@@ -1482,5 +1496,6 @@
 	"pages.vscode.the-marketplace-page-is-not-live-yet-the": "扩展市场页面尚未上线。安装包在此服务器可用后，这里会显示VSIX直接下载链接。",
 	"pages.vscode.use-in-vs-code-or-cursor-it-replaces": "在VS Code或Cursor中使用<span class=\"shell\">{id}</span>。它以基于API的自动同步替代旧的客户端文件夹同步，因此可以与Steam、浏览器和普通桌面编辑器配合使用。",
 	"pages.vscode.your-token": "你的令牌",
-	"pages.contents.announcement_email.holiday_code_example": "附言3：这里有一段可自动领取圣诞增益的<a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a>。\n\t\t\t\t\t附言4：还有一些新内容和新技能！"
+	"pages.contents.announcement_email.holiday_code_example": "附言3：这里有一段可自动领取圣诞增益的<a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a>。\n\t\t\t\t\t附言4：还有一些新内容和新技能！",
+	"pages.contents.selection.slots-in-use": "你的角色栏位已全部占用。"
 }

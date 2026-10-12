@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Steam-innlogging: <span style=\"color: green\">PÅ</span>",
+	"pages.steam_signin.off": "> Steam-innlogging: <span style=\"color: #F54423\">AV</span>",
+	"pages.steam_signin.title": "Logg inn med Steam",
+	"pages.steam_signin.intro": "Bekreft Steam-kontoen din, og velg deretter en Adventure Land-konto å logge inn på.",
+	"pages.steam_signin.continue": "Fortsett til Steam",
+	"pages.steam_signin.choose": "Velg en konto",
+	"pages.steam_signin.choose_help": "Velg en Adventure Land-konto som er knyttet til denne Steam-kontoen.",
+	"pages.steam_signin.identity": "Bekreftet Steam-konto med sluttsifrene {digits}",
+	"pages.steam_signin.account": "Konto {name}",
+	"pages.steam_signin.action": "Logg inn på denne kontoen",
+	"pages.steam_signin.empty": "Ingen Adventure Land-kontoer er tilgjengelige for denne Steam-kontoen.",
+	"pages.steam_signin.email": "Logg inn med e-post",
+	"pages.steam_signin.next": "Flere kontoer",
+	"pages.steam_signin.signup_label": "> Opprett konto",
 	"pages.steam_signup.client_help": "Denne funksjonen hjelper spillere som har problemer med å kjøre spillklienten.",
 	"pages.steam_signup.title": "Registrer deg med Steam",
 	"pages.steam_signup.intro": "Eier du Adventure Land på Steam? Bekreft kjøpet ditt for å opprette en konto og spille i nettleseren.",
@@ -1482,5 +1496,6 @@
 	"pages.vscode.the-marketplace-page-is-not-live-yet-the": "Marketplace-siden er ikke tilgjengelig ennå. En lenke for direkte nedlasting av VSIX vises her når pakken er tilgjengelig på denne serveren.",
 	"pages.vscode.use-in-vs-code-or-cursor-it-replaces": "Bruk <span class=\"shell\">{id}</span> i VS Code eller Cursor. Den erstatter den gamle mappesynkroniseringen i klienten med API-basert automatisk synkronisering, slik at den virker fra Steam, nettleseren og vanlige skrivebordsredigerere.",
 	"pages.vscode.your-token": "Tokenet ditt",
-	"pages.contents.announcement_email.holiday_code_example": "PS 3. Her er <a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a> som automatiserer juleforsterkningen\n\t\t\t\t\tPS 4. Det finnes noen nye ting og nye ferdigheter også!"
+	"pages.contents.announcement_email.holiday_code_example": "PS 3. Her er <a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a> som automatiserer juleforsterkningen\n\t\t\t\t\tPS 4. Det finnes noen nye ting og nye ferdigheter også!",
+	"pages.contents.selection.slots-in-use": "Alle figurplassene dine er i bruk."
 }

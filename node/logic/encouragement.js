@@ -1,5 +1,5 @@
-// Shared game-server scope. One bounded character query and indexed group mark
-// per five minutes or login. Combat and loot use only memory.
+// One bounded character query and indexed group mark per five minutes or login.
+// Platform logins also read previous owner marks. Combat and loot use only memory.
 var encouragement_groups = new Map();
 var encouragement_visits = new Map();
 var encouragement_names = ["encouragement_new", "encouragement_lonewolf", "encouragement_returning"];
@@ -73,6 +73,21 @@ async function encouragement_load(player, previous_online) {
 				oldest = Math.min(oldest, saved.oldest || 0);
 				returning = Math.max(returning, saved.return_until || 0);
 			}
+			// Linking an account must keep its earned time and activity history.
+			if (previous_online !== undefined && identity.query.pid && characters.length && characters.length < 25) {
+				var owners = [...new Set(characters.map((character) => "MK_encouragement-owner:" + character.owner))];
+				var histories = await db
+					.collection("mark")
+					.find({ _id: { $in: owners } }, { projection: { oldest: 1, last_online: 1, return_until: 1 } })
+					.limit(25)
+					.maxTimeMS(3000)
+					.toArray();
+				for (var history of histories) {
+					oldest = Math.min(oldest, history.oldest || 0);
+					latest = Math.max(latest, history.last_online || 0);
+					returning = Math.max(returning, history.return_until || 0);
+				}
+			}
 			group.characters = characters;
 			group.oldest = oldest;
 			group.return_until = returning;
@@ -93,12 +108,44 @@ async function encouragement_load(player, previous_online) {
 	return group.pending;
 }
 
+function encouragement_eligibility(group) {
+	var now = Date.now();
+	return JSON.stringify([
+		group.oldest,
+		group.return_until,
+		!!group.blocked,
+		group.characters
+			.map(function (character) {
+				// Merchant location is irrelevant; combat characters still affect Lone Wolf.
+				var active =
+					character.type !== "merchant" && character.server && now - +new Date(character.last_sync) < 120 * 60000;
+				return [character._id, character.type, active ? character.server : ""];
+			})
+			.sort(function (a, b) {
+				return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0;
+			}),
+	]);
+}
+
 // Authentication calls this on other occupied realms before admitting a sibling.
 // Retain the notice even when that realm is still loading the first character.
 function encouragement_foreign_login(data) {
+	var group = encouragement_groups.get(data.group);
+	// A verified merchant move changes no bonus rules. Keep the original cache deadline.
+	if (
+		data.type === "merchant" &&
+		group &&
+		group.until > Date.now() &&
+		!group.pending &&
+		!group.blocked &&
+		group.characters.some(function (character) {
+			return character._id === data.id && character.type === "merchant";
+		}) &&
+		data.eligibility === encouragement_eligibility(group)
+	)
+		return true;
 	if (data.type !== "merchant")
 		encouragement_visits.set(data.group, { id: data.id, until: Date.now() + encouragement_cache_ms });
-	var group = encouragement_groups.get(data.group);
 	if (group) {
 		group.until = 0;
 		group.next = 0;
@@ -136,6 +183,7 @@ async function encouragement_login(player, previous_online) {
 						group: identity.key,
 						id: player.real_id,
 						type: player.type,
+						eligibility: player.type === "merchant" ? encouragement_eligibility(group) : undefined,
 					},
 					5000,
 				)) !== true
@@ -208,7 +256,9 @@ function encouragement_update(player, force) {
 	var lonewolf = player.type !== "merchant",
 		visit = encouragement_visits.get(identity.key);
 	if (visit && visit.until > now && visit.id !== player.real_id) lonewolf = false;
-	for (var other of Object.values(players)) {
+	// per player per tick - Object.values(players) built an array of every player on each call, the keys are enough [26/09/26]
+	for (var other_id in players) {
+		var other = players[other_id];
 		if (
 			other !== player &&
 			!other.dc &&
@@ -425,7 +475,7 @@ function encouragement_chest(player, monster, chest, share) {
 		};
 }
 
-function encouragement_loot(chest, goldm, looters) {
+function encouragement_loot(chest, r, looters) {
 	var receipts = chest.encouragement || [],
 		golds = {};
 	delete chest.encouragement;
@@ -448,27 +498,41 @@ function encouragement_loot(chest, goldm, looters) {
 				receipt.luck,
 				{ home: receipt.home, pvp: receipt.pvp },
 			);
-		var gold = Math.floor(((chest.encouragement_gold || 0) * goldm + (chest.egold || 0)) * receipt.gold);
+		var gold = Math.floor(((chest.encouragement_gold || 0) * r.goldm + (chest.egold || 0)) * receipt.gold);
 		// A reserved ordinary chest keeps a full inventory from losing or rerolling the result.
 		if (!can_add_items(player, drop.items)) {
 			drop_one_thing(player, [], { reserved: drop, gold: gold, character: receipt.id, group: receipt.group });
 			continue;
 		}
+		var result = in_arr(player.name, looters) ? r : { id: r.id, goldm: r.goldm, opener: r.opener, items: [] };
 		for (var item of drop.items) {
 			add_item(player, item, { found: 1, m: 1, v: B.v });
+			var ritem = cache_item(item);
+			ritem.looter = player.name;
+			result.items.push(ritem);
 			player.socket.emit("game_log", item_message("server.item.found", item, {}, { color: "#4BAEAA" }));
 		}
 		if (drop.cash) add_shells(player, drop.cash, "chest", true, "override");
 		gold = server_tax(gold);
 		player.gold += gold;
 		if (player.t) player.t.cgold += gold;
-		if (looters && in_arr(player.name, looters)) golds[player.id] = gold;
+		if (result === r) golds[player.id] = gold;
 		else if (gold)
 			player.socket.emit(
 				"game_log",
 				localization.message("server.game_log.gold", { amount: String(to_pretty_num(gold)) }, { color: "gold" }),
 			);
-		if (gold || drop.items.length || drop.cash) resend(player, "reopen+nc+inv");
+		if (gold || drop.items.length || drop.cash) {
+			resend(player, "reopen+nc+inv");
+			// Contributors outside the opener's current party do not receive its chest event.
+			if (result !== r) {
+				result.gold = gold;
+				if (r.dry) result.dry = true;
+				if (r.stale) result.stale = true;
+				if (!result.items.length) delete result.items;
+				player.socket.emit("chest_opened", result);
+			}
+		}
 	}
 	return golds;
 }

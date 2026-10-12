@@ -1,3 +1,60 @@
+// Per-account state survives socket/character changes on this server. Keep only
+// short-lived fingerprints, never another copy of the public transcript.
+var public_chat_history = new Map();
+
+function retain_public_chat_message(sender, message) {
+	var now = Date.now(),
+		repeat_window = 5 * 60 * 1000,
+		quiet_period = 10 * 60 * 1000;
+	// Entries are ordered by their last public message, including muted attempts.
+	for (var [owner, state] of public_chat_history) {
+		if (now - state.updated < quiet_period) break;
+		public_chat_history.delete(owner);
+	}
+	var state = public_chat_history.get(sender.owner) || { recent: [], repeats: [], muted: false };
+	state.updated = now;
+	public_chat_history.delete(sender.owner);
+	public_chat_history.set(sender.owner, state);
+	if (public_chat_history.size > 5000) public_chat_history.delete(public_chat_history.keys().next().value);
+	if (state.muted) return false;
+
+	var normalized = message
+		.normalize("NFKC")
+		.toLowerCase()
+		.replace(/\p{Default_Ignorable_Code_Point}/gu, "")
+		.replace(/\s+/g, " ")
+		.replace(/\p{Cc}/gu, "")
+		.trim();
+	if (!normalized) return false;
+	var key = crypto
+		.createHash("sha256")
+		.update(normalized.replace(/\p{P}/gu, "").replace(/\s+/g, " ").trim() || normalized)
+		.digest("hex");
+	state.recent = state.recent.filter(function (entry) {
+		return now - entry.at < repeat_window;
+	});
+	state.repeats = state.repeats.filter(function (at) {
+		return now - at < repeat_window;
+	});
+	var repeated = state.recent.some(function (entry) {
+		return entry.key === key;
+	});
+	if (repeated) state.repeats.push(now);
+	var burst = state.recent.filter(function (entry) {
+		return now - entry.at < 30000;
+	}).length;
+	// Four repeated attempts, or over twelve public messages in thirty seconds,
+	// silence Discord and all saved public histories until ten minutes of quiet.
+	if (state.repeats.length >= 4 || burst >= 12) {
+		state.muted = true;
+		state.recent = [];
+		state.repeats = [];
+		return false;
+	}
+	state.recent.push({ key: key, at: now });
+	return !repeated;
+}
+
 // Shared delivery for native chat and Communicator. A Communicator sender is
 // only an owned name/account identity; it has no player or socket to control.
 async function deliver_chat_message(sender, message, name) {
@@ -56,6 +113,7 @@ async function deliver_chat_message(sender, message, name) {
 		if (owner !== sender.owner) await log_message(sender.owner, "private", [target ? target.name : name]);
 	} else {
 		broadcast("chat_log", { owner: sender.name, message: message, id: sender.id, p: true });
+		if (!retain_public_chat_message(sender, message)) return { success: true };
 		discord_call(message, sender.name);
 		var owners = {};
 		for (var id in players) {

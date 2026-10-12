@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> تسجيل الدخول عبر Steam: <span style=\"color: green\">مفعّل</span>",
+	"pages.steam_signin.off": "> تسجيل الدخول عبر Steam: <span style=\"color: #F54423\">معطّل</span>",
+	"pages.steam_signin.title": "تسجيل الدخول عبر Steam",
+	"pages.steam_signin.intro": "تحقّق من حسابك على Steam، ثم اختر حساب Adventure Land الذي تريد تسجيل الدخول إليه.",
+	"pages.steam_signin.continue": "المتابعة إلى Steam",
+	"pages.steam_signin.choose": "اختر حسابًا",
+	"pages.steam_signin.choose_help": "اختر حساب Adventure Land المرتبط بحساب Steam هذا.",
+	"pages.steam_signin.identity": "تم التحقّق من حساب Steam المنتهي بالأرقام {digits}",
+	"pages.steam_signin.account": "الحساب {name}",
+	"pages.steam_signin.action": "تسجيل الدخول إلى هذا الحساب",
+	"pages.steam_signin.empty": "لا توجد حسابات Adventure Land متاحة لحساب Steam هذا.",
+	"pages.steam_signin.email": "تسجيل الدخول بالبريد الإلكتروني",
+	"pages.steam_signin.next": "المزيد من الحسابات",
+	"pages.steam_signin.signup_label": "> إنشاء حساب",
 	"pages.steam_signup.client_help": "تساعد هذه الميزة اللاعبين الذين يواجهون صعوبة في تشغيل تطبيق اللعبة.",
 	"pages.steam_signup.title": "تسجيل حساب عبر Steam",
 	"pages.steam_signup.intro": "هل تملك Adventure Land على Steam؟ أكّد شراءك لإنشاء حساب واللعب في متصفحك.",
@@ -1482,5 +1496,6 @@
 	"pages.logs.working-on-an-improved-movement-and-visibility-system": "أعمل على نظام محسّن للحركة والرؤية. النظام الحالي معقد بعض الشيء، وهو النسخة الرابعة أو الخامسة، وأتمنى حقًا أن أجد وقتًا للانتقال إلى نسخة سادسة.",
 	"pages.logs.working-on-the-orb-design-3x-orb-s": "أعمل على تصميم الكرات؛ ثلاث Orb لا تبدو جميلة، فهي حل كسول أكثر من اللازم، وخطرت لي فكرة تحويل إحدى الكرات إلى خانة إكسير: سيكون شرابًا معزّزًا طويل المفعول.",
 	"pages.logs.wow-just-realised-it-has-been-a-month": "يا للعجب، انتبهت للتو إلى أن شهرًا مضى على الإطلاق؛ قطعنا منذ ذلك الحين طريقًا طويلًا، وصرت أرى اللعبة مجتمعًا: تعرفت إلى أناس كثيرين، وكسبت أصدقاء كثيرين، وتغيرت نظرتي كلها، لا إلى اللعبة فحسب بل إلى الحياة عمومًا وإلى التطوير. لنقل إنني صرت الآن أكثر أملًا، في أمور كثيرة :)",
-	"pages.logs.wrapping-up-the-bugfixes-research-testing": "أختم الإصلاحات والبحث والتجريب."
+	"pages.logs.wrapping-up-the-bugfixes-research-testing": "أختم الإصلاحات والبحث والتجريب.",
+	"pages.contents.selection.slots-in-use": "جميع خانات شخصياتك مستخدمة."
 }

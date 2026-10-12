@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "ポーカーテーブルは現在閉じています",
 	"response.tavern_closing": "サーバーの再起動中は酒場のゲームは閉まっています",
 	"response.poker_stool_far": "座るには空いているスツールの隣に立ってください",
-	"response.poker_saving": "ポーカーテーブルを更新中です。少し待ってから、もう一度お試しください。"
+	"response.poker_saving": "ポーカーテーブルを更新中です。少し待ってから、もう一度お試しください。",
+	"response.trade_offer_invalid": "そのアイテムは求められません",
+	"response.trade_swap_match": "そのアイテムは交換条件に合いません",
+	"response.trade_swap_space": "商人の持ち物に空きがありません",
+	"game.trade_history.traded": "- {player}と'{item}'を'{received}'に交換",
+	"response.transport_need_items": "必要なアイテム：{items}"
 }

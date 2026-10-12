@@ -465,6 +465,7 @@ var maps = {
 		quirks: [
 			[-192, -1309, 48, 64, "log", "Is this a gateway?"],
 			[-193.41, -1295.83, 0, 0, "info", "crypt"],
+			[0, 0, 0, 0, "goldenbat_info"],
 		],
 		drop_norm: 4500,
 		lux: 0.45,
@@ -739,6 +740,11 @@ var maps = {
 			[65, 544, 20, 16, "sign", "Welcome to The New Town!"],
 			[-150, 154, 20, 16, "sign", "Town Square"],
 			[-365, 144, 20, 16, "sign", "Tavern"],
+			// The Cute Bee can appear in any Mainland pack; its INFO sits in the Goo field, not the town square
+			[-32, 787, 0, 0, "cutebee_info"],
+			// Comic signs: the art is a tile in the map geometry; the last field is the guide article it opens.
+			[-104, 640, 20, 16, "comic", "lore"],
+			[920, 1180, 20, 16, "comic", "cave-story"],
 		],
 		animatables: {
 			the_door: { x: 888, y: -672, position: "door0" },
@@ -973,6 +979,7 @@ var maps = {
 			{ id: "tbartender", position: [150, -202] },
 			{ id: "bouncer", position: [208, -156] },
 			{ id: "citizen21", position: [80, -120], boundary: [40, -144, 120, -80] },
+			{ id: "pokerdealer", position: [-168, -103] },
 		],
 		monsters: [],
 		doors: [
@@ -1710,7 +1717,9 @@ var maps = {
 			[-96, -197, 60, 40, "level2n", 0, 1],
 			[-528, -197, 60, 40, "level2n", 1, 2],
 		],
-		quirks: [],
+		quirks: [
+			[16, 9, 0, 0, "manyeye_info"],
+		],
 		drop_norm: 5000,
 		unlist: true,
 		lux: 0.4,
@@ -1783,8 +1792,8 @@ var maps = {
 		name: "Underground [Cliffs]",
 		npcs: [],
 		monsters: [
-			// {"type":"TBD","boundary":[586,-844,915,-589],"count":6,"grow":true},
-			// {"type":"TBD","boundary":[-455,-1126,-189,-898],"count":6,"grow":true},
+			{ type: "kobold", boundary: [586, -844, 915, -589], count: 2, grow: true, roam: true },
+			{ type: "kobold", boundary: [-455, -1126, -189, -898], count: 2, grow: true, roam: true },
 			// {"type":"TBD","boundary":[-135,-640,73,-545],"count":6,"grow":true},
 			// {"type":"TBD","boundary":[492,-238,647,-81],"count":6,"grow":true},
 		],
@@ -1798,7 +1807,9 @@ var maps = {
 			[255, -917, 62, 99, "gateway", 1, 1], //door to Gateway
 			// [-513,-626,49,62,"gateway",1,1], //door to (To Be Determined)
 		],
-		quirks: [],
+		quirks: [
+			[256, -905, 0, 0, "mimic_info"],
+		],
 		drop_norm: 5000,
 		unlist: true,
 		lux: 0.4,
@@ -1823,7 +1834,9 @@ var maps = {
 			// [720,-237,55,62,"TBD",1,1], //door to (To Be Determined)
 			// [0,-702,40,61,"TBD",1,1], //door to New Instance?
 		],
-		quirks: [],
+		quirks: [
+			[0, 0, 0, 0, "goldenbot_info"],
+		],
 		drop_norm: 5000,
 		unlist: true,
 		lux: 0.4,
@@ -1844,7 +1857,9 @@ var maps = {
 		doors: [
 			[1, -32, 40, 49, "halloween", 5, 0], //door to Halloween
 		],
-		quirks: [],
+		quirks: [
+			[0, 0, 0, 0, "paledino_info"],
+		],
 		drop_norm: 5000,
 		unlist: true,
 		lux: 0.6,

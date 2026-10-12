@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="{{domain.language or 'en'}}" dir="{{ 'rtl' if domain.language == 'ar' else 'ltr' }}">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex">
+		<title>{{ phrase("pages.steam_signin.title") }} - Adventure Land</title>
+		<link rel="icon" href="/images/favicon.png">
+		<link href="/css/common.css?v={{domain.v}}" rel="stylesheet">
+		<link href="/css/index.css?v={{domain.v}}" rel="stylesheet">
+		<link href="/css/steam_auth.css?v={{domain.v}}" rel="stylesheet">
+	</head>
+	<body>
+		<main>
+			{% if view == "accounts" %}
+				<h1 class="whiteheader">{{ phrase("pages.steam_signin.choose") }}</h1>
+				<p class="gray">{{ phrase("pages.steam_signin.identity", {"digits": digits})|escape }}</p>
+				{% if accounts.length %}
+					<p>{{ phrase("pages.steam_signin.choose_help") }}</p>
+					<form method="post" action="/steam-signin/complete">
+						<input type="hidden" name="state" value="{{state|escape}}">
+						<fieldset aria-label="{{phrase('pages.steam_signin.choose')}}">
+							{% for account in accounts %}
+								<label class="gamebutton steam-account">
+									<input type="radio" name="account" value="{{account.handle|escape}}" required>
+									<span><span>{{ phrase("pages.steam_signin.account", {"name": account.name})|escape }}</span>
+									{% if account.email %}<span class="gray" dir="ltr">{{account.email|escape}}</span>{% endif %}
+									{% if account.characters %}<span class="gray">{{account.characters|escape}}</span>{% endif %}</span>
+								</label>
+							{% endfor %}
+						</fieldset>
+						<button class="gamebutton block clickable mt5" type="submit">{{ phrase("pages.steam_signin.action") }}</button>
+					</form>
+				{% else %}<p>{{ phrase("pages.steam_signin.empty") }}</p>{% endif %}
+				{% if next %}
+					<form method="post" action="/steam-signin/accounts" class="mt10">
+						<input type="hidden" name="state" value="{{state|escape}}"><input type="hidden" name="more" value="yes">
+						<button type="submit" class="textbutton">{{ phrase("pages.steam_signin.next") }}</button>
+					</form>
+				{% endif %}
+				<a class="textbutton block mt10" href="/?login=1">{{ phrase("pages.steam_signin.email") }}</a>
+			{% elif view == "error" %}
+				<h1 class="whiteheader">{{ phrase("pages.steam_signin.title") }}</h1>
+				<p class="steam-error" role="alert">{{ phrase(error) }}</p>
+				<a class="gamebutton block mt5" href="/steam-signin">{{ phrase("pages.steam_signin.title") }}</a>
+			{% else %}
+				<h1 class="whiteheader">{{ phrase("pages.steam_signin.title") }}</h1>
+				<p>{{ phrase("pages.steam_signin.intro") }}</p>
+				<form method="post" action="/steam-signin/start">
+					<input type="hidden" name="state" value="{{state|escape}}">
+					<button class="gamebutton block clickable mt5" type="submit">{{ phrase("pages.steam_signin.continue") }}</button>
+				</form>
+			{% endif %}
+			{% if state %}
+				<form method="post" action="/steam-signin/cancel" class="mt10">
+					<input type="hidden" name="state" value="{{state|escape}}">
+					<button type="submit" class="textbutton">{{ phrase("pages.contents.login.back") }}</button>
+				</form>
+			{% else %}<a class="textbutton block mt10" href="/">{{ phrase("pages.contents.login.back") }}</a>{% endif %}
+		</main>
+	</body>
+</html>

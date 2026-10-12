@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Masuk dengan Steam: <span style=\"color: green\">AKTIF</span>",
+	"pages.steam_signin.off": "> Masuk dengan Steam: <span style=\"color: #F54423\">NONAKTIF</span>",
+	"pages.steam_signin.title": "Masuk dengan Steam",
+	"pages.steam_signin.intro": "Verifikasi akun Steam-mu, lalu pilih akun Adventure Land yang ingin kamu masuki.",
+	"pages.steam_signin.continue": "Lanjut ke Steam",
+	"pages.steam_signin.choose": "Pilih akun",
+	"pages.steam_signin.choose_help": "Pilih akun Adventure Land yang terhubung dengan akun Steam ini.",
+	"pages.steam_signin.identity": "Akun Steam terverifikasi dengan akhiran {digits}",
+	"pages.steam_signin.account": "Akun {name}",
+	"pages.steam_signin.action": "Masuk ke akun ini",
+	"pages.steam_signin.empty": "Tidak ada akun Adventure Land yang tersedia untuk akun Steam ini.",
+	"pages.steam_signin.email": "Masuk dengan email",
+	"pages.steam_signin.next": "Akun lainnya",
+	"pages.steam_signin.signup_label": "> Daftar",
 	"pages.steam_signup.client_help": "Fitur ini membantu pemain yang kesulitan menjalankan aplikasi game.",
 	"pages.steam_signup.title": "Daftar dengan Steam",
 	"pages.steam_signup.intro": "Sudah punya Adventure Land di Steam? Verifikasi pembelianmu untuk membuat akun dan bermain lewat browser.",
@@ -1482,5 +1496,6 @@
 	"pages.vscode.the-marketplace-page-is-not-live-yet-the": "Halaman Marketplace belum tersedia. Unduhan VSIX langsung akan muncul di sini saat paketnya tersedia di server ini.",
 	"pages.vscode.use-in-vs-code-or-cursor-it-replaces": "Gunakan <span class=\"shell\">{id}</span> di VS Code atau Cursor. Ekstensi ini menggantikan sinkronisasi folder klien lama dengan sinkronisasi otomatis berbasis API, sehingga bisa digunakan dari Steam, browser, dan editor desktop biasa.",
 	"pages.vscode.your-token": "Token kamu",
-	"pages.contents.announcement_email.holiday_code_example": "PS 3. Ini <a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a> yang mengotomatiskan bonus Natal\n\t\t\t\t\tPS 4. Ada beberapa hal baru dan kemampuan baru juga!"
+	"pages.contents.announcement_email.holiday_code_example": "PS 3. Ini <a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a> yang mengotomatiskan bonus Natal\n\t\t\t\t\tPS 4. Ada beberapa hal baru dan kemampuan baru juga!",
+	"pages.contents.selection.slots-in-use": "Semua slot karaktermu sudah terisi."
 }

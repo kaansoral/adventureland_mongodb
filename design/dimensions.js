@@ -40,6 +40,7 @@ var dimensions={ //by trial+error using game.js/border_mode=true
 	"wolf":[60,48,-3],
 	"iceroamer":[22,36,-2],
 	"fireroamer":[24,40,-3],
+	"chestx":[36,30,4],
 	"bbpompom":[32,35,1],
 	"boar":[42,36,-4],
 	"croc":[45,32,-3],
@@ -1160,3 +1161,7 @@ if(typeof module!=="undefined") module.exports={dimensions,positions};
 Object.assign(positions, {"cave_blackstaff": ["rawitems", 9, 4], "cave_backstabber": ["rawitems", 10, 4], "cave_amber": ["rawitems", 11, 4], "cave_info": ["rawitems", 12, 4]});
 
 Object.assign(positions, {"cave_tunnelaxe": ["rawitems", 14, 4], "cave_reedscythe": ["rawitems", 15, 4], "cave_deepaxe": ["rawitems", 16, 4], "cave_ambercoat": ["rawitems", 17, 4]});
+
+// Rare drops and the status icons of their passives (row 5 of raw_items.png).
+Object.assign(positions, {"stonegaze": ["rawitems", 0, 5], "mummyhex": ["rawitems", 1, 5], "harpyecho": ["rawitems", 2, 5], "canopener": ["rawitems", 3, 5], "blightcap": ["rawitems", 4, 5], "gnomecap": ["rawitems", 5, 5], "koboldbelt": ["rawitems", 6, 5], "frostfang": ["rawitems", 7, 5], "paleclaw": ["rawitems", 8, 5], "mimicgrin": ["rawitems", 9, 5], "scorpionseal": ["rawitems", 10, 5], "watchersearring": ["rawitems", 11, 5], "graveglass": ["rawitems", 12, 5], "heartwoodlocket": ["rawitems", 13, 5], "groundingstrap": ["rawitems", 14, 5], "condition_stoned": ["rawitems", 15, 5], "condition_exposed": ["rawitems", 16, 5], "condition_sundered": ["rawitems", 17, 5], "condition_frenzied": ["rawitems", 18, 5]});
+dimensions["manyeye"] = dimensions["oneeye"].slice();

@@ -259,6 +259,33 @@ function generated_restore_health(player) {
 	player.moving = false;
 	player.vx = player.vy = 0;
 }
+function generated_safe_point(player) {
+	var map = player.map;
+	function clear(x, y) {
+		return (
+			Number.isFinite(x) &&
+			Number.isFinite(y) &&
+			(smap_data[map] === -1 || smap_data[map]?.[phash(x, y)] === 0) &&
+			can_move({ map, x, y, going_x: x, going_y: y, base: player.base })
+		);
+	}
+	if (clear(player.x, player.y)) return { x: player.x, y: player.y };
+	// Server interpolation can cut a corner while the client follows its next move.
+	// Stop on the original side of the wall, never at the destination beyond it.
+	if (player.moving && clear(player.from_x, player.from_y)) {
+		var point = calculate_move({ map, x: player.from_x, y: player.from_y, base: player.base }, player.x, player.y);
+		return clear(point.x, point.y) ? point : { x: player.from_x, y: player.from_y };
+	}
+	var point = safe_xy_nearby(map, player.x, player.y);
+	if (point && clear(point.x, point.y)) return point;
+	// Older saved positions have no movement origin. Stay on that floor and
+	// fall back to its entrance rather than stranding the original entrant.
+	var spawn = G.maps[map]?.spawns?.[0];
+	if (!spawn) return false;
+	if (clear(spawn[0], spawn[1])) return { x: spawn[0], y: spawn[1] };
+	point = safe_xy_nearby(map, spawn[0], spawn[1]);
+	return point && clear(point.x, point.y) ? point : false;
+}
 function generated_disconnect(player) {
 	var entry = generated_entry(player);
 	if (!entry) return false;
@@ -268,10 +295,11 @@ function generated_disconnect(player) {
 	// Keep the cave state separate from the safe outside character saved at logout.
 	release_frozen_player(player);
 	if (member && !member.left && !record.closing) {
+		var point = generated_safe_point(player) || player;
 		member.disconnected = {
 			map: player.map,
-			x: player.x,
-			y: player.y,
+			x: point.x,
+			y: point.y,
 			at: Date.now(),
 			hp: player.hp,
 			mp: player.mp,
@@ -308,7 +336,7 @@ async function generated_return(player, record) {
 		await cave_enter_effect([player], record.key);
 		generated_admission(player, [player]);
 		if (generated_return_run(player) !== record || member.disconnected !== saved) throw Error("cave_closed");
-		var point = safe_xy_nearby(saved.map, saved.x, saved.y);
+		var point = generated_safe_point({ map: saved.map, x: saved.x, y: saved.y, base: player.base });
 		if (!point) throw Error("transport_failed");
 		outside = {
 			hp: player.hp,

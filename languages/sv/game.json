@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "Pokerbordet är stängt just nu",
 	"response.tavern_closing": "Tavernans spel är stängda medan servern startas om",
 	"response.poker_stool_far": "Ställ dig intill en ledig pall för att sätta dig",
-	"response.poker_saving": "Pokerbordet uppdateras. Försök igen om en liten stund."
+	"response.poker_saving": "Pokerbordet uppdateras. Försök igen om en liten stund.",
+	"response.trade_offer_invalid": "Du kan inte be om det föremålet",
+	"response.trade_swap_match": "Föremålet passar inte anbudet",
+	"response.trade_swap_space": "Handlaren har ingen plats",
+	"game.trade_history.traded": "- Bytte '{item}' med {player} mot '{received}'",
+	"response.transport_need_items": "Behöver: {items}"
 }

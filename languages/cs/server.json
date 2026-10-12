@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "KÁMEN!",
+	"server.floating.frenzy": "BĚSNĚNÍ!",
 	"server.party.joined": "{player} se připojuje k družině",
 	"server.party.joined_with_invite": "{player} se připojuje k družině na pozvání od {inviter}",
 	"server.party.left": "{player} opouští družinu",
@@ -399,5 +401,8 @@
 	"server.cave.amber_limit": "Všech {amount} Cave Amber pro tuto návštěvu se již objevilo. Stále můžeš nacházet předměty a získávat XP.",
 	"server.game_error.poker_hand_active": "Tvoje pokerové rozdání stále probíhá na jiném serveru. Počkej, až skončí, nebo se k tomu serveru znovu připoj.",
 	"server.tracktrix.mail_subject": "Tvůj Tracktrix",
-	"server.tracktrix.mail_body": "Malá pomoc na příští lov. Nos tento Tracktrix s sebou!"
+	"server.tracktrix.mail_body": "Malá pomoc na příští lov. Nos tento Tracktrix s sebou!",
+  "server.game_log.offered_for": "{item} nabídnuto k výměně za {want}",
+  "server.game_log.offered_for_or_higher": "{item} nabídnuto k výměně za {want} nebo vyšší",
+  "server.game_log.traded_for": "{item} vyměněno s hráčem {player} za {received}"
 }

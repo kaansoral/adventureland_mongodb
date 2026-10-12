@@ -451,5 +451,10 @@
 	"response.poker_unavailable": "Sarado ang mesa ng poker sa ngayon",
 	"response.tavern_closing": "Sarado ang mga laro ng Taberna habang nagre-restart ang server",
 	"response.poker_stool_far": "Tumayo sa tabi ng bakanteng upuan para makaupo",
-	"response.poker_saving": "Ina-update ang mesa ng poker. Subukan ulit maya-maya."
+	"response.poker_saving": "Ina-update ang mesa ng poker. Subukan ulit maya-maya.",
+	"response.trade_offer_invalid": "Hindi mahihingi ang gamit na iyan",
+	"response.trade_swap_match": "Hindi tugma ang gamit na iyan sa alok",
+	"response.trade_swap_space": "Walang puwang ang mangangalakal",
+	"game.trade_history.traded": "- Ipinagpalit ang '{item}' kay {player} para sa '{received}'",
+	"response.transport_need_items": "Kailangan: {items}"
 }

@@ -67,6 +67,49 @@ test("Steam retry rechecks revoked authentication and character ownership", asyn
 	}
 });
 
+test("Tauri Steam authentication is independent of the legacy Steam flag", async () => {
+	const steamId = "76561198000000000";
+	for (const flag of [0, 1]) {
+		for (const linked of [false, true]) {
+			const s = setup();
+			s.context.mode = { legacy_steam_auth: flag };
+			let verified = 0;
+			s.context.verify_tauri_steam_ticket = async () => {
+				verified++;
+				return steamId;
+			};
+			load(s.context, "node/server_functions.js", [
+				"persisted_tauri_steam_id",
+				"apply_tauri_steam_auth",
+				"verify_tauri_steam_auth",
+			]);
+			if (linked) {
+				s.owner.platform = s.entity.platform = "steam";
+				s.owner.pid = s.entity.pid = s.entity.info.p.steam_id = steamId;
+			}
+			const player = { p: {}, s: { authfail: { ms: 1000 } } };
+			const events = [];
+			assert.equal(
+				await s.context.verify_tauri_steam_auth(
+					player,
+					s.owner,
+					s.entity,
+					{ auth: "fixture-auth", ticket: "fixture-ticket" },
+					{ emit: (name, data) => events.push({ name, data }) },
+				),
+				true,
+			);
+			assert.equal(verified, linked ? 0 : 1);
+			assert.equal(s.stats.commits, linked ? 0 : 1);
+			assert.equal(player.auth_id, steamId);
+			assert.equal(player.platform, "steam");
+			assert.equal(player.s.authfail, undefined);
+			assert.equal(events[0].name, "tauri_auth");
+			assert.equal(events[0].data.status, linked ? "persisted_steam_id" : "steam_ticket_verified");
+		}
+	}
+});
+
 test("Steam ticket diagnostics report safe categories without credentials, tickets, URLs, or bodies", async () => {
 	const secret = "fixture-private-value",
 		ticket = "ab".repeat(64),

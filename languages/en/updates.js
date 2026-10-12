@@ -1,64 +1,238 @@
 // Release highlights. Dates, item/character names and CODE identifiers stay unchanged.
 module.exports = {
-	// Cosmetic boxes, seller, exchanger and the seven head names are proper names. Lava Glass and Storm animate while idle as well as walking.
-	"update.20_09_26.head_cosmetics": "New Make-up and New Accessory are now available from Mr. Dworf. Take them to Haila for head sets, unique heads or accessories. New heads include Cyclops, Eyeball, Mimic, Slime, Lantern, Lava Glass and Storm; Lava Glass and Storm animate even while standing still.",
-	// Release highlight. Cavalry and Tracktrix are fixed names.
-	"update.14_09_26.cavalry": "Call the Cavalry through Tracktrix for help with level 3+ monsters. Four sentries split between battles and help lower-level adventurers first.",
-	// Release highlight for the Tavern games. Fortune's Wheel is the wheel game, Sun and Moon its sides; Texas Hold'em is the poker variant; server tiers I to IV and PVP are server names; bet_wheel(), play_slots(), poker_join() and poker_act() are CODE.
-	"update.15_09_26.wheel": "The Tavern now has Fortune's Wheel, three-reel slots, and a five-seat Texas Hold'em table. Poker blinds follow the server. Buy in for 40 to 200 big blinds; leaving cashes out after the hand. CODE can play with bet_wheel(), play_slots(), poker_join() and poker_act().",
-	// Release highlight for cooperative Rime Djinn and four items. Preserve Rime Djinn, Frozen Cove, Tracker and Rimeglass.
-	"update.14_09_26.rime_djinn": "Rime Djinn now haunt Frozen Cove. Break their shells together, earn Tracker rewards, and gather Rimeglass for three new pieces of equipment.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.capacity": "Loot and reward space checks now count stacks correctly.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.slots": "Invalid inventory slots no longer act on the first item.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.spawns": "Monster documentation now explains both spawn-boundary formats.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.promises": "Upgrade and compound CODE results no longer wait for a redraw.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.exchange": "Exchanges now work with a full inventory when they consume the whole stack.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.split": "Splitting a stack in an overflowing inventory no longer loses items.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.grace": "Offerings used without a scroll now show the grace they add instead of an upgrade chance.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.throw": "Failed throws no longer consume items.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.send": "Sending items now checks space using their titles, markings, and contents.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.entry": "Entrances now name the missing key.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.stunned_items": "Items and potions can no longer be used while stunned.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.alchemy_tooltip": "Alchemy now shows the percentage of an item’s gold value returned.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.numeric_names": "Player-only skills now work on characters with all-numeric names, even when a monster has the same ID.",
+	// Fixed bug listed in the [04/10/26] update post "Invite Friends and Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.cavalry_computer": "Super Computer menus now use the selected inventory item. The Network menu now includes Cavalry when opened from the Super Computer.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.movement_buttons": "Direction buttons now move one 50-pixel step per click. Held arrow keys release correctly when focus changes.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.docs_links": "Character Objects links now open in the game’s documentation panel.",
+	// Improvement listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.scroll_consumption": "Upgrade and compound scrolls now say they are consumed on every attempt, whether it succeeds or fails.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.trade_prices": "Invalid stand prices are now rejected instead of becoming 1-gold listings. Price fields now accept plain text only.",
+	// Fixed bug listed in the [04/10/26] update post "Mail, Bank, Cave and Combat Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.self_splash": "Self-inflicted splash damage no longer prevents XP loss when a monster kills you or gives you loot from your own death.",
+	// Fixed bug listed in the [04/10/26] update post "Mail, Bank and Cave Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.cave_walls": "Cave votes no longer leave characters stuck in walls. Logging out from a blocked position no longer prevents returning to the run.",
+	// Fixed bug listed in the [04/10/26] update post "Mail, Bank and Bonus Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.bank_keys": "Using either bank floor key now makes its first item pack available immediately, without leaving and re-entering.",
+	// Fixed bug listed in the [04/10/26] update post "Mail, Bank and Bonus Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.bank_overflow": "Items in extra inventory rows can now be banked without moving the wrong item.",
+	// Fixed bug listed in the [04/10/26] update post "Mail and Bonus Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.merchant_bonuses": "Switching servers on a merchant no longer interrupts other characters’ encouragement bonuses.",
+	// Fixed bug listed in the [04/10/26] update post "Mail Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.mail_ownership": "Mail attachments can now be collected only by the receiving account. Deleting mail removes only your copy.",
+	// Fixed bug listed in the [04/10/26] update post "Mail and Server Menu Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.server_menu": "Event cards no longer cover the server menu.",
+	// Anniversary crafting release text. Preserve Cole.
+	"update.06_10_26.anniversary_crafting.anniversary_crafting": "Anniversary recipes are available at Cole after the event ends.",
+	// Release note announcing that the anniversary event has ended.
+	"update.04_10_26.mail.anniversary_end": "The anniversary event has ended.",
+	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
+	"update.04_10_26.mail.bank_gold_operation": "Bank gold responses now identify deposits and withdrawals.",
+	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
+	"update.04_10_26.mail.cooperative_online": "Offline characters no longer inflate cooperative monster drops.",
+	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
+	"update.04_10_26.mail.stun_refresh": "Short stun refreshes no longer shorten a longer stun.",
+	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
+	"update.04_10_26.mail.poisoned_monster_healing": "Poisoned monsters now receive 25% of normal healing, as the condition describes.",
+	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
+	"update.04_10_26.mail.browser_connections": "Updated browser and payment-page connections to match the game servers.",
+	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
+	"update.04_10_26.mail.gilded_horse_cape": "The golden Horse Leather Cape is now named Gilded Horse Leather Cape.",
+	// Fixed bug listed in the [29/09/26] update post "Cave Fixes and Orb Compounding". Keep names from the game and CODE identifiers unchanged.
+	"update.29_09_26.character_shells": "Included character slots no longer cost shells. Character changes can no longer overdraw your shell balance.",
+	// Fixed bug listed in the [29/09/26] update post "Cave Fixes and Orb Compounding". Keep names from the game and CODE identifiers unchanged.
+	"update.29_09_26.encouragement_loot": "Encouragement drops now appear in CODE’s loot event.",
+	// Fixed bug listed in the [29/09/26] update post "Cave Fixes and Orb Compounding". Keep names from the game and CODE identifiers unchanged.
+	"update.29_09_26.chat_spam": "Repeated public messages are now filtered out of Discord and saved chat history.",
+	// Fixed bug listed in the [24/09/26] update post "Rare Monsters, 15 Accessories and Trade Offers". Keep names from the game and CODE identifiers unchanged.
+	"update.24_09_26.rare_drops.false_jail": "Walking by the Tavern poker table and a few other spots no longer sends you to jail.",
+	// Section text in the [24/09/26] update post "Rare Monsters, 15 Accessories and Trade Offers", under sprites of: item:stand0. Keep names from the game and CODE identifiers unchanged.
+	"update.26_09_26.trade_offers": "Put an item on your stand and choose OFFER FOR TRADE to ask for another item instead of gold. Set a minimum level or a title, or leave them on ANY. Merchants below level 70 gain XP from completed trades.",
+	// Section heading in the [24/09/26] update post "Rare Monsters, 15 Accessories and Trade Offers". Keep names from the game and CODE identifiers unchanged.
+	"update.26_09_26.trade_offers.title": "Trade Offers",
+	// Title of the [24/09/26] update post "Rare Monsters, 15 Accessories and Trade Offers". Keep names from the game and CODE identifiers unchanged.
+	"update.24_09_26.rare_drops.title": "Rare Monsters, 15 Accessories and Trade Offers",
+	// Section text in the [24/09/26] update post "New Rare Monsters and 15 Accessories", under sprites of: monster:manyeye, monster:mimic, monster:paledino. Keep names from the game and CODE identifiers unchanged.
+	"update.24_09_26.rare_drops.rare_monsters": "Each one can appear after the number of kills shown. INFO at the entrance of each area has a guide.",
+	// Section heading in the [24/09/26] update post "New Rare Monsters and 15 Accessories". Keep names from the game and CODE identifiers unchanged.
+	"update.24_09_26.rare_drops.rare_monsters.title": "New Rare Monsters",
+	// Section text in the [24/09/26] update post "New Rare Monsters and 15 Accessories", under sprites of: item:stonegaze, item:mummyhex, item:harpyecho, item:canopener, item:blightcap, item:gnomecap, item:koboldbelt, item:frostfang, item:paleclaw, item:mimicgrin, item:scorpionseal, item:watchersearring, item:graveglass, item:heartwoodlocket, item:groundingstrap. Keep names from the game and CODE identifiers unchanged.
+	"update.24_09_26.rare_drops.accessories": "Each one drops from one monster. Click an item to see what it does.",
+	// Section heading in the [24/09/26] update post "New Rare Monsters and 15 Accessories". Keep names from the game and CODE identifiers unchanged.
+	"update.24_09_26.rare_drops.accessories.title": "15 New Accessories",
+	// Note under monster:kobold (new) in the change list of the [24/09/26] update post "New Rare Monsters and 15 Accessories". Keep names from the game and CODE identifiers unchanged.
+	"update.24_09_26.rare_drops.monster_kobold": "Two pairs roam Underground Cliffs.",
+	// Note under code:upload_code (changed) in the change list of the [24/09/26] update post "New Rare Monsters and 15 Accessories". Keep names from the game and CODE identifiers unchanged.
+	"update.24_09_26.rare_drops.code_upload_code": "CODE saves now have limits: 1 MiB per script, 118 scripts or 128 MiB per account, and 10 saves in a row, then 1 more every 2 seconds.",
+	// Fixed bug listed in the [24/09/26] update post "New Rare Monsters and 15 Accessories". Keep names from the game and CODE identifiers unchanged.
+	"update.24_09_26.rare_drops.phantom_entities": "Monsters and players that leave no longer stay on the screen.",
+	// Fixed bug listed in the [24/09/26] update post "New Rare Monsters and 15 Accessories". Keep names from the game and CODE identifiers unchanged.
+	"update.24_09_26.rare_drops.blink_stretch": "Mage Blink no longer stretches the character.",
+	// Fixed bug listed in the [24/09/26] update post "New Rare Monsters and 15 Accessories". Keep names from the game and CODE identifiers unchanged.
+	"update.24_09_26.rare_drops.steam_welcome_back": "Linking your account to Steam no longer removes your Welcome Back bonus.",
+	// Improvement listed in the [24/09/26] update post "New Rare Monsters and 15 Accessories". Keep names from the game and CODE identifiers unchanged.
+	"update.24_09_26.rare_drops.server_frames": "Servers stay fast with many players. At 150 players, the slowest server tick went from 178 ms to 11 ms.",
+	// Improvement listed in the [24/09/26] update post "New Rare Monsters and 15 Accessories". Keep names from the game and CODE identifiers unchanged.
+	"update.24_09_26.rare_drops.release_posts": "Update notes now show each update as a post, with every new item, monster and guide in it.",
+	// Title of the [22/09/26] update post "Cavalry, New Heads and Steam Sign-in". Keep names from the game and CODE identifiers unchanged.
+	"update.22_09_26.cavalry.title": "Cavalry, New Heads and Steam Sign-in",
+	// Section heading in the [22/09/26] update post "Cavalry, New Heads and Steam Sign-in". Keep names from the game and CODE identifiers unchanged.
+	"update.14_09_26.cavalry.title": "Call the Cavalry",
+	// Section heading in the [22/09/26] update post "Cavalry, New Heads and Steam Sign-in". Keep names from the game and CODE identifiers unchanged.
+	"update.20_09_26.head_cosmetics.title": "New Heads and Make-up",
+	// Section text in the [22/09/26] update post "Cavalry, New Heads and Steam Sign-in". Keep names from the game and CODE identifiers unchanged.
+	"update.22_09_26.cavalry.steam_signin": "You can now sign in with your Steam account and pick which linked Adventure Land account to play. You can turn Steam sign-in off in your account settings.",
+	// Section heading in the [22/09/26] update post "Cavalry, New Heads and Steam Sign-in". Keep names from the game and CODE identifiers unchanged.
+	"update.22_09_26.cavalry.steam_signin.title": "Sign In with Steam",
+	// Note under event:anniversary (changed) in the change list of the [22/09/26] update post "Cavalry, New Heads and Steam Sign-in". Keep names from the game and CODE identifiers unchanged.
+	"update.22_09_26.cavalry.event_anniversary": "Anniversary items now also drop on PvP servers.",
+	// Fixed bug listed in the [22/09/26] update post "Cavalry, New Heads and Steam Sign-in". Keep names from the game and CODE identifiers unchanged.
+	"update.22_09_26.cavalry.stand_items": "Items bought from a merchant stand now keep all their properties.",
+	// Fixed bug listed in the [22/09/26] update post "Cavalry, New Heads and Steam Sign-in". Keep names from the game and CODE identifiers unchanged.
+	"update.22_09_26.cavalry.zoomed_input": "Clicking in the game world works correctly when the page is zoomed.",
+	// Fixed bug listed in the [22/09/26] update post "Cavalry, New Heads and Steam Sign-in". Keep names from the game and CODE identifiers unchanged.
+	"update.22_09_26.cavalry.shells_page": "The Shells page loads correctly again.",
+	// Improvement listed in the [22/09/26] update post "Cavalry, New Heads and Steam Sign-in". Keep names from the game and CODE identifiers unchanged.
+	"update.22_09_26.cavalry.equip_sounds": "Equipping and unequipping items now makes a sound.",
+	// Title of the [16/09/26] update post "Cave of Many Dreams, Tavern Games and Rime Djinn". Keep names from the game and CODE identifiers unchanged.
+	"update.16_09_26.cave.title": "Cave of Many Dreams, Tavern Games and Rime Djinn",
+	// Section heading in the [16/09/26] update post "Cave of Many Dreams, Tavern Games and Rime Djinn". Keep names from the game and CODE identifiers unchanged.
+	"update.14_09_26.cave.title": "Cave of Many Dreams",
+	// Section heading in the [16/09/26] update post "Cave of Many Dreams, Tavern Games and Rime Djinn". Keep names from the game and CODE identifiers unchanged.
+	"update.15_09_26.wheel.title": "Tavern Games",
+	// Section heading in the [16/09/26] update post "Cave of Many Dreams, Tavern Games and Rime Djinn". Keep names from the game and CODE identifiers unchanged.
+	"update.14_09_26.rime_djinn.title": "Rime Djinn",
+	// Section heading in the [16/09/26] update post "Cave of Many Dreams, Tavern Games and Rime Djinn". Keep names from the game and CODE identifiers unchanged.
+	"update.14_09_26.progression.title": "Progression Guide",
+	// Improvement listed in the [16/09/26] update post "Cave of Many Dreams, Tavern Games and Rime Djinn". Keep names from the game and CODE identifiers unchanged.
+	"update.16_09_26.cave.hub_bank": "Hub now shows your bank and your characters' equipment.",
+	// Improvement listed in the [16/09/26] update post "Cave of Many Dreams, Tavern Games and Rime Djinn". Keep names from the game and CODE identifiers unchanged.
+	"update.16_09_26.cave.steam_browser_signup": "If you own Adventure Land on Steam, you can now create an account and play in your browser.",
+	// Title of the [10/09/26] update post "32 Languages, Encouragement Bonuses and the Hub". Keep names from the game and CODE identifiers unchanged.
+	"update.10_09_26.languages.title": "32 Languages, Encouragement Bonuses and the Hub",
+	// Section text in the [10/09/26] update post "32 Languages, Encouragement Bonuses and the Hub". Keep names from the game and CODE identifiers unchanged.
+	"update.10_09_26.languages.languages": "Adventure Land is now in 32 languages, including Arabic and Filipino. Item, monster, map and NPC names stay the same in every language.",
+	// Section heading in the [10/09/26] update post "32 Languages, Encouragement Bonuses and the Hub". Keep names from the game and CODE identifiers unchanged.
+	"update.10_09_26.languages.languages.title": "32 Languages",
+	// Section heading in the [10/09/26] update post "32 Languages, Encouragement Bonuses and the Hub". Keep names from the game and CODE identifiers unchanged.
+	"update.08_09_26.new_players_returning_adventurers_and_lone_wolves_earn_extra.title": "Encouragement Bonuses",
+	// Section text in the [10/09/26] update post "32 Languages, Encouragement Bonuses and the Hub", under sprites of: monster:goo. Keep names from the game and CODE identifiers unchanged.
+	"update.10_09_26.languages.comic": "Our story starts in a new 5-page comic. Find it at the start of the Tutorial, or in GUIDE.",
+	// Section heading in the [10/09/26] update post "32 Languages, Encouragement Bonuses and the Hub". Keep names from the game and CODE identifiers unchanged.
+	"update.10_09_26.languages.comic.title": "The Voice in the Goo",
+	// Section heading in the [10/09/26] update post "32 Languages, Encouragement Bonuses and the Hub". Keep names from the game and CODE identifiers unchanged.
+	"update.08_09_26.communicator_now_opens_with_server_chat_keeps_private_conversations.title": "Hub",
+	// Improvement listed in the [10/09/26] update post "32 Languages, Encouragement Bonuses and the Hub". Keep names from the game and CODE identifiers unchanged.
+	"update.10_09_26.languages.tutorial_lessons": "The Tutorial now covers farming spots, equipment, stat scrolls, monster hunts and Tracktrix. Merchants have their own lessons.",
+	// Title of the [07/09/26] update post "Anniversary Event and Market Parcels". Keep names from the game and CODE identifiers unchanged.
+	"update.07_09_26.anniversary.title": "Anniversary Event and Market Parcels",
+	// Section heading in the [07/09/26] update post "Anniversary Event and Market Parcels". Keep names from the game and CODE identifiers unchanged.
+	"update.05_09_26.celebrate_ten_years_of_adventure_land_find_featured_players.title": "10 Years of Adventure Land",
+	// Section heading in the [07/09/26] update post "Anniversary Event and Market Parcels". Keep names from the game and CODE identifiers unchanged.
+	"update.05_09_26.merrit_visits_settled_shops_in_mainland_with_stackable_market.title": "Merrit's Market Parcels",
+	// Improvement listed in the [07/09/26] update post "Anniversary Event and Market Parcels". Keep names from the game and CODE identifiers unchanged.
+	"update.07_09_26.anniversary.event_cards": "Live events now show as cards before you enter the game.",
+	// Improvement listed in the [07/09/26] update post "Anniversary Event and Market Parcels". Keep names from the game and CODE identifiers unchanged.
+	"update.07_09_26.anniversary.discord_chat": "Public game chat now goes to the #game_chat channel on Discord.",
+	// Title of the [05/09/26] update post "A Big Update for Paladins". Keep names from the game and CODE identifiers unchanged.
+	"update.05_09_26.paladins.title": "A Big Update for Paladins",
+	// Section heading in the [05/09/26] update post "A Big Update for Paladins". Keep names from the game and CODE identifiers unchanged.
+	"update.04_09_26.paladins_can_cleanse_and_protect_friendlies_rally_them_with.title": "New Paladin Skills",
+	// Section text in the [05/09/26] update post "A Big Update for Paladins", under sprites of: item:vowkeepergloves, item:oathplate, item:resolutesallet, item:concordmace, item:dawnwardaegis. Keep names from the game and CODE identifiers unchanged.
+	"update.05_09_26.paladins.oathkeeper": "5 new Paladin items. The more pieces you wear, the more HP, MP and armor you get.",
+	// Section heading in the [05/09/26] update post "A Big Update for Paladins". Keep names from the game and CODE identifiers unchanged.
+	"update.05_09_26.paladins.oathkeeper.title": "The Oathkeeper Set",
+	// Note under skill:mshield (changed) in the change list of the [05/09/26] update post "A Big Update for Paladins". Keep names from the game and CODE identifiers unchanged.
+	"update.05_09_26.paladins.skill_mshield": "Aether Shield replaces it while active.",
+	// Summary of the [24/09/26] update post "Rare Monsters, 15 Accessories and Trade Offers", shown under its title and in the game log. Keep names from the game and CODE identifiers unchanged.
+	"update.24_09_26.rare_drops": "15 new accessories drop from monsters around the world. Kobolds now roam Underground Cliffs. Many Eye, Mimic and Pale Dino are new rare monsters. Merchants can now trade an item for another item.",
+	// Section text in the [22/09/26] update post "Cavalry, New Heads and Steam Sign-in", under sprites of: cx:cyclops0, cx:eyehead0, cx:mimichead0, cx:slimehead0, cx:lanternhead0, cx:lavaglasshead0, cx:stormhead0. Keep names from the game and CODE identifiers unchanged.
+	"update.20_09_26.head_cosmetics": "Mr. Dworf now sells New Make-up and New Accessory. Give them to Haila for a new head, make-up or accessory. New heads: Cyclops, Eyeball, Mimic, Slime, Lantern, Lava Glass and Storm. Lava Glass and Storm move even when you stand still.",
+	// Section text in the [16/09/26] update post "Cave of Many Dreams, Tavern Games and Rime Djinn". Keep names from the game and CODE identifiers unchanged.
+	"update.15_09_26.wheel": "The Tavern has Fortune's Wheel, three-reel slots and a Texas Hold'em table for 5 players. CODE can play too: bet_wheel(), play_slots(), poker_join() and poker_act().",
+	// Section text in the [22/09/26] update post "Cavalry, New Heads and Steam Sign-in", under sprites of: npc:cavalry_warrior, npc:cavalry_priest, npc:cavalry_mage, npc:cavalry_paladin. Keep names from the game and CODE identifiers unchanged.
+	"update.14_09_26.cavalry": "Call the Cavalry from Tracktrix for help with nearby level 3+ monsters. A Warrior, Priest, Mage and Paladin come to help. When many players call, lower-level players get help first.",
+	// Section text in the [16/09/26] update post "Cave of Many Dreams, Tavern Games and Rime Djinn", under sprites of: monster:rimedjinn, item:djinncrown, item:covemantle, item:stillwaterlens. Keep names from the game and CODE identifiers unchanged.
+	"update.14_09_26.rime_djinn": "Rime Djinn now appear in Frozen Cove. When one starts forming its ice shell, break it together before it hits your party. They drop Rimeglass, and Leo crafts 3 new items from it.",
 	// Release highlight: failed character startup now releases its online claim so the player can reconnect.
 	"update.13_09_26.login_recovery": "Fixed failed logins that could leave characters stuck online and prevent reconnecting.",
-	// Tutorial release highlight: wider completion paths, remembered actions and optional compounding practice.
-	"update.13_09_26.tutorial_progress": "Patched tutorial progress: earlier actions and more ways of completing tasks now count. Compounding practice is optional, so collecting accessories no longer blocks later lessons.",
+	// Fixed bug listed in the [16/09/26] update post "Cave of Many Dreams, Tavern Games and Rime Djinn". Keep names from the game and CODE identifiers unchanged.
+	"update.13_09_26.tutorial_progress": "Tutorial tasks you already did now count, and there are more ways to finish them. Compounding practice is optional now, so it no longer blocks later lessons.",
 	// Release highlight for bundled Steam images and remembered desktop language preferences.
 	"update.09_09_26.steam_clients_include_game_images_and_remember_your_language": "Steam clients now include game images to reduce downloads and remember your language.",
 	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
 	"update.08_09_26.communicator_now_opens_with_server_chat_keeps_private_conversations": "Hub opens with server chat, keeps private conversations together, and lets you chat as any of your characters, even while they are offline.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.08_09_26.new_players_returning_adventurers_and_lone_wolves_earn_extra": "New players, returning adventurers and Lone Wolves earn extra monster rewards for their contribution. Click a bonus condition or open GUIDE → Encouragement Bonuses for the rates and CODE example. Daisy also offers easier hunts until your account's highest character reaches level 60.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.05_09_26.merrit_visits_settled_shops_in_mainland_with_stackable_market": "Merrit visits settled shops in Mainland with stackable Market Parcels and occasional SHELLS. Exchange parcels for supplies, four rare T3 armor pieces or a spear. Keep stands clear of fixed NPCs and neighboring shops; INFO explains her visits and rewards.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.05_09_26.celebrate_ten_years_of_adventure_land_find_featured_players": "Celebrate ten years of Adventure Land: find featured players, trade six cake flavors, and visit Mira for anniversary equipment, returning prizes, and two new emotes.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.05_09_26.gloam_pendant_now_grants_less_dexterity_intelligence_and_skill": "Gloam Pendant now grants less Dexterity, Intelligence, and skill MP reduction while retaining its full MP growth.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.04_09_26.paladins_can_cleanse_and_protect_friendlies_rally_them_with": "Paladins can cleanse and protect friendlies, rally them with Fortitude and Courage, and carry one of four level-scaled auras. Aether Shield restores MP from magical wounds, while Guardian's Oath restores MP from shared damage. Shield Slam turns Armor and MP into a crushing shield strike. Five Paladin-only items form the Oathkeeper Set through material, crafting, token, and Skeletor rewards.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.04_09_26.home_servers_now_offer_themed_material_drops_from_more": "Home servers now offer themed material drops from more cooperative monsters. Quickly switching non-merchant characters between servers causes 30 minutes of Realm Fatigue, temporarily pausing home contribution bonuses and home-only drops while normal rewards continue.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.01_09_26.mainframe_code_can_now_run_up_to_four_characters": "Mainframe CODE can now run up to four characters together in one isolated machine. Shared groups renew for 1 Shell every 60, 50, 45, or 40 minutes based on the number of active characters.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.31_08_26.level_90_mages_can_now_use_arcane_needle_with": "Level 90 Mages can now use Arcane Needle with a wand, dealing reduced damage while piercing resistance and reflection with normal attack effects.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.30_08_26.steam_owners_now_receive_250_free_mainframe_hours_shared": "Steam owners now receive 250 free Mainframe hours shared across their linked Adventure Land accounts, with automatic Shell renewal after the free time is used.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.29_08_26.expanded_the_tutorial_and_game_guide_with_clear_manual": "Expanded the Tutorial and Game Guide with clear manual and optional CODE paths, nearby INFO guides for world services, and complete CODE access for duels, recovered-item shops, tavern games, item de-statting, and strange interactions.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.27_08_26.added_mainframe_run_saved_code_in_isolated_network_free": "Added Mainframe: run saved CODE in isolated, network-free machines for 1 Shell per hour, with game API and MCP controls.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.27_08_26.added_five_new_citizens_across_desertland_cyberland_the_mystical": "Added five new Citizens across Desertland, Cyberland, the Mystical Forest, the Underground Tunnel, and the Tavern, each with their own routines and reactions.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.26_08_26.improved_steam_client_compatibility_on_linux_and_restored_mouse": "Improved Steam client compatibility on Linux and restored mouse item dragging on Windows.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.25_08_26.added_new_steam_clients_for_windows_and_linux_alongside": "Added new Steam clients for Windows and Linux alongside the macOS client, with more reliable Steam login, clearer diagnostics, and in-client Shells purchases.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.25_08_26.corrected_armor_tier_progression_across_the_new_equipment_collection": "Corrected armor tier progression across the new equipment collection.",
+	// Section text in the [10/09/26] update post "32 Languages, Encouragement Bonuses and the Hub", under sprites of: condition:encouragement_new, condition:encouragement_returning, condition:encouragement_lonewolf. Keep names from the game and CODE identifiers unchanged.
+	"update.08_09_26.new_players_returning_adventurers_and_lone_wolves_earn_extra": "New players, players back after 60+ days and players with one character get extra XP, gold and loot. Click your bonus condition to see yours. Daisy also gives easier monster hunts until your highest character reaches level 60.",
+	// Section text in the [07/09/26] update post "Anniversary Event and Market Parcels", under sprites of: item:marketparcel, item:duskweavehood, item:caravanbrigandine, item:mirrorsteelgauntlet, item:ironheelboots, item:tollkeeperspike. Keep names from the game and CODE identifiers unchanged.
+	"update.05_09_26.merrit_visits_settled_shops_in_mainland_with_stackable_market": "Keep a shop open in Mainland's square and Merrit brings you a Market Parcel, up to one per hour per account. Parcels have supplies, and 1 in 900 has a rare armor piece or a spear. Her INFO guide shows your shop's status.",
+	// Section text in the [07/09/26] update post "Anniversary Event and Market Parcels", under sprites of: npc:anniversary_baker, item:sixcake, item:anniversarygift, item:slice_strawberry, item:slice_citrus, item:slice_honey, item:slice_mint, item:slice_blueberry, item:slice_nightberry. Keep names from the game and CODE identifiers unchanged.
+	"update.05_09_26.celebrate_ten_years_of_adventure_land_find_featured_players": "Every 30 minutes, one player on each non-PvP server is featured. Find them and use I Kiss You to get a cake slice and an Anniversary Gift. Trade for all 6 cake flavors and bring them to Mira for a Sixfold Cake. Mira also crafts 8 new pieces of equipment.",
+	// Note under item:gloampendant (changed) in the change list of the [05/09/26] update post "A Big Update for Paladins". Keep names from the game and CODE identifiers unchanged.
+	"update.05_09_26.gloam_pendant_now_grants_less_dexterity_intelligence_and_skill": "Gloam Pendant gives less Dexterity, Intelligence and skill MP reduction. Its MP growth stays the same.",
+	// Section text in the [05/09/26] update post "A Big Update for Paladins", under sprites of: skill:cleansing_light, skill:guardians_oath, skill:beacon_of_resolve, skill:paladin_aura, skill:aether_shield, skill:shield_slam. Keep names from the game and CODE identifiers unchanged.
+	"update.04_09_26.paladins_can_cleanse_and_protect_friendlies_rally_them_with": "Cleansing Light (level 30) clears harmful conditions from an ally. Guardian's Oath (level 50) takes 35% of an ally's damage for 8 seconds. Beacon of Resolve (level 70) gives nearby players Fortitude and Courage. At level 60 you get 4 auras, Aether Shield and Shield Slam.",
+	// Update note in the game log and the update archive. Keep names from the game, CODE identifiers and numbers unchanged.
+	"update.04_09_26.home_servers_now_offer_themed_material_drops_from_more": "More monsters now have home server drops, like Reef Glass from Giga Crab. Switching characters between servers too often gives 30 minutes of Realm Fatigue: no home bonuses or home drops until it ends. Merchants are not affected.",
+	// Update note in the game log and the update archive. Keep names from the game, CODE identifiers and numbers unchanged.
+	"update.01_09_26.mainframe_code_can_now_run_up_to_four_characters": "Mainframe can now run up to 4 characters together. It costs 1 Shell every 60, 50, 45 or 40 minutes for 1, 2, 3 or 4 characters.",
+	// Update note in the game log and the update archive. Keep names from the game, CODE identifiers and numbers unchanged.
+	"update.31_08_26.level_90_mages_can_now_use_arcane_needle_with": "Level 90 Mages can now use Arcane Needle with a wand. It does less damage, but it pierces resistance and reflection. Item effects still work.",
+	// Update note in the game log and the update archive. Keep names from the game, CODE identifiers and numbers unchanged.
+	"update.30_08_26.steam_owners_now_receive_250_free_mainframe_hours_shared": "Steam owners get 250 free Mainframe hours, shared by their linked accounts. After that, Mainframe renews with Shells.",
+	// Update note in the game log and the update archive. Keep names from the game, CODE identifiers and numbers unchanged.
+	"update.29_08_26.expanded_the_tutorial_and_game_guide_with_clear_manual": "The Tutorial and Game Guide now show both the manual and the CODE way to do things. New INFO buttons explain the NPC services near you. CODE can now use duels, the recovered-item shop, Tavern games and item de-statting.",
+	// Update note in the game log and the update archive. Keep names from the game, CODE identifiers and numbers unchanged.
+	"update.27_08_26.added_mainframe_run_saved_code_in_isolated_network_free": "New: Mainframe. It runs your saved CODE on our servers, even when your browser is closed, for 1 Shell per hour.",
+	// Update note in the game log and the update archive. Keep names from the game, CODE identifiers and numbers unchanged.
+	"update.27_08_26.added_five_new_citizens_across_desertland_cyberland_the_mystical": "5 new Citizens now live in Desertland, Cyberland, the Mystical Forest, the Underground Tunnel and the Tavern.",
+	// Update note in the game log and the update archive. Keep names from the game, CODE identifiers and numbers unchanged.
+	"update.26_08_26.improved_steam_client_compatibility_on_linux_and_restored_mouse": "The Steam client works better on Linux, and dragging items with the mouse works again on Windows.",
+	// Update note in the game log and the update archive. Keep names from the game, CODE identifiers and numbers unchanged.
+	"update.25_08_26.added_new_steam_clients_for_windows_and_linux_alongside": "New Steam clients for Windows and Linux. Steam login is more reliable, and you can buy Shells in the client.",
+	// Update note in the game log and the update archive. Keep names from the game, CODE identifiers and numbers unchanged.
+	"update.25_08_26.corrected_armor_tier_progression_across_the_new_equipment_collection": "Fixed the armor tiers of the new equipment.",
 	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
 	"update.25_08_26.drop_egg_and_rising_hearts_now_unlock_and_work": "Drop Egg and Rising Hearts now unlock and work like other Emotes.",
+	// Update note in the game log and the update archive. Keep names from the game, CODE identifiers and numbers unchanged.
+	"update.24_08_26.released_the_new_steam_client_for_macos_with_in": "New Steam client for macOS. You can buy Shells in the client, reloads are smoother, and music and sound effects have separate volume controls.",
 	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.24_08_26.released_the_new_steam_client_for_macos_with_in": "Released the new Steam client for macOS with in-client Shells purchases, all active Shells bonuses, smoother reloads, and separate music and sound-effect volume controls.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	// New Misc. is the exact cosmo5 item name, not a translated cosmetic category. Preserve it; emote display names follow the locale's shared terminology.
-	"update.24_08_26.added_the_new_misc_cosmetic_box_with_gravestones_and": "Added the New Misc. cosmetic box with gravestones and eleven unlockable emotes, including friendly flourishes, a self-cast Pocket Storm, and the solo Mirror Disco. Jumps are wordless, Head Wiggle is subtler and works on full character looks, Joy bursts into a bright pixel rainbow, and the emotes have matching sounds.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.24_08_26.added_40_new_items_and_fan_of_knives_with": "Added 40 new items and Fan of Knives, with new crafting, shop, PvP Token, Ent, and material acquisition paths.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.24_08_26.added_the_worldroot_crook_a_priest_only_t4_staff": "Added the Worldroot Crook, a Priest-only T4 staff crafted from a Harbringer +8 and rare materials, with Intelligence, Strength, and resistance piercing.",
-	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
-	"update.24_08_26.major_code_update_all_public_asynchronous_functions_now_settle": "Major CODE update: all public asynchronous functions now settle on real server results, with complete documentation, live server.status data, and optional MessagePack transport for custom clients.",
+	// Update note in the game log and the update archive. Keep names from the game, CODE identifiers and numbers unchanged.
+	"update.24_08_26.added_the_new_misc_cosmetic_box_with_gravestones_and": "New cosmetic box: New Misc. It has gravestones and 11 new emotes, like High Five, Boop, Pocket Storm, Mirror Disco and Joy. Every emote now has a sound.",
+	// Update note in the game log and the update archive. Keep names from the game, CODE identifiers and numbers unchanged.
+	"update.24_08_26.added_40_new_items_and_fan_of_knives_with": "40 new items, and a new Rogue skill from one of them: Fan of Knives. Get them by crafting, from shops, with PvP Tokens, from Ents and by trading in materials.",
+	// Update note in the game log and the update archive. Keep names from the game, CODE identifiers and numbers unchanged.
+	"update.24_08_26.added_the_worldroot_crook_a_priest_only_t4_staff": "New Priest staff: Worldroot Crook. Craft it from a +8 Harbringer and rare materials. It has Intelligence, Strength and resistance piercing.",
+	// Update note in the game log and the update archive. Keep names from the game, CODE identifiers and numbers unchanged.
+	"update.24_08_26.major_code_update_all_public_asynchronous_functions_now_settle": "Big CODE update: functions that return a promise now resolve with the server's real result. Every function is documented, server.status shows live data, and custom clients can use MessagePack.",
 	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
 	"update.23_08_26.all_update_notes_going_back_to_2016_are_now": "All update notes going back to 2016 are now available in-game, with the latest notes always shown.",
 	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
@@ -1517,9 +1691,12 @@ module.exports = {
 	"update.12_09_16.implemented_aggressiveness_for_monsters_bee_s_sting": "Implemented \"aggressiveness\" for monsters. Bee's sting :)",
 	// update_notes.js; release highlight in game logs and the update archive. Preserve fixed HTML tags/attributes and CODE snippets, when present.
 	"update.12_09_16.added_the_lines_feature_draws_a_line_between_entities": "Added the \"lines\" feature. Draws a line between entities on attack, heal. Should especially be useful for PVP.",
-	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"update.14_09_26.progression": "The Progression Guide suggests equipment projects, useful farms and live opportunities, from your first Goo fights onward. Choose a goal above HP and MP, or turn the guide off beside Tutorial in Settings. CODE can read the same advice with get_progression().",
+	// Section text in the [16/09/26] update post "Cave of Many Dreams, Tavern Games and Rime Djinn". Keep names from the game and CODE identifiers unchanged.
+	"update.14_09_26.progression": "The Progression Guide suggests farms and equipment to work on next. Choose a goal above your HP and MP bars, or turn it off in Settings next to Tutorial. CODE can read it with get_progression().",
 };
 
-// Cave release highlight.
-module.exports["update.14_09_26.cave"] = "Enter the Cave of Many Dreams with your party. Explore changing floors, earn 10× enemy XP and spend cave gold at merchants. Find axes and scythes, or trade Cave Amber to craft rare equipment. Dying inside costs no XP or gold.";
+// Section text in the [16/09/26] update post "Cave of Many Dreams, Tavern Games and Rime Djinn". Keep names from the game and CODE identifiers unchanged.
+module.exports["update.14_09_26.cave"] = "A new dungeon for your party of up to 3. You get 1 run per day and 24 minutes to get through 3 floors. Monsters give 10× XP, and dying inside costs no XP or gold. Find axes, scythes and Cave Amber, and use the Amber to craft rare equipment.";
+
+// Fix in the [29/09/26] update post. Keep CODE and Tiny Crab unchanged; this describes client range checks matching server combat bounds.
+module.exports["update.29_09_26.monster_combat_bounds"] = "Monster range checks in CODE now match the server, including for Tiny Crab.";

@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "TAŞ!",
+	"server.floating.frenzy": "ÇILGINLIK!",
 	"server.party.joined": "{player} gruba katıldı",
 	"server.party.joined_with_invite": "{player}, {inviter} adlı oyuncunun davetiyle gruba katıldı",
 	"server.party.left": "{player} gruptan ayrıldı",
@@ -393,5 +395,8 @@
 	"server.cave.amber_limit": "Bu ziyaret için ayrılan {amount} Cave Amber’ın tamamı ortaya çıktı. Hâlâ eşya bulabilir ve XP kazanabilirsin.",
 	"server.game_error.poker_hand_active": "Poker elin başka bir sunucuda devam ediyor. Bitmesini bekle veya o sunucuya yeniden bağlan.",
 	"server.tracktrix.mail_subject": "Tracktrix'in",
-	"server.tracktrix.mail_body": "Bir sonraki avın için küçük bir yardım. Bu Tracktrix'i yanında tut!"
+	"server.tracktrix.mail_body": "Bir sonraki avın için küçük bir yardım. Bu Tracktrix'i yanında tut!",
+  "server.game_log.offered_for": "{item}, {want} karşılığında takasa çıkarıldı",
+  "server.game_log.offered_for_or_higher": "{item}, {want} veya üstü karşılığında takasa çıkarıldı",
+  "server.game_log.traded_for": "{item}, {player} adlı oyuncuyla {received} karşılığında takas edildi"
 }

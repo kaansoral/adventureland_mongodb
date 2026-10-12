@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Steam ile giriş: <span style=\"color: green\">AÇIK</span>",
+	"pages.steam_signin.off": "> Steam ile giriş: <span style=\"color: #F54423\">KAPALI</span>",
+	"pages.steam_signin.title": "Steam ile Giriş Yap",
+	"pages.steam_signin.intro": "Steam hesabını doğrula, ardından giriş yapacağın Adventure Land hesabını seç.",
+	"pages.steam_signin.continue": "Steam'e devam et",
+	"pages.steam_signin.choose": "Bir hesap seç",
+	"pages.steam_signin.choose_help": "Bu Steam hesabına bağlı bir Adventure Land hesabı seç.",
+	"pages.steam_signin.identity": "Sonu {digits} ile biten Steam hesabı doğrulandı",
+	"pages.steam_signin.account": "Hesap: {name}",
+	"pages.steam_signin.action": "Bu hesaba giriş yap",
+	"pages.steam_signin.empty": "Bu Steam hesabıyla giriş yapılabilecek bir Adventure Land hesabı yok.",
+	"pages.steam_signin.email": "E-posta ile giriş yap",
+	"pages.steam_signin.next": "Diğer hesaplar",
+	"pages.steam_signin.signup_label": "> Kayıt Ol",
 	"pages.steam_signup.client_help": "Bu özellik, oyun istemcisini çalıştırmakta sorun yaşayan oyunculara yardımcı olur.",
 	"pages.steam_signup.title": "Steam ile Kaydol",
 	"pages.steam_signup.intro": "Steam'de Adventure Land'e sahip misin? Satın aldığını doğrulayarak hesap oluşturabilir ve tarayıcında oynayabilirsin.",
@@ -1482,5 +1496,6 @@
 	"pages.vscode.the-marketplace-page-is-not-live-yet-the": "Marketplace sayfası henüz yayında değil. Paket bu sunucuda hazır olduğunda doğrudan VSIX indirmesi burada görünecek.",
 	"pages.vscode.use-in-vs-code-or-cursor-it-replaces": "VS Code veya Cursor'da <span class=\"shell\">{id}</span> kullanın. Eski istemci klasör eşitlemesinin yerine API tabanlı otomatik eşitleme getirir; Steam, tarayıcı ve normal masaüstü editörleriyle çalışır.",
 	"pages.vscode.your-token": "Anahtarınız",
-	"pages.contents.announcement_email.holiday_code_example": "Not 3. Noel güçlendirmesini otomatikleştiren bir <a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a> örneği.\n\t\t\t\t\tNot 4. Yeni şeyler ve yeni yetenekler de var!"
+	"pages.contents.announcement_email.holiday_code_example": "Not 3. Noel güçlendirmesini otomatikleştiren bir <a style=\"color: #33BF6D\" href=\"https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js\"><span style=\"color: #33BF6D\">CODE</span></a> örneği.\n\t\t\t\t\tNot 4. Yeni şeyler ve yeni yetenekler de var!",
+	"pages.contents.selection.slots-in-use": "Tüm karakter yuvalarınız dolu."
 }

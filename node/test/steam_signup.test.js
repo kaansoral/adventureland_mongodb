@@ -103,12 +103,15 @@ function setup({ beforeCommit, host = "adventure.land", local = false } = {}) {
 	}
 	Object.assign(s, transactions(context, [], beforeCommit), { context });
 	load(context, "common/js/common_functions.js", ["isEmailValid", "purify_email"]);
-	load(context, "adventure_functions.js", ["hash_password", "get_new_auth", "set_cookie"]);
+	load(context, "adventure_functions.js", ["hash_password", "get_new_auth", "set_cookie", "get_steam_login_id"]);
 	load(context, "api.js", ["signup_or_login_api"]);
 	// Execute the actual main.js wiring, including response initialization.
 	const main = read("main.js");
 	vm.runInContext(
-		main.slice(main.indexOf('var steam_signup = require("./steam_signup")'), main.indexOf('app.get("/steam-signup"')),
+		main.slice(
+			main.indexOf('var steam_signup = require("./steam_signup")'),
+			main.indexOf('steam_auth_app.get("/steam-signup"'),
+		),
 		context,
 	);
 	s.call = async (
@@ -252,6 +255,16 @@ test("Steam account ID, not a family lender ID, is stored", async () => {
 	await s.verify();
 	await s.complete();
 	assert.equal([...s.records.values()].find((record) => record._id.startsWith("US_")).pid, PID);
+});
+
+test("verified Steam signup supports sign-in by default without an enrollment checkbox", async () => {
+	const s = setup();
+	await s.verify();
+	await s.complete();
+	const user = [...s.records.values()].find((record) => record._id.startsWith("US_"));
+	assert.equal(s.context.get_steam_login_id(user), PID);
+	assert.equal(user.steam_login, undefined);
+	assert.equal(read("htmls/steam_signup.html").includes('name="steam_login"'), false);
 });
 
 test("a stalled Steam request is aborted without leaving the signup request hanging", async (t) => {

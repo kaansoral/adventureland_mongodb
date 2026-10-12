@@ -80,5 +80,8 @@
 	"error.save_failed": "保存できませんでした。もう一度お試しください。",
 	"error.invalid_language": "一覧から言語を選んでください。",
 	"error.cant_copy_over_map_in_use": "使用中のマップは上書きできません。",
-	"error.cant_delete_map_in_use": "使用中のマップは削除できません。"
+	"error.cant_delete_map_in_use": "使用中のマップは削除できません。",
+	"error.code_too_large": "このスクリプトは大きすぎます。各CODEスロットには、UTF-8テキストを最大1 MiB（1,048,576バイト）まで保存できます。",
+	"error.code_storage_full": "CODEの保存容量がいっぱいです。使っていないスクリプトをエクスポートしてから削除し、空きを作ってください。",
+	"error.code_rate_limited": "CODEの保存頻度が高すぎます。少し待ってから、もう一度お試しください。"
 }

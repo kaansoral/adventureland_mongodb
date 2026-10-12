@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "КАМІНЬ!",
+	"server.floating.frenzy": "ШАЛЕНСТВО!",
 	"server.party.joined": "До групи приєднується {player}",
 	"server.party.joined_with_invite": "До групи приєднується {player} на запрошення від {inviter}",
 	"server.party.left": "{player} залишає групу",
@@ -399,5 +401,8 @@
 	"server.cave.amber_limit": "Усі {amount} Cave Amber для цього відвідування вже з’явилися. Ти ще можеш знаходити предмети й отримувати XP.",
 	"server.game_error.poker_hand_active": "Ваша роздача покеру ще триває на іншому сервері. Дочекайтеся її завершення або підключіться до того сервера.",
 	"server.tracktrix.mail_subject": "Ваш Tracktrix",
-	"server.tracktrix.mail_body": "Невеличка допомога для наступного полювання. Носіть цей Tracktrix із собою!"
+	"server.tracktrix.mail_body": "Невеличка допомога для наступного полювання. Носіть цей Tracktrix із собою!",
+  "server.game_log.offered_for": "Запропоновано обмін: {item} на {want}",
+  "server.game_log.offered_for_or_higher": "Запропоновано обмін: {item} на {want} або вище",
+  "server.game_log.traded_for": "Обмін з {player}: {item} на {received}"
 }

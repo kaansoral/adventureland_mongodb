@@ -69,13 +69,14 @@ function fixture() {
 		players: { A: a, B: b },
 		chests: {},
 		workers: [],
-		smap_data: {},
+		smap_data: { zone_test: -1 },
 		amap_data: {},
 		projectiles: {},
 		instances: { zone_test: { name: "zone_test", players: { A: a, B: b }, monsters: {}, observers: {} } },
 		get_player: (name) => c.players[name],
 		check_player: (p) => !p.dc && !p.socket.disconnected && c.players[p.name] === p,
 		can_walk: () => true,
+		can_move: () => true,
 		simple_distance: () => 0,
 		safe_xy_nearby: (map, x, y) => ({ x, y }),
 		cave_enter_effect: async () => {},
@@ -115,6 +116,167 @@ function login(c, p) {
 	p.last = {};
 	c.players[p.name] = p;
 }
+
+function wallFixture() {
+	const h = fixture(),
+		{ c, a } = h;
+	const definitions = c.G;
+	for (const file of ["common/js/common_functions.js", "js/old_common_functions.js"]) vm.runInContext(read(file), c);
+	c.G = definitions;
+	c.clone = structuredClone;
+	Object.assign(c, {
+		Place: "server",
+		perfc: { roam_ops: 0 },
+		smap_step: 10,
+		amap_step: 8,
+		precomputed_bfs: null,
+		hiding_places: [],
+		server_log() {},
+	});
+	// Two rooms joined below a thick wall. Use the real collision and navigation builders.
+	const geometry = {
+		x_lines: [
+			[0, 0, 400],
+			[160, 0, 260],
+			[280, 0, 260],
+			[440, 0, 400],
+		],
+		y_lines: [
+			[0, 0, 440],
+			[260, 160, 280],
+			[400, 0, 440],
+		],
+	};
+	c.G.maps.zone_test = { ...c.G.maps.zone_test, spawns: [[60, 200]], data: geometry, instance: true };
+	c.G.geometry.zone_test = geometry;
+	load(c, "node/server_functions.js", [
+		"server_bfs",
+		"server_bfs2",
+		"phash",
+		"phash2",
+		"smap_round",
+		"is_xy_safe",
+		"safe_xy_nearby",
+		"ghash",
+		"pmap_remove",
+		"pmap_add",
+		"pmap_move",
+	]);
+	c.server_bfs("zone_test");
+	Object.assign(a, {
+		x: 220,
+		y: 200,
+		from_x: 100,
+		from_y: 200,
+		going_x: 340,
+		going_y: 200,
+		moving: true,
+		base: { h: 12, v: 8, vn: 4 },
+	});
+	c.instances.zone_test.pmap = {};
+	c.pmap_add(a);
+	assert.equal(c.safe_xy_nearby(a.map, a.x, a.y), false, "the reported position has no nearby landing");
+	return h;
+}
+
+test("a vote stops a character caught in a wall on the original side, without changing combat state", () => {
+	const { c, a, b, run, packets } = wallFixture();
+	Object.assign(b, { x: 100.25, y: 300.75 });
+	const state = structuredClone({ hp: a.hp, mp: a.mp, s: a.s, last: a.last });
+	c.cave_pause(run);
+	assert.equal(c.smap_data[a.map][c.phash(a.x, a.y)], 0);
+	assert.ok(a.x < 160, "recovery cannot jump to the destination across the wall");
+	assert.equal(c.can_move({ ...a, x: 100, y: 200, going_x: a.x, going_y: a.y }), true);
+	assert.deepEqual([a.going_x, a.going_y, a.moving, a.vx, a.vy], [a.x, a.y, false, 0, 0]);
+	assert.deepEqual([b.x, b.y], [100.25, 300.75], "valid positions are not snapped to the grid");
+	assert.deepEqual({ hp: a.hp, mp: a.mp, s: a.s, last: a.last }, state);
+	assert.equal(c.instances.zone_test.pmap[a.last_hash][a.id], a);
+	assert.ok(
+		packets.some((p) => p.name === "A" && p.event === "correction" && p.data.cave === run.key && p.data.x === a.x),
+	);
+});
+
+test("disconnecting inside a wall saves a reachable point and returns to the same visit", async () => {
+	const { c, a, run } = wallFixture();
+	const expires = run.expires,
+		cooldown = +a.last.attack;
+	disconnect(c, a);
+	assert.ok(run.members[0].disconnected.x < 160);
+	login(c, a);
+	const result = await c.cave_interaction(a, { action: "enter" });
+	assert.equal(result.resumed, true);
+	assert.equal(a.map, "zone_test");
+	assert.ok(a.x < 160);
+	assert.deepEqual([a.hp, a.mp, +a.last.attack, run.expires, run.cave.amber], [40, 20, cooldown, expires, 19]);
+});
+
+test("an old saved position deep in a wall falls back to that floor's entrance without reviving", async () => {
+	const { c, a, run } = wallFixture();
+	a.rip = true;
+	a.hp = 0;
+	disconnect(c, a);
+	Object.assign(run.members[0].disconnected, { x: 220, y: 200 });
+	login(c, a);
+	const result = await c.cave_interaction(a, { action: "enter" });
+	assert.equal(result.run, run.key);
+	assert.deepEqual([a.map, a.x, a.y, a.hp, a.rip], ["zone_test", 60, 200, 0, true]);
+	assert.equal(run.members[0].disconnected, undefined);
+	assert.equal(run.cave.amber, 19);
+});
+
+test("an unusable floor does not discard the saved return or the outside character state", async () => {
+	const { c, a, run } = wallFixture();
+	disconnect(c, a);
+	login(c, a);
+	c.smap_data.zone_test = {};
+	await assert.rejects(c.cave_interaction(a, { action: "enter" }), /transport_failed/);
+	assert.deepEqual([a.map, a.hp, a.rip], ["main", 100, false]);
+	assert.ok(run.members[0].disconnected);
+	assert.equal(run.members[0].rejoining, undefined);
+});
+
+test("the client accepts a wall correction only for its own cave and stops the pending move without graphics", () => {
+	const { c, a, run } = wallFixture();
+	c.G.maps.zone_test.generated.run = run.key;
+	c.character = { ...a, me: true, real_x: a.x, real_y: a.y };
+	const settled = [];
+	c.resolve_deferreds = (name, result) => settled.push({ name, result });
+	c.no_graphics = true;
+	c.PIXI = new Proxy(
+		{},
+		{
+			get() {
+				throw Error("Unexpected graphics");
+			},
+		},
+	);
+	c.add_log = () => {};
+	c.console = { log() {} };
+	const source = read("js/game.js"),
+		start = source.indexOf('\tsocket.on("correction",');
+	let correct;
+	c.socket = {
+		on(event, handler) {
+			assert.equal(event, "correction");
+			correct = handler;
+		},
+	};
+	vm.runInContext(source.slice(start, source.indexOf("\n\tsocket.on(", start + 1)), c);
+	vm.runInContext(source.slice(source.indexOf("var asp_skip ="), source.indexOf("function adopt_soft_properties(")), c);
+	load(c, "js/game.js", ["adopt_soft_properties"]);
+	correct({ x: 100, y: 200 });
+	assert.equal(c.character.real_x, 220, "ordinary corrections still respect collision");
+	correct({ x: 100, y: 200, cave: "another-run" });
+	assert.equal(c.character.real_x, 220);
+	correct({ x: 100, y: 200, cave: run.key });
+	assert.deepEqual(
+		[c.character.real_x, c.character.real_y, c.character.moving, c.character.vx, c.character.vy],
+		[100, 200, false, 0, 0],
+	);
+	c.adopt_soft_properties(c.character, { abs: true });
+	assert.equal(settled[0].name, "move");
+	assert.equal(settled[0].result.reason, "abs");
+});
 
 test("disconnect keeps the purse and roster; the existing enter action restores only its original character", async () => {
 	const { c, a, b, run, writes, packets } = fixture();

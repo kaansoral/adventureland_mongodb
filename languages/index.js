@@ -257,10 +257,37 @@ function message(id, parameters, fields) {
 	return Object.assign({}, fields, { message: phrase(id, parameters, "en"), phrase: id, phrase_args: parameters || {} });
 }
 
+// Every translatable text of an update note or release post with its phrase ID. UPDATE_NOTES.md explains the IDs.
+function note_phrases(note) {
+	var out = [];
+	if (!note || !note.phrase) return out;
+	if (note.note !== undefined) out.push({ holder: note, field: "note", id: note.phrase });
+	if (note.title !== undefined) out.push({ holder: note, field: "title", id: note.phrase + ".title" });
+	(note.highlights || []).forEach(function (highlight) {
+		var base = highlight.phrase || note.phrase + "." + highlight.key;
+		if (highlight.note !== undefined) out.push({ holder: highlight, field: "note", id: base });
+		if (highlight.title !== undefined) out.push({ holder: highlight, field: "title", id: base + ".title" });
+		if (highlight.image && highlight.image.caption !== undefined) out.push({ holder: highlight.image, field: "caption", id: base + ".caption" });
+	});
+	(note.changes || []).forEach(function (entry) {
+		if (entry.note === undefined) return;
+		var key = entry.fixed || entry.improved || entry.new || entry.changed || entry.removed;
+		out.push({ holder: entry, field: "note", id: entry.phrase || note.phrase + "." + String(key).replace(/[^a-z0-9]+/gi, "_").toLowerCase() });
+	});
+	return out;
+}
+
 function translate_notes(notes, language) {
+	var translate = translator(language);
 	return notes.map(function (note) {
-		// Keep the canonical note and metadata for existing consumers and log colors.
-		return Object.assign({}, note, { text: note.phrase ? phrase(note.phrase, {}, language) : note.note });
+		// Keep the canonical note and metadata for existing consumers and log colors; add translated text beside each field.
+		var copy = note.title === undefined && !note.highlights && !note.changes ? Object.assign({}, note) : JSON.parse(JSON.stringify(note));
+		if (!note.phrase) copy.text = note.note;
+		note_phrases(copy).forEach(function (entry) {
+			var name = entry.field === "title" ? "title_text" : entry.field === "caption" ? "caption_text" : "text";
+			entry.holder[name] = translate.has(entry.id) ? translate(entry.id, {}) : entry.holder[entry.field];
+		});
+		return copy;
 	});
 }
 
@@ -308,6 +335,7 @@ module.exports = {
 	phrase: phrase,
 	phrase_html: phrase_html,
 	message: message,
+	note_phrases: note_phrases,
 	translate_notes: translate_notes,
 	serve: serve,
 };

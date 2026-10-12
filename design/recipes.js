@@ -1250,7 +1250,7 @@ Object.assign(craft, {
     "cost": 480000,
     "items": [
       [
-        400,
+        200,
         "cave_amber"
       ],
       [

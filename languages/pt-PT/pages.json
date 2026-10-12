@@ -1,4 +1,18 @@
 {
+	"pages.steam_signin.on": "> Início de sessão com o Steam: <span style=\"color: green\">ATIVADO</span>",
+	"pages.steam_signin.off": "> Início de sessão com o Steam: <span style=\"color: #F54423\">DESATIVADO</span>",
+	"pages.steam_signin.title": "Iniciar sessão com o Steam",
+	"pages.steam_signin.intro": "Verifica a tua conta Steam e escolhe a conta do Adventure Land em que queres iniciar sessão.",
+	"pages.steam_signin.continue": "Continuar para o Steam",
+	"pages.steam_signin.choose": "Escolhe uma conta",
+	"pages.steam_signin.choose_help": "Escolhe uma conta do Adventure Land associada a esta conta Steam.",
+	"pages.steam_signin.identity": "Conta Steam verificada com os últimos algarismos {digits}",
+	"pages.steam_signin.account": "Conta {name}",
+	"pages.steam_signin.action": "Iniciar sessão nesta conta",
+	"pages.steam_signin.empty": "Não há contas do Adventure Land disponíveis para esta conta Steam.",
+	"pages.steam_signin.email": "Iniciar sessão com e-mail",
+	"pages.steam_signin.next": "Mais contas",
+	"pages.steam_signin.signup_label": "> Criar conta",
 	"pages.steam_signup.client_help": "Esta funcionalidade ajuda os jogadores que têm dificuldades em executar o cliente do jogo.",
 	"pages.steam_signup.title": "Registar com Steam",
 	"pages.steam_signup.intro": "Tens Adventure Land no Steam? Verifica a tua compra para criares uma conta e jogares no navegador.",
@@ -1482,5 +1496,6 @@
 	"pages.logs.working-on-an-improved-movement-and-visibility-system": "Estou a trabalhar num sistema melhorado de movimento e visibilidade. O atual é um pouco complexo, é a quarta ou quinta versão, e gostava mesmo de arranjar tempo para passar a uma sexta.",
 	"pages.logs.working-on-the-orb-design-3x-orb-s": "Estou a trabalhar no desenho dos orbes; 3 Orb não me agrada, é preguiçoso demais, e surgiu-me a ideia de transformar um orbe num espaço de elixir: vai ser uma poção de reforço de longa duração.",
 	"pages.logs.wow-just-realised-it-has-been-a-month": "UAU, acabei de perceber que passou um mês desde o lançamento; percorremos um longo caminho desde então e agora vejo o jogo como uma comunidade: conheci muita gente, fiz muitos amigos, toda a minha visão mudou, e não só sobre o jogo, também sobre a vida em geral e sobre desenvolvimento. Digamos que agora estou mais esperançoso, em muitas coisas :)",
-	"pages.logs.wrapping-up-the-bugfixes-research-testing": "A fechar as correções, a pesquisa e os testes."
+	"pages.logs.wrapping-up-the-bugfixes-research-testing": "A fechar as correções, a pesquisa e os testes.",
+	"pages.contents.selection.slots-in-use": "Todos os teus espaços de personagem estão ocupados."
 }

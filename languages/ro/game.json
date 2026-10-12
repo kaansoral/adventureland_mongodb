@@ -454,5 +454,10 @@
 	"response.poker_unavailable": "Masa de poker este închisă momentan",
 	"response.tavern_closing": "Jocurile tavernei sunt închise cât timp serverul repornește",
 	"response.poker_stool_far": "Stai lângă un scaun liber ca să te așezi",
-	"response.poker_saving": "Masa de poker se actualizează. Încearcă din nou în câteva clipe."
+	"response.poker_saving": "Masa de poker se actualizează. Încearcă din nou în câteva clipe.",
+	"response.trade_offer_invalid": "Nu poți cere acest obiect",
+	"response.trade_swap_match": "Obiectul nu corespunde ofertei",
+	"response.trade_swap_space": "Negustorul nu are loc",
+	"game.trade_history.traded": "- Ai schimbat '{item}' cu {player} pe '{received}'",
+	"response.transport_need_items": "Ai nevoie de: {items}"
 }

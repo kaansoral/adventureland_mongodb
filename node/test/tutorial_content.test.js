@@ -585,8 +585,12 @@ test("travel credit does not depend on whether a player packet already changed t
 			current_map: rendered,
 			tutorial_map: "bank",
 			character: {},
-			data: { name: "main" },
+			data: { name: "main", in: "main" },
 			tut: (name) => calls.push(name),
+			// the handler also drops the entity table when the map or instance changes
+			entities: {},
+			entities_map: rendered,
+			entities_in: rendered,
 		});
 		vm.runInContext(body, c);
 		vm.runInContext(body, c);

@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "ΠΕΤΡΑ!",
+	"server.floating.frenzy": "ΜΑΝΙΑ!",
 	"server.party.joined": "{player}: μπήκε στην ομάδα",
 	"server.party.joined_with_invite": "{player}: μπήκε στην ομάδα με πρόσκληση από {inviter}",
 	"server.party.left": "{player}: αποχώρησε από την ομάδα",
@@ -396,5 +398,8 @@
 	"server.cave.amber_limit": "Εμφανίστηκαν και τα {amount} Cave Amber για αυτή την επίσκεψη. Μπορείς ακόμα να βρεις αντικείμενα και να κερδίσεις XP.",
 	"server.game_error.poker_hand_active": "Η παρτίδα πόκερ σου συνεχίζεται σε άλλον διακομιστή. Περίμενε να τελειώσει ή συνδέσου ξανά εκεί.",
 	"server.tracktrix.mail_subject": "Το Tracktrix σου",
-	"server.tracktrix.mail_body": "Λίγη βοήθεια για το επόμενο κυνήγι σου. Κράτα αυτό το Tracktrix μαζί σου!"
+	"server.tracktrix.mail_body": "Λίγη βοήθεια για το επόμενο κυνήγι σου. Κράτα αυτό το Tracktrix μαζί σου!",
+  "server.game_log.offered_for": "Προσφορά ανταλλαγής: {item} για {want}",
+  "server.game_log.offered_for_or_higher": "Προσφορά ανταλλαγής: {item} για {want} ή υψηλότερο",
+  "server.game_log.traded_for": "Αντάλλαξες {item} με {player} για {received}"
 }

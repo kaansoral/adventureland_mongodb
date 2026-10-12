@@ -8,16 +8,27 @@
 	<div class="divider"></div>
 	<div class="guide-showcase">
 		<div class="guide-showcase-art cavalry-tracktrix" dir="ltr"></div>
-		<div class="guide-showcase-copy"><b>Tracktrix</b>{{ phrase("docs.cavalry.manual", {action: phrase("interface.cavalry.call")}) }}</div>
+		<div class="guide-showcase-copy"><b>Tracktrix / Super Computer</b>{{ phrase("docs.cavalry.manual", {action: phrase("interface.cavalry.call")}) }}</div>
 	</div>
 	<div class="guide-note">{{ phrase("docs.cavalry.hint", {button: phrase("interface.cavalry.call_short")}) }}</div>
-	<p>{{ phrase("docs.cavalry.dispatch") }}</p>
+	<div class="divider"></div>
+	<p>{{ phrase("docs.cavalry.rescue") }}</p>
+	<div class="guide-card-grid">
+		<div class="guide-card">{{ phrase("docs.cavalry.newcomer") }}</div>
+		<div class="guide-card">{{ phrase("docs.cavalry.veteran") }}</div>
+	</div>
+	<p>{{ phrase("docs.cavalry.targets") }}</p>
+	<div class="guide-note">{{ phrase("docs.cavalry.guarded") }}</div>
+	<p>{{ phrase("docs.cavalry.delevel") }}</p>
 
 	<div class="divider"></div>
-	<div class="guide-card-grid">
-		<div class="guide-card">{{ phrase("docs.cavalry.rescue") }}</div>
-		<div class="guide-card"><b>{{ phrase("interface.skill.cooldown") }}</b>{{ phrase("docs.cavalry.cooldown") }}</div>
-	</div>
+	<p>{{ phrase("docs.cavalry.dispatch") }}</p>
+	<p>{{ phrase("docs.cavalry.departure") }}</p>
+
+	<div class="divider"></div>
+	<div class="title mt15">{{ phrase("interface.skill.cooldown") }}</div>
+	<p>{{ phrase("docs.cavalry.cooldown") }}</p>
+	<p>{{ phrase("docs.cavalry.unanswered") }}</p>
 
 	<div class="divider"></div>
 	<div class="title mt15">CODE</div>
@@ -50,7 +61,7 @@ call_for_help();</div>
 </script>
 
 <style>
-	.cavalry-guide{text-align:start;max-width:820px}
+	.cavalry-guide{text-align:start}
 	.cavalry-guide .guide-kicker{color:#62727E;font-size:18px;letter-spacing:2px}
 	.cavalry-guide .guide-title{color:#35694A;font-size:44px;line-height:48px;margin:2px 0 12px}
 	.cavalry-guide .title{color:#35694A;font-size:36px}

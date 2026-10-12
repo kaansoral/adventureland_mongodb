@@ -733,6 +733,7 @@ function tavern_poker_deal(ready, id) {
 			seat.player.socket.emit("poker", { event: "cards", n: hand.n, cards: seat.cards.slice() });
 	});
 	hand.acting = big;
+	if (typeof tavern_dealer_announce == "function") tavern_dealer_announce("deal");
 	tavern_poker_advance();
 }
 
@@ -808,6 +809,8 @@ function tavern_poker_apply(seat, action, amount, auto) {
 		auto: !!auto,
 		street: hand.street,
 	});
+	if (seat.allin && result.action != "fold" && typeof tavern_dealer_announce == "function")
+		tavern_dealer_announce("allin");
 	tavern_poker_advance();
 	return result;
 }
@@ -1034,6 +1037,13 @@ function tavern_poker_award(hand, saved) {
 	hand.acting = -1;
 	hand.ended = now;
 	table.next = now + def.showdown_ms;
+	if (!saved.voided && typeof tavern_dealer_announce == "function") {
+		// Venn names the winner of the largest pot, or calls a split when it was shared.
+		var main = (results.pots || []).filter((pot) => pot.winners).sort((a, b) => b.gold - a.gold)[0];
+		if (main && main.winners.length > 1) tavern_dealer_announce("split");
+		else if (main && hand.entries.some((seat) => seat.index == main.winners[0]))
+			tavern_dealer_announce("win", { name: hand.entries.filter((seat) => seat.index == main.winners[0])[0].name });
+	}
 	var summary = {
 		t: "hand",
 		n: hand.n,

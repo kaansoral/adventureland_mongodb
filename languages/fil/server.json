@@ -1,4 +1,6 @@
 {
+	"server.floating.stone": "BATO!",
+	"server.floating.frenzy": "SILAKBO!",
 	"server.party.joined": "Sumali si {player} sa grupo",
 	"server.party.joined_with_invite": "Sumali si {player} sa grupo sa imbitasyon ni {inviter}",
 	"server.party.left": "Umalis si {player} sa grupo",
@@ -393,5 +395,8 @@
 	"server.cave.amber_limit": "Lumitaw na ang lahat ng {amount} Cave Amber para sa pagbisitang ito. Makakahanap ka pa rin ng mga item at makakakuha ng XP.",
 	"server.game_error.poker_hand_active": "Tuloy pa ang hand mo sa poker sa ibang server. Hintaying matapos ito o kumonekta ulit doon.",
 	"server.tracktrix.mail_subject": "Ang iyong Tracktrix",
-	"server.tracktrix.mail_body": "Kaunting tulong para sa susunod mong pangangaso. Dalhin mo ang Tracktrix na ito!"
+	"server.tracktrix.mail_body": "Kaunting tulong para sa susunod mong pangangaso. Dalhin mo ang Tracktrix na ito!",
+  "server.game_log.offered_for": "Inialok ang {item} kapalit ng {want}",
+  "server.game_log.offered_for_or_higher": "Inialok ang {item} kapalit ng {want} o mas mataas",
+  "server.game_log.traded_for": "Ipinagpalit ang {item} kay {player} para sa {received}"
 }
