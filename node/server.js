@@ -5744,60 +5744,63 @@ function init_socket_io(socket_server) {
 						}
 					}
 
-					if (gMap.enter) {
-						const validateRange = gMap.enter.locations && gMap.enter.locations.length > 0;
-						let inRange = !validateRange;
+					// instance alone is not permission; maps must declare enter (even enter: {})
+					if (!gMap.enter) {
+						return fail_response("cant_enter");
+					}
 
-						if (validateRange) {
-							for (const [locationsMapKey, locationType, locationIndex, range = 120] of gMap.enter.locations) {
-								if (
-									!G.maps[locationsMapKey] ||
-									!G.maps[locationsMapKey][locationType] ||
-									!G.maps[locationsMapKey][locationType][locationIndex]
-								) {
-									continue;
-								}
-								const location = G.maps[locationsMapKey][locationType][locationIndex];
-								const distanceToLocation = distance(player, {
-									in: locationsMapKey,
-									map: locationsMapKey,
-									x: location[0],
-									y: location[1],
-								});
-								if (distanceToLocation <= range) {
-									inRange = true;
-									break;
+					const validateRange = gMap.enter.locations && gMap.enter.locations.length > 0;
+					let inRange = !validateRange;
+
+					if (validateRange) {
+						for (const [locationsMapKey, locationType, locationIndex, range = 120] of gMap.enter.locations) {
+							if (
+								!G.maps[locationsMapKey] ||
+								!G.maps[locationsMapKey][locationType] ||
+								!G.maps[locationsMapKey][locationType][locationIndex]
+							) {
+								continue;
+							}
+							const location = G.maps[locationsMapKey][locationType][locationIndex];
+							const distanceToLocation = distance(player, {
+								in: locationsMapKey,
+								map: locationsMapKey,
+								x: location[0],
+								y: location[1],
+							});
+							if (distanceToLocation <= range) {
+								inRange = true;
+								break;
+							}
+						}
+					}
+
+					if (!inRange) {
+						return fail_response("transport_cant_reach");
+					}
+
+					if (gMap.enter.items && !instanceExists) {
+						const itemsToConsume = [];
+						const quantityByItem = Object.assign({}, gMap.enter.items);
+
+						for (let i = 0; i < player.items.length; i++) {
+							const item = player.items[i];
+							if (item && quantityByItem[item.name]) {
+								const quantity = Math.min(item.q || 1, quantityByItem[item.name]);
+								quantityByItem[item.name] -= quantity;
+								itemsToConsume.push([i, quantity]);
+								if (quantityByItem[item.name] == 0) {
+									delete quantityByItem[item.name];
 								}
 							}
 						}
 
-						if (!inRange) {
-							return fail_response("transport_cant_reach");
+						if (Object.keys(quantityByItem).length > 0) {
+							return fail_response("transport_cant_item", data.place, { items: quantityByItem });
 						}
 
-						if (gMap.enter.items && !instanceExists) {
-							const itemsToConsume = [];
-							const quantityByItem = Object.assign({}, gMap.enter.items);
-
-							for (let i = 0; i < player.items.length; i++) {
-								const item = player.items[i];
-								if (item && quantityByItem[item.name]) {
-									const quantity = Math.min(item.q || 1, quantityByItem[item.name]);
-									quantityByItem[item.name] -= quantity;
-									itemsToConsume.push([i, quantity]);
-									if (quantityByItem[item.name] == 0) {
-										delete quantityByItem[item.name];
-									}
-								}
-							}
-
-							if (Object.keys(quantityByItem).length > 0) {
-								return fail_response("transport_cant_item", data.place, { items: quantityByItem });
-							}
-
-							for (const [inventory_index, quantity] of itemsToConsume) {
-								consume(player, inventory_index, quantity);
-							}
+						for (const [inventory_index, quantity] of itemsToConsume) {
+							consume(player, inventory_index, quantity);
 						}
 					}
 
