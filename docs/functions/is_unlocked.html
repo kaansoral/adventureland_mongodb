@@ -1,0 +1,10 @@
+<p><span class='dlabel'>is_unlocked(map)</span></p>
+<p>{{ phrase("docs.functions.is_unlocked.checks-whether-an-account-unlock-requirement-for") }}</p>
+<p>{{ phrase_html("docs.functions.is_unlocked.returns-boolean") }}</p>
+<p>{{ phrase_html("docs.functions.is_unlocked.notes-maps-that-do-not-need-an") }}</p>
+<p>{{ phrase_html("docs.functions.is_unlocked.example") }}</p>
+<div class='code'>if (is_unlocked("bank_b")) smart_move("bank_b");
+if (!is_unlocked("bank_u") &amp;&amp; locate_item("ukey") !== -1) game_log("Have ukey, still need to unlock in bank");</div>
+
+<p></p>
+<span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>

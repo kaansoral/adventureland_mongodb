@@ -379,9 +379,12 @@ test("both floor keys publish the free bank pack immediately, preserving any exi
 			h.activate({ num: 0 });
 			assert(p.user.unlocked[floor]);
 			assert.equal(p.items[0].q, 1);
+			assert.equal(p.unlocked, p.user.unlocked, "character.unlocked shares the bank unlock object");
 			const packet = h.events.findLast((event) => event.event === "player").data;
 			assert.deepEqual(packet.user[pack], structuredClone(p.user[pack]));
 			assert.equal(packet.user[pack].length, existing ? 1 : 0);
+			assert(packet.unlocked[floor], "player packet exposes account unlocks to CODE");
+			assert(packet.user.unlocked[floor], "bank user packet also carries unlocks");
 			p.map = floor;
 			h.bank({ operation: "swap", pack, inv: 0, str: -1 });
 			assert.equal(h.replies.at(-1).success, true, "free pack works without leaving the bank");
@@ -389,6 +392,17 @@ test("both floor keys publish the free bank pack immediately, preserving any exi
 			if (existing) assert.equal(p.user[pack][0].level, 9);
 		}
 	}
+});
+
+test("player_to_client always sends account unlocks for the owning socket", () => {
+	const h = inventorySetup(), p = h.player;
+	p.unlocked = { bank_b: new Date("2020-01-01"), bank_u: true };
+	p.user = null;
+	const self = h.context.player_to_client(p);
+	assert.equal(!!self.unlocked.bank_b, true);
+	assert.equal(!!self.unlocked.bank_u, true);
+	const stranger = h.context.player_to_client(p, 1);
+	assert.equal(stranger.unlocked, undefined);
 });
 
 test("automatic deposits retain normal stacking and strip PvP metadata only on a successful transfer", () => {
