@@ -4734,6 +4734,18 @@ function transport_player_to(player, name, point, effect) {
 	calculate_player_stats(player);
 	pmap_add(player);
 	add_call_cost(player, 8, "transport"); // New - to offset send_all_xy [26/01/20]
+	if (0 && !effect && mssince(player.last.transport) > 6000) {
+		var ms = max(0, -mssince(player.last.attack)) + 3200;
+		var EV = "";
+		EV = "skill_timeout('attack'," + ms + "); ";
+		player.last.attack = future_ms(ms);
+		for (var i in player.last) {
+			if (G.skills[i] && player.last[i] > future_ms(-3000)) {
+				player.last[i] = future_ms(3200);
+				EV += "skill_timeout('" + i + "'," + (3200 + (G.skills[i].cooldown || 0)) + "); ";
+			}
+		}
+	}
 	if (effect) {
 		player.s.penalty_cd = { ms: min(((player.s.penalty_cd && player.s.penalty_cd.ms) || 0) + 812, 120000) };
 	} else {
@@ -4857,6 +4869,12 @@ function init_socket_io(socket_server, server_index) {
 	socket_server.on("connection", function (socket) {
 		socket.al_server_index = server_index; // which of game_ios owns this socket's encoder, for collect_fanout [26/09/26]
 		if (socket.handshake.query.server_method) {
+			if (0 && socket.handshake.query.server_master == keys.SERVER_MASTER) {
+				// this was to make servers communicate with each other and disconnect overflows immediately [28/10/23]
+				if (socket.handshake.query.server_method == "players") {
+					socket.emit("players"); // decided to make the existing cron more aggressive [26/09/21]
+				}
+			}
 			socket.disconnect();
 			return;
 		}
@@ -5459,9 +5477,22 @@ function init_socket_io(socket_server, server_index) {
 					});
 				}
 			}
-			// data.computer=true;
-			data.drops = D.drops.monsters;
-			data.drops_home = D.drops.monsters_home_server || {}; //mirror monsters_home
+			if (player.computer || 1) {
+				// data.computer=true;
+				data.drops = D.drops.monsters;
+				data.drops_home = D.drops.monsters_home_server || {}; //mirror monsters_home
+			} else {
+				data.drops = {};
+				data.drops_home = {};
+				for (var name in data.monsters) {
+					if (data.monsters[name] >= 100 && D.drops.monsters[name]) {
+						data.drops[name] = D.drops.monsters[name];
+					}
+					if (data.monsters[name] >= 100 && D.drops.monsters_home_server[name]) {
+						data.drops_home[name] = D.drops.monsters_home_server[name];
+					}
+				}
+			}
 			if (D.drops.maps.global) {
 				data.global = D.drops.maps.global;
 				register_table(data.global);
@@ -5481,7 +5512,12 @@ function init_socket_io(socket_server, server_index) {
 				register_table(data.maps[name]);
 			}
 			for (var name in G.items) {
-				if (G.items[name].e) {
+				if (
+					G.items[name].e &&
+					(player.computer ||
+						1 ||
+						(player.p.stats.exchanges && player.p.stats.exchanges[name] && player.p.stats.exchanges[name] >= 100))
+				) {
 					if (G.items[name].upgrade || G.items[name].compound) {
 						for (var i = 0; i < 13; i++) {
 							if (D.drops[name + i]) {
@@ -5855,7 +5891,11 @@ function init_socket_io(socket_server, server_index) {
 			if (!can_walk(player)) {
 				return fail_response("transport_failed");
 			}
-			if (player.targets > 5 || !(player.map == "jail" || player.map == "cyberland" || instances[player.in].solo)) {
+			if (
+				(0 && player.s.block) ||
+				player.targets > 5 ||
+				!(player.map == "jail" || player.map == "cyberland" || instances[player.in].solo)
+			) {
 				return fail_response("cant_escape");
 			}
 			transport_player_to(player, B.start_map);
@@ -5894,7 +5934,7 @@ function init_socket_io(socket_server, server_index) {
 			) {
 				return fail_response("cant_enter");
 			}
-			if (player.targets > 5) {
+			if ((0 && player.s.block) || player.targets > 5) {
 				return fail_response("cant_escape");
 			}
 
@@ -6022,6 +6062,10 @@ function init_socket_io(socket_server, server_index) {
 				player.unmount_s = s;
 				sync_loop();
 				return success_response({ success: false, in_progress: true });
+			} else if (0 && instances[data.to].mount && player.user && data.to != player.map) {
+				// an easy prevention for the bank re-entry nuisance, bank can be re-entered physically but not digitally [03/11/16]
+				// commented out for bank_u / bank_b [06/05/20]
+				return fail_response("transport_failed");
 			} else {
 				decay_s(player, 5200);
 				transport_player_to(player, data.to, s);
@@ -6053,7 +6097,11 @@ function init_socket_io(socket_server, server_index) {
 			}
 			server_log(data);
 			var name = randomStr(24);
-			if (data.place == "duelland") {
+			if (data.place == "resort" && 0) {
+				var name = "resort_" + data.name;
+				instance = instances[name] || create_instance(name, "resort_map");
+				transport_player_to(player, name);
+			} else if (data.place == "duelland") {
 				if (instances[data.name] && instances[data.name].map == "duelland") {
 					transport_player_to(player, data.name);
 					instance_emit(
@@ -6230,7 +6278,7 @@ function init_socket_io(socket_server, server_index) {
 			if (!can_walk(player) || player.map == "jail") {
 				return fail_response("transport_failed");
 			}
-			if (player.targets > 5) {
+			if ((0 && player.s.block) || player.targets > 5) {
 				return fail_response("cant_escape");
 			}
 			player.c.town = { ms: min((player.c.town && player.c.town.ms) || 5000, 3000) };
@@ -6279,6 +6327,133 @@ function init_socket_io(socket_server, server_index) {
 		});
 		socket.on("random_look", function (data) {
 			return socket.emit("game_log", "socket.emit('enter',{place:'cgallery'})");
+			var player = players[socket.id];
+			if (!player) {
+				return;
+			}
+			var bodies = [];
+			var heads = [];
+			var hairs = [];
+			var wings = [];
+			var hats = [];
+			if (player.rlooks == 25 && !Dev && player.role != "gm") {
+				return;
+			}
+			if (player.role == "gm") {
+				reduce_call_cost(40);
+			}
+			player.rlooks = (player.rlooks || 0) + 1;
+			for (var s in G.sprites) {
+				var current = G.sprites[s];
+				var matrix = current.matrix;
+				if (current.skip || current.rskip) {
+					continue;
+				}
+				if (!in_arr(current.type, ["body", "head", "hair", "s_wings", "hat"])) {
+					continue;
+				}
+				for (var i = 0; i < matrix.length; i++) {
+					for (var j = 0; j < matrix[i].length; j++) {
+						if (!matrix[i][j]) {
+							continue;
+						}
+						if (current.type == "body") {
+							bodies.push(matrix[i][j]);
+						}
+						if (current.type == "head") {
+							heads.push(matrix[i][j]);
+						}
+						if (current.type == "hair") {
+							hairs.push(matrix[i][j]);
+						}
+						if (current.type == "hat") {
+							hats.push(matrix[i][j]);
+						}
+						if (current.type == "s_wings") {
+							wings.push(matrix[i][j]);
+						}
+					}
+				}
+			}
+			var head = "head";
+			if (Math.random() < 0.1) {
+				head = random_one(heads);
+			}
+			player.tskin = random_one(bodies);
+			player.tcx = [head, random_one(hairs)];
+			if (Math.random() < 0.08) {
+				player.tcx.push(random_one(wings));
+			}
+			if (Math.random() < 0.4) {
+				player.tcx.push(random_one(hats));
+			}
+			resend(player, "u+cid");
+		});
+		socket.on("unlock", function (data) {
+			return; // [27/06/18]
+			var player = players[socket.id];
+			if (!player) {
+				return;
+			}
+			if (gameplay == "normal") {
+				return;
+			} // ? [27/06/18]
+			if (data.name == "code") {
+				var item = player.items[data.num || 0];
+				if (!item || item.name != "computer" || item.charges === 0 || item.charges < 0 || player.unlocking_code) {
+					return;
+				}
+				if (!item.charges) {
+					item.charges = 2;
+				}
+				item.charges--;
+				player.citems[data.num || 0] = player.items[data.num || 0]; // explicitly linked to the actual item
+				player.unlocking_code = true;
+				(async function () {
+					try {
+						var user = await get(player.owner);
+						if (!user) {
+							socket.emit("game_log", localization.message("server.game_log.unlock_failed", {}));
+							player.unlocking_code = false;
+							return;
+						}
+						if (gf(user, "code_unlocked")) {
+							socket.emit(
+								"game_log",
+								localization.message(
+									"server.game_log.your_code_slots_are_already_unlocked_you_can_lend_your_ancient_computer",
+									{},
+								),
+							);
+							item.charges++;
+							player.unlocking_code = false;
+							return;
+						}
+						var R = await tx(
+							async () => {
+								R.element = await tx_get(A.user);
+								R.element.info.code_unlocked = new Date();
+								await tx_save(R.element);
+							},
+							{ user: user },
+						);
+						player.unlocking_code = false;
+						if (R.failed) {
+							socket.emit(
+								"game_log",
+								localization.message("server.game_log.unlock_failed_email_hello_adventure_land_with_a_screenshot", {}),
+							);
+							return;
+						}
+						server_log("user_operation_code: done", 1);
+						socket.emit("game_log", localization.message("server.game_log.code_slots_increased_to_100", {}));
+						resend(player, "reopen");
+					} catch (e) {
+						console.error("user_operation code_unlock error", e);
+						player.unlocking_code = false;
+					}
+				})();
+			}
 		});
 		socket.on("dismantle", function (data) {
 			var player = players[socket.id];
@@ -7953,6 +8128,49 @@ function init_socket_io(socket_server, server_index) {
 		});
 		socket.on("buy_shells", function (data) {
 			return socket.emit("game_log", localization.message("server.game_log.no_longer_possible", {}));
+			var player = players[socket.id];
+			if (!player || player.user || gameplay == "hardcore" || gameplay == "test") {
+				return game_response("cant_in_bank");
+			}
+			var gold = parseInt(data.gold) || 0;
+			if (gold < 1000000 || gold > player.gold) {
+				return socket.emit("game_response", "not_enough_gold");
+			}
+			var shells = Math.floor(gold / G.multipliers.shells_to_gold);
+			player.gold -= gold;
+			socket.emit(
+				"game_log",
+				localization.message("server.game_log.gave_gold", { amount: String(to_pretty_num(gold)) }),
+			);
+			// Dead code: buy_shells returns early above
+			(async function () {
+				try {
+					var user = await get(player.owner);
+					if (!user) return;
+					var R = await tx(
+						async () => {
+							R.element = await tx_get(A.user);
+							if (A.amount > 0 && R.element.cash < A.amount) ex("not_enough");
+							R.element.cash -= A.amount;
+							await tx_save(R.element);
+						},
+						{ user: user, amount: -shells },
+					);
+					if (R.failed) {
+						socket.emit("game_log", localization.message("server.game_log.purchase_failed", {}));
+						return;
+					}
+					player.cash = R.element.cash;
+					socket.emit(
+						"game_log",
+						localization.message("server.game_log.received_shells", { amount: String(to_pretty_num(shells)) }),
+					);
+					resend(player, "reopen+nc");
+				} catch (e) {
+					console.error("buy_shells error", e);
+				}
+			})();
+			resend(player, "reopen+nc");
 		});
 		socket.on("buy_with_cash", function (data) {
 			var player = players[socket.id];
@@ -12816,6 +13034,44 @@ function init_socket_io(socket_server, server_index) {
 			});
 			resend(player, "u+cid");
 		});
+		socket.on("deepsea", function (data) {
+			return;
+			var player = players[socket.id];
+			if (!player || player.rip || player.tskin == "deepsea") {
+				return;
+			}
+			player.tskin = "deepsea";
+			disappearing_text(player.socket, player, localization.message("server.floating.roarrrrrrr", {}), {
+				xy: 1,
+				size: "huge",
+				color: "#60A975",
+			});
+			resend(player, "u+cid");
+		});
+		socket.on("blend", function (data) {
+			return;
+			var player = players[socket.id];
+			var min = 99999;
+			var x = null;
+			if (!player || player.rip) {
+				return;
+			}
+			for (var id in instances[player.in].monsters || {}) {
+				var m = instances[player.in].monsters[id];
+				var c = distance(m, player, true);
+				if (c < min) {
+					min = c;
+					x = m;
+				}
+			}
+			if (x) {
+				var skin = G.monsters[x.type].skin || x.type;
+				if (player.tskin != skin) {
+					player.tskin = skin;
+					resend(player, "u+cid");
+				}
+			}
+		});
 		socket.on("skin", function (data) {
 			var player = players[socket.id];
 			if (player.role != "gm") {
@@ -12828,6 +13084,11 @@ function init_socket_io(socket_server, server_index) {
 			var player = players[socket.id];
 			if (!player || player.rip) {
 				return;
+			}
+			for (var i = 0; i < 42; i++) {
+				if (0 && player.items[i] && !player.items[i].p && ["fury", "starkillers"].includes(player.items[i].name)) {
+					player.items[i].p = "legacy";
+				}
 			}
 			resend(player, "reopen");
 		});
@@ -15832,6 +16093,21 @@ setTimeout(
 	},
 	1 * 60 * 60 * 1000,
 ); //1
+
+setInterval(function () {
+	try {
+		var edge = future_s(-120);
+		for (var id in players) {
+			if (0 && players[id].last_ipass < edge) {
+				players[id].ban = "ipass";
+				players[id].socket.emit("disconnect_reason", "Failed to check in. Your network might be too slow.");
+				players[id].socket.disconnect();
+			}
+		}
+	} catch (e) {
+		log_trace("#X ipass loop error", e);
+	}
+}, 132000);
 
 setTimeout(function () {
 	setInterval(function () {
