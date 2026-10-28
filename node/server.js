@@ -5134,7 +5134,7 @@ function init_socket_io(socket_server, server_index) {
 				delete player.s.typing;
 				resend(player, "u+cid+nc");
 			}
-			success_response({});
+			success_response();
 		});
 		socket.on("ping_trig", function (data) {
 			socket.emit("ping_ack", data);
@@ -5899,7 +5899,7 @@ function init_socket_io(socket_server, server_index) {
 				return fail_response("cant_escape");
 			}
 			transport_player_to(player, B.start_map);
-			success_response({});
+			success_response();
 		});
 		socket.on("transport", function (data) {
 			var player = players[socket.id];
@@ -6069,7 +6069,7 @@ function init_socket_io(socket_server, server_index) {
 			} else {
 				decay_s(player, 5200);
 				transport_player_to(player, data.to, s);
-				return success_response({});
+				return success_response();
 			}
 		});
 		socket.on("enter", function (data) {
@@ -6266,7 +6266,7 @@ function init_socket_io(socket_server, server_index) {
 			} else {
 				return fail_response("transport_cant_reach");
 			}
-			success_response({});
+			success_response();
 		});
 		socket.on("town", function (data) {
 			var player = players[socket.id];
@@ -6872,7 +6872,7 @@ function init_socket_io(socket_server, server_index) {
 			}
 			player.citems[data.num] = cache_item(player.items[data.num]);
 			resend(player, "reopen+nc");
-			success_response({});
+			success_response();
 		});
 		socket.on("compound", function (data) {
 			try {
@@ -12706,7 +12706,7 @@ function init_socket_io(socket_server, server_index) {
 			} else {
 				return fail_response("cant_join");
 			}
-			success_response({});
+			success_response();
 		});
 		socket.on("stop", function (data) {
 			var player = players[socket.id];
@@ -12747,7 +12747,7 @@ function init_socket_io(socket_server, server_index) {
 			if (change) {
 				resend(player, "u+cid");
 			}
-			success_response({});
+			success_response();
 		});
 		socket.on("tarot", function (data) {
 			var player = players[socket.id];
