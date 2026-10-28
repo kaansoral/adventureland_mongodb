@@ -19,6 +19,18 @@
 </div>
 
 <div class="divider"></div>
+<div class="title mt15">{{ phrase("docs.guide.events-and-home.events-window-title") }}</div>
+<p>{{ phrase("docs.guide.events-and-home.events-window") }}</p>
+<p>{{ phrase("docs.guide.events-and-home.events-window-remind") }}</p>
+<p>{{ phrase("docs.guide.events-and-home.events-window-code") }}</p>
+<!-- prettier-ignore -->
+<div class="code">var next = server.status.schedule.events.find(function (o) {
+	return o.event == "goobrawl" &amp;&amp; o.status == "scheduled";
+});
+if (next) game_log("Goo Brawl in " + Math.round((next.at - Date.now()) / 60000) + " minutes");
+show_json(server.status.event_ends);</div>
+
+<div class="divider"></div>
 <div class="title mt15">{{ phrase("docs.guide.events-and-home.events-enter-in-different-ways") }}</div>
 <div class="guide-card-grid">
 	<div class="guide-card">{{ phrase_html("docs.guide.events-and-home.joinable-event-some-server-activities-accept-join-name") }}</div>

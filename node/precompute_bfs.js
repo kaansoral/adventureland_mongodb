@@ -39,6 +39,7 @@ async function run() {
 
 	// Load server_functions and design files in same scope
 	eval("" + fs.readFileSync(path.resolve(__dirname, "server_functions.js")));
+	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/event_flags.js")));
 	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/projectiles.js")));
 	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/animations.js")));
 	eval("" + fs.readFileSync(path.resolve(__dirname, "../design/achievements.js")));
@@ -66,6 +67,8 @@ async function run() {
 	eval("" + fs.readFileSync(path.resolve(__dirname, "../version.js")));
 
 	// Load geometry from MongoDB
+	var active_event_flags = get_event_flags(gameplay);
+	apply_event_flags({ maps: maps, items: items, monsters: monsters, drops: drops }, active_event_flags);
 	var geometry = {};
 	var rpc = {};
 	for (var id in maps) {
@@ -107,6 +110,7 @@ async function run() {
 		skills: skills,
 		games: games,
 		events: events,
+		event_flags: active_event_flags,
 		images: precomputed.images,
 		multipliers: multipliers,
 	};
@@ -120,7 +124,8 @@ async function run() {
 	};
 
 	// Process game data (links G.maps[name].data = G.geometry[name])
-	sprocess_game_data();
+	events = Object.assign({}, active_event_flags);
+	sprocess_game_data(apply_event_flags);
 
 	// Run BFS for all maps
 	var start = new Date();
@@ -167,6 +172,11 @@ async function run() {
 	// Write BFS data to node/precomputed_map_data.js (design/precomputed_images.js has images)
 	var result = {};
 	result.version = G.version;
+	result.event_flags = G.event_flags;
+	result.map_keys = {};
+	for (var name in G.maps) {
+		if (!G.maps[name].ignore) result.map_keys[name] = G.maps[name].key;
+	}
 	result.amap_data = amap_data;
 	result.smap_data = smap_data;
 	result.collision = {};

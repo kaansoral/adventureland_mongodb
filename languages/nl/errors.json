@@ -83,5 +83,9 @@
 	"error.cant_delete_map_in_use": "Een kaart die in gebruik is, kan niet worden verwijderd.",
 	"error.code_too_large": "Dit script is te groot. Elk CODE-slot kan maximaal 1 MiB (1.048.576 bytes) UTF-8-tekst bevatten.",
 	"error.code_storage_full": "Je CODE-opslag is vol. Exporteer en verwijder ongebruikte scripts voordat je meer code opslaat.",
-	"error.code_rate_limited": "Je slaat CODE te vaak op. Wacht even en probeer het opnieuw."
+	"error.code_rate_limited": "Je slaat CODE te vaak op. Wacht even en probeer het opnieuw.",
+	"error.item_changed": "Voorwerp gewijzigd. Probeer het opnieuw.",
+	"error.mail_item_untaken": "Haal de bijlage op voordat je dit bericht verwijdert.",
+	"error.mail_sender_limit": "Dit personage heeft al 20 niet-opgehaalde postbijlagen van jouw account. Er moeten eerst enkele worden opgehaald voordat je er nog een kunt sturen.",
+	"error.mailbox_full": "Dit personage heeft al 200 niet-opgehaalde postbijlagen. Er moeten eerst enkele worden opgehaald voordat je er nog een kunt sturen."
 }

@@ -1132,7 +1132,7 @@ for(var i=8;i<48;i++){
 		"type":"fullstatic",
 	};
 }
-npcs.dreamkeeper={name:"Dorr",role:"dreamkeeper",skin:"mbody4e", cx:{head:"mmakeup01",hair:"hairdo410",chin:"beard102",hat:"hat221",back:"backpacks202"},type:"fullstatic",says:["Going inside? Bring your party close."],interaction:["You have 24 minutes inside. Stay together."]};
+npcs.dreamkeeper={name:"Dorr",role:"dreamkeeper",skin:"mbody4e", cx:{head:"mmakeup01",hair:"hairdo410",chin:"beard102",hat:"hat221",back:"backpacks201"},type:"fullstatic",says:["Going in? Bring your whole party close."],interaction:["You get 24 minutes inside. Stay together."]};
 for(var npc in npcs){
 	npcs[npc]["id"]=npc;
 }

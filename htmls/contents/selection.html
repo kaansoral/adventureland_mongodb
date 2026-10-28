@@ -14,6 +14,14 @@
 				<div class="gamebutton" style="padding:6px 8px; font-size:24px; line-height:18px" onclick="pcs(event); open_guide('events-and-home',get_guide_url('events-and-home'))">{{ phrase("interface.server.info") }}</div>
 			</div>
 			{% include "htmls/contents/selection_characters.html"%}
+			{% if domain.tauri and user.steam_referral and user.steam_referral.state == "pending" %}
+			<div class="steam-friend-picker" style="display:none">
+				<div class="steam-friend-heading">{{ phrase("pages.contents.selection.steam-friend-heading") }}</div>
+				<div class="steam-friend-intro">{{ phrase("pages.contents.selection.steam-friend-intro") }}</div>
+				<div class="steam-friend-list"></div>
+				<div class="textbutton steam-friend-later" onclick="steam_referral_later=true; $('.steam-friend-picker').hide(); resize()">{{ phrase("pages.contents.selection.steam-friend-later") }}</div>
+			</div>
+			{% endif %}
 		</div>
 		<div class="newcharacter onback-hide hidden">
 			{#
@@ -199,28 +207,43 @@
 		</div>
 		{% endif %}
 		<div class="recruitui onback-hide hidden">
-			<div style="font-size: 24px; margin-top: 5px">
-				<div style="/*text-align:left;*/ margin-bottom: 10px; padding: 10px">
-					<div style="margin-bottom: 5px">{{ phrase_html("pages.contents.selection.when-new-players-sign-up-after-visiting-one") }}</div>
-					<span style="color: green">$</span> {{ phrase("pages.contents.selection.you-ll-receive-10-from-all-the-shells") }}
-				</div>
-				<div class="yesselect">
-					<div style="margin-bottom: 3px; color: #ca645d"><a href="{{domain.pref_url}}/player/{{user.name}}" target="_blank" class="cancela">{{domain.pref_url}}/player/{{user.name}}</a></div>
-					{% for c in characters %}
-					<div style="margin-bottom: 3px; color: #7cd06c">
-						<a href="{{domain.pref_url}}/character/{{c.info.name}}" target="_blank" class="cancela">{{domain.pref_url}}/character/{{c.info.name}}</a>
-					</div>
-					{% endfor %}
-					<div style="margin-bottom: 3px; color: #80adcc"><a href="{{domain.pref_url}}/r/{{user._id}}" target="_blank" class="cancela">{{domain.pref_url}}/r/{{user._id}}</a></div>
-					<div style="color: gray; font-size: 16px; color: #b7c6d5; width: 240px; margin-top: 10px; margin-bottom: 8px; display: inline-block">
-						{{ phrase("pages.contents.selection.ps-trackers-are-both-ip-and-cookie-based") }}
-					</div>
-				</div>
-				<div style="color: gray">{{ phrase("pages.contents.selection.you-ve-recruited-so-far", {"referred": user.info.referred or 0}) }}</div>
-				<div style="color: gray">{{ phrase("pages.contents.selection.received-shells", {"rcash": user.info.rcash or 0}) }}</div>
-				<div class="mt5">
-					{{ phrase_html("pages.contents.selection.if-you-ve-invited-a-friend-through-word") }}
-				</div>
+			<div class="recruit-block">
+				<div class="recruit-title">{{ phrase("pages.contents.selection.invite-friends") }}</div>
+				<p>{{ phrase("pages.contents.selection.invite-friends-intro") }}</p>
+				<div class="recruit-label">{{ phrase("pages.contents.selection.you-receive") }}</div>
+				<div class="recruit-reward"><span class="recruit-shells"></span><span class="recruit-friendtoken"></span><span>{{ phrase("pages.contents.selection.inviter-reward") }}</span></div>
+				<div class="recruit-green">{{ phrase("pages.contents.selection.purchase-bonus") }}</div>
+				<div class="recruit-label">{{ phrase("pages.contents.selection.friend-receives") }}</div>
+				<div class="recruit-reward"><span class="recruit-friendtoken"></span><span>{{ phrase("pages.contents.selection.invited-reward") }}</span></div>
+				<p class="recruit-small">{{ phrase("pages.contents.selection.reward-arrival") }}</p>
+				<p class="recruit-small">{{ phrase("pages.contents.selection.first-steam-link") }}</p>
+			</div>
+			<div class="recruit-divider"></div>
+			<div class="recruit-block">
+				<div class="recruit-title">{{ phrase("pages.contents.selection.spend-friend-tokens") }}</div>
+				<p class="recruit-small">{{ phrase("pages.contents.selection.visit-fvona") }}</p>
+				<div class="recruit-shop-row"><span class="recruit-fvona"></span><span class="recruit-gravestone"></span><span>{{ phrase("pages.contents.selection.gravestone-exchange") }}<br><span class="recruit-green">{{ phrase("pages.contents.selection.four-friend-tokens") }}</span></span></div>
+				<div class="gamebutton recruit-view-reward" onclick="show_referral_reward()">{{ phrase("pages.contents.selection.view-reward") }}</div>
+			</div>
+			<div class="recruit-divider"></div>
+			<div class="recruit-block recruit-primary-link">
+				<div>{{domain.pref_url}}/r/{{user._id}}</div>
+				<div class="gamebutton" data-link="{{domain.pref_url}}/r/{{user._id}}" onclick="copy_referral_link(this)">{{ phrase("pages.contents.selection.copy-link") }}</div>
+			</div>
+			<div class="recruit-divider"></div>
+			<div class="recruit-block">
+				<div>{{ phrase("pages.contents.selection.friends-recruited", {"count": user.info.referred or 0}) }}</div>
+				<div>{{ phrase("pages.contents.selection.shells-earned", {"amount": user.info.rcash or 0}) }}</div>
+			</div>
+			<div class="recruit-divider"></div>
+			<div class="recruit-block recruit-secondary-links">
+				<div class="recruit-label">{{ phrase("pages.contents.selection.account-link") }}</div>
+				<a href="{{domain.pref_url}}/player/{{user.name}}" target="_blank" class="cancela">{{domain.pref_url}}/player/{{user.name}}</a>
+				<div class="recruit-label">{{ phrase("pages.contents.selection.character-links") }}</div>
+				{% for c in characters %}<a href="{{domain.pref_url}}/character/{{c.info.name}}" target="_blank" class="cancela">{{c.info.name}}</a>{% endfor %}
+				<div class="recruit-label">{{ phrase("pages.contents.selection.direct-referral-link") }}</div>
+				<a href="{{domain.pref_url}}/r/{{user._id}}" target="_blank" class="cancela">{{domain.pref_url}}/r/{{user._id}}</a>
+				<p class="recruit-small">{{ phrase("pages.contents.selection.missing-invite") }}</p>
 			</div>
 		</div>
 		<div class="privacyui onback-hide hidden">
@@ -373,4 +396,6 @@
 	X.servers={{domain.servers|to_json|safe}};
 	{% if server %}select_login_server({address:"{{server.address}}",path:"{{server.path}}"},false);{% endif %}
 	update_login_server();
+	load_steam_referral_choices();
+	render_referral_panel();
 </script>

@@ -186,7 +186,7 @@ test("cave story loads five native comic pages and descriptions in the selected 
 		assert.equal(images.length, 5, code);
 		for (let i = 0; i < images.length; i++) {
 			const prefix = code === "en" ? "" : code + "/";
-			assert.equal(images[i][1], `/images/comics/cave/${prefix}${i + 1}.png?v=2`);
+			assert.equal(images[i][1], `/images/comics/cave/${prefix}${i + 1}.png?v=3`);
 			const png = fs.readFileSync(path.join(root, images[i][1].split("?")[0]));
 			assert.equal(png.readUInt32BE(16), 960, code);
 			assert.equal(png.readUInt32BE(20), 540, code);

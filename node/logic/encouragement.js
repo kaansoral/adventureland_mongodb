@@ -117,13 +117,10 @@ function encouragement_eligibility(group) {
 		group.characters
 			.map(function (character) {
 				// Merchant location is irrelevant; combat characters still affect Lone Wolf.
-				var active =
-					character.type !== "merchant" && character.server && now - +new Date(character.last_sync) < 120 * 60000;
+				var active = character.type !== "merchant" && character.server && now - +new Date(character.last_sync) < 120 * 60000;
 				return [character._id, character.type, active ? character.server : ""];
 			})
-			.sort(function (a, b) {
-				return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0;
-			}),
+			.sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; }),
 	]);
 }
 
@@ -133,17 +130,10 @@ function encouragement_foreign_login(data) {
 	var group = encouragement_groups.get(data.group);
 	// A verified merchant move changes no bonus rules. Keep the original cache deadline.
 	if (
-		data.type === "merchant" &&
-		group &&
-		group.until > Date.now() &&
-		!group.pending &&
-		!group.blocked &&
-		group.characters.some(function (character) {
-			return character._id === data.id && character.type === "merchant";
-		}) &&
+		data.type === "merchant" && group && group.until > Date.now() && !group.pending && !group.blocked &&
+		group.characters.some(function (character) { return character._id === data.id && character.type === "merchant"; }) &&
 		data.eligibility === encouragement_eligibility(group)
-	)
-		return true;
+	) return true;
 	if (data.type !== "merchant")
 		encouragement_visits.set(data.group, { id: data.id, until: Date.now() + encouragement_cache_ms });
 	if (group) {
@@ -161,6 +151,8 @@ async function encouragement_login(player, previous_online) {
 	try {
 		var identity = encouragement_identity(player),
 			group = await encouragement_load(player, previous_online);
+		// A sibling login may have started a fresh check before this continuation resumed.
+		while (group.pending) await group.pending;
 		if (group.until <= Date.now()) return false;
 		var realms = new Set();
 		for (var character of group.characters) {

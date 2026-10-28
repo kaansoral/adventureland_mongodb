@@ -101,3 +101,14 @@ test("a monster ID is still rejected by a player-only skill", () => {
 	assert.equal(caster.mp, 500);
 	assert.equal(target.mp, 1);
 });
+
+test("generic skills resolve numeric player names before interpreting a monster ID", () => {
+	const { c, target, skill } = fixture("1234");
+	let attacked;
+	c.commence_attack = (attacker, victim) => {
+		attacked = victim;
+		return {};
+	};
+	skill({ name: "attack", id: "1234" });
+	assert.equal(attacked, target);
+});

@@ -317,7 +317,7 @@
 	"game.clicks_away": "Odległość: {dist} kliknięć",
 	"game.echoes": "Liczba ech: {length}",
 	"game.clicks": "Kliknięcia: {c}",
-	"npc.home.set_offer": "To nie jest twój serwer macierzysty. Twoim domem jest {home}. W świecie macierzystym pomoc we wspólnych walkach liczy się bardziej, a nagrody są wyjątkowe. Szybkie przełączanie postaci innych niż kupcy wstrzymuje te korzyści na 30 minut. Ustawić ten serwer jako macierzysty?",
+	"npc.home.set_offer": "To nie jest twój serwer domowy. Twój dom to {home}. Domowe realmy oferują większy udział w kooperacji i specjalne nagrody; szybkie przełączanie postaci innych niż Kupiec wstrzymuje te korzyści na 30 minut. Czy chcesz ustawić ten serwer jako swój dom?",
 	"npc.yes": "Tak!",
 	"npc.home.current": "To twój serwer macierzysty. Twoja pomoc w walce z potworami wymagającymi współpracy liczy się tu bardziej, a niektóre potwory dają dodatkowe nagrody macierzyste. Jeśli przełączysz się tutaj po wizycie innej postaci niebędącej kupcem na innym serwerze, otrzymasz Zmęczenie podróżą na 30 minut. W tym czasie nadal otrzymujesz zwykłe nagrody.",
 	"npc.bless_server.offer": "Chcesz pobłogosławić cały serwer na 3 dni?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Ten przedmiot nie pasuje do oferty",
 	"response.trade_swap_space": "Kupiec nie ma miejsca",
 	"game.trade_history.traded": "- Wymieniono '{item}' z graczem {player} na '{received}'",
-	"response.transport_need_items": "Potrzebujesz: {items}"
+	"response.transport_need_items": "Potrzebujesz: {items}",
+	"combat.emote.hehehe": "HEHEHE"
 }

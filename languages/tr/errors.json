@@ -83,5 +83,9 @@
 	"error.cant_delete_map_in_use": "Kullanımdaki bir harita silinemez.",
 	"error.code_too_large": "Bu betik çok büyük. Her CODE yuvası en fazla 1 MiB (1.048.576 bayt) UTF-8 metni alabilir.",
 	"error.code_storage_full": "CODE depolama alanın dolu. Daha fazla kod kaydetmeden önce kullanmadığın betikleri dışa aktar ve sil.",
-	"error.code_rate_limited": "CODE'u çok sık kaydediyorsun. Biraz bekleyip tekrar dene."
+	"error.code_rate_limited": "CODE'u çok sık kaydediyorsun. Biraz bekleyip tekrar dene.",
+	"error.item_changed": "Eşya değişti. Tekrar dene.",
+	"error.mail_item_untaken": "Bu postayı silmeden önce ekini al.",
+	"error.mail_sender_limit": "Bu karakterin, senin hesabından gelen ve henüz almadığı 20 posta eki var. Bir yenisini gönderebilmen için önce bazılarını alması gerekiyor.",
+	"error.mailbox_full": "Bu karakterin zaten alınmamış 200 posta eki var. Bir yenisini gönderebilmen için önce bazılarını alması gerekiyor."
 }

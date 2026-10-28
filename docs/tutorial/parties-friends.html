@@ -1,22 +1,25 @@
 <p class="tutlead">{{ phrase("docs.tutorial.parties-friends.some-roads-are-easier-with-company-some-are") }}</p>
+<p>{{ phrase("docs.tutorial.parties-friends.summary") }}</p>
 
 <div class="tutlinks">
 	<div
 		class="gamebutton gamebutton-small"
 		onclick="
 			btc(event);
-			open_guide('multi', '/docs/guide/multi');
+			open_guide('parties', '/docs/guide/world/parties');
 		"
 	>
-		{{ phrase("docs.tutorial.parties-friends.playing-together") }}
+		{{ phrase("docs.guide.parties.title") }}
 	</div>
 </div>
 
 {% for task in tutorial_data("parties-friends").tasks %} {% if loop.first %}
 <div class="tutdivider"></div>
 {% endif %}
-<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{task_name(task)}}</span> <span class="tuttaskd tuttaskd{{task}}">{{ phrase("docs.tutorial.parties-friends.done") }}</span></div>
+<div class="tuttaskrow"><span class="tuttask tuttask{{task}}">o</span> <span class="tuttaskname">{{ phrase("docs.guide.parties.practice_title") }}</span> <span class="tuttaskd tuttaskd{{task}}">{{ phrase("docs.tutorial.parties-friends.done") }}</span></div>
 {% endfor %}
+<p>{{ phrase("docs.tutorial.parties-friends.practice_task") }}</p>
+{% include "htmls/party_example.html" %}
 
 <div class="tutpath manual">
 	<div class="tutpath-title">{{ phrase("docs.tutorial.parties-friends.manual") }}</div>

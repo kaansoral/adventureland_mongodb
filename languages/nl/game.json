@@ -317,7 +317,7 @@
 	"game.clicks_away": "Afstand in klikken: {dist}",
 	"game.echoes": "Aantal echo's: {length}",
 	"game.clicks": "Aantal klikken: {c}",
-	"npc.home.set_offer": "Dit is niet je thuisserver. Je woont op {home}. Op je thuiswereld telt je bijdrage aan gezamenlijke gevechten zwaarder en krijg je speciale beloningen. Als je snel wisselt tussen personages die geen handelaar zijn, vervallen die voordelen 30 minuten. Wil je deze server als thuisserver instellen?",
+	"npc.home.set_offer": "Dit is niet je thuisserver. Je bent inwoner van {home}. Thuiswerelden bieden sterkere coöperatieve bijdrage en speciale beloningen; snel wisselen met niet-handelaarspersonages pauzeert die voordelen 30 minuten. Wil je deze server als thuisserver instellen?",
 	"npc.yes": "Ja!",
 	"npc.home.current": "Dit is je thuisserver. Je hulp tegen samenwerkingsmonsters telt hier zwaarder mee en sommige monsters geven extra thuisbeloningen. Als je hierheen wisselt nadat een ander personage dat geen handelaar is een andere server heeft bezocht, krijg je 30 minuten Wereldmoeheid. Je blijft de gewone beloningen krijgen terwijl je weer went.",
 	"npc.bless_server.offer": "Wil je de hele server 3 dagen lang zegenen?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Dat voorwerp past niet bij het aanbod",
 	"response.trade_swap_space": "Handelaar heeft geen plek",
 	"game.trade_history.traded": "- '{item}' geruild met {player} voor '{received}'",
-	"response.transport_need_items": "Nodig: {items}"
+	"response.transport_need_items": "Nodig: {items}",
+	"combat.emote.hehehe": "HEHEHE"
 }

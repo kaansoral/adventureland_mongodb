@@ -1,4 +1,5 @@
 var stripe_state = "pay",
+	stripe_request = null,
 	pamount = 25,
 	steam_state = "pay",
 	steam_order_id = "",
@@ -240,7 +241,8 @@ function stripe_response(status, response) {
 		$("#plog").html("");
 		stripe_state = "charge";
 		$(".pbutton").html(phrase("services.payments.charging"));
-		api_call("stripe_payment", { usd: pamount, response: response });
+		stripe_request = { usd: pamount, response: { id: response.id } };
+		stripe_submit(stripe_request);
 	} else {
 		$("#plog").html("");
 		stripe_state = "failed";
@@ -250,13 +252,34 @@ function stripe_response(status, response) {
 	// if(Dev) show_json(response);
 }
 
+function stripe_submit(request) {
+	if (stripe_request !== request) return;
+	function retry() {
+		if (stripe_request !== request) return;
+		$(".pbutton").html(phrase("services.payments.processing"));
+		p_log(phrase("services.payments.currently-processing-your-payment"), "gray");
+		setTimeout(function () {
+			stripe_submit(request);
+		}, 5000);
+	}
+	api_call("stripe_payment", request, { timeout: 45000 })
+		.then(function (data) {
+			if (data.pending) retry();
+		})
+		.catch(function (error) {
+			if (error && in_arr(error.reason, ["network_error", "timeout", "exception"])) retry();
+			else stripe_result(error && error.reason === "card_declined" ? "declined" : "failed");
+		});
+}
+
 function stripe_result(result, cash) {
+	stripe_request = null;
 	if (result == "success") {
 		$("#plog").html("");
 		stripe_state = "success";
 		$(".pbutton").addClass("psuccess");
 		$(".pbutton").html(phrase("services.payments.success"));
-		character.cash = cash;
+		if (window.character) character.cash = cash;
 		reset_inventory(1);
 	} else if (result == "declined") {
 		$("#plog").html("");

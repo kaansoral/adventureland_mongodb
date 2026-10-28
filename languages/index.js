@@ -196,6 +196,9 @@ var browser_domains = {
 		"server.server_message",
 		"server.shells",
 		"server.tracktrix",
+		"server.graveyard",
+		"server.trickortreat",
+		"server.witchcipher",
 	],
 };
 

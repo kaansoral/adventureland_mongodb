@@ -1149,7 +1149,7 @@ var positions={
 	"djinncrown":["rawitems",2,4],
 	"covemantle":["rawitems",3,4],
 	"stillwaterlens":["rawitems",4,4],
-	"patronsgrace":["custom",5,0],
+	"patronsgrace":["rawitems",19,3],
 	"schedule_clock":["rawitems",18,4],
 };
 
@@ -1164,4 +1164,7 @@ Object.assign(positions, {"cave_tunnelaxe": ["rawitems", 14, 4], "cave_reedscyth
 
 // Rare drops and the status icons of their passives (row 5 of raw_items.png).
 Object.assign(positions, {"stonegaze": ["rawitems", 0, 5], "mummyhex": ["rawitems", 1, 5], "harpyecho": ["rawitems", 2, 5], "canopener": ["rawitems", 3, 5], "blightcap": ["rawitems", 4, 5], "gnomecap": ["rawitems", 5, 5], "koboldbelt": ["rawitems", 6, 5], "frostfang": ["rawitems", 7, 5], "paleclaw": ["rawitems", 8, 5], "mimicgrin": ["rawitems", 9, 5], "scorpionseal": ["rawitems", 10, 5], "watchersearring": ["rawitems", 11, 5], "graveglass": ["rawitems", 12, 5], "heartwoodlocket": ["rawitems", 13, 5], "groundingstrap": ["rawitems", 14, 5], "condition_stoned": ["rawitems", 15, 5], "condition_exposed": ["rawitems", 16, 5], "condition_sundered": ["rawitems", 17, 5], "condition_frenzied": ["rawitems", 18, 5]});
+
+// The Witch's Cipher, Witching Season gear, the Horseman's helmet, Sinister Laugh and Spooked! (from cell 19,5).
+Object.assign(positions, {"verdantspore": ["rawitems", 19, 5], "frostscale": ["rawitems", 0, 6], "embercoal": ["rawitems", 1, 6], "gloomfeather": ["rawitems", 2, 6], "witchparcel": ["rawitems", 3, 6], "cipherdraught": ["rawitems", 4, 6], "crookedkey": ["rawitems", 5, 6], "patchbuckler": ["rawitems", 6, 6], "blackcatbell": ["rawitems", 7, 6], "nightmarketsash": ["rawitems", 8, 6], "hexweavegloves": ["rawitems", 9, 6], "candleboots": ["rawitems", 10, 6], "witchlightmantle": ["rawitems", 11, 6], "laughingbook": ["rawitems", 12, 6], "horsemanpumpkin": ["rawitems", 13, 6], "emote_sinisterlaugh": ["rawitems", 14, 6], "condition_spooked": ["rawitems", 15, 6]});
 dimensions["manyeye"] = dimensions["oneeye"].slice();

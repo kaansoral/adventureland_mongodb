@@ -2,19 +2,19 @@ module.exports = {
 	// JavaScript tutorial practice inputs. Preserve HTML and CODE identifiers. {time} is milliseconds; {reason} is a raw CODE error reason.
 	"client.tutorial_code.inputs.character": "Your code runs once for each object below. Each time, <span class=\"dlabel\">character</span> refers to that object.",
 	// JavaScript tutorial practice inputs. Preserve HTML and CODE identifiers. {time} is milliseconds; {reason} is a raw CODE error reason.
-	"client.tutorial_code.inputs.targets": "Each column is one check. It shows the character properties used here and the <span class=\"dlabel\">target</span> returned by <span class=\"dlabel\">get_nearest_monster</span>. Comments describe later changes.",
+	"client.tutorial_code.inputs.targets": "Each column is one check. It shows the character properties used and the <span class=\"dlabel\">target</span> returned by <span class=\"dlabel\">get_nearest_monster</span>. Comments show what changes later.",
 	// JavaScript tutorial practice inputs. Preserve HTML and CODE identifiers. {time} is milliseconds; {reason} is a raw CODE error reason.
-	"client.tutorial_code.inputs.timers": "Each column is one check. The comments show when HP changes or <span class=\"dlabel\">stopReports</span> is called.",
+	"client.tutorial_code.inputs.timers": "Each column is one check. Comments show when HP changes or <span class=\"dlabel\">stopReports</span> is called.",
 	// JavaScript tutorial practice inputs. Preserve HTML and CODE identifiers. {time} is milliseconds; {reason} is a raw CODE error reason.
-	"client.tutorial_code.inputs.async": "Each column is one check. The comments describe the journey and when practice calls <span class=\"dlabel\">takeTrip</span> or <span class=\"dlabel\">stop</span>.",
+	"client.tutorial_code.inputs.async": "Each column is one check. Comments describe the journey and when practice calls <span class=\"dlabel\">takeTrip</span> or <span class=\"dlabel\">stop</span>.",
 	// JavaScript tutorial practice inputs. Preserve HTML and CODE identifiers. {time} is milliseconds; {reason} is a raw CODE error reason.
-	"client.tutorial_code.inputs.events": "Each column is one check. The <span class=\"dlabel\">data</span> objects reach your hit callback at the times shown, including a hit after the listener should be removed.",
+	"client.tutorial_code.inputs.events": "Each column is one check. The <span class=\"dlabel\">data</span> objects reach your hit callback at the times shown, including one hit after the listener should be gone.",
 	// JavaScript tutorial practice inputs. Preserve HTML and CODE identifiers. {time} is milliseconds; {reason} is a raw CODE error reason.
 	"client.tutorial_code.inputs.at": "At {time} ms",
 	// JavaScript tutorial practice inputs. Preserve HTML and CODE identifiers. {time} is milliseconds; {reason} is a raw CODE error reason.
 	"client.tutorial_code.inputs.travel": "An uninterrupted trip takes {time} ms.",
 	// JavaScript tutorial practice inputs. Preserve HTML and CODE identifiers. {time} is milliseconds; {reason} is a raw CODE error reason.
-	"client.tutorial_code.inputs.failure": "The first trip fails with {reason}; the next can succeed.",
+	"client.tutorial_code.inputs.failure": "The first trip fails with {reason}; the next one can succeed.",
 	// JavaScript tutorial practice inputs. Preserve HTML and CODE identifiers. {time} is milliseconds; {reason} is a raw CODE error reason.
 	"client.tutorial_code.inputs.cooldown": "Attacking is on cooldown until {time} ms.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
@@ -58,7 +58,7 @@ module.exports = {
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
 	"client.tutorial_code.scene.events.2": "Ignore missing or nonnumeric damage",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
-	"client.tutorial_code.scene.events.3": "Zero damage is a number",
+	"client.tutorial_code.scene.events.3": "Zero damage is still a number",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
 	"client.tutorial_code.scene.events.4": "Ignore a string, then clean up",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
@@ -72,17 +72,17 @@ module.exports = {
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
 	"client.tutorial_code.scene.capstone.4": "Stop while a long trip is still pending",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
-	"client.tutorial_code.error.callback": "Pass a function to setTimeout, without calling it.",
+	"client.tutorial_code.error.callback": "Pass a function to setTimeout instead of calling it.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
 	"client.tutorial_code.error.pending_limit": "Too many pending callbacks. Schedule only the next turn.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
-	"client.tutorial_code.error.callback_limit": "Too many callbacks. Check the delay and stopping condition.",
+	"client.tutorial_code.error.callback_limit": "Too many callbacks. Check the delay and the stopping condition.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
 	"client.tutorial_code.error.log_limit": "Too many log lines. Keep this exercise to 40 lines or fewer.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
 	"client.tutorial_code.error.call_limit": "Too many function calls. Check the loop and its stopping condition.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
-	"client.tutorial_code.error.attack": "Attack needs a current, ready target.",
+	"client.tutorial_code.error.attack": "Attack needs a current target that's ready.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
 	"client.tutorial_code.error.stop_reports": "Keep the stopReports function so reporting can be cancelled.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
@@ -98,31 +98,31 @@ module.exports = {
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
 	"client.tutorial_code.check.cleanup": "Finish with no pending callback, action, or listener.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
-	"client.tutorial_code.check.dead": "Return before looking for a target when dead.",
+	"client.tutorial_code.check.dead": "When dead, return before looking for a target.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
-	"client.tutorial_code.check.report_times": "Report immediately, then once per second; respect cancellation.",
+	"client.tutorial_code.check.report_times": "Report immediately, then once per second; stop when cancelled.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
-	"client.tutorial_code.check.trip_count": "Start one trip at a time; allow another after failure.",
+	"client.tutorial_code.check.trip_count": "Start one trip at a time; allow another after a failure.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
 	"client.tutorial_code.check.trip_times": "Log the result only after the trip settles.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
-	"client.tutorial_code.check.await": "Await actions so turns do not overlap.",
+	"client.tutorial_code.check.await": "Await actions so turns don't overlap.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
-	"client.tutorial_code.check.resources": "Do no new work after death; recover before low-resource combat.",
+	"client.tutorial_code.check.resources": "Do no new work after death; recover before fighting with low resources.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
 	"client.tutorial_code.check.stop": "Stop once, cancel movement, and clear the next turn.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
-	"client.tutorial_code.check.after_stop": "Start no action after stopping.",
+	"client.tutorial_code.check.after_stop": "Start no new action after stopping.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
 	"client.tutorial_code.check.schedule_after_stop": "Do not schedule another turn after stopping.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
 	"client.tutorial_code.check.missing_target": "Handle missing targets before reading their properties.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
-	"client.tutorial_code.check.pace": "Wait for work, then pause before the next turn.",
+	"client.tutorial_code.check.pace": "Wait for the work to finish, then pause before the next turn.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
 	"client.tutorial_code.check.actions": "Complete the movement, attack, and loot paths.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
-	"client.tutorial_code.check.ready": "Do not attack without a ready target and enough HP/MP.",
+	"client.tutorial_code.check.ready": "Only attack when you have a ready target and enough HP/MP.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
 	"client.tutorial_code.check.failures": "Report action failures, then keep checking.",
 	// JavaScript tutorial practice feedback. Preserve CODE identifiers, character names and checked output. Parameters contain raw learner output or fixed CODE and must not be translated.
@@ -588,7 +588,7 @@ module.exports = {
 	// Game-data refresh notification emitted by /data.js?reload. Display in the active client's language; preserve apply_backup behavior.
 	"client.data.reloaded": "Game data reloaded",
 	// Monster JSON drop viewer's informational hint. Tracktrix is an item name and stays unchanged.
-	"client.json.tracktrix_hint": "Use the item Tracktrix to see the entire drop list, including global drops.",
+	"client.json.tracktrix_hint": "Use Tracktrix to see the full drop list, including global drops.",
 	// Visual game-log boundary after older entries are discarded; player-authored log entries are unchanged.
 	"client.log.truncated": "- Truncated -",
 	// Log reminder after the player enables holiday music. Settings is the existing configuration interface.
@@ -609,35 +609,35 @@ Object.assign(module.exports, {
   "cave.visit_unlimited": "Dev: unlimited visits",
   // Dorr's first invitation beside the Mainland entrance. Describe real cave activities, the 24-minute visit and the relevant entry limit. Keep Cave Amber and Dev unchanged.
   "cave.keeper_dev": "Fight monster packs, strike a bargain, and bring home Cave Amber for your next weapon. Gather your party—you have 24 minutes inside. On this Dev server, you can visit again after leaving.",
-  "cave.keeper": "Fight monster packs, strike a bargain, and bring home Cave Amber for your next weapon. Gather your party—you have 24 minutes inside. One visit per account each day. If you disconnect, return here before your cave closes.",
+  "cave.keeper": "Fight monster packs, strike a bargain, and bring home Cave Amber for your next weapon. Gather your party—you have 24 minutes inside. One visit per account each day. If you disconnect, come back here before your cave closes.",
   "cave.enter": "Enter together",
   "cave.exit": "Exit",
   "cave.purse": "Shared purse: {gold} gold · {amber} Amber",
   "cave.vote_done": "The party has decided.",
   "cave.seconds": "Choose in {seconds} seconds.",
   "cave.fallback": "If nobody wins the vote: {fallback}.",
-  "cave.shop_rule": "Paid from the shared cave purse. One item, given to a random party member.",
+  "cave.shop_rule": "Paid from the shared cave purse. One item goes to a random party member.",
   "cave.sold": "Sold",
   "cave.buy": "Buy for {gold} cave gold",
-  "cave.error.generic": "That did not work. Try again.",
+  "cave.error.generic": "That didn't work. Try again.",
   "cave.error.daily_opening_used": "An account in this party has already visited today. Its visit resets at midnight on its home server.",
-  "cave.error.bring_party_to_keeper": "Bring every party member close to Dorr, out of combat.",
+  "cave.error.bring_party_to_keeper": "Bring every party member close to Dorr and out of combat.",
   "cave.error.party_too_large": "The cave holds one party of up to three characters.",
   "cave.error.party_changed": "Your party changed while the cave was opening. Try again.",
   "cave.error.generation_busy": "Other caves are opening. Try again shortly.",
-  "cave.error.gold_not_enough": "You do not have enough gold.",
+  "cave.error.gold_not_enough": "You don't have enough gold.",
   "cave.error.sold_out": "That item has already been sold.",
   "cave.error.vote_closed": "That vote has ended.",
   "cave.error.stale_choice": "That conversation has ended.",
-  "cave.error.already_voted": "Your vote has already been cast.",
+  "cave.error.already_voted": "Your vote is already in.",
   "cave.error.cave_closed": "This visit has ended.",
   "cave.error.distance": "Move closer first.",
-  "cave.error.cant_enter": "You cannot enter from here.",
+  "cave.error.cant_enter": "You can't enter from here.",
   "cave.error.character_already_entering": "Someone in your party is already entering a cave.",
   "cave.error.already_opening": "Your cave is already opening.",
   "cave.error.timeout": "The request took too long. Check your connection.",
   "cave.error.disconnected": "You are disconnected.",
-  "cave.error.cant_reenter": "You cannot return after leaving this cave."
+  "cave.error.cant_reenter": "You can't return after leaving this cave."
 });
 
 // Gold attached to a cave reward letter.
@@ -661,11 +661,11 @@ Object.assign(module.exports, {
 	"cave.clock_paused": "Paused · {time}",
 	"cave.vote_clock": "Choose · {seconds}s",
 	"cave.paused_choice": "The cave is paused while your party chooses.",
-	"cave.one_vote": "One vote for each character.",
+	"cave.one_vote": "One vote per character.",
 	"cave.vote_recorded": "Your vote is in. Waiting for the party.",
 	"cave.result": "Chosen: {reply}",
 	"cave.no_reply": "Walk away",
-	"cave.keep_going": "The cave has resumed. You can keep going.",
+	"cave.keep_going": "The cave has resumed. Keep going.",
 	"cave.checking_visit": "Checking your daily visit…",
 	"cave.visit_ready": "Cave visit available",
 	"cave.visit_cooldown": "Next visit: {hours}h {minutes}m · {home}",
@@ -721,21 +721,36 @@ Object.assign(module.exports,{"cave.finish_progress":"To finish the cave: {count
 
 // Cave entry failures: explain the failed step without exposing server errors.
 Object.assign(module.exports, {
- "cave.error.generation_failed": "The cave could not open. Your daily visit has not been used. Try again.",
- "cave.error.generation_worker_exit": "The cave could not open. Your daily visit has not been used. Try again.",
+ "cave.error.generation_failed": "The cave couldn't open. Your daily visit has not been used. Try again.",
+ "cave.error.generation_worker_exit": "The cave couldn't open. Your daily visit has not been used. Try again.",
  "cave.error.generation_timeout": "The cave took too long to open. Your daily visit has not been used. Try again.",
  "cave.error.zone_busy": "All caves are occupied. Try again shortly.",
  "cave.error.admission_expired": "The entry check expired. Your daily visit has not been used. Try again."
 });
 
 // Cave INFO: current currency limits. gold and amber are numeric amounts from G.events.dreams.
-module.exports["cave.currency_limits"] = "Up to {gold} cave gold and {amber} Cave Amber can appear per visit. Spending them does not make more appear.";
+module.exports["cave.currency_limits"] = "Up to {gold} cave gold and {amber} Cave Amber can appear per visit. Spending either does not make more appear.";
 
 // Dorr's existing entry button when this character can return to its original cave.
 module.exports["cave.return"] = "Return to cave";
 
 // Dorr's return greeting. {server} is a fixed server identifier such as EUI. The saved cave health is restored.
-module.exports["cave.keeper_return"] = "Your cave is still open on {server}. Return before time runs out. You will continue where you disconnected, with the health you had there.";
+module.exports["cave.keeper_return"] = "Your cave is still open on {server}. Get back in before time runs out. You'll pick up where you disconnected, with the health you had there.";
 
 // An original entrant tried to return on a different server. INFO shows the correct server.
 module.exports["cave.error.cave_other_server"] = "Your cave is on another server. Open INFO to see which one.";
+
+// Main-menu Steam referral choice. {name} is a Steam display name or a public character name.
+// Friend Token, Adventure Land, Fvona and Mainland are fixed game names.
+Object.assign(module.exports, {
+	"client.steam_referral.character": "Adventure Land: {name}",
+	"client.steam_referral.choose": "Choose",
+	"client.steam_referral.confirm_title": "Connect with {name}?",
+	"client.steam_referral.confirm_reward": "You'll both receive a Friend Token when you next enter the game.",
+	"client.steam_referral.confirm_once": "This connection can only be made once.",
+	"client.steam_referral.connect": "Connect",
+	"client.steam_referral.unavailable": "This connection is no longer available.",
+	"client.steam_referral.copied": "Copied!",
+	"client.steam_referral.copy_failed": "Could not copy the link.",
+	"client.steam_referral.reward_preview": "Exchange 4 Friend Tokens with Fvona in Mainland for this gravestone appearance.",
+});

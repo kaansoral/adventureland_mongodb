@@ -1,0 +1,21 @@
+<p>{{ phrase("docs.guide.parties.practice") }}</p>
+<div class="party-practice" data-sent="{{ phrase('docs.guide.parties.practice_sent') }}" data-joined="{{ phrase('docs.guide.parties.practice_joined') }}">
+	<div class="party-practice-panel"></div>
+	<div class="party-practice-result">
+		<div class="party-practice-actors"></div>
+		<div class="party-practice-chat cbold"></div>
+		<div class="party-practice-roster"></div>
+		<p class="party-practice-status" aria-live="polite"></p>
+	</div>
+</div>
+<style>
+	.party-practice { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 20px; margin: 18px 0; }
+	.party-practice-panel, .party-share-example { color: white; direction: ltr; line-height: normal; }
+	.party-practice-result { flex: 1; min-width: 230px; }
+	.party-practice-actors { display: flex; gap: 30px; margin: 10px 0 20px; align-items: flex-end; font-size: 24px; direction: ltr; }
+	.party-practice-chat:not(:empty) { background: black; border: 5px solid gray; padding: 10px; font-size: 24px; line-height: 24px; direction: ltr; }
+	.party-practice-chat .chatentry { margin: 0; }
+	.party-practice-roster { color: white; padding-top: 20px; direction: ltr; }
+	.party-practice-status:empty { display: none; }
+</style>
+<script>render_party_examples();</script>

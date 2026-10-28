@@ -26,6 +26,7 @@ var monsters={
 			[100000,"stat","apiercing",2],
 			[1000000,"stat","attack",3],
 			[10000000,"stat","xp",1],
+			[50000000,"stat","attack",10],
 		]
 	},
 	"cutebee":{
@@ -37,6 +38,7 @@ var monsters={
 		"achievements":[
 			[1,"stat","hp",10],
 			[20,"stat","for",1],
+			[200,"stat","luck",5],
 		],
 		"cute":true,
 	},
@@ -107,6 +109,7 @@ var monsters={
 		"name":"Rat","skin":"rat","speed":12,"hp":4000,"xp":100,"attack":240,"damage_type":"physical","respawn":42,"gold":5,"range":40,"frequency":0.5,"aggro":0,
 		"difficulty":0.2,
 		"achievements":[
+			[1000,"stat","luck",1],
 			[1000000,"stat","for",5],
 		]
 	},
@@ -148,6 +151,7 @@ var monsters={
 			[1000000,"stat","rpiercing",3],
 			[10000000,"stat","range",2],
 			[100000000,"stat","hp",5],
+			[500000000,"stat","armor",15],
 		]
 	},
 	"crabx":{
@@ -176,6 +180,8 @@ var monsters={
 		"achievements":[
 			[1,"stat","hp",10],
 			[100,"stat","luck",1],
+			[500,"stat","hp",150],
+			[2500,"stat","luck",3],
 		]
 	},
 	"armadillo":{
@@ -210,12 +216,16 @@ var monsters={
 		"name":"Chicken","speed":10,"hp":60,"xp":10,"attack":48,"damage_type":"physical","respawn":200,"gold":40,"range":20,"frequency":1.5,"aggro":1,"rage":0.2,"cute":true,
 		"achievements":[
 			[1000,"stat","gold",2],
+			[10000,"stat","hp",100],
+			[100000,"stat","gold",5],
 		]
 	},
 	"rooster":{
 		"name":"Chicken","speed":7,"hp":60,"xp":10,"attack":48,"damage_type":"physical","respawn":200,"gold":40,"range":20,"frequency":1.5,"aggro":1,"rage":0.2,"cute":true,
 		"achievements":[
 			[1000,"stat","for",1],
+			[10000,"stat","mp",50],
+			[100000,"stat","xp",2],
 		]
 	},
 	"osnake":{
@@ -241,6 +251,7 @@ var monsters={
 			[100000,"stat","speed",0.25],
 			[1000000,"stat","armor",5],
 			[10000000,"stat","resistance",10],
+			[50000000,"stat","speed",0.5],
 		]
 	},
 	"scorpion":{
@@ -301,6 +312,8 @@ var monsters={
 			[100,"stat","mp",10],
 			[1000,"stat","dex",0.5],
 			[10000,"stat","dex",0.5],
+			[25000,"stat","dex",1],
+			[250000,"stat","apiercing",10],
 		],
 	},
 	"ghost":{
@@ -416,6 +429,8 @@ var monsters={
 		"name":"Dark Knight","speed":28,"hp":86000,"xp":72000,"attack":2275,"damage_type":"physical","respawn":40,"gold":800,"range":32,"frequency":1.2,"aggro":0.3,"armor":200,"hide":true,
 		"achievements":[
 			[1,"stat","luck",50],
+			[1000,"stat","armor",15],
+			[10000,"stat","str",2],
 		]
 	},
 	"mvampire":{
@@ -473,6 +488,8 @@ var monsters={
 		//"explosion":2000,
 		"achievements":[
 			[1000,"stat","vit",1],
+			[5000,"stat","hp",100],
+			[50000,"stat","vit",2],
 		],
 	},
 	"rgoo":{
@@ -485,6 +502,8 @@ var monsters={
 		"achievements":[
 			[1,"stat","hp",20],
 			[100,"stat","for",1],
+			[300,"stat","luck",2],
+			[1500,"stat","xp",2],
 		]
 	},
 	"skeletor":{
@@ -504,6 +523,8 @@ var monsters={
 		"name":"Liger X","speed":30,"hp":80000,"xp":120000,"attack":1800,"damage_type":"physical","respawn":16*60,"gold":20000,"range":80,"frequency":1.2,"aggro":0.2,"charge":60,"explanation":"A genetically modified and cybernetically enhanced beast!",
 		"achievements":[
 			[1,"stat","luck",50],
+			[100,"stat","attack",10],
+			[1000,"stat","frequency",1],
 		]
 	},
 
@@ -557,6 +578,7 @@ var monsters={
 			[100000,"stat","dex",2],
 			[1000000,"stat","resistance",5],
 			[10000000,"stat","range",2.5],
+			[25000000,"stat","fzresistance",3],
 		]
 	},
 	"wolf":{
@@ -779,6 +801,8 @@ var monsters={
 			[1,"stat","hp",10],
 			[10,"stat","mp",10],
 			[100,"stat","for",1],
+			[500,"stat","speed",0.5],
+			[2500,"stat","luck",3],
 		]
 	},
 	"mrpumpkin":{
@@ -799,6 +823,38 @@ var monsters={
 			[50000,"stat","apiercing",10],
 			[100000,"stat","crit",1],
 		]
+	},
+	// Halloween events: the Headless Horseman rides every night; Graveyard Rising raises
+	// Zombies and Ghouls in Spooky Town's graveyard, then wakes the Gargoyle.
+	"horseman":{
+		"name":"Headless Horseman","speed":46,"charge":110,"hp":30000000,"xp":42000000,"attack":1600,"damage_type":"physical",
+		"respawn":-1,"gold":10000,"range":40,"frequency":1,"aggro":1,"rage":1,"armor":300,"resistance":300,
+		"phresistance":60,"special":true,"cooperative":true,"announce":"#E8742A",
+		"cbuff":[[60,"halloween0"],[70,"halloween1"],[200,"halloween2"]],
+		"spawns":[["hp:0.75","jackowalker",4],["hp:0.25","jackowalker",4]],
+		"achievements":[[1,"stat","hp",20],[10,"stat","mp",20],[30,"stat","vit",1],[100,"stat","attack",10],[500,"stat","frequency",1]],
+	},
+	"jackowalker":{
+		"name":"Jack-o Walker","speed":30,"charge":60,"hp":60000,"xp":40000,"attack":700,"damage_type":"magical",
+		"respawn":-1,"gold":2000,"range":40,"frequency":1,"aggro":1,"rage":1,"resistance":200,
+		"achievements":[[1,"stat","mp",10],[100,"stat","resistance",5],[500,"stat","resistance",10],[5000,"stat","crit",0.5]],
+	},
+	"zombie":{
+		"name":"Zombie","speed":14,"hp":9000,"xp":9000,"attack":260,"damage_type":"physical",
+		"respawn":-1,"gold":400,"range":30,"frequency":1,"aggro":1,"rage":1,"cooperative":true,
+		"achievements":[[10,"stat","hp",10],[100,"stat","mp",10],[1000,"stat","vit",1],[25000,"stat","hp",100],[250000,"stat","vit",3]],
+	},
+	"ghoul":{
+		"name":"Ghoul","speed":24,"charge":60,"hp":32000,"xp":30000,"attack":540,"damage_type":"physical",
+		"respawn":-1,"gold":1200,"range":34,"frequency":1.2,"aggro":1,"rage":1,"armor":160,"cooperative":true,
+		"achievements":[[1,"stat","hp",10],[100,"stat","armor",5],[1000,"stat","for",1],[5000,"stat","armor",15],[50000,"stat","speed",0.5]],
+	},
+	"gargoyle":{
+		"name":"Gargoyle","speed":18,"hp":6000000,"xp":8000000,"attack":1200,"damage_type":"physical",
+		"respawn":-1,"gold":10000,"range":50,"frequency":0.8,"aggro":1,"rage":1,"armor":700,"resistance":200,
+		"phresistance":80,"special":true,"cooperative":true,"announce":"#8C9196",
+		// About a dozen rounds a day during Halloween: the last tier takes a dedicated season or two.
+		"achievements":[[1,"stat","hp",20],[10,"stat","armor",5],[25,"stat","resistance",5],[50,"stat","phresistance",1],[500,"stat","armor",20],[3000,"stat","vit",2]],
 	},
 	"greenjr":{
 		"name":"Green Jr.","speed":60,"charge":120,"hp":4200,"xp":120000,"attack":30,"damage_type":"physical",
@@ -860,6 +916,8 @@ var monsters={
 		"achievements":[
 			[1,"stat","hp",10],
 			[10,"stat","hp",30],
+			[200,"stat","fzresistance",2],
+			[1000,"stat","resistance",15],
 		]
 	},
 	"ent":{
@@ -934,16 +992,19 @@ var monsters={
 		"name":"Red Spider Queen","speed":0,"charge":0,"hp":4500000,"xp":9000000,"difficulty":15,"attack":10000,"damage_type":"physical","stationary":true,"respawn":-1,"gold":1,"range":640,"frequency":0.4,"aggro":1,"rage":1,
 		"armor":65,"resistance":80,
 		"spawns":[[8000,"spider"]],
+		"achievements":[[1,"stat","hp",20],[100,"stat","attack",10],[1000,"stat","crit",0.5]],
 	},
 	"spiderbl":{
 		"name":"Black Spider Queen","speed":0,"charge":0,"hp":4500000,"xp":9000000,"difficulty":12,"attack":1200,"damage_type":"physical","stationary":true,"respawn":-1,"gold":1,"range":640,"frequency":1.1,"aggro":1,"rage":1,
 		"armor":110,"resistance":135,
 		"spawns":[[6000,"spider"]],
+		"achievements":[[1,"stat","hp",20],[100,"stat","resistance",10],[1000,"stat","pnresistance",3]],
 	},
 	"spiderbr":{
 		"name":"Brown Spider Queen","speed":0,"charge":0,"hp":4500000,"xp":9000000,"difficulty":10,"attack":840,"damage_type":"physical","stationary":true,"respawn":-1,"gold":1,"range":640,"frequency":2,"aggro":1,"rage":1,
 		"armor":90,"resistance":115,
 		"spawns":[[5000,"spider"]],
+		"achievements":[[1,"stat","hp",20],[100,"stat","armor",10],[1000,"stat","vit",2]],
 	},
 	"welemental":{"name":"Water Elemental","speed":20,"hp":80000,"xp":10,"attack":1800,"damage_type":"physical","respawn":1,"gold":1,"range":80,"frequency":1.2,"aggro":0.2,"evasion":80},
 	"felemental":{"name":"Fire Elemental","speed":20,"hp":80000,"xp":10,"attack":1800,"damage_type":"physical","respawn":1,"gold":1,"range":80,"frequency":1.2,"aggro":0.2,"evasion":80},
@@ -956,6 +1017,8 @@ var monsters={
 		"name":"Fairy","speed":10,"hp":3600000,"xp":2000000,"attack":3000,"damage_type":"magical","respawn":0,"gold":1000,"range":999999,"frequency":100,"aggro":0,"hit":"explode_c","aa":1,
 		"achievements":[
 			[10,"stat","luck",2],
+			[100,"stat","luck",3],
+			[1000,"stat","luck",5],
 		],
 	},
 	"redfairy":{
@@ -963,6 +1026,8 @@ var monsters={
 		"name":"Fairy","speed":10,"hp":4800000,"xp":2000000,"attack":4000,"damage_type":"magical","respawn":0,"gold":1000,"range":999999,"frequency":100,"aggro":0,"hit":"explode_c","aa":1,
 		"achievements":[
 			[10,"stat","gold",2],
+			[100,"stat","gold",3],
+			[1000,"stat","gold",5],
 		],
 		"abilities":{"heal":{"heal":20000,"cooldown":1000}}
 	},
@@ -971,6 +1036,8 @@ var monsters={
 		"name":"Fairy","speed":10,"hp":4000000,"xp":2000000,"attack":2400,"damage_type":"magical","respawn":0,"gold":1000,"range":999999,"frequency":100,"aggro":0,"hit":"explode_c","aa":1,
 		"achievements":[
 			[10,"stat","xp",2],
+			[100,"stat","xp",1],
+			[1000,"stat","xp",3],
 		],
 	},
 	"rudolph":{
@@ -980,6 +1047,7 @@ var monsters={
 		"achievements":[
 			[100,"stat","for",2],
 			[1000,"stat","for",2],
+			[10000,"stat","speed",0.5],
 		]
 	},
 	"grinch":{
@@ -1040,6 +1108,8 @@ var monsters={
 		"achievements":[
 			[1,"stat","for",0.25],
 			[10,"stat","luck",0.5],
+			[100,"stat","luck",1],
+			[500,"stat","luck",2],
 		],
 	},
 
@@ -1061,6 +1131,8 @@ var monsters={
 			"roam":true,
 		"achievements":[
 			[1,"stat","vit",1],
+			[100,"stat","attack",10],
+			[1000,"stat","crit",0.5],
 		],
 		//"supporter":true,
 	},
@@ -1105,6 +1177,8 @@ var monsters={
 			[1,"stat","gold",1],
 			[10,"stat","for",0.5],
 			[20,"stat","luck",1],
+			[100,"stat","firesistance",3],
+			[500,"stat","gold",5],
 		],
 		"projectile":"fireball",
 	},
@@ -1328,6 +1402,7 @@ var monsters={
 	"vbat":{
 		"phresistance":70,
 		"name":"Vampireling","speed":24,"charge":84,"hp":156000,"xp":720000,"difficulty":17,"attack":1240,"damage_type":"physical","respawn":-1,"gold":120000,"range":35,"frequency":1.56,"aggro":0.3,"rage":0.1,"aa":1,
+		"achievements":[[10,"stat","hp",20],[5000,"stat","attack",10],[50000,"stat","frequency",1]],
 	},
 	//mage
 	"xmagefz":{
@@ -1412,7 +1487,8 @@ var monsters={
 	"d_wiz":{"name":"Dark Wizard","skin":"shadow","speed":12,"charge":90,"hp":100000,"xp":10000,"attack":5200,"damage_type":"magical","respawn":6000,"gold":20,"range":240,"frequency":2,"aggro":1,
 		"slots":{"mainhand":{"name":"oozingterror","level":13}},"abilities":{"self_healing":{"heal":4800,"cooldown":2000}},
 		"unlist":true,"armor":560,"resistance":920,
-		},
+		"achievements":[[1,"stat","mp",20],[1000,"stat","int",1],[10000,"stat","resistance",15]],
+	},
 
 	//targets
 	"target":{"name":"Target Automatron","speed":12,"hp":50000,"xp":1000,"attack":0,"damage_type":"physical","respawn":0,"gold":20,"range":1,"frequency":0.1,"aggro":0,"stationary":true,"unlist":true,"orientation":2,"humanoid":true,"phresistance":50,},

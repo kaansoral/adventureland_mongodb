@@ -15,8 +15,8 @@ function mail(id, receiver = "US_reader", sender = "US_sender") {
 	};
 }
 
-function fixture(mails, beforeCommit) {
-	const user = { _id: "US_reader" };
+function fixture(mails, beforeCommit, owner = "US_reader") {
+	const user = { _id: owner };
 	const userdata = {
 		_id: "IE_userdata-US_reader",
 		info: { mail: 99, tutorial_step: 8, code_list: { 1: ["main", 3] } },
@@ -25,15 +25,33 @@ function fixture(mails, beforeCommit) {
 	const store = transactions(context, [userdata, ...mails], beforeCommit);
 	const transactionalCollection = context.db.collection;
 	const getField = (document, key) => key.split(".").reduce((value, part) => value?.[part], document);
+	const matches = (document, query) =>
+		Object.entries(query).every(([key, value]) => {
+			if (key === "$or") return value.some((part) => matches(document, part));
+			const actual = getField(document, key);
+			if (value && typeof value.test === "function") return value.test(actual);
+			if (value && value.$in) return value.$in.includes(actual);
+			if (value && "$ne" in Object(value)) return actual !== value.$ne;
+			if (value && "$exists" in Object(value)) return (actual !== undefined) === value.$exists;
+			return Array.isArray(actual) ? actual.includes(value) : actual === value;
+		});
 	context.db.collection = (name) => ({
 		...transactionalCollection(name),
+		async findOne(query, options) {
+			if (options?.session) return transactionalCollection(name).findOne(query, options);
+			return structuredClone([...store.records.values()].find((document) => matches(document, query)) || null);
+		},
+		async countDocuments(query, { session, limit }) {
+			return Math.min(
+				limit,
+				[...session.snapshot.values()].filter((document) => document._id.startsWith("ML_") && matches(document, query))
+					.length,
+			);
+		},
 		find(query) {
 			let selected = [...store.records.values()].filter((document) => {
 				if (!document._id.startsWith("ML_")) return false;
-				return Object.entries(query).every(([key, value]) => {
-					const actual = getField(document, key);
-					return Array.isArray(actual) ? actual.includes(value) : actual === value;
-				});
+				return matches(document, query);
 			});
 			let skip = 0,
 				limit = Infinity,
@@ -89,7 +107,7 @@ function fixture(mails, beforeCommit) {
 	});
 	context.get = async (id) => structuredClone(store.records.get(id));
 	context.remove = async (document) => store.records.delete(document._id);
-	load(context, "adventure_functions.js", ["gf", "simplify_item", "update_mail_count"]);
+	load(context, "adventure_functions.js", ["gf", "mail_receiver", "simplify_item", "update_mail_count"]);
 	load(context, "api.js", ["read_mail_api", "pull_mail_api", "delete_mail_api"]);
 	return {
 		...store,
@@ -101,6 +119,328 @@ function fixture(mails, beforeCommit) {
 		},
 	};
 }
+
+test("legacy numeric recipients can read and collect old mail, but senders cannot", async () => {
+	const letter = parcel("legacy", "12345", "67890");
+	letter.owner = ["US_67890", "US_12345"];
+	const h = fixture([letter], undefined, "US_12345");
+	const inbox = await h.call("pull_mail");
+	assert.equal(inbox.unread, 1);
+	assert.equal(inbox.infs.find((info) => info.type === "mail").mail[0].can_take, true);
+	assert.equal((await h.call("read_mail", { mail: letter._id })).unread, 0);
+	const character = claimCharacters(h);
+	const sender = character("Sender", "US_67890"),
+		receiver = character("Receiver", "US_12345");
+	assert.equal((await sender.claim(letter._id)).reason, "not_owner");
+	assert.equal((await receiver.claim(letter._id)).success, true);
+	assert.equal(receiver.player.items.length, 1);
+	assert.equal((await receiver.claim(letter._id)).reason, "already_taken");
+});
+
+function sendCharacters(h) {
+	const c = h.context;
+	let serial = 0;
+	Object.assign(c, {
+		players: {},
+		mode: {},
+		server_id: "SR_test",
+		structuredClone,
+		G: { items: { sword: { name: "Sword" } } },
+		randomStr: () => "send" + ++serial,
+		cache_item: (item) => item,
+		add_to_trade_history() {},
+		xy_emit() {},
+		resend() {},
+		log_trace(_name, error) {
+			throw error;
+		},
+	});
+	vm.runInContext(read("node/logic/mail.js"), c);
+	load(c, "node/logic/character_sessions.js", ["owns_character_session"]);
+	load(c, "node/server.js", ["player_to_server", "sync_entity"]);
+	h.records.set("CH_reader", { _id: "CH_reader", owner: "US_reader", name: "reader" });
+	h.records.set("US_reader", { _id: "US_reader", info: {} });
+	return function character(id, owner = "US_sender") {
+		h.records.set(owner, { _id: owner, info: {} });
+		let resolve;
+		const socket = (c.socket = {
+			id,
+			emit(event, data) {
+				if (data.response === "mail_sent" || data.response === "mail_failed") resolve?.(data);
+			},
+		});
+		const player = (c.players[id] = {
+			_id: "CH_" + id,
+			real_id: "CH_" + id,
+			name: id,
+			owner,
+			secret: id,
+			socket,
+			gold: 1000000,
+			items: [{ name: "sword", level: 12 }, null],
+			citems: [],
+			cslots: [],
+			p: { minutes: 0 },
+			q: {},
+			s: {},
+			slots: {},
+		});
+		h.records.set(player.real_id, {
+			_id: player.real_id,
+			owner,
+			server: "SR_test",
+			info: { secret: id, p: {}, gold: player.gold, items: structuredClone(player.items) },
+		});
+		c.fail_response = (reason) => resolve({ failed: true, reason });
+		c.success_response = () => {};
+		const handler = socketHandler(c, "mail");
+		return {
+			player,
+			send(data = {}) {
+				return new Promise((done) => {
+					resolve = done;
+					handler({ to: "Reader", item: true, ...data });
+				});
+			},
+		};
+	};
+}
+
+test("mail keeps the 20th attachment and rejects the 21st without charging or removing an item", async () => {
+	const h = fixture(Array.from({ length: 19 }, (_, i) => parcel("old" + i)));
+	const character = sendCharacters(h),
+		sender = character("Sender");
+	assert.equal((await sender.send()).response, "mail_sent");
+	assert.equal(sender.player.gold, 640000);
+	assert.equal(sender.player.items[0], null);
+	assert.equal(h.records.get("CH_Sender").info.items[0], null, "sender deduction commits with the delivered mail");
+	sender.player.items[0] = { name: "sword", level: 13 };
+	assert.equal((await sender.send()).reason, "mail_sender_limit");
+	assert.equal(sender.player.gold, 640000);
+	assert.equal(sender.player.items[0].level, 13);
+	assert.equal([...h.records.values()].filter((m) => m.item).length, 20);
+});
+
+test("concurrent sender characters share the per-person cap", async () => {
+	const h = fixture(Array.from({ length: 19 }, (_, i) => parcel("old" + i)));
+	const character = sendCharacters(h),
+		first = character("First"),
+		second = character("Second");
+	const results = await Promise.all([first.send(), second.send()]);
+	assert.equal(results.filter((r) => r.response === "mail_sent").length, 1);
+	assert.equal(results.filter((r) => r.reason === "mail_sender_limit").length, 1);
+	assert.equal(first.player.gold + second.player.gold, 1640000);
+	assert.equal([first, second].filter((c) => c.player.items[0]).length, 1);
+});
+
+test("automatic rewards do not use either player-mail allowance", async () => {
+	const automatic = Array.from({ length: 220 }, (_, i) =>
+		parcel("reward" + i, "US_reader", "US_sender", {
+			mailbox_character: "CH_reader",
+			...[{ type: "system" }, { cave_award: true }, { tracktrix_gift: true }, { mailbox_exempt: true }][i % 4],
+		}),
+	);
+	const h = fixture([...automatic, ...Array.from({ length: 19 }, (_, i) => parcel("old" + i))]);
+	const sender = sendCharacters(h)("Sender");
+	assert.equal((await sender.send()).response, "mail_sent");
+	sender.player.items[0] = { name: "sword", level: 13 };
+	assert.equal((await sender.send()).reason, "mail_sender_limit");
+	assert.equal(h.records.get("ML_reward0").taken, false);
+	assert.equal(h.records.get("ML_reward1").info.item, automatic[1].info.item);
+});
+
+test("the total cap is per receiving character, includes pending claims, and allows letters without attachments", async () => {
+	const letters = Array.from({ length: 200 }, (_, i) => parcel("old" + i, "US_reader", "US_person" + i));
+	letters[0].taken = "mailclaim_pending";
+	letters.push(parcel("elsewhere", "US_reader", "US_sender", { to: "Other", mailbox_character: "CH_other" }));
+	const h = fixture(letters);
+	const sender = sendCharacters(h)("Sender");
+	assert.equal((await sender.send()).reason, "mailbox_full");
+	assert.equal(sender.player.gold, 1000000);
+	assert.equal(sender.player.items[0].name, "sword");
+	assert.equal((await sender.send({ item: false })).response, "mail_sent");
+	assert.equal(sender.player.gold, 952000);
+	assert.equal(sender.player.items[0].name, "sword");
+	h.records.get("ML_old0").taken = true;
+	assert.equal((await sender.send()).response, "mail_sent");
+});
+
+test("failed delivery returns postage and the reserved slot, even after disconnect", async () => {
+	let player;
+	const h = fixture([], ({ session }) => {
+		if ([...session.pending.keys()].some((id) => id.startsWith("ML_"))) {
+			player.dc = true;
+			delete h.context.players.Sender;
+			throw Error("database unavailable");
+		}
+	});
+	const sender = sendCharacters(h)("Sender");
+	player = sender.player;
+	await h.context.send_player_mail(player, { to: "Reader", item: true });
+	assert.equal(player.gold, 1000000);
+	assert.equal(player.items[0].level, 12);
+	assert.equal(player.mail_sending, undefined);
+});
+
+test("mail snapshots the mounted bank and character together before either write yields", async () => {
+	const h = fixture([]),
+		sender = sendCharacters(h)("Sender"),
+		player = sender.player;
+	player.user = { gold: 1000, items0: [{ name: "firestaff", level: 9 }] };
+	Object.assign(h.records.get(player.owner), { server: "SR_test", mounted_to: player._id });
+	const collection = h.context.db.collection;
+	let withdrew = false,
+		snapshotBeforeWithdraw;
+	const toServer = h.context.player_to_server;
+	h.context.player_to_server = (...args) => {
+		if (args[1] === "mail") snapshotBeforeWithdraw = !withdrew;
+		return toServer(...args);
+	};
+	h.context.db.collection = (name) => {
+		const original = collection(name);
+		return {
+			...original,
+			async replaceOne(query, entity, options) {
+				if (query._id === player.owner && !withdrew) {
+					assert(options?.session, "bank write runs in the transaction");
+					assert.equal(h.records.get(player.real_id).info.items[0].name, "sword", "character is not committed yet");
+					withdrew = true;
+					player.items[1] = player.user.items0[0];
+					player.user.items0[0] = null;
+					player.gold += 1000;
+					player.user.gold = 0;
+				}
+				return original.replaceOne(query, entity, options);
+			},
+		};
+	};
+	assert.equal((await sender.send()).response, "mail_sent");
+	assert.equal(snapshotBeforeWithdraw, true, "character snapshot precedes the bank write");
+	const bank = h.records.get(player.owner).info,
+		saved = h.records.get(player.real_id).info;
+	assert.equal(bank.gold + saved.gold, 641000);
+	assert.equal(bank.items0[0].name, "firestaff");
+	assert.equal(saved.items[1], null);
+	assert.equal(player.items[1].name, "firestaff", "later gameplay remains in RAM for its normal save");
+});
+
+function giveawayTimer(h, player) {
+	const c = h.context;
+	const events = [];
+	Object.assign(c, {
+		trade_slots: ["trade1"],
+		get_player() {},
+		random_one: (list) => list[0],
+		xy_emit: (_player, _event, packet) => events.push(packet),
+	});
+	const send = c.send_player_mail;
+	c.send_player_mail = (...args) => (c.delivery = send(...args));
+	const source = read("node/server.js");
+	const start = source.lastIndexOf("setInterval(function () {", source.indexOf("players[id].pdps *= 0.8"));
+	const end = source.indexOf("}, 60000);", start) + "}, 60000);".length;
+	let tick;
+	c.setInterval = (callback) => {
+		tick = callback;
+	};
+	vm.runInContext(source.slice(start, end), c);
+	player.slots.trade1 = { name: "sword", level: 12, giveaway: 1, list: ["Reader", "Other"], registry: {} };
+	return {
+		events,
+		tickNow: () => tick(),
+		async tick() {
+			tick();
+			await c.delivery;
+		},
+	};
+}
+
+test("giveaway prizes wait at the sender cap and keep the same winner until space is available", async () => {
+	const h = fixture(Array.from({ length: 20 }, (_, i) => parcel("old" + i)));
+	const sender = sendCharacters(h)("Sender"),
+		player = sender.player;
+	const giveaway = giveawayTimer(h, player);
+	const original = player.slots.trade1;
+	await giveaway.tick();
+	assert.equal(player.slots.trade1, original);
+	assert.equal(original.giveaway, 5);
+	assert.equal(original.mail_winner, "Reader");
+	assert.equal(giveaway.events.length, 0, "no prize announcement before delivery");
+	assert.equal(player.gold, 1000000, "giveaways do not charge postage");
+	h.records.get("ML_old0").taken = true;
+	h.context.random_one = () => {
+		throw Error("winner must not be redrawn");
+	};
+	for (let i = 0; i < 5; i++) await giveaway.tick();
+	assert.equal(player.slots.trade1, null);
+	assert.equal(h.records.get(player.real_id).info.slots.trade1, null, "listing removal commits with the mail");
+	const delivered = [...h.records.values()].find((m) => m._id.startsWith("ML_send"));
+	assert.equal(delivered.mailbox_exempt, undefined);
+	assert.equal(delivered.mailbox_character, "CH_reader");
+	const item = JSON.parse(delivered.info.item);
+	assert.equal(item.src, "gva");
+	assert.equal(item.gf, "Sender");
+	for (const key of ["giveaway", "registry", "list", "mail_winner", "mail_waiting_reason"])
+		assert.equal(item[key], undefined);
+	assert.equal(giveaway.events.length, 1);
+	assert.equal(player.items[0].level, 12, "the inventory slot is unrelated to the prize");
+});
+
+test("giveaway prizes and ordinary mail serialize against the same total limit", async () => {
+	const h = fixture(Array.from({ length: 199 }, (_, i) => parcel("old" + i, "US_reader", "US_person" + i)));
+	const character = sendCharacters(h),
+		host = character("Host"),
+		sender = character("Sender", "US_other");
+	const giveaway = giveawayTimer(h, host.player);
+	await Promise.all([giveaway.tick(), sender.send()]);
+	assert.equal([...h.records.values()].filter((m) => m.item).length, 200);
+	assert.equal((host.player.slots.trade1 ? 1 : 0) + (sender.player.items[0] ? 1 : 0), 1);
+	assert.equal(host.player.gold, 1000000);
+});
+
+test("failed giveaway delivery restores its listing and never announces a lost prize", async () => {
+	const h = fixture([], ({ session }) => {
+		if ([...session.pending.keys()].some((id) => id.startsWith("ML_"))) throw Error("database unavailable");
+	});
+	const sender = sendCharacters(h)("Sender");
+	const giveaway = giveawayTimer(h, sender.player),
+		original = sender.player.slots.trade1;
+	await giveaway.tick();
+	assert.equal(sender.player.slots.trade1, original);
+	assert.equal(sender.player.mail_sending, undefined);
+	assert.equal(original.mail_winner, "Reader");
+	assert.equal(original.giveaway, 5);
+	assert.equal(giveaway.events.length, 0);
+	assert.equal([...h.records.values()].filter((m) => m.item).length, 0);
+});
+
+test("a deleted giveaway participant is removed before a new winner is selected", async () => {
+	const h = fixture([]),
+		sender = sendCharacters(h)("Sender"),
+		player = sender.player;
+	const giveaway = giveawayTimer(h, player);
+	player.slots.trade1.list = ["Ghost", "Reader"];
+	await giveaway.tick();
+	assert.equal(player.slots.trade1.mail_winner, undefined);
+	assert.deepEqual(Array.from(player.slots.trade1.list), ["Reader"]);
+	assert.equal(player.slots.trade1.giveaway, 5);
+	assert.equal(giveaway.events.length, 0);
+	for (let i = 0; i < 5; i++) await giveaway.tick();
+	assert.equal(player.slots.trade1, null);
+	const delivered = [...h.records.values()].find((m) => m._id.startsWith("ML_send"));
+	assert.equal(delivered.to, "Reader");
+	assert.equal(giveaway.events.length, 1);
+});
+
+test("unknown recipients and missing attachments keep gold and inventory unchanged", async () => {
+	const h = fixture([]),
+		sender = sendCharacters(h)("Sender");
+	assert.equal((await sender.send({ to: "Nobody" })).reason, "nocharacter");
+	assert.equal(sender.player.gold, 1000000);
+	assert.equal(sender.player.items[0].level, 12);
+	sender.player.items[0] = null;
+	assert.equal((await sender.send()).reason, "no_item");
+	assert.equal(sender.player.gold, 1000000);
+});
 
 function parcel(id, receiver = "US_reader", sender = "US_sender", extra = {}) {
 	const letter = Object.assign(mail(id, receiver, sender), { item: true, taken: false }, extra);
@@ -329,25 +669,17 @@ test("sent and received history retain attachments and stable pagination without
 	assert(!ids.includes("ML_private"));
 });
 
-test("deleting either mailbox copy preserves the other copy and its attachment", async () => {
-	for (const first of ["US_sender", "US_reader"]) {
-		const gift = parcel("one");
+test("untaken attachments stay in the recipient mailbox while the sender may hide its copy", async () => {
+	for (const taken of [false, "mailclaim_pending"]) {
+		const gift = parcel("one", "US_reader", "US_sender", { taken });
 		const h = fixture([gift]);
-		const second = first === "US_sender" ? "US_reader" : "US_sender";
-		const result = await h.call("delete_mail", { mid: gift._id, user: { _id: first } });
-		assert.equal(result.result.success, true);
-		assert.equal(result.unread, 0);
-		assert.deepEqual(h.records.get(gift._id).owner, [second]);
+		assert.equal((await h.call("delete_mail", { mid: gift._id })).result.reason, "mail_item_untaken");
+		assert.equal((await h.call("delete_mail", { mid: gift._id, user: { _id: "US_sender" } })).result.success, true);
+		assert.deepEqual(h.records.get(gift._id).owner, ["US_reader"]);
 		assert.equal(h.records.get(gift._id).info.item, gift.info.item);
-		assert.equal(h.records.get(gift._id).taken, false);
-		const page = (await h.call("pull_mail", { user: { _id: second } })).infs[0];
-		assert.deepEqual(
-			Array.from(page.mail, (entry) => entry.id),
-			[gift._id],
-		);
-		assert.equal((await h.call("pull_mail", { user: { _id: first } })).infs[0].mail.length, 0);
-		await h.call("delete_mail", { mid: gift._id, user: { _id: second } });
-		assert.deepEqual(h.records.get(gift._id).owner, [], "keep the record so deleting a reward cannot recreate it");
+		h.records.get(gift._id).taken = true;
+		assert.equal((await h.call("delete_mail", { mid: gift._id })).result.success, true);
+		assert.deepEqual(h.records.get(gift._id).owner, []);
 	}
 });
 
@@ -450,20 +782,20 @@ test("a sender deleting mail during claim or settlement cannot steal or duplicat
 	}
 });
 
-test("deleting the recipient copy before claim commit cancels delivery without giving the sender access", async () => {
+test("recipient deletion cannot hide an attachment during a claim", async () => {
 	let deleted = false;
 	const h = fixture([parcel("race")], async ({ session }) => {
 		if (deleted || !session.pending.has("ML_race")) return;
 		deleted = true;
-		await h.call("delete_mail", { mid: "ML_race" });
+		assert.equal((await h.call("delete_mail", { mid: "ML_race" })).result.reason, "mail_item_untaken");
 	});
 	const character = claimCharacters(h),
 		reader = character("reader"),
 		sender = character("sender", "US_sender");
-	assert.equal((await reader.claim("ML_race")).reason, "not_owner");
+	assert.equal((await reader.claim("ML_race")).success, true);
 	assert.equal((await sender.claim("ML_race")).reason, "not_owner");
-	assert.equal(reader.player.items.length + sender.player.items.length, 0);
-	assert.equal(h.records.get("ML_race").taken, false);
+	assert.equal(reader.player.items.length + sender.player.items.length, 1);
+	assert.equal(h.records.get("ML_race").taken, true);
 });
 
 test("the mailbox and its actual renderer offer TAKE only to the recipient", async () => {
@@ -486,10 +818,166 @@ test("the mailbox and its actual renderer offer TAKE only to the recipient", asy
 		c.window.mail = { [entry.id]: entry };
 		c.render_mail(entry.id);
 		assert.equal(html.includes("takeitem"), owner === "US_reader");
+		assert.equal(html.includes("show_delete_mail"), owner === "US_sender");
 	}
 });
 
 test("the badge keeps its existing 100-message cap", async () => {
 	const h = fixture(Array.from({ length: 110 }, (_, i) => mail(String(i))));
 	assert.equal((await h.call("pull_mail")).unread, 100);
+});
+
+test("claim retries recognize their own committed claim after lost acknowledgements", async () => {
+	for (const losses of [1, 3]) {
+		const h = fixture([parcel("retry")]);
+		const start = h.context.client.startSession;
+		let lost = 0;
+		h.context.client.startSession = () => {
+			const session = start();
+			const commit = session.commitTransaction.bind(session);
+			session.commitTransaction = async () => {
+				await commit();
+				session.abortTransaction = async () => {
+					throw Error("already committed");
+				};
+				if (typeof h.records.get("ML_retry").taken === "string" && lost++ < losses) throw Error("lost commit response");
+			};
+			return session;
+		};
+		h.context.log_trace = () => {};
+		const reader = claimCharacters(h)("reader");
+		assert.equal((await reader.claim("ML_retry")).success, true);
+		assert.equal(reader.player.items.length, 1);
+		assert.equal(h.records.get("ML_retry").taken, true);
+		assert.equal((await reader.claim("ML_retry")).reason, "already_taken");
+		assert.equal(reader.player.items.length, 1);
+	}
+});
+
+test("a giveaway timer cannot overwrite its reserved listing while the mail commit waits", async () => {
+	let timer,
+		player,
+		checked = false;
+	const h = fixture([], ({ session }) => {
+		if (checked || ![...session.pending.keys()].some((id) => id.startsWith("ML_"))) return;
+		checked = true;
+		const reserved = player.slots.trade1;
+		assert.equal(reserved.name, "placeholder");
+		timer.tickNow();
+		assert.equal(player.slots.trade1, reserved);
+		assert.equal(reserved.giveaway, 1);
+		assert.equal(timer.events.length, 0);
+	});
+	player = sendCharacters(h)("Sender").player;
+	timer = giveawayTimer(h, player);
+	await timer.tick();
+	assert(checked);
+	assert.equal(player.slots.trade1, null);
+	assert.equal(player.mail_sending, undefined);
+	assert.equal(timer.events.length, 1);
+});
+
+test("concurrent giveaway transactions preserve each donor, winner and titled prize", async () => {
+	const h = fixture([]),
+		make = sendCharacters(h);
+	const first = make("First").player,
+		second = make("Second", "US_second").player;
+	const timer = giveawayTimer(h, first);
+	const prize = {
+		name: "sword",
+		level: 12,
+		q: 2,
+		p: "glitched",
+		ps: ["glitched"],
+		giveaway: 1,
+		list: ["Reader"],
+		registry: {},
+	};
+	first.slots.trade1 = structuredClone(prize);
+	second.slots.trade1 = { ...structuredClone(prize), level: 13 };
+	await Promise.all([
+		h.context.send_player_mail(first, { to: "Reader", item: true }, "trade1"),
+		h.context.send_player_mail(second, { to: "Reader", item: true }, "trade1"),
+	]);
+	const delivered = [...h.records.values()].filter((m) => m._id.startsWith("ML_send"));
+	assert.equal(delivered.length, 2);
+	for (const [player, level] of [
+		[first, 12],
+		[second, 13],
+	]) {
+		const letter = delivered.find((m) => m.info.sender === player.owner),
+			item = JSON.parse(letter.info.item);
+		assert.equal(letter.fro, player.name);
+		assert.equal(letter.info.receiver, "US_reader");
+		assert.deepEqual(item, {
+			name: "sword",
+			level,
+			q: 2,
+			p: "glitched",
+			ps: ["glitched"],
+			gf: player.name,
+			src: "gva",
+		});
+		assert.equal(player.slots.trade1, null);
+	}
+	await timer.tick();
+	assert.equal([...h.records.values()].filter((m) => m._id.startsWith("ML_send")).length, 2);
+});
+
+test("changing a giveaway during recipient lookup cannot send the replacement prize", async () => {
+	const h = fixture([]),
+		player = sendCharacters(h)("Sender").player;
+	const timer = giveawayTimer(h, player);
+	const replacement = { name: "sword", level: 13, giveaway: 60, list: ["Other"], registry: {} };
+	const collection = h.context.db.collection;
+	h.context.db.collection = (name) => {
+		const original = collection(name);
+		return {
+			...original,
+			async findOne(query, options) {
+				const result = await original.findOne(query, options);
+				if (name === "character" && query.name === "reader") player.slots.trade1 = replacement;
+				return result;
+			},
+		};
+	};
+	await timer.tick();
+	assert.equal(player.slots.trade1, replacement);
+	assert.equal(replacement.giveaway, 60);
+	assert.equal(player.mail_sending, undefined);
+	assert.equal(timer.events.length, 0);
+	assert.equal([...h.records.values()].filter((m) => m._id.startsWith("ML_send")).length, 0);
+});
+
+test("a failed giveaway lookup leaves a moved original listing untouched", async () => {
+	for (const missing of [false, true]) {
+		const h = fixture([]),
+			player = sendCharacters(h)("Sender").player;
+		const timer = giveawayTimer(h, player),
+			originalPrize = player.slots.trade1;
+		const collection = h.context.db.collection;
+		h.context.db.collection = (name) => {
+			const original = collection(name);
+			return {
+				...original,
+				async findOne(query, options) {
+					const result = await original.findOne(query, options);
+					if (name === "character" && query.name === "reader") {
+						player.slots.trade1 = null;
+						player.slots.trade2 = originalPrize;
+						originalPrize.giveaway = 30;
+						return missing ? null : result;
+					}
+					return result;
+				},
+			};
+		};
+		await timer.tick();
+		assert.equal(originalPrize.giveaway, 30);
+		assert.equal(originalPrize.mail_winner, "Reader");
+		assert.deepEqual(originalPrize.list, ["Reader", "Other"]);
+		assert.equal(player.slots.trade2, originalPrize);
+		assert.equal(player.mail_sending, undefined);
+		assert.equal(timer.events.length, 0);
+	}
 });

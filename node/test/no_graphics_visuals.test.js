@@ -10,6 +10,36 @@ const repository = path.resolve(__dirname, "../..");
 const fakePixiPath = path.join(repository, "js/pixi/fake/pixi.min.js");
 const gamePath = path.join(repository, "js/game.js");
 
+test("headless skin changes and walking never look up textures or construct graphics", () => {
+	const { load } = require("./helpers/server_vm");
+	const c = vm.createContext({
+		no_graphics: true,
+		XYWH: { old: [], snow_angel: [], naked: [] },
+		asp_skip: {},
+		current_map: "main",
+		current_in: "main",
+	});
+	vm.runInContext(fs.readFileSync(fakePixiPath, "utf8"), c);
+	for (const key of ["PIXI", "textures"])
+		Object.defineProperty(c, key, {
+			get() {
+				throw Error("headless graphics access");
+			},
+		});
+	load(c, "js/game.js", ["adopt_soft_properties"]);
+	load(c, "js/functions.js", ["set_texture"]);
+	const character = { type: "character", stype: "full", skin: "old" };
+	for (const [skin, expected] of [
+		["snow_angel", "snow_angel"],
+		["unknown", "naked"],
+		["old", "old"],
+	]) {
+		c.adopt_soft_properties(character, { skin });
+		assert.equal(character.skin, expected);
+		for (let frame = 0; frame < 3; frame++) assert.doesNotThrow(() => c.set_texture(character, frame, 1));
+	}
+});
+
 test("pixel font loading and text entry points do not touch fake PIXI in no-graphics mode", async () => {
 	const context = { no_graphics: true, mode: {}, console, document: { documentElement: { lang: "en" } } };
 	context.window = context;

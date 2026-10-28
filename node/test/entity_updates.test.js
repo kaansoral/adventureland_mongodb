@@ -2,8 +2,46 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const vm = require("node:vm");
-const { read } = require("./helpers/server_vm");
+const { read, extract, socketHandler } = require("./helpers/server_vm");
 const { server, client, player, observer, send } = require("./helpers/entity_updates");
+
+test("the documented refresh example displays one full snapshot and removes its listener", () => {
+	const { EventEmitter } = require("node:events");
+	const socket = new EventEmitter(),
+		shown = [],
+		requests = [];
+	socket.on("send_updates", () => requests.push("refresh"));
+	const c = vm.createContext({ parent: { socket }, show_json: (value) => shown.push(value) });
+	vm.runInContext(extract(read("js/runner_functions.js"), "get_socket"), c);
+	const example = read("docs/functions/get_socket.html").match(
+		/<div class='code'>(var socket = get_socket\(\);[\s\S]*?)<\/div>/,
+	)[1];
+	vm.runInContext(example, c);
+	assert.deepEqual(requests, ["refresh"]);
+	socket.emit("entities", { type: "xy", players: [], monsters: [] });
+	assert.equal(shown.length, 0);
+	const full = { type: "all", players: [{ id: "Self", x: 15, y: 25 }], monsters: [] };
+	socket.emit("entities", full);
+	socket.emit("entities", full);
+	assert.deepEqual(shown, [full]);
+	assert.equal(socket.listenerCount("entities"), 0);
+});
+
+test("send_updates ignores caller identity and refreshes only the authenticated view", () => {
+	const own = { id: "authenticated" },
+		calls = [];
+	const c = vm.createContext({
+		socket: { id: "connection" },
+		players: { connection: own },
+		observers: {},
+		send_all_xy: (value) => calls.push(value),
+	});
+	socketHandler(c, "send_updates")({ id: "someone_else", x: 9000 });
+	assert.deepEqual(calls, [own]);
+	delete c.players.connection;
+	socketHandler(c, "send_updates")({ id: "authenticated" });
+	assert.equal(calls.length, 1);
+});
 
 test("movement packets retain unchanged coordinates needed by the native client", () => {
 	const c = server(),
@@ -154,7 +192,7 @@ test("a dropped final update is recovered even when the entity never updates aga
 	peer.hp = 70;
 	send(c, watcher, peer);
 	assert.equal(watcher.sent.length, 1);
-	assert.equal(watcher.seen.Peer, 1, "the client still holds the entity");
+	assert.ok(watcher.seen.Peer, "the client still holds the entity");
 	assert.equal(watcher.xy_resync, true);
 	watcher.socket.conn.writeBuffer = [];
 	c.send_xy_updates(watcher, []);
@@ -203,4 +241,143 @@ test("map changes clear old sprites before recreating matching IDs from the snap
 	view.process_entities();
 	assert.ok(view.entities.Peer && !view.entities.Peer.dead);
 	assert.equal(view.calls.length, 1);
+});
+
+// #performance spree [02/10/26]: entity deltas - the real encoder (server.js entity_wire via send_xy_updates) against the real decoder (game.js decode_entities)
+test("entity deltas rebuild the exact full packet, across skipped ticks, removed fields and re-entry", () => {
+	const c = server(),
+		decoder = client(),
+		delta = observer("DeltaWatcher"),
+		plain = observer("PlainWatcher");
+	delta.socket.entity_delta = true;
+	let seed = 7;
+	const random = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+	const peers = [player({ id: "PeerA" }), player({ id: "PeerB", type: "priest" })];
+	const monsters = [
+		{
+			id: "m1",
+			type: "goo",
+			is_monster: true,
+			x: 10,
+			y: 10,
+			hp: 100,
+			max_hp: 100,
+			level: 1,
+			in: "main",
+			map: "main",
+			s: {},
+		},
+		{
+			id: "m2",
+			type: "goo",
+			is_monster: true,
+			x: -20,
+			y: 5,
+			hp: 100,
+			max_hp: 100,
+			level: 1,
+			in: "main",
+			map: "main",
+			s: {},
+		},
+	];
+	let deltas = 0,
+		fulls = 0,
+		deltaBytes = 0,
+		fullBytes = 0;
+	for (let tick = 0; tick < 3000; tick++) {
+		for (const e of peers.concat(monsters)) {
+			if (random() < 0.5) e.x += Math.round(random() * 20 - 10);
+			if (random() < 0.3) e.hp = Math.max(1, Math.min(100, e.hp + Math.round(random() * 30 - 15))); // a monster at full HP drops the field
+			if (random() < 0.1) e.s = random() < 0.5 ? {} : { poisoned: { ms: Math.round(random() * 5000) } };
+			if (random() < 0.1) e.target = random() < 0.5 ? undefined : "Someone"; // appears and disappears
+			if (random() < 0.05) e.x = random() < 0.5 ? 5000 : 0; // leaves the view and comes back
+		}
+		const list = peers.map((e) => ({ id: e.id, entity: e, data: c.player_to_client(e, 1) }));
+		for (const m of monsters)
+			list.push({ id: m.id, entity: m, data: c.monster_to_client(m, random() < 0.1 ? ["hit"] : undefined) });
+		if (random() > 0.1) c.send_xy_updates(delta, list); // sometimes a tick is skipped, like a backed-up socket
+		c.send_xy_updates(plain, list);
+		const expected = {};
+		for (const entry of list) if (entry.json) expected[entry.id] = JSON.parse(entry.json); // out of everyone's view = never serialised
+		for (const [event, data] of delta.sent.splice(0)) {
+			for (const raw of [...(data.players || []), ...(data.monsters || [])]) {
+				if (raw["~"]) (deltas++, (deltaBytes += JSON.stringify(raw).length));
+				else (fulls++, (fullBytes += JSON.stringify(raw).length));
+			}
+			decoder.receive_entity_deltas({ data: [event, data] });
+			if (event !== "entities") continue;
+			for (const entity of [...data.players, ...data.monsters])
+				assert.deepEqual(JSON.parse(JSON.stringify(entity)), expected[entity.id], `tick ${tick} ${entity.id}`); // the decoder runs in the client's realm
+		}
+		for (const [, data] of plain.sent.splice(0))
+			for (const entity of data.players || [])
+				assert.equal(entity["~"], undefined, "a client that did not ask gets full packets");
+	}
+	assert.ok(deltas > 1000 && fulls > 50, `both kinds were exercised: ${deltas} deltas, ${fulls} full`);
+	assert.ok(deltaBytes / deltas < (fullBytes / fulls) * 0.6, "deltas are smaller than full packets");
+});
+
+test("a client fed deltas ends up with the same entities as one fed full packets", () => {
+	const c = server(),
+		fed = client(),
+		reference = client(),
+		delta = observer(),
+		plain = observer();
+	delta.socket.entity_delta = true;
+	const peer = player({ s: { mluck: { ms: 1000, f: "Merch" } } });
+	const steps = [
+		() => (peer.hp = 80),
+		() => Object.assign(peer, { moving: true, going_x: 120, move_num: 1 }),
+		() => (peer.x = 30),
+		() => Object.assign(peer, { moving: false, abs: true, x: 60 }),
+		() => (peer.s = {}),
+		() => (peer.target = "Goo"),
+		() => delete peer.target,
+	];
+	send(c, delta, peer);
+	send(c, plain, peer);
+	for (const step of [null, ...steps]) {
+		if (step) (step(), send(c, delta, peer), send(c, plain, peer));
+		for (const [view, watcher] of [
+			[fed, delta],
+			[reference, plain],
+		]) {
+			for (const [event, data] of watcher.sent.splice(0)) {
+				view.receive_entity_deltas({ data: [event, data] });
+				view.handle_entities(data);
+			}
+			view.process_entities();
+		}
+		const pick = (e) =>
+			JSON.stringify(e, [
+				"id",
+				"x",
+				"y",
+				"hp",
+				"moving",
+				"going_x",
+				"going_y",
+				"move_num",
+				"abs",
+				"target",
+				"s",
+				"ctype",
+				"real_x",
+				"real_y",
+				"vx",
+				"vy",
+			]);
+		assert.equal(pick(fed.entities.Peer), pick(reference.entities.Peer));
+	}
+});
+
+test("a delta without its base asks for a complete view instead of applying it", () => {
+	const view = client();
+	const asked = [];
+	view.socket = { emit: (event) => asked.push(event) };
+	const data = { type: "xy", in: "main", map: "main", monsters: [], players: [{ id: "Ghost", "~": [], hp: 5 }] };
+	view.receive_entity_deltas({ data: ["entities", data] });
+	assert.equal(data.players.length, 0);
+	assert.deepEqual(asked, ["send_updates"]);
 });

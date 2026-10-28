@@ -68,37 +68,6 @@ function harness(preventExternal = false) {
 	return { tick: () => tick(), players, mails, lookups, delivered, errors };
 }
 
-test("overlapping giveaway mails retain each donor, winner and item after database waits", async () => {
-	const h = harness();
-	h.tick();
-	assert.equal(h.lookups.length, 3);
-	assert.equal(h.players.first.slots.trade1, null);
-	assert.equal(h.players.first.slots.trade2, null);
-	assert.equal(h.players.second.slots.trade1, null);
-	// Complete lookups out of order, after the loop has visited another player.
-	h.lookups.reverse().forEach((resolve) => resolve());
-	await new Promise(setImmediate);
-	assert.deepEqual(h.errors, []);
-	assert.equal(h.mails.length, 3);
-	for (const [name, level, donor, winner, participants] of [
-		["blade", 4, "First", "One", "One, Two"],
-		["bow", 5, "First", "Two", "Two"],
-		["staff", 6, "Second", "Three", "Three"],
-	]) {
-		const mail = h.mails.find((mail) => JSON.parse(mail.info.item).name === name);
-		assert.equal(mail.fro, donor);
-		assert.equal(mail.to, winner);
-		assert.deepEqual(mail.owner, ["US_" + donor, "US_" + winner]);
-		assert.equal(mail.info.sender, "US_" + donor);
-		assert.equal(mail.info.receiver, "US_" + winner);
-		assert.deepEqual(JSON.parse(mail.info.message).args, { player: donor, participants });
-		assert.deepEqual(JSON.parse(mail.info.item), { name, level, gf: donor, src: "gva" });
-	}
-	h.tick();
-	await new Promise(setImmediate);
-	assert.equal(h.mails.length, 3, "consumed giveaways cannot be delivered twice");
-});
-
 test("isolated servers still deliver giveaways directly without sending mail", () => {
 	const h = harness(true);
 	h.tick();

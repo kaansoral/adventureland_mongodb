@@ -35,7 +35,7 @@ A release, with parts of real ones:
 			key: "cave",                  // or phrase: "update.14_09_26.cave" to reuse an existing phrase
 			title: "Cave of Many Dreams",
 			note: "A new dungeon for your party of up to 3. ...",
-			image: { src: "/images/comics/cave/1.png?v=4", width: 480, height: 270, localized: true },
+			image: { src: "/images/comics/cave/1.png?v=4", width: 480, height: 270, localized: true },   // localized: <folder>/<code>/<file> per language, same width; the height may differ
 		},
 		{
 			key: "rime_djinn",
@@ -70,7 +70,7 @@ A release, with parts of real ones:
 | `priority` | Which release the UPDATE button shows. See [Priority](#priority). |
 | `title` | Short, names the main things. A release without a title is listed but never raises the UPDATE button. |
 | `note` | Optional summary. Skip it when the highlights say it all. |
-| `cover` | Any reference (below). A monster, NPC or item reads best. |
+| `cover` | Required for a titled release. Use a reference (below) with an image, such as an item, monster or NPC. Older releases without a cover use the first item, monster or NPC in their highlights. |
 | `highlights` | The story of the release: usually 1 to 4 sections. Each needs `key` (or `phrase`), and any of `title`, `note`, `show`, `image`. |
 | `changes` | The change list. `sync` writes most of it. |
 | `quiet` | Definitions that changed but must not be listed yet, with the reason. `check` accepts them. |

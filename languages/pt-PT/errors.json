@@ -83,5 +83,9 @@
 	"error.cant_delete_map_in_use": "Não é possível apagar um mapa que esteja em uso.",
 	"error.code_too_large": "Este script é demasiado grande. Cada espaço CODE pode conter até 1 MiB (1.048.576 bytes) de texto UTF-8.",
 	"error.code_storage_full": "O teu armazenamento de CODE está cheio. Exporta e elimina os scripts que não usas antes de guardares mais código.",
-	"error.code_rate_limited": "Estás a guardar CODE com demasiada frequência. Espera um pouco e tenta novamente."
+	"error.code_rate_limited": "Estás a guardar CODE com demasiada frequência. Espera um pouco e tenta novamente.",
+	"error.item_changed": "O objeto mudou. Tenta novamente.",
+	"error.mail_item_untaken": "Recolhe o anexo antes de apagar esta mensagem.",
+	"error.mail_sender_limit": "Esta personagem já tem 20 anexos de correio por recolher enviados pela tua conta. Tem de recolher alguns antes de poderes enviar outro.",
+	"error.mailbox_full": "Esta personagem já tem 200 anexos de correio por recolher. Tem de recolher alguns antes de poderes enviar outro."
 }

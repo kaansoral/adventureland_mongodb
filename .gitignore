@@ -4,6 +4,9 @@
 /common
 /secretsandconfig
 
+# Assets awaiting import review
+/images/TOIMPORT/
+
 # Node
 /node_modules/
 /node/node_modules/
@@ -17,6 +20,9 @@ package-lock.json
 # Private runtime sources and tests
 /node/bots/
 /node/test/bots_*.test.js
+
+# Private production administration notes
+/ADMIN.md
 
 *.py
 *.pyc

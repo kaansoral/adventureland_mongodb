@@ -259,108 +259,45 @@ test("disconnect during the existing unlock read cannot mount a bank", async () 
 });
 
 function inventorySetup() {
-	const G = require("./helpers/design"),
-		events = [],
-		replies = [];
+	const G = require("./helpers/design"), events = [], replies = [];
 	const socket = { id: "A", calls: [], emit: (event, data) => events.push({ event, data: structuredClone(data) }) };
 	const player = {
-		id: "A",
-		name: "A",
-		type: "merchant",
-		socket,
-		owner: "US_owner",
-		map: "bank",
-		in: "bank",
-		level: 20,
-		xp: 0,
-		hp: 100,
-		mp: 100,
-		gold: 100,
-		cash: 0,
-		items: Array(42).fill(null),
-		slots: {},
-		cslots: {},
-		s: {},
-		p: {},
-		user: { gold: 1000, items0: [] },
-		targets_p: 0,
-		targets_m: 0,
-		targets_u: 0,
+		id: "A", name: "A", type: "merchant", socket, owner: "US_owner", map: "bank", in: "bank",
+		level: 20, xp: 0, hp: 100, mp: 100, gold: 100, cash: 0,
+		items: Array(42).fill(null), slots: {}, cslots: {}, s: {}, p: {},
+		user: { gold: 1000, items0: [] }, targets_p: 0, targets_m: 0, targets_u: 0,
 	};
 	const context = vm.createContext({
-		...G,
-		G,
-		console,
-		socket,
-		current_socket: socket,
-		players: { A: player },
-		mode: {},
-		gameplay: "normal",
-		goldm: 1,
-		luckm: 1,
-		xpm: 1,
-		perfc: { cps: 0 },
-		call_modifier: 1,
-		add_call_cost() {},
-		market_patron_observe() {},
-		recalculate_vxy() {},
-		server_log() {},
+		...G, G, console, socket, current_socket: socket, players: { A: player },
+		mode: {}, gameplay: "normal", goldm: 1, luckm: 1, xpm: 1, perfc: { cps: 0 },
+		call_modifier: 1, add_call_cost() {}, market_patron_observe() {}, recalculate_vxy() {}, server_log() {},
 		fail_response: (reason) => replies.push({ failed: true, reason }),
 		success_response: (data) => replies.push({ success: true, ...structuredClone(data) }),
 	});
-	const source = read("node/server.js"),
-		functions = read("node/server_functions.js");
-	vm.runInContext(
-		source.slice(source.indexOf("var stat_to_attr ="), source.indexOf("function calculate_player_stats")),
-		context,
-	);
-	vm.runInContext(
-		functions.slice(functions.indexOf("var item_p_ignore ="), functions.indexOf("function cache_item(")),
-		context,
-	);
+	const source = read("node/server.js"), functions = read("node/server_functions.js");
+	vm.runInContext(source.slice(source.indexOf("var stat_to_attr ="), source.indexOf("function calculate_player_stats")), context);
+	vm.runInContext(functions.slice(functions.indexOf("var item_p_ignore ="), functions.indexOf("function cache_item(")), context);
 	load(context, "js/old_common_functions.js", ["can_stack", "can_add_item"]);
 	load(context, "node/server_functions.js", ["cache_item", "init_bank", "get_call_cost", "anniversary_deliver"]);
-	load(context, "node/server.js", [
-		"calculate_player_stats",
-		"calculate_common_stats",
-		"player_to_client",
-		"resend",
-		"create_new_item",
-		"add_item",
-		"bank_add_item",
-		"consume",
-		"consume_one",
-	]);
+	load(context, "node/server.js", ["calculate_player_stats", "calculate_common_stats", "player_to_client", "resend", "create_new_item", "add_item", "bank_add_item", "consume", "consume_one"]);
 	function refresh() {
 		player.citems = player.items.map((item) => context.cache_item(item));
 		context.init_bank(player);
 		context.calculate_player_stats(player);
 	}
 	refresh();
-	return {
-		context,
-		player,
-		events,
-		replies,
-		refresh,
-		bank: socketHandler(context, "bank"),
-		activate: socketHandler(context, "activate"),
-	};
+	return { context, player, events, replies, refresh, bank: socketHandler(context, "bank"), activate: socketHandler(context, "activate") };
 }
 
 test("anniversary overflow can be banked without selecting or losing the last normal item", () => {
-	const h = inventorySetup(),
-		p = h.player;
+	const h = inventorySetup(), p = h.player;
 	p.items = Array.from({ length: 42 }, () => ({ name: "coat", level: 0 }));
 	p.items[41].level = 9;
 	h.refresh();
 	h.context.anniversary_deliver(p, ["slice_strawberry", "anniversarygift"]);
 	assert.equal(p.items.length, 44);
 	assert.equal(p.esize, -2);
-	for (const [inv, name] of [
-		[42, "slice_strawberry"],
-		[43, "anniversarygift"],
-	]) {
+	for (const [inv, name] of [[42, "slice_strawberry"], [43, "anniversarygift"]]) {
 		h.bank({ operation: "swap", pack: "items0", inv, str: -1 });
 		assert.equal(h.replies.at(-1).inv, inv);
 		assert.equal(p.user.items0.at(-1).name, name);
@@ -373,8 +310,7 @@ test("anniversary overflow can be banked without selecting or losing the last no
 });
 
 test("manual bank swaps use the selected overflow item and preserve both items", () => {
-	const h = inventorySetup(),
-		p = h.player;
+	const h = inventorySetup(), p = h.player;
 	p.items[41] = { name: "coat", level: 9 };
 	p.items[42] = { name: "anniversarygift", q: 3 };
 	p.user.items0[5] = { name: "hpot0", q: 10 };
@@ -391,21 +327,8 @@ test("manual bank swaps use the selected overflow item and preserve both items",
 });
 
 test("banking rejects invalid indices and empty overflow destinations without changing items", () => {
-	for (const [inv, str] of [
-		[-2, 0],
-		[1000000, 0],
-		[42, 0],
-		[0, 42],
-		[0, -2],
-		[0.5, 0],
-		["0oops", 0],
-		[null, 0],
-		[[], 0],
-		[Infinity, 0],
-		[-1, -1],
-	]) {
-		const h = inventorySetup(),
-			p = h.player;
+	for (const [inv, str] of [[-2, 0], [1000000, 0], [42, 0], [0, 42], [0, -2], [0.5, 0], ["0oops", 0], [null, 0], [[], 0], [Infinity, 0], [-1, -1]]) {
+		const h = inventorySetup(), p = h.player;
 		p.items[0] = { name: "coat", level: 9, v: "kept", m: "kept" };
 		p.items[43] = { name: "anniversarygift", q: 1 };
 		p.user.items0[0] = { name: "hpot0", q: 10 };
@@ -418,15 +341,11 @@ test("banking rejects invalid indices and empty overflow destinations without ch
 });
 
 test("bank retrieval cannot add capacity while overflow is present, but existing stacks still work", () => {
-	const h = inventorySetup(),
-		p = h.player;
+	const h = inventorySetup(), p = h.player;
 	p.items = Array.from({ length: 43 }, () => ({ name: "coat", level: 0 }));
 	p.items[0] = null;
 	p.items[42] = { name: "hpot0", q: 3 };
-	p.user.items0 = [
-		{ name: "hpot0", q: 2 },
-		{ name: "anniversarygift", q: 1 },
-	];
+	p.user.items0 = [{ name: "hpot0", q: 2 }, { name: "anniversarygift", q: 1 }];
 	h.refresh();
 	assert.equal(p.esize, 0);
 	h.bank({ operation: "swap", pack: "items0", inv: 0, str: 1 });
@@ -440,8 +359,7 @@ test("bank retrieval cannot add capacity while overflow is present, but existing
 });
 
 test("failed bank deposits leave overflow rewards and their metadata intact", () => {
-	const h = inventorySetup(),
-		p = h.player;
+	const h = inventorySetup(), p = h.player;
 	p.items[42] = { name: "anniversarygift", q: 1, v: "kept", m: "kept" };
 	p.user.items0 = Array.from({ length: 42 }, () => ({ name: "coat", level: 0 }));
 	h.refresh();
@@ -452,13 +370,9 @@ test("failed bank deposits leave overflow rewards and their metadata intact", ()
 });
 
 test("both floor keys publish the free bank pack immediately, preserving any existing contents", () => {
-	for (const [key, floor, pack] of [
-		["bkey", "bank_b", "items8"],
-		["ukey", "bank_u", "items24"],
-	]) {
+	for (const [key, floor, pack] of [["bkey", "bank_b", "items8"], ["ukey", "bank_u", "items24"]]) {
 		for (const existing of [false, true]) {
-			const h = inventorySetup(),
-				p = h.player;
+			const h = inventorySetup(), p = h.player;
 			p.items[0] = { name: key, q: 2 };
 			if (existing) p.user[pack] = [{ name: "coat", level: 9, l: "l" }];
 			h.refresh();
@@ -478,8 +392,7 @@ test("both floor keys publish the free bank pack immediately, preserving any exi
 });
 
 test("automatic deposits retain normal stacking and strip PvP metadata only on a successful transfer", () => {
-	const h = inventorySetup(),
-		p = h.player;
+	const h = inventorySetup(), p = h.player;
 	p.items[42] = { name: "anniversarygift", q: 2, v: "pvp", m: "luck" };
 	p.user.items0 = Array.from({ length: 42 }, () => ({ name: "coat", level: 0 }));
 	p.user.items0[7] = { name: "anniversarygift", q: 3 };
@@ -495,30 +408,15 @@ test("automatic deposits retain normal stacking and strip PvP metadata only on a
 
 test("overflow deposits still require an owned pack on the mounted floor and an unblocked item", () => {
 	for (const change of [
-		(p) => {
-			p.user = null;
-		},
-		(p) => {
-			p.mounting = new Date();
-		},
-		(p) => {
-			p.unmounting = new Date();
-		},
-		(p) => {
-			p.map = "bank_b";
-		},
-		(p) => {
-			delete p.user.items0;
-		},
-		(p) => {
-			p.items[42].b = true;
-		},
-		(p) => {
-			p.items[42].name = "placeholder";
-		},
+		(p) => { p.user = null; },
+		(p) => { p.mounting = new Date(); },
+		(p) => { p.unmounting = new Date(); },
+		(p) => { p.map = "bank_b"; },
+		(p) => { delete p.user.items0; },
+		(p) => { p.items[42].b = true; },
+		(p) => { p.items[42].name = "placeholder"; },
 	]) {
-		const h = inventorySetup(),
-			p = h.player;
+		const h = inventorySetup(), p = h.player;
 		p.items[42] = { name: "anniversarygift", q: 1 };
 		h.refresh();
 		change(p);
@@ -531,8 +429,7 @@ test("overflow deposits still require an owned pack on the mounted floor and an 
 
 test("bank keys still require the mounted bank and cannot consume a second key for an unlocked floor", () => {
 	for (const user of [null, { gold: 1000, items0: [], unlocked: { bank_b: true } }]) {
-		const h = inventorySetup(),
-			p = h.player;
+		const h = inventorySetup(), p = h.player;
 		p.items[0] = { name: "bkey", q: 2 };
 		h.refresh();
 		p.user = user;

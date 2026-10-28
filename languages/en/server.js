@@ -563,6 +563,8 @@ module.exports = {
 	"server.mail.friend_token_message": "For inviting {name} to Adventure Land!",
 	// adventure_functions.js referral reward system mail subject. Friend Token is the item name.
 	"server.mail.friend_token_subject": "A Friend Token!",
+	// Newcomer mail after the first Steam link settles. {name} is the chosen inviter's account name.
+	"server.mail.friend_token_welcome": "For connecting with {name} in Adventure Land!",
 	// node/server.js giveaway system mail. {player} is the host character and {participants} is the list of entrant names.
 	"server.mail.giveaway_message": "Congratulations, you won {player}'s giveaway. Participants were: {participants}",
 	// node/server.js giveaway system mail subject.
@@ -687,13 +689,13 @@ module.exports["server.cave.guard_camp"] = "Guard camp";
 // Title of Nera’s revival conversation. Preserve Amber as the item name.
 module.exports["server.cave.revival_title"] = "A Hand in the Dark";
 // Nera’s revival dialogue. In-place revival costs 1 Amber per fallen player; doorway revival is free. Preserve Amber as the item name.
-module.exports["server.cave.revival_text"] = "I can revive you here for 1 Amber each from the shared purse. Or I can bring you back at this floor’s doorway for free. You have lost no gold or experience.";
+module.exports["server.cave.revival_text"] = "I can revive you here for 1 Amber each from the shared purse, or bring you back at this floor’s doorway for free. You have lost no gold or experience.";
 // Free revival vote button; returns fallen characters to this floor entrance. Preserve Amber as the item name.
 module.exports["server.cave.revival_landing"] = "Revive at the doorway — free";
 // Revival result; amber is the total actually deducted from the shared purse. Preserve Amber as the item name.
-module.exports["server.cave.revive_paid"] = "Back on your feet. The shared purse paid {amber} Amber.";
+module.exports["server.cave.revive_paid"] = "You are back on your feet. The shared purse paid {amber} Amber.";
 // Free revival result. Preserve Amber as the item name.
-module.exports["server.cave.revive_free"] = "You're back at the doorway. No Amber spent.";
+module.exports["server.cave.revive_free"] = "You are back at the doorway. No Amber spent.";
 // Vote result when the required shared tool is no longer available. Preserve Amber as the item name.
 module.exports["server.cave.need_borrowed_tool"] = "You need the borrowed pry bar for that.";
 // Vote result when shared gold or Amber no longer covers the cost. Preserve Amber as the item name.
@@ -705,7 +707,7 @@ module.exports["server.cave.last_seal"] = "The last seal is open. Your reward is
 // The party declined an encounter offer. Preserve Amber as the item name.
 module.exports["server.cave.decline"] = "You turn down the offer and move on.";
 // Encounter result; seconds is time removed from the run clock. Preserve Amber as the item name.
-module.exports["server.cave.time_loss"] = "You get through, but lose {seconds} seconds of cave time.";
+module.exports["server.cave.time_loss"] = "You get through, but it costs you {seconds} seconds of cave time.";
 // A third helper is replaced with 2 Amber. Preserve Amber as the item name.
 module.exports["server.cave.helpers_full"] = "You already have two helpers. Take 2 Amber instead.";
 // Base revival option before its current total cost is shown. Preserve Amber as the item name.
@@ -751,7 +753,7 @@ module.exports["server.cave.die_loss"] = "No win this time.";
 module.exports["server.cave.hunt_empty"] = "There are no more tracks here. The hunt is off.";
 
 // Cave notice. count is the actual spawned pack size.
-module.exports["server.cave.hunt_start"] = "The hunt has started. Kill all {count} marked monsters before the hunt timer runs out. Your progress is below the cave clock.";
+module.exports["server.cave.hunt_start"] = "The hunt is on. Kill all {count} marked monsters before the timer runs out. Your progress is shown below the cave clock.";
 
 // Cave notice. Borrowed shared tool, not an inventory item.
 module.exports["server.cave.supply_tool"] = "Added to the party’s cave supplies: a pry bar. You can use it at a later encounter.";
@@ -763,34 +765,34 @@ module.exports["server.cave.supply_lamp"] = "Added to the party’s cave supplie
 module.exports["server.cave.supply_message"] = "Added to the party’s cave supplies: a message for a guard. You can use it at a later encounter.";
 
 // Cave notice. Decoy automatically distracts the next engaged patrol.
-module.exports["server.cave.supply_decoy"] = "Added to the party’s cave supplies: a patrol distraction. You can use it at a later encounter.";
+module.exports["server.cave.supply_decoy"] = "Added to the party’s cave supplies: a patrol distraction. It will work at a later encounter.";
 
 // Cave notice. Preserve Amber.
 module.exports["server.cave.moths_chest"] = "The moths lead you to an Amber chest.";
 
 // Cave notice. Nonlethal practice fight; seconds is its deadline duration.
-module.exports["server.cave.practice_start"] = "The practice fight has started. Beat {npc} in {seconds} seconds. Neither side can land a killing blow.";
+module.exports["server.cave.practice_start"] = "The practice fight begins. Beat {npc} within {seconds} seconds. Neither side can land a killing blow.";
 
 // Cave notice. The revealed destinations are displayed in the existing Directions list. Translate Directions and CAVE INFO to match the cave UI. The packet retains the old English list of names for CODE.
-module.exports["server.cave.reveal_rooms"] = "I marked {count} destinations. Use Directions in CAVE INFO to get there.";
+module.exports["server.cave.reveal_rooms"] = "I marked {count} destinations. Use Directions in CAVE INFO to find them.";
 
 // Cave notice. No new room can be revealed.
-module.exports["server.cave.reveal_none"] = "You have already checked the rooms I know about.";
+module.exports["server.cave.reveal_none"] = "You have already checked every room I know about.";
 
 // Cave notice. Named merchant explains the single item.
-module.exports["server.cave.story_merchant"] = "{npc}: I bought a dusty shop's last crate. This was the only thing inside. Take a look if you like.";
+module.exports["server.cave.story_merchant"] = "{npc}: I bought the last crate from a dusty old shop. This was the only thing inside. Take a look if you like.";
 
 // Cave notice. Preserve Loaded Die. One reroll per visit, only after losing.
-module.exports["server.cave.story_dice"] = "{npc}: A Loaded Die gives you one second roll per visit when your first roll loses. Wear it before you play.";
+module.exports["server.cave.story_dice"] = "{npc}: A Loaded Die gives you one second roll per visit if your first roll loses. Wear it before you play.";
 
 // Cave notice. Preserve Last Word. Describes the rogue’s equipped weapons.
-module.exports["server.cave.story_dagger"] = "{npc}: Look for a hooked blade with an ivory edge and a red spine. That's Last Word. He carries it beside a plain dagger.";
+module.exports["server.cave.story_dagger"] = "{npc}: Look for a hooked blade with an ivory edge and a red spine. That is Last Word. He carries it beside a plain dagger.";
 
 // Cave notice. Cave gold stays in the cave; unspent Amber is settled when someone leaves. Preserve Amber.
-module.exports["server.cave.story_send"] = "{npc}: Spend cave gold before you leave. The Amber you keep goes to the party when someone leaves.";
+module.exports["server.cave.story_send"] = "{npc}: Spend your cave gold before you leave; it stays here. Any Amber you keep goes to the party when someone leaves.";
 
 // Cave notice. Named traveler gives general cave advice.
-module.exports["server.cave.story_stairs"] = "{npc}: The stairs change every time I come here. I follow the torches.";
+module.exports["server.cave.story_stairs"] = "{npc}: The stairs move every time I come here. I just follow the torches.";
 
 // Cave notice. Subject of trusted cave reward mail only; never player-authored mail.
 module.exports["server.cave.mail_subject"] = "From the cave";
@@ -802,7 +804,7 @@ module.exports["server.cave.mail_body"] = "I kept your cave reward safe. Collect
 module.exports["server.cave.cue_decoy"] = "The patrol follows the distraction.";
 
 // Cave notice. Guard joins as an ally.
-module.exports["server.cave.cue_join"] = "The captain sent you? I'm coming with you.";
+module.exports["server.cave.cue_join"] = "The captain sent you? All right, I’m coming with you.";
 
 // Cave notice. Named boss or broodmother notices a player.
 module.exports["server.cave.cue_turn"] = "{npc} turns toward you!";
@@ -817,25 +819,25 @@ module.exports["server.cave.cue_help"] = "Help me!";
 module.exports["server.cave.cue_nest"] = "The nest is hatching!";
 
 // Cave notice. Harvest is ready at the farmer’s original location. Preserve Amber.
-module.exports["server.cave.harvest"] = "The farmer leaves an Amber chest where you met.";
+module.exports["server.cave.harvest"] = "The farmer leaves an Amber chest where you first met.";
 
 // Cave notice. camp is a nested translated camp-name reference.
-module.exports["server.cave.wave_wait"] = "{camp}: Something is moving in the nest. Another pack in 10 seconds.";
+module.exports["server.cave.wave_wait"] = "{camp}: Something is moving in the nest. Another pack arrives in 10 seconds.";
 
 // Cave notice. wave is the ordinal number of the emerging pack; camp is a translated name.
 module.exports["server.cave.wave_next"] = "{camp}: Pack {wave} is coming out of the nest!";
 
 // Cave notice. Named practice partner congratulates the party.
-module.exports["server.cave.practice_win"] = "{npc}: You win! Here is your reward.";
+module.exports["server.cave.practice_win"] = "{npc}: You win. Here’s your reward.";
 
 // Cave notice. Named practice partner announces timeout without reward.
-module.exports["server.cave.practice_timeout"] = "{npc}: Time is up. No prize this time.";
+module.exports["server.cave.practice_timeout"] = "{npc}: Time’s up. No prize this time.";
 
 // Cave notice. Hunt deadline expired without completing it.
-module.exports["server.cave.hunt_timeout"] = "Time is up. The hunt paid nothing.";
+module.exports["server.cave.hunt_timeout"] = "Time’s up. The hunt pays nothing.";
 
 // Cave notice. The rogue turns on the party.
-module.exports["server.cave.rogue_betrayal"] = "The rogue vanishes behind you. His daggers are already moving.";
+module.exports["server.cave.rogue_betrayal"] = "The rogue slips behind you. His daggers are already moving.";
 
 // Cave notice. The escorted NPC has died.
 module.exports["server.cave.escort_lost"] = "{npc} did not make it. The escort is over.";
@@ -851,3 +853,48 @@ module.exports["server.cave.amber_limit"] = "All {amount} Cave Amber for this vi
 
 // Login refused because the character has a poker hand on a different live server. Reconnect there or wait for that hand to end.
 module.exports["server.game_error.poker_hand_active"] = "Your poker hand is still running on another server. Wait for it to finish, or reconnect there.";
+
+// Server message to everyone when Halloween ends after its last day, November 2 (design/event_flags.js). Candy, Pumpkin Stems and every Halloween recipe stay usable, Xyn still exchanges candy, and the Witch's Cipher goes on as one of the rotating daily events. Keep Halloween, Xyn, the Witch and Witch's Cipher unchanged.
+module.exports["server.server_message.season_ended.halloween"] = "Halloween is over! Candy, Pumpkin Stems and all Halloween recipes remain usable. Xyn still exchanges Candy, and the Witch's Cipher continues as a rotating daily event.";
+
+// Server message to everyone when a Witch's Cipher round starts at the Witch in Spooky Forest. Ingredients drop from monsters in four regions for 20 minutes; anyone can brew, nobody joins. Keep the Witch, Witch's Cipher and Spooky Forest unchanged.
+module.exports["server.witchcipher.started"] = "The Witch's Cipher has begun! Gather ingredients from monsters across four regions and brew at the Witch in Spooky Forest.";
+
+// Server message when the 20-minute gathering ends: ingredients stop dropping, brewing stays open for 8 more minutes.
+module.exports["server.witchcipher.gathering_over"] = "Ingredients have stopped dropping! 8 minutes left to brew at the Witch.";
+
+// Server message when someone cracks the Witch's recipe. {player} is a character name. The cracked recipe stays above the clue board and a new secret recipe starts at once.
+module.exports["server.witchcipher.cracked"] = "{player} cracked the Witch's recipe! The Witch forgot it, and a new recipe has begun.";
+
+// Server message when a Witch's Cipher round ends after the recipe was cracked. The next round is twelve hours later, so not necessarily tomorrow.
+module.exports["server.witchcipher.over"] = "The Witch's Cipher is over! The cauldron goes quiet until the next round.";
+
+// Server message when the Witch's Cipher ends and nobody found the recipe. {recipe} lists the five ingredient names in order.
+module.exports["server.witchcipher.over_uncracked"] = "Nobody cracked the Witch's recipe! It was {recipe}.";
+
+// Brew refused: the account brewed its first mix today on another realm. {server} is that realm, like EUII.
+module.exports["server.witchcipher.claimed_elsewhere"] = "Your account already brewed in the Witch's Cipher on {server} today.";
+
+// Server message when Graveyard Rising starts in Spooky Town's graveyard (every 2 hours during Halloween). Keep Graveyard Rising and Spooky Town unchanged.
+module.exports["server.graveyard.started"] = "Graveyard Rising! Zombies and Ghouls are climbing out of Spooky Town's graves!";
+
+// Game log for players in Spooky Town when a new wave of Zombies and Ghouls rises. {wave} and {waves} are numbers.
+module.exports["server.graveyard.wave"] = "Wave {wave} of {waves} rises from the graves!";
+
+// Server message when the waves end and the Gargoyle on the graveyard monument wakes. Gargoyle is a monster name.
+module.exports["server.graveyard.gargoyle"] = "The Gargoyle awakens at the graveyard monument!";
+
+// Server message when the Gargoyle is defeated and Graveyard Rising ends.
+module.exports["server.graveyard.defeated"] = "The Gargoyle crumbles! The graveyard is quiet again.";
+
+// Server message when Graveyard Rising ends without the Gargoyle being defeated.
+module.exports["server.graveyard.over"] = "The dead settle back into their graves.";
+
+// Floating text over a character who got a treat from a Trick or Treat door. Very short.
+module.exports["server.floating.treat"] = "Treat!";
+
+// Floating text over a character who got a trick (Spooked!) from a Trick or Treat door. Very short.
+module.exports["server.floating.boo"] = "Boo!";
+
+// Game log on the account's 40th Trick or Treat knock: the reward is a CX Jar holding the Sinister Laugh emote. Keep Sinister Laugh and CX Jar unchanged.
+module.exports["server.trickortreat.laugh"] = "40 stamps! The Witch gives you a CX Jar containing the Sinister Laugh emote!";

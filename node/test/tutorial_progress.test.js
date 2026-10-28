@@ -432,12 +432,12 @@ function actionRuntime() {
 		});
 		return pending;
 	};
-	load(c, "js/functions.js", ["tut"]);
+	load(c, "js/functions.js", ["tut", "equipment_sound"]);
 	load(c, "js/old_common_functions.js", ["point_distance"]);
 	load(c, "js/game.js", ["tutorial_npc", "update_tutorial_state"]);
 	const source = read("js/game.js"),
 		handlers = {};
-	for (const event of ["game_response", "game_log"]) {
+	for (const event of ["game_response", "game_log", "party_update"]) {
 		const start = source.indexOf('\tsocket.on("' + event + '",');
 		assert.notEqual(start, -1);
 		c.socket.on = (name, handler) => {
@@ -465,6 +465,17 @@ test("earlier gameplay persists quietly, deduplicates, and never credits unread 
 	assert.equal(r.get().info.tutorial_key, "lore");
 	await r.request({ task: "read_helloworld" });
 	assert.deepEqual(r.saved(), ["inventory"]);
+});
+
+test("one party invite, join request or membership persists credit without an acceptance requirement", async () => {
+	for (const event of ["invite", "request", "membership"]) {
+		const r = actionRuntime();
+		if (event === "membership") r.handlers.party_update({ list: ["Mira", "Finn"] });
+		else r.handlers.game_log({ phrase: event === "invite" ? "server.game_log.invited_to_party" : "server.game_log.requested_to_join_s_party", message: "Confirmed" });
+		await r.flush();
+		assert.ok(r.saved().includes("com"), event);
+		assert.equal(r.context.docs.tutorial.find(lesson => lesson.key === "parties-friends").tasks.join(","), "com");
+	}
 });
 
 test("simultaneous task saves retry conflicts without losing credit or replaying actions", async () => {

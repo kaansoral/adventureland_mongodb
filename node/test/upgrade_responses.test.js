@@ -52,6 +52,8 @@ test("upgrade and compound terminal replies settle before drawing and settle onl
 		["compound_fail", "compound"],
 		["upgrade_invalid_offering", "upgrade", "offering"],
 		["compound_no_scroll", "compound", "no_scroll"],
+		["upgrade_cant", "upgrade", "not_upgradeable"],
+		["compound_cant", "compound", "not_combinable"],
 	]) {
 		const h = fixture();
 		let outcome;
@@ -80,6 +82,22 @@ test("upgrade and compound terminal replies settle before drawing and settle onl
 		await Promise.resolve();
 		assert.equal(next, false, "drawing settled the next request");
 	}
+});
+
+test("compound with an emptied first slot returns the server rejection without throwing", async () => {
+	const h = fixture();
+	h.c.character.items = [null, { name: "strring", level: 0 }, { name: "strring", level: 0 }];
+	let request;
+	h.c.socket.emit = (event, data) => {
+		request = { event, data };
+	};
+	load(h.c, "js/functions.js", ["compound"]);
+	const pending = h.c.compound(0, 1, 2, 3, null, true);
+	assert.equal(request.event, "compound");
+	assert.equal(request.data.clevel, 0);
+	h.receive("compound_mismatch");
+	await assert.rejects(pending, (error) => error.reason === "mismatch");
+	assert.equal(h.c.deferreds.compound, undefined);
 });
 
 test("stale upgrade completion leaves pending CODE requests alone", async () => {

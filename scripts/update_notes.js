@@ -19,7 +19,7 @@ const languages_dir = path.join(root, "languages");
 const production_data = "https://adventure.land/data.js";
 
 // The files main.js evaluates before it serves /data.js, in the same order.
-const design_files = ["projectiles", "animations", "achievements", "game_design", "games", "conditions", "sprites", "dimensions", "monsters", "maps", "npcs", "multipliers", "items", "classes", "levels", "upgrades", "drops", "skills", "events", "recipes", "titles", "tokens", "cosmetics"];
+const design_files = ["event_flags", "projectiles", "animations", "achievements", "game_design", "games", "conditions", "sprites", "dimensions", "monsters", "maps", "npcs", "multipliers", "items", "classes", "levels", "upgrades", "drops", "skills", "events", "recipes", "titles", "tokens", "cosmetics"];
 
 // data.js section -> ledger type, one entry per key.
 const section_types = {
@@ -108,8 +108,9 @@ function load_definitions(revision) {
 		vm.runInContext(source, context, { filename: name + ".js" });
 	}
 	vm.runInContext(read_source(revision, "docs/directory.js"), context, { filename: "directory.js" });
+	if (context.apply_event_flags) context.apply_event_flags(context, context.get_event_flags());
 	const G = {};
-	for (const name of Object.keys(section_types).concat(table_sections, ["drops", "cosmetics", "docs", "sets", "sprites", "dimensions", "positions", "imagesets", "animations", "projectiles", "monster_gold"]))
+	for (const name of Object.keys(section_types).concat(table_sections, ["event_flags", "drops", "cosmetics", "docs", "sets", "sprites", "dimensions", "positions", "imagesets", "animations", "projectiles", "monster_gold"]))
 		if (context[name] !== undefined) G[name] = context[name];
 	return plain(G);
 }
@@ -413,6 +414,7 @@ function validate(notes, G) {
 		if (!/^\[\d\d\/\d\d\/\d\d\]$/.test(note.date || "")) problem(note, "date must be [DD/MM/YY]");
 		if (note.title !== undefined && (typeof note.title !== "string" || !note.title.trim())) problem(note, "title must be text");
 		if (note.priority !== undefined && ![0, 1, 2].includes(note.priority)) problem(note, "priority must be 0 (minor), 1 or 2 (big)");
+		if (note.deployed === null && note.title !== undefined && !note.cover) problem(note, "a titled release needs a cover for the UPDATE button");
 		if (note.cover !== undefined) check_ref(note, note.cover, "cover");
 		const keys = new Set();
 		(note.highlights || []).forEach((highlight, h) => {

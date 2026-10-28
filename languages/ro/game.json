@@ -317,7 +317,7 @@
 	"game.clicks_away": "Distanță în clicuri: {dist}",
 	"game.echoes": "Ecouri: {length}",
 	"game.clicks": "Clicuri: {c}",
-	"npc.home.set_offer": "Acesta nu este serverul tău de origine. Locuiești în {home}. Pe tărâmul de origine, contribuția la luptele cooperative valorează mai mult și primești recompense speciale; schimbarea rapidă între personaje care nu sunt negustori le suspendă timp de 30 de minute. Vrei să alegi acest server ca server de origine?",
+	"npc.home.set_offer": "Acesta nu este serverul tău de acasă. Ești rezident pe {home}. Tărâmurile de acasă oferă contribuție cooperativă mai puternică și recompense speciale; schimbarea rapidă a serverelor cu personaje care nu sunt Negustori suspendă acele beneficii timp de 30 de minute. Vrei să setezi acest server drept casa ta?",
 	"npc.yes": "Da!",
 	"npc.home.current": "Acesta este serverul tău de origine. Ajutorul tău împotriva monștrilor cooperativi contează mai mult aici, iar unii monștri oferă recompense suplimentare pentru localnici. Dacă intri aici după ce un alt personaj care nu este negustor vizitează un server diferit, primești Oboseala tărâmurilor timp de 30 de minute. Recompensele obișnuite continuă în timp ce te acomodezi.",
 	"npc.bless_server.offer": "Vrei să binecuvântezi întregul server pentru 3 zile?",
@@ -459,5 +459,6 @@
 	"response.trade_swap_match": "Obiectul nu corespunde ofertei",
 	"response.trade_swap_space": "Negustorul nu are loc",
 	"game.trade_history.traded": "- Ai schimbat '{item}' cu {player} pe '{received}'",
-	"response.transport_need_items": "Ai nevoie de: {items}"
+	"response.transport_need_items": "Ai nevoie de: {items}",
+	"combat.emote.hehehe": "HEHEHE"
 }

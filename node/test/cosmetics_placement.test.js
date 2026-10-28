@@ -363,3 +363,36 @@ test("cosmetics use square native emote tiles without changing skill actions or 
 	assert.match(inventory, /margin: 2px; border: 2px solid gray; height: 46px; width: 46px; background: black/);
 	assert.match(inventory, /padding:3px;/);
 });
+
+test("weapon and projectile glow follows level swaps, other weapons and unequipping", () => {
+	const { c, actor } = runtime();
+	c.PIXI.filters = { OutlineFilter: class {}, GlowFilter: class {} };
+	c.item_upgrade_glow = (item) => (item.level >= 9 ? { name: item.name, level: item.level } : undefined);
+	const sprite = actor("mabw", {}, 0, 0);
+	c.G.items.blade = { type: "weapon", skin: "blade" };
+	c.G.items.staff = { type: "weapon", skin: "staff" };
+	c.G.positions = { blade: [0], staff: [0] };
+	c.new_attacks = true;
+	c.new_sprite = (name, stype) => ({ name, stype, anchor: { set() {} }, scale: { set() {} }, y: 0, x: 0 });
+	sprite.slots = { mainhand: { name: "blade", level: 9 } };
+	c.cosmetics_logic(sprite);
+	assert.equal(sprite.filter_wglow.level, 9);
+	const glowing = sprite.cxc.weaponblade;
+	sprite.slots.mainhand.level = 0;
+	c.cosmetics_logic(sprite);
+	assert.notEqual(sprite.cxc.weaponblade, glowing);
+	assert.equal(sprite.filter_wglow, null);
+	assert(sprite.cxc.weaponblade.filters[0] instanceof c.PIXI.filters.OutlineFilter);
+	sprite.slots.mainhand.level = 10;
+	c.cosmetics_logic(sprite);
+	assert.equal(sprite.filter_wglow.level, 10);
+	sprite.slots.mainhand = { name: "staff", level: 0 };
+	c.cosmetics_logic(sprite);
+	assert.equal(sprite.filter_wglow, null);
+	sprite.slots.mainhand.level = 10;
+	c.cosmetics_logic(sprite);
+	assert.equal(sprite.filter_wglow.name, "staff");
+	sprite.slots.mainhand = null;
+	c.cosmetics_logic(sprite);
+	assert.equal(sprite.filter_wglow, null);
+});

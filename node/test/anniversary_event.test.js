@@ -13,8 +13,20 @@ const functions = fs.readFileSync(path.join(root, "node/server_functions.js"), "
 const shared = fs.readFileSync(path.join(root, "js/old_common_functions.js"), "utf8");
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const design = localize(vm.createContext({ console: { log() {} } }));
-for (const name of ["multipliers", "conditions", "items", "npcs", "drops", "recipes", "maps"])
+for (const name of [
+	"event_flags",
+	"multipliers",
+	"conditions",
+	"items",
+	"npcs",
+	"drops",
+	"recipes",
+	"maps",
+	"monsters",
+	"events",
+])
 	vm.runInContext(fs.readFileSync(path.join(root, "design", name + ".js"), "utf8"), design, { filename: name });
+design.apply_event_flags(design, { ...design.get_event_flags(), anniversary: true, halloween: false });
 
 test("seasonal tick follows the manual switch and keeps Mira available on PvP", () => {
 	const emitted = [],
@@ -264,11 +276,12 @@ test("account flavor is deterministic, bounded and independent of character or r
 	for (const count of counts.values()) assert(count > 850 && count < 1150);
 });
 test("anniversary defaults off and has no automatic date cutoff or reactivation", () => {
-	const start = source.indexOf("var events = {");
+	const start = source.indexOf("var events = Object.assign(");
 	assert(start >= 0);
-	const context = { is_pvp: false };
+	const context = { is_pvp: false }; // The server selects its gameplay mode after initializing events.
 	localize(vm.createContext(context));
-	vm.runInContext(source.slice(start, source.indexOf("\n};", start) + 3), context);
+	vm.runInContext(fs.readFileSync(path.join(root, "design/event_flags.js"), "utf8"), context);
+	vm.runInContext(source.slice(start, source.indexOf("var dailies =", start)), context);
 	vm.runInContext(definition(functions, "anniversary_is_active"), context);
 	assert.equal(context.anniversary_is_active(), false, "the event stays ended across restarts");
 	context.events.anniversary = true;

@@ -1,4 +1,4 @@
-var extra_shells = 0;
+var extra_shells = 25;
 var multipliers = {
 	extra_shells: extra_shells,
 	shells_to_gold: 32000,

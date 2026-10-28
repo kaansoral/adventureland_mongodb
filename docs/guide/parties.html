@@ -1,0 +1,53 @@
+<div class="party-guide">
+<div class="title">{{ phrase("docs.guide.parties.size_heading") }}</div>
+<p>{{ phrase("docs.guide.parties.size") }}</p>
+
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.parties.join_heading") }}</div>
+<p>{{ phrase("docs.guide.parties.join") }}</p>
+<div class="title">{{ phrase("docs.guide.parties.practice_title") }}</div>
+{% include "htmls/party_example.html" %}
+
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.parties.share_heading") }}</div>
+<p>{{ phrase("docs.guide.parties.share") }}</p>
+<div class="party-share-example"></div>
+
+<p>{{ phrase("docs.guide.parties.steam_connections") }}</p>
+
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.parties.xp_heading") }}</div>
+<p>{{ phrase("docs.guide.parties.xp") }}</p>
+
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.parties.loot_heading") }}</div>
+<p>{{ phrase("docs.guide.parties.loot") }}</p>
+
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.parties.merchants_heading") }}</div>
+<p>{{ phrase("docs.guide.parties.merchants") }}</p>
+<p>
+<span class="dlabel" onclick="open_guide('merchant',get_guide_url('merchant'))">{{ phrase("directory.guide.merchant.title") }}</span>
+<span class="dlabel" onclick="open_guide('encouragement',get_guide_url('encouragement'))">{{ phrase("directory.guide.encouragement.title") }}</span>
+</p>
+<p>{{ phrase("docs.guide.parties.exceptions") }}</p>
+<p><span class="dlabel" onclick="open_guide('cave-of-many-dreams',get_guide_url('cave-of-many-dreams'))">{{ phrase("directory.guide.cave-of-many-dreams.title") }}</span></p>
+
+<div class="divider"></div>
+<div class="title">CODE</div>
+<p>{{ phrase("docs.guide.parties.code_intro") }}</p>
+<div class="code" id="party-read-code">show_json(get_party());</div>
+<div class="code" id="party-invite-code">send_party_invite("TrustedFriend").catch(show_json);</div>
+<p>
+<span class="rlabel" onclick="load_documentation('get_party')">get_party</span> ·
+<span class="rlabel" onclick="load_documentation('show_json')">show_json</span> ·
+<span class="rlabel" onclick="load_documentation('send_party_invite')">send_party_invite</span> ·
+<span class="rlabel" onclick="load_documentation('accept_party_invite')">accept_party_invite</span> ·
+<span class="rlabel" onclick="load_documentation('leave_party')">leave_party</span>
+</p>
+</div>
+<style>
+	.party-guide .title { color: #467956; font-size: 36px; margin-top: 15px; }
+	.party-guide .divider { margin: 15px -26px 0; height: 5px; background-color: #a2a2a2; }
+</style>
+<script>render_party_examples();</script>

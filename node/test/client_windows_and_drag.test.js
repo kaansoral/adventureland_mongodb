@@ -1,75 +1,8 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
 const vm = require("node:vm");
-const { read, extract, load } = require("./helpers/server_vm");
-
-function drag_runtime(source_data, target_data) {
-	const nodes = new Map(),
-		packets = [],
-		deferred = [],
-		dialogs = [];
-	const source_parent = { html: "source" };
-	const source = { id: "citem0", data: source_data, parent: source_parent };
-	const target = { data: target_data, drop: true, html: "target" };
-	nodes.set(source.id, source);
-	// Empty jQuery collections remain truthy, including .parent() of an empty
-	// collection. Keep that behavior here to catch an unbounded ancestor search.
-	function $(node) {
-		return {
-			length: node ? 1 : 0,
-			attr: (name) => (node && name === "ondrop" && node.drop ? "on_drop(event)" : undefined),
-			data: (name) => node && node.data && node.data[name],
-			parent: () => $(node && node.parent),
-			closest(selector) {
-				assert.equal(selector, "[ondrop]");
-				let ancestor = node;
-				while (ancestor && !ancestor.drop) ancestor = ancestor.parent;
-				return $(ancestor);
-			},
-			html(value) {
-				if (value === undefined) return node && node.html;
-				if (node) node.html = value;
-			},
-			all_html: () => node && node.id,
-			get: () => node,
-			focus() {},
-		};
-	}
-	const context = vm.createContext({
-		$,
-		console,
-		document: { getElementById: (id) => nodes.get(id) },
-		character: { items: [{ name: "sword" }, { name: "staff" }], slots: {} },
-		G: { items: { sword: { type: "weapon" } } },
-		socket: { emit: (name, args) => packets.push([name, JSON.parse(JSON.stringify(args))]) },
-		push_deferred: (name) => deferred.push(name),
-		cache_i: [],
-		cache_slots: {},
-		last_rendered_items: "items0",
-		is_mobile: false,
-		trade_slots: ["trade1"],
-		in_arr: (value, array) => array.includes(value),
-		render_item: (selector, args) => dialogs.push([selector, args]),
-		xtarget: null,
-		ctarget: null,
-	});
-	vm.runInContext(extract(read("js/html.js"), "on_drop"), context);
-	function drop(id = source.id, onto = { parent: target }) {
-		context.event = {
-			target: onto,
-			dataTransfer: {
-				getData: (type) => {
-					assert.equal(type, "text");
-					return id;
-				},
-			},
-			preventDefault() {},
-			stopPropagation() {},
-		};
-		vm.runInContext("on_drop(event)", context, { timeout: 100 });
-	}
-	return { context, source, target, packets, deferred, dialogs, drop };
-}
+const { read, load } = require("./helpers/server_vm");
+const { drag_runtime } = require("./helpers/client_drag");
 
 test("inventory, bank and equipment drops keep their existing socket requests, including slot zero", () => {
 	for (const [source, target, event, packet] of [
@@ -78,13 +11,22 @@ test("inventory, bank and equipment drops keep their existing socket requests, i
 		[{ snum: 0 }, { cnum: 0 }, "bank", { operation: "swap", inv: 0, str: 0, pack: "items0" }],
 		[{ snum: 0 }, { strnum: 1 }, "bank", { operation: "move", a: 0, b: 1, pack: "items0" }],
 		[{ inum: 0 }, { slot: "mainhand" }, "equip", { num: 0, slot: "mainhand" }],
-		[{ sname: "mainhand" }, { cnum: 0 }, "unequip", { slot: "mainhand", position: 0 }],
+		[{ sname: "mainhand" }, { cnum: 0 }, "equip", { num: 0, slot: "mainhand", swap: true }],
 	]) {
 		const runtime = drag_runtime(source, target);
 		runtime.drop();
 		assert.deepEqual(runtime.packets, [[event, packet]]);
 		assert.deepEqual(runtime.deferred, [event]);
 	}
+});
+
+test("equipment dragged onto an occupied bag slot swaps; an empty slot still unequips", () => {
+	const h = drag_runtime({ sname: "offhand" }, { cnum: 1 });
+	h.drop();
+	assert.deepEqual(h.packets, [["equip", { num: 1, slot: "offhand", swap: true }]]);
+	h.context.character.items[1] = null;
+	h.drop();
+	assert.deepEqual(h.packets[1], ["unequip", { slot: "offhand", position: 1 }]);
 });
 
 test("trade drops still open the existing listing dialogue without moving the item", () => {
@@ -201,7 +143,7 @@ test("main and both secondary-window commands retain the native drag/drop fix an
 	assert.match(source, /async fn create_subwindow[\s\S]*?open_subwindow\(app, &state/);
 	assert.match(
 		source,
-		/async fn create_character_window[\s\S]*?open_subwindow\(app, &state, character_window_url\(&url\)\?\)/,
+		/async fn create_character_window[\s\S]*?character_window_url\(&url, compatibility_mode\(&state\)\)\?;\s*open_subwindow\(app, &state, url\)/,
 	);
 	assert.match(source, /if open_subwindows >= 4/);
 	assert.ok(

@@ -66,6 +66,8 @@ function extract(source, name) {
 }
 
 function localize(context) {
+	if (!context.is_account_blocked)
+		vm.runInContext(extract(read("adventure_functions.js"), "is_account_blocked"), context);
 	if (!context.crypto) context.crypto = require("node:crypto");
 	if (!context.localization) context.localization = localization;
 	if (!context.phrase) context.phrase = phrase;

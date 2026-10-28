@@ -268,8 +268,9 @@ test("the real data assembler retains public definitions, aliases, ignored maps 
 			return id === "MP_main" ? map : null;
 		},
 	});
-	for (const file of ["design/games.js", "design/precomputed_images.js", "docs/directory.js"])
+	for (const file of ["design/event_flags.js", "design/games.js", "design/precomputed_images.js", "docs/directory.js"])
 		vm.runInContext(read(file), context);
+	context.active_event_flags = context.get_event_flags();
 	context.maps = {
 		main: { key: "main" },
 		alias: { key: "main" },
@@ -287,6 +288,7 @@ test("the real data assembler retains public definitions, aliases, ignored maps 
 	assert.equal(data.version, 123);
 	assert.equal(data.images, context.precomputed.images);
 	assert.equal(data.docs, context.docs);
+	assert.equal(data.event_flags, context.active_event_flags);
 	assert.equal(data.get, undefined);
 	assert.equal(data.require, undefined);
 });

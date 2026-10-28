@@ -859,7 +859,7 @@ function cave_option_unavailable(run, room, option) {
 	if ((option.cost || 0) > run.cave.gold || (option.amber || 0) > run.cave.amber) return "server.cave.purse_short";
 	if (
 		(["guide", "escort", "hire", "cover"].includes(option.effect) || option.outcomes?.some((o) => o.join || o.ally)) &&
-		!room.npc?.zone_actor.follow &&
+		!room.npc?.zone_actor?.follow &&
 		cave_helpers_full(run)
 	)
 		return "server.cave.helpers_limit";
@@ -1185,6 +1185,7 @@ function cave_apply(run, room, option) {
 	cave_complete(run, room);
 }
 function cave_set_side(actor, side) {
+	cave_target(actor, null);
 	actor.zone_actor.side = side;
 	actor.zone_actor.idle = side === "neutral";
 	actor.xp = ["enemy", "predator", "duel_left", "duel_right"].includes(side)
@@ -1359,6 +1360,16 @@ function cave_cue(run, actor, text, kind) {
 	for (var p of cave_players(run))
 		if (p.map === actor.map) p.socket.emit("cave", { type: "cue", state: cave_snapshot(run, p), cue });
 }
+function cave_target(actor, target) {
+	// Native monster.target identifies a player. Cave actors can also fight each other.
+	var name = target?.is_player ? target.name : null;
+	if ((actor.target || null) === name) return;
+	if (actor.target) reduce_targets(actor.target, actor);
+	actor.target = name;
+	if (name) increase_targets(target, actor);
+	actor.u = true;
+	actor.cid = (actor.cid || 0) + 1;
+}
 function cave_actor_tick(run, actor, now, people) {
 	var ai = actor.zone_actor;
 	if (actor.dead || is_disabled(actor)) return;
@@ -1367,6 +1378,7 @@ function cave_actor_tick(run, actor, now, people) {
 		.filter((p) => !p.rip && p.map === actor.map)
 		.sort((a, b) => simple_distance(actor, a) - simple_distance(actor, b));
 	if (ai.depart_at) {
+		cave_target(actor, null);
 		if (now < ai.depart_at) return;
 		var door = G.maps[actor.map].spawns[0];
 		actor.zone_stats.speed = 90;
@@ -1379,6 +1391,7 @@ function cave_actor_tick(run, actor, now, people) {
 		return;
 	}
 	if (ai.idle) {
+		cave_target(actor, null);
 		var listener = nearby[0];
 		if (listener && simple_distance(actor, listener) < 160) {
 			if (ai.citizen && now < (ai.chat_until || 0)) {
@@ -1448,6 +1461,7 @@ function cave_actor_tick(run, actor, now, people) {
 		}
 	}
 	if (ai.distracted_until > now) {
+		cave_target(actor, null);
 		cave_move(actor, ai.distracted_to, now);
 		return;
 	}
@@ -1501,7 +1515,7 @@ function cave_actor_tick(run, actor, now, people) {
 	var candidates = nearby.filter((p) => p.hp > 0 && !is_invinc(p) && !is_invis(p) && cave_hostile(actor, p));
 	for (var other of room.actors)
 		if (other !== actor && !other.dead && cave_hostile(actor, other)) candidates.push(other);
-	if (ai.prey && !ai.prey.dead && cave_hostile(actor, ai.prey)) candidates = [ai.prey];
+	if (ai.prey && candidates.includes(ai.prey)) candidates = [ai.prey];
 	candidates = candidates.filter((p) => p.in === actor.in && simple_distance(actor, p) <= (ai.betrayed ? 200 : 650));
 	candidates.sort(
 		(a, b) =>
@@ -1509,6 +1523,7 @@ function cave_actor_tick(run, actor, now, people) {
 			simple_distance(actor, a) - simple_distance(actor, b),
 	);
 	var target = candidates[0];
+	cave_target(actor, target);
 	if (!target) {
 		if (ai.follow && nearby[0] && simple_distance(actor, nearby[0]) > 65) cave_move(actor, nearby[0], now);
 		else if (simple_distance(actor, ai.home) > 80) cave_move(actor, ai.home, now);
@@ -1562,15 +1577,7 @@ function cave_tick(run, now) {
 		if (occupied) {
 			room.last_near = now;
 			if (room.saved) cave_resume_floor(run, room.map, room);
-		} else if (
-			!room.saved &&
-			room.started &&
-			now - (room.last_near || (room.last_near = now)) > 15000 &&
-			!room.actors.some((a) => !a.dead && (a.zone_actor.follow || a.zone_actor.depart_at || cave_seen(a, people))) &&
-			!(state.vote && !state.vote.resolved && state.vote.room === room)
-		) {
-			cave_suspend_floor(run, room.map, room);
-		}
+		} else if (!room.last_near) room.last_near = now;
 		if (room.saved) continue;
 		var nearby = people.filter((p) => !p.rip && p.map === room.map && simple_distance(p, room) < 280);
 		if (!room.started && occupied) cave_activate(run, room);
@@ -1711,6 +1718,17 @@ function cave_tick(run, now) {
 			cave_complete(run, room);
 		}
 	}
+	// Resolve deaths and encounter outcomes before sleeping rooms discard their actors.
+	for (var room of state.rooms)
+		if (
+			generated_maps[room.map] &&
+			!room.saved &&
+			room.started &&
+			now - room.last_near > 15000 &&
+			!room.actors.some((a) => !a.dead && (a.zone_actor.follow || a.zone_actor.depart_at || cave_seen(a, people))) &&
+			!(state.vote && !state.vote.resolved && state.vote.room === room)
+		)
+			cave_suspend_floor(run, room.map, room);
 	for (var actor of state.actors) cave_actor_tick(run, actor, now, people);
 	if (now - state.last_publish >= 1000) cave_publish(run);
 }
@@ -1757,7 +1775,7 @@ function cave_snapshot(run, player) {
 				id: r.id,
 				x: r.kind === "citizen" ? (r.npc?.x ?? r.x) : r.x,
 				y: r.kind === "citizen" ? (r.npc?.y ?? r.y) : r.y,
-				done: r.encounter?.kind === "merchant" ? !!r.stock?.sold : r.done,
+				done: r.done,
 				floor: r.floor,
 				kind: r.kind,
 				required: !!r.required,
@@ -1852,7 +1870,14 @@ function cave_snapshot(run, player) {
 					service: v.room.decision === "recipes" ? "recipes" : null,
 					shop: v.room.stock
 						? Object.assign(
-								{ room: v.room.id, nearby: player.map === v.room.map && simple_distance(player, v.room.npc) <= 160 },
+								{
+									room: v.room.id,
+									nearby:
+										!!v.room.npc &&
+										!v.room.npc.dead &&
+										player.map === v.room.map &&
+										simple_distance(player, v.room.npc) <= 160,
+								},
 								v.room.stock,
 							)
 						: null,
@@ -1996,6 +2021,7 @@ function cave_suspend_floor(run, map, onlyRoom) {
 		room.saved = room.actors
 			.filter((a) => !a.dead)
 			.map((a) => {
+				cave_target(a, null);
 				var state = {};
 				for (var field of fields) if (a[field] !== undefined) state[field] = JSON.parse(JSON.stringify(a[field]));
 				state.zone_actor = Object.assign({}, a.zone_actor, { prey: a.zone_actor.prey?.id || null });

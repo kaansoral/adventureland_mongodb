@@ -317,7 +317,7 @@
 	"game.clicks_away": "{dist} klik ang layo",
 	"game.echoes": "{length} alingawngaw",
 	"game.clicks": "{c} klik",
-	"npc.home.set_offer": "Hindi ito ang tahanan mong server. Residente ka ng {home}. Mas malaki ang pagkilala sa pagtutulungan at may mga espesyal na gantimpala sa tahanang mundo; pansamantalang nawawala ang mga ito nang 30 minuto kapag mabilis kang nagpapalit ng mga karakter na hindi mangangalakal. Gusto mo bang gawing tahanan ang server na ito?",
+	"npc.home.set_offer": "Hindi ito ang home server mo. Residente ka ng {home}. Nagbibigay ang home realms ng mas malakas na cooperative credit at espesyal na rewards; pansamantalang pinatitigil ng mabilis na pagpapalit ng mga karakter na hindi mangangalakal ang mga benepisyong iyon sa loob ng 30 minuto. Gusto mo bang itakda ang server na ito bilang home mo?",
 	"npc.yes": "Oo!",
 	"npc.home.current": "Ito ang tahanan mong server. Mas malaki ang halaga rito ng tulong mo laban sa mga halimaw na sama-samang nilalabanan, at may dagdag na gantimpala sa tahanan mula sa ilang halimaw. Ang paglipat dito matapos bumisita sa ibang server ang isa pang karakter na hindi mangangalakal ay nagdudulot ng 30 minutong Pagod sa Paglipat ng Mundo. Patuloy ang karaniwang mga gantimpala habang naninibago ka.",
 	"npc.bless_server.offer": "Gusto mo bang biyayaan ang buong server sa loob ng 3 araw?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Hindi tugma ang gamit na iyan sa alok",
 	"response.trade_swap_space": "Walang puwang ang mangangalakal",
 	"game.trade_history.traded": "- Ipinagpalit ang '{item}' kay {player} para sa '{received}'",
-	"response.transport_need_items": "Kailangan: {items}"
+	"response.transport_need_items": "Kailangan: {items}",
+	"combat.emote.hehehe": "HEHEHE"
 }

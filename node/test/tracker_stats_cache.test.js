@@ -52,6 +52,8 @@ function fixture() {
 		recalculate_vxy() {},
 		drop_something() {},
 		monster_hunt_logic() {},
+		witch_cipher_kill() {},
+		graveyard_fallen() {},
 		calculate_monster_score: () => 1,
 		encouragement_xp: (player, monster, xp) => xp,
 		resend() {},

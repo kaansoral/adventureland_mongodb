@@ -620,6 +620,31 @@ fn open_steam_checkout(
     Ok("browser".to_string())
 }
 
+#[derive(Serialize)]
+struct SteamFriend {
+    id: String,
+    name: String,
+}
+
+#[tauri::command]
+fn get_steam_friends(state: State<'_, AppState>) -> Result<Vec<SteamFriend>, String> {
+    let client = state
+        .steam_client
+        .lock()
+        .map_err(|_| "Steam unavailable")?
+        .clone()
+        .ok_or("Steam unavailable")?;
+    Ok(client
+        .friends()
+        .get_friends(steamworks::FriendFlags::IMMEDIATE)
+        .into_iter()
+        .map(|friend| SteamFriend {
+            id: friend.id().raw().to_string(),
+            name: friend.name(),
+        })
+        .collect())
+}
+
 #[tauri::command]
 async fn open_devtools(window: WebviewWindow) {
     window.open_devtools();
@@ -719,7 +744,7 @@ pub fn run() {
                 init_steam(steam_client, steam_ticket, steam_error, steam_purchases, language);
             });
 
-            WebviewWindowBuilder::new(app, "loader", tauri::WebviewUrl::App("loader.html".into()))
+            let _loader = WebviewWindowBuilder::new(app, "loader", tauri::WebviewUrl::App("loader.html".into()))
                 .title("Adventure Land")
                 .inner_size(WIN_WIDTH, WIN_HEIGHT)
                 .visible(false)
@@ -730,6 +755,21 @@ pub fn run() {
                     }
                 })
                 .build()?;
+
+            // Linux windows share this WebContext. Configure it before the game
+            // loads so CODE can import HTTP scripts, including from LAN servers.
+            // This trusts all HTTP origins; TLS checks and same-origin rules stay enabled.
+            #[cfg(target_os = "linux")]
+            if let Err(error) = _loader.with_webview(|webview| {
+                use webkit2gtk::{SecurityManagerExt, WebContextExt, WebViewExt};
+                if let Some(manager) = webview.inner().context().and_then(|context| context.security_manager()) {
+                    manager.register_uri_scheme_as_secure("http");
+                } else {
+                    eprintln!("[Tauri] HTTP scripts remain blocked: WebKit security manager unavailable");
+                }
+            }) {
+                eprintln!("[Tauri] HTTP scripts remain blocked: {error}");
+            }
 
             let page_load_handle = app.handle().clone();
             let main = WebviewWindowBuilder::new(
@@ -755,8 +795,12 @@ pub fn run() {
                     if !startup_page_finished(payload.url(), compatibility, state.compatibility_committed.load(Ordering::Relaxed)) {
                         return;
                     }
-                    state.startup_finished.store(true, Ordering::Relaxed);
                     let _ = window.set_title("Adventure Land");
+                    // Only hand off the loader once. Background reloads must not
+                    // raise the game window or take focus from another app.
+                    if state.startup_finished.swap(true, Ordering::Relaxed) {
+                        return;
+                    }
                     if let Some(loader) = page_load_handle.get_webview_window("loader") {
                         let _ = loader.close();
                     }
@@ -830,6 +874,7 @@ pub fn run() {
             enable_compatibility_mode,
             open_external,
             open_steam_checkout,
+            get_steam_friends,
             open_devtools,
             toggle_fullscreen,
             desktop::get_desktop_language,

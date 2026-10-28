@@ -158,6 +158,33 @@ test("ordinary logout clears legacy cookies even without an authenticated accoun
 	assert.equal(f.stats.sessions, 0);
 });
 
+test("password login rejects active account bans inside the session transaction", async () => {
+	for (const until of [undefined, new Date("9999-12-31T23:59:59.999Z"), new Date(Date.now() + 86400000)]) {
+		const f = setup("adventure.land");
+		// The initial email/password lookup is stale; the transaction sees the ban.
+		const current = f.records.get(f.user._id);
+		current.banned = true;
+		current.info.blocked_until = until;
+		const before = structuredClone(current);
+		const res = response(f.req);
+		const result = await f.context.signup_or_login_api({ req: f.req, res, email: "fixture@example.invalid", password: "fixturepassword", only_login: true });
+		assert.equal(result.reason, "banned");
+		assert.equal(res.getHeader("Set-Cookie"), undefined);
+		assert.equal(f.stats.writes, 0);
+		assert.deepEqual(f.records.get(f.user._id), before);
+	}
+});
+
+test("password login allows an expired timed ban", async () => {
+	const f = setup("adventure.land");
+	f.records.get(f.user._id).banned = true;
+	f.records.get(f.user._id).info.blocked_until = new Date(Date.now() - 1000);
+	const res = response(f.req);
+	const result = await f.context.signup_or_login_api({ req: f.req, res, email: "fixture@example.invalid", password: "fixturepassword", only_login: true });
+	assert.equal(result.success, true);
+	assert.ok(res.getHeader("Set-Cookie"));
+});
+
 test("logout everywhere preserves the bank rejection and leaves cookies intact after transaction failure", async () => {
 	for (const bank of [true, false]) {
 		const f = setup("cloudflare.adventure.land");

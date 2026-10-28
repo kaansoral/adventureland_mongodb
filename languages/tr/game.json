@@ -317,7 +317,7 @@
 	"game.clicks_away": "{dist} tık uzakta",
 	"game.echoes": "{length} yankı",
 	"game.clicks": "{c} tık",
-	"npc.home.set_offer": "Burası ana sunucun değil. Ana sunucun: {home}. Ana sunucunda ortak avlara katkın daha fazla sayılır ve özel ödüller alabilirsin; tüccar dışındaki karakterler arasında hızlı geçiş yapmak bunları 30 dakika duraklatır. Bu sunucuyu ana sunucun yapmak ister misin?",
+	"npc.home.set_offer": "Burası ana sunucunuz değil. {home} sakinisiniz. Ana diyarlar daha güçlü ortak katkı kredisi ve özel ödüller sunar; tüccar olmayan karakterleri hızla sunucular arasında değiştirmek bu faydaları 30 dakika duraklatır. Bu sunucuyu ana sunucunuz yapmak ister misiniz?",
 	"npc.yes": "Evet!",
 	"npc.home.current": "Burası ana sunucun. Ortak av canavarlarına karşı yardımın burada daha fazla sayılır ve bazı canavarlar ek ana sunucu ödülleri taşır. Tüccar olmayan başka bir karakterin farklı bir sunucuyu ziyaret ettikten sonra buraya geçersen 30 dakika Diyar Yorgunluğu yaşarsın. Alışma süren boyunca normal ödüller devam eder.",
 	"npc.bless_server.offer": "Tüm sunucuyu 3 günlüğüne kutsamak ister misin?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Bu eşya teklife uymuyor",
 	"response.trade_swap_space": "Tüccarda yer yok",
 	"game.trade_history.traded": "- '{item}', {player} adlı oyuncuyla '{received}' karşılığında takas edildi",
-	"response.transport_need_items": "Gereken: {items}"
+	"response.transport_need_items": "Gereken: {items}",
+	"combat.emote.hehehe": "HEHEHE"
 }

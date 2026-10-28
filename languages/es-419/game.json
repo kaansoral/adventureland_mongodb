@@ -317,7 +317,7 @@
 	"game.clicks_away": "Distancia en clics: {dist}",
 	"game.echoes": "Ecos: {length}",
 	"game.clicks": "Clics: {c}",
-	"npc.home.set_offer": "Este no es tu servidor de origen. Resides en {home}. Los mundos de origen dan más valor a tu ayuda en combates cooperativos y ofrecen recompensas especiales; cambiar rápidamente entre personajes que no sean mercaderes suspende ambos beneficios durante 30 minutos. ¿Quieres establecer este servidor como tu hogar?",
+	"npc.home.set_offer": "Este no es tu servidor de origen. Eres residente de {home}. Los mundos de origen ofrecen mayor crédito cooperativo y recompensas especiales; cambiar rápidamente personajes que no sean mercader pausa esos beneficios durante 30 minutos. ¿Quieres establecer este servidor como tu hogar?",
 	"npc.yes": "¡Sí!",
 	"npc.home.current": "Este es tu servidor de origen. Aquí tu ayuda contra monstruos cooperativos cuenta más y algunos monstruos llevan recompensas adicionales para los residentes. Si vienes aquí después de que otro personaje que no sea mercader visite un servidor distinto, sufrirás 30 minutos de Fatiga entre mundos. Seguirás recibiendo las recompensas normales mientras te adaptas.",
 	"npc.bless_server.offer": "¿Quieres bendecir todo el servidor durante 3 días?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Ese objeto no coincide con la oferta",
 	"response.trade_swap_space": "El mercader no tiene espacio",
 	"game.trade_history.traded": "- Intercambiaste '{item}' con {player} por '{received}'",
-	"response.transport_need_items": "Necesitas: {items}"
+	"response.transport_need_items": "Necesitas: {items}",
+	"combat.emote.hehehe": "JEJEJE"
 }

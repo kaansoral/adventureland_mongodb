@@ -83,5 +83,9 @@
 	"error.cant_delete_map_in_use": "Không thể xóa bản đồ đang được sử dụng.",
 	"error.code_too_large": "Tập lệnh này quá lớn. Mỗi ô CODE chứa được tối đa 1 MiB (1.048.576 byte) văn bản UTF-8.",
 	"error.code_storage_full": "Bộ nhớ CODE của bạn đã đầy. Hãy xuất rồi xóa các tập lệnh không dùng trước khi lưu thêm mã.",
-	"error.code_rate_limited": "Bạn đang lưu CODE quá thường xuyên. Hãy đợi một lát rồi thử lại."
+	"error.code_rate_limited": "Bạn đang lưu CODE quá thường xuyên. Hãy đợi một lát rồi thử lại.",
+	"error.item_changed": "Vật phẩm đã thay đổi. Hãy thử lại.",
+	"error.mail_item_untaken": "Hãy nhận vật phẩm đính kèm trước khi xóa thư này.",
+	"error.mail_sender_limit": "Nhân vật này đã có 20 tệp đính kèm thư chưa nhận từ tài khoản của bạn. Họ cần nhận bớt trước khi bạn có thể gửi thêm.",
+	"error.mailbox_full": "Nhân vật này đã có 200 tệp đính kèm thư chưa nhận. Họ cần nhận bớt trước khi bạn có thể gửi thêm."
 }

@@ -80,5 +80,5 @@ var titles={
 	},
 };
 
-// A single origin title preserves material stacks and never adds combat stats.
-titles.cavefound={type:"all_items",manual:true,misc:true,stackable:true,title:"Cave-found",source:"dreams"};
+// Keep the saved origin key and normal material stacking; equipped items add magic resistance.
+titles.cavefound={type:"all_items",manual:true,misc:true,stackable:true,title:"Cave",source:"dreams",resistance:5};

@@ -19,7 +19,8 @@
 	<div class="slimbutton" onclick="open_guide('cave-story', '/docs/ref/cave-story')">{{ phrase("docs.cave.story") }}</div>
 	<hr />
 	<h3>{{ phrase("docs.cave.loot_heading") }}</h3>
-	<p>{{ phrase("docs.cave.loot") }}</p>
+	<p>{{ phrase("docs.cave.loot", {title: phrase("title.cavefound.title")}) }}</p>
+	<p>{{ phrase("docs.cave.origin_bonus", {title: phrase("title.cavefound.title")}) }}</p>
 	<p>{{ phrase("docs.cave.purse") }}</p>
 	<p>{{ phrase("docs.cave.disconnect_purse") }}</p>
 	<p id="cave-currency-limits"></p>
@@ -62,6 +63,16 @@
 	<p>{{ phrase("docs.cave.safe_return") }}</p>
 	<hr />
 	<h3>{{ phrase("docs.cave.code_heading") }}</h3>
+	<p>{{ phrase("docs.cave.map_code") }}</p>
+	<!-- prettier-ignore -->
+	<div class="code" id="cave-map-code">var cave = character.cave;
+if (cave) show_json({ floor: cave.floor + 1, map: character.map });</div>
+	<p>{{ phrase("docs.cave.target_code") }}</p>
+	<!-- prettier-ignore -->
+	<div class="code" id="cave-target-code">var monster = get_nearest_monster({ target: character.name });
+if (monster) show_json({ id: monster.id, target: monster.target });</div>
+	<p><a href="/docs/code/character/reference">character</a> · <a href="/docs/code/functions/get_nearest_monster">get_nearest_monster</a></p>
+	<hr />
 	<p>{{ phrase("docs.cave.return_code") }}</p>
 	<!-- prettier-ignore -->
 	<div class="code">var visit = await cave_info();
@@ -140,6 +151,12 @@ show_json(crafted);</div>
 	<div class="code">var crafted = await auto_craft("cave_mothsteps");
 show_json(crafted);</div>
 	<p><a href="/docs/code/functions/auto_craft">auto_craft</a> · <a href="/docs/code/functions/craft">craft</a></p>
+	<hr />
+	<p>{{ phrase("docs.equipment.compound_orb", {item: "Loaded Die"}) }}</p>
+	<!-- prettier-ignore -->
+	<div class="code" id="cave-compound-code">var result = await compound(0, 1, 2, 3);
+show_json(result);</div>
+	<p><a href="/docs/code/functions/compound">compound</a></p>
 </div>
 <script>
 	$(function () {

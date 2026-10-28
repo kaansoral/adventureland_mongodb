@@ -317,7 +317,7 @@
 	"game.clicks_away": "Etäisyys: {dist} naksua",
 	"game.echoes": "Kaikuja: {length}",
 	"game.clicks": "Naksuja: {c}",
-	"npc.home.set_offer": "Tämä ei ole kotipalvelimesi. Kotisi on {home}. Kotimaailmassa saat enemmän hyvitystä yhteistyöstä ja erityispalkintoja. Nopea vaihtaminen muiden hahmojen kuin kauppiaiden välillä keskeyttää edut 30 minuutiksi. Haluatko asettaa tämän palvelimen kodiksesi?",
+	"npc.home.set_offer": "Tämä ei ole kotipalvelimesi. Kotisi on {home}. Kotimaailmat tarjoavat vahvemman yhteistyöhyvityksen ja erikoispalkintoja; muiden kuin Kauppias-hahmojen nopea vaihtaminen palvelimelta toiselle keskeyttää nämä edut 30 minuutiksi. Haluatko asettaa tämän palvelimen kodiksesi?",
 	"npc.yes": "Kyllä!",
 	"npc.home.current": "Tämä on kotipalvelimesi. Apusi yhteistyöhirviöitä vastaan lasketaan täällä suuremmaksi, ja joillakin hirviöillä on ylimääräisiä kotipalkintoja. Jos siirryt tänne toisen muun kuin kauppiashahmosi käytyä eri palvelimella, saat 30 minuutiksi Maailmaväsymyksen. Saat tavalliset palkinnot myös asettuessasi taloksi.",
 	"npc.bless_server.offer": "Haluatko siunata koko palvelimen 3 päiväksi?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Esine ei vastaa tarjousta",
 	"response.trade_swap_space": "Kauppiaalla ei ole tilaa",
 	"game.trade_history.traded": "- Vaihdoit '{item}', vaihtaja: {player}, sait: '{received}'",
-	"response.transport_need_items": "Tarvitaan: {items}"
+	"response.transport_need_items": "Tarvitaan: {items}",
+	"combat.emote.hehehe": "HEHEHE"
 }

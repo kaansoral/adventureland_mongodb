@@ -10,7 +10,7 @@ var items={
 		"s": 9999,
 		"g": 160,
 		"exclusive": true,
-		"explanation": "Cold to the touch. Warmth will not melt it."
+		"explanation": "Cold to the touch. Warmth won't melt it."
 	},
 	"covemantle":{
 		"type": "cape",
@@ -52,6 +52,8 @@ var items={
 		"int": 9,
 		"mp": 400,
 		"resistance": 60,
+		"compound": { "int": 1, "mp": 40, "resistance": 6 },
+		"grades": [0, 0, 6, 7],
 		"g": 240000,
 		"exclusive": true,
 		"cx": {
@@ -2238,6 +2240,55 @@ var armor={
 		"mp": 120,
 		"evasion": 2,
 		"luck": 3
+	},
+	// Witching Season armor: Witch's Parcels and the Witch's recipes make the gloves and boots,
+	// the Headless Horseman drops the helmet. The tier loop sets defenses, stat and grades.
+	// Mana cost reduction stays flat: nothing caps it, and existing gear can already pass 100% at its caps.
+	"hexweavegloves":{
+		"type":"gloves",
+		"tier":4,
+		"skin":"hexweavegloves",
+		"scroll":true,
+		"mp_reduction":20,
+		"upgrade":{},
+		"name":"Hexweave Gloves",
+		"explanation":"A pair of gloves stitched with a little witchcraft.",
+		"g":9600000,
+		"exclusive":true,
+		"cx":{"accent":"#E07A2E"},
+	},
+	// Candlelight keeps spirits at a distance: magical and pure attackers need a bigger crowd to scare you
+	// (Mr. Pumpkin's Jrs, the Jack-o Walkers, Boo Boos). The flame turns some burns.
+	"candleboots":{
+		"type":"shoes",
+		"tier":4,
+		"skin":"candleboots",
+		"scroll":true,
+		"firesistance":15,
+		"mcourage":3,
+		"pcourage":2,
+		"upgrade":{},
+		"name":"Candlewick Boots",
+		"explanation":"Boots with a little candlelight for dark paths.",
+		"g":9600000,
+		"exclusive":true,
+		"cx":{"accent":"#F5A623"},
+	},
+	"horsemanpumpkin":{
+		"type":"helmet",
+		"tier":3,
+		"skin":"horsemanpumpkin",
+		"scroll":true,
+		// Reflects magic: about 1 in 12 magical hits at +7
+		"reflection":5,
+		"speed":2,
+		"firesistance":10,
+		"upgrade":{"reflection":0.5},
+		"name":"Horseman's Pumpkin",
+		"explanation":"The Headless Horseman's rare helmet. Still grinning!",
+		"g":4800000,
+		"exclusive":true,
+		"cx":{"accent":"#F26B1D"},
 	},
 
 }
@@ -4689,7 +4740,7 @@ var weapons={
 		"g":48000,
 		"cx":{"accent":"#CBAE69","scale":0.5,"extension":true},
 		"name":"Locktooth",
-		"explanation":"It opens locks. Their owners usually object.",
+		"explanation":"It opens locks. Their owners tend to object.",
 		"exclusive":true
 	},
 	"cave_tunnelaxe":{
@@ -4704,7 +4755,7 @@ var weapons={
 			"apiercing": 2
 		},
 		"name": "Tunnel Axe",
-		"explanation": "A stout axe for roots, ribs and stubborn doors.",
+		"explanation": "A stout axe for roots, ribs, and stubborn doors.",
 		"g": 48000,
 		"exclusive": true,
 		"cx": {
@@ -6497,7 +6548,6 @@ var gems={
 		"a":true,
 		"s":true,
 		//"event":true,
-		//"quest":"mistletoe", #xmas
 	},
 	"candycane":{
 		"type":"gem",
@@ -6509,7 +6559,6 @@ var gems={
 		"s":true,
 		"a":true,
 		//"event":true,
-		//"quest":"candycane", #xmas
 	},
 	"marketparcel":{
 		"type":"gem",
@@ -6861,7 +6910,6 @@ var quest={
 		"g":3000,
 		"e":20,
 		"s":true,
-		//"quest":"ornament", #xmas
 	},
 	"lostearring":{
 		"type":"earring",
@@ -8064,6 +8112,15 @@ var sets={
 			"rpiercing":20,
 		},
 	},
+	"crookedkeys":{
+		"name":"Skeleton Keys",
+		"items":["crookedkey","crookedkey"],
+		"1":{
+
+		},
+		// A pair pierces 120/120 at +0: worth it from about 260 armor for a Warrior and 180 resistance for a Mage
+		"2":{"apiercing":80,"rpiercing":80},
+	},
 	"watchers":{
 		"name":"Watcher's Eyes",
 		"items":["watchersearring","watchersearring"],
@@ -9066,7 +9123,119 @@ var rare_drop_items={
 	},
 }
 
-var sub_dicts=[pots,armor,weapons,offhands,accessories,scrolls,premiums,gems,materials,collectables,misc,quest,orbs,elixirs,skill_items,crafting_items,pets,items40,rogue_ent_items,rare_drop_items];
+// The Witch's Cipher, a daily event at the Witch in Spooky Forest, and the gear she makes.
+// Ingredients, Parcels and every Witch recipe stay usable all year. exclusive keeps the gear
+// out of the Glitch pools; Parcels and the Witch's recipes are its only sources.
+var witch_items={
+	"verdantspore":{"type":"material","skin":"verdantspore","name":"Verdant Spore","explanation":"A strange little spore. The Witch needs it for her cauldron.","s":9999,"g":1200,"exclusive":true},
+	"frostscale":{"type":"material","skin":"frostscale","name":"Frost Scale","explanation":"Cold to the touch. The Witch can brew with it.","s":9999,"g":1200,"exclusive":true},
+	"embercoal":{"type":"material","skin":"embercoal","name":"Ember Coal","explanation":"Still warm! Toss it into the Witch's cauldron.","s":9999,"g":1200,"exclusive":true},
+	"gloomfeather":{"type":"material","skin":"gloomfeather","name":"Gloom Feather","explanation":"A spooky feather. Just what the Witch needs.","s":9999,"g":1200,"exclusive":true},
+	"witchparcel":{"type":"gem","skin":"witchparcel","name":"Witch's Parcel","explanation":"What's inside? Open it at the Witch, or save it for her recipes.","s":9999,"g":100,"e":1,"quest":"witch","exclusive":true,"cx":{"accent":"#9B6BC9"}},
+	"cipherdraught":{"type":"elixir","skin":"cipherdraught","skin_a":"cipherdraught","name":"Cipher Draught","explanation":"A lucky brew for two hours of better adventures.","luck":25,"gold":10,"xp":10,"speed":2,"duration":2,"s":9999,"g":60000,"exclusive":true},
+	"crookedkey":{
+		"type":"earring",
+		"tier":3,
+		"skin":"crookedkey",
+		"name":"Crooked Key Earring",
+		"explanation":"A crooked key. It might open something!",
+		// One key pierces a little; a pair opens the Skeleton Keys set.
+		"apiercing":20,
+		"rpiercing":20,
+		"set":"crookedkeys",
+		"compound":{"apiercing":4,"rpiercing":4},
+		"grades":[0,3,6,7],
+		"g":1600000,
+		"exclusive":true,
+		"cx":{"accent":"#C08A3A"},
+	},
+	"patchbuckler":{
+		"type":"shield",
+		"tier":3,
+		"skin":"patchbuckler",
+		"name":"Patchwork Buckler",
+		"explanation":"Four scraps. One stubborn shield.",
+		"armor":90,
+		"resistance":50,
+		// Stubborn: no shield gives magical or pure courage otherwise.
+		"courage":2,
+		"mcourage":2,
+		"pcourage":2,
+		"upgrade":{"armor":12,"resistance":7,"courage":0.25,"mcourage":0.25,"pcourage":0.25},
+		"grades":[0,0,10,12],
+		"g":2400000,
+		"exclusive":true,
+		"cx":{"accent":"#E0782A"},
+	},
+	"blackcatbell":{
+		"type":"orb",
+		"tier":3,
+		"skin":"blackcatbell",
+		"name":"Black Cat's Bell",
+		"explanation":"A little bell that rings when no cat is near.",
+		// Quick as a cat: the attack speed orb for every class (Sapstone is the Rogue's), best for Priests and Paladins.
+		"frequency":10,
+		"compound":{"frequency":2},
+		"grades":[0,0,6,7],
+		"g":2400000,
+		"exclusive":true,
+		"cx":{"accent":"#D9A132"},
+	},
+	"nightmarketsash":{
+		"type":"belt",
+		"tier":3,
+		"skin":"nightmarketsash",
+		"name":"Nightmarket Sash",
+		"explanation":"Extra pockets for whatever you find.",
+		// A gold belt; the night market's own traders fill the pockets twice as well.
+		"gold":10,
+		"vit":4,
+		"merchant":{"gold":10},
+		"compound":{"gold":2.5,"vit":1},
+		"grades":[0,3,6,7],
+		"g":2400000,
+		"exclusive":true,
+		"cx":{"accent":"#8A4E8C"},
+	},
+	// Follows the cape family (+0.1 stat a level). In the two haunted maps the witchlight makes physical blows miss.
+	"witchlightmantle":{
+		"type":"cape",
+		"tier":4,
+		"skin":"witchlightmantle",
+		"name":"Witchlight Mantle",
+		"explanation":"A mantle with a little moonlight tucked inside.",
+		"scroll":true,
+		"stat":6,
+		"armor":14,
+		"resistance":24,
+		"halloween":{"evasion":25},
+		"spookytown":{"evasion":25},
+		"upgrade":{"stat":0.1,"armor":2,"resistance":2},
+		"grades":[0,0,8,10],
+		"g":9600000,
+		"exclusive":true,
+		"cx":{"accent":"#915AA0"},
+	},
+	"laughingbook":{
+		"type":"source",
+		"tier":4,
+		"skin":"laughingbook",
+		"name":"Laughing Grimoire",
+		"explanation":"A book that laughs at its own jokes.",
+		// Laughter heals (more INT for Priests); Mages get the punchline (crit).
+		"int":22,
+		"mp":200,
+		"priest":{"int":20},
+		"mage":{"crit":4,"critdamage":25},
+		"compound":{"int":5,"mp":50},
+		"grades":[0,2,6,7],
+		"g":12400000,
+		"exclusive":true,
+		"cx":{"accent":"#9563B5","scale":0.5,"extension":true},
+	},
+}
+
+var sub_dicts=[pots,armor,weapons,offhands,accessories,scrolls,premiums,gems,materials,collectables,misc,quest,orbs,elixirs,skill_items,crafting_items,pets,items40,rogue_ent_items,rare_drop_items,witch_items];
 for(var i=0;i<sub_dicts.length;i++){
 	for(var key in sub_dicts[i]){
 		items[key]=sub_dicts[i][key];
@@ -9130,7 +9299,7 @@ Object.assign(items, {
       "accent": "#8B809F"
     },
     "name": "Counterweight",
-    "explanation": "A heavy stone shield with thick leather straps.",
+    "explanation": "A heavy stone shield held by thick leather straps.",
     "exclusive": true,
     "hp": 120
   },
@@ -9139,13 +9308,14 @@ Object.assign(items, {
     "skin": "cave_loaded_die",
     "crit": 8,
     "critdamage": 10,
-    "grade": 1,
+    "compound": { "crit": 0.5, "critdamage": 2 },
+    "grades": [0, 0, 6, 7],
     "g": 72000,
     "cx": {
       "accent": "#E5BC83"
     },
     "name": "Loaded Die",
-    "explanation": "Someone put a little extra weight under the six.",
+    "explanation": "Someone added a little extra weight beneath the six.",
     "exclusive": true
   },
   "cave_amber": {
@@ -9194,7 +9364,7 @@ Object.assign(items, {
       "scale": 0.5,
       "extension": true
     },
-    "explanation": "The last spell it cast came back."
+    "explanation": "The last spell it cast came straight back."
   },
   "cave_backstabber": {
     "type": "weapon",

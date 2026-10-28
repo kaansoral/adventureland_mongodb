@@ -83,5 +83,9 @@
 	"error.cant_delete_map_in_use": "Használatban lévő térkép nem törölhető.",
 	"error.code_too_large": "Ez a szkript túl nagy. Egy CODE-helyen legfeljebb 1 MiB (1 048 576 bájt) UTF-8-szöveg tárolható.",
 	"error.code_storage_full": "A CODE-tárhelyed megtelt. További kód mentése előtt exportáld és töröld a nem használt szkripteket.",
-	"error.code_rate_limited": "Túl gyakran mentesz CODE-ot. Várj egy kicsit, majd próbáld újra."
+	"error.code_rate_limited": "Túl gyakran mentesz CODE-ot. Várj egy kicsit, majd próbáld újra.",
+	"error.item_changed": "A tárgy megváltozott. Próbáld újra.",
+	"error.mail_item_untaken": "Vedd át a mellékletet a levél törlése előtt.",
+	"error.mail_sender_limit": "Ennek a karakternek már 20 át nem vett levélmelléklete van a fiókodtól. Át kell vennie néhányat, mielőtt újabbat küldhetsz.",
+	"error.mailbox_full": "Ennek a karakternek már 200 át nem vett levélmelléklete van. Át kell vennie néhányat, mielőtt újabbat küldhetsz."
 }

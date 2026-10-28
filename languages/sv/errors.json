@@ -83,5 +83,9 @@
 	"error.cant_delete_map_in_use": "En karta som används kan inte tas bort.",
 	"error.code_too_large": "Det här skriptet är för stort. Varje CODE-plats rymmer upp till 1 MiB (1 048 576 byte) UTF-8-text.",
 	"error.code_storage_full": "Ditt CODE-utrymme är fullt. Exportera och radera oanvända skript innan du sparar mer kod.",
-	"error.code_rate_limited": "Du sparar CODE för ofta. Vänta en stund och försök igen."
+	"error.code_rate_limited": "Du sparar CODE för ofta. Vänta en stund och försök igen.",
+	"error.item_changed": "Föremålet har ändrats. Försök igen.",
+	"error.mail_item_untaken": "Hämta bilagan innan du raderar brevet.",
+	"error.mail_sender_limit": "Den här karaktären har redan 20 ohämtade postbilagor från ditt konto. Några måste hämtas innan du kan skicka en till.",
+	"error.mailbox_full": "Den här karaktären har redan 200 ohämtade postbilagor. Några måste hämtas innan du kan skicka en till."
 }

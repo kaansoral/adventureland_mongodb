@@ -1,0 +1,50 @@
+<div class="title">{{ phrase("event.horseman.name") }}</div>
+<div class="guide-views horseman-views"></div>
+<div class="divider"></div>
+<p>{{ phrase("docs.guide.event-horseman.intro") }}</p>
+<div class="guide-spawn horseman-spawn"></div>
+<p>{{ phrase("docs.guide.event-horseman.walkers") }}</p>
+<div style="overflow-x:auto"><div style="position:relative;width:360px;height:260px;margin:10px auto 0"><img src="/images/guide/horseman-ride.webp?v=63ac3b91" width="360" height="260" alt="Spooky Forest" style="image-rendering:pixelated;display:block"><svg width="360" height="260" style="position:absolute;left:0;top:0"><rect x="150.0" y="100.0" width="55.0" height="60.0" fill="none" stroke="#73FFAC" stroke-width="2"/></svg></div></div>
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.event-horseman.fight-title") }}</div>
+<div class="horseman-stats"></div>
+<p>{{ phrase("docs.guide.event-horseman.fight") }}</p>
+<div class="divider"></div>
+<div class="title">{{ phrase("interface.monster_info.drops") }}</div>
+<div class="guide-drops horseman-drops"></div>
+<p>{{ phrase("docs.guide.event-horseman.helmet") }}</p>
+<div class="divider"></div>
+<div class="title">CODE</div>
+<p>{{ phrase("docs.guide.event-horseman.code") }}</p>
+<!-- prettier-ignore -->
+<div class="code" id="horseman-code">async function ride_with_the_horseman() {
+    var ride = server.status.horseman;
+    if (!ride || !ride.live) return;
+    if (character.map != "halloween") return await join("horseman");
+    var horseman = get_nearest_monster({ type: "horseman" });
+    if (!horseman) return await smart_move({ map: "halloween", x: ride.x, y: ride.y });
+    if (!is_in_range(horseman)) return await move(character.x + (horseman.x - character.x) / 2, character.y + (horseman.y - character.y) / 2);
+    if (can_attack(horseman)) return await attack(horseman);
+}
+
+ride_with_the_horseman().catch(show_json);</div>
+<p><a href="/docs/code/functions/join" target="_blank">join</a> · <a href="/docs/code/functions/get_nearest_monster" target="_blank">get_nearest_monster</a> · <a href="/docs/code/functions/smart_move" target="_blank">smart_move</a> · <a href="/docs/code/functions/is_in_range" target="_blank">is_in_range</a> · <a href="/docs/code/functions/move" target="_blank">move</a> · <a href="/docs/code/functions/can_attack" target="_blank">can_attack</a> · <a href="/docs/code/functions/attack" target="_blank">attack</a> · <a href="/docs/code/server/status" target="_blank">server.status</a></p>
+<style>
+	.title { color: #467956; font-size: 36px; margin-top: 15px; }
+	.divider { margin: 15px -26px 0; height: 5px; background-color: #a2a2a2; }
+	.guide-label { font-size: 22px; line-height: 24px; color: #62727E; margin: 0 4px; }
+</style>
+<script>
+	$(".horseman-views").html(guide_monster_views("horseman"));
+	// The Horseman's health when each group of Jack-o Walkers joins him
+	$(".horseman-spawn").html(
+		guide_monster_tile("horseman", 1) +
+			G.monsters.horseman.spawns
+				.map(function (spawn) {
+					return guide_hp_bar(Math.round(parseFloat(spawn[0].split(":")[1]) * 100)) + "<span class='guide-arrow'></span>" + guide_monster_tile(spawn[1], 0) + "<span class='guide-count'>×" + spawn[2] + "</span>";
+				})
+				.join(""),
+	);
+	$(".horseman-stats").html(guide_monster_stats(["horseman", "jackowalker"]));
+	$(".horseman-drops").html(guide_monster_drops(["horseman", "jackowalker"]));
+</script>

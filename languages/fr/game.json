@@ -317,7 +317,7 @@
 	"game.clicks_away": "À {dist} clics",
 	"game.echoes": "Échos : {length}",
 	"game.clicks": "Clics : {c}",
-	"npc.home.set_offer": "Ce n’est pas ton serveur d’origine. Tu résides sur {home}. Sur ton monde d’origine, ta contribution aux combats coopératifs compte davantage et tu peux obtenir des récompenses spéciales ; changer rapidement de personnage non marchand suspend ces avantages pendant 30 minutes. Veux-tu faire de ce serveur ton serveur d’origine ?",
+	"npc.home.set_offer": "Ce serveur n’est pas votre serveur d’origine. Vous êtes résident de {home}. Les mondes d’origine offrent un crédit coopératif plus élevé et des récompenses spéciales ; changer rapidement de serveur avec des personnages non-marchands suspend ces avantages pendant 30 minutes. Voulez-vous définir ce serveur comme votre serveur d’origine ?",
 	"npc.yes": "Oui !",
 	"npc.home.current": "C’est ton serveur d’origine. Ton aide contre les monstres coopératifs compte davantage ici, et certains monstres offrent des récompenses d’origine supplémentaires. Venir ici après qu’un autre de tes personnages non marchands a visité un autre serveur provoque 30 minutes de Fatigue des mondes. Les récompenses habituelles restent disponibles le temps de t’installer.",
 	"npc.bless_server.offer": "Veux-tu bénir tout le serveur pendant 3 jours ?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Cet objet ne correspond pas à l’offre",
 	"response.trade_swap_space": "Le marchand n’a plus de place",
 	"game.trade_history.traded": "- Échange de '{item}' avec {player} contre '{received}'",
-	"response.transport_need_items": "Il te faut : {items}"
+	"response.transport_need_items": "Il te faut : {items}",
+	"combat.emote.hehehe": "HÉHÉHÉ"
 }

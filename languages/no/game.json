@@ -317,7 +317,7 @@
 	"game.clicks_away": "{dist} klikk unna",
 	"game.echoes": "{length} ekko",
 	"game.clicks": "{c} klikk",
-	"npc.home.set_offer": "Dette er ikke hjemmeserveren din. Du hører hjemme i {home}. På hjemmeverdener teller bidraget ditt mot samarbeidsmonstre mer, og du kan få spesielle belønninger. Raske bytter mellom figurer som ikke er kjøpmenn, setter disse fordelene på pause i 30 minutter. Vil du gjøre denne serveren til hjemmet ditt?",
+	"npc.home.set_offer": "Dette er ikke hjemmeserveren din. Du er bosatt på {home}. Hjemmeverdener gir sterkere samarbeidspoeng og spesielle belønninger; raske serverbytter med ikke-kjøpmannfigurer setter disse fordelene på pause i 30 minutter. Vil du angi denne serveren som hjemmet ditt?",
 	"npc.yes": "Ja!",
 	"npc.home.current": "Dette er hjemmeserveren din. Hjelpen din mot samarbeidsmonstre teller mer her, og noen monstre har ekstra hjemmebelønninger. Bytter du hit etter at en annen figur som ikke er kjøpmann, har besøkt en annen server, får du Verdenstretthet i 30 minutter. Du får fortsatt vanlige belønninger mens du slår deg til ro.",
 	"npc.bless_server.offer": "Vil du velsigne hele serveren i 3 dager?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Gjenstanden passer ikke til tilbudet",
 	"response.trade_swap_space": "Kjøpmannen har ikke plass",
 	"game.trade_history.traded": "- Byttet '{item}' med {player} mot '{received}'",
-	"response.transport_need_items": "Trenger: {items}"
+	"response.transport_need_items": "Trenger: {items}",
+	"combat.emote.hehehe": "HEHEHE"
 }

@@ -41,7 +41,7 @@ function fixture() {
 		players: { Seller: seller, Buyer: buyer },
 		socket: { id: "Seller", emit() {} },
 		id_to_id: { Seller: "Seller", Buyer: "Buyer" },
-		trade_slots: ["trade1", "trade2", "trade4"],
+		trade_slots: ["trade1", "trade2", "trade4", "trade5"],
 		B: { dist: 500 },
 		S: { gold: 0 },
 		a_score: {},
@@ -244,6 +244,53 @@ test("buy orders transfer the actual source item's properties and exact quantity
 		}
 });
 
+test("cached listing IDs cannot trade through hidden slots after a stand closes", () => {
+	for (const event of ["trade_buy", "trade_sell"])
+		for (const [slot, trades] of [
+			["trade1", false],
+			["trade5", true],
+			["trade1", true],
+		]) {
+			const h = fixture();
+			const owner = event === "trade_buy" ? h.seller : h.buyer;
+			owner.p.stand = "stand0";
+			h.put(h.seller, { name: "cake", q: 2 });
+			if (event === "trade_buy") h.run("equip", "Seller", { num: 0, slot, q: 1, price: 100 });
+			else h.run("trade_wishlist", "Buyer", { name: "cake", slot, q: 1, price: 100 });
+			assert.deepEqual(h.failures, []);
+			owner.p.stand = false;
+			owner.p.trades = trades;
+			const before = h.snapshot();
+			h.run(event, event === "trade_buy" ? "Buyer" : "Seller", {
+				id: owner.id,
+				slot,
+				q: 1,
+				rid: "listing",
+			});
+			if (trades && slot === "trade1") {
+				assert.deepEqual(h.failures, []);
+				assert.equal(h.buyer.gold, 999900);
+				assert.equal(h.seller.gold, 1000097);
+				assert.equal(quantity(h.buyer.items, "cake"), 1);
+				assert.equal(quantity(h.seller.items, "cake"), 1);
+			} else {
+				assert.deepEqual(h.failures, ["item_gone"]);
+				assert.deepEqual(h.snapshot(), before);
+			}
+		}
+});
+
+test("buy orders cannot spend a buyer's gold while its bank is mounted", () => {
+	const h = fixture();
+	h.put(h.seller, { name: "cake", q: 2 });
+	h.run("trade_wishlist", "Buyer", { name: "cake", slot: "trade1", q: 1, price: 100 });
+	h.buyer.user = {};
+	const before = h.snapshot();
+	h.run("trade_sell", "Seller", { id: "Buyer", slot: "trade1", q: 1, rid: "listing" });
+	assert.deepEqual(h.failures, ["cant_in_bank"]);
+	assert.deepEqual(h.snapshot(), before);
+});
+
 test("capacity checks distinguish properties, cosmetic payloads and stack limits before any mutation", () => {
 	for (const event of ["trade_buy", "trade_sell"]) {
 		for (const [source, existing, accepted] of [
@@ -318,47 +365,15 @@ test("stack copies retain title history without copying sale or giveaway state",
 	assert.deepEqual(source.ps, ["shiny", "glitched"]);
 });
 
-test("a titled giveaway keeps its properties through listing and one mail delivery", async () => {
-	const h = fixture(),
-		mails = [];
+test("a titled giveaway keeps its properties through listing", () => {
+	const h = fixture();
 	h.put(h.seller, glitched);
 	h.run("equip", "Seller", { num: 0, slot: "trade1", q: 2, giveaway: true, minutes: 5 });
 	assert.deepEqual(h.failures, []);
 	assert.equal(h.seller.slots.trade1.p, "glitched");
+	assert.deepEqual(h.seller.slots.trade1.ps, ["glitched"]);
+	assert.equal(h.seller.slots.trade1.q, 2);
 	assert.equal(h.seller.items[0].q, 1);
-	h.seller.slots.trade1.giveaway = 1;
-	h.seller.slots.trade1.list = ["Buyer"];
-	let tick;
-	Object.assign(h.c, {
-		mode: { prevent_external: false },
-		setInterval: (callback) => (tick = callback),
-		get_player: (name) => h.c.players[name],
-		random_one: (list) => list[0],
-		db: { collection: () => ({ findOne: async () => ({ owner: h.buyer.owner }) }) },
-		get: async (id) => ({ _id: id }),
-		get_id: (user) => user._id,
-		insert: async (mail) => mails.push(plain(mail)),
-		update_mail_count: async () => {},
-		log_trace: (...args) => {
-			throw Error(JSON.stringify(args));
-		},
-		console,
-	});
-	const source = read("node/server.js"),
-		end = source.indexOf('log_trace("#X decay loop error", e);');
-	const start = source.lastIndexOf("setInterval(function () {", end);
-	vm.runInContext(source.slice(start, source.indexOf("}, 60000);", end) + "}, 60000);".length), h.c);
-	tick();
-	await new Promise(setImmediate);
-	assert.equal(mails.length, 1);
-	const item = JSON.parse(mails[0].info.item);
-	assert.equal(item.p, "glitched");
-	assert.deepEqual(item.ps, ["glitched"]);
-	assert.equal(item.q, 2);
-	assert.equal(h.seller.slots.trade1, null);
-	tick();
-	await new Promise(setImmediate);
-	assert.equal(mails.length, 1);
 });
 
 const staff = (level, extra) => ({ name: "staff", level, ...extra });

@@ -18,7 +18,7 @@ var skills={
 		"skin": "rimeglass",
 		"type": "monster",
 		"class": [],
-		"explanation": "At half health, the Djinn casts for 3 seconds. Deal damage equal to 5% of its maximum HP, or stun it, to break the shell and lower resistance by 160 for 5 seconds. Otherwise, it fires at up to three nearby contributors. Ordinary freezing does not interrupt it. Purify cannot dispel the shell.",
+		"explanation": "At half health, the Djinn casts for 3 seconds. Deal damage equal to 5% of its maximum HP, or stun it, to break the shell and lower resistance by 160 for 5 seconds. Otherwise, it fires at up to three nearby contributors. Ordinary freezing won't interrupt it, and Purify can't dispel the shell.",
 		"monster": true
 	},
 
@@ -237,6 +237,15 @@ var skills={
 		"mp":50,
 		"cooldown":240000,
 		"emote":"makeawish",
+	},
+	"sinisterlaugh":{
+		"type":"skill",
+		"skin":"emote_sinisterlaugh",
+		"name":"Sinister Laugh",
+		"explanation":"A wicked laugh to scare your friends.",
+		"mp":20,
+		"cooldown":12000,
+		"emote":"sinisterlaugh",
 	},
 	"ikissyou":{
 		"type":"skill",
@@ -1276,8 +1285,11 @@ var skills={
 		"name":"Purify",
 		"level":60,
 		"damage":2000,
+		"condition_damage":400,
+		"stack_damage":1,
+		"stack_bonus_cap":400,
 		"damage_type":"pure",
-		"explanation":"Deals 2000 pure damage purifying the target, removes all buffs and debuffs dealing additional 400 damage for each and receive the Purifier buff if the target is defeated!",
+		"explanation":"Deals 2000 pure damage, plus 400 for each eligible nonpersistent buff or debuff. These effects are removed, except Rogue stacks and burning on monsters. Rogue stacks add 400 plus 1 per stack, up to 800 damage in total. Innate poison and persistent conditions are unaffected. Defeating the target grants the Purifier buff.",
 		"kill_buff":"purifier",
 		"projectile":"purify",
 		"hostile":true,

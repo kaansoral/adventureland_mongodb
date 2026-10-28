@@ -61,6 +61,90 @@ function api_call(method, args, r_args) {
 	return P.promise;
 }
 
+var steam_referral_later = false;
+var steam_referral_generation = 0;
+var steam_referral_ticket = "";
+
+function load_steam_referral_choices() {
+	var panel = $(".steam-friend-picker");
+	panel.hide();
+	if (!panel.length || steam_referral_later || !window.tauri_invoke || !window.tauri_prepare_auth) return;
+	var generation = ++steam_referral_generation;
+	tauri_prepare_auth().then(function (auth) {
+		return tauri_invoke("get_steam_friends").then(function (friends) { return [auth, friends]; });
+	})
+		.then(function (results) {
+			if (!results[0].ticket || !Array.isArray(results[1])) return;
+			steam_referral_ticket = results[0].ticket;
+			var friends = results[1];
+			return api_call("steam_referral_candidates", { ticket: steam_referral_ticket, friends: friends.map(function (friend) { return friend.id; }) })
+				.then(function (result) {
+					if (generation !== steam_referral_generation || !document.body.contains(panel[0]) || result.state !== "choose") return;
+					var names = {};
+					friends.forEach(function (friend) { names[friend.id] = friend.name; });
+					var list = panel.find(".steam-friend-list").empty();
+					result.candidates.forEach(function (candidate) {
+						var name = names[candidate.steamid] || candidate.account;
+						var button = $("<div class='gamebutton steam-friend-choice' tabindex='0'></div>");
+						var identity = $("<div class='steam-friend-identity'></div>");
+						if (!no_graphics && candidate.character && candidate.character.skin)
+							identity.append(sprite(candidate.character.skin, { cx: candidate.character.cx || {}, rip: candidate.character.rip || "", width: 44, height: 52, scale: 2, overflow: true }));
+						var labels = $("<div class='steam-friend-labels'></div>");
+						labels.append($("<div class='steam-friend-name'></div>").text(name));
+						if (candidate.character) labels.append($("<div class='steam-friend-character'></div>").text(phrase("client.steam_referral.character", { name: candidate.character.name })));
+						identity.append(labels);
+						button.append(identity);
+						button.append($("<div class='steam-friend-action'></div>").text(phrase("client.steam_referral.choose")));
+						button.on("click keydown", function (event) {
+							if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
+							event.preventDefault();
+							show_confirm(
+								phrase.html("client.steam_referral.confirm_title", { name: name }) + "<br><br>" +
+								phrase.html("client.steam_referral.confirm_reward") + "<br><br>" + phrase.html("client.steam_referral.confirm_once"),
+								phrase.html("client.steam_referral.connect"), phrase.html("interface.close.cancel"),
+								function () {
+									api_call("steam_referral_connect", { ticket: steam_referral_ticket, inviter: candidate.id })
+										.then(function () { hide_modal(); panel.hide(); steam_referral_later = true; })
+										.catch(function () { hide_modal(); ui_error(phrase.html("client.steam_referral.unavailable")); });
+								},
+							);
+						});
+						list.append(button);
+					});
+					panel.show();
+					resize();
+				});
+		})
+		.catch(function (error) { console.warn("Steam friend connection unavailable", error && error.reason || error); });
+}
+
+function copy_referral_link(button) {
+	var link = button.dataset.link;
+	function copied() { button.textContent = phrase("client.steam_referral.copied"); }
+	if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(link).then(copied).catch(function () { ui_error(phrase.html("client.steam_referral.copy_failed")); });
+	var input = $("<textarea></textarea>").val(link).appendTo("body");
+	input[0].select();
+	var okay = document.execCommand("copy");
+	input.remove();
+	if (okay) copied();
+	else ui_error(phrase.html("client.steam_referral.copy_failed"));
+}
+
+function show_referral_reward() {
+	var content = "";
+	if (!no_graphics) content += cx_sprite("xgravestone2", { width: 80, height: 80, scale: 3 });
+	content += "<div>" + phrase.html("client.steam_referral.reward_preview") + "</div>";
+	show_modal("<div class='largeborder' style='background:black;text-align:center;padding:16px;font-size:24px'>" + content + "</div>");
+}
+
+function render_referral_panel() {
+	if (no_graphics || !window.G || !G.items || !G.items.friendtoken) return;
+	$(".recruit-shells").html(item_container({ skin: "shells", size: 40, draggable: false }));
+	$(".recruit-friendtoken").html(item_container({ skin: G.items.friendtoken.skin, size: 40, draggable: false }, { name: "friendtoken" }));
+	if (G.npcs && G.npcs.friendtokens) $(".recruit-fvona").html(sprite(G.npcs.friendtokens.skin, { width: 56, height: 72, scale: 2, overflow: true }));
+	$(".recruit-gravestone").html(cx_sprite("xgravestone2", { width: 56, height: 72, scale: 2 }));
+}
+
 function server_to_ui(key) {
 	if (!key) return "";
 	if (X && X.servers) {
@@ -601,13 +685,10 @@ function add_magiport(name) {
 	);
 }
 
-function add_invite(name) {
-	add_chat(
-		"^",
-		phrase.html("client.add_invite.received", { name: name }) + " \t\t" + "<span class='clickable' style='color:green' onclick='push_deferred(\"party\"); socket.emit(\"party\",{event:\"accept\",name:\"" + (name) + "\"}); remove_chat(\"pin" + (name) + "\")'>" + phrase.html("client.add_invite.accept") + "</span>",
-		undefined,
-		"pin" + name,
-	);
+function add_invite(name, return_html) {
+	var html = phrase.html("client.add_invite.received", { name: name }) + " \t\t" + "<span class='clickable' style='color:green' onclick='push_deferred(\"party\"); socket.emit(\"party\",{event:\"accept\",name:\"" + (name) + "\"}); remove_chat(\"pin" + (name) + "\")'>" + phrase.html("client.add_invite.accept") + "</span>";
+	if (return_html) return html;
+	add_chat("^", html, undefined, "pin" + name);
 }
 
 function add_challenge(name) {
@@ -890,12 +971,14 @@ function release_sources(item) {
 			G.drops[box].forEach(function (row) {
 				if (row[1] == item) add("item:" + box);
 			});
-	if (recipe)
+	if (recipe) {
+		var crafter = crafting_npc(recipe, G.event_flags);
 		for (var npc in G.npcs)
-			if ((recipe.quest && G.npcs[npc].quest == recipe.quest) || (!recipe.quest && G.npcs[npc].role == "craftsman")) {
+			if (npc == crafter || G.npcs[npc].quest == crafter) {
 				add("npc:" + npc);
 				break;
 			}
+	}
 	for (var seller in G.npcs) if (in_arr(item, G.npcs[seller].items || [])) add("npc:" + seller);
 	for (var token in G.tokens) if (G.tokens[token][item] !== undefined && G.items[token]) add("item:" + token);
 	return sources;
@@ -1210,8 +1293,23 @@ function mark_release_seen(release) {
 	if (!$("#event-announcements").children().length) $("#event-announcements").hide();
 }
 
+function release_cover_ref(release) {
+	if (release.cover) return release.cover;
+	// Older posts may only name their image in a highlight.
+	var highlights = release.highlights || [];
+	for (var i = 0; i < highlights.length; i++) {
+		var shown = highlights[i].show || [];
+		for (var j = 0; j < shown.length; j++) {
+			var ref = typeof shown[j] == "string" ? shown[j] : shown[j].spawn,
+				r = release_parse(ref || "");
+			if (r.def && in_arr(r.type, ["item", "monster", "npc"])) return ref;
+		}
+	}
+	return "";
+}
+
 function release_cover_html(release) {
-	var r = release_parse(release.cover || "");
+	var r = release_parse(release_cover_ref(release));
 	if (!r.def) return "";
 	if (r.type == "monster" || r.type == "npc") return sprite(r.type == "npc" ? r.def.skin : r.id, { overflow: true, cx: r.type == "npc" ? clone(r.def.cx || {}) : undefined });
 	var skin = r.type == "item" || r.type == "craft" ? G.items[r.id].skin : r.def.skin;
@@ -1235,7 +1333,7 @@ function release_card_html() {
 	var index = release_unseen();
 	if (index == -1 || window.character || (typeof inside != "undefined" && inside == "game")) return "";
 	var release = update_notes[index],
-		r = release_parse(release.cover || "");
+		r = release_parse(release_cover_ref(release));
 	return event_announcement_html({
 		open: "show_release(" + index + ")",
 		sprite: r.def ? (r.type == "npc" ? r.def.skin : r.id) : "",
@@ -2445,7 +2543,7 @@ function code_eval(snippet) {
 }
 
 function code_move(x, y) {
-	code_eval("smart_move({x:'" + x + "',y:'" + y + "'})");
+	code_eval("smart_move(" + JSON.stringify({ x: Number(x), y: Number(y) }) + ")");
 }
 
 function code_travel(map) {
@@ -3472,7 +3570,7 @@ function split(num, quantity) {
 function sell(num, quantity) {
 	if (!quantity) quantity = 1;
 	var promise = push_deferred("sell");
-	socket.emit("sell", { num: num, quantity: quantity });
+	socket.emit("sell", { num: num, quantity: quantity, item: character.items[num] || null });
 	try {
 		$(".sellnum").html(max(0, character.items[num].q - quantity));
 	} catch (e) {
@@ -3904,7 +4002,7 @@ function compound(item0, item1, item2, scroll, offering, code, calculate) {
 	if (!code && (item0 == null || item1 == null || item2 == null || scroll == null)) d_text(phrase("client.floating.invalid"), character);
 	else {
 		var promise = push_deferred("compound");
-		socket.emit("compound", { items: [item0, item1, item2], scroll_num: scroll, offering_num: offering, clevel: character.items[item0].level || 0, calculate: calculate });
+		socket.emit("compound", { items: [item0, item1, item2], scroll_num: scroll, offering_num: offering, clevel: (character.items[item0] && character.items[item0].level) || 0, calculate: calculate });
 		return promise;
 	}
 }
@@ -4094,16 +4192,17 @@ setInterval(function () {
 
 function poof(is_code) {
 	var delay = 2400;
+	var item = character.items[p_item] || null;
 	exchange_type = "poof";
 	if (is_code || 1) {
 		var promise = push_deferred("destroy");
-		socket.emit("destroy", { num: p_item, q: 1, statue: true });
+		socket.emit("destroy", { num: p_item, q: 1, statue: true, item: item });
 		return promise;
 	}
 	function poof_trigger(p_item) {
 		return function () {
 			if (!exchange_animations) return;
-			socket.emit("destroy", { num: p_item, q: 1, statue: true });
+			socket.emit("destroy", { num: p_item, q: 1, statue: true, item: item });
 		};
 	}
 	if (p_item == null) d_text(phrase("client.floating.invalid"), character);
@@ -4118,7 +4217,7 @@ function exchange(is_code) {
 	if (character.q.exchange) {
 		d_text(phrase("client.floating.wait"), character);
 		return rejecting_promise({ reason: "in_progress" });
-	} else if (!is_code && e_item == null) {
+	} else if (e_item == null || !character.items[e_item]) {
 		d_text(phrase("client.floating.invalid"), character);
 		return rejecting_promise({ reason: "invalid" });
 	} else {
@@ -4393,6 +4492,7 @@ function restore_dimensions(sprite) {
 }
 
 function set_texture(sprite, i, j) {
+	if (no_graphics) return;
 	var c = i + "" + j;
 	sprite.i = i;
 	sprite.j = j;
@@ -6810,6 +6910,7 @@ function handle_information(infs) {
 			if (inside == "message") $("#message").html(info.message);
 			else ui_success(info.message);
 		} else if (info.type == "content") {
+			if (info.screen == "selection" && inside == "game") continue;
 			$("#content").html(info.html);
 			resize();
 		} else if (info.type == "eval") {

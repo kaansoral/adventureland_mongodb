@@ -66,20 +66,22 @@ module.exports = {
 	"condition.stonebreak.name": "Crumbling",
 	// Tooltip for Crumbling.
 	"condition.stonebreak.explanation": "Recently turned to stone. It can't be petrified again until this fades.",
-	// Fixed name of the four-sentry team.
-	"interaction.cavalry.title": "Cavalry",
-	// Fixed name of the four-sentry team.
-	"role.cavalry.name": "Cavalry",
-	// Service directory and MCP summary; monster level is at least 3.
-	"interaction.cavalry.summary": "Call four sentries to help with nearby level 3+ monsters.",
-	// Fixed name of the four-sentry team.
-	"directory.guide.cavalry.title": "Cavalry",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"directory.guide.parties.title": "Parties",
 	// Tutorial task: open the in-game mailbox, even if empty; no item collection required.
 	"tutorial.task.mail": "Open Mail",
 	// Tutorial title before Monster Hunts; mail means the in-game mailbox.
 	"tutorial.mail.title": "Check Your Mail",
+	// Fixed name of the four-sentry team.
+	"interaction.cavalry.title": "Cavalry",
+	// Fixed name of the four-sentry team.
+	"directory.guide.cavalry.title": "Cavalry",
+	// Fixed name of the four-sentry team.
+	"role.cavalry.name": "Cavalry",
+	// Service directory and MCP summary; monster level is at least 3.
+	"interaction.cavalry.summary": "Call four sentries to help with nearby level 3+ monsters.",
 	// Item tooltip prose. Preserve the item name when referenced; concise in-world voice.
-	"item.rimeglass.explanation": "Cold to the touch. Warmth will not melt it.",
+	"item.rimeglass.explanation": "Cold to the touch. Warmth won't melt it.",
 	// Item tooltip prose. Preserve the item name when referenced; concise in-world voice.
 	"item.djinncrown.explanation": "A cold crown for a restless mind.",
 	// Item tooltip and guide. Bonuses apply only in Cave of Darkness; preserve the map name and quantities. Attack uses normal equipment scaling.
@@ -91,7 +93,7 @@ module.exports = {
 	// Rime Djinn condition name. Translate the ability name consistently. HP is health; stun interrupts, ordinary freeze does not. Quantities and timings must be exact.
 	"condition.rimeshell.name": "Rime Shell",
 	// Rime Djinn condition explanation. Translate the ability name consistently. HP is health; stun interrupts, ordinary freeze does not. Quantities and timings must be exact.
-	"condition.rimeshell.explanation": "Deal damage equal to 5% of the Djinn’s maximum HP within 3 seconds, or stun it, to break the shell. Ordinary freezing does not interrupt it. Purify cannot dispel the shell.",
+	"condition.rimeshell.explanation": "Deal damage equal to 5% of the Djinn’s maximum HP within 3 seconds, or stun it, to break the shell. Ordinary freezing won't interrupt it, and Purify can't dispel it.",
 	// Rime Djinn condition name. Translate the ability name consistently. HP is health; stun interrupts, ordinary freeze does not. Quantities and timings must be exact.
 	"condition.rimeexposed.name": "Cracked Shell",
 	// Rime Djinn condition explanation. Translate the ability name consistently. HP is health; stun interrupts, ordinary freeze does not. Quantities and timings must be exact.
@@ -103,35 +105,35 @@ module.exports = {
 	// Rime Djinn skill name. Translate the ability name consistently. HP is health; stun interrupts, ordinary freeze does not. Quantities and timings must be exact.
 	"skill.rimeshell.name": "Rime Shell",
 	// Rime Djinn skill explanation. Translate the ability name consistently. HP is health; stun interrupts, ordinary freeze does not. Quantities and timings must be exact.
-	"skill.rimeshell.explanation": "At half health, the Djinn casts for 3 seconds. Deal damage equal to 5% of its maximum HP, or stun it, to break the shell and lower resistance by 160 for 5 seconds. Otherwise, it fires at up to three nearby contributors. Ordinary freezing does not interrupt it. Purify cannot dispel the shell.",
+	"skill.rimeshell.explanation": "At half health, the Djinn casts for 3 seconds. Deal damage equal to 5% of its maximum HP, or stun it, to break the shell and lower resistance by 160 for 5 seconds. Otherwise, it fires at up to three nearby contributors. Ordinary freezing won't interrupt it, and Purify can't dispel the shell.",
 	// Title in the existing tutorial index and article header. Keep CODE unchanged.
-	"tutorial.js-hello.title": "Make CODE speak",
+	"tutorial.js-hello.title": "Make CODE Speak",
 	// Title in the existing tutorial index and article header. Keep CODE unchanged.
-	"tutorial.js-values.title": "Name a value",
+	"tutorial.js-values.title": "Name a Value",
 	// Title in the existing tutorial index and article header. Keep CODE unchanged.
-	"tutorial.js-variables.title": "Change a variable",
+	"tutorial.js-variables.title": "Change a Variable",
 	// Title in the existing tutorial index and article header. Keep CODE unchanged.
-	"tutorial.js-character.title": "Read your character",
+	"tutorial.js-character.title": "Read Your Character",
 	// Title in the existing tutorial index and article header. Keep CODE unchanged.
-	"tutorial.js-decisions.title": "Make a decision",
+	"tutorial.js-decisions.title": "Make a Decision",
 	// Title in the existing tutorial index and article header. Keep CODE unchanged.
-	"tutorial.js-arrays.title": "Make a list",
+	"tutorial.js-arrays.title": "Make a List",
 	// Title in the existing tutorial index and article header. Keep CODE unchanged.
-	"tutorial.js-loops.title": "Loop through a list",
+	"tutorial.js-loops.title": "Loop Through a List",
 	// Title in the existing tutorial index and article header. Keep CODE unchanged.
-	"tutorial.js-functions.title": "Write your own function",
+	"tutorial.js-functions.title": "Write Your Own Function",
 	// Title in the existing tutorial index and article header. Keep CODE unchanged.
-	"tutorial.js-inventory.title": "Count your supplies",
+	"tutorial.js-inventory.title": "Count Your Supplies",
 	// Title in the existing tutorial index and article header. Keep CODE unchanged.
-	"tutorial.js-targets.title": "There may be no target",
+	"tutorial.js-targets.title": "There May Be No Target",
 	// Title in the existing tutorial index and article header. Keep CODE unchanged.
-	"tutorial.js-timers.title": "Check again later",
+	"tutorial.js-timers.title": "Check Again Later",
 	// Title in the existing tutorial index and article header. Keep CODE unchanged.
-	"tutorial.js-async.title": "Wait for the game",
+	"tutorial.js-async.title": "Wait for the Game",
 	// Title in the existing tutorial index and article header. Keep CODE unchanged.
-	"tutorial.js-events.title": "React when things happen",
+	"tutorial.js-events.title": "React When Things Happen",
 	// Title in the existing tutorial index and article header. Keep CODE unchanged.
-	"tutorial.js-capstone.title": "Build a small farming script",
+	"tutorial.js-capstone.title": "Build a Small Farming Script",
 	// Tutorial lesson about the Tracktrix item; keep its proper name unchanged.
 	"tutorial.tracktrix.title": "Tracktrix",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
@@ -330,7 +332,7 @@ module.exports = {
 	// design/conditions.js; encouragement_new name, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"condition.encouragement_new.name": "New Player",
 	// design/conditions.js; encouragement_returning explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
-	"condition.encouragement_returning.explanation": "Welcome back. There is more to discover. 3× Gold, XP and Luck below level 80; 2× from level 80. Extra rewards follow your contribution.",
+	"condition.encouragement_returning.explanation": "Welcome back. There's more to discover. 3× Gold, XP and Luck below level 80; 2× from level 80. Extra rewards follow your contribution.",
 	// design/conditions.js; encouragement_returning name, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"condition.encouragement_returning.name": "Welcome Back",
 	// design/conditions.js; energized explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
@@ -503,7 +505,7 @@ module.exports = {
 	// design/conditions.js; purifier name, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"condition.purifier.name": "Purifier",
 	// design/conditions.js; realmfatigue explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
-	"condition.realmfatigue.explanation": "Another non-merchant character on your account was recently on a different server. Home bonuses and kiss rewards are blocked for 30 minutes; activity elsewhere extends the timer. Returning home does not clear it. Keep your non-merchant characters on one server.",
+	"condition.realmfatigue.explanation": "Another non-merchant character on your account was recently on a different server. Home bonuses and kiss rewards are blocked for 30 minutes; activity elsewhere extends the timer. Returning home won't clear it. Keep your non-merchant characters on one server.",
 	// design/conditions.js; realmfatigue name, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"condition.realmfatigue.name": "Realm Fatigue",
 	// design/conditions.js; reflection explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
@@ -817,7 +819,7 @@ module.exports = {
 	// docs/directory.js; NPC/service INFO title and short guide summary. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"interaction.special.title": "Strange Interactions",
 	// docs/directory.js; NPC/service INFO title and short guide summary. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
-	"interaction.tavern.summary": "Read the house rules before placing a dice, slots or wheel wager, or sitting down at the Hold'em table.",
+	"interaction.tavern.summary": "Read the house rules before wagering on dice, slots or the wheel, or taking a seat at the Hold'em table.",
 	// docs/directory.js; NPC/service INFO title and short guide summary. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"interaction.tavern.title": "Tavern Games",
 	// docs/directory.js; NPC/service INFO title and short guide summary. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
@@ -906,12 +908,14 @@ module.exports = {
 	"item.confetti.explanation": "To celebrate good times",
 	// design/items.js; cosmo0 explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged. Names: ["Haila"].
 	"item.cosmo0.explanation": "Give this to NPC Haila to receive a new look. Heads-up! It's random, you may or may-not like it. [Work in progress - PRICE/DROPS MIGHT CHANGE!]",
+	// design/items.js; cosmo1 explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged. Names: ["Haila"].
 	// New Make-up box: exchange with Haila for one random individual head or one complete related-head set. Proper names stay fixed.
 	"item.cosmo1.explanation": "Give this to Haila for a random unique head or a set of related head colors and faces.",
 	// design/items.js; cosmo2 explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged. Names: ["Haila"].
 	"item.cosmo2.explanation": "Give this to NPC Haila to receive a new hairdo. Heads-up! It's random, you may or may-not like it. [Work in progress - PRICE/DROPS MIGHT CHANGE!]",
 	// design/items.js; cosmo3 explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged. Names: ["Haila"].
 	"item.cosmo3.explanation": "Give this to NPC Haila to receive a new hat. Heads-up! It's random, you may or may-not like it. [Work in progress - PRICE/DROPS MIGHT CHANGE!]",
+	// design/items.js; cosmo4 explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged. Names: ["Haila"].
 	// Haila exchanges this box for one random accessory, not every listed category.
 	"item.cosmo4.explanation": "Give this to Haila for a random accessory: glasses, facial hair, a mask, face markings, a backpack, wings or a tail.",
 	// design/items.js; cosmo5 explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged. Names: ["Haila"].
@@ -2697,8 +2701,7 @@ module.exports = {
 	// design/skills.js; pure_eval name, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"skill.pure_eval.name": "Pure Eval",
 	// design/skills.js; purify explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
-	"skill.purify.explanation":
-		"Deals 2000 pure damage purifying the target, removes all buffs and debuffs dealing additional 400 damage for each and receive the Purifier buff if the target is defeated!",
+	"skill.purify.explanation": "Deals 2000 pure damage, plus 400 for each eligible nonpersistent buff or debuff. These effects are removed, except Rogue stacks and burning on monsters. Rogue stacks add 400 plus 1 per stack, up to 800 damage in total. Innate poison and persistent conditions are unaffected. Defeating the target grants the Purifier buff.",
 	// design/skills.js; purify name, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"skill.purify.name": "Purify",
 	// design/skills.js; quickpunch explanation, displayed by its existing tooltip, dialogue or announcement renderer. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
@@ -2999,6 +3002,16 @@ module.exports = {
 	"stat.explosion.name": "Explosion",
 	// Shared stat display label in item tooltips, class details, cosmetic and equipment slots. Never translate its internal identifier. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"stat.for.name": "Fortitude",
+	// Stat name in achievement lists and stat references; the same short label as the item tooltip (interface.item.poison_res).
+	"stat.pnresistance.name": "Poison Res.",
+	// Stat name in achievement lists and stat references; the same short label as the item tooltip (interface.item.fire_res).
+	"stat.firesistance.name": "Fire Res.",
+	// Stat name in achievement lists and stat references; the same short label as the item tooltip (interface.item.freeze_res).
+	"stat.fzresistance.name": "Freeze Res.",
+	// Stat name in achievement lists and stat references; the same short label as the item tooltip (interface.item.impact_res).
+	"stat.phresistance.name": "Impact Res.",
+	// Stat name in achievement lists and stat references; the same short label as the item tooltip (interface.item.status_res).
+	"stat.stresistance.name": "Status Res.",
 	// Shared stat display label in item tooltips, class details, cosmetic and equipment slots. Never translate its internal identifier. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"stat.frequency.name": "Attack Speed",
 	// Shared stat display label in item tooltips, class details, cosmetic and equipment slots. Never translate its internal identifier. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
@@ -3110,7 +3123,7 @@ module.exports = {
 	// docs/directory.js; tutorial checklist task label; action key stays unchanged. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged. Names: ["CODE"].
 	"tutorial.task.code": "CODE!",
 	// docs/directory.js; tutorial checklist task label; action key stays unchanged. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
-	"tutorial.task.com": "Communicator",
+	"tutorial.task.com": "Try a party invite",
 	// docs/directory.js; tutorial checklist task label; action key stays unchanged. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
 	"tutorial.task.compound": "Compound!",
 	// docs/directory.js; tutorial checklist task label; action key stays unchanged. Keep item/NPC/map/monster names, Adventure Land and CODE symbols unchanged.
@@ -3289,7 +3302,7 @@ module.exports = {
 Object.assign(module.exports, {
   // Mothstep Boots tooltip. The flat bonuses apply only on map cave, whose proper name is Cave of Darkness.
   "item.cave_mothsteps.explanation": "Cave of Darkness: +35% Evasion and +20 Speed.",
-  "item.cave_tunnelaxe.explanation": "A stout axe for roots, ribs and stubborn doors.",
+  "item.cave_tunnelaxe.explanation": "A stout axe for roots, ribs, and stubborn doors.",
   "item.cave_reedscythe.explanation": "Made to clear a path.",
   "item.cave_deepaxe.explanation": "A pale seam runs through the dark blade.",
   "item.cave_ambercoat.explanation": "Warm amber is woven into its lining."
@@ -3297,42 +3310,42 @@ Object.assign(module.exports, {
 
 Object.assign(module.exports, {
   // Locktooth's item description: a sword used to force locks, to their owners' displeasure.
-  "item.cave_locktooth.explanation": "It opens locks. Their owners usually object.",
+  "item.cave_locktooth.explanation": "It opens locks. Their owners tend to object.",
   // Counterweight's item description; thick straps hold a heavy stone shield.
-  "item.cave_counterweight.explanation": "A heavy stone shield with thick leather straps.",
+  "item.cave_counterweight.explanation": "A heavy stone shield held by thick leather straps.",
   // Loaded Die's item description; the six face has been weighted to cheat.
-  "item.cave_loaded_die.explanation": "Someone put a little extra weight under the six.",
+  "item.cave_loaded_die.explanation": "Someone added a little extra weight beneath the six.",
   // Cave Amber's material description; warm stone found deep underground.
   "item.cave_amber.explanation": "Warm stone from the lower caves.",
   // Nightjudge's item description, alluding to the spell reflected back at its wielder.
-  "item.cave_blackstaff.explanation": "The last spell it cast came back.",
+  "item.cave_blackstaff.explanation": "The last spell it cast came straight back.",
   // Last Word's item description; its previous owner struck without waiting for a reply.
   "item.cave_backstabber.explanation": "Its owner never waited for an answer.",
   // Dorr's short world greeting. Bring the whole party near him before entering.
-  "npc.dreamkeeper.says.0": "Going inside? Bring your party close.",
+  "npc.dreamkeeper.says.0": "Going in? Bring your whole party close.",
   // Dorr's fallback dialogue; the cave allows 24 minutes of active play.
-  "npc.dreamkeeper.interaction.0": "You have 24 minutes inside. Stay together.",
+  "npc.dreamkeeper.interaction.0": "You get 24 minutes inside. Stay together.",
   // Cave of Many Dreams discovery summary beside the native INFO shortcut.
-  "interaction.dreams.summary": "Enter with your party. Vote, fight and find your way down in 24 minutes.",
+  "interaction.dreams.summary": "Enter with your party. Vote, fight, and find your way down in 24 minutes.",
   // Guide directory title for the comic about Dorr; preserve the NPC name.
-  "directory.guide.cave-story.title": "Dorr’s Story",
-  // Item title for a reward found in the Cave of Many Dreams.
-  "title.cavefound.title": "Cave-found"
+  "directory.guide.cave-story.title": "Nell’s first cave",
+  // Short item-title prefix for a reward found in the Cave of Many Dreams; equipped copies give +5 magic resistance.
+  "title.cavefound.title": "Cave"
 });
 
 // Cave encounter text; the canonical game definitions stay in English for CODE.
 // Cave encounter title and room objective: e01.
 module.exports["event.dreams.e01.name"] = "Dice in a Tin Cup";
 // Cave encounter e01 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e01.text"] = "Pick a bet, then roll the die once for the party. We use gold or Amber from your shared purse. The winnings shown include your stake.";
+module.exports["event.dreams.e01.text"] = "Pick your bet, then roll once for the whole party. Stakes come from your shared gold or Amber, and the listed payout includes the stake.";
 // Cave e01 choice small. Preserve amounts and any item names.
-module.exports["event.dreams.e01.options.small.label"] = "Bet 2,000 shared gold; roll 4–6 for 4,000";
+module.exports["event.dreams.e01.options.small.label"] = "Bet 2,000 shared gold; roll 4–6 to get 4,000";
 // Cave e01 choice large. Preserve amounts and any item names.
-module.exports["event.dreams.e01.options.large.label"] = "Bet 5,000 shared gold; roll 4–6 for 10,000";
+module.exports["event.dreams.e01.options.large.label"] = "Bet 5,000 shared gold; roll 4–6 to get 10,000";
 // Cave e01 choice six. Preserve amounts and any item names.
-module.exports["event.dreams.e01.options.six.label"] = "Bet 2,000 on a six: win 12,000";
+module.exports["event.dreams.e01.options.six.label"] = "Bet 2,000 on a six; win 12,000";
 // Cave e01 choice die. Preserve amounts and any item names.
-module.exports["event.dreams.e01.options.die.label"] = "Bet 6 Amber for a Loaded Die: win on a six";
+module.exports["event.dreams.e01.options.die.label"] = "Bet 6 Amber on a Loaded Die; win on a six";
 // Cave e01 choice favor. Preserve amounts and any item names.
 module.exports["event.dreams.e01.options.favor.label"] = "Roll 4–6 for a helper; 1–3 brings two guards";
 // Cave e01 choice door. Preserve amounts and any item names.
@@ -3340,7 +3353,7 @@ module.exports["event.dreams.e01.options.door.label"] = "Roll for a fight: four 
 // Cave encounter title and room objective: e02.
 module.exports["event.dreams.e02.name"] = "The Unclaimed Parcel";
 // Cave encounter e02 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e02.text"] = "This box has been here for days. I can sell it to you, but I should warn you: it rattles when nobody touches it.";
+module.exports["event.dreams.e02.text"] = "This box has been sitting here for days. I can sell it to you, but fair warning: it rattles when nobody touches it.";
 // Cave e02 choice e02_0. Preserve amounts and any item names.
 module.exports["event.dreams.e02.options.e02_0.label"] = "Cut the seal. Something inside is scratching.";
 // Cave e02 choice e02_0 outcome 0.
@@ -3350,27 +3363,27 @@ module.exports["event.dreams.e02.options.e02_0.outcomes.1.text"] = "The alarm ri
 // Cave e02 choice e02_1. Preserve amounts and any item names.
 module.exports["event.dreams.e02.options.e02_1.label"] = "Pry the hinges off quietly.";
 // Cave e02 choice e02_1 outcome 0.
-module.exports["event.dreams.e02.options.e02_1.outcomes.0.text"] = "You lifted the lid without ringing the alarm.";
+module.exports["event.dreams.e02.options.e02_1.outcomes.0.text"] = "You lift the lid without setting off the alarm.";
 // Cave e02 choice e02_2. Preserve amounts and any item names.
 module.exports["event.dreams.e02.options.e02_2.label"] = "Spend 20 seconds checking the trap.";
 // Cave e02 choice e02_2 result.
-module.exports["event.dreams.e02.options.e02_2.result"] = "We will check it for 20 seconds, then collect the supplies.";
+module.exports["event.dreams.e02.options.e02_2.result"] = "You spend 20 seconds checking it, then collect the supplies.";
 // Cave e02 choice e02_3. Preserve amounts and any item names.
 module.exports["event.dreams.e02.options.e02_3.label"] = "Buy the box for 2,000 shared gold";
 // Cave e02 choice e02_3 outcome 0.
 module.exports["event.dreams.e02.options.e02_3.outcomes.0.text"] = "The seller opens the box for you.";
 // Cave e02 choice e02_4. Preserve amounts and any item names.
-module.exports["event.dreams.e02.options.e02_4.label"] = "Ring the alarm and claim what the guards carry.";
+module.exports["event.dreams.e02.options.e02_4.label"] = "Ring the alarm and take what the guards carry.";
 // Cave e02 choice e02_4 outcome 0.
-module.exports["event.dreams.e02.options.e02_4.outcomes.0.text"] = "The guards heard the bell.";
+module.exports["event.dreams.e02.options.e02_4.outcomes.0.text"] = "The guards hear the bell.";
 // Cave e02 choice e02_5. Preserve amounts and any item names.
-module.exports["event.dreams.e02.options.e02_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e02.options.e02_5.label"] = "Leave it and keep going.";
 
 // Cave encounter text; the canonical game definitions stay in English for CODE.
 // Cave encounter title and room objective: e03.
 module.exports["event.dreams.e03.name"] = "Feed the Vault";
 // Cave encounter e03 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e03.text"] = "I keep rats for the wolves. You can help me clear the pen, buy some bait, or take the tame one with you.";
+module.exports["event.dreams.e03.text"] = "I keep rats for the wolves. You can help clear the pen, buy some bait, or take the tame one along.";
 // Cave e03 choice e03_0. Preserve amounts and any item names.
 module.exports["event.dreams.e03.options.e03_0.label"] = "Open the rat gate. Fight six rats for the parcel.";
 // Cave e03 choice e03_0 outcome 0.
@@ -3378,9 +3391,9 @@ module.exports["event.dreams.e03.options.e03_0.outcomes.0.text"] = "Six rats spi
 // Cave e03 choice e03_1. Preserve amounts and any item names.
 module.exports["event.dreams.e03.options.e03_1.label"] = "Put your hand through the bars.";
 // Cave e03 choice e03_1 outcome 0.
-module.exports["event.dreams.e03.options.e03_1.outcomes.0.text"] = "You reached the latch.";
+module.exports["event.dreams.e03.options.e03_1.outcomes.0.text"] = "You reach the latch.";
 // Cave e03 choice e03_1 outcome 1.
-module.exports["event.dreams.e03.options.e03_1.outcomes.1.text"] = "A wolf caught your sleeve.";
+module.exports["event.dreams.e03.options.e03_1.outcomes.1.text"] = "A wolf catches your sleeve.";
 // Cave e03 choice e03_2. Preserve amounts and any item names.
 module.exports["event.dreams.e03.options.e03_2.label"] = "Buy a rattling feed tin for 2 Amber";
 // Cave e03 choice e03_2 outcome 0.
@@ -3388,23 +3401,23 @@ module.exports["event.dreams.e03.options.e03_2.outcomes.0.text"] = "Keep it wrap
 // Cave e03 choice e03_3. Preserve amounts and any item names.
 module.exports["event.dreams.e03.options.e03_3.label"] = "Free the tame rat. Let it follow us.";
 // Cave e03 choice e03_3 outcome 0.
-module.exports["event.dreams.e03.options.e03_3.outcomes.0.text"] = "The rat knows whose side it is on.";
+module.exports["event.dreams.e03.options.e03_3.outcomes.0.text"] = "The rat seems to know whose side it is on.";
 // Cave e03 choice e03_4. Preserve amounts and any item names.
-module.exports["event.dreams.e03.options.e03_4.label"] = "Sell the spare feed for 2,000 cave gold.";
+module.exports["event.dreams.e03.options.e03_4.label"] = "Sell the spare feed for 2,000 cave gold";
 // Cave e03 choice e03_4 outcome 0.
-module.exports["event.dreams.e03.options.e03_4.outcomes.0.text"] = "The handler counts out the gold.";
+module.exports["event.dreams.e03.options.e03_4.outcomes.0.text"] = "The handler counts out 2,000 cave gold.";
 // Cave e03 choice e03_5. Preserve amounts and any item names.
-module.exports["event.dreams.e03.options.e03_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e03.options.e03_5.label"] = "Leave it and keep going.";
 // Cave encounter title and room objective: e04.
 module.exports["event.dreams.e04.name"] = "The Hot Forge";
 // Cave encounter e04 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e04.text"] = "There is a supply box stuck behind the hot forge. We can force it out, buy a cooled one, or leave it alone.";
+module.exports["event.dreams.e04.text"] = "There’s a supply box stuck behind the hot forge. We can force it out, buy a cooled one, or decide it isn’t worth the burns.";
 // Cave e04 choice e04_0. Preserve amounts and any item names.
-module.exports["event.dreams.e04.options.e04_0.label"] = "Pull the box out now; the guards may hear";
+module.exports["event.dreams.e04.options.e04_0.label"] = "Pull the box out now; the guard may hear";
 // Cave e04 choice e04_0 outcome 0.
 module.exports["event.dreams.e04.options.e04_0.outcomes.0.text"] = "You pull the supply box free.";
 // Cave e04 choice e04_0 outcome 1.
-module.exports["event.dreams.e04.options.e04_0.outcomes.1.text"] = "The forge guard heard you. He calls his men.";
+module.exports["event.dreams.e04.options.e04_0.outcomes.1.text"] = "The forge guard hears you and comes after you.";
 // Cave e04 choice e04_1. Preserve amounts and any item names.
 module.exports["event.dreams.e04.options.e04_1.label"] = "Buy the cooled box for 4 shared Amber";
 // Cave e04 choice e04_1 outcome 0.
@@ -3420,43 +3433,43 @@ module.exports["event.dreams.e04.options.e04_3.outcomes.0.text"] = "Mind the hot
 // Cave e04 choice e04_4. Preserve amounts and any item names.
 module.exports["event.dreams.e04.options.e04_4.label"] = "Sell the scraps to the smith for 2 Amber";
 // Cave e04 choice e04_4 outcome 0.
-module.exports["event.dreams.e04.options.e04_4.outcomes.0.text"] = "The smith buys the scraps. The Amber goes into the shared purse.";
+module.exports["event.dreams.e04.options.e04_4.outcomes.0.text"] = "The smith buys the scraps. The 2 Amber goes into the shared purse.";
 // Cave e04 choice e04_5. Preserve amounts and any item names.
-module.exports["event.dreams.e04.options.e04_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e04.options.e04_5.label"] = "Leave it and keep going.";
 
 // Cave encounter text; the canonical game definitions stay in English for CODE.
 // Cave encounter title and room objective: e05.
 module.exports["event.dreams.e05.name"] = "The Guard’s Contract";
 // Cave encounter e05 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e05.text"] = "Need another sword? Pay me now and I will fight beside you. Or take a chance on the guard offering to lead you for free.";
+module.exports["event.dreams.e05.text"] = "Need another sword? Pay me now and I’ll fight beside you. Or trust the guard offering to lead you for free. Your call.";
 // Cave e05 choice e05_0. Preserve amounts and any item names.
 module.exports["event.dreams.e05.options.e05_0.label"] = "Hire the guard for 2,000 shared gold";
 // Cave e05 choice e05_0 outcome 0.
-module.exports["event.dreams.e05.options.e05_0.outcomes.0.text"] = "I will watch your back.";
+module.exports["event.dreams.e05.options.e05_0.outcomes.0.text"] = "I’ll watch your back.";
 // Cave e05 choice e05_1. Preserve amounts and any item names.
 module.exports["event.dreams.e05.options.e05_1.label"] = "Let the guard lead. No money up front.";
 // Cave e05 choice e05_1 outcome 0.
 module.exports["event.dreams.e05.options.e05_1.outcomes.0.text"] = "A deal is a deal. Follow me.";
 // Cave e05 choice e05_1 outcome 1.
-module.exports["event.dreams.e05.options.e05_1.outcomes.1.text"] = "The guard whistles. His friends step out.";
+module.exports["event.dreams.e05.options.e05_1.outcomes.1.text"] = "The guard whistles. Three of his friends step out.";
 // Cave e05 choice e05_2. Preserve amounts and any item names.
-module.exports["event.dreams.e05.options.e05_2.label"] = "Fight the guard for the contract chest.";
+module.exports["event.dreams.e05.options.e05_2.label"] = "Fight the guard for the contract chest";
 // Cave e05 choice e05_2 outcome 0.
 module.exports["event.dreams.e05.options.e05_2.outcomes.0.text"] = "Then come and earn it.";
 // Cave e05 choice e05_3. Preserve amounts and any item names.
-module.exports["event.dreams.e05.options.e05_3.label"] = "Take a route with fewer guards.";
+module.exports["event.dreams.e05.options.e05_3.label"] = "Take a route with fewer guards";
 // Cave e05 choice e05_3 outcome 0.
-module.exports["event.dreams.e05.options.e05_3.outcomes.0.text"] = "Keep this pass where they can see it.";
+module.exports["event.dreams.e05.options.e05_3.outcomes.0.text"] = "Keep this pass where the guards can see it.";
 // Cave e05 choice e05_4. Preserve amounts and any item names.
-module.exports["event.dreams.e05.options.e05_4.label"] = "Buy a spare lamp for 1 Amber.";
+module.exports["event.dreams.e05.options.e05_4.label"] = "Buy a spare lamp for 1 Amber";
 // Cave e05 choice e05_4 outcome 0.
-module.exports["event.dreams.e05.options.e05_4.outcomes.0.text"] = "You will want this below.";
+module.exports["event.dreams.e05.options.e05_4.outcomes.0.text"] = "You’ll want this below.";
 // Cave e05 choice e05_5. Preserve amounts and any item names.
-module.exports["event.dreams.e05.options.e05_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e05.options.e05_5.label"] = "Leave it and keep going.";
 // Cave encounter title and room objective: e06.
 module.exports["event.dreams.e06.name"] = "The Trapped Surveyor";
 // Cave encounter e06 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e06.text"] = "Wolves have cornered {npc}. “Help me! Kill these wolves and I will share what is in my pack.” You could also wait and search the pack if the wolves kill them.";
+module.exports["event.dreams.e06.text"] = "Wolves have cornered {npc}. “Help me! Kill these wolves and I’ll share what’s in my pack.” You could also wait and search the pack if the wolves kill them.";
 // Cave e06 choice save. Preserve amounts and any item names.
 module.exports["event.dreams.e06.options.save.label"] = "Save {npc}: fight the wolves";
 // Cave e06 choice watch. Preserve amounts and any item names.
@@ -3474,7 +3487,7 @@ module.exports["event.dreams.e06.options.cover.label"] = "Bring {npc} behind us;
 // Cave encounter title and room objective: e07.
 module.exports["event.dreams.e07.name"] = "Borrow a Uniform";
 // Cave encounter e07 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e07.text"] = "I took these coats from the guards. A coat will get you past one guardroom. The captain may notice if you take his.";
+module.exports["event.dreams.e07.text"] = "I took these coats from the guards. One will get you through a guardroom. Take the captain’s, though, and he may notice.";
 // Cave e07 choice e07_0. Preserve amounts and any item names.
 module.exports["event.dreams.e07.options.e07_0.label"] = "Pay 2 Amber for a guard’s coat. Skip the next guardroom.";
 // Cave e07 choice e07_0 outcome 0.
@@ -3482,27 +3495,27 @@ module.exports["event.dreams.e07.options.e07_0.outcomes.0.text"] = "Keep the hoo
 // Cave e07 choice e07_1. Preserve amounts and any item names.
 module.exports["event.dreams.e07.options.e07_1.label"] = "Steal the captain’s coat; he may catch us";
 // Cave e07 choice e07_1 outcome 0.
-module.exports["event.dreams.e07.options.e07_1.outcomes.0.text"] = "The captain has not noticed. Yet.";
+module.exports["event.dreams.e07.options.e07_1.outcomes.0.text"] = "The captain hasn’t noticed. Yet.";
 // Cave e07 choice e07_1 outcome 1.
 module.exports["event.dreams.e07.options.e07_1.outcomes.1.text"] = "That coat has a bell sewn into it.";
 // Cave e07 choice e07_2. Preserve amounts and any item names.
-module.exports["event.dreams.e07.options.e07_2.label"] = "Challenge the captain for the coat.";
+module.exports["event.dreams.e07.options.e07_2.label"] = "Challenge the captain for the coat";
 // Cave e07 choice e07_2 outcome 0.
 module.exports["event.dreams.e07.options.e07_2.outcomes.0.text"] = "The captain draws both blades.";
 // Cave e07 choice e07_3. Preserve amounts and any item names.
-module.exports["event.dreams.e07.options.e07_3.label"] = "Take a discarded lamp from the locker.";
+module.exports["event.dreams.e07.options.e07_3.label"] = "Take a discarded lamp from the locker";
 // Cave e07 choice e07_3 outcome 0.
 module.exports["event.dreams.e07.options.e07_3.outcomes.0.text"] = "The oil is still good.";
 // Cave e07 choice e07_4. Preserve amounts and any item names.
 module.exports["event.dreams.e07.options.e07_4.label"] = "Search the pockets for supplies";
 // Cave e07 choice e07_4 outcome 0.
-module.exports["event.dreams.e07.options.e07_4.outcomes.0.text"] = "You find a bundle of supplies in the lining.";
+module.exports["event.dreams.e07.options.e07_4.outcomes.0.text"] = "You find a bundle of supplies tucked into the lining.";
 // Cave e07 choice e07_5. Preserve amounts and any item names.
-module.exports["event.dreams.e07.options.e07_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e07.options.e07_5.label"] = "Leave it and keep going.";
 // Cave encounter title and room objective: e08.
 module.exports["event.dreams.e08.name"] = "Pick a Fighter";
 // Cave encounter e08 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e08.text"] = "Pick a pen and fight what is inside. Win and you get something from my supply box. There are crabs, bats, wolves—and one very large Lockbreaker.";
+module.exports["event.dreams.e08.text"] = "Pick a pen and fight whatever’s inside. Win and you get something from my supply box. Crabs, bats, wolves—and one very large Lockbreaker.";
 // Cave e08 choice e08_0. Preserve amounts and any item names.
 module.exports["event.dreams.e08.options.e08_0.label"] = "Choose three crabs. Slow, but armored.";
 // Cave e08 choice e08_0 outcome 0.
@@ -3510,7 +3523,7 @@ module.exports["event.dreams.e08.options.e08_0.outcomes.0.text"] = "The crab pen
 // Cave e08 choice e08_1. Preserve amounts and any item names.
 module.exports["event.dreams.e08.options.e08_1.label"] = "Fight six bats";
 // Cave e08 choice e08_1 outcome 0.
-module.exports["event.dreams.e08.options.e08_1.outcomes.0.text"] = "The bats spread around the room.";
+module.exports["event.dreams.e08.options.e08_1.outcomes.0.text"] = "Six bats spread across the room.";
 // Cave e08 choice e08_2. Preserve amounts and any item names.
 module.exports["event.dreams.e08.options.e08_2.label"] = "Choose the wolf pair. They move together.";
 // Cave e08 choice e08_2 outcome 0.
@@ -3520,29 +3533,29 @@ module.exports["event.dreams.e08.options.e08_3.label"] = "Choose the Lockbreaker
 // Cave e08 choice e08_3 outcome 0.
 module.exports["event.dreams.e08.options.e08_3.outcomes.0.text"] = "The Lockbreaker steps into the ring.";
 // Cave e08 choice e08_4. Preserve amounts and any item names.
-module.exports["event.dreams.e08.options.e08_4.label"] = "Let the handler choose your opponent.";
+module.exports["event.dreams.e08.options.e08_4.label"] = "Let the handler choose your opponent";
 // Cave e08 choice e08_4 outcome 0.
-module.exports["event.dreams.e08.options.e08_4.outcomes.0.text"] = "The handler calls the fight off. Take the purse.";
+module.exports["event.dreams.e08.options.e08_4.outcomes.0.text"] = "The handler calls the fight off. Take the supplies and 3,000 cave gold.";
 // Cave e08 choice e08_4 outcome 1.
-module.exports["event.dreams.e08.options.e08_4.outcomes.1.text"] = "The handler opens two pens.";
+module.exports["event.dreams.e08.options.e08_4.outcomes.1.text"] = "The handler opens two wolf pens. Four wolves come out.";
 // Cave e08 choice e08_5. Preserve amounts and any item names.
-module.exports["event.dreams.e08.options.e08_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e08.options.e08_5.label"] = "Leave it and keep going.";
 // Cave encounter title and room objective: e09.
 module.exports["event.dreams.e09.name"] = "Finish the Golem";
 // Cave encounter e09 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e09.text"] = "This golem has not moved in years. A proper repair costs 4 Amber. That loose stone might also wake it, but I cannot promise it will like us.";
+module.exports["event.dreams.e09.text"] = "This golem hasn’t moved in years. A proper repair costs 4 Amber. That loose stone might wake it too, but I can’t promise it’ll be pleased to see us.";
 // Cave e09 choice e09_0. Preserve amounts and any item names.
-module.exports["event.dreams.e09.options.e09_0.label"] = "Use 4 Amber to repair its chest.";
+module.exports["event.dreams.e09.options.e09_0.label"] = "Use 4 Amber to repair its chest";
 // Cave e09 choice e09_0 outcome 0.
-module.exports["event.dreams.e09.options.e09_0.outcomes.0.text"] = "The golem stands beside you.";
+module.exports["event.dreams.e09.options.e09_0.outcomes.0.text"] = "The golem rises and stands beside you.";
 // Cave e09 choice e09_1. Preserve amounts and any item names.
-module.exports["event.dreams.e09.options.e09_1.label"] = "Fit the loose power stone.";
+module.exports["event.dreams.e09.options.e09_1.label"] = "Fit the loose power stone";
 // Cave e09 choice e09_1 outcome 0.
-module.exports["event.dreams.e09.options.e09_1.outcomes.0.text"] = "The golem follows your voice.";
+module.exports["event.dreams.e09.options.e09_1.outcomes.0.text"] = "The golem turns toward your voice and follows.";
 // Cave e09 choice e09_1 outcome 1.
-module.exports["event.dreams.e09.options.e09_1.outcomes.1.text"] = "The golem mistakes you for intruders.";
+module.exports["event.dreams.e09.options.e09_1.outcomes.1.text"] = "The golem wakes and mistakes you for intruders.";
 // Cave e09 choice e09_2. Preserve amounts and any item names.
-module.exports["event.dreams.e09.options.e09_2.label"] = "Remove the stone while it is awake.";
+module.exports["event.dreams.e09.options.e09_2.label"] = "Remove the stone while it’s awake";
 // Cave e09 choice e09_2 outcome 0.
 module.exports["event.dreams.e09.options.e09_2.outcomes.0.text"] = "The golem closes its fist around the stone.";
 // Cave e09 choice e09_3. Preserve amounts and any item names.
@@ -3550,49 +3563,49 @@ module.exports["event.dreams.e09.options.e09_3.label"] = "Sell the broken plates
 // Cave e09 choice e09_3 outcome 0.
 module.exports["event.dreams.e09.options.e09_3.outcomes.0.text"] = "The mechanic buys the plates and pays 2 Amber.";
 // Cave e09 choice e09_4. Preserve amounts and any item names.
-module.exports["event.dreams.e09.options.e09_4.label"] = "Spend 20 seconds opening its storage hatch.";
+module.exports["event.dreams.e09.options.e09_4.label"] = "Spend 20 seconds opening its storage hatch";
 // Cave e09 choice e09_4 result.
-module.exports["event.dreams.e09.options.e09_4.result"] = "We will check it for 20 seconds, then collect the supplies.";
+module.exports["event.dreams.e09.options.e09_4.result"] = "You spend 20 seconds opening the hatch, then collect the supplies.";
 // Cave e09 choice e09_5. Preserve amounts and any item names.
-module.exports["event.dreams.e09.options.e09_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e09.options.e09_5.label"] = "Leave it and keep going.";
 // Cave encounter title and room objective: e10.
 module.exports["event.dreams.e10.name"] = "The Handler and the Wolves";
 // Cave encounter e10 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e10.text"] = "The red chain opens the big pen. There are six level 100 wolves inside. Try the smaller pen if you want a fight you might survive.";
+module.exports["event.dreams.e10.text"] = "The red chain opens the big pen. Six level 100 wolves in there. If you prefer your odds less insulting, try the smaller pen.";
 // Cave e10 choice e10_0. Preserve amounts and any item names.
-module.exports["event.dreams.e10.options.e10_0.label"] = "Pull the red chain: six level 100 wolves.";
+module.exports["event.dreams.e10.options.e10_0.label"] = "Pull the red chain: six level 100 wolves";
 // Cave e10 choice e10_1. Preserve amounts and any item names.
-module.exports["event.dreams.e10.options.e10_1.label"] = "Open the small pen instead.";
+module.exports["event.dreams.e10.options.e10_1.label"] = "Open the small pen instead";
 // Cave e10 choice e10_1 outcome 0.
-module.exports["event.dreams.e10.options.e10_1.outcomes.0.text"] = "These wolves are younger. Still hungry.";
+module.exports["event.dreams.e10.options.e10_1.outcomes.0.text"] = "Two younger wolves come out. Still hungry.";
 // Cave e10 choice e10_2. Preserve amounts and any item names.
 module.exports["event.dreams.e10.options.e10_2.label"] = "Buy a tin rattle for 2 shared Amber";
 // Cave e10 choice e10_2 outcome 0.
-module.exports["event.dreams.e10.options.e10_2.outcomes.0.text"] = "Throw it between the guards.";
+module.exports["event.dreams.e10.options.e10_2.outcomes.0.text"] = "Keep it handy for when you need a distraction.";
 // Cave e10 choice e10_3. Preserve amounts and any item names.
-module.exports["event.dreams.e10.options.e10_3.label"] = "Reach for the handler’s purse.";
+module.exports["event.dreams.e10.options.e10_3.label"] = "Reach for the handler’s purse";
 // Cave e10 choice e10_3 outcome 0.
-module.exports["event.dreams.e10.options.e10_3.outcomes.0.text"] = "The handler was asleep.";
+module.exports["event.dreams.e10.options.e10_3.outcomes.0.text"] = "The handler really was asleep. You take what you find.";
 // Cave e10 choice e10_3 outcome 1.
-module.exports["event.dreams.e10.options.e10_3.outcomes.1.text"] = "The handler was pretending.";
+module.exports["event.dreams.e10.options.e10_3.outcomes.1.text"] = "The handler was pretending. Four wolves are waiting.";
 // Cave e10 choice e10_4. Preserve amounts and any item names.
-module.exports["event.dreams.e10.options.e10_4.label"] = "Pay 2,000 cave gold for the locked crate.";
+module.exports["event.dreams.e10.options.e10_4.label"] = "Pay 2,000 cave gold for the locked crate";
 // Cave e10 choice e10_4 outcome 0.
-module.exports["event.dreams.e10.options.e10_4.outcomes.0.text"] = "Keep your fingers away from the red chain.";
+module.exports["event.dreams.e10.options.e10_4.outcomes.0.text"] = "The handler hands over the locked crate.";
 // Cave e10 choice e10_5. Preserve amounts and any item names.
-module.exports["event.dreams.e10.options.e10_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e10.options.e10_5.label"] = "Leave it and keep going.";
 
 // Cave encounter text; the canonical game definitions stay in English for CODE.
 // Cave encounter title and room objective: e11.
 module.exports["event.dreams.e11.name"] = "Two People Claim the Chest";
 // Cave encounter e11 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e11.text"] = "{npc} carried the chest here. {rival} has its key. Both want to keep it, and neither will back down. You can help one, fight both, or let them settle it.";
+module.exports["event.dreams.e11.text"] = "{npc} carried the chest here. {rival} has the key. They both claim it, and neither looks interested in compromise.";
 // Cave e11 choice left. Preserve amounts and any item names.
 module.exports["event.dreams.e11.options.left.label"] = "Help {npc} fight {rival}";
 // Cave e11 choice right. Preserve amounts and any item names.
 module.exports["event.dreams.e11.options.right.label"] = "Help {rival} fight {npc}";
 // Cave e11 choice neither. Preserve amounts and any item names.
-module.exports["event.dreams.e11.options.neither.label"] = "Let them fight; collect what is left";
+module.exports["event.dreams.e11.options.neither.label"] = "Let them fight; collect what’s left";
 // Cave e11 choice both. Preserve amounts and any item names.
 module.exports["event.dreams.e11.options.both.label"] = "Fight both and take the chest";
 // Cave e11 choice peace. Preserve amounts and any item names.
@@ -3602,7 +3615,7 @@ module.exports["event.dreams.e11.options.testimony.label"] = "Help whichever fig
 // Cave encounter title and room objective: e12.
 module.exports["event.dreams.e12.name"] = "The Bell Ropes";
 // Cave encounter e12 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e12.text"] = "These ropes ring the guard bells. The short one calls three guards. The long one calls their keeper. The red one opens the wolf pen.";
+module.exports["event.dreams.e12.text"] = "These ropes ring the guard bells. Short calls three guards. Long calls their keeper. Red opens the wolf pen. At least they’ve made the bad ideas easy to tell apart.";
 // Cave e12 choice e12_0. Preserve amounts and any item names.
 module.exports["event.dreams.e12.options.e12_0.label"] = "Pull the short rope. Wake three guards.";
 // Cave e12 choice e12_0 outcome 0.
@@ -3612,21 +3625,21 @@ module.exports["event.dreams.e12.options.e12_1.label"] = "Pull the long rope. Wa
 // Cave e12 choice e12_1 outcome 0.
 module.exports["event.dreams.e12.options.e12_1.outcomes.0.text"] = "A deeper bell answers.";
 // Cave e12 choice e12_2. Preserve amounts and any item names.
-module.exports["event.dreams.e12.options.e12_2.label"] = "Cut the red rope: level 100 wolves.";
+module.exports["event.dreams.e12.options.e12_2.label"] = "Cut the red rope: level 100 wolves";
 // Cave e12 choice e12_3. Preserve amounts and any item names.
-module.exports["event.dreams.e12.options.e12_3.label"] = "Take the loose bell as a decoy.";
+module.exports["event.dreams.e12.options.e12_3.label"] = "Take the loose bell as a decoy";
 // Cave e12 choice e12_3 outcome 0.
-module.exports["event.dreams.e12.options.e12_3.outcomes.0.text"] = "It will draw a guard away from the next fight.";
+module.exports["event.dreams.e12.options.e12_3.outcomes.0.text"] = "You take the loose bell for a distraction later.";
 // Cave e12 choice e12_4. Preserve amounts and any item names.
-module.exports["event.dreams.e12.options.e12_4.label"] = "Use a pry bar to open the bell’s base.";
+module.exports["event.dreams.e12.options.e12_4.label"] = "Use a pry bar to open the bell’s base";
 // Cave e12 choice e12_5. Preserve amounts and any item names.
-module.exports["event.dreams.e12.options.e12_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e12.options.e12_5.label"] = "Leave it and keep going.";
 // Cave encounter title and room objective: e13.
 module.exports["event.dreams.e13.name"] = "The Strong Magnet";
 // Cave encounter e13 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e13.text"] = "The magnet pulls loose metal out of the walls. Turn it too high and it may pull the armored sentinel over here too.";
+module.exports["event.dreams.e13.text"] = "The magnet pulls loose metal out of the walls. Turn it up too far and it might pull the armored sentinel over here as well.";
 // Cave e13 choice e13_0. Preserve amounts and any item names.
-module.exports["event.dreams.e13.options.e13_0.label"] = "Turn the magnet all the way up.";
+module.exports["event.dreams.e13.options.e13_0.label"] = "Turn the magnet all the way up";
 // Cave e13 choice e13_0 outcome 0.
 module.exports["event.dreams.e13.options.e13_0.outcomes.0.text"] = "A locked case tears free of the ceiling.";
 // Cave e13 choice e13_0 outcome 1.
@@ -3636,29 +3649,29 @@ module.exports["event.dreams.e13.options.e13_1.label"] = "Sell the loose metal f
 // Cave e13 choice e13_1 outcome 0.
 module.exports["event.dreams.e13.options.e13_1.outcomes.0.text"] = "The operator buys the metal and pays 2 Amber.";
 // Cave e13 choice e13_2. Preserve amounts and any item names.
-module.exports["event.dreams.e13.options.e13_2.label"] = "Pull the sentinel’s shield toward the party.";
+module.exports["event.dreams.e13.options.e13_2.label"] = "Pull the sentinel’s shield toward the party";
 // Cave e13 choice e13_2 outcome 0.
-module.exports["event.dreams.e13.options.e13_2.outcomes.0.text"] = "The sentinel comes with its shield.";
+module.exports["event.dreams.e13.options.e13_2.outcomes.0.text"] = "The shield moves. The sentinel comes with it.";
 // Cave e13 choice e13_3. Preserve amounts and any item names.
-module.exports["event.dreams.e13.options.e13_3.label"] = "Pay 2 Amber to use the small magnet.";
+module.exports["event.dreams.e13.options.e13_3.label"] = "Pay 2 Amber to use the small magnet";
 // Cave e13 choice e13_3 outcome 0.
-module.exports["event.dreams.e13.options.e13_3.outcomes.0.text"] = "A little box slides out of the wall.";
+module.exports["event.dreams.e13.options.e13_3.outcomes.0.text"] = "A small box slides out of the wall.";
 // Cave e13 choice e13_4. Preserve amounts and any item names.
-module.exports["event.dreams.e13.options.e13_4.label"] = "Take the magnetic latch to open stuck hatches";
+module.exports["event.dreams.e13.options.e13_4.label"] = "Take the magnetic latch for a stuck hatch";
 // Cave e13 choice e13_4 outcome 0.
-module.exports["event.dreams.e13.options.e13_4.outcomes.0.text"] = "It grips the next locked hatch.";
+module.exports["event.dreams.e13.options.e13_4.outcomes.0.text"] = "You take the magnetic latch with you.";
 // Cave e13 choice e13_5. Preserve amounts and any item names.
-module.exports["event.dreams.e13.options.e13_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e13.options.e13_5.label"] = "Leave it and keep going.";
 // Cave encounter title and room objective: e14.
 module.exports["event.dreams.e14.name"] = "Two Couriers, One Badge";
 // Cave encounter e14 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e14.text"] = "{npc} and {rival} both claim this delivery. Each says the other stole it. They are about to fight over the crate.";
+module.exports["event.dreams.e14.text"] = "{npc} and {rival} both claim the delivery. Each says the other stole it, and they’re about to settle the matter with steel.";
 // Cave e14 choice left. Preserve amounts and any item names.
 module.exports["event.dreams.e14.options.left.label"] = "Help {npc} fight {rival}";
 // Cave e14 choice right. Preserve amounts and any item names.
 module.exports["event.dreams.e14.options.right.label"] = "Help {rival} fight {npc}";
 // Cave e14 choice neither. Preserve amounts and any item names.
-module.exports["event.dreams.e14.options.neither.label"] = "Let them fight; collect what is left";
+module.exports["event.dreams.e14.options.neither.label"] = "Let them fight; collect what’s left";
 // Cave e14 choice both. Preserve amounts and any item names.
 module.exports["event.dreams.e14.options.both.label"] = "Fight both and take the chest";
 // Cave e14 choice peace. Preserve amounts and any item names.
@@ -3670,145 +3683,145 @@ module.exports["event.dreams.e14.options.testimony.label"] = "Help whichever fig
 // Cave encounter title and room objective: e15.
 module.exports["event.dreams.e15.name"] = "Letter to the Captain";
 // Cave encounter e15 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e15.text"] = "I need this letter delivered to the captain. He may pay you for it. He may also blame you for what it says. Your choice.";
+module.exports["event.dreams.e15.text"] = "I need this letter delivered to the captain. He might pay you for it. He might also decide whatever it says is your fault.";
 // Cave e15 choice e15_0. Preserve amounts and any item names.
 module.exports["event.dreams.e15.options.e15_0.label"] = "Deliver the letter; the captain may blame us";
 // Cave e15 choice e15_0 outcome 0.
-module.exports["event.dreams.e15.options.e15_0.outcomes.0.text"] = "The captain pays for the message.";
+module.exports["event.dreams.e15.options.e15_0.outcomes.0.text"] = "The captain accepts the message and pays you 3,000 cave gold.";
 // Cave e15 choice e15_0 outcome 1.
-module.exports["event.dreams.e15.options.e15_0.outcomes.1.text"] = "The letter names you as the thief.";
+module.exports["event.dreams.e15.options.e15_0.outcomes.1.text"] = "The letter names you as the thief. Two people move to stop you.";
 // Cave e15 choice e15_1. Preserve amounts and any item names.
-module.exports["event.dreams.e15.options.e15_1.label"] = "Open the letter in front of the captain.";
+module.exports["event.dreams.e15.options.e15_1.label"] = "Open the letter in front of the captain";
 // Cave e15 choice e15_1 outcome 0.
 module.exports["event.dreams.e15.options.e15_1.outcomes.0.text"] = "The captain reaches for his sword.";
 // Cave e15 choice e15_2. Preserve amounts and any item names.
 module.exports["event.dreams.e15.options.e15_2.label"] = "Hire the messenger for 2,000 shared gold";
 // Cave e15 choice e15_2 outcome 0.
-module.exports["event.dreams.e15.options.e15_2.outcomes.0.text"] = "The messenger joins your party as a helper.";
+module.exports["event.dreams.e15.options.e15_2.outcomes.0.text"] = "The messenger agrees to come with you.";
 // Cave e15 choice e15_3. Preserve amounts and any item names.
 module.exports["event.dreams.e15.options.e15_3.label"] = "Take the messenger’s spare lamp";
 // Cave e15 choice e15_3 outcome 0.
-module.exports["event.dreams.e15.options.e15_3.outcomes.0.text"] = "She has already lit another.";
+module.exports["event.dreams.e15.options.e15_3.outcomes.0.text"] = "She has another one lit already.";
 // Cave e15 choice e15_4. Preserve amounts and any item names.
-module.exports["event.dreams.e15.options.e15_4.label"] = "Read the letter for 20 seconds, then collect the supplies";
+module.exports["event.dreams.e15.options.e15_4.label"] = "Spend 20 seconds reading the letter, then collect the supplies";
 // Cave e15 choice e15_4 result.
-module.exports["event.dreams.e15.options.e15_4.result"] = "We will check it for 20 seconds, then collect the supplies.";
+module.exports["event.dreams.e15.options.e15_4.result"] = "You spend 20 seconds checking the letter, then collect the supplies.";
 // Cave e15 choice e15_5. Preserve amounts and any item names.
-module.exports["event.dreams.e15.options.e15_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e15.options.e15_5.label"] = "Leave it and keep going.";
 // Cave encounter title and room objective: e16.
 module.exports["event.dreams.e16.name"] = "Trade the Crates";
 // Cave encounter e16 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e16.text"] = "Two crates were left on my cart. You can take the sealed one, pay to open both, or help me with the guards watching the other one.";
+module.exports["event.dreams.e16.text"] = "Two crates were left on my cart. One’s sealed, one’s being watched. You can gamble on the first, pay for a safer look, or deal with the guards yourself.";
 // Cave e16 choice e16_0. Preserve amounts and any item names.
 module.exports["event.dreams.e16.options.e16_0.label"] = "Take the sealed crate; it may contain bats";
 // Cave e16 choice e16_0 outcome 0.
-module.exports["event.dreams.e16.options.e16_0.outcomes.0.text"] = "Their crate contains a parcel and 4,000 gold.";
+module.exports["event.dreams.e16.options.e16_0.outcomes.0.text"] = "The crate holds supplies and 4,000 cave gold.";
 // Cave e16 choice e16_0 outcome 1.
-module.exports["event.dreams.e16.options.e16_0.outcomes.1.text"] = "Their crate contains live bats.";
+module.exports["event.dreams.e16.options.e16_0.outcomes.1.text"] = "The crate holds six very live bats.";
 // Cave e16 choice e16_1. Preserve amounts and any item names.
-module.exports["event.dreams.e16.options.e16_1.label"] = "Pay 3 Amber to open both crates.";
+module.exports["event.dreams.e16.options.e16_1.label"] = "Pay 3 Amber to open both crates";
 // Cave e16 choice e16_1 outcome 0.
-module.exports["event.dreams.e16.options.e16_1.outcomes.0.text"] = "The trader lets you choose a parcel.";
+module.exports["event.dreams.e16.options.e16_1.outcomes.0.text"] = "The trader opens both and lets you take the supplies.";
 // Cave e16 choice e16_2. Preserve amounts and any item names.
-module.exports["event.dreams.e16.options.e16_2.label"] = "Take the guarded crate.";
+module.exports["event.dreams.e16.options.e16_2.label"] = "Take the guarded crate";
 // Cave e16 choice e16_2 outcome 0.
 module.exports["event.dreams.e16.options.e16_2.outcomes.0.text"] = "Two hired swords step in front of it.";
 // Cave e16 choice e16_3. Preserve amounts and any item names.
-module.exports["event.dreams.e16.options.e16_3.label"] = "Sell the trader’s empty crates for 1,500 gold";
+module.exports["event.dreams.e16.options.e16_3.label"] = "Sell the empty crates for 1,500 cave gold";
 // Cave e16 choice e16_3 outcome 0.
-module.exports["event.dreams.e16.options.e16_3.outcomes.0.text"] = "The trader needs the wood.";
+module.exports["event.dreams.e16.options.e16_3.outcomes.0.text"] = "The trader pays 1,500 cave gold for the wood.";
 // Cave e16 choice e16_4. Preserve amounts and any item names.
-module.exports["event.dreams.e16.options.e16_4.label"] = "Take the loose hinges for a pry bar.";
+module.exports["event.dreams.e16.options.e16_4.label"] = "Take the loose hinges as a pry bar";
 // Cave e16 choice e16_4 outcome 0.
-module.exports["event.dreams.e16.options.e16_4.outcomes.0.text"] = "They are still strong.";
+module.exports["event.dreams.e16.options.e16_4.outcomes.0.text"] = "The hinges are sturdy enough to use.";
 // Cave e16 choice e16_5. Preserve amounts and any item names.
-module.exports["event.dreams.e16.options.e16_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e16.options.e16_5.label"] = "Leave it and keep going.";
 // Cave encounter title and room objective: e17.
 module.exports["event.dreams.e17.name"] = "The Copying Shadow";
 // Cave encounter e17 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e17.text"] = "That dark patch copies the strongest fighter in your party. Step into it and you will have to fight the copy. There is a supply box behind it.";
+module.exports["event.dreams.e17.text"] = "That dark patch copies the strongest fighter in your party. Step into it and the copy will step out. There’s a supply box behind it, naturally.";
 // Cave e17 choice e17_0. Preserve amounts and any item names.
 module.exports["event.dreams.e17.options.e17_0.label"] = "Step into the shadow. Fight a copy of your strongest fighter.";
 // Cave e17 choice e17_0 outcome 0.
-module.exports["event.dreams.e17.options.e17_0.outcomes.0.text"] = "Your shadow steps away from your feet.";
+module.exports["event.dreams.e17.options.e17_0.outcomes.0.text"] = "Your shadow peels away from your feet.";
 // Cave e17 choice e17_1. Preserve amounts and any item names.
-module.exports["event.dreams.e17.options.e17_1.label"] = "Throw a stone into the shadow.";
+module.exports["event.dreams.e17.options.e17_1.label"] = "Throw a stone into the shadow";
 // Cave e17 choice e17_1 outcome 0.
-module.exports["event.dreams.e17.options.e17_1.outcomes.0.text"] = "The stone comes back wrapped in cloth.";
+module.exports["event.dreams.e17.options.e17_1.outcomes.0.text"] = "The stone comes back wrapped with supplies.";
 // Cave e17 choice e17_1 outcome 1.
-module.exports["event.dreams.e17.options.e17_1.outcomes.1.text"] = "Something followed the stone back.";
+module.exports["event.dreams.e17.options.e17_1.outcomes.1.text"] = "Five bats follow the stone back.";
 // Cave e17 choice e17_2. Preserve amounts and any item names.
-module.exports["event.dreams.e17.options.e17_2.label"] = "Pay 2 Amber to keep the lamp burning.";
+module.exports["event.dreams.e17.options.e17_2.label"] = "Pay 2 Amber to keep the lamp burning";
 // Cave e17 choice e17_2 outcome 0.
-module.exports["event.dreams.e17.options.e17_2.outcomes.0.text"] = "The shadow retreats from the parcel.";
+module.exports["event.dreams.e17.options.e17_2.outcomes.0.text"] = "The light drives the shadow back, leaving the supplies within reach.";
 // Cave e17 choice e17_3. Preserve amounts and any item names.
-module.exports["event.dreams.e17.options.e17_3.label"] = "Borrow the watcher’s lamp.";
+module.exports["event.dreams.e17.options.e17_3.label"] = "Borrow the watcher’s lamp";
 // Cave e17 choice e17_3 outcome 0.
 module.exports["event.dreams.e17.options.e17_3.outcomes.0.text"] = "Keep it close to the floor.";
 // Cave e17 choice e17_4. Preserve amounts and any item names.
-module.exports["event.dreams.e17.options.e17_4.label"] = "Watch the shadow for 20 seconds.";
+module.exports["event.dreams.e17.options.e17_4.label"] = "Watch the shadow for 20 seconds";
 // Cave e17 choice e17_4 result.
-module.exports["event.dreams.e17.options.e17_4.result"] = "We will check it for 20 seconds, then collect the supplies.";
+module.exports["event.dreams.e17.options.e17_4.result"] = "You watch it for 20 seconds, then collect the supplies.";
 // Cave e17 choice e17_5. Preserve amounts and any item names.
-module.exports["event.dreams.e17.options.e17_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e17.options.e17_5.label"] = "Leave it and keep going.";
 // Cave encounter title and room objective: e18.
 module.exports["event.dreams.e18.name"] = "The Broken Lift";
 // Cave encounter e18 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e18.text"] = "The lift is stuck with a supply cage below us. Turn the wheel or pry open the service hatch. Something is moving down there.";
+module.exports["event.dreams.e18.text"] = "The lift’s stuck, and there’s a supply cage somewhere below us. Turn the wheel or pry open the service hatch. Something down there is moving.";
 // Cave e18 choice e18_0. Preserve amounts and any item names.
-module.exports["event.dreams.e18.options.e18_0.label"] = "Turn the lift wheel hard.";
+module.exports["event.dreams.e18.options.e18_0.label"] = "Turn the lift wheel hard";
 // Cave e18 choice e18_0 outcome 0.
 module.exports["event.dreams.e18.options.e18_0.outcomes.0.text"] = "A supply cage rises into reach.";
 // Cave e18 choice e18_0 outcome 1.
-module.exports["event.dreams.e18.options.e18_0.outcomes.1.text"] = "The cage is full of rats.";
+module.exports["event.dreams.e18.options.e18_0.outcomes.1.text"] = "The cage comes up carrying eight rats.";
 // Cave e18 choice e18_1. Preserve amounts and any item names.
-module.exports["event.dreams.e18.options.e18_1.label"] = "Hire the lift guard for 2,000 cave gold.";
+module.exports["event.dreams.e18.options.e18_1.label"] = "Hire the lift guard for 2,000 cave gold";
 // Cave e18 choice e18_1 outcome 0.
-module.exports["event.dreams.e18.options.e18_1.outcomes.0.text"] = "I am done guarding a broken lift.";
+module.exports["event.dreams.e18.options.e18_1.outcomes.0.text"] = "I’ve guarded this broken lift long enough. I’m coming with you.";
 // Cave e18 choice e18_2. Preserve amounts and any item names.
-module.exports["event.dreams.e18.options.e18_2.label"] = "Pry open the service hatch.";
+module.exports["event.dreams.e18.options.e18_2.label"] = "Pry open the service hatch";
 // Cave e18 choice e18_3. Preserve amounts and any item names.
 module.exports["event.dreams.e18.options.e18_3.label"] = "Sell the loose cable for 2 Amber";
 // Cave e18 choice e18_3 outcome 0.
 module.exports["event.dreams.e18.options.e18_3.outcomes.0.text"] = "The lift keeper buys the cable and pays 2 Amber.";
 // Cave e18 choice e18_4. Preserve amounts and any item names.
-module.exports["event.dreams.e18.options.e18_4.label"] = "Call down to the lower landing.";
+module.exports["event.dreams.e18.options.e18_4.label"] = "Call down to the lower landing";
 // Cave e18 choice e18_4 outcome 0.
 module.exports["event.dreams.e18.options.e18_4.outcomes.0.text"] = "Two wolves answer from below.";
 // Cave e18 choice e18_5. Preserve amounts and any item names.
-module.exports["event.dreams.e18.options.e18_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e18.options.e18_5.label"] = "Leave it and keep going.";
 
 // Cave encounter text; the canonical game definitions stay in English for CODE.
 // Cave encounter title and room objective: e19.
 module.exports["event.dreams.e19.name"] = "The Farmer’s Guess";
 // Cave encounter e19 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e19.text"] = "I grow mushrooms to sell for Amber. The plain patch is safe. The spotted patch pays more, but picking it may wake the bats.";
+module.exports["event.dreams.e19.text"] = "I grow mushrooms for Amber. The plain patch is safe. The spotted patch pays better, though picking it may wake the bats.";
 // Cave e19 choice e19_0. Preserve amounts and any item names.
 module.exports["event.dreams.e19.options.e19_0.label"] = "Pick the spotted patch; it may wake bats";
 // Cave e19 choice e19_0 outcome 0.
-module.exports["event.dreams.e19.options.e19_0.outcomes.0.text"] = "The farmer buys the whole basket.";
+module.exports["event.dreams.e19.options.e19_0.outcomes.0.text"] = "The farmer buys the harvest and adds 3,000 cave gold.";
 // Cave e19 choice e19_0 outcome 1.
-module.exports["event.dreams.e19.options.e19_0.outcomes.1.text"] = "The picking wakes the bats above you.";
+module.exports["event.dreams.e19.options.e19_0.outcomes.1.text"] = "The picking wakes six bats overhead.";
 // Cave e19 choice e19_1. Preserve amounts and any item names.
 module.exports["event.dreams.e19.options.e19_1.label"] = "Pick the plain patch for 2 Amber";
 // Cave e19 choice e19_1 outcome 0.
-module.exports["event.dreams.e19.options.e19_1.outcomes.0.text"] = "The farmer marks the safe patch.";
+module.exports["event.dreams.e19.options.e19_1.outcomes.0.text"] = "The farmer buys the safe harvest for 2 Amber.";
 // Cave e19 choice e19_2. Preserve amounts and any item names.
 module.exports["event.dreams.e19.options.e19_2.label"] = "Plant a crop. Return after one minute for 3 Amber.";
 // Cave e19 choice e19_3. Preserve amounts and any item names.
-module.exports["event.dreams.e19.options.e19_3.label"] = "Borrow the farmer’s empty seed tin.";
+module.exports["event.dreams.e19.options.e19_3.label"] = "Borrow the farmer’s empty seed tin";
 // Cave e19 choice e19_3 outcome 0.
-module.exports["event.dreams.e19.options.e19_3.outcomes.0.text"] = "The rats like these mushrooms.";
+module.exports["event.dreams.e19.options.e19_3.outcomes.0.text"] = "The empty tin should make a decent distraction.";
 // Cave e19 choice e19_4. Preserve amounts and any item names.
-module.exports["event.dreams.e19.options.e19_4.label"] = "Clear the farmer’s rat pen.";
+module.exports["event.dreams.e19.options.e19_4.label"] = "Clear the farmer’s rat pen";
 // Cave e19 choice e19_4 outcome 0.
-module.exports["event.dreams.e19.options.e19_4.outcomes.0.text"] = "The farmer opens the pen.";
+module.exports["event.dreams.e19.options.e19_4.outcomes.0.text"] = "The farmer opens the pen. Six rats pour out.";
 // Cave e19 choice e19_5. Preserve amounts and any item names.
-module.exports["event.dreams.e19.options.e19_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e19.options.e19_5.label"] = "Leave it and keep going.";
 // Cave encounter title and room objective: e20.
 module.exports["event.dreams.e20.name"] = "The Cornered Rogue";
 // Cave encounter e20 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e20.text"] = "Wolves are attacking a rogue with two daggers. You can save him or wait and loot his body if he dies. He keeps watching your backs, even while he fights.";
+module.exports["event.dreams.e20.text"] = "Wolves have cornered a rogue with two daggers. You can help him, or wait and search his pack if they kill him. He keeps checking your position even while he fights.";
 // Cave e20 choice save. Preserve amounts and any item names.
 module.exports["event.dreams.e20.options.save.label"] = "Save {npc}: fight the wolves";
 // Cave e20 choice watch. Preserve amounts and any item names.
@@ -3824,95 +3837,95 @@ module.exports["event.dreams.e20.options.cover.label"] = "Bring {npc} behind us;
 // Cave encounter title and room objective: e21.
 module.exports["event.dreams.e21.name"] = "Change the Map";
 // Cave encounter e21 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e21.text"] = "I sell guard passes and mark supply rooms on maps. I also know a shortcut, but three guards are using it right now.";
+module.exports["event.dreams.e21.text"] = "I sell guard passes and mark supply rooms on maps. I know a shortcut too, though three guards have currently claimed it for themselves.";
 // Cave e21 choice e21_0. Preserve amounts and any item names.
 module.exports["event.dreams.e21.options.e21_0.label"] = "Buy a pass for 3 shared Amber; skip one guardroom";
 // Cave e21 choice e21_0 outcome 0.
-module.exports["event.dreams.e21.options.e21_0.outcomes.0.text"] = "One use. Then tear it up.";
+module.exports["event.dreams.e21.options.e21_0.outcomes.0.text"] = "One use. After that, tear it up.";
 // Cave e21 choice e21_1. Preserve amounts and any item names.
-module.exports["event.dreams.e21.options.e21_1.label"] = "Take the guarded shortcut.";
+module.exports["event.dreams.e21.options.e21_1.label"] = "Take the guarded shortcut";
 // Cave e21 choice e21_1 outcome 0.
-module.exports["event.dreams.e21.options.e21_1.outcomes.0.text"] = "The shortcut ends at three guards.";
+module.exports["event.dreams.e21.options.e21_1.outcomes.0.text"] = "The shortcut leads straight to three guards.";
 // Cave e21 choice e21_2. Preserve amounts and any item names.
-module.exports["event.dreams.e21.options.e21_2.label"] = "Trust the crossed-out route.";
+module.exports["event.dreams.e21.options.e21_2.label"] = "Trust the crossed-out route";
 // Cave e21 choice e21_2 outcome 0.
-module.exports["event.dreams.e21.options.e21_2.outcomes.0.text"] = "The old route still leads to a supply box.";
+module.exports["event.dreams.e21.options.e21_2.outcomes.0.text"] = "The old route still leads to supplies.";
 // Cave e21 choice e21_2 outcome 1.
-module.exports["event.dreams.e21.options.e21_2.outcomes.1.text"] = "The old route belongs to wolves now.";
+module.exports["event.dreams.e21.options.e21_2.outcomes.1.text"] = "Three wolves have taken over the old route.";
 // Cave e21 choice e21_3. Preserve amounts and any item names.
-module.exports["event.dreams.e21.options.e21_3.label"] = "Hire the mapmaker for 2,000 cave gold.";
+module.exports["event.dreams.e21.options.e21_3.label"] = "Hire the mapmaker for 2,000 cave gold";
 // Cave e21 choice e21_3 outcome 0.
-module.exports["event.dreams.e21.options.e21_3.outcomes.0.text"] = "The mapmaker packs her things.";
+module.exports["event.dreams.e21.options.e21_3.outcomes.0.text"] = "The mapmaker packs her things and comes with you.";
 // Cave e21 choice e21_4. Preserve amounts and any item names.
-module.exports["event.dreams.e21.options.e21_4.label"] = "Take the spare lantern.";
+module.exports["event.dreams.e21.options.e21_4.label"] = "Take the spare lantern";
 // Cave e21 choice e21_4 outcome 0.
-module.exports["event.dreams.e21.options.e21_4.outcomes.0.text"] = "Mark your way back.";
+module.exports["event.dreams.e21.options.e21_4.outcomes.0.text"] = "You take the lantern for the road ahead.";
 // Cave e21 choice e21_5. Preserve amounts and any item names.
-module.exports["event.dreams.e21.options.e21_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e21.options.e21_5.label"] = "Leave it and keep going.";
 // Cave encounter title and room objective: e22.
 module.exports["event.dreams.e22.name"] = "One More Turn";
 // Cave encounter e22 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e22.text"] = "The chest is caught in this old machine. Turn the wheel to free it, or release the pressure slowly. The sentinel is sleeping beside the pipes.";
+module.exports["event.dreams.e22.text"] = "The chest is caught in this old machine. One more turn might free it, or you can bleed the pressure off slowly. The sentinel beside the pipes is asleep—for now.";
 // Cave e22 choice e22_0. Preserve amounts and any item names.
-module.exports["event.dreams.e22.options.e22_0.label"] = "Give the wheel one more turn.";
+module.exports["event.dreams.e22.options.e22_0.label"] = "Give the wheel one more turn";
 // Cave e22 choice e22_0 outcome 0.
-module.exports["event.dreams.e22.options.e22_0.outcomes.0.text"] = "The last latch opens.";
+module.exports["event.dreams.e22.options.e22_0.outcomes.0.text"] = "The last latch gives way.";
 // Cave e22 choice e22_0 outcome 1.
 module.exports["event.dreams.e22.options.e22_0.outcomes.1.text"] = "The pressure wakes the sentinel.";
 // Cave e22 choice e22_1. Preserve amounts and any item names.
-module.exports["event.dreams.e22.options.e22_1.label"] = "Release all the pressure at once.";
+module.exports["event.dreams.e22.options.e22_1.label"] = "Release all the pressure at once";
 // Cave e22 choice e22_1 outcome 0.
-module.exports["event.dreams.e22.options.e22_1.outcomes.0.text"] = "The keeper hears the pipe burst.";
+module.exports["event.dreams.e22.options.e22_1.outcomes.0.text"] = "The pipe bursts. A Lockbreaker comes to investigate.";
 // Cave e22 choice e22_2. Preserve amounts and any item names.
-module.exports["event.dreams.e22.options.e22_2.label"] = "Open the valve slowly: 20 seconds.";
+module.exports["event.dreams.e22.options.e22_2.label"] = "Open the valve slowly: 20 seconds";
 // Cave e22 choice e22_2 result.
-module.exports["event.dreams.e22.options.e22_2.result"] = "We will check it for 20 seconds, then collect the supplies.";
+module.exports["event.dreams.e22.options.e22_2.result"] = "You spend 20 seconds easing the pressure, then collect the supplies.";
 // Cave e22 choice e22_3. Preserve amounts and any item names.
-module.exports["event.dreams.e22.options.e22_3.label"] = "Use a pry bar on the jammed latch.";
+module.exports["event.dreams.e22.options.e22_3.label"] = "Use a pry bar on the jammed latch";
 // Cave e22 choice e22_4. Preserve amounts and any item names.
 module.exports["event.dreams.e22.options.e22_4.label"] = "Sell the loose fittings for 2 Amber";
 // Cave e22 choice e22_4 outcome 0.
 module.exports["event.dreams.e22.options.e22_4.outcomes.0.text"] = "The mechanic buys the fittings and pays 2 Amber.";
 // Cave e22 choice e22_5. Preserve amounts and any item names.
-module.exports["event.dreams.e22.options.e22_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e22.options.e22_5.label"] = "Leave it and keep going.";
 
 // Cave encounter text; the canonical game definitions stay in English for CODE.
 // Cave encounter title and room objective: e23.
 module.exports["event.dreams.e23.name"] = "Keep the Crate Cold";
 // Cave encounter e23 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e23.text"] = "Help me get this crate to the stairs. I will pay 3,000 cave gold and share my supplies when we arrive. Or we can open it here.";
+module.exports["event.dreams.e23.text"] = "Help me get this crate to the stairs and I’ll pay 3,000 cave gold and share my supplies when we arrive. Or we can open it here and see what all the ice is protecting.";
 // Cave e23 choice e23_0. Preserve amounts and any item names.
-module.exports["event.dreams.e23.options.e23_0.label"] = "Escort the porter to the stairs.";
+module.exports["event.dreams.e23.options.e23_0.label"] = "Escort the porter to the stairs";
 // Cave e23 choice e23_1. Preserve amounts and any item names.
-module.exports["event.dreams.e23.options.e23_1.label"] = "Open the crate before moving it.";
+module.exports["event.dreams.e23.options.e23_1.label"] = "Open the crate before moving it";
 // Cave e23 choice e23_1 outcome 0.
-module.exports["event.dreams.e23.options.e23_1.outcomes.0.text"] = "The ice kept the parcel dry.";
+module.exports["event.dreams.e23.options.e23_1.outcomes.0.text"] = "The ice kept the supplies dry.";
 // Cave e23 choice e23_1 outcome 1.
-module.exports["event.dreams.e23.options.e23_1.outcomes.1.text"] = "The crate held sleeping crabs.";
+module.exports["event.dreams.e23.options.e23_1.outcomes.1.text"] = "Four sleeping crabs wake up inside the crate.";
 // Cave e23 choice e23_2. Preserve amounts and any item names.
-module.exports["event.dreams.e23.options.e23_2.label"] = "Pay 2,000 cave gold to unload it here.";
+module.exports["event.dreams.e23.options.e23_2.label"] = "Pay 2,000 cave gold to unload it here";
 // Cave e23 choice e23_2 outcome 0.
-module.exports["event.dreams.e23.options.e23_2.outcomes.0.text"] = "The porter breaks the ice around the parcel.";
+module.exports["event.dreams.e23.options.e23_2.outcomes.0.text"] = "The porter breaks away the ice and hands over the supplies.";
 // Cave e23 choice e23_3. Preserve amounts and any item names.
 module.exports["event.dreams.e23.options.e23_3.label"] = "Ask the porter to fight beside us";
 // Cave e23 choice e23_3 result.
-module.exports["event.dreams.e23.options.e23_3.result"] = "The porter puts down the crate and joins you.";
+module.exports["event.dreams.e23.options.e23_3.result"] = "The porter sets the crate down and comes with you.";
 // Cave e23 choice e23_4. Preserve amounts and any item names.
-module.exports["event.dreams.e23.options.e23_4.label"] = "Take the spare lamp from the cart.";
+module.exports["event.dreams.e23.options.e23_4.label"] = "Take the spare lamp from the cart";
 // Cave e23 choice e23_4 outcome 0.
-module.exports["event.dreams.e23.options.e23_4.outcomes.0.text"] = "The porter hands you the lamp.";
+module.exports["event.dreams.e23.options.e23_4.outcomes.0.text"] = "The porter hands you the spare lamp.";
 // Cave e23 choice e23_5. Preserve amounts and any item names.
-module.exports["event.dreams.e23.options.e23_5.label"] = "Leave this and keep going.";
+module.exports["event.dreams.e23.options.e23_5.label"] = "Leave it and keep going.";
 // Cave encounter title and room objective: e24.
 module.exports["event.dreams.e24.name"] = "The Same Prisoner Twice";
 // Cave encounter e24 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e24.text"] = "{npc} and {rival} are dressed alike. Both claim to be the prisoner you came to find. They have drawn their weapons. Who will you help?";
+module.exports["event.dreams.e24.text"] = "{npc} and {rival} are dressed alike, and both insist they’re the prisoner you came to find. They’ve already drawn their weapons, which is not helping.";
 // Cave e24 choice left. Preserve amounts and any item names.
 module.exports["event.dreams.e24.options.left.label"] = "Help {npc} fight {rival}";
 // Cave e24 choice right. Preserve amounts and any item names.
 module.exports["event.dreams.e24.options.right.label"] = "Help {rival} fight {npc}";
 // Cave e24 choice neither. Preserve amounts and any item names.
-module.exports["event.dreams.e24.options.neither.label"] = "Let them fight; collect what is left";
+module.exports["event.dreams.e24.options.neither.label"] = "Let them fight; collect what’s left";
 // Cave e24 choice both. Preserve amounts and any item names.
 module.exports["event.dreams.e24.options.both.label"] = "Fight both and take the chest";
 // Cave e24 choice peace. Preserve amounts and any item names.
@@ -3922,13 +3935,13 @@ module.exports["event.dreams.e24.options.testimony.label"] = "Help whichever fig
 // Cave encounter title and room objective: e25.
 module.exports["event.dreams.e25.name"] = "The Prisoner and the Captain";
 // Cave encounter e25 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e25.text"] = "{rival} wants to put {npc} back in chains. The prisoner says the captain sold out the last patrol. They are about to fight.";
+module.exports["event.dreams.e25.text"] = "{rival} wants {npc} back in chains. The prisoner says the captain sold out the last patrol. Neither seems interested in discussing it much longer.";
 // Cave e25 choice left. Preserve amounts and any item names.
 module.exports["event.dreams.e25.options.left.label"] = "Help {npc} fight {rival}";
 // Cave e25 choice right. Preserve amounts and any item names.
 module.exports["event.dreams.e25.options.right.label"] = "Help {rival} fight {npc}";
 // Cave e25 choice neither. Preserve amounts and any item names.
-module.exports["event.dreams.e25.options.neither.label"] = "Let them fight; collect what is left";
+module.exports["event.dreams.e25.options.neither.label"] = "Let them fight; collect what’s left";
 // Cave e25 choice both. Preserve amounts and any item names.
 module.exports["event.dreams.e25.options.both.label"] = "Fight both and take the chest";
 // Cave e25 choice peace. Preserve amounts and any item names.
@@ -3938,11 +3951,11 @@ module.exports["event.dreams.e25.options.testimony.label"] = "Help whichever fig
 // Cave encounter title and room objective: e26.
 module.exports["event.dreams.e26.name"] = "The Toll Patrol";
 // Cave encounter e26 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e26.text"] = "Three guards step in front of you. Their captain holds out a hand. “Pay the toll. Or try getting past us.”";
+module.exports["event.dreams.e26.text"] = "Three guards block the way. Their captain holds out a hand. “Pay the toll, or find out how serious we are.”";
 // Cave e26 choice e26_0. Preserve amounts and any item names.
 module.exports["event.dreams.e26.options.e26_0.label"] = "Pay the 3,000 gold toll";
 // Cave e26 choice e26_0 result.
-module.exports["event.dreams.e26.options.e26_0.result"] = "The guards take the payment and let you through.";
+module.exports["event.dreams.e26.options.e26_0.result"] = "The guards take the 3,000 gold and let you through.";
 // Cave e26 choice e26_1. Preserve amounts and any item names.
 module.exports["event.dreams.e26.options.e26_1.label"] = "Fight the three guards";
 // Cave e26 choice e26_1 result.
@@ -3950,7 +3963,7 @@ module.exports["event.dreams.e26.options.e26_1.result"] = "The three guards draw
 // Cave e26 choice e26_2. Preserve amounts and any item names.
 module.exports["event.dreams.e26.options.e26_2.label"] = "Pay 2 shared Amber instead";
 // Cave e26 choice e26_2 result.
-module.exports["event.dreams.e26.options.e26_2.result"] = "The guards accept the Amber and let you through.";
+module.exports["event.dreams.e26.options.e26_2.result"] = "The guards accept the 2 Amber and let you through.";
 // Cave e26 choice e26_3. Preserve amounts and any item names.
 module.exports["event.dreams.e26.options.e26_3.label"] = "Pay 1,000 gold and spend 30 seconds getting past";
 // Cave e26 choice e26_4. Preserve amounts and any item names.
@@ -3964,11 +3977,11 @@ module.exports["event.dreams.e26.options.e26_5.result"] = "{npc} calls in three 
 // Cave encounter title and room objective: e27.
 module.exports["event.dreams.e27.name"] = "Stopped by a Guard";
 // Cave encounter e27 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e27.text"] = "This guard will not let you pass for free. Pay with cave gold or Amber, fight his men, or wait for the patrol to move.";
+module.exports["event.dreams.e27.text"] = "The guard blocks your way. Apparently, passing through is a privilege with a price.";
 // Cave e27 choice e27_0. Preserve amounts and any item names.
-module.exports["event.dreams.e27.options.e27_0.label"] = "Pay 3,000 shared gold to let us pass";
+module.exports["event.dreams.e27.options.e27_0.label"] = "Pay 3,000 shared gold to pass";
 // Cave e27 choice e27_0 result.
-module.exports["event.dreams.e27.options.e27_0.result"] = "The guards take the payment and let you through.";
+module.exports["event.dreams.e27.options.e27_0.result"] = "The guards take the gold and step aside.";
 // Cave e27 choice e27_1. Preserve amounts and any item names.
 module.exports["event.dreams.e27.options.e27_1.label"] = "Fight the three guards";
 // Cave e27 choice e27_1 result.
@@ -3976,7 +3989,7 @@ module.exports["event.dreams.e27.options.e27_1.result"] = "The three guards draw
 // Cave e27 choice e27_2. Preserve amounts and any item names.
 module.exports["event.dreams.e27.options.e27_2.label"] = "Pay 2 shared Amber instead";
 // Cave e27 choice e27_2 result.
-module.exports["event.dreams.e27.options.e27_2.result"] = "The guards accept the Amber and let you through.";
+module.exports["event.dreams.e27.options.e27_2.result"] = "The guards take the Amber and let you through.";
 // Cave e27 choice e27_3. Preserve amounts and any item names.
 module.exports["event.dreams.e27.options.e27_3.label"] = "Pay 1,000 gold and spend 30 seconds getting past";
 // Cave e27 choice e27_4. Preserve amounts and any item names.
@@ -3988,7 +4001,7 @@ module.exports["event.dreams.e27.options.e27_5.result"] = "{npc} calls in three 
 // Cave encounter title and room objective: e28.
 module.exports["event.dreams.e28.name"] = "The Rope Snaps";
 // Cave encounter e28 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e28.text"] = "The alarm rope snapped. Guards are coming. The bell keeper can call them off for a fee, or you can deal with them yourself.";
+module.exports["event.dreams.e28.text"] = "The alarm rope has snapped, but the message got through. Guards are coming, and the bell keeper seems willing to reconsider—for a price.";
 // Cave e28 choice e28_0. Preserve amounts and any item names.
 module.exports["event.dreams.e28.options.e28_0.label"] = "Pay 3,000 shared gold to stop the alarm";
 // Cave e28 choice e28_0 result.
@@ -4000,7 +4013,7 @@ module.exports["event.dreams.e28.options.e28_1.result"] = "The three guards draw
 // Cave e28 choice e28_2. Preserve amounts and any item names.
 module.exports["event.dreams.e28.options.e28_2.label"] = "Pay 2 shared Amber instead";
 // Cave e28 choice e28_2 result.
-module.exports["event.dreams.e28.options.e28_2.result"] = "The guards accept the Amber and let you through.";
+module.exports["event.dreams.e28.options.e28_2.result"] = "The guards take the Amber and let you through.";
 // Cave e28 choice e28_3. Preserve amounts and any item names.
 module.exports["event.dreams.e28.options.e28_3.label"] = "Pay 1,000 gold and spend 30 seconds getting past";
 // Cave e28 choice e28_4. Preserve amounts and any item names.
@@ -4012,11 +4025,11 @@ module.exports["event.dreams.e28.options.e28_5.result"] = "{npc} calls in three 
 // Cave encounter title and room objective: e29.
 module.exports["event.dreams.e29.name"] = "The Cargo Is Stuck";
 // Cave encounter e29 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e29.text"] = "A loaded cart is stuck in the passage. Its guards want payment before they move it. You can pay, force your way past, or wait for them to unload.";
+module.exports["event.dreams.e29.text"] = "A loaded cart is wedged in the passage. Its guards could move it, but first they'd like to be paid for the inconvenience.";
 // Cave e29 choice e29_0. Preserve amounts and any item names.
 module.exports["event.dreams.e29.options.e29_0.label"] = "Pay 3,000 shared gold to move the cart";
 // Cave e29 choice e29_0 result.
-module.exports["event.dreams.e29.options.e29_0.result"] = "The guards take the payment and let you through.";
+module.exports["event.dreams.e29.options.e29_0.result"] = "The guards take the payment, move the cart, and let you through.";
 // Cave e29 choice e29_1. Preserve amounts and any item names.
 module.exports["event.dreams.e29.options.e29_1.label"] = "Fight the three guards";
 // Cave e29 choice e29_1 result.
@@ -4024,7 +4037,7 @@ module.exports["event.dreams.e29.options.e29_1.result"] = "The three guards draw
 // Cave e29 choice e29_2. Preserve amounts and any item names.
 module.exports["event.dreams.e29.options.e29_2.label"] = "Pay 2 shared Amber instead";
 // Cave e29 choice e29_2 result.
-module.exports["event.dreams.e29.options.e29_2.result"] = "The guards accept the Amber and let you through.";
+module.exports["event.dreams.e29.options.e29_2.result"] = "The guards take the Amber and let you through.";
 // Cave e29 choice e29_3. Preserve amounts and any item names.
 module.exports["event.dreams.e29.options.e29_3.label"] = "Pay 1,000 gold and spend 30 seconds getting past";
 // Cave e29 choice e29_4. Preserve amounts and any item names.
@@ -4036,7 +4049,7 @@ module.exports["event.dreams.e29.options.e29_5.result"] = "{npc} calls in three 
 // Cave encounter title and room objective: e30.
 module.exports["event.dreams.e30.name"] = "The Wrong Receipt";
 // Cave encounter e30 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e30.text"] = "The collector thinks you took a debtor’s receipt. Pay him to leave you alone, fight his guards, or wait while he checks the name.";
+module.exports["event.dreams.e30.text"] = "The collector insists you're carrying a debtor's receipt. He can be paid off, fought, or given time to discover that names are worth reading.";
 // Cave e30 choice e30_0. Preserve amounts and any item names.
 module.exports["event.dreams.e30.options.e30_0.label"] = "Pay 3,000 shared gold to settle the debt";
 // Cave e30 choice e30_0 result.
@@ -4048,7 +4061,7 @@ module.exports["event.dreams.e30.options.e30_1.result"] = "The three guards draw
 // Cave e30 choice e30_2. Preserve amounts and any item names.
 module.exports["event.dreams.e30.options.e30_2.label"] = "Pay 2 shared Amber instead";
 // Cave e30 choice e30_2 result.
-module.exports["event.dreams.e30.options.e30_2.result"] = "The guards accept the Amber and let you through.";
+module.exports["event.dreams.e30.options.e30_2.result"] = "The guards take the Amber and let you through.";
 // Cave e30 choice e30_3. Preserve amounts and any item names.
 module.exports["event.dreams.e30.options.e30_3.label"] = "Pay 1,000 gold and spend 30 seconds getting past";
 // Cave e30 choice e30_4. Preserve amounts and any item names.
@@ -4062,29 +4075,29 @@ module.exports["event.dreams.e30.options.e30_5.result"] = "{npc} calls in three 
 // Cave encounter title and room objective: e31.
 module.exports["event.dreams.e31.name"] = "The Shop with One Item";
 // Cave encounter e31 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e31.text"] = "I have one item for sale. Have a look. Pay with the party’s cave gold. A random member of your original party gets the item.";
+module.exports["event.dreams.e31.text"] = "I've got exactly one item for sale. Have a look. It costs cave gold, and if you buy it, one random member of the party you entered with gets it.";
 // Cave e31 choice e31_0. Preserve amounts and any item names.
 module.exports["event.dreams.e31.options.e31_0.label"] = "Open the shop";
 // Cave e31 choice e31_0 result.
-module.exports["event.dreams.e31.options.e31_0.result"] = "The shop is open. Inspect the item, then pay with cave gold if you want it.";
+module.exports["event.dreams.e31.options.e31_0.result"] = "The shop opens. You can inspect the item and pay with cave gold if you want it.";
 // Cave e31 choice e31_1. Preserve amounts and any item names.
-module.exports["event.dreams.e31.options.e31_1.label"] = "Keep our gold and move on.";
+module.exports["event.dreams.e31.options.e31_1.label"] = "Keep our gold and move on";
 // Cave e31 choice e31_2. Preserve amounts and any item names.
 module.exports["event.dreams.e31.options.e31_2.label"] = "Ask where the item came from";
 // Cave e31 choice e31_2 result.
-module.exports["event.dreams.e31.options.e31_2.result"] = "I bought it when the old shop cleared its shelves. This is the last one I have.";
+module.exports["event.dreams.e31.options.e31_2.result"] = "I bought it when the old shop cleared its shelves. This is the last one I've got.";
 // Cave e31 choice e31_3. Preserve amounts and any item names.
 module.exports["event.dreams.e31.options.e31_3.label"] = "Check the price and the item";
 // Cave e31 choice e31_3 result.
-module.exports["event.dreams.e31.options.e31_3.result"] = "There is one copy at the price shown. No bidding and no second sale.";
+module.exports["event.dreams.e31.options.e31_3.result"] = "There's one copy at the listed price. No bidding, and no second sale.";
 // Cave e31 choice e31_4. Preserve amounts and any item names.
-module.exports["event.dreams.e31.options.e31_4.label"] = "We do not need it.";
+module.exports["event.dreams.e31.options.e31_4.label"] = "We don't need it";
 // Cave e31 choice e31_5. Preserve amounts and any item names.
-module.exports["event.dreams.e31.options.e31_5.label"] = "Leave it for another day.";
+module.exports["event.dreams.e31.options.e31_5.label"] = "Leave it for another day";
 // Cave encounter title and room objective: e32.
 module.exports["event.dreams.e32.name"] = "Clear the Crab Pens";
 // Cave encounter e32 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e32.text"] = "These crabs keep breaking out of their pens. Pick a hunt. Kill all the marked crabs before time runs out and I will pay you.";
+module.exports["event.dreams.e32.text"] = "The crabs keep breaking out of their pens. Clear the marked ones before time runs out, and I’ll make it worth your while.";
 // Cave e32 choice e32_0. Preserve amounts and any item names.
 module.exports["event.dreams.e32.options.e32_0.label"] = "Kill 6 crabs in 90s for supplies, 5,000 gold and 2 Amber";
 // Cave e32 choice e32_1. Preserve amounts and any item names.
@@ -4096,11 +4109,11 @@ module.exports["event.dreams.e32.options.e32_3.label"] = "Take a helper: 6 crabs
 // Cave e32 choice e32_4. Preserve amounts and any item names.
 module.exports["event.dreams.e32.options.e32_4.label"] = "Take 120s to kill 6 crabs; earn 2 Amber";
 // Cave e32 choice e32_5. Preserve amounts and any item names.
-module.exports["event.dreams.e32.options.e32_5.label"] = "Skip this hunt.";
+module.exports["event.dreams.e32.options.e32_5.label"] = "Skip this hunt";
 // Cave encounter title and room objective: e33.
 module.exports["event.dreams.e33.name"] = "Catch the Bats";
 // Cave encounter e33 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e33.text"] = "The bats stole my keys again. Pick a hunt. Kill all the marked bats before time runs out and I will give you a reward.";
+module.exports["event.dreams.e33.text"] = "The bats stole my keys again. Clear the marked ones before time runs out, and I’ll give you something for the trouble.";
 // Cave e33 choice e33_0. Preserve amounts and any item names.
 module.exports["event.dreams.e33.options.e33_0.label"] = "Kill 8 bats in 75s for supplies, 5,000 gold and 2 Amber";
 // Cave e33 choice e33_1. Preserve amounts and any item names.
@@ -4112,11 +4125,11 @@ module.exports["event.dreams.e33.options.e33_3.label"] = "Take a helper: 8 bats 
 // Cave e33 choice e33_4. Preserve amounts and any item names.
 module.exports["event.dreams.e33.options.e33_4.label"] = "Take 105s to kill 8 bats; earn 2 Amber";
 // Cave e33 choice e33_5. Preserve amounts and any item names.
-module.exports["event.dreams.e33.options.e33_5.label"] = "Skip this hunt.";
+module.exports["event.dreams.e33.options.e33_5.label"] = "Skip this hunt";
 // Cave encounter title and room objective: e34.
 module.exports["event.dreams.e34.name"] = "Rats with Silver Teeth";
 // Cave encounter e34 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e34.text"] = "The rats are chewing through my stock. Pick a hunt. Kill all the marked rats before time runs out and I will pay you.";
+module.exports["event.dreams.e34.text"] = "The rats are chewing through my stock. Clear the marked ones before time runs out, and I’ll pay you.";
 // Cave e34 choice e34_0. Preserve amounts and any item names.
 module.exports["event.dreams.e34.options.e34_0.label"] = "Kill 10 rats in 60s for supplies, 5,000 gold and 2 Amber";
 // Cave e34 choice e34_1. Preserve amounts and any item names.
@@ -4128,13 +4141,13 @@ module.exports["event.dreams.e34.options.e34_3.label"] = "Take a helper: 10 rats
 // Cave e34 choice e34_4. Preserve amounts and any item names.
 module.exports["event.dreams.e34.options.e34_4.label"] = "Take 90s to kill 10 rats; earn 2 Amber";
 // Cave e34 choice e34_5. Preserve amounts and any item names.
-module.exports["event.dreams.e34.options.e34_5.label"] = "Skip this hunt.";
+module.exports["event.dreams.e34.options.e34_5.label"] = "Skip this hunt";
 
 // Cave encounter text; the canonical game definitions stay in English for CODE.
 // Cave encounter title and room objective: e35.
 module.exports["event.dreams.e35.name"] = "Move the Caravan";
 // Cave encounter e35 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e35.text"] = "I lost the rest of my caravan. Walk me to the stairs and I will pay 3,000 cave gold and share my supplies. I can carry a weapon if you need help.";
+module.exports["event.dreams.e35.text"] = "I lost the rest of my caravan. Get me to the stairs and I’ll pay 3,000 cave gold and share my supplies. I can carry a weapon if you’d rather have the extra help.";
 // Cave e35 choice e35_0. Preserve amounts and any item names.
 module.exports["event.dreams.e35.options.e35_0.label"] = "Walk {npc} to the stairs for a reward";
 // Cave e35 choice e35_1. Preserve amounts and any item names.
@@ -4154,15 +4167,15 @@ module.exports["event.dreams.e35.options.e35_4.label"] = "Take 1 Amber instead o
 // Cave e35 choice e35_4 outcome 0.
 module.exports["event.dreams.e35.options.e35_4.outcomes.0.text"] = "I can spare this much. Good luck.";
 // Cave e35 choice e35_5. Preserve amounts and any item names.
-module.exports["event.dreams.e35.options.e35_5.label"] = "Sorry. We cannot take you with us.";
+module.exports["event.dreams.e35.options.e35_5.label"] = "Sorry. We can’t take you with us.";
 // Cave encounter title and room objective: e36.
 module.exports["event.dreams.e36.name"] = "Craft with Cave Amber";
 // Cave encounter e36 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e36.text"] = "Cole can turn Cave Amber into equipment. I have his recipes and a few spare materials. What would help you?";
+module.exports["event.dreams.e36.text"] = "Cole can turn Cave Amber into equipment. I have his recipes and a few spare materials. What would be useful?";
 // Cave e36 choice e36_0. Preserve amounts and any item names.
 module.exports["event.dreams.e36.options.e36_0.label"] = "Show Cole’s recipes";
 // Cave e36 choice e36_0 result.
-module.exports["event.dreams.e36.options.e36_0.result"] = "Take your Amber to Cole in Mainland. These are the things he can make.";
+module.exports["event.dreams.e36.options.e36_0.result"] = "Take your Amber to Cole in Mainland. Here’s what he can make with it.";
 // Cave e36 choice e36_1. Preserve amounts and any item names.
 module.exports["event.dreams.e36.options.e36_1.label"] = "Take a sample: 1 Amber";
 // Cave e36 choice e36_1 outcome 0.
@@ -4180,11 +4193,11 @@ module.exports["event.dreams.e36.options.e36_4.label"] = "Ask the smith’s help
 // Cave e36 choice e36_4 outcome 0.
 module.exports["event.dreams.e36.options.e36_4.outcomes.0.text"] = "The smith’s helper comes with you.";
 // Cave e36 choice e36_5. Preserve amounts and any item names.
-module.exports["event.dreams.e36.options.e36_5.label"] = "We will visit Cole later.";
+module.exports["event.dreams.e36.options.e36_5.label"] = "We’ll visit Cole later";
 // Cave encounter title and room objective: e37.
 module.exports["event.dreams.e37.name"] = "Try the Dice";
 // Cave encounter e37 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e37.text"] = "Want a free roll? Roll a six to win a chest with 1 Amber for the party. No bet this time.";
+module.exports["event.dreams.e37.text"] = "Want a free roll? Roll a six and the party gets a chest with 1 Amber. No bet this time.";
 // Cave e37 choice e37_0. Preserve amounts and any item names.
 module.exports["event.dreams.e37.options.e37_0.label"] = "Roll for free; a six wins 1 Amber";
 // Cave e37 choice e37_1. Preserve amounts and any item names.
@@ -4196,35 +4209,35 @@ module.exports["event.dreams.e37.options.e37_2.label"] = "Ask the dealer to roll
 // Cave e37 choice e37_3. Preserve amounts and any item names.
 module.exports["event.dreams.e37.options.e37_3.label"] = "Ask the dealer to come along instead";
 // Cave e37 choice e37_3 outcome 0.
-module.exports["event.dreams.e37.options.e37_3.outcomes.0.text"] = "I am tired of sitting here. Let us go.";
+module.exports["event.dreams.e37.options.e37_3.outcomes.0.text"] = "I’m tired of sitting here. Let’s go.";
 // Cave e37 choice e37_4. Preserve amounts and any item names.
-module.exports["event.dreams.e37.options.e37_4.label"] = "Save the game for later.";
+module.exports["event.dreams.e37.options.e37_4.label"] = "Save the game for later";
 // Cave e37 choice e37_5. Preserve amounts and any item names.
-module.exports["event.dreams.e37.options.e37_5.label"] = "No thanks. We do not want to roll.";
+module.exports["event.dreams.e37.options.e37_5.label"] = "No thanks. We don’t want to roll";
 // Cave encounter title and room objective: e38.
 module.exports["event.dreams.e38.name"] = "Borrow a Tool";
 // Cave encounter e38 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e38.text"] = "Take something from my tool bag. A pry bar opens locked hatches. A lamp helps with the moths. I also have a noisy decoy to draw a patrol away.";
+module.exports["event.dreams.e38.text"] = "Take what you need from my tool bag. The pry bar opens locked hatches, the lamp helps with moths, and the tin rattle can draw a patrol away.";
 // Cave e38 choice e38_0. Preserve amounts and any item names.
 module.exports["event.dreams.e38.options.e38_0.label"] = "Take a pry bar for locked hatches";
 // Cave e38 choice e38_0 result.
-module.exports["event.dreams.e38.options.e38_0.result"] = "You take the pry bar. It stays in your cave supplies.";
+module.exports["event.dreams.e38.options.e38_0.result"] = "You take the pry bar and add it to your cave supplies.";
 // Cave e38 choice e38_1. Preserve amounts and any item names.
 module.exports["event.dreams.e38.options.e38_1.label"] = "Take a lamp for the moths";
 // Cave e38 choice e38_1 result.
-module.exports["event.dreams.e38.options.e38_1.result"] = "You take the lamp. It stays in your cave supplies.";
+module.exports["event.dreams.e38.options.e38_1.result"] = "You take the lamp and add it to your cave supplies.";
 // Cave e38 choice e38_2. Preserve amounts and any item names.
 module.exports["event.dreams.e38.options.e38_2.label"] = "Take the tin rattle";
 // Cave e38 choice e38_2 result.
 module.exports["event.dreams.e38.options.e38_2.result"] = "You pack the rattle. It will draw the next patrol away for eight seconds.";
 // Cave e38 choice e38_3. Preserve amounts and any item names.
-module.exports["event.dreams.e38.options.e38_3.label"] = "Ask the toolmaker to come with us";
+module.exports["event.dreams.e38.options.e38_3.label"] = "Ask the cartographer to come with us";
 // Cave e38 choice e38_3 outcome 0.
-module.exports["event.dreams.e38.options.e38_3.outcomes.0.text"] = "I will bring my tools and watch your back.";
+module.exports["event.dreams.e38.options.e38_3.outcomes.0.text"] = "The cartographer brings the tools and comes with you.";
 // Cave e38 choice e38_4. Preserve amounts and any item names.
 module.exports["event.dreams.e38.options.e38_4.label"] = "Trade the scrap for 1 Amber";
 // Cave e38 choice e38_4 outcome 0.
-module.exports["event.dreams.e38.options.e38_4.outcomes.0.text"] = "The toolmaker gives you 1 Amber for the scrap.";
+module.exports["event.dreams.e38.options.e38_4.outcomes.0.text"] = "The cartographer gives you 1 Amber for the scrap.";
 // Cave e38 choice e38_5. Preserve amounts and any item names.
 module.exports["event.dreams.e38.options.e38_5.label"] = "We have what we need.";
 
@@ -4232,19 +4245,19 @@ module.exports["event.dreams.e38.options.e38_5.label"] = "We have what we need."
 // Cave encounter title and room objective: e39.
 module.exports["event.dreams.e39.name"] = "The Amber Garden";
 // Cave encounter e39 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e39.text"] = "These seeds grow Amber in a minute. Plant some, then return here and open the chest for 3 Amber. You can explore while they grow.";
+module.exports["event.dreams.e39.text"] = "These seeds grow Amber in one minute. Plant them, explore if you like, then come back and open the chest for 3 Amber.";
 // Cave e39 choice e39_0. Preserve amounts and any item names.
 module.exports["event.dreams.e39.options.e39_0.label"] = "Plant a crop; collect 3 Amber after one minute";
 // Cave e39 choice e39_0 result.
-module.exports["event.dreams.e39.options.e39_0.result"] = "The seeds are planted. Come back here in a minute and open the chest to collect your Amber.";
+module.exports["event.dreams.e39.options.e39_0.result"] = "The seeds are planted. Return in one minute and open the chest to collect 3 Amber.";
 // Cave e39 choice e39_1. Preserve amounts and any item names.
 module.exports["event.dreams.e39.options.e39_1.label"] = "Take 1 Amber now instead";
 // Cave e39 choice e39_1 outcome 0.
-module.exports["event.dreams.e39.options.e39_1.outcomes.0.text"] = "Here is one from the last crop.";
+module.exports["event.dreams.e39.options.e39_1.outcomes.0.text"] = "The farmer gives you 1 Amber from the last crop.";
 // Cave e39 choice e39_2. Preserve amounts and any item names.
 module.exports["event.dreams.e39.options.e39_2.label"] = "Take the farmer’s spare rattle";
 // Cave e39 choice e39_2 result.
-module.exports["event.dreams.e39.options.e39_2.result"] = "The rattle will draw the next patrol away for eight seconds.";
+module.exports["event.dreams.e39.options.e39_2.result"] = "You take the rattle. It will draw the next patrol away for eight seconds.";
 // Cave e39 choice e39_3. Preserve amounts and any item names.
 module.exports["event.dreams.e39.options.e39_3.label"] = "Ask the farmhand to join us";
 // Cave e39 choice e39_3 outcome 0.
@@ -4252,13 +4265,13 @@ module.exports["event.dreams.e39.options.e39_3.outcomes.0.text"] = "The farmhand
 // Cave e39 choice e39_4. Preserve amounts and any item names.
 module.exports["event.dreams.e39.options.e39_4.label"] = "Borrow the farmer’s spare lamp";
 // Cave e39 choice e39_4 result.
-module.exports["event.dreams.e39.options.e39_4.result"] = "Take it. I have another by the seed beds.";
+module.exports["event.dreams.e39.options.e39_4.result"] = "The farmer lends you the spare lamp.";
 // Cave e39 choice e39_5. Preserve amounts and any item names.
 module.exports["event.dreams.e39.options.e39_5.label"] = "Leave the seeds with the farmer.";
 // Cave encounter title and room objective: e40.
 module.exports["event.dreams.e40.name"] = "Practice with Wooden Swords";
 // Cave encounter e40 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e40.text"] = "Want to spar? Beat me before the timer ends and you win a prize. I will stop at 1 HP, and my blows cannot kill you.";
+module.exports["event.dreams.e40.text"] = "Want to spar? Beat me before the timer runs out and you win a prize. I stop at 1 HP, and my blows cannot kill you.";
 // Cave e40 choice e40_0. Preserve amounts and any item names.
 module.exports["event.dreams.e40.options.e40_0.label"] = "Try the 30-second fight for a supply prize";
 // Cave e40 choice e40_1. Preserve amounts and any item names.
@@ -4268,53 +4281,53 @@ module.exports["event.dreams.e40.options.e40_2.label"] = "Win within 15 seconds 
 // Cave e40 choice e40_3. Preserve amounts and any item names.
 module.exports["event.dreams.e40.options.e40_3.label"] = "Ask {npc} to fight beside us instead";
 // Cave e40 choice e40_3 result.
-module.exports["event.dreams.e40.options.e40_3.result"] = "{npc}: A real fight sounds better. I will come with you.";
+module.exports["event.dreams.e40.options.e40_3.result"] = "{npc} decides a real fight sounds better and comes with you.";
 // Cave e40 choice e40_4. Preserve amounts and any item names.
 module.exports["event.dreams.e40.options.e40_4.label"] = "Take a 20-second lesson and the trainer’s supplies";
 // Cave e40 choice e40_4 result.
-module.exports["event.dreams.e40.options.e40_4.result"] = "Watch my feet. I will give you the spare supplies when we finish.";
+module.exports["event.dreams.e40.options.e40_4.result"] = "You spend 20 seconds on the lesson, then take the trainer’s spare supplies.";
 // Cave e40 choice e40_5. Preserve amounts and any item names.
 module.exports["event.dreams.e40.options.e40_5.label"] = "No thanks. We do not want to spar.";
 // Cave encounter title and room objective: e41.
 module.exports["event.dreams.e41.name"] = "Trade Materials";
 // Cave encounter e41 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e41.text"] = "I will trade my supply box for 2 Amber from the shared purse. Or take one of these smaller things for the road.";
+module.exports["event.dreams.e41.text"] = "I will trade you my supply box for 2 Amber from the shared purse. If not, you can take one of the smaller things instead.";
 // Cave e41 choice e41_0. Preserve amounts and any item names.
 module.exports["event.dreams.e41.options.e41_0.label"] = "Trade 2 shared Amber for the supply box";
 // Cave e41 choice e41_0 result.
-module.exports["event.dreams.e41.options.e41_0.result"] = "The trader takes the Amber and opens the box.";
+module.exports["event.dreams.e41.options.e41_0.result"] = "The trader takes 2 Amber from the shared purse and opens the box.";
 // Cave e41 choice e41_1. Preserve amounts and any item names.
 module.exports["event.dreams.e41.options.e41_1.label"] = "Borrow a pry bar instead";
 // Cave e41 choice e41_1 result.
-module.exports["event.dreams.e41.options.e41_1.result"] = "Take the spare pry bar. No charge.";
+module.exports["event.dreams.e41.options.e41_1.result"] = "You take the spare pry bar at no charge.";
 // Cave e41 choice e41_2. Preserve amounts and any item names.
 module.exports["event.dreams.e41.options.e41_2.label"] = "Take the trader’s spare lamp";
 // Cave e41 choice e41_2 result.
-module.exports["event.dreams.e41.options.e41_2.result"] = "The lamp still has oil. Take it.";
+module.exports["event.dreams.e41.options.e41_2.result"] = "You take the spare lamp. It still has oil.";
 // Cave e41 choice e41_3. Preserve amounts and any item names.
 module.exports["event.dreams.e41.options.e41_3.label"] = "Take a tin rattle for the road";
 // Cave e41 choice e41_3 result.
-module.exports["event.dreams.e41.options.e41_3.result"] = "The rattle will draw the next patrol away for eight seconds.";
+module.exports["event.dreams.e41.options.e41_3.result"] = "You take the rattle. It will draw the next patrol away for eight seconds.";
 // Cave e41 choice e41_4. Preserve amounts and any item names.
 module.exports["event.dreams.e41.options.e41_4.label"] = "Ask the trader’s guard to join us";
 // Cave e41 choice e41_4 outcome 0.
-module.exports["event.dreams.e41.options.e41_4.outcomes.0.text"] = "The guard agrees to come with you.";
+module.exports["event.dreams.e41.options.e41_4.outcomes.0.text"] = "The guard agrees and comes with you.";
 // Cave e41 choice e41_5. Preserve amounts and any item names.
 module.exports["event.dreams.e41.options.e41_5.label"] = "Keep our Amber.";
 // Cave encounter title and room objective: e42.
 module.exports["event.dreams.e42.name"] = "The Rat’s Shortcuts";
 // Cave encounter e42 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e42.text"] = "My rat keeps finding rooms the guards missed. I can mark them on your map, or let the rat follow you.";
+module.exports["event.dreams.e42.text"] = "My rat keeps finding rooms the guards missed. I can mark them on your map, or you can let the rat tag along.";
 // Cave e42 choice e42_0. Preserve amounts and any item names.
 module.exports["event.dreams.e42.options.e42_0.label"] = "Mark the rooms the rat found";
 // Cave e42 choice e42_1. Preserve amounts and any item names.
 module.exports["event.dreams.e42.options.e42_1.label"] = "Let the rat follow us";
 // Cave e42 choice e42_1 outcome 0.
-module.exports["event.dreams.e42.options.e42_1.outcomes.0.text"] = "The rat follows you out of the room.";
+module.exports["event.dreams.e42.options.e42_1.outcomes.0.text"] = "The rat scurries out of the room with you.";
 // Cave e42 choice e42_2. Preserve amounts and any item names.
 module.exports["event.dreams.e42.options.e42_2.label"] = "Borrow a lamp to check the wall";
 // Cave e42 choice e42_2 result.
-module.exports["event.dreams.e42.options.e42_2.result"] = "Here. You can keep the lamp for this visit.";
+module.exports["event.dreams.e42.options.e42_2.result"] = "The keeper lends you the lamp for this visit.";
 // Cave e42 choice e42_3. Preserve amounts and any item names.
 module.exports["event.dreams.e42.options.e42_3.label"] = "Take the pry bar by the rat’s hole";
 // Cave e42 choice e42_3 result.
@@ -4330,45 +4343,45 @@ module.exports["event.dreams.e42.options.e42_5.label"] = "Leave the rat with its
 // Cave encounter title and room objective: e43.
 module.exports["event.dreams.e43.name"] = "Call a Guard Away";
 // Cave encounter e43 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e43.text"] = "“I used to lead those guards. Some would still listen to me. I can help you get past their camp, or come along myself.”";
+module.exports["event.dreams.e43.text"] = "I used to lead those guards. Some of them might still listen to me. I can help you past their camp, or come along myself.";
 // Cave e43 choice e43_0. Preserve amounts and any item names.
 module.exports["event.dreams.e43.options.e43_0.label"] = "Take a message for a guard";
 // Cave e43 choice e43_0 result.
-module.exports["event.dreams.e43.options.e43_0.result"] = "Take this to the next guard camp. One guard will stand down. If you have room for another helper, they will join you.";
+module.exports["event.dreams.e43.options.e43_0.result"] = "Take this to the next guard camp. One guard will stand down, and if you have room for another helper, they will join you.";
 // Cave e43 choice e43_1. Preserve amounts and any item names.
 module.exports["event.dreams.e43.options.e43_1.label"] = "Ask {npc} to fight beside us";
 // Cave e43 choice e43_1 result.
-module.exports["event.dreams.e43.options.e43_1.result"] = "{npc}: All right. I will come with you.";
+module.exports["event.dreams.e43.options.e43_1.result"] = "{npc} agrees and comes with you.";
 // Cave e43 choice e43_2. Preserve amounts and any item names.
 module.exports["event.dreams.e43.options.e43_2.label"] = "Ask where the other travelers are";
 // Cave e43 choice e43_3. Preserve amounts and any item names.
 module.exports["event.dreams.e43.options.e43_3.label"] = "Borrow {npc}’s spare lamp";
 // Cave e43 choice e43_3 result.
-module.exports["event.dreams.e43.options.e43_3.result"] = "{npc} hands you a lamp.";
+module.exports["event.dreams.e43.options.e43_3.result"] = "{npc} hands you the spare lamp.";
 // Cave e43 choice e43_4. Preserve amounts and any item names.
 module.exports["event.dreams.e43.options.e43_4.label"] = "Borrow {npc}’s pry bar";
 // Cave e43 choice e43_4 result.
-module.exports["event.dreams.e43.options.e43_4.result"] = "You take the pry bar.";
+module.exports["event.dreams.e43.options.e43_4.result"] = "You take {npc}’s pry bar.";
 // Cave e43 choice e43_5. Preserve amounts and any item names.
 module.exports["event.dreams.e43.options.e43_5.label"] = "We will deal with the guards ourselves.";
 // Cave encounter title and room objective: e44.
 module.exports["event.dreams.e44.name"] = "Find the Rogue";
 // Cave encounter e44 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e44.text"] = "Looking for the rogue? I can mark where I saw him. Check both daggers before you decide whether to help him.";
+module.exports["event.dreams.e44.text"] = "Looking for the rogue? I can mark where I saw him. Before you decide whether to help, check both of his daggers.";
 // Cave e44 choice e44_0. Preserve amounts and any item names.
 module.exports["event.dreams.e44.options.e44_0.label"] = "Mark where the rogue was seen";
 // Cave e44 choice e44_1. Preserve amounts and any item names.
 module.exports["event.dreams.e44.options.e44_1.label"] = "Explain how to spot the rare dagger";
 // Cave e44 choice e44_1 result.
-module.exports["event.dreams.e44.options.e44_1.result"] = "The rare dagger is called Last Word. Look at the rogue’s equipped weapons. He only drops it if monsters kill him before he turns on you.";
+module.exports["event.dreams.e44.options.e44_1.result"] = "The rare dagger is called Last Word. Check the rogue’s equipped weapons. He only drops it if monsters kill him before he turns on you.";
 // Cave e44 choice e44_2. Preserve amounts and any item names.
 module.exports["event.dreams.e44.options.e44_2.label"] = "Ask {npc} to join us";
 // Cave e44 choice e44_2 result.
-module.exports["event.dreams.e44.options.e44_2.result"] = "{npc}: I will help, but keep an eye on that rogue.";
+module.exports["event.dreams.e44.options.e44_2.result"] = "{npc} agrees to help, but warns you to keep an eye on the rogue.";
 // Cave e44 choice e44_3. Preserve amounts and any item names.
 module.exports["event.dreams.e44.options.e44_3.label"] = "Borrow a lamp to see the blades";
 // Cave e44 choice e44_3 result.
-module.exports["event.dreams.e44.options.e44_3.result"] = "Take the spare lamp.";
+module.exports["event.dreams.e44.options.e44_3.result"] = "You take the spare lamp.";
 // Cave e44 choice e44_4. Preserve amounts and any item names.
 module.exports["event.dreams.e44.options.e44_4.label"] = "Take a sample of the local Amber";
 // Cave e44 choice e44_4 outcome 0.
@@ -4378,7 +4391,7 @@ module.exports["event.dreams.e44.options.e44_5.label"] = "We will look for him o
 // Cave encounter title and room objective: e45.
 module.exports["event.dreams.e45.name"] = "The Lost Traveler";
 // Cave encounter e45 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e45.text"] = "I cannot find the stairs. Let me follow you there and I will pay 3,000 cave gold and share the supplies I have left.";
+module.exports["event.dreams.e45.text"] = "I cannot find the stairs. Get me there and I will pay 3,000 cave gold and share whatever supplies I have left.";
 // Cave e45 choice e45_0. Preserve amounts and any item names.
 module.exports["event.dreams.e45.options.e45_0.label"] = "Walk {npc} to the stairs for a reward";
 // Cave e45 choice e45_1. Preserve amounts and any item names.
@@ -4388,21 +4401,21 @@ module.exports["event.dreams.e45.options.e45_1.result"] = "{npc} draws a weapon 
 // Cave e45 choice e45_2. Preserve amounts and any item names.
 module.exports["event.dreams.e45.options.e45_2.label"] = "Borrow a lamp for the walk";
 // Cave e45 choice e45_2 outcome 0.
-module.exports["event.dreams.e45.options.e45_2.outcomes.0.text"] = "Keep the lamp. It may help with the moths.";
+module.exports["event.dreams.e45.options.e45_2.outcomes.0.text"] = "You keep the lamp. It may help with the moths.";
 // Cave e45 choice e45_3. Preserve amounts and any item names.
 module.exports["event.dreams.e45.options.e45_3.label"] = "Ask for a pry bar for the locked hatches";
 // Cave e45 choice e45_3 outcome 0.
-module.exports["event.dreams.e45.options.e45_3.outcomes.0.text"] = "Here. This one still has a good edge.";
+module.exports["event.dreams.e45.options.e45_3.outcomes.0.text"] = "You take the pry bar. It still has a good edge.";
 // Cave e45 choice e45_4. Preserve amounts and any item names.
 module.exports["event.dreams.e45.options.e45_4.label"] = "Take 1 Amber instead of escorting";
 // Cave e45 choice e45_4 outcome 0.
-module.exports["event.dreams.e45.options.e45_4.outcomes.0.text"] = "I can spare this much. Good luck.";
+module.exports["event.dreams.e45.options.e45_4.outcomes.0.text"] = "{npc} gives you 1 Amber and wishes you luck.";
 // Cave e45 choice e45_5. Preserve amounts and any item names.
 module.exports["event.dreams.e45.options.e45_5.label"] = "Sorry. We cannot take you with us.";
 // Cave encounter title and room objective: e46.
 module.exports["event.dreams.e46.name"] = "Is It Worth the Price?";
 // Cave encounter e46 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e46.text"] = "This came from a shop that closed years ago. I have one copy. Pay with the party’s cave gold. A random member of your original party gets it.";
+module.exports["event.dreams.e46.text"] = "This came from a shop that closed years ago, and I have one copy left. Pay with the party’s cave gold; one random member of your original party gets it.";
 // Cave e46 choice e46_0. Preserve amounts and any item names.
 module.exports["event.dreams.e46.options.e46_0.label"] = "Open the shop";
 // Cave e46 choice e46_0 result.
@@ -4416,7 +4429,7 @@ module.exports["event.dreams.e46.options.e46_2.result"] = "I bought it when the 
 // Cave e46 choice e46_3. Preserve amounts and any item names.
 module.exports["event.dreams.e46.options.e46_3.label"] = "Check the price and the item";
 // Cave e46 choice e46_3 result.
-module.exports["event.dreams.e46.options.e46_3.result"] = "There is one copy at the price shown. No bidding and no second sale.";
+module.exports["event.dreams.e46.options.e46_3.result"] = "There is one copy at the price shown. No bidding, and no second sale.";
 // Cave e46 choice e46_4. Preserve amounts and any item names.
 module.exports["event.dreams.e46.options.e46_4.label"] = "We do not need it.";
 // Cave e46 choice e46_5. Preserve amounts and any item names.
@@ -4426,21 +4439,21 @@ module.exports["event.dreams.e46.options.e46_5.label"] = "Leave it for another d
 // Cave encounter title and room objective: e47.
 module.exports["event.dreams.e47.name"] = "Follow the Thread";
 // Cave encounter e47 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e47.text"] = "The moths gathered around a pair of boots in the wall. A steady lamp will draw them away. Without a lamp, I can only collect some Amber for you.";
+module.exports["event.dreams.e47.text"] = "The moths gathered around a pair of boots in the wall. A steady lamp will draw them off. Without one, I can only gather some Amber for you.";
 // Cave e47 choice e47_0. Preserve amounts and any item names.
 module.exports["event.dreams.e47.options.e47_0.label"] = "Use our lamp to uncover the boots";
 // Cave e47 choice e47_1. Preserve amounts and any item names.
 module.exports["event.dreams.e47.options.e47_1.label"] = "Take 2 Amber without disturbing the moths";
 // Cave e47 choice e47_1 outcome 0.
-module.exports["event.dreams.e47.options.e47_1.outcomes.0.text"] = "I found these beside the nest.";
+module.exports["event.dreams.e47.options.e47_1.outcomes.0.text"] = "The farmer found 2 Amber beside the nest.";
 // Cave e47 choice e47_2. Preserve amounts and any item names.
 module.exports["event.dreams.e47.options.e47_2.label"] = "Borrow a lamp for another moth nest";
 // Cave e47 choice e47_2 result.
-module.exports["event.dreams.e47.options.e47_2.result"] = "Take this lamp. Keep it steady when you find another nest.";
+module.exports["event.dreams.e47.options.e47_2.result"] = "You take the lamp. Keep it steady when you find another nest.";
 // Cave e47 choice e47_3. Preserve amounts and any item names.
 module.exports["event.dreams.e47.options.e47_3.label"] = "Ask the moth keeper to follow us";
 // Cave e47 choice e47_3 outcome 0.
-module.exports["event.dreams.e47.options.e47_3.outcomes.0.text"] = "Let me put the lid on this jar. I will come with you.";
+module.exports["event.dreams.e47.options.e47_3.outcomes.0.text"] = "The moth keeper packs up and comes with you.";
 // Cave e47 choice e47_4. Preserve amounts and any item names.
 module.exports["event.dreams.e47.options.e47_4.label"] = "Mark the nearby rooms on our map";
 // Cave e47 choice e47_5. Preserve amounts and any item names.
@@ -4448,15 +4461,15 @@ module.exports["event.dreams.e47.options.e47_5.label"] = "Leave the moths alone.
 // Cave encounter title and room objective: e48.
 module.exports["event.dreams.e48.name"] = "The Supply Cart";
 // Cave encounter e48 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e48.text"] = "I keep a few supplies for travelers. Today I have one item left. I take cave gold; your party shares the purchase.";
+module.exports["event.dreams.e48.text"] = "I keep a few supplies for travelers. There is one item left today, and I take cave gold from the shared purse.";
 // Cave e48 choice e48_0. Preserve amounts and any item names.
 module.exports["event.dreams.e48.options.e48_0.label"] = "See the item and its price";
 // Cave e48 choice e48_0 result.
-module.exports["event.dreams.e48.options.e48_0.result"] = "The shop is open. You can pay from the party’s cave gold.";
+module.exports["event.dreams.e48.options.e48_0.result"] = "The shop is open. You can pay for the item with the party’s cave gold.";
 // Cave e48 choice e48_1. Preserve amounts and any item names.
 module.exports["event.dreams.e48.options.e48_1.label"] = "Ask what happens to leftover cave gold";
 // Cave e48 choice e48_1 result.
-module.exports["event.dreams.e48.options.e48_1.result"] = "Spend cave gold at shops and encounters before the run ends. It stays in the cave. Unspent Amber goes to your party.";
+module.exports["event.dreams.e48.options.e48_1.result"] = "Spend cave gold at shops and encounters before the run ends. It stays in the cave. Unspent Amber goes to your party afterward.";
 // Cave e48 choice e48_2. Preserve amounts and any item names.
 module.exports["event.dreams.e48.options.e48_2.label"] = "Ask where other merchants wait";
 // Cave e48 choice e48_2 result.
@@ -4474,15 +4487,15 @@ module.exports["event.dreams.e48.options.e48_5.label"] = "Keep the gold in the s
 // Cave encounter title and room objective: e49.
 module.exports["event.dreams.e49.name"] = "Make a Tool";
 // Cave encounter e49 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e49.text"] = "I can make a pry bar from these hinges, or refill a lamp. Pick one. You can keep it for the rest of this visit.";
+module.exports["event.dreams.e49.text"] = "I can turn these hinges into a pry bar, or refill a lamp. Pick one, and it is yours for the rest of this visit.";
 // Cave e49 choice e49_0. Preserve amounts and any item names.
 module.exports["event.dreams.e49.options.e49_0.label"] = "Take a pry bar for locked hatches";
 // Cave e49 choice e49_0 result.
-module.exports["event.dreams.e49.options.e49_0.result"] = "You take the pry bar. It stays in your cave supplies.";
+module.exports["event.dreams.e49.options.e49_0.result"] = "You take the pry bar and add it to your cave supplies.";
 // Cave e49 choice e49_1. Preserve amounts and any item names.
 module.exports["event.dreams.e49.options.e49_1.label"] = "Take a lamp for the moths";
 // Cave e49 choice e49_1 result.
-module.exports["event.dreams.e49.options.e49_1.result"] = "You take the lamp. It stays in your cave supplies.";
+module.exports["event.dreams.e49.options.e49_1.result"] = "You take the lamp and add it to your cave supplies.";
 // Cave e49 choice e49_2. Preserve amounts and any item names.
 module.exports["event.dreams.e49.options.e49_2.label"] = "Take the tin rattle";
 // Cave e49 choice e49_2 result.
@@ -4490,7 +4503,7 @@ module.exports["event.dreams.e49.options.e49_2.result"] = "You pack the rattle. 
 // Cave e49 choice e49_3. Preserve amounts and any item names.
 module.exports["event.dreams.e49.options.e49_3.label"] = "Ask the toolmaker to come with us";
 // Cave e49 choice e49_3 outcome 0.
-module.exports["event.dreams.e49.options.e49_3.outcomes.0.text"] = "I will bring my tools and watch your back.";
+module.exports["event.dreams.e49.options.e49_3.outcomes.0.text"] = "The toolmaker brings the tools and comes with you.";
 // Cave e49 choice e49_4. Preserve amounts and any item names.
 module.exports["event.dreams.e49.options.e49_4.label"] = "Trade the scrap for 1 Amber";
 // Cave e49 choice e49_4 outcome 0.
@@ -4500,11 +4513,11 @@ module.exports["event.dreams.e49.options.e49_5.label"] = "We have what we need."
 // Cave encounter title and room objective: e50.
 module.exports["event.dreams.e50.name"] = "Before You Leave";
 // Cave encounter e50 opening dialogue. npc and rival, when present, are names.
-module.exports["event.dreams.e50.text"] = "Take a gift before you go: some Amber, something from my supply box, or a spare tool. You only get one.";
+module.exports["event.dreams.e50.text"] = "Take one gift before you go: 2 Amber, something from my supply box, or a spare tool. One choice, so make it count.";
 // Cave e50 choice e50_0. Preserve amounts and any item names.
 module.exports["event.dreams.e50.options.e50_0.label"] = "Take 2 Amber";
 // Cave e50 choice e50_0 result.
-module.exports["event.dreams.e50.options.e50_0.result"] = "Here. Open the chest to add these to the shared purse.";
+module.exports["event.dreams.e50.options.e50_0.result"] = "Open the chest to add 2 Amber to the shared purse.";
 // Cave e50 choice e50_1. Preserve amounts and any item names.
 module.exports["event.dreams.e50.options.e50_1.label"] = "Open the little supply box";
 // Cave e50 choice e50_1 outcome 0.
@@ -4512,7 +4525,7 @@ module.exports["event.dreams.e50.options.e50_1.outcomes.0.text"] = "You open the
 // Cave e50 choice e50_2. Preserve amounts and any item names.
 module.exports["event.dreams.e50.options.e50_2.label"] = "Take a spare lamp";
 // Cave e50 choice e50_2 result.
-module.exports["event.dreams.e50.options.e50_2.result"] = "Take the lamp. You may still need it.";
+module.exports["event.dreams.e50.options.e50_2.result"] = "You take the lamp. You may still need it.";
 // Cave e50 choice e50_3. Preserve amounts and any item names.
 module.exports["event.dreams.e50.options.e50_3.label"] = "Take a spare pry bar";
 // Cave e50 choice e50_3 result.
@@ -4520,7 +4533,7 @@ module.exports["event.dreams.e50.options.e50_3.result"] = "You take the spare pr
 // Cave e50 choice e50_4. Preserve amounts and any item names.
 module.exports["event.dreams.e50.options.e50_4.label"] = "Ask {npc} to stay with us";
 // Cave e50 choice e50_4 result.
-module.exports["event.dreams.e50.options.e50_4.result"] = "{npc}: I can stay a little longer. Lead the way.";
+module.exports["event.dreams.e50.options.e50_4.result"] = "{npc} agrees to stay a little longer and comes with you.";
 // Cave e50 choice e50_5. Preserve amounts and any item names.
 module.exports["event.dreams.e50.options.e50_5.label"] = "Thanks. We have enough.";
 
@@ -4546,25 +4559,133 @@ module.exports["event.dreams.camp.2.1.name"] = "Deep Roost";
 module.exports["event.dreams.traveler.Pip.says.0"] = "Excuse me! Heavy bag.";
 
 // Ambient cave traveler Pip speaks this line on click. Preserve Amber and Dorr.
-module.exports["event.dreams.traveler.Pip.says.1"] = "I came for Amber. Found mostly spiders.";
+module.exports["event.dreams.traveler.Pip.says.1"] = "I came for Amber. Mostly found spiders.";
 
 // Ambient cave traveler Pip speaks this line on click. Preserve Amber and Dorr.
-module.exports["event.dreams.traveler.Pip.says.2"] = "The stairs are marked. I still get lost.";
+module.exports["event.dreams.traveler.Pip.says.2"] = "The stairs are marked. I still manage to get lost.";
 
 // Ambient cave traveler Bram speaks this line on click. Preserve Amber and Dorr.
-module.exports["event.dreams.traveler.Bram.says.0"] = "Mind the bats. They sleep until you get close.";
+module.exports["event.dreams.traveler.Bram.says.0"] = "Mind the bats. They sleep until you get too close.";
 
 // Ambient cave traveler Bram speaks this line on click. Preserve Amber and Dorr.
-module.exports["event.dreams.traveler.Bram.says.1"] = "Dorr said this would be a short walk.";
+module.exports["event.dreams.traveler.Bram.says.1"] = "Dorr said this would be a short walk. Dorr was optimistic.";
 
 // Ambient cave traveler Bram speaks this line on click. Preserve Amber and Dorr.
-module.exports["event.dreams.traveler.Bram.says.2"] = "You look busy. I'll keep out of the way.";
+module.exports["event.dreams.traveler.Bram.says.2"] = "You look busy. I’ll stay out of your way.";
 
 // Ambient cave traveler Lena speaks this line on click. Preserve Amber and Dorr.
-module.exports["event.dreams.traveler.Lena.says.0"] = "Someone down here is selling just one thing. Strange shop.";
+module.exports["event.dreams.traveler.Lena.says.0"] = "Someone down here has a shop with exactly one thing for sale. Strange business model.";
 
 // Ambient cave traveler Lena speaks this line on click. Preserve Amber and Dorr.
-module.exports["event.dreams.traveler.Lena.says.1"] = "I heard shouting ahead. I took the long way.";
+module.exports["event.dreams.traveler.Lena.says.1"] = "I heard shouting up ahead. I took the long way around.";
 
 // Ambient cave traveler Lena speaks this line on click. Preserve Amber and Dorr.
-module.exports["event.dreams.traveler.Lena.says.2"] = "If you find a blue scarf, it's mine.";
+module.exports["event.dreams.traveler.Lena.says.2"] = "If you find a blue scarf, it’s mine.";
+
+// Item tooltip flavor line for Verdant Spore, an ingredient of the Witch's Cipher (drops in one region during its gathering). Short and mysterious; the item name stays unchanged.
+module.exports["item.verdantspore.explanation"] = "A strange little spore. The Witch needs it for her cauldron.";
+
+// Item tooltip flavor line for Frost Scale, an ingredient of the Witch's Cipher (drops in one region during its gathering). Short and mysterious; the item name stays unchanged.
+module.exports["item.frostscale.explanation"] = "Cold to the touch. The Witch can brew with it.";
+
+// Item tooltip flavor line for Ember Coal, an ingredient of the Witch's Cipher (drops in one region during its gathering). Short and mysterious; the item name stays unchanged.
+module.exports["item.embercoal.explanation"] = "Still warm! Toss it into the Witch's cauldron.";
+
+// Item tooltip flavor line for Gloom Feather, an ingredient of the Witch's Cipher (drops in one region during its gathering). Short and mysterious; the item name stays unchanged.
+module.exports["item.gloomfeather.explanation"] = "A spooky feather. Just what the Witch needs.";
+
+// Item tooltip for the Witch's Parcel: opened (exchanged) at the Witch in Spooky Forest, or kept for her gear recipes. Keep the Witch and Witch's Parcel unchanged.
+module.exports["item.witchparcel.explanation"] = "What's inside? Open it at the Witch, or save it for her recipes.";
+
+// Item tooltip flavor line for Cipher Draught, a two-hour elixir (luck, gold, XP and a little speed). Short.
+module.exports["item.cipherdraught.explanation"] = "A lucky brew for two hours of better adventures.";
+
+// Item tooltip flavor line for a Witching Season gear piece (crookedkey). Short and playful; no stats or comparisons.
+module.exports["item.crookedkey.explanation"] = "A crooked key. It might open something!";
+
+// Item tooltip flavor line for a Witching Season gear piece (patchbuckler). Short and playful; no stats or comparisons.
+module.exports["item.patchbuckler.explanation"] = "Four scraps. One stubborn shield.";
+
+// Item tooltip flavor line for a Witching Season gear piece (blackcatbell). Short and playful; no stats or comparisons.
+module.exports["item.blackcatbell.explanation"] = "A little bell that rings when no cat is near.";
+
+// Item tooltip flavor line for a Witching Season gear piece (nightmarketsash). Short and playful; no stats or comparisons.
+module.exports["item.nightmarketsash.explanation"] = "Extra pockets for whatever you find.";
+
+// Item tooltip flavor line for a Witching Season gear piece (hexweavegloves). Short and playful; no stats or comparisons.
+module.exports["item.hexweavegloves.explanation"] = "A pair of gloves stitched with a little witchcraft.";
+
+// Item tooltip flavor line for a Witching Season gear piece (candleboots). Short and playful; no stats or comparisons.
+module.exports["item.candleboots.explanation"] = "Boots with a little candlelight for dark paths.";
+
+// Item tooltip flavor line for a Witching Season gear piece (witchlightmantle). Short and playful; no stats or comparisons.
+module.exports["item.witchlightmantle.explanation"] = "A mantle with a little moonlight tucked inside.";
+
+// Item tooltip flavor line for a Witching Season gear piece (laughingbook). Short and playful; no stats or comparisons.
+module.exports["item.laughingbook.explanation"] = "A book that laughs at its own jokes.";
+
+// Item tooltip flavor line for a Witching Season gear piece (horsemanpumpkin). Short and playful; no stats or comparisons.
+module.exports["item.horsemanpumpkin.explanation"] = "The Headless Horseman's rare helmet. Still grinning!";
+
+// Condition name shown on a character after a Trick or Treat door played a trick. Exclamation is part of the name.
+module.exports["condition.spooked.name"] = "Spooked!";
+
+// Condition tooltip: the trick half of a Trick or Treat knock. +40 speed for 3 seconds.
+module.exports["condition.spooked.explanation"] = "Boo! Speed increased by 40 for 3 seconds.";
+
+// Condition name (not shown in the condition bar) of a Zombie or Ghoul climbing out of its grave in Graveyard Rising.
+module.exports["condition.rising.name"] = "Rising";
+
+// Emote name: an evil cackle with green laugh marks. Translate as a skill label.
+module.exports["skill.sinisterlaugh.name"] = "Sinister Laugh";
+
+// Emote tooltip flavor line for Sinister Laugh.
+module.exports["skill.sinisterlaugh.explanation"] = "A wicked laugh to scare your friends.";
+
+// Event name in guides, the Events window and announcements. Descriptive event name; translate.
+module.exports["event.witchcipher.name"] = "Witch's Cipher";
+
+// Event announcement card text for Witch's Cipher on character selection.
+module.exports["event.witchcipher.announcement.text"] = "Gather ingredients and crack the Witch's lost recipe.";
+
+// Event name in guides, the Events window and announcements. Headless Horseman is a monster name; keep it unchanged.
+module.exports["event.horseman.name"] = "Headless Horseman";
+
+// Event announcement card text for Headless Horseman on character selection.
+module.exports["event.horseman.announcement.text"] = "The Headless Horseman rides out of Spooky Forest's graveyard.";
+
+// Event name in guides, the Events window and announcements. Descriptive event name; translate.
+module.exports["event.graveyard.name"] = "Graveyard Rising";
+
+// Event announcement card text for Graveyard Rising on character selection.
+module.exports["event.graveyard.announcement.text"] = "Zombies and Ghouls are rising in Spooky Town's graveyard.";
+
+// Event name in guides, the Events window and announcements. Descriptive event name; translate.
+module.exports["event.trickortreat.name"] = "Trick or Treat";
+
+// Spooky Town door 1 (a Trick or Treat door during Halloween); shown when the door is clicked outside Halloween. Same meaning as map.halloween.quirks.1.5.
+module.exports["map.spookytown.quirks.1.5"] = "Locked";
+
+// Spooky Town door 2 (a Trick or Treat door during Halloween); shown when the door is clicked outside Halloween. Same meaning as map.halloween.quirks.1.5.
+module.exports["map.spookytown.quirks.2.5"] = "Locked";
+
+// Spooky Town door 3 (a Trick or Treat door during Halloween); shown when the door is clicked outside Halloween. Same meaning as map.halloween.quirks.1.5.
+module.exports["map.spookytown.quirks.3.5"] = "Locked";
+
+// Spooky Town door 4 (a Trick or Treat door during Halloween); shown when the door is clicked outside Halloween. Same meaning as map.halloween.quirks.1.5.
+module.exports["map.spookytown.quirks.4.5"] = "Locked";
+
+// Spooky Town door 5 (a Trick or Treat door during Halloween); shown when the door is clicked outside Halloween. Same meaning as map.halloween.quirks.1.5.
+module.exports["map.spookytown.quirks.5.5"] = "Locked";
+
+// Title of the INFO button near the Witch in Spooky Forest; opens the Witch's Cipher guide. Descriptive event name; translate.
+module.exports["interaction.witchcipher.title"] = "Witch's Cipher";
+
+// Tooltip of the INFO button near the Witch; opens the Witch's Cipher guide. 06:00 and 18:00 (during Halloween) and 13:00 or 20:00 (the rest of the year) are on the realm clock.
+module.exports["interaction.witchcipher.summary"] = "During Halloween, brew at 06:00 and 18:00 realm time; the rest of the year, the Witch's Cipher takes turns with other daily events at 13:00 or 20:00.";
+
+// Title of the INFO button near a Trick or Treat door during Halloween; opens the Trick or Treat guide.
+module.exports["interaction.trickortreat.title"] = "Trick or Treat";
+
+// Tooltip of the INFO button near a Trick or Treat door during Halloween.
+module.exports["interaction.trickortreat.summary"] = "Knock on this door during Halloween for a treat or a fright.";

@@ -317,7 +317,7 @@
 	"game.clicks_away": "Berjarak {dist} klik",
 	"game.echoes": "{length} gema",
 	"game.clicks": "{c} klik",
-	"npc.home.set_offer": "Ini bukan server asalmu. Kamu adalah penghuni {home}. Dunia asal memberi bobot kontribusi kerja sama lebih besar dan hadiah khusus; berpindah karakter nonpedagang dengan cepat menangguhkan keduanya selama 30 menit. Ingin menjadikan server ini sebagai server asalmu?",
+	"npc.home.set_offer": "Ini bukan server rumahmu. Kamu adalah penduduk {home}. Dunia rumah memberikan kredit kooperatif lebih kuat dan hadiah khusus; berpindah cepat antar-karakter non-Pedagang menghentikan manfaat itu selama 30 menit. Apakah kamu ingin menetapkan server ini sebagai rumahmu?",
 	"npc.yes": "Ya!",
 	"npc.home.current": "Ini server asalmu. Bantuanmu melawan monster kerja sama dihitung lebih besar di sini, dan beberapa monster membawa hadiah tambahan untuk penghuni dunia ini. Berpindah ke sini setelah karakter nonpedagang lain mengunjungi server berbeda menyebabkan Lelah Berpindah Dunia selama 30 menit. Hadiah biasa tetap diberikan selama kamu menyesuaikan diri.",
 	"npc.bless_server.offer": "Ingin memberkati seluruh server selama 3 hari?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Item itu tidak cocok dengan penawaran",
 	"response.trade_swap_space": "Tas pedagang penuh",
 	"game.trade_history.traded": "- Menukar '{item}' dengan {player} untuk '{received}'",
-	"response.transport_need_items": "Perlu: {items}"
+	"response.transport_need_items": "Perlu: {items}",
+	"combat.emote.hehehe": "HEHEHE"
 }

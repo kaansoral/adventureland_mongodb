@@ -317,7 +317,7 @@
 	"game.clicks_away": "{dist}クリック先",
 	"game.echoes": "反応が{length}個",
 	"game.clicks": "{c}クリック",
-	"npc.home.set_offer": "ここは所属サーバーではありません。現在の所属は{home}です。所属ワールドでは共闘への貢献がより高く評価され、特別な報酬も得られます。商人以外のキャラクターを短時間で切り替えると、これらの特典が30分間止まります。このサーバーを所属先にしますか？",
+	"npc.home.set_offer": "ここはあなたのホームサーバーではありません。あなたは{home}の住人です。ホームワールドでは協力時の貢献判定が強化され、特別報酬もあります。商人以外のキャラクターを短時間でサーバー間移動させると、それらの恩恵が30分間停止します。このサーバーをホームに設定しますか？",
 	"npc.yes": "はい！",
 	"npc.home.current": "ここは所属サーバーです。共闘モンスターとの戦いで貢献がより高く評価され、一部のモンスターから追加の所属報酬を得られます。別の商人以外のキャラクターが他サーバーを訪れた後にこちらへ切り替えると、30分間のワールド疲労が発生します。落ち着くまでの間も通常の報酬は得られます。",
 	"npc.bless_server.offer": "サーバー全体に3日間の祝福を授けますか？",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "そのアイテムは交換条件に合いません",
 	"response.trade_swap_space": "商人の持ち物に空きがありません",
 	"game.trade_history.traded": "- {player}と'{item}'を'{received}'に交換",
-	"response.transport_need_items": "必要なアイテム：{items}"
+	"response.transport_need_items": "必要なアイテム：{items}",
+	"combat.emote.hehehe": "ヒヒヒ"
 }

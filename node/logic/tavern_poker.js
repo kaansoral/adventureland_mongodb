@@ -184,6 +184,9 @@ function tavern_poker_checkpoint(seats, id, awards, complete) {
 			index: seat.index,
 		};
 	});
+	entries.forEach(function (entry) {
+		if (entry.player) entry.player.poker_saving = true;
+	});
 	tx(
 		async () => {
 			var rows = [],
@@ -201,6 +204,7 @@ function tavern_poker_checkpoint(seats, id, awards, complete) {
 						player.unmount_call ||
 						player.sync_call ||
 						player.stop_call ||
+						player.mail_sending ||
 						player.merrit_grant
 					)
 						ex("poker_save_busy");
@@ -284,6 +288,9 @@ function tavern_poker_checkpoint(seats, id, awards, complete) {
 		})
 		.then(function (result) {
 			table.saving = false;
+			entries.forEach(function (entry) {
+				if (entry.player) delete entry.player.poker_saving;
+			});
 			if (result.success) {
 				if (result.conservation_failed) server_log("#X poker hand voided: awards and rake did not conserve gold", 1);
 				(result.invalid || []).forEach(function (index) {

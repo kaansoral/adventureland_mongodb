@@ -72,6 +72,7 @@ test("initial pages and sign-in fragments load the authoritative homes before se
 	assert.equal(page.server, servers[1]);
 	assert.equal(page.domain.server_explicit, false);
 	const fragment = await context.selection_info({}, {}, {});
+	assert.equal(fragment.screen, "selection");
 	assert.equal(fragment.html.server, servers[1]);
 	assert.equal(fragment.html.domain.characters[0].info.p.home, "USII");
 	assert.equal(fragment.html.domain.servers, servers);
@@ -86,6 +87,26 @@ test("initial pages and sign-in fragments load the authoritative homes before se
 	await context.render_selection({}, response, {}, { url_address: servers[0].address, url_path: servers[0].path });
 	assert.equal(page.server, servers[0]);
 	assert.equal(page.domain.server_explicit, true);
+});
+
+test("a delayed selection response cannot cover an already connected character", () => {
+	const rendered = [];
+	const context = vm.createContext({
+		inside: "game",
+		call_code_function() {},
+		resize() {},
+		$: () => ({ html: (value) => rendered.push(value) }),
+		in_arr: (v, values) => values.includes(v),
+	});
+	vm.runInContext(extract(read("js/functions.js"), "handle_information"), context);
+	context.handle_information([{ type: "content", screen: "selection", html: "late sign-in" }]);
+	assert.deepEqual(rendered, []);
+	context.inside = "selection";
+	context.handle_information([{ type: "content", screen: "selection", html: "current sign-in" }]);
+	assert.deepEqual(rendered, ["current sign-in"]);
+	context.inside = "game";
+	context.handle_information([{ type: "content", html: "other content" }]);
+	assert.deepEqual(rendered, ["current sign-in", "other content"]);
 });
 
 function client() {

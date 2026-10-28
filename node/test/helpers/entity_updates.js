@@ -66,7 +66,8 @@ function server() {
 		"remove_entity_emit",
 		"xy_upush_logic",
 	]);
-	load(c, "node/server.js", ["send_xy_updates", "player_to_client", "monster_to_client"]);
+	load(c, "node/server.js", ["entity_wire", "send_xy_updates", "player_to_client", "monster_to_client"]);
+	c.entity_revision = 1;
 	return c;
 }
 
@@ -120,7 +121,11 @@ function client() {
 		"process_entities",
 		"on_disappear",
 		"draw_entities",
+		"clone_packet",
+		"decode_entities",
+		"receive_entity_deltas",
 	]);
+	c.entity_packets = {};
 	return c;
 }
 

@@ -675,31 +675,31 @@ module.exports = {
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.reason.material": "Still needed: {quantity} {item}.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.reason.try_material": "Try a few fights for {item}; check potion use.",
+	"progression.reason.try_material": "Try a few fights for {item}, and keep an eye on potion use.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.reason.spares": "Keep your worn equipment. Use spare copies.",
+	"progression.reason.spares": "Keep your worn equipment. Work with spare copies.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.reason.random": "The reward is random; each attempt uses the exchange item.",
+	"progression.reason.random": "The reward is random, and every attempt consumes the exchange item.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.reason.source": "Check the source and remaining ingredients in INFO.",
+	"progression.reason.source": "Check INFO for the source and any ingredients you still need.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.reason.gain": "This bag item improves your current build.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.reason.stat": "Matching stat scrolls needed: {quantity}.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.reason.blocked": "A next step for {item} needs more information. Inspect its sources.",
+	"progression.reason.blocked": "The next step for {item} needs more information. Inspect its sources.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.reason.recover": "Resurrect if needed, then restore HP and MP.",
+	"progression.reason.recover": "Resurrect if needed, then restore your HP and MP.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.reason.supplies": "Ready: {hp} HP potions, {mp} MP potions.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.reason.shop": "Use a stand, list spare items, and keep supplies funded.",
+	"progression.reason.shop": "Use a stand, list spare items, and keep enough gold flowing for supplies.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.reason.gather": "Check your tool, level, MP, cooldown and gathering location.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.reason.hunt_turnin": "Your assigned hunt is complete. Collect your Monster Token.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.reason.hunt": "Ask for a hunt and save Monster Tokens for equipment.",
+	"progression.reason.hunt": "Ask for a hunt, and save Monster Tokens for equipment.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.reason.hunt_farm": "These kills count toward your assigned hunt.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
@@ -707,15 +707,15 @@ module.exports = {
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.reason.bees": "Earn XP and save Bee Wings for Cole.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.reason.income": "Recent loot covers potion costs and helps fund your goal.",
+	"progression.reason.income": "Recent loot covers your potion costs and helps fund your goal.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.reason.try_income": "Try a few fights; compare loot gold with potion costs.",
+	"progression.reason.try_income": "Try a few fights and compare the loot gold against your potion costs.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.reason.xp": "Recent fights support steady leveling.",
+	"progression.reason.xp": "Recent fights are giving you steady leveling progress.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.reason.try_xp": "Try one fight first; continue if HP and potions hold up.",
+	"progression.reason.try_xp": "Try one fight first. Continue if your HP and potions hold up.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.reason.season": "Collect seasonal drops alongside your current farm.",
+	"progression.reason.season": "Collect seasonal drops while you work on your current farm.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.reason.event_ready": "Recent participation earned credit. Check the current fight in INFO.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
@@ -723,11 +723,11 @@ module.exports = {
 	// Progression guide: goal lesson, with optional sources and spare equipment. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.lesson.foundation": "Your first working equipment",
 	// Progression guide: goal lesson, with optional sources and spare equipment. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.lesson.foundation.why": "Start with Goo. Move to Bees after steady fights, buy five armor pieces, and develop a spare weapon to +3.",
+	"progression.lesson.foundation.why": "Start with Goo. Move to Bees once fights are steady, buy five armor pieces, and develop a spare weapon to +3.",
 	// Progression guide: goal lesson, with optional sources and spare equipment. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.lesson.working": "A +5 weapon and matching armor stats",
 	// Progression guide: goal lesson, with optional sources and spare equipment. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.lesson.working.why": "Raise a spare weapon to +5. Bring armor to +3 and add your class’s main stat. Keep useful drops for Cole.",
+	"progression.lesson.working.why": "Raise a spare weapon to +5. Bring your armor to +3 and add your class’s main stat. Keep useful drops for Cole.",
 	// Progression guide: goal lesson, with optional sources and spare equipment. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.lesson.amulet": "Your first matching amulet",
 	// Progression guide: goal lesson, with optional sources and spare equipment. Preserve named parameters, native item/map/NPC names and CODE identifiers.
@@ -735,11 +735,11 @@ module.exports = {
 	// Progression guide: goal lesson, with optional sources and spare equipment. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.lesson.amulet2": "Bring your amulet to +2",
 	// Progression guide: goal lesson, with optional sources and spare equipment. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.lesson.amulet2.why": "Use three identical spare amulets at the same level for each attempt. Reach +1, then +2; keep your worn amulet safe.",
+	"progression.lesson.amulet2.why": "Each attempt needs three identical spare amulets at the same level. Reach +1, then +2, while keeping your worn amulet safe.",
 	// Progression guide: goal lesson, with optional sources and spare equipment. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.lesson.earrings": "Fill both earring slots",
 	// Progression guide: goal lesson, with optional sources and spare equipment. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"progression.lesson.earrings.why": "Fill both ears before compounding. Inspect Phoenix or Dracul drops and fresh player offers; continue rings while a party is unavailable.",
+	"progression.lesson.earrings.why": "Fill both ears before compounding. Check Phoenix or Dracul drops and fresh player offers; keep working on rings when a party is unavailable.",
 	// Progression guide: goal lesson, with optional sources and spare equipment. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.lesson.rings": "Find two matching rings",
 	// Progression guide: goal lesson, with optional sources and spare equipment. Preserve named parameters, native item/map/NPC names and CODE identifiers.
@@ -756,7 +756,7 @@ module.exports = {
 	"progression.lesson.equipment": "Build a lasting equipment foundation",
 	// Progression guide: goal lesson, with optional sources and spare equipment. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.lesson.equipment.why":
-		"Work on spare +7 armor and weapons alongside accessories. Bats drop books for suitable offhands. Level gains may finish the goal without another costly upgrade.",
+		"Work on spare +7 armor and weapons alongside your accessories. Bats drop books for suitable offhands. Level gains may finish the goal without another costly upgrade.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"progression.goal.encounter": "Earn participation credit against {monster}",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
@@ -764,7 +764,7 @@ module.exports = {
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
 	"progression.goal.hint": "Levels and equipment, one step at a time.",
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
-	"progression.goal.explain": "Raise {stat} through leveling and lasting equipment. This is a long-term goal; you can move to stronger monsters along the way.",
+	"progression.goal.explain": "Raise {stat} through levels and lasting equipment. It’s a long-term goal; move on to stronger monsters as you grow.",
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
 	"progression.next": "Now: {step}",
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
@@ -782,33 +782,33 @@ module.exports = {
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
 	"progression.how.stat": "Unequip {item}, then place it with {quantity} {scroll} in the upgrade slots. This selects {stat} without changing the item's level.",
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
-	"progression.how.stat_shop": "Buy missing scrolls from the listed seller and keep them in one stack.",
+	"progression.how.stat_shop": "Buy any missing scrolls from the listed seller and keep them in one stack.",
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
-	"progression.how.upgrade": "Use a spare {item} and {scroll} at the upgrade NPC. Check the chance before spending. Equip the spare when it is better than your worn item.",
+	"progression.how.upgrade": "Use a spare {item} and {scroll} at the upgrade NPC. Check the chance before spending. Equip the spare once it is better than your worn item.",
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
-	"progression.how.compound": "Bring three spare {item} at +{level} and {scroll} to the compound NPC. Each attempt uses all three copies. Keep your worn item.",
+	"progression.how.compound": "Bring three spare {item} at +{level} and {scroll} to the compound NPC. Each attempt consumes all three copies. Keep your worn item safe.",
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
 	"progression.how.equip": "Open your inventory and equip {item}.",
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
-	"progression.how.buy": "Visit {npc} and buy {quantity} {item}. The price below is for this purchase.",
+	"progression.how.buy": "Visit {npc} and buy {quantity} {item}. The price below covers this purchase.",
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
 	"progression.how.craft": "Bring the ingredients below to {npc}. Open the recipe to see the craft and its cost.",
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
-	"progression.how.farm": "Farm {monster} in {map} for experience and gold. Keep potions ready and collect the loot.",
+	"progression.how.farm": "Farm {monster} in {map} for experience and gold. Keep potions ready and pick up the loot.",
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
 	"progression.fight.estimate": "Estimated fight: {seconds}s, about {loss}% of your maximum HP before healing.",
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
-	"progression.farm.funds": "Gold from this farm funds {item}. Experience also raises your stats.",
+	"progression.farm.funds": "Gold from this farm helps fund {item}. The experience also raises your stats.",
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
-	"progression.reason.gold": "Farm gold for equipment and keep potions stocked.",
+	"progression.reason.gold": "Farm gold for equipment, and keep your potions stocked.",
 	// Progression: goal context, concrete next steps or projected stats. Preserve item/NPC/map names and named parameters.
-	"progression.reason.level": "Farm for experience; levels increase your character's stats.",
+	"progression.reason.level": "Farm for experience; each level raises your character's stats.",
 	// Progression: opens the existing recipe interface; it does not spend ingredients.
 	"progression.recipe.open": "View recipe",
 	// Merchant guide: read-only resale research, full-stack costs, tax, and personal supplies. Preserve NPC/item names and named values; profit is only a possibility.
 	"progression.goal.trade": "Trade for profit",
 	// Merchant guide: read-only resale research, full-stack costs, tax, and personal supplies. Preserve NPC/item names and named values; profit is only a possibility.
-	"progression.goal.trade_hint": "Keep your shop stocked; buy only with a resale plan.",
+	"progression.goal.trade_hint": "Keep your shop stocked, and don’t buy without a resale plan.",
 	// Merchant guide: read-only resale research, full-stack costs, tax, and personal supplies. Preserve NPC/item names and named values; profit is only a possibility.
 	"progression.action.market": "Check {npc}'s stock",
 	// Merchant guide: read-only resale research, full-stack costs, tax, and personal supplies. Preserve NPC/item names and named values; profit is only a possibility.
@@ -818,24 +818,24 @@ module.exports = {
 	// Merchant guide: read-only resale research, full-stack costs, tax, and personal supplies. Preserve NPC/item names and named values; profit is only a possibility.
 	"progression.reason.market_empty": "No affordable match in recently seen stock and buy orders.",
 	// Merchant guide: read-only resale research, full-stack costs, tax, and personal supplies. Preserve NPC/item names and named values; profit is only a possibility.
-	"progression.reason.market_unlock": "Donate to Ron to unlock Lost & Found. Keep your reserve.",
+	"progression.reason.market_unlock": "Donate to Ron to unlock Lost & Found. Keep your reserve intact.",
 	// Merchant guide: read-only resale research, full-stack costs, tax, and personal supplies. Preserve NPC/item names and named values; profit is only a possibility.
 	"progression.reason.market_space": "Free an inventory slot before buying more stock.",
 	// Merchant guide: read-only resale research, full-stack costs, tax, and personal supplies. Preserve NPC/item names and named values; profit is only a possibility.
 	"progression.action.shop_keep": "Keep your shop stocked",
 	// Merchant guide: read-only resale research, full-stack costs, tax, and personal supplies. Preserve NPC/item names and named values; profit is only a possibility.
-	"progression.reason.shop_keep": "Sell spare loot and materials. An open stand also earns XP.",
+	"progression.reason.shop_keep": "Sell spare loot and materials. Keeping a stand open also earns XP.",
 	// Merchant guide: read-only resale research, full-stack costs, tax, and personal supplies. Preserve NPC/item names and named values; profit is only a possibility.
-	"progression.how.market": "Right-click {npc} to browse. Check the whole stack's price and a buyer's offer before purchasing.",
+	"progression.how.market": "Right-click {npc} to browse. Check the full stack price and a buyer's offer before purchasing.",
 	// Merchant guide: read-only resale research, full-stack costs, tax, and personal supplies. Preserve NPC/item names and named values; profit is only a possibility.
 	"progression.market.quote": "Stack: {quantity}. Cost: {cost} gold. After-tax sale: {proceeds} gold. Possible profit: {profit} gold.",
 	// Merchant guide: read-only resale research, full-stack costs, tax, and personal supplies. Preserve NPC/item names and named values; profit is only a possibility.
 	"progression.market.buyer": "{buyer} recently wanted this item. Recheck their order, funds and space; the sale is not guaranteed.",
 	// Merchant guide: read-only resale research, full-stack costs, tax, and personal supplies. Preserve NPC/item names and named values; profit is only a possibility.
 	"progression.how.shop":
-		"List spare loot and gathered materials, then keep your stand open for customers and XP. Compare prices before restocking. Save gold for supplies; a high asking price does not prove an item will sell.",
+		"List spare loot and gathered materials, then keep your stand open for customers and XP. Compare prices before restocking. Keep gold aside for supplies; a high asking price does not mean an item will sell.",
 	// Merchant guide: read-only resale research, full-stack costs, tax, and personal supplies. Preserve NPC/item names and named values; profit is only a possibility.
 	"progression.action.unlock_potions": "Unlock your {stat} potions",
 	// Merchant guide: read-only resale research, full-stack costs, tax, and personal supplies. Preserve NPC/item names and named values; profit is only a possibility.
-	"progression.how.unlock_potions": "You have enough potions in locked stacks. Unlock them in your inventory before use.",
+	"progression.how.unlock_potions": "You have enough potions in locked stacks. Unlock them in your inventory before using them.",
 };

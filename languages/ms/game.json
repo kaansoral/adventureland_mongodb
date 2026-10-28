@@ -317,7 +317,7 @@
 	"game.clicks_away": "Sejauh {dist} klik",
 	"game.echoes": "{length} gema",
 	"game.clicks": "{c} klik",
-	"npc.home.set_offer": "Ini bukan pelayan asal anda. Anda ialah penduduk {home}. Alam asal memberi pengiktirafan sumbangan kerjasama yang lebih tinggi dan ganjaran khas; pertukaran watak bukan pedagang dengan cepat menghentikannya selama 30 minit. Mahukah anda menjadikan pelayan ini pelayan asal anda?",
+	"npc.home.set_offer": "Ini bukan server rumah anda. Anda penduduk {home}. Alam rumah menawarkan kredit kerjasama yang lebih kuat dan ganjaran khas; menukar watak bukan pedagang dengan pantas menghentikan manfaat tersebut selama 30 minit. Adakah anda mahu menetapkan server ini sebagai rumah anda?",
 	"npc.yes": "Ya!",
 	"npc.home.current": "Ini pelayan asal anda. Bantuan anda menentang raksasa kerjasama lebih diiktiraf di sini, dan sesetengah raksasa membawa ganjaran tambahan untuk penduduk asal. Bertukar ke sini setelah watak bukan pedagang lain melawat pelayan berbeza menyebabkan Keletihan Alam selama 30 minit. Ganjaran biasa diteruskan sementara anda menyesuaikan diri.",
 	"npc.bless_server.offer": "Mahukah anda memberkati seluruh pelayan selama 3 hari?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Item itu tidak sepadan dengan tawaran",
 	"response.trade_swap_space": "Pedagang tiada ruang",
 	"game.trade_history.traded": "- Menukar '{item}' dengan {player} untuk '{received}'",
-	"response.transport_need_items": "Perlu: {items}"
+	"response.transport_need_items": "Perlu: {items}",
+	"combat.emote.hehehe": "HEHEHE"
 }

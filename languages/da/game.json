@@ -317,7 +317,7 @@
 	"game.clicks_away": "Afstand i klik: {dist}",
 	"game.echoes": "Antal ekkoer: {length}",
 	"game.clicks": "Antal klik: {c}",
-	"npc.home.set_offer": "Dette er ikke din hjemserver. Du bor på {home}. I din hjemverden tæller din hjælp mod samarbejdsmonstre mere, og du får særlige belønninger. Hurtige skift mellem figurer, der ikke er købmænd, sætter disse fordele på pause i 30 minutter. Vil du gøre denne server til dit hjem?",
+	"npc.home.set_offer": "Dette er ikke din hjemmeserver. Du er bosat på {home}. Hjemmerealms giver stærkere samarbejdskredit og særlige belønninger; hurtigt skift mellem ikke-købmandsfigurer sætter disse fordele på pause i 30 minutter. Vil du gøre denne server til dit hjem?",
 	"npc.yes": "Ja!",
 	"npc.home.current": "Dette er din hjemserver. Din hjælp mod samarbejdsmonstre tæller mere her, og nogle monstre giver ekstra hjemmebelønninger. Hvis du skifter hertil, efter at en anden figur, der ikke er købmand, har besøgt en anden server, får du Verdenstræthed i 30 minutter. Du får stadig de normale belønninger, mens du falder til.",
 	"npc.bless_server.offer": "Vil du velsigne hele serveren i 3 dage?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Genstanden passer ikke til tilbuddet",
 	"response.trade_swap_space": "Købmanden har ikke plads",
 	"game.trade_history.traded": "- Byttede '{item}' med {player} for '{received}'",
-	"response.transport_need_items": "Kræver: {items}"
+	"response.transport_need_items": "Kræver: {items}",
+	"combat.emote.hehehe": "HEHEHE"
 }

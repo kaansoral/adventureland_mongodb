@@ -83,5 +83,9 @@
 	"error.cant_delete_map_in_use": "Une carte en cours d’utilisation ne peut pas être supprimée.",
 	"error.code_too_large": "Ce script est trop volumineux. Chaque emplacement CODE peut contenir jusqu’à 1 MiB (1 048 576 octets) de texte UTF-8.",
 	"error.code_storage_full": "Votre espace de stockage CODE est plein. Exportez et supprimez les scripts inutilisés avant d’enregistrer davantage de code.",
-	"error.code_rate_limited": "Vous enregistrez du CODE trop souvent. Patientez un instant, puis réessayez."
+	"error.code_rate_limited": "Vous enregistrez du CODE trop souvent. Patientez un instant, puis réessayez.",
+	"error.item_changed": "L'objet a changé. Réessayez.",
+	"error.mail_item_untaken": "Récupère la pièce jointe avant de supprimer ce courrier.",
+	"error.mail_sender_limit": "Ce personnage a déjà 20 pièces jointes non récupérées provenant de ton compte. Il doit en récupérer avant que tu puisses lui en envoyer une autre.",
+	"error.mailbox_full": "Ce personnage a déjà 200 pièces jointes non récupérées. Il doit en récupérer avant que tu puisses lui en envoyer une autre."
 }

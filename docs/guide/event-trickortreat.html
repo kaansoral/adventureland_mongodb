@@ -1,0 +1,43 @@
+<div class="title">{{ phrase("event.trickortreat.name") }}</div>
+<div style="overflow-x:auto"><div style="position:relative;width:390px;height:135px;margin:10px auto 0"><img src="/images/guide/trickortreat-forest.webp?v=4793ce78" width="390" height="135" alt="Spooky Forest" style="image-rendering:pixelated;display:block"><svg width="390" height="135" style="position:absolute;left:0;top:0"><circle cx="335.5" cy="75.0" r="9" fill="none" stroke="#FFC850" stroke-width="2"/><circle cx="56.0" cy="91.0" r="9" fill="none" stroke="#FFC850" stroke-width="2"/></svg></div></div>
+<div style="overflow-x:auto"><div style="position:relative;width:560px;height:450px;margin:10px auto 0"><img src="/images/guide/trickortreat-town.webp?v=65d38376" width="560" height="450" alt="Spooky Town" style="image-rendering:pixelated;display:block"><svg width="560" height="450" style="position:absolute;left:0;top:0"><circle cx="130.0" cy="140.0" r="9" fill="none" stroke="#FFC850" stroke-width="2"/><circle cx="330.0" cy="97.0" r="9" fill="none" stroke="#FFC850" stroke-width="2"/><circle cx="477.0" cy="173.0" r="9" fill="none" stroke="#FFC850" stroke-width="2"/><circle cx="90.0" cy="380.0" r="9" fill="none" stroke="#FFC850" stroke-width="2"/><circle cx="377.0" cy="333.0" r="9" fill="none" stroke="#FFC850" stroke-width="2"/></svg></div></div>
+<p>{{ phrase("docs.guide.event-trickortreat.intro") }}</p>
+<div class="divider"></div>
+<div class="guide-spawn trick-treats"></div>
+<div class="guide-spawn trick-tricks"></div>
+<p>{{ phrase("docs.guide.event-trickortreat.odds") }}</p>
+<div class="guide-spawn trick-costumes"></div>
+<div class="divider"></div>
+<div class="guide-spawn trick-stamps"></div>
+<p>{{ phrase("docs.guide.event-trickortreat.stamps") }}</p>
+<div class="divider"></div>
+<div class="title">CODE</div>
+<p>{{ phrase("docs.guide.event-trickortreat.code") }}</p>
+<!-- prettier-ignore -->
+<div class="code" id="trickortreat-code">async function trick_or_treat() {
+    var doors = G.events.trickortreat.doors;
+    for (var i = 0; i &lt; doors.length; i++) {
+        if (character.trickortreat &amp;&amp; character.trickortreat.doors.includes(i)) continue;
+        await smart_move({ map: doors[i][0], x: doors[i][1], y: doors[i][2] + 24 });
+        show_json(await knock(i));
+    }
+}
+
+trick_or_treat().catch(show_json);</div>
+<p><a href="/docs/code/functions/knock" target="_blank">knock</a> · <a href="/docs/code/functions/smart_move" target="_blank">smart_move</a> · <a href="/docs/code/character/reference" target="_blank">character</a></p>
+<style>
+	.title { color: #467956; font-size: 36px; margin-top: 15px; }
+	.divider { margin: 15px -26px 0; height: 5px; background-color: #a2a2a2; }
+	.guide-label { font-size: 22px; line-height: 24px; color: #62727E; margin: 0 4px; }
+</style>
+<script>
+	(function () {
+		var rules = G.events.trickortreat;
+		var icon = function (name, q) { return item_container({ skin: G.items[name].skin, draggable: false, onclick: "render_item_info('" + name + "')" }, { name: name, q: q }); };
+		$(".trick-treats").html("<span class='guide-label'>" + rules.treat + "%</span>" + rules.treats.map(function (row) { return icon(row[1], row[2] > 1 ? row[2] : undefined); }).join(""));
+		// A trick: Spooked!, or a Ghost floats out of the door
+		$(".trick-tricks").html("<span class='guide-label'>" + (100 - rules.treat) + "%</span>" + item_container({ skin: G.conditions.spooked.skin, draggable: false }) + "<span class='guide-label'>" + html_escape(phrase.definition("condition", "spooked", "name", G.conditions.spooked.name)) + "</span>" + guide_monster_tile("ghost", 0) + "<span class='guide-label'>" + html_escape(phrase.definition("monster", "ghost", "name", G.monsters.ghost.name)) + "</span>");
+		$(".trick-costumes").html(rules.costumes.map(function (name) { return icon(name); }).join("") + "<span class='guide-arrow'></span><span class='guide-label'>" + rules.costume_treat + "%</span>");
+		$(".trick-stamps").html("<span class='guide-label'>×" + rules.stamps.parcel + "</span>" + icon("witchparcel") + "<span class='guide-label'>×" + rules.stamps.laugh + "</span>" + item_container({ skin: G.skills.sinisterlaugh.skin, draggable: false }));
+	})();
+</script>

@@ -105,6 +105,7 @@ function fixture(options = {}) {
 			return game.output;
 		},
 	});
+	load(context, "adventure_functions.js", ["is_safe_character_name"]);
 	load(context, "api.js", ["is_name_xallowed", "communicator_chat_status", "communicator_say", "send_message_api"]);
 	const send = (extra = {}) =>
 		context.send_message_api({
@@ -228,6 +229,29 @@ test("native say still enforces cooldown, echoes PMs and settles its original CO
 	assert.equal(f.relayed.length, 0);
 });
 
+test("CODE message cost reaches each size tier and preserves recipient scaling", () => {
+	for (const [length, base] of [
+		[100, 1],
+		[101, 2],
+		[1000, 2],
+		[1001, 3],
+		[10000, 3],
+		[10001, 10],
+		[50000, 10],
+		[50001, 20],
+	]) {
+		for (const to of ["Bob", ["Bob", "Alice"]]) {
+			const f = fixture();
+			let delivered = 0;
+			f.socket.on("cm", () => delivered++);
+			f.socket.listeners("cm")[0]({ to, message: "x".repeat(length - 2) });
+			const recipients = Array.isArray(to) ? to.length : 1;
+			assert.equal(f.cost() + 1, base * recipients * (recipients > 1 ? 0.8 : 1), "encoded length " + length);
+			assert.equal(delivered, 1);
+		}
+	}
+});
+
 test("Communicator cooldown is shared across destinations and saved or remote live mutes still apply", async () => {
 	const f = fixture();
 	assert.equal((await f.send()).success, true);
@@ -348,6 +372,7 @@ test("history isolates private accounts, matches both directions and pages tied 
 			}),
 		},
 	});
+	load(context, "adventure_functions.js", ["is_safe_character_name"]);
 	load(context, "api.js", [
 		"is_name_xallowed",
 		"chat_cursor_query",

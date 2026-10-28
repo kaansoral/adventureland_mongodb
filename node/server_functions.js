@@ -39,7 +39,8 @@ var edges = {
 };
 var NPC_prefix = "NPC0000000000000000NPC";
 
-function sprocess_game_data() {
+function sprocess_game_data(apply_events) {
+	Object.assign(events, G.event_flags);
 	for (var name in G.items) {
 		var def = G.items[name];
 		def.igrade = calculate_item_grade(def);
@@ -144,7 +145,6 @@ function sprocess_game_data() {
 		D.monster_gold.bat *= 50;
 		D.monster_gold.bbpompom *= 75;
 		D.monster_gold.ghost *= 50;
-		events.egghunt = 0.1;
 	}
 	D.craftmap = {};
 	for (var name in G.craft) {
@@ -264,33 +264,8 @@ function sprocess_game_data() {
 		D.drops.maps.global_static.push([1.0 / ((gameplay == "hardcore" && 1000) || 100000), "pvptoken"]);
 	}
 
-	if (events.halloween) {
-		G.monsters.jr.respawn = 480;
-		G.monsters.greenjr.respawn = 480;
-		D.drops.maps.global.push([0.00005, "candy0"]);
-		D.drops.maps.global.push([0.00125, "candy1"]);
-	}
-
-	if (events.holidayseason) {
-		events.snowman = 60;
-		D.drops.maps.global.push([0.0006, "ornament"]);
-		D.drops.maps.global.push([0.0018, "mistletoe"]);
-		D.drops.maps.global.push([0.0005, "candycane"]);
-		D.drops.maps.global.push([0.0001, "open", "xN"]);
-		D.drops.maps.global.push([0.00000001, "orbofsc"]);
-	}
-
-	if (events.lunarnewyear) {
-		D.drops.maps.global.push([0.00005, "brownenvelope"]);
-		D.drops.maps.global.push([0.000000005, "5bucks"]);
-	}
-	if (events.valentines) {
-		D.drops.maps.global.push([0.001, "candypop"]);
-	}
-	if (events.egghunt) {
-		D.drops.maps.global.push([0.000005, "goldenegg"]);
-		D.drops.maps.global.push([0.009, "open", "eastereggs"]);
-	}
+	// Hardcore clears global drops and changes respawns above; apply its seasons afterwards, as before.
+	if (gameplay == "hardcore") apply_events({ drops: D.drops, monsters: G.monsters }, G.event_flags, gameplay);
 }
 
 function calculate_xvalue(arr, rec, divide, mult) {
@@ -907,6 +882,7 @@ async function persist_tauri_steam_install(owner, entity, auth, steam_id) {
 			R.entity = await tx_get(A.entity);
 			if (!R.owner || !R.owner.info.auths.includes(A.auth)) ex("password_issue");
 			if (!R.entity || R.entity.owner !== get_id(R.owner)) ex("no_character");
+			await register_steam_referral_link(R.owner, A.steam_id, tx_get, tx_save, session);
 			R.owner.platform = "steam";
 			R.owner.pid = A.steam_id;
 			R.entity.platform = "steam";
@@ -2087,6 +2063,15 @@ function spawn_special_monster(type) {
 			y: G.maps[map].monsters[0].boundary[1],
 		});
 	}
+	if (type == "horseman") {
+		// Rides out of the north graveyard and roams Spooky Forest like the Ice Golem.
+		var map = "halloween";
+		var pack = { type: "horseman", boundary: [-460, -1700, -350, -1580], count: 1, i: map, roam: true };
+		pack.gold = D.monster_gold.horseman;
+		server_log("Headless Horseman: " + JSON.stringify(pack));
+		new_monster(pack.i, pack);
+		broadcast("game_event", { name: "horseman", map: pack.i, x: -405, y: -1640 });
+	}
 	if (type == "icegolem") {
 		var map = "winterland";
 		var pack = { type: "icegolem", boundary: [782.25, 395.96, 888.71, 450.28], count: 1, i: map, roam: true };
@@ -2245,7 +2230,75 @@ function collect_signups(event) {
 	});
 }
 
-var last_daily = null;
+var event_schedule = null;
+function event_schedule_state() {
+	if (!event_schedule) {
+		event_schedule = event_schedule_rules.create_schedule({
+			saved: S.schedule,
+			offset: E.schedule.time_offset,
+			pools: { dailies: dailies, nightlies: nightlies },
+			realm: region + server_name,
+			season_open: function (season, at) {
+				return !!events[season] && !(event_ends[season] && at >= Date.parse(event_ends[season]));
+			},
+		});
+		S.schedule = event_schedule.state();
+	}
+	return event_schedule;
+}
+
+// Starts each published occurrence once, after the two-minute startup grace, and marks it
+// finished when its event ends. The lineup is saved right away so a restart cannot repeat it.
+function event_schedule_tick(now) {
+	var schedule = event_schedule_state(),
+		change = false,
+		due = schedule.tick(now, { can_start: msince(server_start) > 2 });
+	if (due.length) {
+		// Save the lineup with these marked live before starting them, so a crash cannot start them twice.
+		due.forEach((occurrence) => (occurrence.starting = true));
+		save(Server).then(
+			function () {
+				var at = Date.now();
+				due.forEach(function (occurrence) {
+					delete occurrence.starting;
+					// The season may have closed, or the server begun stopping, while the save was running.
+					if (!server.live || (occurrence.season && !events[occurrence.season]))
+						return schedule.finish(occurrence.event, at, "missed");
+					if (occurrence.event == "witchcipher") witch_cipher_start(occurrence);
+					else if (occurrence.event == "graveyard") graveyard_start(occurrence);
+					else events[occurrence.event] = true;
+				});
+				Server.updated = new Date(0); // the round's own state follows on the next server loop
+				broadcast_e();
+			},
+			function (error) {
+				// Not saved, so not started: the next tick tries again inside the occurrence's window.
+				log_trace("event schedule save", error);
+				due.forEach(function (occurrence) {
+					delete occurrence.starting;
+					delete occurrence.started;
+					occurrence.status = "scheduled";
+				});
+			},
+		);
+	}
+	schedule.state().occurrences.forEach(function (occurrence) {
+		if (
+			occurrence.status == "live" &&
+			!occurrence.starting &&
+			!events[occurrence.event] &&
+			now - occurrence.started > 5000
+		) {
+			schedule.finish(occurrence.event, now);
+			change = true;
+		}
+	});
+	if (change) {
+		Server.updated = new Date(0); // saved on the next server loop
+		broadcast_e();
+	}
+}
+
 var anniversary_controller = null;
 function anniversary_is_active() {
 	return events.anniversary === true;
@@ -2376,9 +2429,31 @@ function anniversary_tick() {
 	}
 }
 
+// A season with an end time in design/event_flags.js ends here, without a restart.
+function season_end_logic(now) {
+	if (!season_controls) return;
+	for (var name in event_ends) {
+		if (!events[name] || (now || Date.now()) < Date.parse(event_ends[name])) continue;
+		var restart = season_controls.end(
+			{ event_flags: G.event_flags, drops: D.drops, monsters: G.monsters },
+			name,
+			season_controls.restore,
+		);
+		events[name] = false;
+		if (name == "halloween") halloween_season_end();
+		if (restart) server_log("Season " + name + " ended; a restart removes its maps and NPCs", 1);
+		broadcast(
+			"server_message",
+			localization.message("server.server_message.season_ended." + name, {}, { color: "#E6AE3F" }),
+		);
+		broadcast_e();
+	}
+}
+
 function event_loop() {
 	try {
 		anniversary_tick();
+		season_end_logic();
 		var c = new Date();
 		var ch = (c.getUTCHours() + 24 + E.schedule.time_offset) % 24;
 		var change = false;
@@ -2388,23 +2463,7 @@ function event_loop() {
 			E.schedule.night = false;
 		}
 
-		E.schedule.dailies.forEach(function (h) {
-			if (ch == h && last_daily != h && msince(server_start) > 2) {
-				last_daily = h;
-				var event = dailies.shift();
-				dailies.push(event);
-				events[event] = true;
-			}
-		});
-
-		E.schedule.nightlies.forEach(function (h) {
-			if (ch == h && last_daily != h && msince(server_start) > 2) {
-				last_daily = h;
-				var event = nightlies.shift();
-				nightlies.push(event);
-				events[event] = true;
-			}
-		});
+		event_schedule_tick(c.getTime());
 
 		if (events.halloween) {
 			var s = get_monster("slenderman");
@@ -2488,7 +2547,11 @@ function event_loop() {
 				}
 			}
 		}
-		["crabxx", "franky", "icegolem"].forEach(function (name) {
+		witch_cipher_tick();
+		graveyard_tick();
+		trick_or_treat_tick();
+
+		["crabxx", "franky", "icegolem", "horseman"].forEach(function (name) {
 			if (events[name]) {
 				var monster = get_monster(name);
 				if (!monster && monster_c[name]) {
@@ -3031,6 +3094,10 @@ function event_loop() {
 }
 
 function broadcast_e(dont_send) {
+	Object.assign(E.schedule, event_schedule_state().publish());
+	E.event_flags = Object.assign({}, G.event_flags);
+	E.event_ends = {};
+	for (var season in event_ends) if (G.event_flags[season]) E.event_ends[season] = Date.parse(event_ends[season]);
 	if (!dont_send) {
 		broadcast("server_info", E);
 	}
@@ -4040,6 +4107,7 @@ function exchange(player, name, args) {
 	}
 	var socket = player.socket;
 	var done = false;
+	var outcome = { success: true };
 	var total = 0;
 	var current = 0;
 	var table = D.drops[name];
@@ -4060,7 +4128,7 @@ function exchange(player, name, args) {
 	table.forEach(function (drop) {
 		total += drop[0];
 	});
-	result = Math.random() * total;
+	var result = Math.random() * total;
 	table.forEach(function (drop) {
 		if (done) {
 			return;
@@ -4110,40 +4178,43 @@ function exchange(player, name, args) {
 				//		args.phrase = `Mined ${drop[2]} and got`;
 				//		break;
 				//}
-				exchange(player, drop[2], args);
+				outcome = exchange(player, drop[2], args);
 			} else {
-				var item = create_new_item(drop[1], drop[2]);
-				var prop = undefined;
-				if (
-					name == "glitch" &&
-					(G.items[item.name].upgrade ||
-						G.items[item.name].compound ||
-						character_slots.includes(G.items[item.name].type))
-				) {
-					add_item_property(item, "glitched");
+				for (var copy = 0; copy < (G.items[drop[1]].s ? 1 : drop[2] || 1); copy++) {
+					var item = create_new_item(drop[1], drop[2]);
+					var prop = undefined;
+					if (
+						name == "glitch" &&
+						(G.items[item.name].upgrade ||
+							G.items[item.name].compound ||
+							character_slots.includes(G.items[item.name].type))
+					) {
+						add_item_property(item, "glitched");
+					}
+					if (drop[4]) {
+						add_item_property(item, drop[4]);
+					}
+					if (name == "glitch") {
+						args.phrase = "Glitched";
+					}
+					if (args.v) {
+						item.v = args.v;
+					}
+					if (drop[1] == "cxjar") {
+						item.data = drop[3];
+					}
+					var num = add_item(player, item, { r: 1, phrase: args.phrase });
+					if (outcome.reward === undefined) Object.assign(outcome, { reward: item.name, num: num });
+					var item_action = args.phrase
+						? { Fished: "fished", Mined: "mined", Glitched: "glitched" }[args.phrase]
+						: "received";
+					socket.emit(
+						"game_log",
+						item_action
+							? item_message("server.item." + item_action, item, {}, { color: colors.server_success })
+							: { message: args.phrase + " " + item_to_phrase(item), color: colors.server_success },
+					);
 				}
-				if (drop[4]) {
-					add_item_property(item, drop[4]);
-				}
-				if (name == "glitch") {
-					args.phrase = "Glitched";
-				}
-				if (args.v) {
-					item.v = args.v;
-				}
-				if (drop[1] == "cxjar") {
-					item.data = drop[3];
-				}
-				add_item(player, item, { r: 1, phrase: args.phrase });
-				var item_action = args.phrase
-					? { Fished: "fished", Mined: "mined", Glitched: "glitched" }[args.phrase]
-					: "received";
-				socket.emit(
-					"game_log",
-					item_action
-						? item_message("server.item." + item_action, item, {}, { color: colors.server_success })
-						: { message: args.phrase + " " + item_to_phrase(item), color: colors.server_success },
-				);
 			}
 		}
 	});
@@ -4152,8 +4223,12 @@ function exchange(player, name, args) {
 	}
 	if (done && bonus)
 		bonus.forEach(function (drop) {
-			if (Math.random() < drop[0]) exchange(player, [drop], { ...args, name });
+			if (Math.random() < drop[0]) {
+				var extra = exchange(player, [drop], { ...args, name });
+				if (outcome.reward === undefined && extra.reward !== undefined) outcome = extra;
+			}
 		});
+	return outcome;
 }
 
 function chest_exchange(chest, name) {
@@ -4183,9 +4258,12 @@ function chest_exchange(chest, name) {
 			} else if (drop[1] == "cx") {
 				chest.items.push({ name: "cxjar", q: 1, data: drop[2] });
 			} else {
-				const item = create_new_item(drop[1], drop[2]);
-				if (drop[1] === "cxjar") item.data = drop[3];
-				chest.items.push(item);
+				for (var copy = 0; copy < (G.items[drop[1]].s ? 1 : drop[2] || 1); copy++) {
+					const item = create_new_item(drop[1], drop[2]);
+					if (drop[1] === "cxjar") item.data = drop[3];
+					if (drop[4]) add_item_property(item, drop[4]);
+					chest.items.push(item);
+				}
 			}
 		}
 	});
@@ -4738,8 +4816,10 @@ var smap_edge = 60; // for smap_step 24, the edge was 40 - also check out access
 // if(Dev) smap_step=24; // 10 takes toooo long [22/06/18]
 var hiding_places = [];
 function server_bfs(map) {
+	// Older precomputed files have no map keys; keep using them until the next precompute.
 	if (
 		precomputed_bfs &&
+		(!precomputed_bfs.map_keys || precomputed_bfs.map_keys[map] === G.maps[map].key) &&
 		(!G.maps[map].collision_key || precomputed_bfs.collision?.[map] === G.maps[map].collision_key) &&
 		precomputed_bfs.smap_data &&
 		precomputed_bfs.smap_data[map] !== undefined &&

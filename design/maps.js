@@ -261,10 +261,7 @@ var maps = {
 		ignore: true,
 	},
 	bank: {
-		key: "jayson_bank",
 		key: "jayson_bank0",
-		//"key":"jayson_bank_xmas",
-		//"key":"jayson_bank0.Xmas", //xmas
 		name: "The Bank",
 		npcs: [
 			{ id: "goldnpc", position: [1, -416] },
@@ -555,10 +552,6 @@ var maps = {
 	},
 	main: {
 		key: "jayson_ALMap2_v2",
-		//"key":"jayson_ALMap2_v2.Xmas",
-		//"key":"jayson_ALMap2_v2.CNewYear",
-		//"key":"jayson_ALMap2_v2_xmas", //xmas
-		//"key":"jayson_ALMap2_v2.lunarNewYear",
 		name: "Mainland",
 		seasonal_npcs: [{ id: "anniversary_baker", position: [64, -88], event: "anniversary" }],
 		npcs: [
@@ -607,7 +600,6 @@ var maps = {
 			{ id: "pvptokens", position: [159, 403] },
 			{ id: "monsterhunter", position: [126, -413] },
 			{ id: "mcollector", position: [81, -283, 1] },
-			//{"id":"newyear_tree","position":[64,-88]}, //xmas
 			{ id: "favors", position: [79, -47] },
 		],
 		monsters: [
@@ -1100,7 +1092,6 @@ var maps = {
 			{ id: "citizen1", position: [0, -5] },
 			{ id: "citizen5", position: [0, -5] },
 			{ id: "citizen6", position: [0, -5] },
-			//{"id":"mistletoe","position":[94,-181,2]}, //xmas
 		],
 		monsters: [],
 		doors: [
@@ -1207,8 +1198,6 @@ var maps = {
 		npcs: [
 			{ id: "leathermerchant", position: [262, -48.5] },
 			{ id: "transporter", position: [-73, -393] },
-			//{"id":"santa","position":[1242,-1631]}, //xmas
-			//{"id":"ornaments","position":[-137,-193,1]}, //xmas
 			{ id: "guard", position: [1065, -2015] },
 			{ id: "citizen7", position: [-15, 5] },
 			{ id: "citizen8", position: [-15, 5] },
@@ -1218,7 +1207,6 @@ var maps = {
 		monsters: [
 			{ type: "stompy", boundary: [30, -2954, 836, -2536], count: 1 },
 			{ type: "wolf", boundary: [30, -2954, 836, -2536], count: 7, grow: true }, //added grow 31/1/2024
-			//{"type":"rudolph","boundary":[1065,-1598,1418,-1449],"count":1}, //xmas
 			{ type: "arcticbee", boundary: [682, -967, 1482, -779], count: 10, grow: true },
 			{ type: "wolfie", boundary: [-367, -2234, 29, -1819], count: 4, grow: true }, //added grow 31/1/2024
 			{ type: "wolfie", boundary: [236, -2232, 460, -1847], count: 3, grow: true }, //added grow 31/1/2024
@@ -1359,8 +1347,9 @@ var maps = {
 			[-560, -1004, 28, 32, "mforest", 0, 5],
 		],
 		quirks: [
-			[-228, -178, 32, 40, "log", "Locked but there are noises coming from inside"],
-			[331, -210, 32, 40, "log", "Locked"],
+			// Trick or Treat doors during Halloween (G.events.trickortreat.doors); otherwise they read as before.
+			[-228, -178, 32, 40, "knock", "Locked but there are noises coming from inside"],
+			[331, -210, 32, 40, "knock", "Locked"],
 			[128, -251, 20, 16, "sign", "Beware! Don't fall down!"],
 		],
 		//"filter":"halloween",
@@ -1398,7 +1387,15 @@ var maps = {
 			[34, 1449, 80, 30, "halloween", 2, 1],
 			[240, -181, 48, 32, "level2", 5, 2],
 		],
-		quirks: [[-63, -44, 30, 24, "invisible_statue"]],
+		quirks: [
+			[-63, -44, 30, 24, "invisible_statue"],
+			// Trick or Treat doors during Halloween (G.events.trickortreat.doors).
+			[-130, -60, 32, 40, "knock", "Locked"],
+			[70, -103, 32, 40, "knock", "Locked"],
+			[217, -27, 32, 40, "knock", "Locked"],
+			[-170, 180, 32, 40, "knock", "Locked"],
+			[117, 133, 32, 40, "knock", "Locked"],
+		],
 		ref: {
 			poof: { map: "spookytown", in: "spookytown", x: -63, y: -44 },
 		},

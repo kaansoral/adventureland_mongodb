@@ -85,6 +85,7 @@ function fixture(beforeCommit) {
 		encouragement_login: async () => true,
 		encouragement_identity: (p) => ({ key: p.owner }),
 		encouragement_update() {},
+		event_player_status() {},
 		resume_instance() {},
 		pmap_add() {},
 		cache_player_items() {},
@@ -134,7 +135,7 @@ function fixture(beforeCommit) {
 		"tavern_poker_table",
 		"tavern_poker_source_live",
 	]);
-	load(c, "adventure_functions.js", ["msince", "hsince"]);
+	load(c, "adventure_functions.js", ["msince", "hsince", "is_safe_character_name"]);
 	load(c, "node/server_functions.js", ["delete_observer", "init_player_exit"]);
 	load(c, "node/server.js", ["sync_entity", "sync_loop", "mount_call", "unmount_call", "sync_call", "stop_call"]);
 	c.player_to_server = (p) => ({ ...p });
@@ -202,6 +203,65 @@ function publish(f) {
 	delete f.c.observers[f.socket.id];
 	return p;
 }
+
+test("unsafe stored or display names cannot claim or publish a character session", async () => {
+	const names = Object.getOwnPropertyNames(Object.prototype).concat("prototype");
+	for (const field of ["stored", "display"]) {
+		for (const name of names.flatMap((name) => [name, name.toUpperCase()])) {
+			for (const mainframe of [false, true]) {
+				const f = fixture();
+				if (field === "stored") f.character().name = name;
+				else f.character().info.name = name;
+				const before = structuredClone(f.character());
+				const prototype = Object.getPrototypeOf(f.c.instances.main.players);
+				if (mainframe) f.data.mainframe_session = "a".repeat(32);
+				await f.auth(f.data);
+				await flush();
+				assert.ok(
+					f.events.some((event) => event.event === "game_error" && event.data.reason === "invalid_name"),
+					field + ": " + name,
+				);
+				assert.ok(!f.events.some((event) => event.event === "start"));
+				assert.equal(f.stats.writes, 0);
+				assert.deepEqual(f.character(), before);
+				assert.deepEqual(Object.keys(f.c.players), []);
+				assert.deepEqual(Object.keys(f.c.instances.main.players), []);
+				assert.equal(Object.getPrototypeOf(f.c.instances.main.players), prototype);
+				assert.equal(f.c.pending_logins.size, 0);
+				assert.equal(f.timers.size, 0);
+			}
+		}
+	}
+});
+
+test("active account bans reject regular and Mainframe character authentication without claiming the character", async () => {
+	for (const mainframe of [false, true]) {
+		for (const until of [undefined, new Date("9999-12-31T23:59:59.999Z"), new Date(Date.now() + 86400000)]) {
+			const f = fixture();
+			f.owner().banned = true;
+			f.owner().info.blocked_until = until;
+			const before = structuredClone(f.character());
+			if (mainframe) f.data.mainframe_session = "a".repeat(32);
+			await f.auth(f.data);
+			await flush();
+			assert.ok(f.events.some((event) => event.event === "game_error" && event.data.reason === "banned"));
+			assert.ok(!f.events.some((event) => event.event === "start"));
+			assert.equal(f.stats.writes, 0);
+			assert.deepEqual(f.character(), before);
+			assert.deepEqual(Object.keys(f.c.players), []);
+			assert.equal(f.c.pending_logins.size, 0);
+			assert.equal(f.timers.size, 0);
+		}
+	}
+});
+
+test("expired timed bans allow a character to start", async () => {
+	const f = fixture();
+	f.owner().banned = true;
+	f.owner().info.blocked_until = new Date(Date.now() - 1000);
+	await f.auth(f.data);
+	assert.ok(f.events.some((event) => event.event === "start"));
+});
 
 test("gift mail starts after login succeeds and a mail failure cannot cancel the character", async () => {
 	const f = fixture(),

@@ -81,7 +81,8 @@ jobs:
             libfribidi.so.0 \
             libfreetype.so.6 \
             libfontconfig.so.1 \
-            libexpat.so.1; do
+            libexpat.so.1 \
+            libcom_err.so.2; do
             runtime_source="$(ldconfig -p | awk -v soname="$runtime_soname" '$1 == soname && !found { source = $NF; found = 1 } END { print source }')"
             test -n "$runtime_source"
             cp -L "$runtime_source" "runtime/usr/lib/$runtime_soname"
@@ -108,6 +109,7 @@ jobs:
           find runtime -name 'libfreetype.so*' -print -quit | grep -q .
           find runtime -name 'libfontconfig.so*' -print -quit | grep -q .
           find runtime -name 'libexpat.so*' -print -quit | grep -q .
+          find runtime -name 'libcom_err.so*' -print -quit | grep -q .
           find runtime -name 'libwebkit2gtk-4.1.so*' -print -quit | grep -q .
           find runtime -name 'WebKitNetworkProcess' -print -quit | grep -q .
           find runtime -name 'libsteam_api.so' -print -quit | grep -q .
@@ -115,10 +117,15 @@ jobs:
           for bundled_library in \
             runtime/usr/lib/libpango-1.0.so.0 \
             runtime/usr/lib/libjavascriptcoregtk-4.1.so.0 \
+            runtime/usr/lib/libkrb5.so.3 \
+            runtime/usr/lib/libgssapi_krb5.so.2 \
             runtime/usr/lib/libwebkit2gtk-4.1.so.0; do
             resolution="$(LD_LIBRARY_PATH="$bundle_library_path" ldd -r "$bundled_library" 2>&1)"
             printf '%s\n' "$resolution"
-            ! printf '%s\n' "$resolution" | grep -E 'not found|undefined symbol'
+            if printf '%s\n' "$resolution" | grep -E 'not found|undefined symbol'; then
+              echo "Bundled library validation failed: $bundled_library" >&2
+              exit 1
+            fi
             if [ "$bundled_library" = runtime/usr/lib/libpango-1.0.so.0 ]; then
               for runtime_soname in libglib-2.0.so.0 libharfbuzz.so.0 libfribidi.so.0 libfreetype.so.6; do
                 printf '%s\n' "$resolution" | grep -F "$runtime_soname => $PWD/runtime/usr/lib/$runtime_soname"
@@ -128,6 +135,9 @@ jobs:
               for runtime_soname in libfreetype.so.6 libfontconfig.so.1 libexpat.so.1; do
                 printf '%s\n' "$resolution" | grep -F "$runtime_soname => $PWD/runtime/usr/lib/$runtime_soname"
               done
+            fi
+            if [ "$bundled_library" = runtime/usr/lib/libkrb5.so.3 ] || [ "$bundled_library" = runtime/usr/lib/libgssapi_krb5.so.2 ]; then
+              printf '%s\n' "$resolution" | grep -F "libcom_err.so.2 => $PWD/runtime/usr/lib/libcom_err.so.2"
             fi
           done
           cd ../../..

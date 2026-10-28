@@ -1,6 +1,11 @@
 <div style='width: 600px'>
 	<p style='font-size: 32px; color: #404086; text-decoration: underline dotted #F1832F'>{{ phrase("docs.guide.event-halloween.halloween-on-adventure-land") }}</p>
 
+	<p class='halloween-ends' style='font-size: 26px; color: #C2561E'></p>
+	<div class='halloween-events' style='display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end'></div>
+	<p>{{ phrase("docs.guide.event-halloween.new-events") }}</p>
+	<p>{{ phrase("docs.guide.event-halloween.after") }}</p>
+
 	<p>
 		<div style='float:left; margin-right: 10px'><span class='spexchange'></span> <span class='eitem1'></span> <span class='eitem2'></span> </div> {{ phrase("docs.guide.event-halloween.during-the-halloween-season-all-monsters-drop-candies") }} <br />
 	</p>
@@ -30,6 +35,14 @@
 
 		
 		$(".spexchange").html(sprite("magic",{width:42}));
+
+		// The season's last day comes from the server's end time; the four Halloween activities open their guides.
+		if (window.S && S.event_ends && S.event_ends.halloween)
+			$(".halloween-ends").text(phrase("interface.events.selection_season_ends", { name: phrase.definition("event", "halloween", "name", G.events.halloween.name), date: new Intl.DateTimeFormat(phrase.language || "en", { day: "numeric", month: "long", timeZone: "UTC" }).format(S.event_ends.halloween - 1) }));
+		$(".halloween-events").html(["horseman", "graveyard", "trickortreat", "witchcipher"].map(function (key) {
+			var e = G.events[key], art = G.items[e.sprite] ? item_container({ skin: G.items[e.sprite].skin, draggable: false }) : sprite(e.sprite, { overflow: true });
+			return "<div class='gamebutton' style='padding:6px 8px;font-size:22px;line-height:18px' onclick='pcs(event); open_guide(\"event-" + key + "\",\"/docs/guide/event-" + key + "\")'>" + art + "<div style='margin-top:2px'>" + html_escape(phrase.definition("event", key, "name", e.name)) + "</div></div>";
+		}).join(""));
 
 		$(".spmrgreen").html(sprite("mrgreen"));
 		$(".spmrpumpkin").html(sprite("mrpumpkin"));

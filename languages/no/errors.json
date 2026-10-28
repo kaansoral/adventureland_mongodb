@@ -83,5 +83,9 @@
 	"error.cant_delete_map_in_use": "Et kart som er i bruk, kan ikke slettes.",
 	"error.code_too_large": "Dette skriptet er for stort. Hver CODE-plass kan inneholde opptil 1 MiB (1 048 576 byte) UTF-8-tekst.",
 	"error.code_storage_full": "CODE-lageret ditt er fullt. Eksporter og slett ubrukte skript før du lagrer mer kode.",
-	"error.code_rate_limited": "Du lagrer CODE for ofte. Vent litt og prøv igjen."
+	"error.code_rate_limited": "Du lagrer CODE for ofte. Vent litt og prøv igjen.",
+	"error.item_changed": "Gjenstanden er endret. Prøv igjen.",
+	"error.mail_item_untaken": "Hent vedlegget før du sletter brevet.",
+	"error.mail_sender_limit": "Denne figuren har allerede 20 uavhentede postvedlegg fra kontoen din. Noen må hentes før du kan sende et nytt.",
+	"error.mailbox_full": "Denne figuren har allerede 200 uavhentede postvedlegg. Noen må hentes før du kan sende et nytt."
 }

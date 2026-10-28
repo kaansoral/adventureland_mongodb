@@ -21,13 +21,21 @@ if [ -n "${SteamAppId:-}${SteamGameId:-}" ]; then
 	steam_environment=1
 fi
 
+use_bundled=${ADVENTURELAND_FORCE_BUNDLED:-0}
+case ":${XDG_CURRENT_DESKTOP:-}:${XDG_SESSION_DESKTOP:-}:" in
+	*:niri:*|*:Niri:*|*:NIRI:*) use_bundled=1 ;;
+esac
+if [ "${ADVENTURELAND_FORCE_SYSTEM:-0}" = "1" ]; then
+	use_bundled=0
+fi
+
 if [ "$steam_environment" = "1" ]; then
 	native_dependencies=$(env -u LD_LIBRARY_PATH -u LD_PRELOAD ldd "$native_binary" 2>&1) || native_dependencies=""
 else
 	native_dependencies=$(ldd "$native_binary" 2>&1) || native_dependencies=""
 fi
 
-if [ "${ADVENTURELAND_FORCE_BUNDLED:-0}" != "1" ] && [ -n "$native_dependencies" ] && ! printf '%s\n' "$native_dependencies" | grep -q "not found"; then
+if [ "$use_bundled" != "1" ] && [ -n "$native_dependencies" ] && ! printf '%s\n' "$native_dependencies" | grep -q "not found"; then
 	if [ -n "$runtime_cache_dir" ]; then
 		export GST_REGISTRY_1_0="$runtime_cache_dir/gstreamer-native.bin"
 	fi

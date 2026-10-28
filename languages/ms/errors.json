@@ -83,5 +83,9 @@
 	"error.cant_delete_map_in_use": "Peta yang sedang digunakan tidak boleh dipadam.",
 	"error.code_too_large": "Skrip ini terlalu besar. Setiap slot CODE boleh menyimpan sehingga 1 MiB (1,048,576 bait) teks UTF-8.",
 	"error.code_storage_full": "Storan CODE anda penuh. Eksport dan padam skrip yang tidak digunakan sebelum menyimpan lebih banyak kod.",
-	"error.code_rate_limited": "Anda menyimpan CODE terlalu kerap. Tunggu sebentar dan cuba lagi."
+	"error.code_rate_limited": "Anda menyimpan CODE terlalu kerap. Tunggu sebentar dan cuba lagi.",
+	"error.item_changed": "Item telah berubah. Cuba lagi.",
+	"error.mail_item_untaken": "Ambil lampiran sebelum memadamkan surat ini.",
+	"error.mail_sender_limit": "Watak ini sudah mempunyai 20 lampiran surat yang belum diambil daripada akaun kamu. Mereka perlu mengambil sebahagiannya sebelum kamu boleh menghantar lagi.",
+	"error.mailbox_full": "Watak ini sudah mempunyai 200 lampiran surat yang belum diambil. Mereka perlu mengambil sebahagiannya sebelum kamu boleh menghantar lagi."
 }

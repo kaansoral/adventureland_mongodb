@@ -51,6 +51,7 @@ function post_get_init_character(entity) {}
 eval("" + fs.readFileSync(path.resolve(__dirname, "models.js")));
 
 // /design — order follows Python config.py import order (dependencies must load first)
+eval("" + fs.readFileSync(path.resolve(__dirname, "design/event_flags.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/projectiles.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/animations.js"))); // needs projectiles
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/achievements.js")));
@@ -75,6 +76,8 @@ eval("" + fs.readFileSync(path.resolve(__dirname, "design/titles.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/tokens.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/cosmetics.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "design/precomputed_images.js")));
+var active_event_flags = get_event_flags();
+apply_event_flags({ maps: maps, items: items, monsters: monsters, drops: drops }, active_event_flags);
 
 // docs
 eval("" + fs.readFileSync(path.resolve(__dirname, "docs/directory.js")));
@@ -477,6 +480,7 @@ async function get_browser_data() {
 		skills: skills,
 		games: games,
 		events: events,
+		event_flags: active_event_flags,
 		images: precomputed.images,
 		multipliers: multipliers,
 		docs: docs,

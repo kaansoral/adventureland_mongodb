@@ -317,7 +317,7 @@
 	"game.clicks_away": "Vzdálenost v klicích: {dist}",
 	"game.echoes": "Počet ech: {length}",
 	"game.clicks": "Počet kliků: {c}",
-	"npc.home.set_offer": "Tohle není tvůj domovský server. Tvým domovem je {home}. Na domovských světech se víc započítává tvá pomoc v kooperativních bojích a získáváš zvláštní odměny; rychlé střídání postav kromě obchodníků tyto výhody na 30 minut pozastaví. Chceš si tento server nastavit jako domov?",
+	"npc.home.set_offer": "Toto není váš domovský server. Jste obyvatelem {home}. Domovské světy nabízejí silnější kooperativní kredit a speciální odměny; rychlé přepínání neobchodnických postav tyto výhody na 30 minut pozastaví. Chcete tento server nastavit jako svůj domov?",
 	"npc.yes": "Ano!",
 	"npc.home.current": "Tohle je tvůj domovský server. Tvá pomoc proti kooperativním nestvůrám se tu započítává víc a některé nestvůry mají dodatečné odměny pro domácí. Pokud sem přejdeš poté, co jiná tvá postava kromě obchodníka navštíví jiný server, získáš na 30 minut Únavu z přechodů mezi světy. Běžné odměny během zabydlování dostáváš dál.",
 	"npc.bless_server.offer": "Chceš požehnat celému serveru na 3 dny?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Tento předmět neodpovídá nabídce",
 	"response.trade_swap_space": "Obchodník nemá místo",
 	"game.trade_history.traded": "- Vyměněno '{item}' s hráčem {player} za '{received}'",
-	"response.transport_need_items": "Potřebuješ: {items}"
+	"response.transport_need_items": "Potřebuješ: {items}",
+	"combat.emote.hehehe": "CHECHECHE"
 }

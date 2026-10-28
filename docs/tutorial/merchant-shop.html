@@ -14,6 +14,7 @@
 	if (slot !== -1) return await open_stand(slot);
 }
 open_shop().catch(show_json);</div>
+{% include "htmls/stand_removal.html" %}
 <p>
 	{{ phrase("docs.tutorial.new.references") }}: <span class="rlabel clickable" onclick="load_documentation('open_stand')">open_stand</span> ·
 	<span class="rlabel clickable" onclick="load_documentation('close_stand')">close_stand</span> · <span class="rlabel clickable" onclick="load_documentation('trade')">trade</span> ·

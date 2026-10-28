@@ -122,3 +122,19 @@ test("leveled exchanges use the same +0 and higher table keys as the server", ()
 		{ name: "compound", level: 3 },
 	]);
 });
+
+test("exact drop odds use the matching denominator without an extra factor of ten", () => {
+	const context = vm.createContext({});
+	load(context, "js/old_common_functions.js", ["to_pretty_float"]);
+	load(context, "js/html.js", ["to_pretty_fraction"]);
+	for (const [chance, denominator] of [
+		[1, "1"],
+		[0.1, "10"],
+		[0.01, "100"],
+		[1 / 1000000, "1M"],
+		[1 / 1000000000, "1B"],
+	]) {
+		assert.equal(context.to_pretty_fraction(chance).replace(/<[^>]+>/g, ""), "1/" + denominator);
+	}
+	assert.equal(context.to_pretty_fraction(0.25).replace(/<[^>]+>/g, ""), "2.5/10");
+});

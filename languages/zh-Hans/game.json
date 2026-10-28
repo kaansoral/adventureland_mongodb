@@ -317,7 +317,7 @@
 	"game.clicks_away": "距离{dist}格",
 	"game.echoes": "{length}道回声",
 	"game.clicks": "{c}格",
-	"npc.home.set_offer": "这里不是你的主服务器，你目前居住在{home}。在主世界中，合作贡献更高，还能获得特殊奖励；快速切换非商人角色会让这些加成暂停30分钟。要将这里设为主服务器吗？",
+	"npc.home.set_offer": "这里不是你的主服务器。你的主服是 {home}。主世界会提供更强的合作贡献和特殊奖励；非商人角色快速切换服务器会让这些福利暂停 30 分钟。要把这个服务器设为你的主服务器吗？",
 	"npc.yes": "好！",
 	"npc.home.current": "这里是你的主服务器。在这里协力对抗合作怪物时，你的贡献更高，部分怪物还有额外的主服务器奖励。如果另一个非商人角色刚去过其他服务器，你再切换到这里，就会受到30分钟的跨界疲劳影响。适应期间仍可获得普通奖励。",
 	"npc.bless_server.offer": "要为整个服务器赐予持续3天的祝福吗？",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "该物品不符合交换条件",
 	"response.trade_swap_space": "商人没有空位",
 	"game.trade_history.traded": "- 与{player}交换，以'{item}'换得'{received}'",
-	"response.transport_need_items": "需要：{items}"
+	"response.transport_need_items": "需要：{items}",
+	"combat.emote.hehehe": "嘿嘿嘿"
 }

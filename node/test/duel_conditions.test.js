@@ -196,6 +196,36 @@ test("Snake Oil still cleanses poison after stun expires", () => {
 	assert(target.last.potion > new Date());
 });
 
+test("dead characters can recover and consume potions and elixirs without reviving", () => {
+	for (const [event, data, name] of [
+		["use", { item: "hp" }],
+		["use", { item: "mp" }],
+		["equip", { num: 0 }, "hpot0"],
+		["equip", { num: 0 }, "elixirluck"],
+		["equip", { num: 0, consume: true }, "snakeoil"],
+	]) {
+		const { target, replies, run } = fixture(false);
+		target.s = {};
+		target.rip = true;
+		target.hp = 0;
+		target.mp = 0;
+		if (name) target.items[0] = { name, q: 2 };
+		const before = snapshot(target);
+		run(event, target, data);
+		assert.equal(
+			replies.some((reply) => reply.failed),
+			false,
+		);
+		assert.notEqual(snapshot(target), before);
+		assert.equal(target.rip, true);
+		if (event === "use" || name === "hpot0" || name === "snakeoil") {
+			assert(target.last.potion > new Date());
+			assert((data.item === "mp" ? target.mp : target.hp) > 0);
+		}
+		if (name) assert.equal(target.items[0].q, 1);
+	}
+});
+
 test("Stun leaves equipment swaps and potion listings available", () => {
 	const { c, target, replies, run } = fixture(false);
 	target.items[0] = { name: "ringofluck", level: 0 };

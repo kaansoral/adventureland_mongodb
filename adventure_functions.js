@@ -95,6 +95,15 @@ function simplify_name(name) {
 	return ("" + name).toLowerCase();
 }
 
+function is_safe_character_name(name) {
+	if (typeof name !== "string" || !name.length) return false;
+	var lower = name.toLowerCase();
+	// Character names become object keys. Reserve inherited keys in every casing.
+	return lower !== "prototype" && !Object.getOwnPropertyNames(Object.prototype).some(function (key) {
+		return key.toLowerCase() === lower;
+	});
+}
+
 function is_string(s) {
 	return typeof s === "string";
 }
@@ -346,6 +355,25 @@ function get_steam_login_id(user) {
 	return typeof id === "string" && /^[0-9]{16,20}$/.test(id) ? id : "";
 }
 
+async function register_steam_referral_link(user, steam_id, tx_get, tx_save, session, first_signup) {
+	if (!/^[0-9]{16,20}$/.test(steam_id)) return;
+	var mark_id = "MK_steam-referral-" + steam_id;
+	var mark = await tx_get(mark_id);
+	if (mark) {
+		if (mark.owner === get_id(user) && mark.eligible && !user.steam_referral) user.steam_referral = { steamid: steam_id, state: "pending" };
+		return;
+	}
+	var previously_linked = !first_signup && ((user.platform === "steam" && !!user.pid) || !!user.steam_login?.steamid || !!gf(user, "reward"));
+	var previously_rewarded = await tx_get("IE_rrewardmark-" + steam_id);
+	var other = await db.collection("user").findOne(
+		{ _id: { $ne: get_id(user) }, $or: [{ platform: "steam", pid: steam_id }, { "steam_login.steamid": steam_id }] },
+		{ projection: { _id: 1 }, session },
+	);
+	var eligible = !previously_linked && !previously_rewarded && !other;
+	await tx_save({ _id: mark_id, type: "steam_referral", phrase: steam_id, owner: get_id(user), eligible: eligible, created: new Date() });
+	if (eligible) user.steam_referral = { steamid: steam_id, state: "pending" };
+}
+
 function set_steam_login(user, enabled) {
 	if (typeof enabled !== "boolean") throw new Error("Invalid Steam setting");
 	const previous = user.steam_login || {},
@@ -366,6 +394,13 @@ function set_steam_login(user, enabled) {
 function normalize_user_id(id) {
 	if (id && !id.startsWith("US_")) return "US_" + id;
 	return id;
+}
+
+function is_account_blocked(user, now) {
+	if (!user || user.banned !== true) return false;
+	var until = user.info && user.info.blocked_until;
+	var time = until ? +new Date(until) : NaN;
+	return !Number.isFinite(time) || time > (now === undefined ? Date.now() : now);
 }
 
 async function get_user(req) {
@@ -446,7 +481,7 @@ game_name = "Adventure Land";
 base_domain = new URL(options.base_url).hostname;
 secure_cookies = options.secure;
 SALES = 4 + 5 + 388 + 5101 + 125 / 20;
-extra_shells = 0;
+extra_shells = 25;
 server_regions = { EU: "EU", US: "US", ASIA: "ASIA" };
 region_coords = { EU: [50, 8], US: [37, -100], ASIA: [1.3, 103.8] };
 allowed_name_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
@@ -1061,10 +1096,18 @@ async function send_tracktrix_mail(user, name) {
 
 async function update_mail_count(user) {
 	var owner = user._id || user;
-	var unread = await db.collection("mail").find({ owner: owner, "info.receiver": owner, read: false }).project({ _id: 1 }).limit(100).toArray();
+	var receiver_ids = [owner];
+	if (/^US_\d+$/.test(owner)) receiver_ids.push(owner.slice(3));
+	var unread = await db.collection("mail").find({ owner: owner, "info.receiver": { $in: receiver_ids }, read: false }).project({ _id: 1 }).limit(100).toArray();
 	// Do not replace userdata: another request may be saving CODE or tutorial progress.
 	await db.collection("infoelement").updateOne({ _id: "IE_userdata-" + owner }, { $set: { "info.mail": unread.length }, $setOnInsert: { created: new Date() } }, { upsert: true });
 	return unread.length;
+}
+
+function mail_receiver(mail) {
+	var receiver = gf(mail, "receiver");
+	// Imported letters retain the old numeric account ID inside their info blob.
+	return typeof receiver === "string" && /^\d+$/.test(receiver) ? "US_" + receiver : receiver;
 }
 
 async function get_user_data(user_id) {
@@ -1305,107 +1348,66 @@ async function reward_referrer_logic(user) {
 	if (!user.referrer || !user.pid) return;
 	if (user.platform !== "steam" && user.platform !== "mas") return;
 	if (gf(user, "reward")) return;
-
-	// Transaction: mark reward on user to prevent double reward
 	var R = await tx(
 		async () => {
-			var entity = await tx_get(A.user);
-			if (gf(entity, "reward")) ex("already_rewarded");
-			entity.info.reward = true;
-			await tx_save(entity);
+			var invited = await tx_get(A.user);
+			if (!invited || gf(invited, "reward") || invited.referrer !== A.referrer || invited.pid !== A.pid || invited.platform !== A.platform) ex("already_rewarded");
+			var inviter = await tx_get(A.referrer);
+			if (!inviter || get_id(inviter) === get_id(invited)) ex("invalid_referrer");
+			if (await tx_get("IE_rrewardmark-" + A.pid)) ex("already_rewarded");
+			var steam = A.platform === "steam";
+			if (steam) {
+				var link = invited.steam_referral;
+				var mark = await tx_get("MK_steam-referral-" + A.pid);
+				if (!link || link.steamid !== A.pid || !mark || !mark.eligible || mark.owner !== get_id(invited)) ex("ineligible_steam");
+				if (link.state === "rewarded") ex("already_rewarded");
+				link.state = "rewarded";
+				link.inviter = get_id(inviter);
+			}
+			invited.info.reward = true;
+			inviter.info.referred = gf(inviter, "referred", 0) + 1;
+			inviter.info.referrer_events = gf(inviter, "referrer_events", 0) + 1;
+			inviter.info.rcash = gf(inviter, "rcash", 0) + 200;
+			inviter.cash += 200;
+			await tx_save(invited);
+			await tx_save(inviter);
+			await tx_save({ _id: "IE_rrewardmark-" + A.pid, created: new Date(), type: "infoelement", info: { owner: get_id(invited) } });
+			var language = localization.normalize(inviter.language) || "en";
+			await tx_save({
+				_id: "ML_" + get_id(invited) + "-rewards-" + get_id(inviter),
+				created: new Date(), read: false, item: true, taken: false, fro: "mainframe", to: inviter.name, type: "system", owner: [get_id(inviter)],
+				info: {
+					subject: phrase("server.mail.friend_token_subject", {}, language),
+					message: phrase("server.mail.friend_token_message", { name: invited.name || "someone" }, language),
+					sender: "!", receiver: get_id(inviter), item: JSON.stringify({ name: "friendtoken", q: 1 }),
+				}, blobs: ["info"],
+			});
+			if (steam) await tx_save({
+				_id: "ML_" + get_id(invited) + "-welcome-friendtoken",
+				created: new Date(), read: false, item: true, taken: false, fro: "mainframe", to: invited.name, type: "system", owner: [get_id(invited)],
+				info: {
+					subject: phrase("server.mail.friend_token_subject", {}, localization.normalize(invited.language) || "en"),
+					message: phrase("server.mail.friend_token_welcome", { name: inviter.name }, localization.normalize(invited.language) || "en"),
+					sender: "!", receiver: get_id(invited), item: JSON.stringify({ name: "friendtoken", q: 1 }),
+				}, blobs: ["info"],
+			});
+			R.inviter = inviter;
+			R.invited = invited;
+			R.steam = steam;
 		},
-		{ user: user },
+		{ user: get_id(user), referrer: user.referrer, pid: user.pid, platform: user.platform },
+		3,
 	);
 	if (R.failed) return;
-
-	// Get referrer user
-	var referrer = await get(user.referrer);
-	if (!referrer) {
-		console.error("reward_referrer: referrer not found: " + user.referrer);
-		return;
-	}
-
-	// Cheat prevention: check if this PID already triggered a reward
-	var rrewardmark = await get("IE_rrewardmark-" + user.pid);
-	if (rrewardmark) {
-		console.error("REFERRER CHEAT DETECTED: " + get_id(user) + " pid: " + user.pid);
-		return;
-	}
-
-	// Log "referred" event on the referrer
-	add_event(referrer, "referred", ["referrer"], {
-		rowner: get_id(referrer),
-		info: { message: referrer.name + " referred " + user.name + " " + gf(user, "email", ""), id: get_id(user) },
+	await Promise.all([update_mail_count(R.inviter), ...(R.steam ? [update_mail_count(R.invited)] : [])]).catch(console.error);
+	add_event(R.inviter, "referred", ["referrer"], {
+		rowner: get_id(R.inviter),
+		info: { message: R.inviter.name + " referred " + R.invited.name, id: get_id(R.invited) },
 	});
-
-	// Transaction: add 200 shells to referrer, increment referral counters
-	var R2 = await tx(
-		async () => {
-			var entity = await tx_get(A.referrer);
-			entity.info.referred = gf(entity, "referred", 0) + 1;
-			entity.info.referrer_events = gf(entity, "referrer_events", 0) + 1;
-			entity.info.rcash = gf(entity, "rcash", 0) + 200;
-			entity.cash += 200;
-			await tx_save(entity);
-		},
-		{ referrer: referrer },
-	);
-	if (R2.failed) {
-		console.error("reward_referrer: add_cash transaction failed");
-		return;
-	}
-
-	// Create Friend Token mail for the referrer
-	var referred_name = user.name || gf(user, "email", "someone");
-	try {
-		await insert({
-			_id: "ML_" + get_id(user) + "-rewards-" + get_id(referrer),
-			created: new Date(),
-			read: false,
-			item: true,
-			taken: false,
-			fro: "mainframe",
-			to: referrer.name,
-			type: "system",
-			owner: [get_id(referrer)],
-			info: {
-				subject: phrase("server.mail.friend_token_subject", {}, localization.normalize(referrer.language) || "en"),
-				message: phrase("server.mail.friend_token_message", { name: referred_name }, localization.normalize(referrer.language) || "en"),
-				sender: "!",
-				receiver: get_id(referrer),
-				item: JSON.stringify({ name: "friendtoken", q: 1 }),
-			},
-			blobs: ["info"],
-		});
-		// Update referrer's unread mail count
-		try {
-			await update_mail_count(referrer);
-		} catch (e) {
-			console.error("reward_referrer mail ud error", e);
-		}
-	} catch (e) {
-		console.error("reward_referrer mail error", e);
-	}
-
-	// Create rrewardmark to prevent re-reward for this PID
-	try {
-		await insert({
-			_id: "IE_rrewardmark-" + user.pid,
-			created: new Date(),
-			type: "infoelement",
-			info: {},
-		});
-	} catch (e) {
-		console.error("reward_referrer rrewardmark error", e);
-	}
-
-	// Log "referrer_reward" event
-	add_event(referrer, "referrer_reward", ["cashflow", "referrer"], {
-		info: { message: "Referrer: " + referrer.name + " received 200 reward shells from " + referred_name + "[" + get_id(user) + "]", source: get_id(user) },
+	add_event(R.inviter, "referrer_reward", ["cashflow", "referrer"], {
+		info: { message: "Referrer: " + R.inviter.name + " received 200 reward shells from " + R.invited.name + "[" + get_id(R.invited) + "]", source: get_id(R.invited) },
 	});
-
-	// Update referrer's characters with new shell count
-	update_characters(referrer, null, null, 200).catch(console.error);
+	update_characters(R.inviter, null, null, 200).catch(console.error);
 }
 
 // ==================== EVENTS ====================
@@ -1632,6 +1634,7 @@ async function selection_info(req, user, domain) {
 	domain.servers = servers_to_client(domain, servers);
 	return {
 		type: "content",
+		screen: "selection",
 		html: nunjucks.render("htmls/contents/selection.html", {
 			user: user,
 			domain: domain,

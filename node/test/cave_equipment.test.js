@@ -71,14 +71,57 @@ test("cave equipment recipes and an ordinary pickaxe craft through the real hand
 		assert.deepEqual(failures, [], name);
 		assert.equal(player.gold, 0, name);
 		assert.deepEqual(plain(player.items.filter(Boolean)), [
-			{ name, ...(G.items[name].upgrade ? { level: 0 } : {}), oo: "Crafter" },
+			{ name, ...(G.items[name].upgrade || G.items[name].compound ? { level: 0 } : {}), oo: "Crafter" },
 		]);
 		assert.equal(messages.at(-1)[0], "craft");
 		assert.equal(messages.at(-1)[1].name, name);
 	}
 });
 
+test("cave orbs compound through the native handler, including old copies without a level", () => {
+	for (const name of ["cave_loaded_die", "stillwaterlens", "orbofint"]) {
+		const { context: c, player: p, failures } = inventoryFixture();
+		Object.assign(p, { ...G.maps.main.compound, q: {}, p: { ograce: 0 }, esize: 0 });
+		p.items = [{ name, p: "cavefound" }, { name, level: 0 }, { name }, { name: "cscroll2", q: 1 }];
+		p.citems = plain(p.items);
+		Object.assign(c, { D: { compounds: G.compounds }, server_log() {}, add_achievement() {}, add_item_property() {} });
+		load(c, "node/server.js", ["consume_one"]);
+		// The same normalization used by sprocess_game_data, without starting its unrelated services.
+		G.items[name].igrade = G.calculate_item_grade(G.items[name]);
+		c.Math = Object.assign(Object.create(Math), { random: () => 0.5 });
+		socketHandler(c, "compound")({ items: [0, 1, 2], scroll_num: 3, clevel: 0 });
+		assert.deepEqual(failures, [], name);
+		assert.equal(p.p.c_item?.name, name);
+		assert.equal(p.p.c_item.level, 1);
+		assert.equal(p.p.c_item.p, "cavefound");
+		assert.equal(p.items[1], null);
+		assert.equal(p.items[2], null);
+		assert.equal(p.items[3], null);
+		assert.equal(p.q.compound.num, 0);
+	}
+});
+
+test("the two orbs keep small native stat gains and the normal rare compound ceiling", () => {
+	for (const [name, fields, values] of [
+		["cave_loaded_die", ["crit", "critdamage"], [[8, 10], [8.5, 12], [9.5, 16], [12.375, 27.5]]],
+		["stillwaterlens", ["int", "mp", "resistance"], [[9, 400, 60], [10, 440, 66], [12, 520, 78], [18, 750, 113]]],
+	]) {
+		for (const [index, level] of [0, 1, 3, 7].entries()) {
+			const p = G.calculate_item_properties({ name, level });
+			assert.deepEqual(fields.map((key) => p[key]), values[index], name + " +" + level);
+		}
+		assert.equal(G.calculate_item_grade(G.items[name], { level: 0 }), 2);
+		assert.equal(G.calculate_item_grade(G.items[name], { level: 7 }), 4);
+	}
+});
+
 test("Cave-found materials stack normally and do not pass their title through crafting", () => {
+	for (const level of [0, 7]) {
+		const plainItem = G.calculate_item_properties({ name: "cave_loaded_die", level });
+		const titledItem = G.calculate_item_properties({ name: "cave_loaded_die", level, p: "cavefound" });
+		assert.equal(titledItem.resistance - plainItem.resistance, 5, "the saved title has one flat defense bonus");
+		assert.equal(titledItem.crit, plainItem.crit);
+	}
 	const { context, player, messages, failures, recipe } = inventoryFixture("cave_tunnelaxe");
 	for (const item of player.items) item.p = "cavefound";
 	socketHandler(context, "craft")({ items: recipe.items.map((_, index) => [index, index]) });

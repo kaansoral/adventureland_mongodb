@@ -189,6 +189,7 @@ test("Rime Shatter launches fixed 20,000 damage through the real attack handler"
 	}
 	monster.attack = 960;
 	assert.equal(context.commence_attack(monster, player, "attack").damage, 960);
+	assert.deepEqual(Array.from(context.projectiles.shot.conditions), ["poisoned"], "one poison roll per hit");
 	player.x = 260;
 	assert.equal(context.commence_attack(monster, player, "rimeshatter").failed, true);
 });

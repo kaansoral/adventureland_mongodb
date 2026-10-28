@@ -5,12 +5,21 @@ const { read, load } = require("./helpers/server_vm");
 
 test("HUB bank reads require the signed-in account and return only saved bank contents", async () => {
 	const item = { name: "coat", level: 7, stat_type: "int", l: "l" };
+	const saved_item = {
+		...item,
+		grace: 12,
+		o: "private-owner",
+		oo: "private-original-owner",
+		src: "private-source",
+		gf: "private-giver",
+		list: ["private-player"],
+	};
 	const user = {
 		_id: "US_owner",
 		password: "private-account-field",
 		info: {
 			gold: 1234,
-			items0: [item, null],
+			items0: [saved_item, null],
 			items1: [],
 			items47: [{ name: "hpot0", q: 10 }],
 			items48: [item],
@@ -25,7 +34,7 @@ test("HUB bank reads require the signed-in account and return only saved bank co
 		gf: (entity, key, fallback) => (entity.info[key] === undefined ? fallback : entity.info[key]),
 	});
 	vm.runInContext(read("api.js"), context);
-	load(context, "adventure_functions.js", ["user_to_server"]);
+	load(context, "adventure_functions.js", ["user_to_server", "simplify_item"]);
 	load(context, "common/handlers.js", ["handle_api_call", "send_json"]);
 	async function request(body = {}, method = "POST") {
 		let result;

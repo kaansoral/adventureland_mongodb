@@ -160,7 +160,7 @@ module.exports = {
 		"Oragon in game, and Jayson in real life, joined the team to build new maps and improve the content of the game, he has been progressing really well, the new TOWN has been ready for weeks, but we are waiting a bit to re-launch the game with new content, anyway, enough talking.",
 	// htmls/contents/announcement_email.html:143; Page p prose block. Keep Adventure Land, CODE symbols, product names, and item/NPC/map/character names unchanged.
 	"pages.contents.announcement_email.our-anniversary-event-is-live-it-s-a":
-		"Our Anniversary Event is live! It's a good time to continue playing Adventure Land. Our Anniversary Gifts are global drops. You can start opening (exchanging) the gifts nearing the end of the event.",
+		"Our Anniversary Event is live! It's a good time to return to Adventure Land. Anniversary Gifts are global drops, and you can open (exchange) them during the event or afterward.",
 	// htmls/contents/announcement_email.html:128; Page p prose block. Keep Adventure Land, CODE symbols, product names, and item/NPC/map/character names unchanged.
 	"pages.contents.announcement_email.our-easter-event-is-live-chase-the-wabbit":
 		"Our Easter Event is live! Chase the Wabbit, hunt eggs, craft them into a basket, get lucky with the golden egg, exchange them for rewards. It's an exciting time on Adventure Land!",
@@ -364,7 +364,7 @@ module.exports = {
 	"pages.contents.guide.if-anyone-is-breaking-the-rules-just-email":
 		'<span style="color: #f4f4f4">&gt;</span> If anyone is breaking the rules, just email a screenshot of the violation to hello@adventure.land',
 	// htmls/contents/guide.html:114; Page prose. Keep Adventure Land, CODE symbols, product names, and item/NPC/map/character names unchanged.
-	"pages.contents.guide.increases-hp-armor": "Increases HP, Armor.",
+	"pages.contents.guide.increases-hp-armor": "Increases HP, Armor and run speed.",
 	// htmls/contents/guide.html:118; Page prose. Keep Adventure Land, CODE symbols, product names, and item/NPC/map/character names unchanged.
 	"pages.contents.guide.increases-mp-resistance": "Increases MP, Resistance.",
 	// htmls/contents/guide.html:118; Page span prose block. Keep Adventure Land, CODE symbols, product names, and item/NPC/map/character names unchanged.
@@ -3557,3 +3557,32 @@ module.exports = {
 	"pages.contents.announcement_email.holiday_code_example":
 		'Ps 3. Here\'s a <a style="color: #33BF6D" href="https://raw.githubusercontent.com/kaansoral/adventureland/master/examples/happy_holidays.js"><span style="color: #33BF6D">CODE</span></a> that automates the Xmas buff\n\t\t\t\t\tPs 4. There are some new things and new skills too!',
 };
+
+// Main-menu Steam friend choice and Invite Friends panel. Steam, Adventure Land, Friend Token,
+// Fvona, Mainland and SHELLS are fixed names. {count} and {amount} are account totals.
+Object.assign(module.exports, {
+	"pages.contents.selection.steam-friend-heading": "Choose a Steam Friend",
+	"pages.contents.selection.steam-friend-intro": "Choose one Steam friend to connect with in Adventure Land. You'll both receive a Friend Token. The connection is permanent.",
+	"pages.contents.selection.steam-friend-later": "Later",
+	"pages.contents.selection.invite-friends": "Invite Friends",
+	"pages.contents.selection.invite-friends-intro": "Invite a friend to Adventure Land and connect their account to yours.",
+	"pages.contents.selection.you-receive": "You receive:",
+	"pages.contents.selection.inviter-reward": "200 SHELLS + 1 Friend Token",
+	"pages.contents.selection.purchase-bonus": "You also receive 10% of their SHELL purchases of 20 SHELLS or more.",
+	"pages.contents.selection.friend-receives": "Your friend receives:",
+	"pages.contents.selection.invited-reward": "1 Friend Token",
+	"pages.contents.selection.reward-arrival": "Rewards arrive after your friend connects and enters the game.",
+	"pages.contents.selection.first-steam-link": "For friends linking Steam to Adventure Land for the first time. Each eligible friend can connect once.",
+	"pages.contents.selection.spend-friend-tokens": "Spend Friend Tokens",
+	"pages.contents.selection.visit-fvona": "Visit Fvona in Mainland.",
+	"pages.contents.selection.gravestone-exchange": "Exchange 4 Friend Tokens for this gravestone appearance.",
+	"pages.contents.selection.four-friend-tokens": "4 Friend Tokens",
+	"pages.contents.selection.view-reward": "View Reward",
+	"pages.contents.selection.copy-link": "Copy Link",
+	"pages.contents.selection.friends-recruited": "Friends Recruited: {count}",
+	"pages.contents.selection.shells-earned": "SHELLS Earned: {amount}",
+	"pages.contents.selection.account-link": "Account Link",
+	"pages.contents.selection.character-links": "Character Links",
+	"pages.contents.selection.direct-referral-link": "Direct Referral Link",
+	"pages.contents.selection.missing-invite": "Missing an invite? Email hello@adventure.land within 2 weeks with your friend's account email and character name.",
+});

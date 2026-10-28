@@ -14,6 +14,18 @@ if (process.env.pm_id === "0" || !process.env.pm_id) {
 		},
 		1 * 60 * 1000,
 	);
+	var stripe_purchase_check_running = false;
+	setInterval(async function () {
+		if (stripe_purchase_check_running) return;
+		stripe_purchase_check_running = true;
+		try {
+			await retry_stripe_purchases();
+		} catch (e) {
+			console.error("Stripe purchase recovery failed");
+		} finally {
+			stripe_purchase_check_running = false;
+		}
+	}, 60000);
 	var mainframe_renewal_check_running = false;
 	setInterval(
 		async function () {

@@ -317,7 +317,7 @@
 	"game.clicks_away": "Distanza in clic: {dist}",
 	"game.echoes": "Echi: {length}",
 	"game.clicks": "Clic: {c}",
-	"npc.home.set_offer": "Questo non è il tuo server di origine. Risiedi su {home}. Nei reami di origine il tuo contributo cooperativo conta di più e ricevi ricompense speciali; passare rapidamente tra personaggi non mercanti sospende questi vantaggi per 30 minuti. Vuoi impostare questo server come server di origine?",
+	"npc.home.set_offer": "Questo non è il tuo server di casa. Sei residente di {home}. I reami di casa offrono un contributo cooperativo più forte e ricompense speciali; cambiare rapidamente server con personaggi non Mercante sospende questi benefici per 30 minuti. Vuoi impostare questo server come casa?",
 	"npc.yes": "Sì!",
 	"npc.home.current": "Questo è il tuo server di origine. Qui il tuo aiuto contro i mostri cooperativi conta di più e alcuni mostri offrono ricompense di origine aggiuntive. Arrivare qui dopo che un altro personaggio non mercante ha visitato un server diverso causa 30 minuti di Fatica del reame. Mentre ti ambienti, continui a ricevere le ricompense normali.",
 	"npc.bless_server.offer": "Vuoi benedire l'intero server per 3 giorni?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Quell'oggetto non corrisponde all'offerta",
 	"response.trade_swap_space": "Il mercante non ha spazio",
 	"game.trade_history.traded": "- Hai scambiato '{item}' con {player} per '{received}'",
-	"response.transport_need_items": "Occorre: {items}"
+	"response.transport_need_items": "Occorre: {items}",
+	"combat.emote.hehehe": "EHEHEH"
 }

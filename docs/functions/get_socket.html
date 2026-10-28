@@ -7,5 +7,16 @@
 	show_json(event);
 });</div>
 
+<hr>
+<p>{{ phrase("docs.functions.get_socket.refresh") }}</p>
+<div class='code'>var socket = get_socket();
+function snapshot(data) {
+	if (data.type !== "all") return;
+	socket.off("entities", snapshot);
+	show_json(data);
+}
+socket.on("entities", snapshot);
+socket.emit("send_updates");</div>
+
 <p></p>
 <span class='redlabel'>{{ phrase("docs.reference.source_code") }}</span>

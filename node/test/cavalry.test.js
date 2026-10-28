@@ -162,6 +162,8 @@ function fixture(storage = { marks: new Map(), levels: new Map() }) {
 	]);
 	vm.runInContext(read("node/logic/cavalry.js"), c);
 	vm.runInContext(read("node/logic/instance_pause.js"), c);
+	vm.runInContext(read("node/logic/witch_cipher.js"), c); // no round is running: kills drop no ingredients
+	vm.runInContext(read("node/logic/halloween_events.js"), c); // no Graveyard Rising is running
 	for (const name of ["main", "winterland", "desertland", "halloween", "woffice"])
 		c.instances[name] = { name, map: name, players: {}, monsters: {}, pmap: {}, npcs: 0 };
 	for (const entry of G.maps.woffice.npcs.filter((x) => G.npcs[x.id].cavalry)) {

@@ -830,6 +830,44 @@ canvas { display:block; } /*replaces the overflow: hidden solution [07/07/16] */
 	letter-spacing: 2px;
 	color: #62727E;
 }
+/* A fight's monsters as stat cards side by side, and a health bar marking when something happens */
+.guide-article .guide-stats{
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	align-items: flex-start;
+	margin-top: 10px;
+}
+/* The tooltip's box and white text, since the guide page itself is light */
+.guide-article .guide-stats .buyitem{
+	background-color: black;
+	border: 5px solid gray;
+	color: white;
+	font-size: 24px;
+	line-height: 24px;
+	padding: 20px;
+	max-width: 240px;
+	text-align: left;
+}
+/* A monster's tile with its own drops beside it */
+.guide-article .guide-drop-group{
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	margin-top: 10px;
+}
+.guide-article .guide-hp{
+	display: inline-block;
+	width: 54px;
+	height: 8px;
+	border: 2px solid #9F9FB0;
+	background: #3C3C3C;
+	margin: 0 2px 0 8px;
+}
+.guide-article .guide-hp > span{
+	display: block;
+	height: 100%;
+}
 .guide-article .guide-count{
 	color: #467956;
 	margin: 0 4px 0 6px;
@@ -1255,7 +1293,8 @@ a.gamebutton{
 .release-section.release-all{color: #F1EFE9}
 .release-show{display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; margin: 10px 0}
 .release-image{margin: 10px 0; line-height: 0; overflow-x: auto}
-.release-image img{image-rendering: crisp-edges; image-rendering: pixelated}
+/* A translated picture keeps the English width; its height follows the picture, so each shows at its own size. */
+.release-image img{height: auto; image-rendering: crisp-edges; image-rendering: pixelated}
 .release-group{color: #69BE86; font-size: 26px; line-height: 26px; margin: 16px 0 4px; border-bottom: 2px dashed #3E3E3E; padding-bottom: 4px}
 .release-row{display: flex; gap: 12px; align-items: center; margin: 8px 0}
 .release-icon{flex: none; min-width: 58px; text-align: center}
@@ -1312,6 +1351,44 @@ html:lang(ar) .release-archive-title{
 	z-index:205;
 	display: inline-block;
 }
+.steam-friend-picker{
+	border-top: 3px solid gray;
+	margin-top: 7px;
+	padding-top: 10px;
+	text-align: left;
+	font-size: 24px;
+	line-height: 1.15;
+}
+.steam-friend-heading{color: #fff}
+.steam-friend-intro{font-size: 16px;color: #c3c3c3;margin: 8px 0 10px}
+.steam-friend-list{display: grid;grid-template-columns: repeat(2,minmax(0,1fr));gap: 6px;max-height: 230px;overflow-y: auto}
+.steam-friend-choice{box-sizing: border-box;width: 100%;min-height: 94px;padding: 7px!important;text-align: left;font-size: 20px}
+.steam-friend-identity{display: flex;align-items: flex-start;gap: 4px}
+.steam-friend-labels{min-width: 0;flex: 1}
+.steam-friend-name{overflow: hidden;text-overflow: ellipsis;white-space: nowrap;color: #fff}
+.steam-friend-character{font-size: 16px;color: #bbb;overflow-wrap: anywhere}
+.steam-friend-action{text-align: right;color: #93d56a;margin-top: 4px}
+.steam-friend-later{font-size: 18px;color: #bbb;text-align: right;margin-top: 8px}
+.recruitui{margin-left: -10px;margin-right: -10px;text-align: left;font-size: 24px;line-height: 1.15}
+.recruit-block{padding: 13px 10px}
+.recruit-block p{margin: 10px 0 16px}
+.recruit-title{color: #fff;font-size: 27px;margin-bottom: 8px}
+.recruit-label{color: #bbb;margin-top: 14px;margin-bottom: 5px}
+.recruit-reward,.recruit-shop-row{display: flex;align-items: center;gap: 10px}
+.recruit-reward .recruit-shells,.recruit-reward .recruit-friendtoken{flex: none;width: 48px;min-height: 42px}
+.recruit-green{color: #a4fa64;font-size: 18px;line-height: 1.3;margin-top: 8px}
+.recruit-small{color: #c4c4c4;font-size: 18px;line-height: 1.3}
+.recruit-divider{width: 100%;border-top: 4px solid gray}
+.recruit-shop-row{font-size: 18px;align-items: center}
+.recruit-fvona,.recruit-gravestone{flex: none}
+.recruit-shop-row>span:last-child{min-width: 0}
+.recruit-view-reward{display: table;margin: 12px auto 0}
+.recruit-primary-link{text-align: center;color: #80adcc;font-size: 18px;overflow-wrap: anywhere}
+.recruit-primary-link .gamebutton{display: table;margin: 9px auto 0}
+.recruit-secondary-links{font-size: 18px;overflow-wrap: anywhere}
+.recruit-secondary-links .recruit-label{font-size: 16px;margin: 13px 0 3px}
+.recruit-secondary-links a{display: inline-block;color: #7cd06c;margin-right: 8px}
+.recruit-secondary-links p{margin-top: 15px}
 .loginorselection{
 	text-align: center;
 	-webkit-text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
@@ -1640,3 +1717,45 @@ li{
 	padding-top: 4px;
 	margin-top: 4px;
 }
+
+/* Events window (js/event_schedule.js): the realm's lineup, seasons and today's attractions */
+.agenda{width:600px;max-width:calc(100vw - 40px);box-sizing:border-box;background:black;border:5px solid gray;padding:12px 16px;font-size:26px;line-height:28px;color:#E5E5E5;text-align:left}
+.agenda-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.agenda-title{font-size:36px;line-height:36px;color:#F0B742}
+.agenda-realm{color:#BBBBBB;font-size:24px}
+.agenda .time-choice{margin:10px 0 6px;color:#BBBBBB;font-size:22px}
+.agenda .time-choice span.clickable{color:#DDDDDD;text-decoration:underline;margin-left:6px}
+.agenda .time-choice span.chosen{color:#F0D296;text-decoration:none}
+.agenda-controls{margin:8px 0}
+.agenda-controls .gamebutton{padding:5px 9px;font-size:24px;line-height:24px}
+.agenda .gamebutton.chosen{border-color:#C9AC6E;color:#F0D296}
+.agenda-section{margin:12px -16px 0;padding:8px 16px 4px;border-top:4px solid #666666;color:#C9AC6E;font-size:24px}
+.agenda-row{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #444444;min-height:48px}
+.agenda-time{flex:0 0 66px;font-size:28px;line-height:30px;color:#F0D296}
+.agenda-time small{display:block;font-size:20px;line-height:22px;color:#AAAAAA}
+.agenda-icon{flex:0 0 56px;height:56px;display:flex;align-items:flex-end;justify-content:center}
+.agenda-row>div:nth-child(3){flex:1 1 auto;min-width:0}
+.agenda-name{color:#EEEEEE;font-size:28px;line-height:28px}
+.agenda-meta{color:#AAAAAA;font-size:22px;line-height:24px;margin-top:3px}
+.agenda-actions{flex:0 0 auto;text-align:right}
+.agenda .events-button{padding:5px 7px;font-size:22px;line-height:24px;margin-left:4px}
+.agenda-foot{color:#AAAAAA;font-size:22px;line-height:24px;margin:14px 0 2px}
+/* The line between the realm box and chat: X,Y, the event slider (or the coordinates) and EVENTS hh:mm. */
+#events-bar{display:flex;width:320px;background:black;border:5px solid gray;margin-bottom:-5px;font-size:24px;line-height:22px}
+#coords-button{flex:0 0 auto;padding:3px 6px 3px 7px;border-right:5px solid gray;color:#AAAAAA;white-space:nowrap}
+#events-bar.coords-on #coords-button{color:#E8C878}
+#events-ticker{flex:1 1 0;min-width:0;height:28px;position:relative;overflow:hidden}
+#events-ticker-track{position:absolute;left:0;top:3px;white-space:nowrap;will-change:transform}
+#events-ticker-track .ticker-dot{color:#666666;padding:0 9px}
+#events-ticker-track .ticker-item{unicode-bidi:isolate}
+/* Right-to-left text slides the other way, so each item comes in from its own start */
+html:lang(ar) #events-ticker-track{left:auto;right:0;direction:rtl}
+#coords-view{display:none;padding:3px 4px;text-align:center;white-space:nowrap;color:white}
+#events-bar.coords-on #events-ticker-track{display:none}
+#events-bar.coords-on #coords-view{display:block}
+#events-bar .timeui{flex:0 0 auto;padding:3px 6px 3px 7px;border-left:5px solid gray;color:white;white-space:nowrap}
+.events-next-card{display:block;width:326px;box-sizing:border-box;text-align:left;font-family:inherit;font-size:24px;line-height:26px;padding:10px 12px;margin-bottom:14px;background:black;color:white;border:5px solid gray;cursor:pointer}
+.events-next-card small{display:block;font-size:20px;color:#AFAFAF}
+.events-next-card strong{display:block;color:#E8C878;font-size:28px;font-weight:normal}
+.events-next-card .events-season-end{display:block;color:#F5A05B}
+@media(max-width:680px){.agenda-icon{display:none}.agenda-row{gap:7px}.agenda-name{font-size:26px}.agenda .events-button{font-size:20px;padding:4px}}

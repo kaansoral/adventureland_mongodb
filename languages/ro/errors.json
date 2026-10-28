@@ -83,5 +83,9 @@
 	"error.cant_delete_map_in_use": "O hartă aflată în uz nu poate fi ștearsă.",
 	"error.code_too_large": "Acest script este prea mare. Fiecare slot CODE poate conține cel mult 1 MiB (1.048.576 de octeți) de text UTF-8.",
 	"error.code_storage_full": "Spațiul de stocare CODE este plin. Exportă și șterge scripturile nefolosite înainte de a salva mai mult cod.",
-	"error.code_rate_limited": "Salvezi CODE prea des. Așteaptă puțin și încearcă din nou."
+	"error.code_rate_limited": "Salvezi CODE prea des. Așteaptă puțin și încearcă din nou.",
+	"error.item_changed": "Obiectul s-a schimbat. Încearcă din nou.",
+	"error.mail_item_untaken": "Ridică atașamentul înainte să ștergi această scrisoare.",
+	"error.mail_sender_limit": "Acest personaj are deja 20 de atașamente poștale neridicate de la contul tău. Trebuie să ridice câteva înainte să poți trimite altul.",
+	"error.mailbox_full": "Acest personaj are deja 200 de atașamente poștale neridicate. Trebuie să ridice câteva înainte să poți trimite altul."
 }

@@ -22,6 +22,8 @@ function can_create_character_check(user, ip) {
 }
 
 function is_name_allowed(name) {
+	if (!is_safe_character_name(name)) return false;
+	if (/^\d+$/.test(name)) return false;
 	if (name.length < 4) return false;
 	if (name.length > 12) return false;
 	for (var i = 0; i < name.length; i++) {
@@ -31,6 +33,8 @@ function is_name_allowed(name) {
 }
 
 function is_name_xallowed(name) {
+	if (!is_safe_character_name(name)) return false;
+	if (/^\d+$/.test(name)) return false;
 	if (name.length < 1) return false;
 	if (name.length > 12) return false;
 	for (var i = 0; i < name.length; i++) {
@@ -75,7 +79,10 @@ function load_bank_api(args) {
 		packs = {};
 	for (var i = 0; i < 48; i++) {
 		var pack = "items" + i;
-		if (Array.isArray(bank[pack])) packs[pack] = bank[pack].slice(0, 42);
+		if (Array.isArray(bank[pack]))
+			packs[pack] = bank[pack].slice(0, 42).map(function (item) {
+				return item ? simplify_item(Object.assign({}, item)) : null;
+			});
 	}
 	return { success: true, gold: bank.gold, packs: packs };
 }
@@ -98,6 +105,7 @@ async function signup_or_login_api(args, steam_signup) {
 			var R = await tx(
 				async () => {
 					R.user = await tx_get(A.user);
+					if (is_account_blocked(R.user)) ex("banned");
 					if (A.explicit_language || !localization.initialized(R.user)) {
 						R.user.language = A.language;
 						R.user.language_set = A.language_set;
@@ -180,6 +188,7 @@ async function signup_or_login_api(args, steam_signup) {
 				blobs: ["info"],
 			};
 			R.auth = get_new_auth(R.user);
+			if (A.steam_signup) await register_steam_referral_link(R.user, A.steam_signup.steamid, tx_get, tx_save, session, true);
 			await tx_save(R.user);
 			await tx_save({ _id: "MK_email-" + A.email, type: "email", phrase: A.email, owner: get_id(R.user), created: new Date() });
 			if (A.steam_signup) await tx_save({ _id: "MK_steam-signup-" + A.steam_signup.id, type: "steam_signup", owner: get_id(R.user), created: new Date() });
@@ -218,6 +227,119 @@ async function signup_or_login_api(args, steam_signup) {
 	}
 
 	return { success: true, user: get_id(R.user), auth: R.auth, language: domain.language };
+}
+
+async function steam_referral_candidates_api(args) {
+	var user = args.user;
+	var link = user.steam_referral;
+	if (!link || link.state !== "pending" || gf(user, "reward")) return { success: true, state: "closed" };
+	if (await verify_tauri_steam_ticket(args.ticket) !== link.steamid) return { failed: true, reason: "steam_auth_failed" };
+	if (!Array.isArray(args.friends) || args.friends.length > 2000 || args.friends.some((id) => typeof id !== "string" || !/^[0-9]{16,20}$/.test(id))) return { failed: true, reason: "invalid_friends" };
+	if (user.referrer) {
+		var referral = await get(user.referrer);
+		if (referral && !referral.banned && get_id(referral) !== get_id(user)) return { success: true, state: "connected" };
+	}
+	var friend_ids = [...new Set(args.friends)].filter((id) => id !== link.steamid);
+	if (!friend_ids.length) return { success: true, state: "none" };
+	var rows = await db.collection("user")
+		.find({
+			_id: { $ne: get_id(user) }, banned: { $ne: true }, created: { $lt: user.created },
+			$or: [{ platform: "steam", pid: { $in: friend_ids } }, { "steam_login.steamid": { $in: friend_ids } }],
+		})
+		.project({ _id: 1, name: 1, created: 1, platform: 1, pid: 1, steam_login: 1 })
+		.sort({ created: 1 })
+		.limit(4001)
+		.maxTimeMS(4000)
+		.toArray();
+	if (rows.length > 4000) return { success: true, state: "none" };
+	var found = new Set(), candidates = [];
+	for (var row of rows) {
+		var steam_id = get_steam_login_id(row);
+		if (!friend_ids.includes(steam_id) || found.has(steam_id)) continue;
+		found.add(steam_id);
+		candidates.push({ id: get_id(row), steamid: steam_id, account: row.name });
+	}
+	if (!candidates.length) return { success: true, state: "none" };
+	if (candidates.length === 1) {
+		var only = candidates[0];
+		var result = await tx(
+			async () => {
+				var invited = await tx_get(A.user), inviter = await tx_get(A.inviter);
+				if (!invited || !inviter || invited.steam_referral?.state !== "pending" || invited.steam_referral.steamid !== A.steamid || gf(invited, "reward")) ex("closed");
+				if (invited.referrer) {
+					var referral = await tx_get(invited.referrer);
+					if (referral && !referral.banned && get_id(referral) !== get_id(invited)) ex("closed");
+					delete invited.referrer;
+				}
+				if (inviter.banned || !(inviter.created < invited.created) || get_steam_login_id(inviter) !== A.friend_steamid) ex("invalid_friend");
+				var mark = await tx_get("MK_steam-referral-" + A.steamid);
+				if (!mark || !mark.eligible || mark.owner !== get_id(invited)) ex("closed");
+				invited.referrer = get_id(inviter);
+				invited.steam_referral.state = "connected";
+				invited.steam_referral.inviter = get_id(inviter);
+				delete invited.steam_referral.choices;
+				await tx_save(invited);
+			},
+			{ user: get_id(user), inviter: only.id, steamid: link.steamid, friend_steamid: only.steamid },
+			3,
+		);
+		return { success: !result.failed, state: result.failed ? "closed" : "connected" };
+	}
+	var characters = await db.collection("character")
+		.find({ owner: { $in: candidates.map((c) => c.id) }, private: { $ne: true }, "info.private": { $ne: true } })
+		.project({ owner: 1, name: 1, "info.name": 1, "info.skin": 1, "info.cx": 1, "info.rip": 1 })
+		.limit(400).toArray();
+	for (var candidate of candidates) {
+		var character = characters.find((c) => c.owner === candidate.id);
+		if (character) candidate.character = { name: character.info?.name || character.name, skin: character.info?.skin, cx: character.info?.cx || {}, rip: character.info?.rip || "" };
+	}
+	var recorded = await tx(
+		async () => {
+			var invited = await tx_get(A.user);
+			if (!invited || invited.steam_referral?.state !== "pending" || invited.steam_referral.steamid !== A.steamid || gf(invited, "reward")) ex("closed");
+			if (invited.referrer) {
+				var referral = await tx_get(invited.referrer);
+				if (referral && !referral.banned && get_id(referral) !== get_id(invited)) ex("closed");
+				delete invited.referrer;
+			}
+			var mark = await tx_get("MK_steam-referral-" + A.steamid);
+			if (!mark || !mark.eligible || mark.owner !== get_id(invited)) ex("closed");
+			invited.steam_referral.choices = A.choices;
+			await tx_save(invited);
+		},
+		{ user: get_id(user), steamid: link.steamid, choices: candidates.map((c) => ({ id: c.id, steamid: c.steamid })) },
+		3,
+	);
+	return recorded.failed ? { success: true, state: "closed" } : { success: true, state: "choose", candidates: candidates };
+}
+
+async function steam_referral_connect_api(args) {
+	var user = args.user, link = user.steam_referral;
+	if (!link || link.state !== "pending" || !Array.isArray(link.choices) || !link.choices.some((choice) => choice.id === args.inviter)) return { failed: true, reason: "closed" };
+	if (await verify_tauri_steam_ticket(args.ticket) !== link.steamid) return { failed: true, reason: "steam_auth_failed" };
+	var result = await tx(
+		async () => {
+			var invited = await tx_get(A.user), inviter = await tx_get(A.inviter);
+			if (!invited || !inviter || invited.steam_referral?.state !== "pending" || invited.steam_referral.steamid !== A.steamid || gf(invited, "reward")) ex("closed");
+			if (invited.referrer) {
+				var referral = await tx_get(invited.referrer);
+				if (referral && !referral.banned && get_id(referral) !== get_id(invited)) ex("closed");
+				delete invited.referrer;
+			}
+			var choice = invited.steam_referral.choices?.find((entry) => entry.id === A.inviter);
+			if (!choice || inviter.banned || !(inviter.created < invited.created) || get_steam_login_id(inviter) !== choice.steamid) ex("invalid_friend");
+			var mark = await tx_get("MK_steam-referral-" + A.steamid);
+			if (!mark || !mark.eligible || mark.owner !== get_id(invited)) ex("closed");
+			invited.referrer = get_id(inviter);
+			invited.steam_referral.state = "connected";
+			invited.steam_referral.inviter = get_id(inviter);
+			delete invited.steam_referral.choices;
+			await tx_save(invited);
+		},
+		{ user: get_id(user), inviter: args.inviter, steamid: link.steamid },
+		3,
+	);
+	return result.failed ? { failed: true, reason: result.reason } : { success: true };
 }
 
 async function settings_api(args) {
@@ -480,6 +602,7 @@ async function create_character_api(args) {
 	if (!char_type || !character_types.includes(char_type)) return { failed: true, reason: "character_type_not_allowed" };
 	if (classes[char_type] && classes[char_type].looks && classes[char_type].looks.length <= look) return { failed: true, reason: "invalid_look" };
 	if (!name) return { failed: true, reason: "please_enter_a_name" };
+	if (typeof name !== "string") return { failed: true, reason: "invalid_name" };
 	name = name.replace(/ /g, "").replace(/\t/g, "");
 	if (!is_name_allowed(name)) return { failed: true, reason: "invalid_name" };
 	if (await get_character(name, true)) return { failed: true, reason: "name_used" };
@@ -1235,7 +1358,7 @@ async function read_mail_api(args) {
 	var R = await tx(
 		async () => {
 			var mail = await tx_get(A.mail_id);
-			if (mail && !mail.read && mail.owner?.includes(get_id(A.user)) && gf(mail, "receiver") === get_id(A.user)) {
+			if (mail && !mail.read && mail.owner?.includes(get_id(A.user)) && mail_receiver(mail) === get_id(A.user)) {
 				mail.read = true;
 				await tx_save(mail);
 			}
@@ -1290,7 +1413,7 @@ async function pull_mail_api(args) {
 		if (mail.item) {
 			mail_data.item = simplify_item(mail.info.item);
 			mail_data.taken = mail.taken;
-			mail_data.can_take = gf(mail, "receiver") === get_id(user);
+			mail_data.can_take = mail_receiver(mail) === get_id(user);
 		}
 		data.mail.push(mail_data);
 	}
@@ -1302,9 +1425,15 @@ async function pull_mail_api(args) {
 async function delete_mail_api(args) {
 	var user = args.user;
 	if (!user || typeof args.mid !== "string" || !args.mid.startsWith("ML_")) return { failed: true, reason: "cant_delete" };
-	// Each account removes its own copy. Retain the claim record even when both copies are hidden.
-	var result = await db.collection("mail").updateOne({ _id: args.mid, owner: get_id(user) }, { $pull: { owner: get_id(user) } });
-	if (!result.matchedCount) return { failed: true, reason: "cant_delete" };
+	// An untaken attachment must remain accessible, including while a claim settles.
+	var result = await tx(async () => {
+		var mail = await tx_get(A.id);
+		if (!mail || !mail.owner || !in_arr(A.owner, mail.owner)) ex("cant_delete");
+		if (mail.item && mail.taken !== true && mail_receiver(mail) === A.owner) ex("mail_item_untaken");
+		mail.owner = mail.owner.filter(function (owner) { return owner !== A.owner; });
+		await tx_save(mail);
+	}, { id: args.mid, owner: get_id(user) }, 3);
+	if (result.failed) return result;
 	args.res.infs.push({ type: "unread", count: await update_mail_count(user) });
 	args.res.infs.push({ type: "message", message: phrase_html("server.api.mail_deleted") });
 	return { success: true };
@@ -1637,6 +1766,7 @@ async function reset_tutorial_api(args) {
 
 var STEAM_SHELL_USD_AMOUNTS = [1, 10, 25, 100, 500];
 var STEAM_PURCHASE_COLLECTION = "steam_purchase";
+var STRIPE_PURCHASE_COLLECTION = "stripe_purchase";
 
 function steam_checkout_language(language) {
 	// Steam uses regional Web API codes. Its UI falls back to English for Arabic; Filipino has no Web API locale.
@@ -1954,87 +2084,217 @@ async function steam_payment_finish_api(args) {
 	return { failed: true, reason: "steam_purchase_failed" };
 }
 
+async function grant_stripe_shell_purchase(purchase, req) {
+	var session = client.startSession();
+	var result;
+	try {
+		result = await session.withTransaction(
+			async function () {
+				var current = await db.collection(STRIPE_PURCHASE_COLLECTION).findOne({ _id: purchase._id }, { session: session });
+				if (!current || current.owner !== purchase.owner || !current.charge_id || current.charge_id !== purchase.charge_id) throw new Error("invalid_purchase");
+				var user = await db.collection("user").findOne({ _id: current.owner }, { session: session });
+				if (!user) throw new Error("missing_user");
+				if (current.state === "delivered") return { success: true, already_delivered: true, cash: user.cash, shells: current.shells };
+				if (current.state !== "pending") throw new Error("invalid_purchase_state");
+				user.cash = (user.cash || 0) + current.shells;
+				await db.collection("user").updateOne({ _id: user._id }, { $inc: { cash: current.shells }, $set: { updated: new Date() } }, { session: session });
+				var referrer = null,
+					referrer_shells = 0;
+				if (user.referrer && user.referrer !== user._id && current.shells >= 20) {
+					referrer = await db.collection("user").findOne({ _id: user.referrer }, { session: session });
+					if (referrer) {
+						referrer_shells = Math.round(current.shells * 0.1);
+						referrer.cash = (referrer.cash || 0) + referrer_shells;
+						await db.collection("user").updateOne(
+							{ _id: referrer._id },
+							{
+								$inc: { cash: referrer_shells, "info.rcash": referrer_shells, "info.referrer_events": 1 },
+								$set: { updated: new Date() },
+							},
+							{ session: session },
+						);
+					}
+				}
+				await db.collection(STRIPE_PURCHASE_COLLECTION).updateOne(
+					{ _id: current._id },
+					{
+						$set: { state: "delivered", delivered: new Date(), updated: new Date(), referrer_shells: referrer_shells },
+						$unset: { source: "", next_attempt: "" },
+					},
+					{ session: session },
+				);
+				return { success: true, cash: user.cash, shells: current.shells, user: user, referrer: referrer, referrer_shells: referrer_shells };
+			},
+			{ timeoutMS: 12000, writeConcern: { w: "majority" } },
+		);
+	} finally {
+		await session.endSession();
+	}
+	if (result.user) {
+		// Notifications follow the commit; their failure must not turn a delivered purchase into a failed payment.
+		var info = { usd: purchase.usd, order_id: purchase._id, charge_id: purchase.charge_id };
+		add_event(result.user, "stripe", ["payments", "cashflow"], { req: req, info: Object.assign({}, info, { message: "STRIPE! " + result.user.name + " spent " + purchase.usd + " USD!" }) }).catch(
+			function () {
+				console.error("Stripe payment event failed");
+			},
+		);
+		add_event(result.user, "shells", ["cashflow"], { req: req, info: Object.assign({}, info, { message: "STRIPE! " + result.user.name + " received " + result.shells + " SHELLS!" }) }).catch(
+			function () {
+				console.error("Stripe shells event failed");
+			},
+		);
+		update_characters(result.user, null, null, result.shells).catch(function () {
+			console.error("Stripe character update failed");
+		});
+		if (result.referrer) {
+			add_event(result.referrer, "referrer_cash", ["cashflow", "referrer"], {
+				info: {
+					message: "Referrer: " + result.referrer.name + " received " + result.referrer_shells + " shells from " + result.user.name + "[" + result.user._id + "]",
+					source: result.user._id,
+					order_id: purchase._id,
+					charge_id: purchase.charge_id,
+				},
+			}).catch(function () {
+				console.error("Stripe referral event failed");
+			});
+			update_characters(result.referrer, null, null, result.referrer_shells).catch(function () {
+				console.error("Stripe referrer update failed");
+			});
+		}
+	}
+	return { success: true, cash: result.cash, shells: result.shells, already_delivered: !!result.already_delivered };
+}
+
+async function process_stripe_purchase(purchase, req) {
+	var pending = { success: false, pending: true };
+	var collection = db.collection(STRIPE_PURCHASE_COLLECTION);
+	if (purchase.livemode !== !Dev) throw new Error("invalid_payment_mode");
+	if (purchase.state === "delivered") return grant_stripe_shell_purchase(purchase, req);
+	if (purchase.state === "declined" || purchase.state === "failed") return { failed: true, reason: purchase.state === "declined" ? "card_declined" : "payment_failed" };
+	// A short lease bounds provider calls across API requests and HTTP workers. The receipt transaction provides deduplication.
+	purchase = await collection.findOneAndUpdate(
+		{ _id: purchase._id, state: "pending", next_attempt: { $lte: new Date() } },
+		{
+			$set: { next_attempt: new Date(Date.now() + 60000), updated: new Date() },
+			$inc: { attempts: 1 },
+		},
+		{ returnDocument: "after" },
+	);
+	if (!purchase) return pending;
+	var charge,
+		request_options = { timeout: 10000, maxNetworkRetries: 1 };
+	if (purchase.charge_id) charge = await stripe.charges.retrieve(purchase.charge_id, request_options);
+	else {
+		// A lost response (including a cached Stripe 500) is recovered by metadata. An empty search is only pending.
+		if (purchase.attempts > 1) {
+			var found = await stripe.charges.search({ query: "metadata['shell_purchase']:'" + purchase._id + "'", limit: 1 }, request_options);
+			charge = found.data[0];
+		}
+		if (!charge) {
+			// Stripe may prune idempotency keys after 24h. Never submit an old ambiguous charge again.
+			if (Date.now() - new Date(purchase.created).getTime() >= 23 * 60 * 60 * 1000) {
+				console.error("Stripe purchase requires reconciliation: " + purchase._id);
+				return pending;
+			}
+			try {
+				charge = await stripe.charges.create(
+					{
+						amount: purchase.amount,
+						currency: "usd",
+						source: purchase.source,
+						description: purchase.shells + " SHELLS for " + purchase.usd + " USD",
+						metadata: { shell_purchase: purchase._id },
+					},
+					Object.assign({}, request_options, { idempotencyKey: "shells-" + purchase._id }),
+				);
+			} catch (e) {
+				if (e.type !== "StripeCardError" && e.type !== "StripeInvalidRequestError") throw e;
+				var declined = e.type === "StripeCardError";
+				await collection.updateOne({ _id: purchase._id, state: "pending" }, { $set: { state: declined ? "declined" : "failed", updated: new Date() }, $unset: { source: "", next_attempt: "" } });
+				return { failed: true, reason: declined ? "card_declined" : "payment_failed" };
+			}
+		}
+	}
+	if (charge.amount !== purchase.amount || charge.currency !== "usd" || charge.livemode !== purchase.livemode || !charge.metadata || charge.metadata.shell_purchase !== purchase._id)
+		throw new Error("invalid_charge");
+	if (charge.status === "failed" || charge.refunded || charge.amount_refunded || charge.disputed) {
+		await collection.updateOne({ _id: purchase._id, state: "pending" }, { $set: { state: "failed", charge_id: charge.id, updated: new Date() }, $unset: { source: "", next_attempt: "" } });
+		return { failed: true, reason: "payment_failed" };
+	}
+	if (charge.status !== "succeeded" || !charge.paid || !charge.captured || charge.amount_captured !== purchase.amount) return pending;
+	await collection.updateOne({ _id: purchase._id, state: "pending" }, { $set: { charge_id: charge.id, updated: new Date() }, $unset: { source: "" } });
+	purchase.charge_id = charge.id;
+	return grant_stripe_shell_purchase(purchase, req);
+}
+
+async function retry_stripe_purchases() {
+	if (!stripe) return;
+	var purchases = await db
+		.collection(STRIPE_PURCHASE_COLLECTION)
+		.find({ state: "pending", livemode: !Dev, next_attempt: { $lte: new Date() } })
+		.sort({ next_attempt: 1 })
+		.limit(20)
+		.toArray();
+	for (var purchase of purchases) {
+		try {
+			await process_stripe_purchase(purchase);
+		} catch (e) {
+			console.error("Stripe purchase retry pending: " + purchase._id);
+		}
+	}
+}
+
 async function stripe_payment_api(args) {
-	var domain = await get_domain(args.req),
-		user = args.user;
-	var response = args.response,
-		usd = args.usd;
-	var token = response && response.id;
-	if (!token || !usd) {
+	var token = args.response && args.response.id;
+	var usd = Math.max(1, parseInt(args.usd));
+	if (typeof token !== "string" || !/^tok_[A-Za-z0-9]+$/.test(token) || !Number.isSafeInteger(usd * 100)) {
 		args.res.infs.push({ type: "func", func: "stripe_result", args: ["failed"] });
 		return { failed: true, reason: "issue_with_token_or_usd" };
 	}
-	usd = Math.max(1, parseInt(usd));
-	var shells = purchased_shells_for_usd(usd, extra_shells);
-
+	var id = crypto
+		.createHash("sha256")
+		.update((Dev ? "test:" : "live:") + token)
+		.digest("hex");
 	try {
-		var charge = await stripe.charges.create({
-			amount: usd * 100,
-			currency: "usd",
-			description: shells + " SHELLS for " + usd + " USD",
-			source: token,
-		});
-		add_event(user, "stripe", ["payments", "cashflow"], { req: args.req, info: { message: "STRIPE! " + user.name + " spent " + usd + " USD!", usd: usd, token: token, response: response } });
-
-		var R = await tx(
-			async () => {
-				R.element = await tx_get(A.user);
-				R.element.cash += A.shells;
-				await tx_save(R.element);
-			},
-			{ user: user, shells: shells },
-		);
-
-		if (R.failed) {
-			args.res.infs.push({ type: "func", func: "stripe_result", args: ["failed"] });
-			return { failed: true, reason: "transaction_failed" };
-		}
-
-		add_event(R.element, "shells", ["cashflow"], { req: args.req, info: { message: "STRIPE! " + user.name + " received " + shells + " SHELLS!", usd: usd, token: token } });
-		args.res.infs.push({ type: "func", func: "stripe_result", args: ["success", R.element.cash] });
-		args.res.infs.push({ type: "success", message: phrase_html("server.api.you_received_shells", { amount: String(shells) }) });
-		update_characters(R.element, null, null, shells).catch(console.error);
-
-		// Referrer bonus: 10% of shells to the referrer
-		try {
-			if (R.element.referrer && shells >= 20) {
-				var referrer = await get(R.element.referrer);
-				if (referrer) {
-					var referrer_shells = Math.round(shells * 0.1);
-					add_event(referrer, "referrer_cash", ["cashflow", "referrer"], {
-						info: {
-							message: "Referrer: " + referrer.name + " received " + referrer_shells + " shells from " + user.name + "[" + get_id(user) + "]",
-							source: get_id(user),
-						},
-					});
-					var R2 = await tx(
-						async () => {
-							var entity = await tx_get(A.referrer);
-							entity.info.rcash = gf(entity, "rcash", 0) + A.referrer_shells;
-							entity.info.referrer_events = gf(entity, "referrer_events", 0) + 1;
-							entity.cash += A.referrer_shells;
-							await tx_save(entity);
-						},
-						{ referrer: referrer, referrer_shells: referrer_shells },
-					);
-					if (!R2.failed) {
-						update_characters(referrer, null, null, referrer_shells).catch(console.error);
-					}
-				}
+		var collection = db.collection(STRIPE_PURCHASE_COLLECTION);
+		var purchase = await collection.findOne({ _id: id });
+		if (!purchase) {
+			purchase = {
+				_id: id,
+				owner: get_id(args.user),
+				usd: usd,
+				amount: usd * 100,
+				shells: purchased_shells_for_usd(usd, extra_shells),
+				source: token,
+				livemode: !Dev,
+				state: "pending",
+				attempts: 0,
+				created: new Date(),
+				updated: new Date(),
+				next_attempt: new Date(),
+			};
+			// Persist before contacting Stripe; retain only its token reference, never the client's card response.
+			try {
+				await collection.insertOne(purchase, { writeConcern: { w: "majority" } });
+			} catch (e) {
+				if (e.code !== 11000) throw e;
+				purchase = await collection.findOne({ _id: id });
 			}
-		} catch (e) {
-			console.error("referrer bonus error", e);
 		}
-
-		return { success: true };
+		if (!purchase || purchase.owner !== get_id(args.user) || purchase.usd !== usd) {
+			args.res.infs.push({ type: "func", func: "stripe_result", args: ["failed"] });
+			return { failed: true, reason: "invalid_purchase" };
+		}
+		var result = await process_stripe_purchase(purchase, args.req);
+		if (result.success) {
+			args.res.infs.push({ type: "func", func: "stripe_result", args: ["success", result.cash] });
+			if (!result.already_delivered) args.res.infs.push({ type: "success", message: phrase_html("server.api.you_received_shells", { amount: String(result.shells) }) });
+		} else if (result.failed) args.res.infs.push({ type: "func", func: "stripe_result", args: [result.reason === "card_declined" ? "declined" : "failed"] });
+		return result;
 	} catch (e) {
-		if (e.type === "StripeCardError") {
-			args.res.infs.push({ type: "func", func: "stripe_result", args: ["declined"] });
-			return { failed: true, reason: "card_declined" };
-		}
-		console.error("stripe error", e);
-		args.res.infs.push({ type: "func", func: "stripe_result", args: ["failed"] });
-		return { failed: true, reason: "payment_failed" };
+		// The same purchase can resume after a database or provider outage. Do not log tokens or card responses.
+		console.error("Stripe purchase pending: " + id);
+		return { success: false, pending: true };
 	}
 }
 
@@ -2147,6 +2407,8 @@ function hi_api(args) {
 // ==================== REF DEFINITIONS ====================
 
 var REF = {
+	steam_referral_candidates: { F: steam_referral_candidates_api, P: true, U: true, ticket: { type: "string" }, friends: { type: "any" } },
+	steam_referral_connect: { F: steam_referral_connect_api, P: true, U: true, ticket: { type: "string" }, inviter: { type: "string" } },
 	signup_or_login: {
 		F: signup_or_login_api,
 		P: true,

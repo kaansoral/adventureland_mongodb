@@ -317,7 +317,7 @@
 	"game.clicks_away": "{dist} klick bort",
 	"game.echoes": "Antal ekon: {length}",
 	"game.clicks": "{c} klick",
-	"npc.home.set_offer": "Det här är inte din hemserver. Du hör hemma på {home}. I din hemvärld räknas dina bidrag mot samarbetsmonster mer och du får särskilda belöningar. Snabba byten mellan karaktärer som inte är handlare pausar detta i 30 minuter. Vill du göra den här servern till ditt hem?",
+	"npc.home.set_offer": "Det här är inte din hemserver. Du är bosatt på {home}. Hemvärldar ger starkare samarbetskredit och särskilda belöningar; snabba byten mellan icke-Handlare pausar de fördelarna i 30 minuter. Vill du ange den här servern som ditt hem?",
 	"npc.yes": "Ja!",
 	"npc.home.current": "Det här är din hemserver. Dina bidrag mot samarbetsmonster räknas mer här, och vissa monster ger extra hembelöningar. Om du byter hit efter att en annan karaktär som inte är handlare har besökt en annan server får du Världströtthet i 30 minuter. Du får vanliga belöningar medan du finner dig till rätta.",
 	"npc.bless_server.offer": "Vill du välsigna hela servern i 3 dagar?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Föremålet passar inte anbudet",
 	"response.trade_swap_space": "Handlaren har ingen plats",
 	"game.trade_history.traded": "- Bytte '{item}' med {player} mot '{received}'",
-	"response.transport_need_items": "Behöver: {items}"
+	"response.transport_need_items": "Behöver: {items}",
+	"combat.emote.hehehe": "HEHEHE"
 }

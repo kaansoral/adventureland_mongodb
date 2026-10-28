@@ -99,6 +99,7 @@ function market_patron_can_visit(npc, player) {
 // normal character saves until its outcome is known, including disconnect saves.
 async function market_patron_grant(npc, player) {
 	if (
+		player.mail_sending ||
 		player.merrit_grant ||
 		player.sync_call ||
 		player.mount_call ||

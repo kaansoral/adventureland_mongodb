@@ -83,5 +83,9 @@
 	"error.cant_delete_map_in_use": "Peta yang sedang digunakan tidak dapat dihapus.",
 	"error.code_too_large": "Skrip ini terlalu besar. Setiap slot CODE dapat menampung hingga 1 MiB (1.048.576 byte) teks UTF-8.",
 	"error.code_storage_full": "Penyimpanan CODE-mu penuh. Ekspor dan hapus skrip yang tidak digunakan sebelum menyimpan kode lagi.",
-	"error.code_rate_limited": "Kamu menyimpan CODE terlalu sering. Tunggu sebentar lalu coba lagi."
+	"error.code_rate_limited": "Kamu menyimpan CODE terlalu sering. Tunggu sebentar lalu coba lagi.",
+	"error.item_changed": "Item berubah. Coba lagi.",
+	"error.mail_item_untaken": "Ambil lampirannya sebelum menghapus surat ini.",
+	"error.mail_sender_limit": "Karakter ini sudah memiliki 20 lampiran surat yang belum diambil dari akunmu. Mereka harus mengambil beberapa sebelum kamu bisa mengirim lagi.",
+	"error.mailbox_full": "Karakter ini sudah memiliki 200 lampiran surat yang belum diambil. Mereka harus mengambil beberapa sebelum kamu bisa mengirim lagi."
 }

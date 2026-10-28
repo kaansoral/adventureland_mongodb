@@ -44,6 +44,7 @@ const discord_relay = require("./logic/discord")({
 	enabled: !Dev,
 });
 const anniversary_rules = require("./logic/anniversary_event");
+const event_schedule_rules = require("./logic/event_schedule");
 const market_patron_rules = require("./logic/market_patron")((a, b) => simple_distance(a, b));
 const monster_hunt_rules = require("./logic/monster_hunts");
 const server_information = require("./logic/server_information")("SR_" + region + server_name);
@@ -121,11 +122,14 @@ eval("" + fs.readFileSync(path.resolve(__dirname, "logic/market_patron_runtime.j
 eval("" + fs.readFileSync(path.resolve(__dirname, "logic/encouragement.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "logic/cavalry.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "logic/character_sessions.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/mail.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "logic/observer_broadcast.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "logic/chat.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "logic/generated_maps.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "logic/instance_pause.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "logic/cave_of_many_dreams.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/witch_cipher.js")));
+eval("" + fs.readFileSync(path.resolve(__dirname, "logic/halloween_events.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "logic/tavern.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "logic/tavern_wheel.js")));
 eval("" + fs.readFileSync(path.resolve(__dirname, "logic/tavern_slots.js")));
@@ -208,6 +212,7 @@ var E = {
 		night: false,
 	},
 }; // server event data
+var season_controls = null; // ends a season with a set end time on the running server, see design/events.js
 var TX = [];
 var TXX = {}; // all inter account transactions [07/02/22]
 var B = {
@@ -299,34 +304,37 @@ var mode = {
 	fear_affects_heal: 0, // when feared heal output is lowered
 	implicit_targets: 0, // Do skills that don't have an explicit target, such as self-buffing skills, trigger mana restoring effects with increased chances?
 };
-var events = {
-	anniversary: false, // Ended 06/10/26.
-	// SEASONS
-	holidayseason: false,
-	lunarnewyear: false,
-	valentines: false,
-	pinkgoo: 0, // every N minutes - 60
-	snowman: 20 * 60, // 1200 normally - 60 - at sprocess_game_data
-	egghunt: 0, // every N minutes - 60
-	halloween: false,
-	// RANDOM
-	goblin: false,
-	goldenbat: 160000,
-	cutebee: 960000,
-	goldenbot: 200000,
-	manyeye: 30000,
-	mimic: 24000,
-	paledino: 60000,
-	hide_and_seek: 0,
-	// DAILIES
-	goobrawl: false,
-	crabxx: false,
-	abtesting: false,
-	// NIGHTLIES
-	icegolem: false,
-	franky: false,
-};
-var dailies = ["crabxx", "goobrawl", "abtesting"];
+eval("" + fs.readFileSync(path.resolve(__dirname, "../design/event_flags.js")));
+var events = Object.assign(
+	{
+		// SEASONS
+		pinkgoo: 0, // every N minutes - 60
+		snowman: 20 * 60, // 1200 normally - 60 - at sprocess_game_data
+		// RANDOM
+		goblin: false,
+		goldenbat: 160000,
+		cutebee: 960000,
+		goldenbot: 200000,
+		manyeye: 30000,
+		mimic: 24000,
+		paledino: 60000,
+		hide_and_seek: 0,
+		// DAILIES
+		goobrawl: false,
+		crabxx: false,
+		abtesting: false,
+		// NIGHTLIES
+		icegolem: false,
+		franky: false,
+		// SCHEDULED: the Witch's Cipher daily, the Headless Horseman and Graveyard Rising in Halloween
+		witchcipher: false,
+		horseman: false,
+		graveyard: false,
+	},
+	get_event_flags(),
+);
+// The Witch's Cipher has its own two daily rounds during Halloween (node/logic/event_schedule.js)
+var dailies = ["crabxx", "goobrawl", "abtesting", "witchcipher"];
 shuffle(dailies);
 var nightlies = ["icegolem", "franky"];
 shuffle(nightlies);
@@ -467,6 +475,7 @@ async function init_game() {
 		Server.info.data = S;
 
 		// Load all design files (local to init_game to avoid name collisions with server.js/server_functions.js globals like events, npcs)
+		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/event_flags.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/projectiles.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/animations.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/achievements.js")));
@@ -493,6 +502,10 @@ async function init_game() {
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/precomputed_images.js")));
 
 		// Load geometry from MongoDB (parallel fetch, following qwazy pattern)
+		var active_event_flags = get_event_flags(gameplay);
+		var season_data = { maps: maps, items: items, monsters: monsters, drops: drops };
+		apply_event_flags(season_data, active_event_flags);
+		season_controls = { restore: season_data.event_restore || {}, end: end_event_flag };
 		var geometry = {};
 		var rpc = {};
 		for (var id in maps) {
@@ -534,6 +547,7 @@ async function init_game() {
 			skills: skills,
 			games: games,
 			events: events,
+			event_flags: active_event_flags,
 			images: precomputed.images,
 			multipliers: multipliers,
 		};
@@ -553,7 +567,8 @@ async function init_game() {
 		}
 		if (G) {
 			restore_generated_maps();
-			sprocess_game_data();
+			sprocess_game_data(apply_event_flags);
+			witch_cipher_restore();
 		}
 		try {
 			http_server.listen(server_def.local_port, server_def.local_ip);
@@ -651,6 +666,7 @@ init_game();
 async function reload_server(to_broadcast, change) {
 	try {
 		// Re-eval all design files (same scope trick as init_game)
+		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/event_flags.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/projectiles.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/animations.js")));
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/achievements.js")));
@@ -677,6 +693,12 @@ async function reload_server(to_broadcast, change) {
 		eval("" + fs.readFileSync(path.resolve(__dirname, "../design/precomputed_images.js")));
 
 		// Reload geometry from MongoDB
+		var active_event_flags = get_event_flags(gameplay);
+		if (JSON.stringify(active_event_flags) !== JSON.stringify(G.event_flags))
+			throw new Error("Event flags changed: restart the game server to replace seasonal maps and NPCs together.");
+		var season_data = { maps: maps, items: items, monsters: monsters, drops: drops };
+		apply_event_flags(season_data, active_event_flags);
+		season_controls = { restore: season_data.event_restore || {}, end: end_event_flag };
 		var geometry = {};
 		var rpc = {};
 		for (var id in maps) {
@@ -716,6 +738,7 @@ async function reload_server(to_broadcast, change) {
 			skills: skills,
 			games: games,
 			events: events,
+			event_flags: active_event_flags,
 			images: precomputed.images,
 			multipliers: multipliers,
 		};
@@ -727,7 +750,7 @@ async function reload_server(to_broadcast, change) {
 			odds: typeof odds !== "undefined" && odds,
 		};
 		restore_generated_maps();
-		sprocess_game_data();
+		sprocess_game_data(apply_event_flags);
 		prop_cache = {};
 		if (to_broadcast) {
 			broadcast("reloaded", { change: change || "" });
@@ -833,6 +856,8 @@ function player_to_server(player, place) {
 				"xy_resync",
 				"monster_stats_cache",
 				"monster_stats_dirty",
+				"wire_fields", // entity_wire's record of the last update sent [02/10/26]
+				"wire_revision",
 				"width",
 				"height",
 				"u",
@@ -949,6 +974,8 @@ function player_to_client(player, stranger) {
 			"luckm",
 			"encouragement",
 			"anniversary",
+			"witchcipher",
+			"trickortreat",
 			"map",
 			"in",
 			"isize",
@@ -1624,16 +1651,6 @@ function calculate_player_stats(player) {
 		max(player.dex - 160, 0) / 925.0 +
 		player.int / 1575.0; // 120 635 1275 is the original mix
 	// player.frequency=9000;
-	player.attack_ms = round(1000.0 / player.frequency);
-	if (player.last_attack_ms && player.attack_ms != player.last_attack_ms) {
-		// server_log("skill_timeout_correction: "+player.last_attack_ms+" to "+player.attack_ms+" timeout: "+(player.attack_ms-mssince(player.last.attack)))
-		player.socket.emit("skill_timeout", {
-			name: "attack",
-			ms: player.attack_ms - mssince(player.last.attack),
-			reason: "attack_ms",
-		});
-	}
-	player.last_attack_ms = player.attack_ms;
 	player.mp_cost +=
 		min(player.level, 80) * (player.mp_cost / 10.0) +
 		player.a_mp_cost +
@@ -1713,7 +1730,20 @@ function calculate_player_stats(player) {
 	if (player.s.dash) {
 		player.speed = 500;
 	}
+
 	calculate_common_stats(player);
+
+	player.attack_ms = round(1000.0 / player.frequency);
+	if (player.last_attack_ms && player.attack_ms != player.last_attack_ms) {
+		// server_log("skill_timeout_correction: "+player.last_attack_ms+" to "+player.attack_ms+" timeout: "+(player.attack_ms-mssince(player.last.attack)))
+		player.socket.emit("skill_timeout", {
+			name: "attack",
+			ms: player.attack_ms - mssince(player.last.attack),
+			reason: "attack_ms",
+		});
+	}
+
+	player.last_attack_ms = player.attack_ms;
 
 	player.tax =
 		(player.level > 80 && 0.01) ||
@@ -1758,6 +1788,8 @@ function calculate_player_stats(player) {
 	}
 	player.evasion = min(50, player.evasion);
 	player.reflection = min((player.s.reflection && 50) || 30, player.reflection);
+	// Attacks and skills never become free: Mana Cost Reduction stops at 80%
+	player.mp_reduction = min(80, player.mp_reduction);
 	player.speed = min(player.speed, player.cruise || 200000);
 	player.speed = round(max(5, player.speed));
 	if (!player.gold && player.gold !== 0) {
@@ -2024,14 +2056,14 @@ function add_item(player, new_item, args) {
 		new_item = create_new_item(new_item, args.q || 1);
 	}
 	if (args.p) {
-		new_item.p = args.p;
+		add_item_property(new_item, args.p);
 	}
 	if (
 		(args.m || args.r) &&
 		((G.items[new_item.name].upgrade && Math.random() < 1.0 / 500) ||
 			(G.items[new_item.name].compound && Math.random() < 1.0 / 20000))
 	) {
-		new_item.p = "shiny";
+		add_item_property(new_item, "shiny");
 		a = true;
 	}
 	if (G.items[new_item.name].s) {
@@ -2090,9 +2122,16 @@ function add_item(player, new_item, args) {
 		if (new_item.data) {
 			item.data = new_item.data;
 		} // "cxjar"
-		var num = add_item(mr, item, { m: 1 });
+		var merchant_num = add_item(mr, item, { m: 1 });
 		mr.socket.emit("game_log", item_message("server.item.found", item, {}, { color: "#64B867" }));
-		xy_emit(mr, "ui", { type: "+M", name: mr.name, item: cache_item(item), num: num, cevent: "mluck", event: "mluck" });
+		xy_emit(mr, "ui", {
+			type: "+M",
+			name: mr.name,
+			item: cache_item(item),
+			num: merchant_num,
+			cevent: "mluck",
+			event: "mluck",
+		});
 		resend(mr, "reopen+nc+inv");
 	}
 	if (args.announce !== false && (a || (a_score[new_item.name] || 0) < G.items[new_item.name].a) && !player.stealth) {
@@ -2777,6 +2816,7 @@ function issue_monster_awards(monster) {
 }
 
 function issue_monster_award(monster, award) {
+	graveyard_fallen(monster);
 	if (monster.cooperative) {
 		return issue_monster_awards(monster);
 	}
@@ -3281,6 +3321,21 @@ function commence_attack(attacker, target, atype) {
 		attacker.socket.emit("game_response", { response: "attack_failed", id: target.id });
 		return { failed: true, reason: "no_pvp", place: atype, id: target.id };
 	}
+	// A healing weapon must not bypass Purify's PvE target restriction.
+	if (
+		atype === "purify" &&
+		attacker.is_player &&
+		target.is_player &&
+		!is_in_pvp(target, true) &&
+		attacker !== target &&
+		!(attacker.owner && attacker.owner === target.owner) &&
+		!(attacker.party && attacker.party === target.party) &&
+		!(attacker.team && attacker.team === target.team) &&
+		!(attacker.guild && attacker.guild === target.guild)
+	) {
+		attacker.socket.emit("game_response", { response: "attack_failed", id: target.id });
+		return { failed: true, reason: "no_pvp", place: atype, id: target.id };
+	}
 
 	// DAMAGE
 	if (G.skills[atype].damage) {
@@ -3424,12 +3479,9 @@ function commence_attack(attacker, target, atype) {
 	} else if (atype == "mentalburst") {
 		attack = attacker.attack * G.skills[atype].damage_multiplier;
 	} else if (atype == "poisonarrow") {
-		info.conditions.push("poisoned");
+		if (!in_arr("poisoned", info.conditions)) info.conditions.push("poisoned");
 	} else if (attacker.is_monster && atype !== "rimeshatter") {
 		var rng = parseInt(Math.random() * 100 - 50);
-		if (attacker.s.poisonous) {
-			info.conditions.push("poisoned");
-		}
 		attacker.last.attack = future_ms(rng);
 	}
 
@@ -4026,17 +4078,30 @@ function complete_attack(attacker, target, info) {
 				}
 				if (def.purify) {
 					for (var name in target.s) {
+						if (name == "poisonous" && target.is_monster && (target.zone_stats || G.monsters[target.type]).poisonous)
+							continue;
 						if (
 							(G.conditions[name] &&
 								(G.conditions[name].buff || G.conditions[name].debuff) &&
 								!G.conditions[name].persistent) ||
 							target.s[name].citizens
 						) {
-							delete target.s[name];
-							attack += 400;
-							info.first_attack += 400;
-							target.cid++;
-							target.u = true;
+							var bonus = G.skills.purify.condition_damage;
+							if (name === "stack") {
+								var stacks = target.s[name].s;
+								stacks = Number.isFinite(stacks) ? max(0, min(G.skills.stack.max, floor(stacks))) : 0;
+								bonus = stacks
+									? bonus + min(stacks * G.skills.purify.stack_damage, G.skills.purify.stack_bonus_cap)
+									: 0;
+							}
+							attack += bonus;
+							info.first_attack += bonus;
+							// Rogue progress and burning monsters still contribute without being erased.
+							if (name !== "stack" && !(name === "burned" && target.is_monster)) {
+								delete target.s[name];
+								target.cid++;
+								target.u = true;
+							}
 						}
 					}
 				}
@@ -4480,7 +4545,14 @@ function complete_attack(attacker, target, info) {
 function target_player(monster, player, no_increase) {
 	if (is_cavalry(player)) return;
 	if (monster.zone_actor) {
-		if (player && cave_hostile(monster, player)) monster.zone_actor.prey = player;
+		if (player && cave_hostile(monster, player)) {
+			monster.zone_actor.prey = player;
+			if (monster.s.sleeping) {
+				delete monster.s.sleeping;
+				monster.u = true;
+				monster.cid++;
+			}
+		}
 		return;
 	}
 	// if(Dev) console.log("target_player: "+player.name+" "+(!no_increase));
@@ -4884,6 +4956,7 @@ function init_socket_io(socket_server, server_index) {
 		socket.fs = {}; // function list
 		socket.generated_protocol = Number(socket.handshake.query.map_protocol) || 0;
 		socket.generated_headless = socket.handshake.query.no_graphics === "1";
+		socket.entity_delta = socket.handshake.query.entity_delta === "1"; // the client rebuilds full entity packets from deltas [02/10/26]
 
 		if (!is_socket_allowed(socket)) {
 			disconnect_old_sockets(socket);
@@ -4925,14 +4998,14 @@ function init_socket_io(socket_server, server_index) {
 						var add = 1;
 						var len = JSON.stringify(data.message).length;
 						var mult = 1;
-						if (len > 100) {
-							add = 2;
-						} else if (len > 1000) {
-							add = 3;
+						if (len > 50000) {
+							add = 20;
 						} else if (len > 10000) {
 							add = 10;
-						} else if (len > 50000) {
-							add = 20;
+						} else if (len > 1000) {
+							add = 3;
+						} else if (len > 100) {
+							add = 2;
 						}
 						if (!Array.isArray(data.to)) {
 							data.to = [data.to];
@@ -5657,10 +5730,10 @@ function init_socket_io(socket_server, server_index) {
 					var R = await tx(
 						async () => {
 							var m = await tx_get(A.mail);
-							if (!m || !m.owner || !in_arr(A.owner, m.owner) || gf(m, "receiver") !== A.owner) ex("not_owner");
+							if (!m || !m.owner || !in_arr(A.owner, m.owner) || mail_receiver(m) !== A.owner) ex("not_owner");
 							if (!m.item) ex("no_item");
 							if (m.character && m.character !== A.character) ex("wrong_character");
-							if (m.taken) ex("already_taken");
+							if (m.taken && m.taken !== A.claim) ex("already_taken");
 							m.taken = A.claim;
 							await tx_save(m);
 							R.item = m.info.item;
@@ -5668,12 +5741,17 @@ function init_socket_io(socket_server, server_index) {
 						},
 						{ mail: mail, owner: player_owner, character: player.real_id, claim: claim },
 						3,
-					);
+					).catch(function (error) {
+						log_trace("mail claim transaction", error);
+						return { failed: true, reason: "exception" };
+					});
+					if (R.failed && R.reason == "exception") {
+						var latest_mail = await get(data.id);
+						if (latest_mail && latest_mail.taken === claim)
+							R = { success: true, item: latest_mail.info.item, cave_award: latest_mail.cave_award === true };
+						else if (latest_mail && latest_mail.taken) R.reason = "already_taken";
+					}
 					if (R.failed) {
-						if (R.reason == "exception") {
-							var latest_mail = await get(data.id);
-							if (latest_mail && latest_mail.taken) R.reason = "already_taken";
-						}
 						if (in_arr(R.reason, ["already_taken", "no_item"])) {
 							return finish_mail_item("mail_item_already_taken", { failed: true, reason: R.reason });
 						}
@@ -5724,160 +5802,15 @@ function init_socket_io(socket_server, server_index) {
 		});
 		socket.on("mail", function (data) {
 			var player = players[socket.id];
-			if (!player) {
-				return;
-			}
-			if (mode.prevent_external) {
-				return fail_response("not_in_this_server");
-			}
-			var item = null;
-			var retries = 1;
-			function finish_mail(response, extra) {
-				if (!players[socket.id]) return;
-				socket.emit(
-					"game_response",
-					Object.assign(
-						{
-							response: response,
-							to: data.to,
-							request_id: data.request_id,
-							cevent: response,
-						},
-						extra || {},
-					),
-				);
-			}
-			if (player.gold < 48000) {
-				return fail_response("gold_not_enough");
-			}
-			if (data.item && player.items[0] && player.items[0].name != "placeholder") {
-				if (player.items[0].l) {
-					return fail_response("item_locked");
-				}
-				if (player.items[0].b || player.items[0].v) {
-					return fail_response("item_blocked");
-				}
-				if (player.gold < 360000) {
-					return fail_response("gold_not_enough");
-				}
-				player.gold -= 360000;
-				item = JSON.stringify(player.items[0]);
-				player.items[0] = player.citems[0] = null;
-				retries = 3;
-			} else {
-				player.gold -= 48000;
-			}
-			(async function () {
-				try {
-					var player = players[socket.id];
-					if (!player) return;
-					var simplified_to = data.to.toLowerCase().replace(/\s+/g, "");
-					var to_char = await db.collection("character").findOne({ name: simplified_to });
-					if (!to_char) {
-						var player = players[socket.id];
-						if (player) finish_mail("mail_failed", { reason: "nocharacter" });
-						if (player && item && player.esize) {
-							var r = JSON.parse(item);
-							add_item(player, r);
-							resend(player, "reopen");
-						} else if (item) console.log("#M unsent mail, lost item: " + item);
-						return;
-					}
-					var user2 = await get(to_char.owner);
-					var user1 = player.owner ? await get(player.owner) : null;
-					if (!user2) {
-						var player = players[socket.id];
-						if (player) finish_mail("mail_failed", { reason: "nouser" });
-						if (player && item && player.esize) {
-							var r = JSON.parse(item);
-							add_item(player, r);
-							resend(player, "reopen");
-						} else if (item) console.log("#M unsent mail, lost item: " + item);
-						return;
-					}
-					if (!user1) {
-						var player = players[socket.id];
-						if (player) finish_mail("mail_failed", { reason: "nouser" });
-						if (player && item && player.esize) {
-							var r = JSON.parse(item);
-							add_item(player, r);
-							resend(player, "reopen");
-						} else if (item) console.log("#M unsent mail, lost item: " + item);
-						return;
-					}
-					var subject = ("" + (data.subject || "")).substring(0, 74);
-					var msg = ("" + (data.message || "")).substring(0, 1000);
-					var rid = randomStr(50);
-					var R = await tx(
-						async () => {
-							var existing = await tx_get("ML_" + A.rid);
-							if (existing) {
-								R.mail = existing;
-								return;
-							}
-							R.mail = {
-								_id: "ML_" + A.rid,
-								created: new Date(),
-								read: false,
-								item: false,
-								taken: false,
-								fro: A.fro,
-								to: A.to_name,
-								type: "mail",
-								owner: [get_id(A.user1), get_id(A.user2)],
-								info: {
-									message: A.msg,
-									subject: A.subject,
-									sender: get_id(A.user1),
-									receiver: get_id(A.user2),
-								},
-								blobs: ["info"],
-							};
-							if (A.item) {
-								R.mail.item = true;
-								R.mail.info.item = A.item;
-								R.mail.taken = false;
-							}
-							await tx_save(R.mail);
-						},
-						{
-							rid: rid,
-							fro: player.name,
-							to_name: data.to,
-							user1: user1,
-							user2: user2,
-							subject: subject,
-							msg: msg,
-							item: item,
-						},
-					);
-					if (R.failed) {
-						var player = players[socket.id];
-						if (player) finish_mail("mail_failed", { reason: "unknown" });
-						if (player && item && player.esize) {
-							var r = JSON.parse(item);
-							add_item(player, r);
-							resend(player, "reopen");
-						} else if (item) console.log("#M unsent mail, lost item: " + item);
-						return;
-					}
-					try {
-						await update_mail_count(user2);
-					} catch (e) {
-						console.error("send_mail ud error", e);
-					}
-					var player = players[socket.id];
-					if (player) finish_mail("mail_sent");
-				} catch (e) {
-					console.error("send_mail error", e);
-					var player = players[socket.id];
-					if (player) finish_mail("mail_failed", { reason: "coms_failure" });
-					if (item) console.log("#M unsent mail, lost item: " + item);
-				}
-			})();
-			resend(player, "reopen");
-			success_response("mail_sending", { sucess: false, in_progress: true, received: "unknown" });
+			if (!player) return;
+			if (mode.prevent_external) return fail_response("not_in_this_server");
+			if (!data || typeof data.to !== "string" || !data.to.trim() || data.to.length > 100)
+				return fail_response("invalid");
+			if (mail_send_busy(player)) return fail_response("in_progress");
+			void send_player_mail(player, data);
+			success_response("mail_sending", { success: false, in_progress: true, received: "unknown" });
 		});
+
 		socket.on("leave", function (data) {
 			var player = players[socket.id];
 			if (!player) {
@@ -6467,6 +6400,8 @@ function init_socket_io(socket_server, server_index) {
 			}
 			// if(player.esize<=0) return socket.emit("game_response","inventory_full");
 			var item = player.items[data.num];
+			if (item && item.l) return fail_response("item_locked");
+			if (item && item.b) return fail_response("item_blocked");
 			if (item && item.level && G.items[item.name].compound) {
 				var cost = min(50000000, calculate_item_value(item) * 10);
 				if (player.gold < cost) {
@@ -6500,12 +6435,6 @@ function init_socket_io(socket_server, server_index) {
 			}
 			if (!item || !G.dismantle[item.name]) {
 				return fail_response("dismantle_cant");
-			}
-			if (item.l) {
-				return fail_response("item_locked");
-			}
-			if (item.b) {
-				return fail_response("item_blocked");
 			}
 			if (player.gold < G.dismantle[item.name].cost) {
 				return fail_response("gold_not_enough");
@@ -6631,41 +6560,45 @@ function init_socket_io(socket_server, server_index) {
 			success_response("craft", { num: i, name: crafted.name, cevent: true });
 		});
 		socket.on("exchange", function (data) {
+			data = data || {};
+			const fail = (reason) => fail_response(reason, { request_id: data.request_id });
 			const player = players[socket.id];
 			if (!player) {
-				return fail_response("invalid");
+				return fail("invalid");
 			}
+			if (data.request_id !== undefined && (typeof data.request_id !== "string" || data.request_id.length > 128))
+				return fail("invalid");
 			if (player.q.exchange) {
-				return fail_response("exchange_existing");
+				return fail("exchange_existing");
 			}
 			if (player.user) {
-				return fail_response("cant_in_bank");
+				return fail("cant_in_bank");
 			}
 
 			const item = player.items[data.item_num];
 			if (!item) {
-				return fail_response("invalid");
+				return fail("invalid");
 			}
 			if (item.l) {
-				return fail_response("item_locked");
+				return fail("item_locked");
 			}
 			const def = G.items[item.name];
 			const suffix = def && (def.compound || def.upgrade) ? item.level || 0 : "";
 			const dropId = item.name + suffix;
 			if (!def || !def.e || !D.drops[dropId]) {
-				return fail_response("invalid");
+				return fail("invalid");
 			}
 			if (player.esize <= 0 && (item.q || 1) != def.e) {
-				return fail_response("inventory_full");
+				return fail("inventory_full");
 			}
 			if (!player.computer) {
 				const dist = distance(player, def.quest ? G.quests[def.quest] : G.maps.main.exchange);
 				if (dist > B.sell_dist) {
-					return fail_response("distance");
+					return fail("distance");
 				}
 			}
 			if (def.e > 1 && item.q < def.e) {
-				return fail_response("exchange_notenough");
+				return fail("exchange_notenough");
 			}
 			player.p.stats.exchanges[dropId] = (player.p.stats.exchanges[dropId] || 0) + 1;
 			consume(player, data.item_num, def.e);
@@ -6674,14 +6607,13 @@ function init_socket_io(socket_server, server_index) {
 			if (player.s.massexchange) {
 				ms /= 2;
 				delete player.s.massexchange;
-				ex = "+u+cid";
 			}
 			if (player.s.massexchangepp) {
 				ms /= 10;
 				delete player.s.massexchangepp;
-				ex = "+u+cid";
 			}
 			player.q.exchange = { ms: ms, len: ms, name: item.name, id: dropId, q: def.e, num: num };
+			if (data.request_id) player.q.exchange.request_id = data.request_id;
 			if (suffix) {
 				player.q.exchange.s = suffix;
 			}
@@ -6692,7 +6624,7 @@ function init_socket_io(socket_server, server_index) {
 				player.q.exchange.qs = def.quest;
 			}
 			resend(player, "reopen+nc+inv");
-			success_response({ success: false, in_progress: true, num: num });
+			success_response({ success: false, in_progress: true, num: num, request_id: data.request_id });
 		});
 		socket.on("exchange_buy", function (data) {
 			//console.log(JSON.stringify(data));
@@ -6945,22 +6877,25 @@ function init_socket_io(socket_server, server_index) {
 					return socket.emit("game_response", { response: "item_locked", place: "compound", failed: true });
 				}
 
+				var new_level = (item0.level || 0) + 1;
+				var igrade = def.igrade;
+				if ((item0.level || 0) >= 3) {
+					igrade = calculate_item_grade(def, { name: item0.name, level: (item0.level || 0) - 2 });
+				}
+				if (!Number.isFinite(D.compounds[igrade] && D.compounds[igrade][new_level])) {
+					return socket.emit("game_response", "compound_cant");
+				}
 				if (!data.calculate) {
 					consume_one(player, data.scroll_num);
 				}
 
-				var new_level = (item0.level || 0) + 1;
 				var probability = 1;
 				var oprobability = 1;
 				var result = 0;
 				var proc = 0;
 				var grace = 0;
-				var igrade = def.igrade;
 				var high = false;
 				var grace_bonus = 0;
-				if ((item0.level || 0) >= 3) {
-					igrade = calculate_item_grade(def, { name: item0.name, level: (item0.level || 0) - 2 });
-				}
 
 				delete player.p.c_item;
 				delete player.p.c_itemx;
@@ -7208,6 +7143,13 @@ function init_socket_io(socket_server, server_index) {
 				}
 
 				var new_level = (item.level || 0) + 1;
+				if (
+					scroll &&
+					scroll_def.type == "uscroll" &&
+					!Number.isFinite(D.upgrades[item_def.igrade] && D.upgrades[item_def.igrade][new_level])
+				) {
+					return socket.emit("game_response", "upgrade_cant");
+				}
 				var probability = 1;
 				var oprobability = 1;
 				var grace = 0;
@@ -7281,7 +7223,7 @@ function init_socket_io(socket_server, server_index) {
 						};
 
 						if (result <= chance) {
-							item.p = "shiny";
+							add_item_property(item, "shiny");
 							player.p.u_item = item;
 						} else {
 							player.p.u_item = item;
@@ -7701,6 +7643,13 @@ function init_socket_io(socket_server, server_index) {
 				return fail_response("invalid");
 			}
 			var trading = data.slot && get_trade_slots(player).includes(data.slot) && !data.consume;
+			// Reverse dragging may only replace the occupied source slot, never use an item or choose another slot.
+			if (
+				data.swap &&
+				(data.consume || trading || !player.slots[data.slot] || can_equip_item(player, def, data.slot) !== data.slot)
+			) {
+				return fail_response("cant_equip");
+			}
 			if (
 				player.s.stunned &&
 				!trading &&
@@ -8076,15 +8025,18 @@ function init_socket_io(socket_server, server_index) {
 		});
 		socket.on("sell", function (data) {
 			var player = players[socket.id];
+			if (!player || player.user) {
+				return fail_response("cant_in_bank");
+			}
 			var num = data.num;
 			var item = player.items[data.num];
 			var quantity = min(max(parseInt(data.quantity) || 0, 1), (item && item.q) || 1);
 			var can_reach = false;
-			if (!player || player.user) {
-				return fail_response("cant_in_bank");
-			}
 			if (!item) {
 				return fail_response("no_item");
+			}
+			if (data.item !== undefined && !seen_item_matches(item, data.item)) {
+				return fail_response("item_changed");
 			}
 			if (item.name == "placeholder") {
 				return fail_response("item_placeholder");
@@ -8725,6 +8677,9 @@ function init_socket_io(socket_server, server_index) {
 			}
 			var item = player.items[data.num];
 			var name = player.items[data.num].name;
+			if (data.item !== undefined && !seen_item_matches(item, data.item)) {
+				return fail_response("item_changed", { num: data.num });
+			}
 			data.q = min(max(parseInt(data.q) || 0, 1), (item && item.q) || 1);
 			if (item.name == "placeholder") {
 				return fail_response("item_placeholder", { num: data.num });
@@ -8877,7 +8832,7 @@ function init_socket_io(socket_server, server_index) {
 			if (!buyer || buyer.npc || is_invis(buyer)) {
 				return fail_response("buyer_gone");
 			}
-			if (player.user) {
+			if (buyer.user) {
 				return fail_response("cant_in_bank");
 			}
 			if (distance(buyer, player, true) > B.dist) {
@@ -8887,7 +8842,7 @@ function init_socket_io(socket_server, server_index) {
 				return fail_response("hmm");
 			}
 			var item = buyer.slots[data.slot];
-			if (!item || (data.rid && item.rid != data.rid)) {
+			if (!item || (data.rid && item.rid != data.rid) || !get_trade_slots(buyer).includes(data.slot)) {
 				return fail_response("item_gone");
 			}
 			if (item.name == "placeholder") {
@@ -9016,7 +8971,7 @@ function init_socket_io(socket_server, server_index) {
 				return fail_response("hmm");
 			}
 			var item = seller.slots[data.slot];
-			if (!item || (data.rid && item.rid != data.rid)) {
+			if (!item || (data.rid && item.rid != data.rid) || !get_trade_slots(seller).includes(data.slot)) {
 				return fail_response("item_gone");
 			}
 			if (item.name == "placeholder") {
@@ -9954,7 +9909,8 @@ function init_socket_io(socket_server, server_index) {
 					return fail_response("no_target", data.name);
 				}
 				const isMonster =
-					!(gSkill.target == "player" && players[id_to_id[data.id]]) && "" + parseInt(data.id) === "" + data.id;
+					!((gSkill.target == "player" || gSkill.target === true) && players[id_to_id[data.id]]) &&
+					"" + parseInt(data.id) === "" + data.id;
 				const isPlayer = !isMonster;
 				const canTargetMonster = gSkill.target == "monster" || gSkill.target === true;
 				const canTargetPlayer = gSkill.target == "player" || gSkill.target === true;
@@ -9971,10 +9927,12 @@ function init_socket_io(socket_server, server_index) {
 					target = instances[player.in].monsters[data.id];
 				} else {
 					// TODO: Consider adding game_response, too
+					if (player.seen) delete player.seen[data.id]; // the client forgets it, so the next update must be complete [02/10/26]
 					return socket.emit("disappear", { id: data.id, place: data.name, reason: "not_there" });
 				}
 				if (is_invis(target) || (!gSkill.global && distance(target, player) > B.max_vision)) {
 					// TODO: Consider adding game_response, too
+					if (player.seen) delete player.seen[data.id];
 					return socket.emit("disappear", { id: data.id, place: data.name, reason: "not_there" });
 				}
 			}
@@ -11103,6 +11061,31 @@ function init_socket_io(socket_server, server_index) {
 				return;
 			}
 			if (data.type === "cavalry") return cavalry_interaction(player, data, socket);
+			if (data.type === "witchcipher" || data.type === "knock") {
+				var interaction = data.type;
+				Promise.resolve()
+					.then(() =>
+						interaction === "knock" ? trick_or_treat_knock(player, data) : witch_cipher_interaction(player, data),
+					)
+					.then((result) =>
+						socket.emit(
+							"game_response",
+							Object.assign({ response: "data", place: "interaction", interaction, request_id }, result),
+						),
+					)
+					.catch((error) => {
+						log_trace(interaction, error);
+						socket.emit("game_response", {
+							response: "data",
+							place: "interaction",
+							interaction,
+							request_id,
+							failed: true,
+							reason: "invalid",
+						});
+					});
+				return;
+			}
 			if (data.type == "merrit_info") {
 				market_patron_info(player);
 				return;
@@ -11664,7 +11647,10 @@ function init_socket_io(socket_server, server_index) {
 					R.entity = await tx_get(A[0].character);
 					if (!R.entity) ex("no_character");
 					if (!R.owner || !R.owner.info.auths.includes(A[0].auth)) ex("password_issue");
+					if (is_account_blocked(R.owner)) ex("banned");
 					if (R.entity.owner !== get_id(R.owner)) ex("no_character");
+					if (!is_safe_character_name(R.entity.name) || !is_safe_character_name(R.entity.info && R.entity.info.name))
+						ex("invalid_name");
 					if (A[0].mainframe_session !== undefined) {
 						var assignment = await tx_get("MK_mainframe_assignment-" + get_id(R.entity));
 						if (!is_valid_mainframe_session(assignment, A[0].mainframe_session)) ex("mainframe_issue");
@@ -11970,6 +11956,7 @@ function init_socket_io(socket_server, server_index) {
 					socket.disconnect();
 				} else {
 					server_information.remember(player);
+					event_player_status(player);
 					var cdata = player_to_client(player);
 					player.ipass = cdata.ipass = randomStr(12);
 					player.last_ipass = new Date();
@@ -11996,6 +11983,15 @@ function init_socket_io(socket_server, server_index) {
 					cdata.entities = send_all_xy(player, { raw: true });
 					if (players[socket.id] !== player || player.dc || !socket.connected) return;
 					socket.emit("start", cdata);
+					if (!player.mainframe && !data.no_html) {
+						get(player.owner)
+							.then(function (current_owner) {
+								if (current_owner && current_owner.platform === "steam") return reward_referrer_logic(current_owner);
+							})
+							.catch(function (error) {
+								console.error("reward_referrer entry error", error);
+							});
+					}
 					if (!gf(owner, "tracktrix_mail_sent", false))
 						send_tracktrix_mail(owner, player.name)
 							.then(function (count) {
@@ -12675,6 +12671,15 @@ function init_socket_io(socket_server, server_index) {
 				if (simple_distance(player, { map: "winterland", x: 820, y: 425 }) > 100) {
 					transport_player_to(player, "winterland", [820, 425, 0, 10]);
 				}
+			} else if (data.name == "horseman" && events.horseman) {
+				if (simple_distance(player, { map: "halloween", x: -405, y: -1560 }) > 200) {
+					transport_player_to(player, "halloween", [-405, -1560, 0, 40]);
+				}
+			} else if (data.name == "graveyard" && events.graveyard) {
+				// Below the graveyard's stairs, out of the Mummies' reach
+				if (simple_distance(player, { map: "spookytown", x: 255, y: -1030 }) > 200) {
+					transport_player_to(player, "spookytown", [255, -1030, 0, 30]);
+				}
 			} else if (data.name == "abtesting" && E.abtesting) {
 				if (player.map != "abtesting" || !player.team) {
 					if (
@@ -13120,15 +13125,8 @@ function init_socket_io(socket_server, server_index) {
 				}
 				// if(!server.live) { server_log('Ignoring the "disconnect" of '+player.name,1); return; }
 
-				try {
-					if (player.moving && distance(player, { x: player.going_x, y: player.going_y }) < 800) {
-						player.x = player.going_x;
-						player.y = player.going_y;
-					}
-				} catch (e) {
-					log_trace("#X DCERRORM", e);
-				}
-				// to not get stuck on out-of-bounds corners
+				// Save the last server position, never the client's untraveled destination.
+				player.moving = false;
 
 				try {
 					if (player.party) {
@@ -13727,6 +13725,37 @@ function start_moving_element(monster) {
 	calculate_vxy(monster);
 }
 
+// #performance spree [02/10/26]: entity deltas, done right this time - a client that asks for them (handshake entity_delta=1) gets
+// only the fields that changed since the update it already holds, and rebuilds the exact full packet before any handler sees it (js/game.js decode_entities)
+// ~75% fewer entity bytes at EU I's population - what permessage-deflate saved, without zlib's CPU; other clients keep getting full packets
+// each serialised update gets a revision; a viewer gets the delta only when seen[id] is exactly the previous one, anything else (new in view, skipped tick, refresh) gets the full entity
+var entity_revision = 1;
+function entity_wire(entry) {
+	var data = typeof entry.data.toJSON === "function" ? entry.data.toJSON() : entry.data, // what JSON.stringify(entry.data) would encode
+		entity = entry.entity,
+		previous = entity.wire_fields,
+		fields = Object.create(null),
+		full = "",
+		delta = "",
+		removed = [];
+	for (var key in data) {
+		var value = JSON.stringify(data[key]);
+		if (value === undefined) continue; // JSON.stringify skips these too, so full stays byte-identical to JSON.stringify(data)
+		var pair = JSON.stringify(key) + ":" + value;
+		fields[key] = value;
+		full += (full && ",") + pair;
+		if (key !== "id" && (!previous || previous[key] !== value)) delta += "," + pair;
+	}
+	if (previous) for (var old in previous) if (!(old in fields)) removed.push(old);
+	entry.json = "{" + full + "}";
+	entry.delta = previous
+		? '{"id":' + JSON.stringify(entity.id) + ',"~":' + JSON.stringify(removed) + delta + "}"
+		: null;
+	entry.base = entity.wire_revision;
+	entry.revision = entity.wire_revision = ++entity_revision;
+	entity.wire_fields = fields;
+}
+
 function send_xy_updates(player, list) {
 	// third version, very refined - deleted older versions after the "instances" commit
 	// #NOTE: this routine is the bottlenck, unclear whether anything can be done about it, test with mode.nopush [31/07/18]
@@ -13735,6 +13764,7 @@ function send_xy_updates(player, list) {
 	// player.seen records what each client was sent, removals follow it (remove_entity_emit) - the phantom entities fix
 	if (mode.noxy || player.is_npc) return;
 	var seen = player.seen || (player.seen = Object.create(null));
+	var deltas = player.socket.entity_delta;
 	var shed = socket_backlog(player.socket, B.xy_backlog_limit) > B.xy_backlog_limit;
 	// a skipped tick can lose an entity's last update for good - resync the whole view once the socket drains
 	if (!shed && player.xy_resync) {
@@ -13757,11 +13787,11 @@ function send_xy_updates(player, list) {
 			continue;
 		}
 		if (shed) continue;
-		// complete payloads only - the client replaces pending packets between draws and reads x/y/going_x/going_y straight off each one, deltas broke both
-		if (entry.json === undefined) entry.json = JSON.stringify(entry.data);
-		seen[entity.id] = 1;
-		if (entity.is_monster) monsters_json += (monsters_json && ",") + entry.json;
-		else players_json += (players_json && ",") + entry.json;
+		if (entry.json === undefined) entity_wire(entry);
+		var wire = deltas && entry.delta && seen[entity.id] === entry.base ? entry.delta : entry.json;
+		seen[entity.id] = entry.revision;
+		if (entity.is_monster) monsters_json += (monsters_json && ",") + wire;
+		else players_json += (players_json && ",") + wire;
 	}
 	perfc.sxyu += list.length;
 	if (shed) {
@@ -13964,7 +13994,11 @@ function defeated_by_a_monster(attacker, player) {
 		player.socket.emit("game_log", localization.message("server.game_log.lost_1_level", {}));
 	}
 	player.socket.emit("game_response", { response: "defeated_by_a_monster", xp: lost_xp, monster: attacker.type });
-	if (attacker.target) {
+	// Only drop pursuit when the dead player was the monster's target.
+	// Splash / packed kills of bystanders used to clear tank aggro via
+	// `if (attacker.target)` — e.g. mrpumpkin targeting a priest, killing a
+	// stacked merchant, then stop_pursuit(defeat) → priest lost aggro.
+	if (attacker.target === player.name) {
 		stop_pursuit(attacker, { force: true, cause: "defeat" });
 	}
 	rip(player);
@@ -14871,7 +14905,12 @@ function update_instance(instance) {
 					if (player.items[ref.num] && player.items[ref.num].name == "placeholder") {
 						player.citems[ref.num] = player.items[ref.num] = null;
 					}
-					exchange(player, ref.id, { v: ref.v });
+					var outcome = exchange(player, ref.id, { v: ref.v });
+					if (ref.request_id)
+						player.hitchhikers.push([
+							"game_response",
+							Object.assign({ response: "data", place: "exchange", request_id: ref.request_id }, outcome),
+						]);
 					if (ref.qs) {
 						player.socket.emit("game_response", { response: ref.qs + "_success", suffix: ref.s || "" });
 					} else {
@@ -16151,6 +16190,7 @@ setInterval(function () {
 			players[id].pdps *= 0.8;
 			player.p.minutes++;
 			trade_slots.forEach(function (slot) {
+				if (!mode.prevent_external && mail_send_busy(player)) return;
 				if (player.slots[slot] && player.slots[slot].giveaway) {
 					player.slots[slot].giveaway--;
 					if (!player.slots[slot].giveaway) {
@@ -16167,82 +16207,12 @@ setInterval(function () {
 							player.slots[slot].giveaway = 5;
 						} else {
 							if (!mode.prevent_external) {
-								var winner = random_one(list);
 								var item = player.slots[slot];
-								player.slots[slot] = null;
-								delete item.list;
-								delete item.giveaway;
-								delete item.registry;
-								item.gf = player.name;
-								item.src = "gva";
-								var mitem = JSON.stringify(item);
-								add_to_trade_history(player, "giveaway", winner.name, cache_item(item, true));
-								xy_emit(
-									player,
-									"game_log",
-									localization.message(
-										"server.game_log.won_s_giveaway_of",
-										{ winner: String(winner.name), player: String(player.name), item: String(G.items[item.name].name) },
-										{ color: "#42A0DC", confetti: winner.name },
-									),
-								);
-								// send giveaway mail with item
-								(async function () {
-									try {
-										var simplified_to = winner.name.toLowerCase().replace(/\s+/g, "");
-										var to_char = await db.collection("character").findOne({ name: simplified_to });
-										if (!to_char) {
-											console.log("#M giveaway no char: " + winner.name);
-											return;
-										}
-										var user2 = await get(to_char.owner);
-										var user1 = player.owner ? await get(player.owner) : null;
-										var rid = randomStr(50);
-										var giveaway_msg = phrase(
-											"server.mail.giveaway_message",
-											{
-												player: player.name,
-												participants: list
-													.map(function (entry) {
-														return entry.name;
-													})
-													.join(", "),
-											},
-											localization.normalize(user2.language) || "en",
-										);
-										await insert({
-											_id: "ML_" + rid,
-											created: new Date(),
-											read: false,
-											item: true,
-											taken: false,
-											fro: player.name,
-											to: winner.name,
-											type: "mail",
-											owner: [get_id(user1), get_id(user2)],
-											info: {
-												message: giveaway_msg,
-												subject: phrase(
-													"server.mail.giveaway_subject",
-													{},
-													localization.normalize(user2.language) || "en",
-												),
-												sender: get_id(user1),
-												receiver: get_id(user2),
-												item: mitem,
-											},
-											blobs: ["info"],
-										});
-										try {
-											await update_mail_count(user2);
-										} catch (e) {
-											console.error("giveaway mail ud error", e);
-										}
-									} catch (e) {
-										console.log("#M unsent giveaway, lost item: " + mitem);
-										console.error(e);
-									}
-								})();
+								var winner = item.mail_winner || random_one(list).name;
+								// Keep the chosen winner and prize while their mailbox is full.
+								item.mail_winner = winner;
+								item.giveaway = 1;
+								send_player_mail(player, { to: winner, item: true }, slot);
 							} else {
 								var winner = random_one(list);
 								var item = player.slots[slot];
@@ -16634,6 +16604,7 @@ function sync_loop() {
 	async function mount_call(player) {
 		// player.last_sync=new Date(); - sync doesn't happen at mount - maybe it should [16/08/17] it does now [06/03/26]
 		if (
+			player.mail_sending ||
 			player.merrit_grant ||
 			player.dc ||
 			player.mount_call ||
@@ -16696,6 +16667,7 @@ function sync_loop() {
 	// unmount_call: Bank exit using tx() (following qwazy pattern)
 	async function unmount_call(player) {
 		if (
+			player.mail_sending ||
 			player.merrit_grant ||
 			player.dc ||
 			player.mount_call ||
@@ -16761,6 +16733,7 @@ function sync_loop() {
 	// sync_call: Character sync using tx() (following qwazy pattern)
 	async function sync_call(player) {
 		if (
+			player.mail_sending ||
 			player.merrit_grant ||
 			player.dc ||
 			player.mount_call ||
@@ -16815,7 +16788,16 @@ function sync_loop() {
 	}
 	// stop_call: Character logout using tx() (following qwazy pattern)
 	async function stop_call(player) {
-		if (player.stop_call || player.sync_call || player.mount_call || player.unmount_call || player.merrit_grant) return;
+		if (
+			player.stop_call ||
+			player.sync_call ||
+			player.mount_call ||
+			player.unmount_call ||
+			player.mail_sending ||
+			player.merrit_grant ||
+			player.knocking // a Trick or Treat knock is settling its rewards
+		)
+			return;
 		var bank = (player.user && true) || false;
 		player.stopping = new Date();
 		init_player_exit(player);
@@ -16870,7 +16852,7 @@ function sync_loop() {
 			});
 			try {
 				var user = await get(player.owner);
-				if (user)
+				if (user && user.platform === "mas")
 					reward_referrer_logic(user).catch(function (e) {
 						console.error("reward_referrer error", e);
 					});
@@ -16890,7 +16872,9 @@ function sync_loop() {
 		try {
 			check_for_delays(player);
 
-			if (player.merrit_grant) {
+			if (player.mail_sending) {
+				recover_mail_send(player);
+			} else if (player.merrit_grant) {
 				market_patron_recover(player);
 			} else if (player.unmount_call || player.mount_call || player.sync_call || player.stop_call) {
 			} else if (!server.live) {
@@ -16914,7 +16898,9 @@ function sync_loop() {
 		try {
 			check_for_delays(player);
 
-			if (player.merrit_grant) {
+			if (player.mail_sending) {
+				recover_mail_send(player);
+			} else if (player.merrit_grant) {
 				market_patron_recover(player);
 			} else if (player.unmount_call || player.mount_call || player.sync_call || player.stop_call) {
 			} else if (!player.stop_call) {

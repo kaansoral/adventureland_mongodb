@@ -72,10 +72,31 @@ server.status.abtesting.<span data-status-field="B">B</span></div>
 	<span data-status-field="time_offset">time_offset</span>: 0,
 	<span data-status-field="dailies">dailies</span>: [13, 20],
 	<span data-status-field="nightlies">nightlies</span>: [23],
-	<span data-status-field="night">night</span>: false
+	<span data-status-field="night">night</span>: false,
+	<span data-status-field="realm">realm</span>: "USII",
+	<span data-status-field="server_time">server_time</span>: 1792266037212,
+	<span data-status-field="events">events</span>: [{ id: "USII-2026-10-18-1800-witchcipher", event: "witchcipher", at: 1792278000000, status: "scheduled" }],
+	<span data-status-field="repeats">repeats</span>: [{ event: "graveyard", at: 1792269000000, status: "scheduled", season: "halloween", every: 7200000 }]
 };</div>
 
 <p>{{ phrase_html("docs.articles.data-server-status.schedule-contains-server-clock-information-used-by-daily") }}</p>
+
+<p>{{ phrase_html("docs.articles.data-server-status.schedule-lineup") }}</p>
+
+<p>{{ phrase_html("docs.articles.data-server-status.witchcipher") }}</p>
+<div class="code">show_json(server.status.witchcipher);
+// live, phase: "gathering" or "brewing"; start, gather_end, end (Unix milliseconds)
+// board: the last 12 mixes, each { mix, right, moved }
+// possible: how many recipes still fit every clue
+// cracked: { by, recipe } once someone finds it</div>
+
+<p>{{ phrase_html("docs.articles.data-server-status.graveyard") }}</p>
+<div class="code">show_json(server.status.graveyard);
+// live, map, x, y, start, wave, waves, left
+// gargoyle: true once it wakes, with hp, max_hp, target and end</div>
+
+<p>{{ phrase_html("docs.articles.data-server-status.event-ends") }}</p>
+<div class="code">show_json(server.status.event_ends); // { halloween: 1793664000000 }</div>
 
 <p>{{ phrase_html("docs.articles.data-server-status.seasonal-and-temporary-state") }}</p>
 
@@ -89,6 +110,10 @@ server.status.<span data-status-field="blessed_by">blessed_by</span>
 server.status.<span data-status-field="blessed_minutes">blessed_minutes</span></div>
 
 <p>{{ phrase("docs.articles.data-server-status.seasonal-entries-are-usually-truthy-while-their-season") }}</p>
+
+<p>{{ phrase_html("docs.articles.data-server-status.event-flags") }}</p>
+
+<div class="code">show_json(server.status.event_flags);</div>
 
 <p>{{ phrase_html("docs.articles.data-server-status.compatibility") }}</p>
 

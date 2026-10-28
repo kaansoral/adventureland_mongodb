@@ -1,0 +1,105 @@
+<div class="title">{{ phrase("event.witchcipher.name") }}</div>
+<div class="guide-spawn witch-hero"></div>
+<p>{{ phrase("docs.guide.event-witchcipher.intro") }}</p>
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.event-witchcipher.ingredients") }}</div>
+<div class="witch-ingredients"></div>
+<p>{{ phrase("docs.guide.event-witchcipher.gathering") }}</p>
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.event-witchcipher.cauldron") }}</div>
+<div class="witch-example"></div>
+<p>{{ phrase("docs.guide.event-witchcipher.clues") }}</p>
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.event-witchcipher.payout") }}</div>
+<div class="witch-payout"></div>
+<p>{{ phrase("docs.guide.event-witchcipher.pay_limit") }}</p>
+<div class="divider"></div>
+<div class="title witch-parcel-title"></div>
+<div class="guide-drops witchparcel-drops"></div>
+<p>{{ phrase("docs.guide.event-witchcipher.parcels") }}</p>
+<div class="divider"></div>
+<div class="title">{{ phrase("docs.guide.event-witchcipher.recipes") }}</div>
+<div class="witch-recipes"></div>
+<div class="divider"></div>
+<div class="title">CODE</div>
+<p>{{ phrase("docs.guide.event-witchcipher.code") }}</p>
+<!-- prettier-ignore -->
+<div class="code" id="witchcipher-code">var NAMES = ["verdantspore", "frostscale", "embercoal", "gloomfeather"];
+
+// How many ingredients of a mix sit in the same place as in a recipe: the Witch's clue.
+function right(recipe, mix) {
+    var count = 0;
+    for (var i = 0; i &lt; mix.length; i++) if (recipe[i] == mix[i]) count++;
+    return count;
+}
+
+// The first recipe your ingredients can make that is not on the board yet and fits every clue.
+// After a crack the board starts over.
+function next_mix(cipher) {
+    for (var n = 0; n &lt; 1024; n++) {
+        var mix = [0, 1, 2, 3, 4].map(function (i) { return NAMES[Math.floor(n / Math.pow(4, i)) % 4]; });
+        var have = NAMES.every(function (name) { return quantity(name) &gt;= mix.filter(function (m) { return m == name; }).length; });
+        if (have &amp;&amp; cipher.board.every(function (c) { return c.mix.join() != mix.join() &amp;&amp; right(mix, c.mix) == c.right; })) return mix;
+    }
+}
+
+async function witch_cipher_step() {
+    var cipher = server.status.witchcipher;
+    if (!cipher || !cipher.live || !character.witchcipher) return;
+    if (!character.witchcipher.mixes_left || !next_mix(cipher)) return;
+    await smart_move({ map: "halloween", x: 858, y: -120 });
+    var mix = next_mix(server.status.witchcipher);
+    if (mix) return await brew(mix);
+}
+
+witch_cipher_step().catch(show_json);</div>
+<p><a href="/docs/code/functions/brew" target="_blank">brew</a> · <a href="/docs/code/functions/witch_cipher_info" target="_blank">witch_cipher_info</a> · <a href="/docs/code/functions/smart_move" target="_blank">smart_move</a> · <a href="/docs/code/functions/quantity" target="_blank">quantity</a> · <a href="/docs/code/functions/exchange" target="_blank">exchange</a> · <a href="/docs/code/functions/auto_craft" target="_blank">auto_craft</a> · <a href="/docs/code/server/status" target="_blank">server.status</a></p>
+<style>
+	.title { color: #467956; font-size: 36px; margin-top: 15px; }
+	.divider { margin: 15px -26px 0; height: 5px; background-color: #a2a2a2; }
+	.witch-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+	.witch-row .witch-text { font-size: 24px; line-height: 26px; margin-left: 6px; }
+	.witch-row .witch-right { color: #3B8F4E; }
+</style>
+<script>
+	(function () {
+		var rules = G.events.witchcipher;
+		var icon = function (name, q) { return item_container({ skin: G.items[name].skin, draggable: false, onclick: "render_item_info('" + name + "')" }, { name: name, q: q }); };
+		var right = function (recipe, mix) {
+			var count = 0;
+			for (var i = 0; i < mix.length; i++) if (recipe[i] == mix[i]) count++;
+			return count;
+		};
+		$(".witch-hero").html("<div class='guide-view'>" + sprite("brewingwitch", { full: true, scale: 3 }) + "</div>" + ["verdantspore", "frostscale", "embercoal", "gloomfeather"].map(function (name) { return icon(name); }).join("") + "<span class='guide-arrow'></span>" + icon("witchparcel"));
+		// Each monster's chance per kill at Luck 1, as its own loot shows it while gathering lasts
+		$(".witch-ingredients").html(rules.ingredients.map(function (entry) {
+			return "<div class='guide-drops'>" + entry[1].map(function (monster) {
+				return "<div class='guide-drop-group'>" + guide_monster_tile(monster, 0) + "<div>" + render_drop([(rules.loot * G.monsters[monster].hp) / 1000, entry[0]], 1, "#858B8E") + "</div></div>";
+			}).join("") + "</div>";
+		}).join(""));
+		// A sample round: the secret is fixed here, the clues are computed the way the server scores them.
+		var secret = ["frostscale", "gloomfeather", "gloomfeather", "embercoal", "verdantspore"];
+		$(".witch-example").html([
+			["verdantspore", "verdantspore", "verdantspore", "verdantspore", "verdantspore"],
+			["frostscale", "frostscale", "gloomfeather", "gloomfeather", "verdantspore"],
+			["frostscale", "gloomfeather", "gloomfeather", "frostscale", "embercoal"],
+			["frostscale", "gloomfeather", "gloomfeather", "embercoal", "frostscale"],
+			secret,
+		].map(function (mix) {
+			return "<div class='witch-row'>" + mix.map(function (name) { return icon(name); }).join("") + "<span class='witch-text witch-right'>" + phrase.html("interface.witch.right", { count: right(secret, mix) }) + "</span></div>";
+		}).join(""));
+		var pay = rules.payout;
+		$(".witch-payout").html([
+			[pay.fits, "{{ phrase('docs.guide.event-witchcipher.pay_fits') }}"],
+			[pay.fits + pay.crack, "{{ phrase('docs.guide.event-witchcipher.pay_crack') }}"],
+			[0, "{{ phrase('docs.guide.event-witchcipher.pay_other') }}"],
+		].map(function (row) { return "<div class='witch-row'>" + (row[0] ? icon("witchparcel", row[0]) : item_container({ shade: "witchparcel", s_op: 0.36, draggable: false })) + "<span class='witch-text'>" + row[1] + "</span></div>"; }).join(""));
+		$(".witch-parcel-title").text(G.items.witchparcel.name);
+		// The "open" row divides each weight by the table's total, like opening the Parcel
+		$(".witchparcel-drops").html(render_drop([1, "open", "witchparcel"], 1, "#858B8E"));
+		$(".witch-recipes").html(["witchparcel", "cipherdraught", "crookedkey", "patchbuckler", "blackcatbell", "nightmarketsash", "hexweavegloves", "candleboots", "witchlightmantle", "laughingbook"].map(function (name) {
+			var recipe = G.craft[name];
+			return "<div class='witch-row'>" + icon(name) + "<span class='guide-arrow' style='transform: scaleX(-1)'></span>" + recipe.items.map(function (part) { return icon(part[1], part[0]); }).join("") + "<span class='witch-text'>+ " + to_pretty_num(recipe.cost) + "</span></div>";
+		}).join(""));
+	})();
+</script>

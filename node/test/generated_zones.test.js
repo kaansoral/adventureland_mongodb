@@ -13,6 +13,10 @@ function fixture() {
 		real_id: "a",
 		owner: "owner",
 		name: "A",
+		targets: 0,
+		targets_p: 0,
+		targets_m: 0,
+		targets_u: 0,
 		map: "zone_a",
 		in: "zone_a",
 		socket: { id: "a", generated_protocol: 1, emit() {} },
@@ -188,7 +192,8 @@ test("cave chases follow a moving player, respect walls and ignore a superseded 
 	const definitions = { ...c.G, geometry: { zone_a: { x_lines: [], y_lines: [] } } };
 	for (const file of ["common/js/common_functions.js", "js/old_common_functions.js"]) vm.runInContext(read(file), c);
 	c.G = definitions;
-	load(c, "node/server.js", ["start_moving_element"]);
+	c.name_to_id = { A: "a" };
+	load(c, "node/server.js", ["start_moving_element", "increase_targets", "reduce_targets", "monster_to_client"]);
 	load(c, "node/server_functions.js", ["new_worker"]);
 	load(c, "node/logic/cave_of_many_dreams.js", ["cave_move", "cave_actor_tick", "cave_face"]);
 	c.generated_maps.zone_a.floor.worker = 0;
@@ -201,11 +206,15 @@ test("cave chases follow a moving player, respect walls and ignore a superseded 
 	c.instances.zone_a = { monsters: { [actor.id]: actor } };
 	c.new_worker(0);
 	c.cave_actor_tick(run, actor, 10000, [p]);
+	assert.equal(actor.target, "A");
+	assert.equal(c.monster_to_client(actor).target, "A", "CODE receives the selected player");
+	assert.equal(p.targets, 1);
 	assert.equal(actor.going_x, 1000);
 	assert.equal(actor.moving, true);
 	p.x = 900;
 	p.y = 1100;
 	c.cave_actor_tick(run, actor, 10300, [p]);
+	assert.equal(p.targets, 1, "following the same player does not count another attacker");
 	assert.equal(actor.going_x, 900, "changes course before reaching the old destination");
 	assert.equal(actor.going_y, 1100);
 	assert.ok(actor.vx > 0 && actor.vy > 0);
@@ -233,6 +242,26 @@ test("cave chases follow a moving player, respect walls and ignore a superseded 
 	c.cave_actor_tick(run, actor, 12300, [p]);
 	assert.equal(actor.moving, false, "stops beside the target instead of running past it");
 	assert.equal(actor.vx, 0);
+	const other = { ...p, name: "B", id: "B", x: 805, targets: 0, targets_p: 0, targets_m: 0, targets_u: 0 };
+	c.players.b = other;
+	c.name_to_id.B = "b";
+	c.cave_actor_tick(run, actor, 12600, [p, other]);
+	assert.equal(actor.target, "B");
+	assert.equal(p.targets, 0);
+	assert.equal(other.targets, 1);
+	actor.zone_actor.prey = other;
+	c.cave_actor_tick(run, actor, 12900, [p]);
+	assert.equal(actor.target, "A", "a disconnected forced target cannot override the current player list");
+	assert.equal(other.targets, 0);
+	c.cave_set_side(actor, "ally");
+	assert.equal(c.monster_to_client(actor).target, null);
+	assert.equal(p.targets, 0, "changing sides releases the old player's attacker count");
+	c.cave_set_side(actor, "enemy");
+	c.cave_actor_tick(run, actor, 13200, [p]);
+	p.rip = true;
+	c.cave_actor_tick(run, actor, 13500, [p]);
+	assert.equal(actor.target, null);
+	assert.equal(p.targets, 0);
 });
 test("cave definitions contain 50 encounters and bounded reward budgets", () => {
 	const { c, p, run } = chestFixture(),
@@ -643,7 +672,7 @@ test("a cave gold letter can be claimed once by its assigned character", async (
 		info: { sender: p.owner, receiver: p.owner, item: JSON.stringify({ gold: 1234 }) },
 	};
 	const store = transactions(c, [mail]);
-	load(c, "adventure_functions.js", ["gf"]);
+	load(c, "adventure_functions.js", ["gf", "mail_receiver"]);
 	c.get = async (id) => clone(store.records.get(id));
 	const handler = socketHandler(c, "mail_take_item");
 	handler({ id: mail._id, request_id: "one" });
@@ -1855,14 +1884,12 @@ test("cave revival translates choices and results while keeping canonical CODE f
 	assert.equal(p.rip, false);
 	assert.equal(resolved.result_label, "No reply was chosen.");
 	assert.equal(display(resolved.result_message), "Es wurde keine Antwort gewählt.");
-	assert.ok(resolved.summary.includes("You're back at the doorway. No Amber spent."));
+	assert.ok(resolved.summary.includes("You are back at the doorway. No Amber spent."));
 	assert.ok(
-		resolved.summary_messages.some(
-			(entry) => display(entry) === "Ihr seid wieder am Eingang. Es wurde kein Amber ausgegeben.",
-		),
+		resolved.summary_messages.some((entry) => display(entry) === "Ihr seid wieder am Eingang. Kein Amber ausgegeben."),
 	);
-	assert.equal(logs[0].message, "You're back at the doorway. No Amber spent.");
-	assert.equal(display(logs[0]), "Ihr seid wieder am Eingang. Es wurde kein Amber ausgegeben.");
+	assert.equal(logs[0].message, "You are back at the doorway. No Amber spent.");
+	assert.equal(display(logs[0]), "Ihr seid wieder am Eingang. Kein Amber ausgegeben.");
 });
 
 test("cave encounter results translate the selected outcome and keep CODE text unchanged", () => {
@@ -1887,7 +1914,7 @@ test("cave encounter results translate the selected outcome and keep CODE text u
 		assert.equal(
 			german(result.phrase, result.phrase_args),
 			option.result
-				? "Wir untersuchen sie 20 Sekunden lang und nehmen dann die Vorräte mit."
+				? "Ihr verbringt 20 Sekunden damit, sie zu überprüfen, und nehmt dann die Vorräte."
 				: "Ihr öffnet die Kiste und nehmt den Inhalt mit.",
 		);
 	}
@@ -1918,7 +1945,7 @@ test("cave traveler chat and combat cues preserve CODE text with translated disp
 	assert.equal(german(cue.text_message.phrase), "Der Wächter holt aus. Geht weg!");
 	const camp = G.events.dreams.camps[0][1];
 	const notice = c.localization.message("server.cave.wave_wait", { camp: { phrase: "event.dreams.camp.0.1.name" } });
-	assert.equal(notice.message, camp.name + ": Something is moving in the nest. Another pack in 10 seconds.");
+	assert.equal(notice.message, camp.name + ": Something is moving in the nest. Another pack arrives in 10 seconds.");
 	assert.match(german(notice.phrase, notice.phrase_args), /^Fledermausquartier:/);
 });
 
@@ -2001,4 +2028,154 @@ test("cave music uses the existing player, switches with votes, and respects mut
 	};
 	c.init_music();
 	c.reflect_music();
+});
+
+test("cave boss defeats count before a distant room sleeps, including native burn kills", () => {
+	for (const floor of [0, 1, 2])
+		for (const burn of [false, true]) {
+			const { c, p, run, room } = encounterFixture(G.events.dreams.encounters[0]);
+			const now = Date.now(),
+				packets = [],
+				rewards = [];
+			run.cave.actors.clear();
+			Object.assign(room, {
+				kind: "boss",
+				floor,
+				encounter: null,
+				npc: null,
+				actors: [],
+				enemies: [],
+				started: false,
+				last_near: now - 16001,
+			});
+			c.generated_maps.zone_a.floor.definition.generated.floor = floor;
+			c.G.maps.zone_b.generated.floor = floor + 1;
+			run.manifest[floor] = run.manifest[0];
+			const instance = {
+				name: "zone_a",
+				map: "zone_a",
+				monsters: {},
+				players: {},
+				observers: {},
+				rage_list: [],
+				last_update: new Date(now - 20),
+			};
+			Object.assign(c, {
+				instances: { zone_a: instance },
+				monster_c: {},
+				mssince: (date) => Date.now() - date,
+				min: Math.min,
+				max: Math.max,
+				ceil: Math.ceil,
+				xy_emit() {},
+				add_pdps() {},
+				add_coop_points() {},
+				achievement_logic_burn_last_hit() {},
+				monster_abilities: { damage() {} },
+				remove_entity_emit() {},
+				cave_reward: (record, source, table) => rewards.push(table),
+			});
+			load(c, "node/server.js", ["kill_monster", "remove_monster", "update_instance", "rage_logic"]);
+			load(c, "node/logic/cave_of_many_dreams.js", ["cave_publish"]);
+			p.socket.emit = (event, packet) => {
+				if (event === "cave") packets.push(packet);
+			};
+			c.cave_activate(run, room);
+			for (const actor of room.actors) {
+				actor.temp = true;
+				actor.map_def = { live: 1 };
+				actor.a = {};
+				instance.monsters[actor.id] = actor;
+				c.monster_c[actor.type] = (c.monster_c[actor.type] || 0) + 1;
+			}
+			const boss = room.enemies.find((actor) => actor.zone_actor.boss);
+			for (const actor of room.enemies) if (actor !== boss) c.kill_monster(p, actor);
+			p.x = 3000;
+			Object.assign(boss, { x: p.x - 10, y: p.y });
+			c.cave_tick(run, now);
+			assert.equal(room.saved, undefined, "a visible living boss stays active outside its room");
+			assert.ok(!run.completed[floor], "the living boss still locks the stairs");
+			if (burn) {
+				boss.s.burned = { ms: 2000, intensity: boss.hp * 5, f: p.name };
+				c.update_instance(instance);
+			} else c.kill_monster(p, boss);
+			assert.equal(boss.dead, true);
+			c.cave_tick(run, now + 1);
+			assert.equal(run.completed[floor], true, "completion is recorded before suspension removes dead actors");
+			const state = packets.at(-1).state;
+			assert.equal(state.objectives.find((objective) => objective.id === room.id).done, true);
+			assert.equal(state.doors[0].locked, false);
+			assert.equal(c.generated_can_enter(p, { name: "zone_b", map: "zone_b" }), true);
+			assert.equal(rewards.filter((table) => table === "cave_boss").length, 1);
+			p.x = room.x;
+			c.cave_tick(run, now + 2);
+			assert.equal(room.enemies.length, 0, "returning does not respawn a defeated boss");
+			assert.equal(rewards.filter((table) => table === "cave_boss").length, 1, "the reward is issued once");
+		}
+});
+
+test("cave status keeps resolved choices after their speakers leave memory", () => {
+	for (const entireFloor of [false, true])
+		for (const id of ["e35", "e31"]) {
+			const { c, p, run, room } = encounterFixture(G.events.dreams.encounters.find((encounter) => encounter.id === id));
+			const first = room.encounter.options.find((option) => option.effect === (id === "e35" ? "guide" : "inspect"));
+			const leave = room.encounter.options.find((option) => option.effect === "leave");
+			room.encounter.options = [first, leave];
+			room.voted = false;
+			c.cave_begin_vote(run, room);
+			for (const member of run.members) run.cave.vote.votes[member.character] = leave.id;
+			c.cave_resolve_vote(run, Date.now());
+			c.cave_suspend_floor(run, room.map, entireFloor ? undefined : room);
+			load(c, "node/logic/cave_of_many_dreams.js", ["cave_publish"]);
+			c.cave_publish(run);
+			assert.equal(p.cave.choice.resolved, true);
+			assert.equal(p.cave.choice.options.length, 2, "the recorded choices remain available to CODE");
+			assert.equal(p.cave.objectives.find((objective) => objective.id === room.id).done, id !== "e31");
+			if (id === "e31") assert.equal(p.cave.choice.shop.nearby, false, "an unloaded merchant is not nearby");
+		}
+});
+
+test("cave loot updates the purse and published balance after an encounter speaker leaves", () => {
+	const { c, p, run, room } = encounterFixture(G.events.dreams.encounters.find((encounter) => encounter.id === "e35"));
+	room.encounter.options = room.encounter.options.filter((option) => ["guide", "leave"].includes(option.effect));
+	room.voted = false;
+	c.cave_begin_vote(run, room);
+	const leave = room.encounter.options.find((option) => option.effect === "leave");
+	for (const member of run.members) run.cave.vote.votes[member.character] = leave.id;
+	c.cave_resolve_vote(run, Date.now());
+	load(c, "node/logic/cave_of_many_dreams.js", ["cave_publish"]);
+	c.cave_publish(run);
+	const before = { gold: run.cave.gold, amber: run.cave.amber };
+	c.cave_suspend_floor(run, room.map, room);
+	assert.equal(room.npc.zone_actor, undefined);
+	const chest = { cave: run.key, map: p.map, in: p.in, x: p.x, y: p.y, gold: 1000, amber: 3 };
+	const packets = [];
+	c.socket = p.socket;
+	c.chests = { reward: chest };
+	run.cave.chests.add("reward");
+	p.socket.emit = (event, packet) => packets.push({ event, packet });
+	socketHandler(c, "open_chest")({ id: "reward" });
+	assert.equal(run.cave.gold, before.gold + 1000);
+	assert.equal(run.cave.amber, before.amber + 3);
+	assert.equal(p.cave.amber, before.amber + 3);
+	assert.equal(p.cave.gold, before.gold + 1000);
+	assert.equal(packets.filter((p) => p.event === "chest_opened").length, 1);
+	assert.equal(packets.find((p) => p.event === "cave").packet.state.amber, before.amber + 3);
+	assert.equal(c.chests.reward, undefined);
+	assert.equal(run.cave.chests.has("reward"), false);
+	assert.equal(c.cave_open_chest(p, chest, "reward").failed, true);
+	assert.equal(run.cave.amber, before.amber + 3, "a repeated claim cannot duplicate the reward");
+});
+
+test("Cave shop objectives complete after a choice without requiring a purchase", () => {
+	const definition = G.events.dreams.encounters.find((e) => e.id === "e46");
+	for (const option of definition.options.filter((o) => ["inspect", "leave"].includes(o.effect))) {
+		const { c, p, run, room } = encounterFixture(definition);
+		room.required = true;
+		assert.equal(!!c.cave_snapshot(run, p).objectives.find((o) => o.id === room.id).done, false);
+		c.cave_apply(run, room, option);
+		assert.equal(room.done, true);
+		assert.equal(room.stock.sold, false);
+		assert.equal(c.cave_snapshot(run, p).objectives.find((o) => o.id === room.id).done, true);
+	}
 });

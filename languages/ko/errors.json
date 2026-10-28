@@ -83,5 +83,9 @@
 	"error.cant_delete_map_in_use": "사용 중인 맵은 삭제할 수 없어요.",
 	"error.code_too_large": "이 스크립트는 너무 큽니다. 각 CODE 슬롯에는 UTF-8 텍스트를 최대 1 MiB(1,048,576바이트)까지 저장할 수 있습니다.",
 	"error.code_storage_full": "CODE 저장 공간이 가득 찼습니다. 코드를 더 저장하려면 사용하지 않는 스크립트를 내보낸 뒤 삭제하세요.",
-	"error.code_rate_limited": "CODE를 너무 자주 저장하고 있습니다. 잠시 기다린 뒤 다시 시도하세요."
+	"error.code_rate_limited": "CODE를 너무 자주 저장하고 있습니다. 잠시 기다린 뒤 다시 시도하세요.",
+	"error.item_changed": "아이템이 변경되었습니다. 다시 시도하세요.",
+	"error.mail_item_untaken": "이 우편을 삭제하기 전에 첨부물을 받으세요.",
+	"error.mail_sender_limit": "이 캐릭터에게는 내 계정에서 보낸 미수령 우편 첨부물이 이미 20개 있어요. 일부를 받아야 새 첨부물을 보낼 수 있어요.",
+	"error.mailbox_full": "이 캐릭터에게는 아직 받지 않은 우편 첨부물이 이미 200개 있어요. 일부를 받아야 새 첨부물을 보낼 수 있어요."
 }

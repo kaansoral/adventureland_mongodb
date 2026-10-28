@@ -317,7 +317,7 @@
 	"game.clicks_away": "Cách {dist} đơn vị",
 	"game.echoes": "{length} tiếng vọng",
 	"game.clicks": "{c} đơn vị",
-	"npc.home.set_offer": "Đây không phải máy chủ nhà của bạn. Bạn là cư dân của {home}. Ở thế giới nhà, đóng góp hợp tác được tính cao hơn và có phần thưởng đặc biệt; đổi nhanh giữa các nhân vật không phải thương nhân sẽ tạm ngừng các lợi ích này trong 30 phút. Bạn có muốn đặt máy chủ này làm nhà không?",
+	"npc.home.set_offer": "Đây không phải máy chủ nhà của bạn. Bạn là cư dân của {home}. Thế giới nhà cho tín dụng hợp tác mạnh hơn và các phần thưởng đặc biệt; chuyển nhanh các nhân vật không phải Thương nhân sẽ tạm dừng các lợi ích đó trong 30 phút. Bạn có muốn đặt máy chủ này làm nhà không?",
 	"npc.yes": "Có!",
 	"npc.home.current": "Đây là máy chủ nhà của bạn. Đóng góp khi đánh quái vật hợp tác được tính cao hơn ở đây, và một số quái vật có thêm phần thưởng dành cho cư dân. Chuyển đến đây sau khi một nhân vật khác không phải thương nhân ghé máy chủ khác sẽ gây Mệt mỏi do chuyển thế giới trong 30 phút. Bạn vẫn nhận phần thưởng thông thường trong lúc ổn định lại.",
 	"npc.bless_server.offer": "Bạn có muốn ban phước cho toàn máy chủ trong 3 ngày không?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Vật phẩm này không khớp với đề nghị",
 	"response.trade_swap_space": "Thương nhân hết chỗ",
 	"game.trade_history.traded": "- Đã đổi '{item}' với {player} lấy '{received}'",
-	"response.transport_need_items": "Cần: {items}"
+	"response.transport_need_items": "Cần: {items}",
+	"combat.emote.hehehe": "HÊ HÊ HÊ"
 }

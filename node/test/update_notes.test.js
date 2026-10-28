@@ -41,6 +41,18 @@ test("the check rejects unknown references, keys and priorities", () => {
 		);
 });
 
+test("the release check catches a missing cover before deployment", () => {
+	const note = { phrase: "update.01_10_26.test", deployed: null, date: "[01/10/26]", title: "Fixes" };
+	const missingCover = () =>
+		tool.validate([note], { items: { gem0: {} } }).some((line) => line.includes("needs a cover"));
+	assert.equal(missingCover(), true);
+	note.cover = "item:gem0";
+	assert.equal(missingCover(), false);
+	delete note.cover;
+	note.deployed = "[01/10/26]";
+	assert.equal(missingCover(), false, "old published releases can use their highlight image");
+});
+
 test("phrases that no note uses are found, so sync can remove them after a rename", () => {
 	const notes = [
 		{
@@ -265,4 +277,44 @@ test("the UPDATE button shows the most important release since the last one open
 	// Notes without a title never raise it, and pages without HTML never draw it.
 	assert.equal(button([notes[5]], undefined).shown(), -1);
 	assert.equal(button(notes, "update.01_10_26.seen", { no_html: true }).shown(), -1);
+});
+
+test("UPDATE and landing cards reuse a featured image when an older release has no cover", () => {
+	const note = { phrase: "update.01_10_26.test", title: "Fixes", highlights: [{ show: ["item:gem0"] }] };
+	const G = tool.load_definitions(null);
+	const { context: c } = button([note], undefined, {
+		G,
+		window: {},
+		in_arr: (value, values) => values.includes(value),
+		randomStr: () => "cover-test",
+		phrase: Object.assign(() => "New update", { html: () => "UPDATE" }),
+		release_counts: () => "",
+		$: () => ({
+			html() {
+				return this;
+			},
+			text: () => "",
+		}),
+		event_announcement_html: (args) => args,
+	});
+	for (const name of [
+		"release_parse",
+		"release_cover_ref",
+		"release_cover_html",
+		"release_update_button_html",
+		"release_card_html",
+	])
+		vm.runInContext(extract(read("js/functions.js"), name), c);
+	vm.runInContext(extract(read("js/html.js"), "item_container"), c);
+	const html = c.release_update_button_html();
+	assert.match(html, /<img /, "the button includes the native item renderer's image");
+	assert.match(html, /show_release\(0\)/);
+	assert.match(html, /UPDATE/);
+	assert.equal(c.release_card_html().sprite, "gem0");
+	note.cover = "item:gem1";
+	assert.equal(c.release_cover_ref(note), "item:gem1", "an explicit cover wins");
+	assert.equal(c.release_card_html().sprite, "gem1");
+	delete note.cover;
+	note.highlights[0].show = ["item:missing", { spawn: "monster:goo", among: "monster:goo", count: 100 }];
+	assert.equal(c.release_cover_ref(note), "monster:goo", "spawn highlights work and missing definitions are skipped");
 });

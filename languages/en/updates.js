@@ -1,77 +1,227 @@
 // Release highlights. Dates, item/character names and CODE identifiers stay unchanged.
 module.exports = {
-	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
-	"update.04_10_26.mail.capacity": "Loot and reward space checks now count stacks correctly.",
-	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
-	"update.04_10_26.mail.slots": "Invalid inventory slots no longer act on the first item.",
-	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
-	"update.04_10_26.mail.spawns": "Monster documentation now explains both spawn-boundary formats.",
-	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
-	"update.04_10_26.mail.promises": "Upgrade and compound CODE results no longer wait for a redraw.",
-	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
-	"update.04_10_26.mail.exchange": "Exchanges now work with a full inventory when they consume the whole stack.",
-	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
-	"update.04_10_26.mail.split": "Splitting a stack in an overflowing inventory no longer loses items.",
-	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
-	"update.04_10_26.mail.grace": "Offerings used without a scroll now show the grace they add instead of an upgrade chance.",
+	// Improvement listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_55": "Mail attachments are limited to 20 uncollected from the same sending account and 200 per recipient character. Existing mail and attachments stay. Automatic reward mail does not count toward these limits.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_56": "Rejected mail keeps the item and postage.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_57": "Purify preserves Rogue stacks and burning on monsters. Rogue stacks add up to 800 damage.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_58": "Purify can no longer target nonfriendly players in PvE, even with Cupid.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_63": "Collect attachments before deleting received mail.",
+	// Improvement listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.boss_drops": "Adjusted co-op boss drops on home servers.",
+	// Improvement listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.numeric_names": "New character names and renames cannot be numbers only.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_87": "Closed merchant slots can no longer be traded through cached listings.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_86": "Exact drop odds now use simpler fractions, such as 1/1M.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_85": "The Hub bank view no longer exposes hidden item data.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_84": "Destroy requests no longer destroy a different item moved into the same bag slot.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_82": "town() and smart_move now wait for town teleports to finish.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_81": "Fixed simultaneous logins on the same account rejecting each other.",
+	// Improvement listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.item_bonuses": "Item tooltips now show the numbers of map and class bonuses.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.mp_reduction_cap": "Mana Cost Reduction now stops at 80%.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_79": "Empty equip_batch entries now return an error.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_78": "Large CODE messages now count correctly toward the call limit.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_77": "Compounding an empty slot no longer throws in CODE.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_76": "smart_move keeps waiting while it finds a new route.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_75": "Unsupported upgrades and compounds no longer consume materials.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_74": "find_npc now finds roaming NPCs.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_73": "Weapon and projectile glow now updates when you swap gear.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_72": "MAINFRAME crafting now skips locked, blocked and giveaway items.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_71": "Invalid smart_move requests no longer continue the previous route.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_70": "Lucky envelope rewards keep their title inside chests.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_69": "Merchant bonuses no longer change the reported loot slot.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_68": "Locked and sealed items can no longer be dismantled.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_67": "Glitch exchanges now award both Glitches when two are rolled.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_66": "Cave shop choices now show as complete without a purchase.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_65": "CODE exchange() now completes correctly even if another exchange starts.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_40": "Monsters keep their target when splash damage defeats another character.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_41": "Attack speed now includes condition effects.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_42": "Skin changes no longer crash characters running without graphics.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_43": "Poison is no longer rolled twice on the same hit.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_44": "Purify no longer removes a monster's natural poison attack.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_46": "Fixed Dorr's missing backpack.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_47": "Recipients can claim attachments from older mail again.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_48": "Skills can target characters with numeric names.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_49": "Dragging equipped gear onto a bag item now swaps them.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_50": "Hostile Cave monsters wake when hit.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_51": "Selling no longer takes a different item that moved into the selected slot.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_52": "MAINFRAME now accepts send_updates to refresh visible entities.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_53": "A delayed sign-in response no longer covers the game with the character selector.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.support_54": "Reconnecting no longer jumps to an unfinished movement destination.",
+	// Summary of the [08/10/26] update post "Witch's Cipher, Halloween and Events", shown under its title and in the game log. Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween": "Solve the Witch's Cipher twice a day during Halloween, then alongside the rotating daily events all year. Halloween also brings the Headless Horseman, Graveyard Rising and Trick or Treat, with new Ghost tricks and Witch's Parcel rewards. The new Events window shows what's coming up.",
+	// Title of the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.title": "Witch's Cipher, Halloween and Events",
+	// Section text in the [08/10/26] update post "Witch's Cipher, Halloween and Events", under sprites of: item:witchparcel, item:cipherdraught, item:crookedkey, item:patchbuckler, item:blackcatbell, item:nightmarketsash, item:hexweavegloves, item:candleboots, item:witchlightmantle, item:laughingbook. Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.witchcipher": "During Halloween, the Witch's Cipher runs twice a day, at 06:00 and 18:00 realm time. The rest of the year, it takes turns with Giga Crab, Goo Brawl and A/B Testing at 13:00 or 20:00. Gather ingredients from monsters in four regions during the first 20 minutes, then brew at the Witch in Spooky Forest during the 28-minute round. No need to join. Each mix uses five ingredients in order and gives one clue: how many are in the right place. The realm shares a board of clues, and you can see whether your mix fits before brewing. A new mix that fits every clue earns a Witch's Parcel. Crack the recipe for the first time that UTC day and earn five Parcels. When someone cracks it, the Witch forgets the recipe and starts another. You get five mixes per account per UTC day, on one realm. Keep your ingredients and use your Witch's Parcels to open or craft items in the Witch's recipes.",
+	// Section heading in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.witchcipher.title": "New Daily Event: Witch's Cipher!",
+	// Section text in the [08/10/26] update post "Witch's Cipher, Halloween and Events", under sprites of: monster:horseman, monster:gargoyle, item:horsemanpumpkin, skill:sinisterlaugh. Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.halloween": "The Headless Horseman rides out of Spooky Forest's graveyard every night at 00:00 realm time. Zombies and Ghouls rise from Spooky Town's graveyard every two hours, followed by a Gargoyle. Knock on seven doors for treats, tricks and rewards for every 10 stamps. Halloween's last day is November 2, but Xyn still exchanges Candy and Pumpkin Stems afterward, and Halloween recipes remain usable.",
+	// Section heading in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.halloween.title": "Headless Horseman, Graveyard Rising and Trick or Treat!",
+	// Section text in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.events": "Click the slider or realm clock above chat to see active seasons, upcoming bosses, today's activities and the next seven days of events. Switch between your time and realm time. Choose REMIND to get a game-log message 10 minutes before an event. The slider above chat scrolls through live events, the next three events with countdowns and season end dates; hover to pause, or click to open EVENTS. Click X,Y or the realm name to show your coordinates instead; your character screen still shows the next event.",
+	// Section heading in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.events.title": "New Events Window!",
+	// Improvement listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.event_schedule": "Event times are now set seven days ahead and stay the same after server restarts.",
+	// Improvement listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.broadcast_info": "The Steam broadcast now shows monster INFO, drops, items and current events.",
+	// Fixed bug listed in the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.mainframe_spookytown": "Fixed MAINFRAME smart_move() getting stuck when leaving Spooky Town.",
+	// Note under map:halloween (changed) in the change list of the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.map_halloween": "Two doors in Spooky Forest now let you knock for Trick or Treat.",
+	// Note under map:spookytown (changed) in the change list of the [08/10/26] update post "Witch's Cipher, Halloween and Events". Keep names from the game and CODE identifiers unchanged.
+	"update.08_10_26.halloween.map_spookytown": "Five doors in Spooky Town now let you knock for Trick or Treat.",
+	// Fixed bug listed in the [06/10/26] update post "Anniversary Crafting". Keep names from the game and CODE identifiers unchanged.
+	"update.06_10_26.anniversary_crafting.update_button_image": "Fixed the missing image on the UPDATE button.",
+	// Improvement listed in the [06/10/26] update post "Anniversary Crafting". Keep names from the game and CODE identifiers unchanged.
+	"update.06_10_26.anniversary_crafting.seasonal_flags": "CODE can now read seasonal flags through server.status.event_flags.",
+	// Anniversary crafting release text. Preserve Cole.
+	"update.06_10_26.anniversary_crafting.title": "Anniversary Crafting",
+	// Anniversary crafting release text. Preserve Cole.
+	"update.06_10_26.anniversary_crafting.anniversary_crafting": "Anniversary recipes are available at Cole after the event ends.",
+	// Release note announcing that the anniversary event has ended.
+	"update.04_10_26.mail.anniversary_end": "The anniversary event has ended.",
+	// Fixed bug listed in the [04/10/26] update post "Invite Friends and Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.bank_gold_operation": "Bank gold responses now identify deposits and withdrawals.",
+	// Fixed bug listed in the [04/10/26] update post "Invite Friends and Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.cooperative_online": "Offline characters no longer inflate cooperative monster drops.",
+	// Fixed bug listed in the [04/10/26] update post "Invite Friends and Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.stun_refresh": "Short stun refreshes no longer shorten a longer stun.",
+	// Fixed bug listed in the [04/10/26] update post "Invite Friends and Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.poisoned_monster_healing": "Poisoned monsters now receive 25% of normal healing, as the condition describes.",
+	// Fixed bug listed in the [04/10/26] update post "Invite Friends and Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.browser_connections": "Updated browser and payment-page connections to match the game servers.",
+	// Fixed bug listed in the [04/10/26] update post "Invite Friends and Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.gilded_horse_cape": "The golden Horse Leather Cape is now named Gilded Horse Leather Cape.",
+	// Section text in the [04/10/26] update post "Invite Friends and Fixes", under sprites of: item:friendtoken. Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.friends": "Eligible Steam friends can connect once from the character screen. Both receive a Friend Token when the invited player enters the game, and the inviter receives 200 SHELLS.",
+	// Section heading in the [04/10/26] update post "Invite Friends and Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.friends.title": "Invite Friends",
+	// Improvement listed in the [04/10/26] update post "Invite Friends and Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.steam_friends": "First-time Steam links can now connect to an earlier Adventure Land friend. When several friends qualify, you choose one.",
 	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
 	"update.04_10_26.mail.throw": "Failed throws no longer consume items.",
 	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.split": "Splitting a stack in an overflowing inventory no longer loses items.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.exchange": "Exchanges now work with a full inventory when they consume the whole stack.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.slots": "Invalid inventory slots no longer act on the first item.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
 	"update.04_10_26.mail.send": "Sending items now checks space using their titles, markings, and contents.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.capacity": "Loot and reward space checks now count stacks correctly.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.grace": "Offerings used without a scroll now show the grace they add instead of an upgrade chance.",
 	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
 	"update.04_10_26.mail.entry": "Entrances now name the missing key.",
 	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.promises": "Upgrade and compound CODE results no longer wait for a redraw.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.spawns": "Monster documentation now explains both spawn-boundary formats.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
 	"update.04_10_26.mail.stunned_items": "Items and potions can no longer be used while stunned.",
 	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
-	"update.04_10_26.mail.alchemy_tooltip": "Alchemy now shows the percentage of an item’s gold value returned.",
+	"update.04_10_26.mail.account_bans": "Banned accounts can no longer sign in or connect to the game.",
 	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
-	"update.04_10_26.mail.numeric_names": "Player-only skills now work on characters with all-numeric names, even when a monster has the same ID.",
+	"update.04_10_26.mail.trade_prices": "Invalid stand prices are now rejected instead of becoming 1-gold listings. Price fields now accept plain text only.",
 	// Fixed bug listed in the [04/10/26] update post "Invite Friends and Fixes". Keep names from the game and CODE identifiers unchanged.
 	"update.04_10_26.mail.cavalry_computer": "Super Computer menus now use the selected inventory item. The Network menu now includes Cavalry when opened from the Super Computer.",
 	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
 	"update.04_10_26.mail.movement_buttons": "Direction buttons now move one 50-pixel step per click. Held arrow keys release correctly when focus changes.",
 	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
 	"update.04_10_26.mail.docs_links": "Character Objects links now open in the game’s documentation panel.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.numeric_names": "Player-only skills now work on characters with all-numeric names, even when a monster has the same ID.",
+	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.alchemy_tooltip": "Alchemy now shows the percentage of an item’s gold value returned.",
 	// Improvement listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
 	"update.04_10_26.mail.scroll_consumption": "Upgrade and compound scrolls now say they are consumed on every attempt, whether it succeeds or fails.",
-	// Fixed bug listed in the [04/10/26] update post "Bug Fixes". Keep names from the game and CODE identifiers unchanged.
-	"update.04_10_26.mail.trade_prices": "Invalid stand prices are now rejected instead of becoming 1-gold listings. Price fields now accept plain text only.",
 	// Fixed bug listed in the [04/10/26] update post "Mail, Bank, Cave and Combat Fixes". Keep names from the game and CODE identifiers unchanged.
 	"update.04_10_26.mail.self_splash": "Self-inflicted splash damage no longer prevents XP loss when a monster kills you or gives you loot from your own death.",
 	// Fixed bug listed in the [04/10/26] update post "Mail, Bank and Cave Fixes". Keep names from the game and CODE identifiers unchanged.
 	"update.04_10_26.mail.cave_walls": "Cave votes no longer leave characters stuck in walls. Logging out from a blocked position no longer prevents returning to the run.",
 	// Fixed bug listed in the [04/10/26] update post "Mail, Bank and Bonus Fixes". Keep names from the game and CODE identifiers unchanged.
-	"update.04_10_26.mail.bank_keys": "Using either bank floor key now makes its first item pack available immediately, without leaving and re-entering.",
-	// Fixed bug listed in the [04/10/26] update post "Mail, Bank and Bonus Fixes". Keep names from the game and CODE identifiers unchanged.
 	"update.04_10_26.mail.bank_overflow": "Items in extra inventory rows can now be banked without moving the wrong item.",
+	// Fixed bug listed in the [04/10/26] update post "Mail, Bank and Bonus Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.bank_keys": "Using either bank floor key now makes its first item pack available immediately, without leaving and re-entering.",
 	// Fixed bug listed in the [04/10/26] update post "Mail and Bonus Fixes". Keep names from the game and CODE identifiers unchanged.
 	"update.04_10_26.mail.merchant_bonuses": "Switching servers on a merchant no longer interrupts other characters’ encouragement bonuses.",
-	// Fixed bug listed in the [04/10/26] update post "Mail Fixes". Keep names from the game and CODE identifiers unchanged.
-	"update.04_10_26.mail.mail_ownership": "Mail attachments can now be collected only by the receiving account. Deleting mail removes only your copy.",
 	// Fixed bug listed in the [04/10/26] update post "Mail and Server Menu Fixes". Keep names from the game and CODE identifiers unchanged.
 	"update.04_10_26.mail.server_menu": "Event cards no longer cover the server menu.",
-	// Anniversary crafting release text. Preserve Cole.
-	"update.06_10_26.anniversary_crafting.anniversary_crafting": "Anniversary recipes are available at Cole after the event ends.",
-	// Release note announcing that the anniversary event has ended.
-	"update.04_10_26.mail.anniversary_end": "The anniversary event has ended.",
-	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
-	"update.04_10_26.mail.bank_gold_operation": "Bank gold responses now identify deposits and withdrawals.",
-	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
-	"update.04_10_26.mail.cooperative_online": "Offline characters no longer inflate cooperative monster drops.",
-	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
-	"update.04_10_26.mail.stun_refresh": "Short stun refreshes no longer shorten a longer stun.",
-	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
-	"update.04_10_26.mail.poisoned_monster_healing": "Poisoned monsters now receive 25% of normal healing, as the condition describes.",
-	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
-	"update.04_10_26.mail.browser_connections": "Updated browser and payment-page connections to match the game servers.",
-	// Release fix note. Preserve game item names, CODE identifiers and the healing percentage.
-	"update.04_10_26.mail.gilded_horse_cape": "The golden Horse Leather Cape is now named Gilded Horse Leather Cape.",
+	// Title of the [04/10/26] update post "Invite Friends and Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.title": "Invite Friends and Fixes",
+	// Fixed bug listed in the [04/10/26] update post "Mail Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.mail.mail_ownership": "Mail attachments can now be collected only by the receiving account. Deleting mail removes only your copy.",
+	// Improvement listed in the [04/10/26] update post "Halloween and Cave Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.release.halloween": "Halloween has started!",
+	// Fixed bug listed in the [04/10/26] update post "Halloween and Cave Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.release.cave_progress": "Fixed Cave progress getting stuck after dragging enemies away or leaving a completed encounter.",
+	// Fixed bug listed in the [04/10/26] update post "Halloween and Cave Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.release.cave_loot": "Fixed Cave loot showing ERROR and Amber counters not updating after leaving a completed encounter.",
+	// Title of the [04/10/26] update post "Halloween and Cave Fixes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.release.title": "Halloween and Cave Fixes",
+	// Fixed bug listed in the [04/10/26] update post "Flaming Eyes". Keep names from the game and CODE identifiers unchanged.
+	"update.04_10_26.release.flaming_eyes": "The flaming-eye head now animates, even while standing still.",
 	// Fixed bug listed in the [29/09/26] update post "Cave Fixes and Orb Compounding". Keep names from the game and CODE identifiers unchanged.
 	"update.29_09_26.character_shells": "Included character slots no longer cost shells. Character changes can no longer overdraw your shell balance.",
+	// Improvement listed in the [29/09/26] update post "Cave Fixes and Orb Compounding". Keep names from the game and CODE identifiers unchanged.
+	"update.29_09_26.server_cpu": "Game servers use about 20% less CPU, so busy events lag less.",
 	// Fixed bug listed in the [29/09/26] update post "Cave Fixes and Orb Compounding". Keep names from the game and CODE identifiers unchanged.
 	"update.29_09_26.encouragement_loot": "Encouragement drops now appear in CODE’s loot event.",
 	// Fixed bug listed in the [29/09/26] update post "Cave Fixes and Orb Compounding". Keep names from the game and CODE identifiers unchanged.
 	"update.29_09_26.chat_spam": "Repeated public messages are now filtered out of Discord and saved chat history.",
+	// Summary of the [29/09/26] update post "Cave Fixes and Orb Compounding", shown under its title and in the game log. Keep names from the game and CODE identifiers unchanged.
+	"update.29_09_26.release": "Loaded Die and Stillwater Lens can now be compounded.",
+	// Title of the [29/09/26] update post "Cave Fixes and Orb Compounding". Keep names from the game and CODE identifiers unchanged.
+	"update.29_09_26.release.title": "Cave Fixes and Orb Compounding",
+	// Fixed bug listed in the [29/09/26] update post "Cave Fixes and Orb Compounding". Keep names from the game and CODE identifiers unchanged.
+	"update.29_09_26.release.cave_targets": "Cave monsters now report their target to CODE.",
+	// Note under title:cavefound (changed) in the change list of the [29/09/26] update post "Cave Fixes and Orb Compounding". Keep names from the game and CODE identifiers unchanged.
+	"update.29_09_26.release.title_cavefound": "Cave-found is now called Cave. Each equipped item with this title gives +5 magic resistance.",
 	// Fixed bug listed in the [24/09/26] update post "Rare Monsters, 15 Accessories and Trade Offers". Keep names from the game and CODE identifiers unchanged.
 	"update.24_09_26.rare_drops.false_jail": "Walking by the Tavern poker table and a few other spots no longer sends you to jail.",
 	// Section text in the [24/09/26] update post "Rare Monsters, 15 Accessories and Trade Offers", under sprites of: item:stand0. Keep names from the game and CODE identifiers unchanged.

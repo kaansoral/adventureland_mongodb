@@ -83,5 +83,9 @@
 	"error.cant_delete_map_in_use": "Eine verwendete Karte kann nicht gelöscht werden.",
 	"error.code_too_large": "Dieses Skript ist zu groß. Jeder CODE-Slot kann bis zu 1 MiB (1.048.576 Bytes) UTF-8-Text enthalten.",
 	"error.code_storage_full": "Dein CODE-Speicher ist voll. Exportiere und lösche ungenutzte Skripte, bevor du weiteren Code speicherst.",
-	"error.code_rate_limited": "Du speicherst CODE zu häufig. Warte kurz und versuche es erneut."
+	"error.code_rate_limited": "Du speicherst CODE zu häufig. Warte kurz und versuche es erneut.",
+	"error.item_changed": "Gegenstand geändert. Versuche es erneut.",
+	"error.mail_item_untaken": "Hole den Anhang ab, bevor du diese Nachricht löschst.",
+	"error.mail_sender_limit": "Dieser Charakter hat bereits 20 nicht abgeholte Postanhänge von deinem Konto. Er muss einige abholen, bevor du einen weiteren senden kannst.",
+	"error.mailbox_full": "Dieser Charakter hat bereits 200 nicht abgeholte Postanhänge. Er muss einige abholen, bevor du einen weiteren senden kannst."
 }

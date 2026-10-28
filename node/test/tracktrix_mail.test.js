@@ -23,7 +23,7 @@ function fixture(beforeCommit) {
 		assert.equal(id._id || id, owner._id);
 		return Array.from(store.records.values()).filter((record) => record.type === "mail" && !record.read).length;
 	};
-	load(c, "adventure_functions.js", ["send_tracktrix_mail"]);
+	load(c, "adventure_functions.js", ["send_tracktrix_mail", "mail_receiver"]);
 	return { c, owner, mailId: "ML_tracktrix:" + owner._id, ...store };
 }
 

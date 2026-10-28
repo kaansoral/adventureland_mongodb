@@ -20,14 +20,6 @@ var drops = {
 	maps: {
 		global_static: [],
 		global: [
-			// Anniversary only. A credited account rolls only its own slice flavor.
-			[1.0 / 1500, "anniversarygift"],
-			[1.0 / 50000, "slice_strawberry"],
-			[1.0 / 50000, "slice_citrus"],
-			[1.0 / 50000, "slice_honey"],
-			[1.0 / 50000, "slice_mint"],
-			[1.0 / 50000, "slice_blueberry"],
-			[1.0 / 50000, "slice_nightberry"],
 			//[0.000015,"goldenegg"], //originally 0.000005
 			//[0.0000001,"5bucks"],
 			//[0.0002,"gift0"],
@@ -193,7 +185,7 @@ var drops = {
 			[0.1, "candycane"],
 			[0.1, "candycane"],
 			[0.1, "mistletoe"],
-			[0.00075, "offering"],
+			[1.0 / 1225, "offering"],
 			[1, "carrot"],
 			[1, "snowball"],
 			[1, "snowball"],
@@ -233,8 +225,6 @@ var drops = {
 			[100, "seashell"],
 			[500, "cclaw"],
 			[10000, "cshell"],
-			[1000, "funtoken"],
-			[1000, "funtoken"],
 			[1000, "funtoken"],
 			[10, "funtoken"],
 			[10, "funtoken"],
@@ -428,6 +418,39 @@ var drops = {
 			[100, "candy0"],
 			[100, "candy1"],
 		],
+		// Halloween events. Cooperative rows are per share of the fight, like Mr. Pumpkin's: with one extra table
+		// pass per 10 fighters, a row of weight w hands a crowd about w x Luck copies a fight, capped at one a fighter.
+		horseman: [
+			[100, "candy0", 5],
+			[100, "candy1", 10],
+			// Weight 10: each fighter averages five Parcels a night at any crowd size
+			[10, "witchparcel", 5],
+			[4, "pstem", 25],
+			// About one Horseman's Pumpkin a night for a usual crowd, one Burning Candle every other night
+			[0.5, "horsemanpumpkin"],
+			[0.25, "bcandle"],
+		],
+		jackowalker: [
+			[1, "pstem"],
+			[0.05, "candy1"],
+		],
+		zombie: [
+			[0.02, "bandages"],
+			[0.01, "mbones"],
+		],
+		ghoul: [
+			[0.06, "bandages"],
+			[0.0015, "ectoplasm"],
+		],
+		// Twelve rounds a day: the scarce materials come about once a realm-day
+		gargoyle: [
+			[100, "candy1", 6],
+			// Weight 10, like Mr. Pumpkin's helmet: with the extra table roll per 10 fighters, each fighter averages a Parcel at any crowd size
+			[10, "witchparcel"],
+			[1, "essenceofether", 2],
+			[0.05, "ectoplasm"],
+			[0.04, "bcandle"],
+		],
 		bbpompom: [
 			[0.0004, "essenceoffrost"],
 			[6.0 / 1000, "lspores"],
@@ -477,23 +500,17 @@ var drops = {
 			[200, "candy1"],
 			[200, "candy1"],
 			[10, "frankypants"],
-			[1.0 / 2000, "mpxgloves"],
-			[1.0 / 5000, "ukey"],
 			[1.0 / 8000, "cxjar", 1, "marmor3h"],
 		],
 		dragold: [
 			[3, "goldenegg"],
 			[3, "goldenegg"],
-			[3, "goldenegg"],
-			[50, "essenceoffire"],
-			[40, "essenceoffire"],
-			[30, "essenceoffire"],
 			[20, "essenceoffire"],
 			[10, "essenceoffire"],
 			[10, "essenceoffire"],
-			[1, "embercore", 5],
+			[0.005, "embercore"],
 			[0.2, "offering"],
-			[0.5, "lmace"],
+			[0.2, "lmace"],
 			[2.0 / 4 / 1000 / 1000, "cxjar", 1, "hat400"],
 			[2.0 / 6 / 1000 / 1000, "chrysalis0"],
 			[1, "horsecapeg"],
@@ -514,7 +531,7 @@ var drops = {
 			[7.0 / 10000000, "ringofluck"],
 		],
 		grinch: [
-			[0.6 / 100, "ringhs"],
+			[1 / 250, "ringhs"],
 			[10, "wbookhs"],
 			[20.0, "gcape"],
 			[1.0 / 10000, "northstar"],
@@ -738,7 +755,13 @@ var drops = {
 		],
 	},
 	monsters_home_server: {
-		crabxx: [[1.0, "reefglass", 3]],
+		crabxx: [
+			[1.0, "reefglass", 3],
+			[1.0 / 1000, "suckerpunch"],
+			[1000, "funtoken"],
+			[1000, "funtoken"],
+			[1000, "funtoken"],
+		],
 		rharpy: [
 			[0.05, "feather1"],
 			[0.2, "essenceoffrost"],
@@ -752,10 +775,18 @@ var drops = {
 			[0.05, "frostcore"],
 		],
 		dragold: [
+			[3, "goldenegg"],
+			[50, "essenceoffire"],
+			[40, "essenceoffire"],
+			[30, "essenceoffire"],
 			[1.0, "essenceoffire"],
-			[0.005, "embercore"],
+			[1, "embercore", 2],
+			[0.75, "lmace"],
+			[0.5, "lmace"],
 		],
 		franky: [
+			[1.0 / 2000, "mpxgloves"],
+			[1.0 / 5000, "ukey"],
 			[1.0, "bandages", 10],
 			[0.005, "ectoplasm"],
 		],
@@ -776,6 +807,21 @@ var drops = {
 			[0.285714, "candy1", 8],
 			//[0.045714,"candy", 15]
 			//[0.045714,"candy1", 45] "jackpot" chance?
+		],
+		snowman: [
+			[0.1, "candycane"],
+			[0.1, "candycane"],
+			[0.1, "mistletoe"],
+			[1.0 / 1225, "offering"],
+			[0.01, "wbookhs"],
+		],
+		grinch: [
+			[1 / 250, "ringhs"],
+			[10, "wbookhs"],
+			[5, "wbookhs"],
+			[3, "wbookhs"],
+			[20.0, "gcape"],
+			[1, "sweaterhs"],
 		],
 	},
 	konami: [
@@ -1163,6 +1209,33 @@ var drops = {
 		[0.0001, "shells", 50],
 		[0.1, "emptyheart"],
 		[1, "cupid"],
+	],
+	// An opened Witch's Parcel (exchanged at the Witch). Weights add up to 100.
+	witchparcel: [
+		[12, "cscroll0", 4],
+		[12, "scroll1", 2],
+		[12, "cscroll1"],
+		// The Draught is a strong two-hour elixir now: fewer of them, more potions
+		[8, "cipherdraught"],
+		[12, "hpot1", 10],
+		[11.75, "mpot1", 10],
+		[9, "gemfragment", 3],
+		[8, "goldnugget"],
+		[7, "funtoken", 4],
+		[6, "offeringp"],
+		[1.5, "scroll2"],
+		[0.25, "offering"],
+		[0.15, "cscroll2"],
+		[0.05, "platinumnugget"],
+		[0.05, "crookedkey"],
+		[0.05, "patchbuckler"],
+		[0.05, "blackcatbell"],
+		[0.05, "nightmarketsash"],
+		[0.02, "hexweavegloves"],
+		[0.02, "candleboots"],
+		[0.02, "witchlightmantle"],
+		[0.02, "laughingbook"],
+		[0.02, "cxjar", 1, "sinisterlaugh"],
 	],
 	candy0: [
 		[0.008, "spookyamulet"],

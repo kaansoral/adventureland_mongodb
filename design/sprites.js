@@ -997,6 +997,49 @@ var sprites = {
 			[null, null, "vbat", null],
 		],
 	},
+	horseman: {
+		file: "/images/misc/horseman_c_1.png",
+		rows: 1,
+		columns: 1,
+		matrix: [["horseman"]],
+	},
+	jackowalker: {
+		file: "/images/tiles/monsters/jacko_a_1.png",
+		rows: 1,
+		columns: 1,
+		matrix: [["jackowalker"]],
+	},
+	zombies: {
+		file: "/images/tiles/monsters/mzombies_1.png",
+		rows: 2,
+		columns: 4,
+		matrix: [
+			["zombie", "zombie1", "zombie2", "zombie3"],
+			["zombie4", "zombie5", "zombie6", "zombie7"],
+		],
+	},
+	// Graveyard Rising: a grave mound churning, then a hand breaking out (rows are the stages).
+	zombies_rise: {
+		file: "/images/tiles/monsters/mzombies_ground_a_1.png",
+		rows: 2,
+		columns: 4,
+		matrix: [
+			["grave_mound", null, null, "grave_hand"],
+			[null, null, null, null],
+		],
+	},
+	ghoul: {
+		file: "/images/tiles/monsters/mghoulA_1.png",
+		rows: 1,
+		columns: 1,
+		matrix: [["ghoul"]],
+	},
+	gargoyle: {
+		file: "/images/tiles/monsters/gargoyle_1.png",
+		rows: 1,
+		columns: 1,
+		matrix: [["gargoyle"]],
+	},
 	mrpumpkin: {
 		file: "/images/tiles/monsters/mr_pumpkin.png",
 		rows: 1,
@@ -1255,7 +1298,7 @@ var imagesets = {
 		size: 20,
 		rows: 40,
 		columns: 20,
-		file: "/images/tiles/items/raw_items.png?v=31",
+		file: "/images/tiles/items/raw_items.png?v=36",
 		load: true,
 	},
 };

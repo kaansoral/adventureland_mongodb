@@ -57,6 +57,18 @@ regenerate_once();</div>
 <p>{{ phrase("docs.articles.7-using-skills.special-usage-paladin-aura") }}</p>
 <p>{{ phrase_html("docs.articles.7-using-skills.to-select-an-aura-directly-pass-its-state") }}</p>
 
+<div class="divider"></div>
+<p>{{ phrase("docs.skills.purify_stacks") }}</p>
+<div class="code" id="purify-stacks">var target = get_targeted_monster();
+if (target &amp;&amp; character.ctype === "paladin"
+	&amp;&amp; character.level &gt;= G.skills.purify.level
+	&amp;&amp; is_in_range(target, "purify")
+	&amp;&amp; !is_on_cooldown("purify")) {
+	use_skill("purify", target).catch(show_json);
+}</div>
+<p><span class="rlabel clickable" onclick="load_documentation('use_skill')">use_skill</span> · <span class="rlabel clickable" onclick="load_documentation('get_targeted_monster')">get_targeted_monster</span></p>
+<div class="divider"></div>
+
 <p>{{ phrase("docs.articles.7-using-skills.special-usage-3-shot") }}</p>
 
 <div class='code'>

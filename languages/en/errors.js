@@ -1,5 +1,13 @@
 // Human-readable API errors. The original reason codes remain unchanged in CODE.
 module.exports = {
+	// New attachment refused at 200 untaken mail entries for the addressed character. The sender keeps the item and postage.
+	"error.mailbox_full": "This character already has 200 uncollected mail attachments. They need to collect some before you can send another.",
+	// New attachment refused at 20 untaken entries from the sender account to this character. Self-mail also counts.
+	"error.mail_sender_limit": "This character already has 20 uncollected mail attachments from your account. They need to collect some before you can send another.",
+	// The receiving account must claim the attached item before hiding its copy. Senders may still hide their own copy.
+	"error.mail_item_untaken": "Collect the attachment before deleting this mail.",
+	// A sale was refused because its selected item changed before receipt.
+	"error.item_changed": "Item changed. Try again.",
 	// Account/API error unexpected; shown after a failed manual action, never used as a protocol value.
 	"error.unexpected": "Something went wrong. Please try again.",
 	// Account/API error invalid_call; shown after a failed manual action, never used as a protocol value.

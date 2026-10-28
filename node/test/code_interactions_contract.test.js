@@ -275,3 +275,223 @@ test("all added public methods have directory entries and function pages", () =>
 		);
 	}
 });
+
+test("exchange waits for its own completion even when its old slot and queue are reused", async () => {
+	const { load } = require("./helpers/server_vm");
+	const h = runnerContext(),
+		c = h.context;
+	c.character.items = [{ name: "candy0", q: 1 }];
+	c.character.q = {};
+	c.setTimeout = () => {
+		throw Error("exchange must not poll or time out a completed request");
+	};
+	load(c, "js/runner_functions.js", ["exchange"]);
+	const result = vm.runInContext(
+		"(async function(){try {return await exchange(0);} finally {globalThis.finally_ran=true;}})()",
+		c,
+	);
+	const request = h.socket.sent.find((r) => r.event === "exchange");
+	h.socket.emit("game_response", { place: "exchange", request_id: request.data.request_id, in_progress: true, num: 0 });
+	h.socket.emit("game_response", { place: "exchange", request_id: "other", success: true });
+	await Promise.resolve();
+	assert.equal(c.finally_ran, undefined);
+	// A later action can occupy the same slot before a polling timer observes completion.
+	c.character.q.exchange = { num: 0, request_id: "later" };
+	c.character.items[0] = { name: "placeholder" };
+	h.socket.emit("game_response", {
+		place: "exchange",
+		request_id: request.data.request_id,
+		success: true,
+		reward: "glitch",
+		num: 5,
+	});
+	assert.deepEqual(JSON.parse(JSON.stringify(await result)), { success: true, reward: "glitch", num: 5 });
+	assert.equal(c.finally_ran, true);
+	assert.equal(h.socket.listenerCount("game_response"), 0);
+	assert.equal(h.socket.listenerCount("disconnect"), 0);
+});
+
+test("exchange finally runs immediately on refusal or disconnect, before or after acceptance", async () => {
+	const { load } = require("./helpers/server_vm");
+	for (const resolveAll of [false, true])
+		for (const accepted of [false, true])
+			for (const disconnected of [false, true]) {
+				const h = runnerContext(),
+					c = h.context;
+				c.RESOLVE_ALL = resolveAll;
+				c.character.items = [{ name: "candy0", q: 1 }];
+				c.character.q = {};
+				load(c, "js/runner_functions.js", ["exchange"]);
+				const result = vm.runInContext(
+					"(async function(){try {return await exchange(0);} finally {globalThis.finally_ran=true;}})()",
+					c,
+				);
+				const request = h.socket.sent.find((r) => r.event === "exchange");
+				if (accepted)
+					h.socket.emit("game_response", {
+						place: "exchange",
+						request_id: request.data.request_id,
+						in_progress: true,
+						num: 0,
+					});
+				const reason = disconnected ? "disconnected" : "distance";
+				if (disconnected) h.socket.emit("disconnect");
+				else
+					h.socket.emit("game_response", {
+						place: "exchange",
+						request_id: request.data.request_id,
+						failed: true,
+						response: reason,
+					});
+				if (resolveAll) assert.equal((await result).reason, reason);
+				else await assert.rejects(result, (e) => e.reason === reason);
+				assert.equal(c.finally_ran, true);
+				assert.equal(h.socket.listenerCount("game_response"), 0);
+				assert.equal(h.socket.listenerCount("disconnect"), 0);
+			}
+});
+
+test("invalid smart_move replacement stops the old route without throwing or reusing its path", async () => {
+	const { load } = require("./helpers/server_vm");
+	for (const destination of [null, undefined, false, "unknown_place", { x: Infinity, y: 0 }, { x: 0, y: NaN }]) {
+		const h = runnerContext(),
+			c = h.context;
+		let interrupted = 0;
+		c.smart = { moving: true, found: true, plot: [{ map: "main", x: 900, y: 900 }], on_done: () => interrupted++ };
+		c.G = { events: {}, maps: {}, monsters: {} };
+		c.parent.phrase = (x) => x;
+		c.game_log = () => {};
+		c.find_npc = () => null;
+		load(c, "js/runner_functions.js", ["smart_move"]);
+		let callback;
+		await assert.rejects(
+			c.smart_move(destination, (value) => {
+				callback = value;
+			}),
+			(e) => e.reason === "invalid",
+		);
+		assert.equal(callback, false);
+		assert.equal(interrupted, 1);
+		assert.equal(c.smart.moving, false);
+	}
+});
+
+function movementContext() {
+	const { load } = require("./helpers/server_vm");
+	const c = runnerContext().context;
+	Object.assign(c, {
+		Dev: false,
+		deferreds: {},
+		smart: { moving: false },
+		code_settings: { log_smart_move: false },
+		game_log() {},
+		can_walk: () => true,
+		is_transporting: () => false,
+		can_move_to: () => false,
+	});
+	c.parent.phrase = (id) => id;
+	Object.assign(c.character, { real_x: 0, real_y: 0 });
+	load(c, "js/old_common_functions.js", [
+		"deferred",
+		"push_deferred",
+		"resolve_deferred",
+		"reject_deferred",
+		"resolve_deferreds",
+		"reject_deferreds",
+	]);
+	load(c, "js/runner_functions.js", ["smart_move", "smart_move_logic"]);
+	return c;
+}
+
+test("a lost smart_move path replans without interrupting its Promise or callback", async () => {
+	const c = movementContext();
+	const callbacks = [];
+	let outcome;
+	const journey = c.smart_move({ x: 100, y: 100 }, (value) => callbacks.push(value));
+	journey.then(
+		(value) => {
+			outcome = value;
+		},
+		(error) => {
+			outcome = error;
+		},
+	);
+	c.smart.found = true;
+	c.smart.plot = [{ map: "main", x: 50, y: 50 }];
+	c.smart_move_logic();
+	await Promise.resolve();
+	assert.equal(outcome, undefined, "replanning settled the original journey");
+	assert.deepEqual(callbacks, []);
+	let searches = 0;
+	c.start_pathfinding = () => {
+		searches++;
+		c.smart.found = true;
+		c.smart.plot = [{ map: "main", x: 100, y: 100 }];
+	};
+	c.can_move_to = () => true;
+	c.move = (x, y) => Object.assign(c.character, { real_x: x, real_y: y });
+	c.smart_move_logic();
+	c.smart_move_logic();
+	c.smart_move_logic();
+	assert.equal(searches, 1);
+	assert.equal((await journey).success, true);
+	assert.deepEqual(callbacks, [true]);
+	assert.equal(c.deferreds.smart_move, undefined);
+});
+
+test("the coordinate MOVE button sends numeric coordinates to smart_move", async () => {
+	const { load } = require("./helpers/server_vm");
+	const c = movementContext();
+	load(c, "js/functions.js", ["code_move"]);
+	let journey;
+	c.code_eval = (source) => {
+		journey = vm.runInContext(source, c);
+		journey.catch(() => {});
+	};
+	c.code_move("-12.5", "84");
+	assert.equal(c.smart.moving, true);
+	assert.equal(c.smart.x, -12.5);
+	assert.equal(c.smart.y, 84);
+	c.smart.moving = false;
+	c.smart.on_done(true);
+	assert.equal((await journey).success, true);
+});
+
+test("equip_batch rejects empty entries without throwing or sending an equipment request", async () => {
+	const { load } = require("./helpers/server_vm");
+	for (const data of [[null], [undefined], Array(1)]) {
+		const h = runnerContext(),
+			c = h.context;
+		c.parent.phrase = (id) => id;
+		c.game_log = () => {};
+		load(c, "js/runner_functions.js", ["equip_batch"]);
+		await assert.rejects(c.equip_batch(data), (error) => error.reason === "invalid");
+		assert.equal(h.socket.sent.length, 0);
+	}
+	const h = runnerContext();
+	load(h.context, "js/runner_functions.js", ["equip_batch"]);
+	await h.context.equip_batch([
+		{ num: 0, slot: "chest" },
+		{ num: 1, slot: "orb" },
+	]);
+	assert.equal(h.socket.sent.length, 1);
+	assert.equal(h.socket.sent[0].event, "equip_batch");
+});
+
+test("find_npc reads roaming NPC routes and preserves stationary and seasonal lookups", () => {
+	const { load } = require("./helpers/server_vm");
+	const h = runnerContext(),
+		c = h.context;
+	c.parent.G = require("./helpers/design");
+	c.parent.S = {};
+	load(c, "js/runner_functions.js", ["find_npc"]);
+	for (const [id, map, x, y] of [
+		["pvp", "main", 232, 388],
+		["citizen20", "mtunnel", 0, 8],
+	]) {
+		const found = c.find_npc(id);
+		assert.deepEqual(JSON.parse(JSON.stringify(found)), { map, in: map, x, y });
+	}
+	assert(c.find_npc("newupgrade"));
+	assert.equal(c.find_npc("nonexistent_npc"), null);
+});

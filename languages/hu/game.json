@@ -317,7 +317,7 @@
 	"game.clicks_away": "{dist} kattanásnyira",
 	"game.echoes": "{length} visszhang",
 	"game.clicks": "{c} kattanás",
-	"npc.home.set_offer": "Ez nem az otthoni szervered. Az otthonod: {home}. Az otthoni világokban többet ér a közös harcokhoz való hozzájárulásod, és különleges jutalmakat is kapsz; ha gyorsan váltasz a nem kereskedő karaktereid között, ezek 30 percre szünetelnek. Szeretnéd ezt a szervert beállítani otthonodnak?",
+	"npc.home.set_offer": "Ez nem az otthoni szervered. {home} lakója vagy. Az otthoni világok erősebb kooperatív jóváírást és különleges jutalmakat kínálnak; a nem Kereskedő karakterek gyors szerverváltása 30 percre szünetelteti ezeket az előnyöket. Szeretnéd ezt a szervert otthonodnak beállítani?",
 	"npc.yes": "Igen!",
 	"npc.home.current": "Ez az otthoni szervered. Itt többet számít a segítséged a közösen támadható szörnyek ellen, és néhány szörny extra otthoni jutalmat is ad. Ha azután váltasz ide, hogy egy másik, nem kereskedő karaktered másik szerveren járt, 30 perc Világváltási fáradtságot kapsz. A szokásos jutalmak ezalatt is járnak.",
 	"npc.bless_server.offer": "Szeretnéd 3 napra megáldani az egész szervert?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Ez a tárgy nem felel meg az ajánlatnak",
 	"response.trade_swap_space": "A kereskedőnél nincs hely",
 	"game.trade_history.traded": "- Csere: '{item}', partner: {player}, kapott: '{received}'",
-	"response.transport_need_items": "Szükséges: {items}"
+	"response.transport_need_items": "Szükséges: {items}",
+	"combat.emote.hehehe": "HEHEHE"
 }

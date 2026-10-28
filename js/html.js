@@ -169,10 +169,12 @@ function chat_title_click(type, id) {
 	if (in_arr(cid, docked)) toggle_chat_window(type, id);
 }
 
+// Docked windows sit behind the chat box with their title bars stacked above it, so they follow its measured height.
 function redock() {
+	var corner = $("#bottomleftcorner2").is(":visible") && $("#bottomleftcorner2").outerHeight();
 	for (var i = 0; i < docked.length; i++) {
 		var cid = docked[i];
-		$("#chatw" + cid).css("bottom", 15 + i * 32);
+		$("#chatw" + cid).css("bottom", corner ? corner + 34 + i * 32 - $("#chatw" + cid).outerHeight() : 15 + i * 32);
 		$("#chatw" + cid).css("z-index", 70 - i);
 	}
 }
@@ -262,7 +264,9 @@ function render_party_old(list) {
 	else $("#partylist").css("display", "inline-block");
 }
 
-function render_party() {
+function render_party(args) {
+	args = args || {};
+	var party = args.party || window.party;
 	var html = "";
 	for (var name in party) {
 		var member = party[name];
@@ -272,6 +276,7 @@ function render_party() {
 		else html += "<div style='margin-top: 1px'>" + name.substr(0, 3).toUpperCase() + "</div>";
 		html += "</div>";
 	}
+	if (args.return_html) return html;
 	$("#newparty").html(html);
 	if (!party_list.length) $("#newparty").hide();
 	else $("#newparty").show();
@@ -700,17 +705,18 @@ function render_event_announcements() {
 			})
 			.slice(0, 2),
 		release = release_card_html(),
+		next_card = character ? "" : events_selection_card_html(),
 		signature = JSON.stringify(
 			keys
 				.map(function (key) {
 					return [key, G.events[key]];
 				})
-				.concat([!!no_graphics, release]),
+				.concat([!!no_graphics, release, next_card]),
 		);
 	if (banner.data("events") === signature) return;
 	banner.data("events", signature);
-	// An unread update post comes first, then live events.
-	var html = release;
+	// An unread update post comes first, then the next event and live events.
+	var html = release + next_card;
 	keys.forEach(function (key) {
 		var event = G.events[key],
 			theme = event.announcement;
@@ -807,13 +813,15 @@ function render_server() {
 		else if (minutes < 10) minutes = "0" + minutes;
 		$(".minutesui").html(hours + ":" + minutes);
 	}
-	["crabxx", "goobrawl", "abtesting", "franky", "icegolem"].forEach(function (type) {
-		if (S[type]) {
+	["crabxx", "goobrawl", "abtesting", "franky", "icegolem", "horseman", "graveyard", "witchcipher"].forEach(function (type) {
+		if (S[type] && S[type].live !== false) {
 			var scolor = "#ECECEC",
 				lcolor = "#ECECEC",
 				lphrase = phrase.html("interface.server.event"),
 				s = type;
 			if (type == "goobrawl") ((lcolor = "#FF5D34"), (s = "rgoo"));
+			if (type == "witchcipher") ((lcolor = "#AF6AE2"), (s = "brewingwitch"));
+			if (type == "graveyard") ((lcolor = "#9FA3A8"), (s = "gargoyle"));
 			if (type == "abtesting") ((lcolor = "#E10029"), (s = "thehelmet"));
 			else if (G.monsters[type] && G.monsters[type].announce) lcolor = G.monsters[type].announce;
 			html += " <div class='gamebutton' style='padding: 6px 8px 6px 8px; font-size: 24px; line-height: 18px' onclick='pcs(event); open_guide(\"event-" + type + '","/docs/ref/event-' + type + "\")'>";
@@ -898,7 +906,9 @@ function render_server() {
 	}
 }
 
-function render_character_sheet() {
+function render_character_sheet(args) {
+	args = args || {};
+	var character = args.character || window.character, party = args.party || window.party;
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top; text-align: left' class='disableclicks'>";
 	html +=
 		"<div><span style='color:gray'>" +
@@ -910,7 +920,7 @@ function render_character_sheet() {
 	html += "<div><span style='color:gray'>" + phrase.html("interface.character_sheet.xp") + "</span> " + to_pretty_num(character.xp) + " / " + to_pretty_num(character.max_xp) + "</div>";
 	var divider = 1,
 		disclaimer = "";
-	if (pvp && !(!is_pvp && G.maps[character.map].safe_pvp)) ((divider = 10), (disclaimer = "<span style='color:#605B85'>" + phrase.html("interface.character_sheet.pvp") + "</span>"));
+	if (!args.return_html && pvp && !(!is_pvp && G.maps[character.map].safe_pvp)) ((divider = 10), (disclaimer = "<span style='color:#605B85'>" + phrase.html("interface.character_sheet.pvp") + "</span>"));
 	var lost_xp = floor(min(max((character.max_xp * 0.01) / divider, (character.xp * 0.02) / divider), character.xp));
 	if (character.ctype != "merchant")
 		html += "<div><span style='color:gray'>" + phrase.html("interface.character_sheet.max_xp_loss") + "</span> " + to_pretty_num(lost_xp) + " " + disclaimer + "</div>";
@@ -1024,6 +1034,7 @@ function render_character_sheet() {
 		else html += "<div><span style='color:gray'>" + phrase.html("interface.character_sheet.luck") + "</span> " + round(character.luckm * 100) + "%</div>";
 	}
 	html += "</div>";
+	if (args.return_html) return html;
 	render_ui_panel("#rightcornerui", html, "stats", { label: "X", corner: true, classes: "ui-close-corner" });
 	topright_npc = "character";
 }
@@ -1273,15 +1284,17 @@ function render_monster(monster) {
 }
 
 var cache_bid = -1;
-function render_character(player) {
+function render_character(player, args) {
+	args = args || {};
+	var character = args.character || window.character, party_list = args.party_list || window.party_list;
 	var html =
 			"<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top;' class='renderedinfo' data-id='" + player.id + "'>",
-		cccx = $(".cccx").length,
+		cccx = !args.return_html && $(".cccx").length,
 		ihtml = "",
 		bhtml = "",
 		xhtml = "",
 		already = false;
-	if ($(".renderedinfo").length && $(".renderedinfo").data("id") == player.id) already = true;
+	if (!args.return_html && $(".renderedinfo").length && $(".renderedinfo").data("id") == player.id) already = true;
 	html += info_line({
 		name: (player.role && phrase.definition("role", player.role, "name", player.role.toTitleCase()).toLocaleUpperCase(phrase.language)) || phrase.html("interface.character.name"),
 		color: (player.role && "#E14F8B") || "gray",
@@ -1316,7 +1329,7 @@ function render_character(player) {
 	if (player.npc && G.npcs[player.npc].cavalry)
 		html += button_line({name: phrase.html("interface.item.info"), onclick: "open_guide('cavalry', get_guide_url('cavalry'))", color: "#C6AA62"});
 	html += "</div>";
-	var bid = player.party + "|" + player.stand + "|" + (character.slots.trade1 !== undefined);
+	var bid = player.party + "|" + player.stand + "|" + (character && character.slots.trade1 !== undefined);
 	html += "<div class='bhtml'>";
 	if (!player.npc && !player.party && character && !player.me && !player.stand)
 		bhtml += button_line({
@@ -1354,6 +1367,7 @@ function render_character(player) {
 	html += bhtml;
 	html += "</div>";
 	html += "</div>";
+	if (args.return_html) return html;
 	if (already) {
 		$(".ihtml").html(ihtml);
 		if (bid != cache_bid) $(".bhtml").html(bhtml);
@@ -2224,6 +2238,7 @@ function render_exchange_shrine(type) {
 	if (type == "ornament") ((shade = "ornament"), (button = phrase.html("interface.exchange_shrine.give")));
 	if (type == "seashell") ((shade = "seashell"), (button = phrase.html("interface.exchange_shrine.give")));
 	if (type == "gemfragment") ((shade = "gemfragment"), (button = phrase.html("interface.exchange_shrine.provide")));
+	if (type == "witchparcel") ((shade = "witchparcel"), (button = phrase.html("interface.exchange_shrine.open")));
 	if (type == "cx") ((shade = "cosmo0"), (button = phrase.html("interface.exchange_shrine.shazam")));
 	e_item = null;
 	var html = "<div style='background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top; text-align: center'>";
@@ -3546,6 +3561,7 @@ function docs_link_click(event) {
 		match = url && url.match(/^\/docs\/(?:code\/functions|guide(?:\/[\w-]+)*)\/([\w-]+)$/);
 	if (url == "/docs/code/character/reference") open_article("data-character", url);
 	else if (url == "/docs/code/monster/reference") open_article("data-monster", url);
+	else if (url == "/docs/code/server/status") open_article("data-server-status", url);
 	else if (match && url.indexOf("/docs/code/functions/") == 0) load_documentation(match[1]);
 	else if (match && get_guide_url(match[1]) == url) open_guide(match[1], url);
 	else return;
@@ -3567,6 +3583,82 @@ function get_tutorial_view(track) {
 		lessons: track === "merchant" ? G.docs.merchant_tutorial : G.docs.tutorial,
 		progress: (window.X && (track === "merchant" ? X.merchant_tutorial : X.tutorial)) || { step: 0, completed: [], pending: [] },
 	};
+}
+
+function render_party_examples() {
+	if (window.no_graphics) return;
+	// These examples use the live HTML renderers, but never the live character,
+	// roster or socket. Remove live handlers before placing a preview in the DOM.
+	function inert(html) {
+		var element = $(html);
+		element.find("*").addBack().each(function () {
+			var node = this;
+			if (node.nodeType !== 1) return;
+			Array.prototype.slice.call(node.attributes).forEach(function (attr) {
+				if (/^on/i.test(attr.name)) node.removeAttribute(attr.name);
+			});
+		}).removeClass("renderedinfo ihtml bhtml xhtml");
+		return element;
+	}
+	function example_character(name, type) {
+		var definition = G.classes[type], look = definition.looks[0];
+		return Object.assign({}, definition.stats, {
+			id: name, name: name, ctype: type, level: 1, xp: 0, max_xp: G.levels[1], map: "main",
+			hp: definition.hp, max_hp: definition.hp, mp: definition.mp, max_mp: definition.mp,
+			attack: definition.attack, frequency: definition.frequency, range: definition.range, speed: definition.speed,
+			armor: definition.armor, resistance: definition.resistance, mp_cost: definition.mp_cost,
+			courage: definition.courage, mcourage: definition.mcourage, pcourage: definition.pcourage,
+			skin: look[0], cx: Object.assign({}, look[1]), s: {}, slots: {}, goldm: 1, xpm: 1, luckm: 1,
+		});
+	}
+	$(".party-practice").each(function () {
+		var root = $(this);
+		if (root.data("ready")) return;
+		root.data("ready", true);
+		var mira = example_character("Mira", "mage"), finn = example_character("Finn", "warrior"), roster = { Mira: mira, Finn: finn };
+		mira.me = true;
+		function select(member) {
+			var html = render_character(member, { character: mira, party_list: [], return_html: true });
+			var panel = $(html), invite = panel.find("[onclick]").filter(function () { return this.getAttribute("onclick").indexOf("event:'invite'") !== -1; });
+			panel = inert(panel);
+			invite.on("click", function (event) {
+				event.stopPropagation();
+				if (window.character) tut("com");
+				root.find(".party-practice-status").text(root.attr("data-sent"));
+				var invitation = inert("<div class='chatentry' style='color:gray'>" + add_invite("Mira", true) + "</div>");
+				invitation.find(".clickable").on("click", function (event) {
+					event.stopPropagation();
+					mira.party = finn.party = "Mira";
+					var portraits = inert(render_party({ party: roster, return_html: true }));
+					portraits.filter(".gamebutton").each(function (index) {
+						$(this).on("click", function (event) { event.stopPropagation(); select(index ? finn : mira); });
+					});
+					root.find(".party-practice-roster").empty().append(portraits);
+					root.find(".party-practice-status").text(root.attr("data-joined"));
+					root.find(".party-practice-chat").empty();
+					select(finn);
+				});
+				root.find(".party-practice-chat").empty().append(invitation);
+			});
+			root.find(".party-practice-panel").empty().append(panel);
+		}
+		[mira, finn].forEach(function (member) {
+			var actor = $("<div class='clickable' style='text-align:center'></div>");
+			actor.html(sprite(member.skin, { cx: Object.assign({}, member.cx), scale: 3, width: 90, height: 110, overflow: true }) + "<div>" + member.name + "</div>");
+			actor.on("click", function (event) { event.stopPropagation(); select(member); });
+			root.find(".party-practice-actors").append(actor);
+		});
+		select(finn);
+		if (window.character && character.party) tut("com");
+	});
+	$(".party-share-example").each(function () {
+		var member = example_character("Mira", "mage");
+		member.party = "Mira";
+		var panel = inert(render_character_sheet({ character: member, party: { Mira: { share: 0.4 } }, return_html: true }));
+		// Show the top of the actual sheet, through its PARTY row, at native size.
+		panel.children().slice(5).remove();
+		$(this).empty().append(panel);
+	});
 }
 
 function render_tutorial_items() {
@@ -4081,6 +4173,43 @@ function guide_monster_views(name) {
 			return "<div class='guide-view'>" + guide_monster_tile(name, j) + "<div class='guide-view-label'>" + phrase.html("interface.monster_views." + side) + "</div></div>";
 		})
 		.join("");
+}
+
+// A monster's numbers as its INFO window shows them, in the tooltip's black box, for guides that explain a fight
+function guide_monster_stats(names) {
+	return (
+		"<div class='guide-stats'>" +
+		names
+			.map(function (name) {
+				return "<div class='buyitem'>" + render_item("html", { pure: true, item: G.monsters[name], prop: G.monsters[name], monster: name }) + "</div>";
+			})
+			.join("") +
+		"</div>"
+	);
+}
+
+// Each monster's own drops beside its tile, so a fight with several monsters shows which one drops what
+function guide_monster_drops(names) {
+	return names
+		.map(function (name) {
+			return (
+				"<div class='guide-drop-group'>" +
+				guide_monster_tile(name, 0) +
+				"<div>" +
+				(G.drops.monsters[name] || [])
+					.map(function (drop) {
+						return render_drop(drop, 1, "#858B8E");
+					})
+					.join("") +
+				"</div></div>"
+			);
+		})
+		.join("");
+}
+
+// A health bar filled to the given percent, like the party list's, with the number beside it
+function guide_hp_bar(percent) {
+	return "<span class='guide-hp'><span style='width:" + percent + "%;background:" + colors.hp + "'></span></span><span class='guide-label'>" + percent + "%</span>";
 }
 
 function render_all_monsters() {
@@ -4752,6 +4881,75 @@ function render_wishlist(num, page, offer, typing) {
 	if (typing && input) (input.focus(), input.setSelectionRange(input.value.length, input.value.length));
 }
 
+// The stat lines of an item tooltip. Map and class bonuses use it too, with an empty def, so only their numbers show.
+function render_prop_lines(prop, item, args) {
+	var html = "";
+	if (prop.gold) html += bold_prop_line(phrase.html("interface.item.gold"), ((prop.gold > 0 && "+") || "") + prop.gold + "%", "gold");
+	if (prop.luck) html += bold_prop_line(phrase.html("interface.item.luck"), ((prop.luck > 0 && "+") || "") + prop.luck + "%", "#5DE376");
+	if (prop.xp) html += bold_prop_line(phrase.html("stat.xp.name"), ((!args.monster && prop.xp > 0 && "+") || "") + prop.xp + ((!args.monster && "%") || ""), "#1E73DE");
+	if (prop.lifesteal) html += bold_prop_line(phrase.html("interface.item.lifesteal"), to_pretty_float(prop.lifesteal) + "%", colors.lifesteal);
+	if (prop.manasteal) html += bold_prop_line(phrase.html("interface.item.manasteal"), to_pretty_float(prop.manasteal) + "%", colors.manasteal);
+	if (item.goldsteal) html += bold_prop_line(phrase.html("interface.item.goldsteal"), phrase.html("interface.item.dynamic"), "gold");
+	if (prop.evasion) html += bold_prop_line(phrase.html("interface.item.evasion"), to_pretty_float(prop.evasion) + "%", "#7AC0F5");
+	if (prop.avoidance) html += bold_prop_line(phrase.html("interface.item.avoidance"), to_pretty_float(prop.avoidance) + "%", "#7AC0F5");
+	if (prop.miss && item.type != "elixir") html += bold_prop_line(phrase.html("interface.item.miss"), prop.miss + "%", "#F36C6E");
+	if (prop.reflection) html += bold_prop_line(phrase.html("interface.item.reflection"), to_pretty_float(prop.reflection) + "%", "#B484E5");
+	if (prop.dreturn) html += bold_prop_line(phrase.html("interface.item.d_return"), to_pretty_float(prop.dreturn) + "%", "#E94959");
+	if (prop.crit) html += bold_prop_line(phrase.html("interface.item.crit"), to_pretty_float(prop.crit) + "%", "#E52967");
+	if (prop.critdamage) html += bold_prop_line(phrase.html("interface.item.crit_damage"), "+" + to_pretty_float(prop.critdamage) + "%", "#A8214E");
+	if (prop.attack) html += bold_prop_line(phrase.html("interface.item.damage"), prop.attack, colors.attack);
+	if (item.damage_type) {
+		if (item.damage_type == "pure") html += bold_prop_line(phrase.html("interface.item.type"), phrase.html("interface.item.pure"), "#AA9B55");
+		else if (item.damage_type == "magical") html += bold_prop_line(phrase.html("interface.item.type"), phrase.html("interface.item.magical"), "#8998AA");
+		else if (item.damage_type == "physical") html += bold_prop_line(phrase.html("interface.item.type"), phrase.html("interface.item.physical"), "#93AB98");
+	}
+	if (prop.range) html += bold_prop_line(phrase.html("interface.item.range"), ((!args.monster && "+") || "") + prop.range, colors.range);
+	if (prop.hp) html += bold_prop_line(phrase.html("stat.hp.name"), prop.hp, colors.hp);
+	if (prop.str) html += bold_prop_line(phrase.html("interface.item.strength"), prop.str, colors.str);
+	if (prop["int"]) html += bold_prop_line(phrase.html("interface.item.intelligence"), prop["int"], colors["int"]);
+	if (prop.dex) html += bold_prop_line(phrase.html("interface.item.dexterity"), prop.dex, colors.dex);
+	if (prop.vit) html += bold_prop_line(phrase.html("interface.item.vitality"), prop.vit, colors.hp);
+	if (prop["for"]) html += bold_prop_line(phrase.html("interface.item.fortitude"), prop["for"], colors["for"]);
+	if (prop.mp) html += bold_prop_line(phrase.html("stat.mp.name"), prop.mp, colors.mp);
+	if (prop.mp_cost > 0) html += bold_prop_line(phrase.html("interface.item.attack_mp_cost"), "+" + prop.mp_cost, colors.mp);
+	else if (prop.mp_cost) html += bold_prop_line(phrase.html("interface.item.attack_mp_cost"), prop.mp_cost, colors.mp);
+	if (prop.mp_reduction > 0) html += bold_prop_line(phrase.html("interface.item.skill_mp_reduction"), "%" + prop.mp_reduction, colors.mp);
+	else if (prop.mp_reduction) html += bold_prop_line(phrase.html("interface.item.skill_mp_increase"), "%" + -prop.mp_reduction, colors.mp);
+	if (prop.stat) html += bold_prop_line(phrase.html("interface.item.stat"), prop.stat);
+	if (prop.armor) html += bold_prop_line(phrase.html("interface.item.armor"), prop.armor, colors.armor);
+	if (prop.apiercing) html += bold_prop_line(phrase.html("interface.item.a_piercing"), prop.apiercing, colors.armor);
+	if (prop.rpiercing) html += bold_prop_line(phrase.html("interface.item.r_piercing"), prop.rpiercing, colors.resistance);
+	if (prop.resistance) html += bold_prop_line(phrase.html("interface.item.resistance"), prop.resistance, colors.resistance);
+	if (prop.pnresistance) html += bold_prop_line(phrase.html("interface.item.poison_res"), prop.pnresistance, "#68B84B");
+	if (prop.firesistance) html += bold_prop_line(phrase.html("interface.item.fire_res"), prop.firesistance, "#B42B22");
+	if (prop.fzresistance) html += bold_prop_line(phrase.html("interface.item.freeze_res"), prop.fzresistance, "#69B1B6");
+	if (prop.phresistance) html += bold_prop_line(phrase.html("interface.item.impact_res"), prop.phresistance, "#69B1B6");
+	if (prop.stresistance) html += bold_prop_line(phrase.html("interface.item.status_res"), prop.stresistance, "#9FA7B6");
+	if (item.wspeed) html += bold_prop_line(phrase.html("interface.item.speed"), phrase.definition("speed", item.wspeed, "name", item.wspeed.toTitleCase()), "gray");
+	if (prop.speed)
+		html += bold_prop_line(
+			(item.wtype && phrase.html("interface.item.run_speed")) || phrase.html("interface.item.speed"),
+			((!args.monster && prop.speed > 0 && "+") || "") + prop.speed,
+			colors.speed,
+		);
+	if (prop.frequency || args.monster) html += bold_prop_line(phrase.html("interface.item.a_speed"), (prop.frequency || 1) * ((args.monster && 100) || 1), "#3BE681");
+	if (prop.output) html += bold_prop_line(phrase.html("interface.item.damage_output"), ((prop.output > 0 && "+") || "") + prop.output + "%", "#D93319");
+	if (prop.incdmgamp) html += bold_prop_line(phrase.html("interface.item.incoming_damage"), prop.incdmgamp + "%", "#D93319");
+	if (prop.stun) html += bold_prop_line(phrase.html("interface.item.stun"), prop.stun + "%", "#784224");
+	if (prop.explosion) html += bold_prop_line(phrase.html("interface.item.explosion"), prop.explosion + "%", "#782D33");
+	if (prop.blast) html += bold_prop_line(phrase.html("interface.item.blast"), prop.blast + "%", "#685079");
+	if (prop.breaks && prop.breaks > 0) html += bold_prop_line(phrase.html("interface.item.breaks"), to_pretty_float(prop.breaks) + "%", "#782D33");
+	if (prop.charisma) html += bold_prop_line(phrase.html("interface.item.charisma"), prop.charisma, "#4DB174");
+	if (prop.awesomeness) html += bold_prop_line(phrase.html("interface.item.awesomeness"), prop.awesomeness, "#FFDE2F");
+	if (prop.bling) html += bold_prop_line(phrase.html("interface.item.bling"), prop.bling, "#A4E6FF");
+	if (prop.cuteness) html += bold_prop_line(phrase.html("interface.item.cuteness"), prop.cuteness, "#FD82F0");
+	if (prop.intensity) html += bold_prop_line(phrase.html("interface.item.intensity"), prop.intensity, "#786D6A");
+	if (prop.courage) html += bold_prop_line(phrase.html("interface.item.courage"), prop.courage, "#9E1813");
+	if (prop.mcourage) html += bold_prop_line(phrase.html("interface.item.m_courage"), prop.mcourage, "#4628A0");
+	if (prop.pcourage) html += bold_prop_line(phrase.html("interface.item.p_courage"), prop.pcourage, "#D19D32");
+	return html;
+}
+
 var last_selector = "";
 function render_item(selector, args) {
 	if (args && args.actual) args.name = args.actual.name;
@@ -4765,7 +4963,8 @@ function render_item(selector, args) {
 	var actual = args && args.actual;
 	if (selector && selector != "html") last_selector = selector;
 	else if (selector != "html") selector = last_selector;
-	var prop = args.prop || calculate_item_properties(actual || {}, { def: item, class: window.character && character.ctype, map: window.character && character.map }),
+	// The item's own stats; map and class bonuses are listed with their numbers below them
+	var prop = args.prop || calculate_item_properties(actual || {}, { def: item }),
 		grade = calculate_item_grade(item, actual || {});
 	var html = "";
 	if (!args.pure)
@@ -4780,7 +4979,7 @@ function render_item(selector, args) {
 		else if (item.type == "tarot") html += "<img style='display: inline-block; margin: -8px 2px -6px -8px;' src='/images/cards/tarot/major_arcana/tarot__" + item.major + ".png' />";
 		color = "#E4E4E4"; // previously gray [16/08/16]
 		if (item.grade == "mid") color = "blue"; // lol - must be old [13/04/20]
-		if (actual && actual.p && G.titles[actual.p]) item_name = G.titles[actual.p].title + " " + item_name;
+		if (actual && actual.p && G.titles[actual.p]) item_name = phrase.definition("title", actual.p, "title", G.titles[actual.p].title) + " " + item_name;
 		else if (actual && actual.p) item_name = actual.p.toTitleCase() + " " + item_name;
 		if (prop.level) {
 			if (item.upgrade && prop.level == 12) item_name += " +Z";
@@ -4826,69 +5025,7 @@ function render_item(selector, args) {
 				bold_prop_line(phrase.html("interface.item.find"), "<span style='color:" + colors.string + ";'>\"" + args.monster + '"</span>', "#7AD963") +
 				"</span>";
 		}
-		if (prop.gold) html += bold_prop_line(phrase.html("interface.item.gold"), ((prop.gold > 0 && "+") || "") + prop.gold + "%", "gold");
-		if (prop.luck) html += bold_prop_line(phrase.html("interface.item.luck"), ((prop.luck > 0 && "+") || "") + prop.luck + "%", "#5DE376");
-		if (prop.xp) html += bold_prop_line(phrase.html("stat.xp.name"), ((!args.monster && prop.xp > 0 && "+") || "") + prop.xp + ((!args.monster && "%") || ""), "#1E73DE");
-		if (prop.lifesteal) html += bold_prop_line(phrase.html("interface.item.lifesteal"), to_pretty_float(prop.lifesteal) + "%", colors.lifesteal);
-		if (prop.manasteal) html += bold_prop_line(phrase.html("interface.item.manasteal"), to_pretty_float(prop.manasteal) + "%", colors.manasteal);
-		if (item.goldsteal) html += bold_prop_line(phrase.html("interface.item.goldsteal"), phrase.html("interface.item.dynamic"), "gold");
-		if (prop.evasion) html += bold_prop_line(phrase.html("interface.item.evasion"), to_pretty_float(prop.evasion) + "%", "#7AC0F5");
-		if (prop.avoidance) html += bold_prop_line(phrase.html("interface.item.avoidance"), to_pretty_float(prop.avoidance) + "%", "#7AC0F5");
-		if (prop.miss && item.type != "elixir") html += bold_prop_line(phrase.html("interface.item.miss"), prop.miss + "%", "#F36C6E");
-		if (prop.reflection) html += bold_prop_line(phrase.html("interface.item.reflection"), to_pretty_float(prop.reflection) + "%", "#B484E5");
-		if (prop.dreturn) html += bold_prop_line(phrase.html("interface.item.d_return"), to_pretty_float(prop.dreturn) + "%", "#E94959");
-		if (prop.crit) html += bold_prop_line(phrase.html("interface.item.crit"), to_pretty_float(prop.crit) + "%", "#E52967");
-		if (prop.critdamage) html += bold_prop_line(phrase.html("interface.item.crit_damage"), "+" + to_pretty_float(prop.critdamage) + "%", "#A8214E");
-		if (prop.attack) html += bold_prop_line(phrase.html("interface.item.damage"), prop.attack, colors.attack);
-		if (item.damage_type) {
-			if (item.damage_type == "pure") html += bold_prop_line(phrase.html("interface.item.type"), phrase.html("interface.item.pure"), "#AA9B55");
-			else if (item.damage_type == "magical") html += bold_prop_line(phrase.html("interface.item.type"), phrase.html("interface.item.magical"), "#8998AA");
-			else if (item.damage_type == "physical") html += bold_prop_line(phrase.html("interface.item.type"), phrase.html("interface.item.physical"), "#93AB98");
-		}
-		if (prop.range) html += bold_prop_line(phrase.html("interface.item.range"), ((!args.monster && "+") || "") + prop.range, colors.range);
-		if (prop.hp) html += bold_prop_line(phrase.html("stat.hp.name"), prop.hp, colors.hp);
-		if (prop.str) html += bold_prop_line(phrase.html("interface.item.strength"), prop.str, colors.str);
-		if (prop["int"]) html += bold_prop_line(phrase.html("interface.item.intelligence"), prop["int"], colors["int"]);
-		if (prop.dex) html += bold_prop_line(phrase.html("interface.item.dexterity"), prop.dex, colors.dex);
-		if (prop.vit) html += bold_prop_line(phrase.html("interface.item.vitality"), prop.vit, colors.hp);
-		if (prop["for"]) html += bold_prop_line(phrase.html("interface.item.fortitude"), prop["for"], colors["for"]);
-		if (prop.mp) html += bold_prop_line(phrase.html("stat.mp.name"), prop.mp, colors.mp);
-		if (prop.mp_cost > 0) html += bold_prop_line(phrase.html("interface.item.attack_mp_cost"), "+" + prop.mp_cost, colors.mp);
-		else if (prop.mp_cost) html += bold_prop_line(phrase.html("interface.item.attack_mp_cost"), prop.mp_cost, colors.mp);
-		if (prop.mp_reduction > 0) html += bold_prop_line(phrase.html("interface.item.skill_mp_reduction"), "%" + prop.mp_reduction, colors.mp);
-		else if (prop.mp_reduction) html += bold_prop_line(phrase.html("interface.item.skill_mp_increase"), "%" + -prop.mp_reduction, colors.mp);
-		if (prop.stat) html += bold_prop_line(phrase.html("interface.item.stat"), prop.stat);
-		if (prop.armor) html += bold_prop_line(phrase.html("interface.item.armor"), prop.armor, colors.armor);
-		if (prop.apiercing) html += bold_prop_line(phrase.html("interface.item.a_piercing"), prop.apiercing, colors.armor);
-		if (prop.rpiercing) html += bold_prop_line(phrase.html("interface.item.r_piercing"), prop.rpiercing, colors.resistance);
-		if (prop.resistance) html += bold_prop_line(phrase.html("interface.item.resistance"), prop.resistance, colors.resistance);
-		if (prop.pnresistance) html += bold_prop_line(phrase.html("interface.item.poison_res"), prop.pnresistance, "#68B84B");
-		if (prop.firesistance) html += bold_prop_line(phrase.html("interface.item.fire_res"), prop.firesistance, "#B42B22");
-		if (prop.fzresistance) html += bold_prop_line(phrase.html("interface.item.freeze_res"), prop.fzresistance, "#69B1B6");
-		if (prop.phresistance) html += bold_prop_line(phrase.html("interface.item.impact_res"), prop.phresistance, "#69B1B6");
-		if (prop.stresistance) html += bold_prop_line(phrase.html("interface.item.status_res"), prop.stresistance, "#9FA7B6");
-		if (item.wspeed) html += bold_prop_line(phrase.html("interface.item.speed"), phrase.definition("speed", item.wspeed, "name", item.wspeed.toTitleCase()), "gray");
-		if (prop.speed)
-			html += bold_prop_line(
-				(item.wtype && phrase.html("interface.item.run_speed")) || phrase.html("interface.item.speed"),
-				((!args.monster && prop.speed > 0 && "+") || "") + prop.speed,
-				colors.speed,
-			);
-		if (prop.frequency || args.monster) html += bold_prop_line(phrase.html("interface.item.a_speed"), (prop.frequency || 1) * ((args.monster && 100) || 1), "#3BE681");
-		if (prop.output) html += bold_prop_line(phrase.html("interface.item.damage_output"), ((prop.output > 0 && "+") || "") + prop.output + "%", "#D93319");
-		if (prop.incdmgamp) html += bold_prop_line(phrase.html("interface.item.incoming_damage"), prop.incdmgamp + "%", "#D93319");
-		if (prop.stun) html += bold_prop_line(phrase.html("interface.item.stun"), prop.stun + "%", "#784224");
-		if (prop.explosion) html += bold_prop_line(phrase.html("interface.item.explosion"), prop.explosion + "%", "#782D33");
-		if (prop.blast) html += bold_prop_line(phrase.html("interface.item.blast"), prop.blast + "%", "#685079");
-		if (prop.breaks && prop.breaks > 0) html += bold_prop_line(phrase.html("interface.item.breaks"), to_pretty_float(prop.breaks) + "%", "#782D33");
-		if (prop.charisma) html += bold_prop_line(phrase.html("interface.item.charisma"), prop.charisma, "#4DB174");
-		if (prop.awesomeness) html += bold_prop_line(phrase.html("interface.item.awesomeness"), prop.awesomeness, "#FFDE2F");
-		if (prop.bling) html += bold_prop_line(phrase.html("interface.item.bling"), prop.bling, "#A4E6FF");
-		if (prop.cuteness) html += bold_prop_line(phrase.html("interface.item.cuteness"), prop.cuteness, "#FD82F0");
-		if (prop.intensity) html += bold_prop_line(phrase.html("interface.item.intensity"), prop.intensity, "#786D6A");
-		if (prop.courage) html += bold_prop_line(phrase.html("interface.item.courage"), prop.courage, "#9E1813");
-		if (prop.mcourage) html += bold_prop_line(phrase.html("interface.item.m_courage"), prop.mcourage, "#4628A0");
-		if (prop.pcourage) html += bold_prop_line(phrase.html("interface.item.p_courage"), prop.pcourage, "#D19D32");
+		html += render_prop_lines(prop, item, args);
 		if (grade == 1 && item.type != "booster") html += bold_prop_line(phrase.html("interface.item.grade"), phrase.html("interface.item.high"), "#696354");
 		if (grade == 2 && item.type != "booster") html += bold_prop_line(phrase.html("interface.item.grade"), phrase.html("interface.item.rare"), "#6668AC");
 		if (grade == 3 && item.type != "booster") html += bold_prop_line(phrase.html("interface.item.grade"), phrase.html("interface.item.legendary"), "#39A868");
@@ -4909,32 +5046,40 @@ function render_item(selector, args) {
 			}
 		}
 		if (prop.spawns) {
+			// Each spawned monster once, even when it spawns at several times or HP thresholds
+			var spawned = [];
 			prop.spawns.forEach(function (s) {
+				if (spawned.indexOf(s[1]) != -1) return;
+				spawned.push(s[1]);
 				html += info_line({ name: phrase.html("interface.item.spawns"), color: "#237B2A", value: G.monsters[s[1]].name, onclick: "render_monster_info('" + s[1] + "')" });
 			});
 		}
-		for (var mname in G.maps)
-			if (item[mname]) {
-				html +=
-					"<div><span style='color: #7738E8;'>" +
+		// Map and class bonuses with their numbers at this item's level. Maps or classes with the same bonus share one list.
+		var bonuses = [];
+		var add_bonus = function (label, block, extra) {
+			var full = calculate_item_properties(actual || {}, Object.assign({ def: item }, extra)),
+				bonus = {};
+			for (var p in full) if (typeof full[p] == "number" && full[p] !== prop[p]) bonus[p] = full[p] - prop[p];
+			var key = JSON.stringify(bonus),
+				group = bonuses.filter(function (g) {
+					return g.key == key;
+				})[0];
+			if (!group) bonuses.push((group = { key: key, prop: bonus, labels: [] }));
+			group.labels.push(
+				"<div><span style='color: #7738E8;'>" +
 					phrase.html("interface.item.bonus") +
 					"</span>: <span class='clickable' onclick='stpr(event); show_json(" +
-					JSON.stringify(item[mname]) +
+					JSON.stringify(block) +
 					")'>" +
-					phrase.html("interface.item.only", { map: G.maps[mname].name }) +
-					"</span></div>";
-			}
-		for (var cname in G.classes)
-			if (item[cname]) {
-				html +=
-					"<div><span style='color: #7738E8;'>" +
-					phrase.html("interface.item.bonus") +
-					"</span>: <span class='clickable' onclick='stpr(event); show_json(" +
-					JSON.stringify(item[cname]) +
-					")'>" +
-					phrase.html("interface.item.only_2", { value: phrase.definition("class", cname, "name", cname.toTitleCase()) }) +
-					"</span></div>";
-			}
+					label +
+					"</span></div>",
+			);
+		};
+		for (var mname in G.maps) if (item[mname]) add_bonus(phrase.html("interface.item.only", { map: G.maps[mname].name }), item[mname], { map: mname });
+		for (var cname in G.classes) if (item[cname]) add_bonus(phrase.html("interface.item.only_2", { value: phrase.definition("class", cname, "name", cname.toTitleCase()) }), item[cname], { class: cname });
+		bonuses.forEach(function (group) {
+			html += "<div style='border-left: 2px solid #7738E8; padding-left: 6px; margin: 2px 0'>" + group.labels.join("") + render_prop_lines(group.prop, {}, {}) + "</div>";
+		});
 		if (args.count) html += bold_prop_line(phrase.html("interface.item.kills"), to_pretty_num(args.count), "#7D0C15");
 		if (args.score) html += bold_prop_line(phrase.html("interface.item.score"), to_pretty_num(args.score), "#C38737");
 		if (args.mcount) html += bold_prop_line(phrase.html("interface.item.max_score"), to_pretty_num(args.mcount) + " <span class='gray'>[" + args.mowner + "]</span>", "#DCC343");
@@ -5954,6 +6099,9 @@ function on_rclick(current) {
 				$("#critem" + cr_last).html(html);
 				cr_last++;
 			}
+		} else if (topleft_npc == "witchcipher") {
+			// The cauldron takes one ingredient per click; the stack stays in the inventory.
+			if (character.items[inum]) witch_mix_add(character.items[inum].name);
 		} else if (topleft_npc == "dismantler") {
 			if (ds_item !== null) return;
 			ds_item = inum;
@@ -6054,9 +6202,13 @@ function on_drop(event) {
 		// drop in the same slot
 		if (is_mobile && mssince(last_drag_start) < 300) slot_click(slot);
 	} else if (cnum != undefined && sname != undefined) {
-		socket.emit("unequip", { slot: sname, position: cnum });
-		push_deferred("unequip");
-		// swap=true; #GTODO: Implement position
+		if (character.items[cnum] && !in_arr(sname, trade_slots)) {
+			socket.emit("equip", { num: cnum, slot: sname, swap: true });
+			push_deferred("equip");
+		} else {
+			socket.emit("unequip", { slot: sname, position: cnum });
+			push_deferred("unequip");
+		}
 	} else if (slot != undefined && inum != undefined) {
 		if (in_arr(slot, trade_slots)) {
 			if (character.slots[slot]) return;
@@ -7478,7 +7630,8 @@ function show_delete_mail(id) {
 function render_mail(id) {
 	var mail = window.mail[id];
 	var html = "<div style='font-size: 24px'>";
-	html += "<div class='clickable' style='color: #DB090A; float: right' onclick='show_delete_mail(\"" + id + "\");'>" + phrase.html("interface.mail.delete") + "</div>";
+	if (!(mail.item && mail.can_take && mail.taken !== true))
+		html += "<div class='clickable' style='color: #DB090A; float: right' onclick='show_delete_mail(\"" + id + "\");'>" + phrase.html("interface.mail.delete") + "</div>";
 	html += "<div class='mailsubject'><span style='color: gray'>" + phrase.html("interface.mail.from") + "</span> " + mail.fro + "</div>";
 	html += "<div class='mailsubject'><span style='color: gray'>" + phrase.html("interface.mail.to") + "</span> " + mail.to + "</div>";
 	html += "<div class='mailsubject'><span style='color: gray'>" + phrase.html("interface.mail.subject") + "</span> " + html_escape(phrase.message(mail.subject_message || mail.subject)) + "</div>";
@@ -8374,7 +8527,7 @@ function to_pretty_fraction(num) {
 		[10, "10", "#909090"],
 		[1, "1", "#64C287"],
 	].forEach(function (l) {
-		if (num * l[0] > 1) html = to_pretty_float(num * l[0]) + "<span style='color:" + l[2] + "'>/" + l[1] + "</span>";
+		if (num * l[0] >= 1) html = to_pretty_float(num * l[0]) + "<span style='color:" + l[2] + "'>/" + l[1] + "</span>";
 	});
 	return html;
 }

@@ -1,29 +1,49 @@
 // English documentation catalog. IDs identify source meaning and usage.
 module.exports = {
-	// Items guide and upgrade CODE reference. Preserve Primling, CODE, null and grace_added. A preview consumes nothing.
-	"docs.upgrading.grace_only": "At the upgrade shrine, use an offering such as Primling without a scroll to add 0.5 grace. The offering is consumed; the item keeps its level. In CODE, pass null for the scroll. Calculation mode consumes nothing and returns grace_added.",
-	// Entry CODE reference. Preserve CODE, transport_cant_item and items; the keys in items are executable item IDs.
-	"docs.functions.enter.missing_key": "If an entrance requires a key, the error names the missing key. In CODE, a transport_cant_item rejection includes items, mapping each required item ID to its quantity.",
+	// Manual Purify and use_skill: Rogue stack damage, monster burn, and friendly-only player targeting in PvE. Cupid is a fixed item name.
+	"docs.skills.purify_stacks": "Purify leaves Rogue stacks and burning on monsters in place. Valid Rogue stacks add 400 plus 1 per stack, up to 800 damage in total. Burning on a monster adds 400. In PvE, Purify cannot target players outside your account, party, team or guild, even with Cupid.",
+	// Player-run giveaways use both mail limits; the prize and chosen winner wait in the stand slot, retried when the host is online.
+	"docs.mail.giveaway_limits": "Player-run giveaway prizes also count toward these limits. If the winner's mailbox is full, the prize stays in the giveaway slot and is retried while the host is online.",
+	// Automatic reward deliveries are exempt from both mail attachment caps.
+	"docs.mail.automatic_rewards": "Automatic reward mail does not count toward these limits.",
+	// Manual mail and send_mail(): per-character attachment caps; one stack counts as one. No existing items are deleted.
+	"docs.mail.attachment_limits": "Each character can have up to 200 uncollected mail attachments, including at most 20 from the same sending account. Each attachment or stack counts as one. New attachments cannot be sent once either limit is reached. Existing mail and attachments stay. Letters without attachments can still be sent.",
+	// exchange() completes from its own server result; disconnect does not cancel an accepted exchange.
+	"docs.functions.exchange.completion": "exchange() resolves when the server completes your exchange, even if another exchange starts. It rejects if the server refuses the request or the connection closes. Disconnecting does not cancel an accepted exchange; check your inventory after reconnecting before trying again.",
+	// trade_buy and trade_sell reject unavailable listing slots. Keep item_gone unchanged.
+	"docs.functions.trade.slot_unavailable": "Rejects with item_gone if the listing's trade slot is no longer available.",
+	// destroy() rejects a changed inventory item. Keep the CODE reason item_changed unchanged.
+	"docs.functions.destroy.item_changed": "Rejects with item_changed if the item in that slot changes before the server handles the request.",
+	// A route recalculation continues the same journey. Preserve smart_move and Promise.
+	"docs.functions.smart_move.replan": "If the route is lost, smart_move searches again. Its Promise stays pending until the journey finishes or fails.",
+	// Empty inventory slots reject the CODE compound Promise. Preserve Promise and .catch().
+	"docs.functions.compound.empty_slot": "If a selected slot is empty, the returned Promise rejects. Handle the error with .catch().",
+	// CODE message size affects server call cost; avoid repeated large messages. Preserve CODE.
+	"docs.functions.send_cm.message_size": "Larger messages use more of the call limit. Keep repeated CODE messages short.",
+	// Null, undefined or missing equipment batch entries reject before sending. Preserve Promise.
+	"docs.functions.equip_batch.empty_entries": "Empty entries reject the Promise before any equipment request is sent.",
+	// Roaming NPC lookup returns the first configured waypoint, not a live sighting. Preserve find_npc.
+	"docs.functions.find_npc.roaming": "For roaming NPCs, find_npc returns the first point on their route, not their current position.",
+	// Raw send_updates snapshot request in browser and MAINFRAME. Keep send_updates, entities and MAINFRAME unchanged. Two requests per second is the MAINFRAME bound; no request correlation.
+	"docs.functions.get_socket.refresh": "send_updates requests a full snapshot of visible entities. MAINFRAME allows two requests per second. Listen for entities before sending the request; the response has no matching request ID.",
+	// sell() item snapshot check. Only stack quantity may change; preserve CODE identifiers.
+	"docs.functions.sell.item_changed": "The sale fails if another item moves into the selected slot before the server receives the request.",
+	// CODE server status: loaded definition flags versus the connected server's current boolean flags. Keep executable identifiers unchanged.
+	"docs.articles.data-server-status.event-flags": "<code>G.event_flags</code> lists the seasons in your loaded game data. Use <code>server.status.event_flags</code> to check which seasons are enabled on your current server. Each flag is true or false. Existing fields such as <code>server.status.holidayseason</code> still work.",
 	// Monster reference. Preserve boundary and boundaries, the two CODE data fields. Definitions do not prove current sightings.
 	"docs.articles.data-monster.spawn_boundaries": "A spawn pack can use boundary for one rectangle on its map, or boundaries for rectangles that include their own map names. Scan every map when looking for a monster’s spawn areas: one pack can span several maps. These are possible spawn areas, not live sightings.",
+	// Entry CODE reference. Preserve CODE, transport_cant_item and items; the keys in items are executable item IDs.
+	"docs.functions.enter.missing_key": "If an entrance requires a key, the error names the missing key. In CODE, a transport_cant_item rejection includes items, mapping each required item ID to its quantity.",
+	// Items guide and upgrade CODE reference. Preserve Primling, CODE, null and grace_added. A preview consumes nothing.
+	"docs.upgrading.grace_only": "At the upgrade shrine, use an offering such as Primling without a scroll to add 0.5 grace. The offering is consumed; the item keeps its level. In CODE, pass null for the scroll. Calculation mode consumes nothing and returns grace_added.",
 	// Item use and recovery requests during stun, in the Items guide and CODE references. Preserve HP/MP, CODE, reason and "disabled". Passive recovery continues.
 	"docs.items.stunned_use": "Consumables, item activations, thrown items, and HP/MP recovery requests are blocked while you are stunned. These CODE actions reject with reason: \"disabled\".",
 	// CODE trade and wishlist price limits. Preserve price, reason and the failure reason "invalid".
 	"docs.trade.valid_price": "Use a whole gold amount from 1 to 99,999,999,999 for price. Invalid prices reject with reason: \"invalid\".",
-	// Items guide, beside PvP item markings. Self-inflicted splash still hurts, but never counts as an opponent or awards a self-kill or self-loot. Preserve PvP.
-	"docs.guide.items.self_damage": "Your own splash damage can hurt you in PvP areas. It does not count as another player attacking you, give you a PvP kill or let you loot your own death.",
-	// Cave return: preserve the current floor, progress, health and fallen state.
-	"docs.cave.safe_return": "If a wall blocks your saved position, returning places you at a safe point on the same floor, or at that floor’s entrance. Your cave progress and health are kept; fallen characters remain fallen.",
-	// Banking guide: Bank Key and Underground Key each grant their floor's first pack as well as its entrance. This does not describe Diamond Key or purchasing a pack.
-	"docs.guide.banking.key_pack": "Each floor key also unlocks its first item pack, which is available immediately.",
-	// Banking and anniversary guides, plus bank_store reference: overflow keeps real reward items without increasing capacity. Keep bank_store() unchanged. Index means the zero-based position in character.items.
-	"docs.guide.banking.overflow_items": "Rewards can appear in an extra inventory row when your bag is full. These items are kept, but the row does not add capacity. At the bank, drag an item from that row into a pack, or use bank_store() with its inventory index.",
 	// Encouragement guide introduction. Existing merchants can move between realms without interrupting other characters' bonuses; normal account eligibility and character limits still apply.
 	"docs.guide.encouragement.merchant_realms": "Merchants can change realms without interrupting your other characters’ encouragement bonuses.",
 	// Mail tutorial and send_mail/take_mail_item references. Receiving account owns the attachment, including self-mail; deletion hides only the caller's copy.
-	"docs.mail.ownership": "Only the receiving account can collect an attachment. Senders cannot take it back. Deleting mail removes only your copy.",
-	// Bank gold response metadata. Preserve operation, deposit, withdraw and gold as CODE.
-	"docs.functions.bank_gold.operation": "The result's <span class='dlabel'>operation</span> is <span class='dlabel'>\"deposit\"</span> or <span class='dlabel'>\"withdraw\"</span>; <span class='dlabel'>gold</span> is the amount moved.",
+	"docs.mail.ownership": "Only the receiving account can collect an attachment. Senders cannot take it back, but can hide their own copy of the mail. Recipients must collect attachments before deleting mail. Deleting mail removes only your copy.",
 	// Golden Bat guide paragraph after its spawn line; the drop list with exact rates follows. Item names fixed; 24,000 exact.
 	"docs.guide.golden-bat.intro": "It flies around the cave until someone catches it. With 24,000 HP, it only sometimes attacks and never hits back.",
 	// Cute Bee guide paragraph after its spawn line; the drop list follows. Fun Token is a fixed name; 300 and 16 exact.
@@ -78,52 +98,98 @@ module.exports = {
 	"docs.functions.giveaway.duration": "Choose 5–600 minutes for any item. Its gold value does not limit the duration. The timer runs while your character is online.",
 	// use_skill reference and Using Skills guide: numeric HP/MP regeneration output. Preserve the output CODE field and its span markup.
 	"docs.functions.use_skill.regeneration_output": "Read each regeneration ability's recovery amount from its <span class=\"dlabel\">output</span> field.",
+	// Party practice/tutorial: fictional Mira invites Finn; native PARTY and Accept controls. One attempt suffices, and existing COM credit remains valid.
+	"docs.guide.parties.practice_title": "Try a party invite",
+	// Party practice/tutorial: fictional Mira invites Finn; native PARTY and Accept controls. One attempt suffices, and existing COM credit remains valid.
+	"docs.guide.parties.practice": "This is a fictional example. Click PARTY below, then ACCEPT in Finn's chat to see what joining looks like. No real invitation is sent.",
+	// Party practice/tutorial: fictional Mira invites Finn; native PARTY and Accept controls. One attempt suffices, and existing COM credit remains valid.
+	"docs.guide.parties.practice_sent": "Invite sent. That's enough for this tutorial; in a real party, the other player still has to ACCEPT.",
+	// Party practice/tutorial: fictional Mira invites Finn; native PARTY and Accept controls. One attempt suffices, and existing COM credit remains valid.
+	"docs.guide.parties.practice_joined": "These portraits are party members. Click one to select that member. Mira and Finn are only examples.",
+	// Party practice/tutorial: fictional Mira invites Finn; native PARTY and Accept controls. One attempt suffices, and existing COM credit remains valid.
+	"docs.tutorial.parties-friends.summary": "Party members must be on the same server. Parties can have up to 10 characters, with at most 9 non-merchants. Ordinary XP and gold follow party shares, while items go to one member weighted by share. Merchants normally do not share these rewards. See the full Parties guide for details.",
+	// Party practice/tutorial: fictional Mira invites Finn; native PARTY and Accept controls. One attempt suffices, and existing COM credit remains valid.
+	"docs.tutorial.parties-friends.practice_task": "Try PARTY in the example or send a real invite. Acceptance is not required. Joining, requesting to join, or opening COM also counts.",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"docs.guide.parties.title": "Parties",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"docs.guide.parties.size_heading": "Party size",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"docs.guide.parties.size": "Ordinary parties can have up to 10 characters, with at most 9 non-merchants. More than one merchant is allowed. If you want 9 fighters and 1 merchant, invite the merchant before the ninth fighter. This is separate from one account's online limit of 3 non-merchants plus 1 merchant.",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"docs.guide.parties.join_heading": "Joining and inviting",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"docs.guide.parties.join": "Both characters must be online on the same server: the same region and server number. Select a nearby character and choose PARTY to invite them, or REQUEST to join their existing party. The other player must accept. Any party member can invite. Use COM for party chat.",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"docs.guide.parties.share_heading": "Your party share",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"docs.guide.parties.share": "Open your character sheet by clicking the green level/XP bar at the lower right, or STATS in the newcomer UI. PARTY shows your share as a percentage. It is not a flat equal split and is not based on level. Recent damage, tanking, healing and some support actions contribute, while every non-merchant has a base contribution. One account's non-merchants pool their contribution, then divide it equally among those characters.",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"docs.guide.parties.xp_heading": "XP sharing",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"docs.guide.parties.xp": "For ordinary monster kills, each online non-merchant gets monster XP × party share × their own XP multiplier, followed by applicable personal Encouragement. Same server is enough; you do not need to be nearby or on the same map. A 40% share of a 1,000 XP kill gives 400 XP before personal XP bonuses. Equal shares can still produce different final XP because personal bonuses may differ.",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"docs.guide.parties.loot_heading": "Gold and item sharing",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"docs.guide.parties.loot": "Ordinary chest gold uses each member's party share and the opener's gold multiplier. That multiplier applies only if the opener is within 400 pixels and opens the chest within 8 minutes of it appearing; otherwise it is 1. Server tax is deducted and rounding applies. Recipients do not use their own gold multipliers. Item entries go to one randomly selected party member, weighted by share among members with room for that item, including an existing stack. If nobody can receive it, it goes to Lost & Found.",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"docs.guide.parties.merchants_heading": "Merchants",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"docs.guide.parties.merchants": "In a mixed party, a merchant normally has 0% standard share and gets no ordinary monster XP or ordinary chest gold or items. All-merchant parties use equal loot shares but still get no monster-kill XP. Personal Encouragement rewards stay with the contributor instead of entering the party lottery.",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"docs.guide.parties.exceptions": "These rules cover ordinary party rewards. Co-op monsters use individual participation rewards instead of this party split. Cave of Many Dreams has its own reward rules and allows only 3 characters.",
+	// Party guide: ordinary parties, not Co-op or Cave rewards. UI names follow existing controls; preserve CODE, TrustedFriend, Cave of Many Dreams and Lost & Found.
+	"docs.guide.parties.code_intro": "In CODE, get_party() lets you inspect your party and show_json() can display it. To send a one-off invite, use send_party_invite(\"TrustedFriend\").catch(show_json), replacing TrustedFriend with the character's name. They must be on the same server. Success only means the invite was sent; the other player still has to accept.",
 	// Nearby guide hint, based on the current character’s level, not account level. button is the localized short CALL label. Leveled means the monster has gained levels. Only the button is hidden at level 60+, not access to the guide. Keep Cavalry.
 	"docs.cavalry.hint": "Below level 60, when a nearby leveled monster looks dangerous, you may see {button} beside the Cavalry's familiar sprite. Click it to open this guide. At level 60 and above, the button is hidden.",
+	// Mail lesson. {take} is the existing localized TAKE button. The one gift is shared by all characters on an account; claiming it is optional for tutorial completion. Keep Daisy and Tracktrix.
+	"docs.tutorial.mail.take": "Open Daisy's letter and choose {take} to collect Tracktrix. Any character on your account can take it. Collecting it is optional for this lesson.",
+	// Mail lesson. {com} is the localized COM menu label; Mail is its existing mailbox tab. Opening an empty mailbox counts.
+	"docs.tutorial.mail.open": "Open {com}, then Mail. Simply opening your mailbox completes this lesson, even if it's empty.",
 	// Cooldown uses highest account recorded level, living connected players within 150 center-to-center pixels of caller or ANY otherwise eligible candidate before guard filtering/target cap, and players attacked by those candidates even outside 150. Shared account-wide across characters and game servers; 10 minutes plus 1 minute per level.
 	"docs.cavalry.cooldown": "Cooldown is shared across all characters and servers: 10 minutes plus 1 minute per level. Use the highest of your account's recorded maximum; living, connected players within 150 pixels of you or any otherwise qualifying monster, even if that monster is not selected; and players those monsters are attacking, including party members outside that range.",
 	// Rescue eligibility uses the highest recorded level across the whole account, including other characters and recorded earlier levels, not only the calling character.
 	"docs.cavalry.rescue": "Rescue limits use your ACCOUNT's highest recorded character level, including other characters and past recorded levels. A lower-level character does not lower it.",
-	// Mail lesson. {take} is the existing localized TAKE button. The one gift is shared by all characters on an account; claiming it is optional for tutorial completion. Keep Daisy and Tracktrix.
-	"docs.tutorial.mail.take": "Open Daisy's letter and choose {take} to collect Tracktrix. Any character on your account can take it. Collecting it is optional for this lesson.",
-	// Mail lesson. {com} is the localized COM menu label; Mail is its existing mailbox tab. Opening an empty mailbox counts.
-	"docs.tutorial.mail.open": "Open {com}, then Mail. Simply opening your mailbox completes this lesson, even if it is empty.",
 	// Home guide: check destination before entering. Light green card borders mark matching homes; gray borders and red home labels mark a different home. Hover shows the saved home. Online characters are observed on their current server.
 	"docs.guide.events-and-home.choosing-server": "Before choosing a character, check the server above the character list. Use the Servers list to change it. A light green character border means the selected server is their home; otherwise the border is gray and their home label is red. Hover over the card to see their home. Signing in prefers an available saved home unless you chose a server yourself or opened a server link. Characters already running open on their current server.",
 	// Home guide: home belongs to each character, assigned on first entry, not changed by visiting.
-	"docs.guide.events-and-home.saved-home": "Each character has its own saved home, set when it first enters the game. Visiting a familiar server does not change it.",
+	"docs.guide.events-and-home.saved-home": "Each character has its own saved home, set when it first enters the game. Visiting another server does not change it.",
 	// Home guide. condition is the translated Hop Sickness name. Keep XP, PvP and Bean. Level 60+, non-PvP, 12 online minutes; reconnect preserves time and returning/changing home clears it.
-	"docs.guide.events-and-home.hop-sickness": "{condition} lowers XP, gold, luck and attack power after a character of level 60 or above enters another non-PvP server away from home. The base duration is 12 minutes of online play. Reconnecting to that server preserves the remaining time. Returning to the saved home or changing home with Bean clears it immediately.",
+	"docs.guide.events-and-home.hop-sickness": "{condition} lowers XP, gold, luck and attack power after a level 60+ character enters another non-PvP server away from home. The base duration is 12 minutes of online play. Reconnecting there preserves the remaining time. Returning to the saved home or changing home with Bean clears it immediately.",
 	// Public CODE requirements and Promise fields. Preserve Tracktrix, Cavalry, Cave of Many Dreams, assigned, queued, next_call, cooldown_ms, reason and 0–4.
 	"docs.cavalry.code": "Carry Tracktrix or Super Computer and follow the rescue rules. Call interact(\"cavalry\") once. Results include assigned (0–4), queued, next_call and cooldown_ms; failures reject with reason. Cavalry cannot be called from generated maps, including Cave of Many Dreams.",
 	// Four Cavalry NPCs shared per game server, distributed 4 / 2+2 / 2+1+1 / 1+1+1+1. Calls within 160 normal game range share a fight. Priority uses current caller character level, then call age; lower-level calls can take sentries from higher-level ones.
 	"docs.cavalry.dispatch": "Four sentries are shared per server. Separate fights split them 4, 2+2, 2+1+1 or 1+1+1+1. Calls within 160 game range share one fight. Lower CURRENT character level gets priority; older calls break ties. Extra fights wait, and sentries may move to a lower-level caller.",
 	// Cavalry guide class behavior and unchanged rewards. Translate class names using established terms. Keep Cavalry, Tracktrix and XP; monsters do not target Cavalry.
 	"docs.cavalry.combat": "The Warrior stays charged. The Mage fires up to three projectiles and sometimes blinks. The Priest heals wounded nearby players; the Paladin heals and protects nearby allies. Monsters never target Cavalry. Assisted kills keep normal XP, loot and Tracktrix credit.",
-	// Cavalry guide manual action. Tracktrix must be in inventory; action is the translated call label including its exclamation mark. Keep Tracktrix, Cavalry and Cave of Many Dreams.
+	// Cavalry guide manual action. Tracktrix or Super Computer must be in inventory; action is the translated call label including its exclamation mark. Keep Tracktrix, Super Computer, Cavalry and Cave of Many Dreams.
 	"docs.cavalry.manual": "Carry Tracktrix or Super Computer, click it, and choose {action} You must be alive and connected. Cavalry cannot be called from generated maps, including Cave of Many Dreams.",
 	// Guide introduction; preserve Wizard's Crib, translate class labels using established terms.
 	"docs.cavalry.intro": "Four sentries wait in Wizard's Crib: a Paladin, Mage, Warrior and Priest. Click one to inspect their equipment.",
 	// Guide introduction. Rime Djinn, Frozen Cove and Harpy are fixed game names. Ordinary aggro=1 permits passing attacks without target acquisition.
-	"docs.guide.rime-djinn.intro": "Rime Djinn drift across the central island in Frozen Cove, beyond the Harpies. They strike passersby without giving chase, but fight back when attacked. Bring allies for their magical attacks.",
+	"docs.guide.rime-djinn.intro": "Rime Djinn drift across the central island in Frozen Cove, beyond the Harpies. They strike passersby without giving chase, but fight back when attacked. Bring allies; their attacks are magical.",
 	// Guide explanation of existing selected-monster UI, ABILITY link and condition icons. Translate ABILITY to the existing control label and Cracked Shell to condition.rimeexposed.name.
-	"docs.guide.rime-djinn.ui": "Select a Djinn to see its shell timer and remaining break damage. Click ABILITY or a condition icon for details. Breaking the shell reveals Cracked Shell for 5 seconds. A stun or deep freeze also breaks it.",
+	"docs.guide.rime-djinn.ui": "Select a Djinn to see its shell timer and how much damage remains to break it. Click ABILITY or a condition icon for details. Breaking the shell reveals Cracked Shell for 5 seconds. A stun or deep freeze also breaks it.",
 	// Guide rewards. Proper item names, Rimeglass, Leo and Tracker remain unchanged. Contributions affect shares; rewards are not guaranteed every kill.
-	"docs.guide.rime-djinn.rewards": "Contributors share XP, drops and Tracker credit through the usual cooperative rules. Damage, tanking and healing can contribute. Collect Rimeglass and other materials, then visit Leo to craft Djinn Crown, Cove Mantle or Stillwater Lens. All three can also drop directly.",
+	"docs.guide.rime-djinn.rewards": "Contributors share XP, drops and Tracker credit through the usual cooperative rules. Damage, tanking and healing can all contribute. Collect Rimeglass and other materials, then visit Leo to craft Djinn Crown, Cove Mantle or Stillwater Lens. All three can also drop directly.",
 	// CODE requirements. Preserve Frozen Cove and identifiers ms, remaining, rimeexposed. One attack per call; get_nearest_monster deliberately includes occupied cooperative monsters.
-	"docs.guide.rime-djinn.code_combat": "Run this once while alive, in attack range in Frozen Cove, with enough MP and your attack ready. It also selects Djinn already fighting allies. The shell exposes milliseconds in ms and required damage in remaining; rimeexposed marks the broken shell.",
+	"docs.guide.rime-djinn.code_combat": "Run this once while alive, in attack range in Frozen Cove, with enough MP and your attack ready. It can also select Djinn already fighting allies. The shell exposes milliseconds in ms and required damage in remaining; rimeexposed marks the broken shell.",
 	// CODE crafting requirements. Preserve Leo, Computer, Helmet, Cape, Orb of Intelligence and identifiers djinncrown, covemantle, stillwaterlens. Ingredient levels are exactly +0.
 	"docs.guide.rime-djinn.code_craft": "Run this near Leo or with a Computer, with enough gold, free inventory space and all ingredients unlocked in your inventory. Use a +0 Helmet. Replace djinncrown with covemantle or stillwaterlens for the other recipes, using a +0 Cape or +0 Orb of Intelligence respectively.",
 	// Tutorial welcome: earlier gameplay is remembered; {button} is the localized Continue label.
-	"docs.tutorial.helloworld.earlier_actions": "Earlier actions count too. When the tasks are done, choose {button} to move on.",
+	"docs.tutorial.helloworld.earlier_actions": "Earlier actions count too. Once the tasks are done, choose {button} to move on.",
 	// Compounding lesson: both practice tasks are optional; no purchase or item consumption is required to continue.
 	"docs.tutorial.compound.optional_practice": "You can continue without buying scrolls or compounding. Come back when you have three matching accessories.",
 	// Bank CODE requirements: fixed item name HP Potion and key hpot0; the example deposits one gold and the whole matching potion stack.
-	"docs.tutorial.bank.example_supplies": "Keep an HP Potion (hpot0) in your bag for this example. It deposits 1 gold and stores that potion stack.",
+	"docs.tutorial.bank.example_supplies": "Keep an HP Potion (hpot0) in your bag for this example. It deposits 1 gold and stores the entire potion stack.",
 	// Recovery lesson: {skills} is the localized SKILLS control. Explain manual use and the CODE example's missing-HP condition.
-	"docs.tutorial.skills-recovery.regeneration_task": "Drag a regeneration skill from {skills} to your skillbar and press its key. It counts for this task too. The CODE example runs only when HP is missing.",
+	"docs.tutorial.skills-recovery.regeneration_task": "Drag a regeneration skill from {skills} to your skillbar and press its key. That counts for this task too. The CODE example runs only when HP is missing.",
 	// Bank store/retrieve references and banking guide. Omitting the destination slot lets the server place/stack the item; an explicit occupied slot exchanges items, never merges them. No parameters or fixed CODE.
 	"docs.functions.bank_store.explicit_destination": "Omit the destination slot for automatic placement and stacking. If you specify an occupied destination, the two items swap instead of merging. Use an empty destination to avoid a swap.",
+	// Banking and anniversary guides, plus bank_store reference: overflow keeps real reward items without increasing capacity. Keep bank_store() unchanged. Index means the zero-based position in character.items.
+	"docs.guide.banking.overflow_items": "Rewards can appear in an extra inventory row when your bag is full. These items are kept, but the row does not add capacity. At the bank, drag an item from that row into a pack, or use bank_store() with its inventory index.",
+	// Banking guide: Bank Key and Underground Key each grant their floor's first pack as well as its entrance. This does not describe Diamond Key or purchasing a pack.
+	"docs.guide.banking.key_pack": "Each floor key also unlocks its first item pack, which is available immediately.",
 	// JavaScript lesson “Make CODE speak”, idea. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-hello.idea": "<span class=\"dlabel\">game_log(\"Hello!\");</span> writes to the game log. <span class=\"dlabel\">game_log</span> is a function: a named action. Parentheses call it; the text inside is its argument. Quotes make text a <em>string</em>. A semicolon ends the instruction.",
 	// JavaScript lesson “Make CODE speak”, task. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
@@ -133,13 +199,13 @@ module.exports = {
 	// JavaScript lesson “Make CODE speak”, transfer. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-hello.transfer": "Open CODE on a logged-in character. Copy the example into an unused slot and press ENGAGE. Look for your message in the game log.",
 	// JavaScript lesson “Make CODE speak”, variation. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-hello.variation": "Remove a closing quote and run again. Read the error, then put it back. Errors are clues.",
+	"docs.tutorial.js-hello.variation": "Remove a closing quote and run it again. Read the error, then put the quote back. Errors are clues.",
 	// JavaScript lesson “Make CODE speak”, reading title. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-hello.reading_title": "Function calls and strings",
+	"docs.tutorial.js-hello.reading_title": "Function Calls and Strings",
 	// JavaScript lesson “Make CODE speak”, reading before. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-hello.reading_before": "<p>You just called a function. A <em>function</em> is a piece of code that does a job. Adventure Land provides <span class=\"dlabel\">game_log</span> to write a message to the game log. The parentheses in <span class=\"dlabel\">game_log(...)</span> call that function.</p>\n<p>A value passed inside the parentheses is an <em>argument</em>. In <span class=\"dlabel\">game_log(\"Hello!\")</span>, the argument is a string: a text value. The quotes tell JavaScript where the text begins and ends. They are not part of the message.</p>",
 	// JavaScript lesson “Make CODE speak”, reading after. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-hello.reading_after": "<p>These instructions run from top to bottom, producing two log lines. You can change the text inside the quotes. Keep the function name, parentheses, and matching quotes so JavaScript can still understand the call.</p>",
+	"docs.tutorial.js-hello.reading_after": "<p>These instructions run from top to bottom and produce two log lines. You can change the text inside the quotes. Keep the function name, parentheses, and matching quotes so JavaScript can still understand the call.</p>",
 	// JavaScript lesson “Name a value”, idea. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-values.idea": "<span class=\"dlabel\">const hp = 180;</span> gives a value a name. <span class=\"dlabel\">=</span> assigns it. Numbers need no quotes. <span class=\"dlabel\">maxHp - hp</span> subtracts; <span class=\"dlabel\">+</span> adds numbers but joins strings. Use <span class=\"dlabel\">const</span> when you will not reassign a variable.",
 	// JavaScript lesson “Name a value”, task. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
@@ -147,15 +213,15 @@ module.exports = {
 	// JavaScript lesson “Name a value”, hint. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-values.hint": "Subtract current HP from maximum HP. <span class=\"dlabel\">//</span> starts a comment; JavaScript ignores the rest of that line.",
 	// JavaScript lesson “Name a value”, transfer. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-values.transfer": "These two numbers are practice values. The same calculation runs in CODE. After practicing variables, you will read your own character.",
+	"docs.tutorial.js-values.transfer": "These two numbers are practice values. The same calculation works in CODE. After practicing variables, you will read your own character.",
 	// JavaScript lesson “Name a value”, variation. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-values.variation": "Change hp to 300 and predict the result before running. Restore 180 to pass this exercise.",
+	"docs.tutorial.js-values.variation": "Change hp to 300 and predict the result before you run it. Restore 180 to pass this exercise.",
 	// JavaScript lesson “Name a value”, reading title. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-values.reading_title": "Values, variables, and types",
+	"docs.tutorial.js-values.reading_title": "Values, Variables, and Types",
 	// JavaScript lesson “Name a value”, reading before. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-values.reading_before": "<p>A <em>value</em> is a piece of data. <span class=\"dlabel\">180</span> is a number; <span class=\"dlabel\">\"Mira\"</span> is a string. A <em>variable</em> gives a value a name you can use again. <span class=\"dlabel\">const current = 180;</span> declares a variable named <span class=\"dlabel\">current</span> and gives it its first value.</p>\n<p>An <em>expression</em> produces a value. In <span class=\"dlabel\">const missing = maximum - current;</span>, JavaScript calculates the subtraction, then assigns the result to <span class=\"dlabel\">missing</span>. You choose these variable names; use names that explain what their values mean.</p>",
+	"docs.tutorial.js-values.reading_before": "<p>A <em>value</em> is a piece of data. <span class=\"dlabel\">180</span> is a number; <span class=\"dlabel\">\"Mira\"</span> is a string. A <em>variable</em> gives a value a name you can use again. <span class=\"dlabel\">const current = 180;</span> declares a variable named <span class=\"dlabel\">current</span> and gives it its first value.</p>\n<p>An <em>expression</em> produces a value. In <span class=\"dlabel\">const missing = maximum - current;</span>, JavaScript calculates the subtraction, then assigns the result to <span class=\"dlabel\">missing</span>. You choose these variable names, so use names that explain what their values mean.</p>",
 	// JavaScript lesson “Name a value”, reading after. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-values.reading_after": "<p>The output is <span class=\"dlabel\">120</span>, then <span class=\"dlabel\">number</span>. <span class=\"dlabel\">typeof</span> tells you a value’s type. Adding quotes changes a number into text: <span class=\"dlabel\">\"180\"</span> is a string. That distinction matters when you calculate or join values.</p>",
+	"docs.tutorial.js-values.reading_after": "<p>The output is <span class=\"dlabel\">120</span>, then <span class=\"dlabel\">number</span>. <span class=\"dlabel\">typeof</span> tells you a value’s type. Adding quotes turns a number into text: <span class=\"dlabel\">\"180\"</span> is a string. That distinction matters when you calculate or join values.</p>",
 	// Learner-facing comment in the starter example for “Name a value”. Translate comment prose; keep referenced CODE names and expected output strings unchanged. The enclosing example supplies context.
 	"docs.tutorial.js-values.starter.comment_1": "Fix this calculation.",
 	// JavaScript lesson “Change a variable”, idea. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
@@ -163,11 +229,11 @@ module.exports = {
 	// JavaScript lesson “Change a variable”, task. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-variables.task": "Your practice count starts at 3 potions. Add 2 to it. Log the count before and after: <span class=\"dlabel\">3</span>, then <span class=\"dlabel\">5</span>, on separate lines.",
 	// JavaScript lesson “Change a variable”, hint. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-variables.hint": "<span class=\"dlabel\">potions = 2;</span> replaces the count. Include the old value to add to it. Keep numbers outside quotes: <span class=\"dlabel\">3 + 2</span> is 5, but <span class=\"dlabel\">\"3\" + 2</span> is the string <span class=\"dlabel\">\"32\"</span>.",
+	"docs.tutorial.js-variables.hint": "<span class=\"dlabel\">potions = 2;</span> replaces the count. To add to it, include the old value. Keep numbers outside quotes: <span class=\"dlabel\">3 + 2</span> is 5, but <span class=\"dlabel\">\"3\" + 2</span> is the string <span class=\"dlabel\">\"32\"</span>.",
 	// JavaScript lesson “Change a variable”, transfer. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-variables.transfer": "These are ordinary JavaScript variables. The example works in CODE too. Changing this practice count does not add or use items in your real inventory.",
+	"docs.tutorial.js-variables.transfer": "These are ordinary JavaScript variables. The example works in CODE too. Changing this practice count does not add or use anything in your real inventory.",
 	// JavaScript lesson “Change a variable”, variation. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-variables.variation": "Replace let with const and run. Reassignment fails because a const variable cannot be reassigned. Restore let. You can also write potions += 2 to add two to the current value.",
+	"docs.tutorial.js-variables.variation": "Replace let with const and run it. Reassignment fails because a const variable cannot be reassigned. Restore let. You can also write potions += 2 to add two to the current value.",
 	// JavaScript lesson “Change a variable”, reading title. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-variables.reading_title": "let, const, and var",
 	// JavaScript lesson “Change a variable”, reading before. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
@@ -175,9 +241,9 @@ module.exports = {
 	// JavaScript lesson “Change a variable”, reading after. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-variables.reading_after": "<p>The output is <span class=\"dlabel\">5</span>, then <span class=\"dlabel\">4</span>. <span class=\"dlabel\">+=</span> adds to the current value; <span class=\"dlabel\">-=</span> subtracts from it.</p>",
 	// JavaScript lesson “Change a variable”, var and scope explanation before the block example. Preserve HTML and CODE identifiers. No interpolation parameters.
-	"docs.tutorial.js-variables.reading_var_before": "<p>You will also see <span class=\"dlabel\">var</span> in CODE. It declares a variable you can reassign, like <span class=\"dlabel\">let</span>. It also allows you to declare the same name again in the same scope.</p>\n<p>A variable’s <em>scope</em> is where you can use it. <span class=\"dlabel\">let</span> and <span class=\"dlabel\">const</span> stay inside the block <span class=\"dlabel\">{ ... }</span> where you declare them. <span class=\"dlabel\">var</span> is available throughout the surrounding function or script, even when you declare it inside an ordinary block.</p>",
+	"docs.tutorial.js-variables.reading_var_before": "<p>You will also see <span class=\"dlabel\">var</span> in CODE. Like <span class=\"dlabel\">let</span>, it declares a variable you can reassign. Unlike <span class=\"dlabel\">let</span>, it also lets you declare the same name again in the same scope.</p>\n<p>A variable’s <em>scope</em> is where you can use it. <span class=\"dlabel\">let</span> and <span class=\"dlabel\">const</span> stay inside the block <span class=\"dlabel\">{ ... }</span> where you declare them. <span class=\"dlabel\">var</span> is available throughout the surrounding function or script, even when you declare it inside an ordinary block.</p>",
 	// JavaScript lesson “Change a variable”, explanation of the block example’s output. Preserve HTML, CODE identifiers, and the literal output Ready. No interpolation parameters.
-	"docs.tutorial.js-variables.reading_var_after": "<p>This logs <span class=\"dlabel\">3</span>, then <span class=\"dlabel\">Ready</span>. You can read <span class=\"dlabel\">greeting</span> outside the block because it uses <span class=\"dlabel\">var</span>. The <span class=\"dlabel\">count</span> variable only exists inside the block; adding <span class=\"dlabel\">game_log(count);</span> after <span class=\"dlabel\">}</span> would cause a <span class=\"dlabel\">ReferenceError</span>.</p>\n<p>For new CODE, use <span class=\"dlabel\">const</span> unless you need to reassign a value; then use <span class=\"dlabel\">let</span>. Their block scope makes it easier to see where a variable belongs.</p>",
+	"docs.tutorial.js-variables.reading_var_after": "<p>This logs <span class=\"dlabel\">3</span>, then <span class=\"dlabel\">Ready</span>. You can read <span class=\"dlabel\">greeting</span> outside the block because it uses <span class=\"dlabel\">var</span>. The <span class=\"dlabel\">count</span> variable exists only inside the block; adding <span class=\"dlabel\">game_log(count);</span> after <span class=\"dlabel\">}</span> would cause a <span class=\"dlabel\">ReferenceError</span>.</p>\n<p>For new CODE, use <span class=\"dlabel\">const</span> unless you need to reassign a value; then use <span class=\"dlabel\">let</span>. Their block scope makes it easier to see where a variable belongs.</p>",
 	// JavaScript lesson “Read your character”, idea. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-character.idea": "<span class=\"dlabel\">character</span> is an object: related values with names. A dot reads a property: <span class=\"dlabel\">character.hp</span>, <span class=\"dlabel\">character.max_hp</span>, <span class=\"dlabel\">character.name</span>. Adventure Land updates these values as you play. Read them to make decisions.",
 	// JavaScript lesson “Read your character”, task. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
@@ -187,11 +253,11 @@ module.exports = {
 	// JavaScript lesson “Read your character”, hint. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-character.hint": "<span class=\"dlabel\">character.name + \": \"</span> joins the name and punctuation. Keep the subtraction in its own variable before joining it to text.",
 	// JavaScript lesson “Read your character”, transfer. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-character.transfer": "The example reads your character's current name and HP. ENGAGE it again after your HP changes to get a new report.",
+	"docs.tutorial.js-character.transfer": "The example reads your character's current name and HP. ENGAGE it again after your HP changes to get a fresh report.",
 	// JavaScript lesson “Read your character”, variation. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-character.variation": "Compare Mira and Orin in the results. Why does code with a fixed 120 fail? Assigning character.hp is not a way to heal in the game.",
+	"docs.tutorial.js-character.variation": "Compare Mira and Orin in the results. Why does code with a fixed 120 fail? Assigning character.hp does not heal your character in the game.",
 	// JavaScript lesson “Read your character”, reading title. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-character.reading_title": "You just used an object",
+	"docs.tutorial.js-character.reading_title": "You Just Used an Object",
 	// JavaScript lesson “Read your character”, reading before. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-character.reading_before": "<p>An <em>object</em> groups related values into <em>properties</em>. Every property has a name and a value. Your character has a <span class=\"dlabel\">name</span> property containing text, and <span class=\"dlabel\">hp</span> and <span class=\"dlabel\">max_hp</span> properties containing numbers.</p>\n<p>Adventure Land makes this object available through the variable <span class=\"dlabel\">character</span>. To read one of its properties, write the variable name, a dot, and the property name. <span class=\"dlabel\">character.max_hp</span> means “the max_hp property of character.” <span class=\"dlabel\">character.hp</span> reads its current HP; <span class=\"dlabel\">character.name</span> reads its name.</p>",
 	// JavaScript lesson “Read your character”, reading after. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
@@ -201,49 +267,49 @@ module.exports = {
 	// JavaScript lesson “Make a decision”, task. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-decisions.task": "Log <span class=\"dlabel\">Heal</span> below half of maximum HP. Otherwise log <span class=\"dlabel\">Ready</span>. Exactly half counts as Ready. This reports a decision; it does not use a potion.",
 	// JavaScript lesson “Make a decision”, hint. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-decisions.hint": "Compare <span class=\"dlabel\">character.hp</span> with <span class=\"dlabel\">character.max_hp / 2</span>. Half means a fraction of this character’s maximum, not 50 HP.",
+	"docs.tutorial.js-decisions.hint": "Compare <span class=\"dlabel\">character.hp</span> with <span class=\"dlabel\">character.max_hp / 2</span>. Half means half of this character’s maximum, not 50 HP.",
 	// JavaScript lesson “Make a decision”, transfer. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-decisions.transfer": "Run on any character to report its current state. The message is only an HP rule; Ready does not mean every fight is safe.",
+	"docs.tutorial.js-decisions.transfer": "Run it on any character to report its current state. The message is only an HP rule; Ready does not mean every fight is safe.",
 	// JavaScript lesson “Make a decision”, variation. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-decisions.variation": "Change < to <=. Bram catches the difference. For equality use ===; a single = assigns a value.",
+	"docs.tutorial.js-decisions.variation": "Change < to <=. Bram catches the difference. For equality, use ===; a single = assigns a value.",
 	// JavaScript lesson “Make a decision”, reading title. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-decisions.reading_title": "Conditions are values too",
+	"docs.tutorial.js-decisions.reading_title": "Conditions Are Values Too",
 	// JavaScript lesson “Make a decision”, reading before. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-decisions.reading_before": "<p>A comparison such as <span class=\"dlabel\">character.hp &lt; character.max_hp / 2</span> produces <span class=\"dlabel\">true</span> or <span class=\"dlabel\">false</span>. These are <em>boolean</em> values. You can store the result in a variable, just as you stored a number earlier.</p>\n<p>An <span class=\"dlabel\">if</span> statement tests the condition in its parentheses. When it is true, JavaScript runs the following block. An optional <span class=\"dlabel\">else</span> block runs when it is false.</p>",
 	// JavaScript lesson “Make a decision”, reading after. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-decisions.reading_after": "<p>Exactly half HP makes this comparison false, so the example logs Ready. <span class=\"dlabel\">&lt;</span> means less than; <span class=\"dlabel\">&lt;=</span> includes equality. <span class=\"dlabel\">===</span> tests equality without converting types. A single <span class=\"dlabel\">=</span> assigns a value. Keep these different jobs in mind when a condition behaves unexpectedly.</p>",
+	"docs.tutorial.js-decisions.reading_after": "<p>Exactly half HP makes this comparison false, so the example logs Ready. <span class=\"dlabel\">&lt;</span> means less than; <span class=\"dlabel\">&lt;=</span> includes equality. <span class=\"dlabel\">===</span> tests equality without converting types. A single <span class=\"dlabel\">=</span> assigns a value. Keep those jobs separate when a condition behaves strangely.</p>",
 	// JavaScript lesson “Make a list”, idea. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-arrays.idea": "An <em>array</em> holds an ordered list. <span class=\"dlabel\">[\"Mira\", \"Nox\", \"Bram\"]</span> has three strings. <span class=\"dlabel\">party[0]</span> reads the first entry: indexes start at zero. <span class=\"dlabel\">party.length</span> gives the number of entries. Brackets create the list or select an entry; the dot reads its length.",
 	// JavaScript lesson “Make a list”, task. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-arrays.task": "Log the first name in the sample party, then how many names it contains. Expect <span class=\"dlabel\">Mira</span> and <span class=\"dlabel\">3</span> on separate lines.",
 	// JavaScript lesson “Make a list”, hint. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-arrays.hint": "The indexes are 0, 1, and 2. A list of three entries has no index 3; reading it gives <span class=\"dlabel\">undefined</span>.",
+	"docs.tutorial.js-arrays.hint": "The indexes are 0, 1, and 2. A list with three entries has no index 3; reading it gives <span class=\"dlabel\">undefined</span>.",
 	// JavaScript lesson “Make a list”, transfer. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-arrays.transfer": "This is a list you created, not the game's live party. The same JavaScript syntax later lets you read character.items, which is an array of inventory slots.",
+	"docs.tutorial.js-arrays.transfer": "This is a list you created, not the game's live party. The same JavaScript syntax later lets you read character.items, an array of inventory slots.",
 	// JavaScript lesson “Make a list”, variation. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-arrays.variation": "Add a fourth name and predict the new length. Try index 0 and index 3. Restore the original list to check this exercise.",
 	// JavaScript lesson “Make a list”, reading title. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-arrays.reading_title": "Arrays are objects for lists",
+	"docs.tutorial.js-arrays.reading_title": "Arrays Are Objects for Lists",
 	// JavaScript lesson “Make a list”, reading before. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-arrays.reading_before": "<p>An array is a kind of object designed for an ordered list. Read an entry with an index in square brackets: <span class=\"dlabel\">names[0]</span>. Read a named property with a dot: <span class=\"dlabel\">names.length</span>. The length counts entries, so the last index is one less than the length.</p>\n<p>Arrays also have useful functions called <em>methods</em>. <span class=\"dlabel\">names.push(\"Bram\")</span> calls the array’s <span class=\"dlabel\">push</span> method to add a value at the end. The dot finds the method; the parentheses call it.</p>",
+	"docs.tutorial.js-arrays.reading_before": "<p>An array is a kind of object built for an ordered list. Read an entry with an index in square brackets: <span class=\"dlabel\">names[0]</span>. Read a named property with a dot: <span class=\"dlabel\">names.length</span>. The length counts entries, so the last index is one less than the length.</p>\n<p>Arrays also have useful functions called <em>methods</em>. <span class=\"dlabel\">names.push(\"Bram\")</span> calls the array’s <span class=\"dlabel\">push</span> method to add a value at the end. The dot finds the method; the parentheses call it.</p>",
 	// JavaScript lesson “Make a list”, reading after. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-arrays.reading_after": "<p>The output is Mira, then 3. Notice that <span class=\"dlabel\">const</span> still allows the array’s contents to change. It prevents reassigning <span class=\"dlabel\">names</span> to a different value; it does not freeze the array or an object’s properties.</p>",
+	"docs.tutorial.js-arrays.reading_after": "<p>The output is Mira, then 3. Notice that <span class=\"dlabel\">const</span> still allows the array’s contents to change. It prevents you from reassigning <span class=\"dlabel\">names</span> to a different value; it does not freeze the array or an object’s properties.</p>",
 	// JavaScript lesson “Loop through a list”, idea. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-loops.idea": "A <span class=\"dlabel\">for</span> loop repeats a block. Its three parts say where to start, when to keep going, and how to advance: <span class=\"dlabel\">let i = 0</span> starts at the first index; <span class=\"dlabel\">i &lt; party.length</span> checks that an entry remains; <span class=\"dlabel\">i++</span> adds one after each turn. Inside the braces, <span class=\"dlabel\">party[i]</span> reads that entry.",
 	// JavaScript lesson “Loop through a list”, task. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-loops.task": "Fix the loop so it logs every name once, starting with Mira. Expect three lines: <span class=\"dlabel\">Mira</span>, <span class=\"dlabel\">Nox</span>, <span class=\"dlabel\">Bram</span>.",
 	// JavaScript lesson “Loop through a list”, hint. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-loops.hint": "Start at index 0. Keep <span class=\"dlabel\">&lt;</span>, not <span class=\"dlabel\">&lt;=</span>, to stop before the first missing entry. This loop finishes immediately; it does not wait between names.",
+	"docs.tutorial.js-loops.hint": "Start at index 0. Keep <span class=\"dlabel\">&lt;</span>, not <span class=\"dlabel\">&lt;=</span>, so the loop stops before the first missing entry. This loop finishes immediately; it does not wait between names.",
 	// JavaScript lesson “Loop through a list”, transfer. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-loops.transfer": "The copied loop runs once and logs the sample names. For repeated game decisions over time, the later timer lesson schedules another run instead of keeping a loop running forever.",
+	"docs.tutorial.js-loops.transfer": "The copied loop runs once and logs the sample names. For repeated game decisions over time, the later timer lesson schedules another run instead of leaving a loop running forever.",
 	// JavaScript lesson “Loop through a list”, variation. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-loops.variation": "Change < to <= and inspect the extra line. Then add a fourth name: using .length lets the loop include it automatically. Restore the original list and condition to pass.",
 	// JavaScript lesson “Loop through a list”, reading title. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-loops.reading_title": "What a loop does each time",
+	"docs.tutorial.js-loops.reading_title": "What a Loop Does Each Time",
 	// JavaScript lesson “Loop through a list”, reading before. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-loops.reading_before": "<p>A <span class=\"dlabel\">for</span> loop has a precise order. It creates the counter once, tests the condition, runs the body if the condition is true, and updates the counter. Then it tests the condition again. It stops as soon as that test is false.</p>\n<p>The counter is an ordinary variable. <span class=\"dlabel\">i</span> is just a short name people often use for an index. You can choose another name and use a loop for more than arrays. This example counts from one to three:</p>",
+	"docs.tutorial.js-loops.reading_before": "<p>A <span class=\"dlabel\">for</span> loop follows a precise order. It creates the counter once, tests the condition, runs the body if the condition is true, and updates the counter. Then it tests the condition again. It stops as soon as that test is false.</p>\n<p>The counter is an ordinary variable. <span class=\"dlabel\">i</span> is just a short name people often use for an index. You can choose another name, and loops are useful for more than arrays. This example counts from one to three:</p>",
 	// JavaScript lesson “Loop through a list”, reading after. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-loops.reading_after": "<p>The output is 1, 2, 3. After the third turn, <span class=\"dlabel\">count++</span> makes the counter 4; the next test is false. Counting through 3 uses <span class=\"dlabel\">&lt;= 3</span>. Reading array indexes uses <span class=\"dlabel\">&lt; array.length</span>. Choose the condition for the job, and make sure the loop can reach its stopping point.</p>",
+	"docs.tutorial.js-loops.reading_after": "<p>The output is 1, 2, 3. After the third turn, <span class=\"dlabel\">count++</span> makes the counter 4; the next test is false. Counting through 3 uses <span class=\"dlabel\">&lt;= 3</span>. Reading array indexes uses <span class=\"dlabel\">&lt; array.length</span>. Choose the condition that fits the job, and make sure the loop can reach its stopping point.</p>",
 	// JavaScript lesson “Write your own function”, idea. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-functions.idea": "<span class=\"dlabel\">function statusFor(hero) { ... }</span> defines your own function. <span class=\"dlabel\">hero</span> is its parameter: the value supplied by a call. <span class=\"dlabel\">return</span> gives a result back and leaves the function. Defining a function does not run it; calling it does.",
 	// JavaScript lesson “Write your own function”, task. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
@@ -253,9 +319,9 @@ module.exports = {
 	// JavaScript lesson “Write your own function”, transfer. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-functions.transfer": "You now have a reusable HP decision. Next, combine JavaScript with inventory, targeting, and timed actions.",
 	// JavaScript lesson “Write your own function”, variation. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-functions.variation": "Call statusFor({ hp: 20, max_hp: 100 }). Curly braces can also create an object. What would happen without return?",
+	"docs.tutorial.js-functions.variation": "Call statusFor({ hp: 20, max_hp: 100 }). Curly braces can create an object too. What happens if you leave out return?",
 	// JavaScript lesson “Write your own function”, reading title. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-functions.reading_title": "Parameters and returned values",
+	"docs.tutorial.js-functions.reading_title": "Parameters and Returned Values",
 	// JavaScript lesson “Write your own function”, reading before. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-functions.reading_before": "<p>A <em>parameter</em> is a local name listed in a function’s definition. An <em>argument</em> is the value supplied when you call it. In the example below, <span class=\"dlabel\">hero</span> is the parameter and <span class=\"dlabel\">character</span> is the argument. Inside that call, <span class=\"dlabel\">hero</span> refers to the object you passed in.</p>\n<p>A function can calculate a value and return it to its caller. You can store that result, use it in another calculation, or pass it to <span class=\"dlabel\">game_log</span>.</p>",
 	// JavaScript lesson “Write your own function”, reading after. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
@@ -269,9 +335,9 @@ module.exports = {
 	// JavaScript lesson “Count your supplies”, transfer. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-inventory.transfer": "In CODE, this snippet counts hpot0 in your real bag without changing it. Other potion types have different item names. The exercise above uses practice bags.",
 	// JavaScript lesson “Count your supplies”, variation. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-inventory.variation": "Count mpot0 instead. Explain why removing the empty-slot check causes an error and why adding 1 per stack gives the wrong quantity.",
+	"docs.tutorial.js-inventory.variation": "Count mpot0 instead. Explain why removing the empty-slot check causes an error, and why adding 1 per stack gives the wrong quantity.",
 	// JavaScript lesson “Count your supplies”, reading title. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-inventory.reading_title": "A list of objects, with gaps",
+	"docs.tutorial.js-inventory.reading_title": "A List of Objects, with Gaps",
 	// JavaScript lesson “Count your supplies”, reading before. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-inventory.reading_before": "<p>You are combining three familiar ideas: an array, objects inside it, and a changing total. A <span class=\"dlabel\">for…of</span> loop gives you each value directly. The earlier <span class=\"dlabel\">for</span> loop gave you an index. Use an index when you need the slot number.</p>\n<p><span class=\"dlabel\">null</span> explicitly marks an empty slot. A missing property gives <span class=\"dlabel\">undefined</span>. Both are false-like in a condition, so <span class=\"dlabel\">!item</span> means there is no item here. <span class=\"dlabel\">||</span> means “or” and stops as soon as its left side is true; that prevents reading <span class=\"dlabel\">item.name</span> from an empty slot.</p>",
 	// JavaScript lesson “Count your supplies”, reading after. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
@@ -289,7 +355,7 @@ module.exports = {
 	// JavaScript lesson “There may be no target”, variation. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-targets.variation": "Read target.mtype after the null guard. Move that read before the guard and check Nox’s result. Explain the error before fixing it.",
 	// JavaScript lesson “There may be no target”, reading title. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-targets.reading_title": "Check before you read",
+	"docs.tutorial.js-targets.reading_title": "Check Before You Read",
 	// JavaScript lesson “There may be no target”, reading before. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-targets.reading_before": "<p>An early <span class=\"dlabel\">return</span> is a <em>guard</em>: it ends the function when the remaining work does not apply. It makes the main path easier to read and keeps missing data from causing an error.</p>\n<p><span class=\"dlabel\">&amp;&amp;</span> means “and.” JavaScript evaluates the right side only when the left side is truthy. Here, it reads the property only when a target exists.</p>",
 	// JavaScript lesson “There may be no target”, reading after. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
@@ -299,7 +365,7 @@ module.exports = {
 	// JavaScript lesson “Check again later”, idea. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-timers.idea": "<span class=\"dlabel\">setTimeout(report, 1000)</span> asks JavaScript to call <span class=\"dlabel\">report</span> after at least 1000 milliseconds. It returns immediately. Pass the function itself, without calling it: <span class=\"dlabel\">report</span>, not <span class=\"dlabel\">report()</span>.",
 	// JavaScript lesson “Check again later”, task. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-timers.task": "Log <span class=\"dlabel\">HP: N</span> now, then once a second, for three reports total. Read HP inside report so every line is fresh. Keep stopReports able to cancel the next report. Practice time runs quickly here.",
+	"docs.tutorial.js-timers.task": "Log <span class=\"dlabel\">HP: N</span> now, then once a second, for three reports total. Read HP inside report so each line is fresh. Keep stopReports able to cancel the next report. Practice time runs quickly here.",
 	// JavaScript lesson “Check again later”, hint. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-timers.hint": "The starter stores HP once. Move that property read into report. The checks change HP between callbacks and call stopReports early in Orin’s scenario.",
 	// JavaScript lesson “Check again later”, transfer. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
@@ -307,7 +373,7 @@ module.exports = {
 	// JavaScript lesson “Check again later”, variation. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-timers.variation": "Add setTimeout(stopReports, 1500). Predict how many reports appear. Remove it again to pass Mira’s three-report check.",
 	// JavaScript lesson “Check again later”, reading title. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-timers.reading_title": "Give JavaScript time to breathe",
+	"docs.tutorial.js-timers.reading_title": "Give JavaScript Time to Breathe",
 	// JavaScript lesson “Check again later”, reading before. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-timers.reading_before": "<p>A <em>callback</em> is a function another piece of code calls later. While a timeout waits, the game can process movement and new character data. A busy loop keeps JavaScript occupied and prevents that work.</p>\n<p>A callback can still read the variables in the scope where it was defined. This is a <em>closure</em>. The report callback remembers count and timer; it reads character.hp when the callback actually runs.</p>",
 	// JavaScript lesson “Check again later”, reading after. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
@@ -325,23 +391,23 @@ module.exports = {
 	// JavaScript lesson “Wait for the game”, variation. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-async.variation": "Add setTimeout(function () { stop(\"move\"); }, 100). Interrupt the trip and look for interrupted. Remove that line, then explain why finally must reset travelling on both success and failure.",
 	// JavaScript lesson “Wait for the game”, reading title. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-async.reading_title": "Started, finished, or failed",
+	"docs.tutorial.js-async.reading_title": "Started, Finished, or Failed",
 	// JavaScript lesson “Wait for the game”, reading before. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-async.reading_before": "<p>An <span class=\"dlabel\">async</span> function always returns a Promise. Inside it, <span class=\"dlabel\">await</span> waits for another Promise. On success, execution continues after await. If the Promise rejects, execution jumps to catch.</p>\n<p><span class=\"dlabel\">finally</span> runs after either outcome. Resetting travelling there prevents one failed trip from leaving the function permanently busy. The busy variable belongs outside takeTrip so later calls share it.</p>",
 	// JavaScript lesson “Wait for the game”, reading after. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-async.reading_after": "<p>CODE normally rejects failed actions with an object containing <span class=\"dlabel\">reason</span>. These examples use that default Promise behavior. Do not enable <span class=\"dlabel\">mode_resolve_all()</span> for them; that mode changes how failures are delivered.</p>\n<p>Clearing a timeout cannot cancel a Promise. Use the action’s cancellation function, such as <span class=\"dlabel\">stop(\"move\")</span> for travel, and handle the interrupted result.</p>",
 	// JavaScript lesson “React when things happen”, idea. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-events.idea": "<span class=\"dlabel\">character.on(\"hit\", callback)</span> calls your function when your character receives a hit event. The callback receives an object describing what happened. The call returns a listener ID; keep it to remove that listener later.",
+	"docs.tutorial.js-events.idea": "<span class=\"dlabel\">character.on(\"hit\", callback)</span> calls your function when your character receives a hit event. The callback receives an object describing what happened. The call returns a listener ID; keep it so you can remove that listener later.",
 	// JavaScript lesson “React when things happen”, task. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-events.task": "Log <span class=\"dlabel\">Damage: N</span> for hit events with a numeric damage property, including 0. Ignore payloads without numeric damage. Remove your listener after two seconds; later hits must produce no output.",
 	// JavaScript lesson “React when things happen”, hint. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-events.hint": "Pass the saved listener ID to character.remove. The starter passes the event name instead. A heal or another event can lack damage, so keep the typeof check.",
 	// JavaScript lesson “React when things happen”, transfer. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-events.transfer": "In CODE, this snippet listens for two seconds and removes its listener. In a quiet area you may see no output; that is normal. Practice supplies events without a real fight.",
+	"docs.tutorial.js-events.transfer": "In CODE, this snippet listens for two seconds and then removes its listener. In a quiet area you may see no output; that is normal. Practice supplies events without a real fight.",
 	// JavaScript lesson “React when things happen”, variation. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-events.variation": "Use character.once instead of character.on. It removes itself after the first matching event, even if your callback ignores that payload. Explain why that is different from the exercise.",
+	"docs.tutorial.js-events.variation": "Use character.once instead of character.on. It removes itself after the first matching event, even if your callback ignores that payload. Explain why that differs from the exercise.",
 	// JavaScript lesson “React when things happen”, reading title. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-events.reading_title": "Respond when something happens",
+	"docs.tutorial.js-events.reading_title": "Respond When Something Happens",
 	// JavaScript lesson “React when things happen”, reading before. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-events.reading_before": "<p>A timer answers “check again later.” An event answers “this just happened.” Both use callbacks. An event callback receives a <em>payload</em>: an object with details about that event.</p>\n<p><span class=\"dlabel\">hit</span> describes an event whose resolved target is your character. <span class=\"dlabel\">target_hit</span> describes one caused by your character. Read <span class=\"dlabel\">data.damage</span> only when it is present and numeric; a hit payload can instead describe healing or another outcome.</p>",
 	// JavaScript lesson “React when things happen”, reading after. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
@@ -349,17 +415,17 @@ module.exports = {
 	// Learner-facing comment in the starter example for “React when things happen”. Translate comment prose; keep referenced CODE names and expected output strings unchanged. The enclosing example supplies context.
 	"docs.tutorial.js-events.starter.comment_1": "Use the listener ID.",
 	// JavaScript lesson “Build a small farming script”, idea. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-capstone.idea": "Put the pieces together: a configuration object, guards, fresh target reads, awaited actions, and one scheduled next turn. This example runs for ten seconds. Read it in small parts before pressing Execute.",
+	"docs.tutorial.js-capstone.idea": "Put the pieces together: a configuration object, guards, fresh target reads, awaited actions, and one scheduled next turn. This example runs for ten seconds. Read it in small pieces before pressing Execute.",
 	// JavaScript lesson “Build a small farming script”, task. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-capstone.task": "The script forgets to handle a missing target. Add the guard before reading target.map or checking range. Pass all three checks, then explain what each return prevents and where the next turn is scheduled.",
 	// JavaScript lesson “Build a small farming script”, hint. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-capstone.hint": "After get_nearest_monster, add if (!target) return. A return inside try still runs finally. Scheduling there keeps one next turn after the current work finishes, even when a guard returns or an action fails.",
+	"docs.tutorial.js-capstone.hint": "After get_nearest_monster, add if (!target) return. A return inside try still runs finally. Scheduling there leaves exactly one next turn after the current work finishes, even when a guard returns or an action fails.",
 	// JavaScript lesson “Build a small farming script”, transfer. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-capstone.transfer": "This CODE example really moves, attacks goo, recovers HP/MP, and loots for ten seconds. Try it with a living warrior, usable gear, free bag space, and HP/MP potions near goo on main. First check that you can handle one goo manually. Recovery may consume potions; low HP can still be dangerous. Use a dedicated CODE slot and ENGAGE only when ready. The exercise above uses simulated scenarios.",
+	"docs.tutorial.js-capstone.transfer": "This CODE example really moves, attacks goo, recovers HP/MP, and loots for ten seconds. Try it with a living warrior, usable gear, free bag space, and HP/MP potions near goo on main. First make sure you can handle one goo manually. Recovery may consume potions; low HP can still be dangerous. Use a dedicated CODE slot and ENGAGE only when ready. The exercise above uses simulated scenarios.",
 	// JavaScript lesson “Build a small farming script”, variation. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-capstone.variation": "Change config.delay to 1500 and predict what changes. It is a pause after work settles, not an attack-speed setting. Then explain why a target must be found again after movement. Keep the ten-second stop while experimenting.",
+	"docs.tutorial.js-capstone.variation": "Change config.delay to 1500 and predict what changes. It is a pause after work settles, not an attack-speed setting. Then explain why the target must be found again after movement. Keep the ten-second stop while experimenting.",
 	// JavaScript lesson “Build a small farming script”, reading title. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
-	"docs.tutorial.js-capstone.reading_title": "A small script you can explain",
+	"docs.tutorial.js-capstone.reading_title": "A Small Script You Can Explain",
 	// JavaScript lesson “Build a small farming script”, reading before. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
 	"docs.tutorial.js-capstone.reading_before": "<p>The configuration object collects values you may want to change. The tick function does one turn of work. It waits for each requested action before continuing and schedules the next turn only in finally. This keeps slow turns from overlapping.</p>\n<p>The guards have different jobs: running stops future work; rip handles death; HP/MP checks pause combat; the target guard handles an empty search; range chooses movement or an attack. After movement, the function returns so the next turn finds a fresh target.</p>",
 	// JavaScript lesson “Build a small farming script”, reading after. Translate prose; preserve HTML, CODE identifiers, names, item/event keys, and quoted strings the exercise prints. No interpolation parameters in this phrase.
@@ -367,21 +433,21 @@ module.exports = {
 	// Learner-facing comment in the starter example for “Build a small farming script”. Translate comment prose; keep referenced CODE names and expected output strings unchanged. The enclosing example supplies context.
 	"docs.tutorial.js-capstone.starter.comment_1": "Handle a missing target here.",
 	// Shared visible heading in JavaScript tutorial articles. Keep CODE and JavaScript unchanged.
-	"docs.tutorial.javascript.task": "Your turn",
+	"docs.tutorial.javascript.task": "Your Turn",
 	// Shared visible heading in JavaScript tutorial articles. Keep CODE and JavaScript unchanged.
 	"docs.tutorial.javascript.hint": "Hint",
 	// Shared visible heading in JavaScript tutorial articles. Keep CODE and JavaScript unchanged.
-	"docs.tutorial.javascript.solution": "One solution",
+	"docs.tutorial.javascript.solution": "One Solution",
 	// Shared visible heading in JavaScript tutorial articles. Keep CODE and JavaScript unchanged.
-	"docs.tutorial.javascript.variation": "Try one more thing",
+	"docs.tutorial.javascript.variation": "Try One More Thing",
 	// Shared visible heading in JavaScript tutorial articles. Keep CODE and JavaScript unchanged.
-	"docs.tutorial.javascript.reading": "A little more JavaScript",
+	"docs.tutorial.javascript.reading": "A Little More JavaScript",
 	// Shared visible heading in JavaScript tutorial articles. Keep CODE and JavaScript unchanged.
-	"docs.tutorial.javascript.transfer": "Try it in CODE",
+	"docs.tutorial.javascript.transfer": "Try It in CODE",
 	// Replace the existing final lesson’s closing sentence; Continue leads directly to the appended JavaScript lessons. Keep JavaScript and CODE unchanged.
 	"docs.tutorial.theend.javascript_next": "Next, write a few small scripts and learn the JavaScript behind CODE.",
 	// Practice instructions in every JavaScript lesson. Preserve names, CODE identifiers and the Execute/Continue control meanings.
-	"docs.tutorial.javascript.practice": "Edit the code, then press Execute to check the result. Practice uses sample data and does not control your character. Continue advances whenever you are ready.",
+	"docs.tutorial.javascript.practice": "Edit the code, then press Execute to check the result. Practice uses sample data and does not control your character. Continue whenever you are ready.",
 	// Directions before transferring a tutorial example into the real CODE editor; ENGAGE is a fixed control name.
 	"docs.tutorial.javascript.copy": "To try an example in CODE, select its text and copy it into an unused slot. Stop your current script before pressing ENGAGE.",
 	// Tutorial: concrete first-use instructions; preserve NPC, map and item names and CODE identifiers.
@@ -391,15 +457,15 @@ module.exports = {
 	// Tutorial: concrete first-use instructions; preserve NPC, map and item names and CODE identifiers.
 	"docs.tutorial.new.gather_start": "For your first fishing attempt, go to the western shore of Mainland near Tristian. Close your stand, equip the Rod in your main hand, and stop by the water with at least 120 MP and an empty bag slot. Open SKILLS and drag Fishing to a hotbar key, then press that key. Mining works the same way with a Pickaxe in the Mining Tunnel south of Mainland. Wait for the attempt to finish; finding nothing is possible, and some tools can break.",
 	// Anniversary guide: inspect the existing character state and terminal skill result. Keep character.anniversary, rewarded and reason as CODE identifiers.
-	"docs.guide.event-anniversary.kiss-feedback": "Your character.anniversary state explains reward eligibility. A kiss result includes rewarded and reason fields. A permanently unlocked kiss can play without giving rewards.",
+	"docs.guide.event-anniversary.kiss-feedback": "Your character.anniversary state explains whether you qualify for rewards. A kiss result includes rewarded and reason fields. A permanently unlocked kiss can still play without awarding anything.",
 	// Monster achievement stat bonuses require carrying Tracktrix; these are score thresholds, not raw kill counts.
-	"docs.tutorial.tracktrix.achievements": "Monster achievements grant stat bonuses while you carry Tracktrix. Your account's highest score for each monster counts—not the sum of your characters' scores.",
-	"docs.tutorial.tracktrix.goo_rewards": "For Goo, 10 points grant +5 HP; 100 points add another +10 HP.",
+	"docs.tutorial.tracktrix.achievements": "Monster achievements grant stat bonuses while you carry Tracktrix. For each monster, your account's highest score counts—not the combined scores of all your characters.",
+	"docs.tutorial.tracktrix.goo_rewards": "For Goo, 10 points grant +5 HP; reaching 100 points adds another +10 HP.",
 	// Tracktrix tutorial and guide: one mailed gift per account, including existing accounts; further copies cost 4 Monster Tokens at Daisy. Preserve proper names.
 	"docs.tutorial.tracktrix.intro": "Daisy sends your account one Tracktrix by mail. It reveals monsters, drops, and your achievement progress. Need another? Trade her 4 Monster Tokens.",
-	"docs.tutorial.tracktrix.manual": "Keep Tracktrix in your inventory. Click it, then choose INTERFACE! to open it. Select a monster to inspect its drops and achievement milestones. You can finish this lesson without owning one.",
-	"docs.tutorial.tracktrix.goal": "Start with a monster you can farm safely, such as Goo. Check its next achievement milestone before choosing a longer farming goal.",
-	"docs.tutorial.tracktrix.code": "You can inspect monster data through CODE even before you own a Tracktrix. This example shows Goo's achievement milestones; it does not show your personal progress.",
+	"docs.tutorial.tracktrix.manual": "Keep Tracktrix in your inventory. Click it, then choose INTERFACE! to open it. Select a monster to see its drops and achievement milestones. You can finish this lesson without owning one.",
+	"docs.tutorial.tracktrix.goal": "Start with a monster you can farm safely, such as Goo. Check its next achievement milestone before committing to a longer farming goal.",
+	"docs.tutorial.tracktrix.code": "You can inspect monster data through CODE even before you own a Tracktrix. This example shows Goo's achievement milestones, not your personal progress.",
 	// docs/articles/hub.html: Article title. Keep Hub, the external chat and character-watching page name. Preserve the HTML.
 	"docs.articles.hub.title": '<span class="dlabel">Hub &amp; Chat</span>',
 	// docs/articles/hub.html: Opening directions. Preserve the /hub link and the CHAT control name.
@@ -435,7 +501,7 @@ module.exports = {
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
 	"docs.tutorial.new.comparison_intro": "These are level-50 characters with the same class, no buffs, and no achievement bonuses. Compare their ordinary attacks against the same target. You do not need to own this equipment to continue.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
-	"docs.tutorial.new.comparison_note": "The numbers show average ordinary-hit damage before critical hits, misses, and special effects. Damage per second assumes uninterrupted attacks and enough MP. Actual farming includes movement, healing, and potion use.",
+	"docs.tutorial.new.comparison_note": "The numbers show average ordinary-hit damage before critical hits, misses, and special effects. Damage per second assumes uninterrupted attacks and enough MP. Actual farming also includes movement, healing, and potion use.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
@@ -462,35 +528,35 @@ module.exports = {
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
 	"docs.tutorial.new.merchant_intro": "Your merchant can bring potions to your fighters, carry loot home, and run a shop. Start with a small supply run, not an expensive purchase. Open COM, choose Characters, and open your merchant alongside a fighter on the same server. If you have not created a merchant yet, create one from the character selection page.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
-	"docs.tutorial.new.merchant_budget": "To give your merchant starting gold by hand, take a fighter into the bank on Mainland, deposit some gold with Mr. Rich, and leave. Then enter with your merchant and withdraw it. Only one of your characters can be inside the bank at a time. Save enough for your fighters' next potions before spending on a stand or donations.",
+	"docs.tutorial.new.merchant_budget": "To give your merchant starting gold by hand, take a fighter into the bank on Mainland, deposit some gold with Mr. Rich, then leave. Enter with your merchant and withdraw it. Only one of your characters can be inside the bank at a time. Before spending on a stand or donations, keep enough aside for your fighters' next potions.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
-	"docs.tutorial.new.supplies_manual": "Ernis sells HP and MP potions beside Gabriel in Mainland's town square. Right-click Ernis, click a potion, set the quantity, and buy a small stack. To share it by hand, store it with a bank item clerk, leave the bank, then collect it with your other character. For a direct delivery without visiting the bank, stand near the recipient and use the CODE example below.",
+	"docs.tutorial.new.supplies_manual": "Ernis sells HP and MP potions beside Gabriel in Mainland's town square. Right-click Ernis, choose a potion, set the quantity, and buy a small stack. To share it by hand, store it with a bank item clerk, leave the bank, then collect it with your other character. For direct delivery without a bank visit, stand near the recipient and use the CODE example below.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
-	"docs.tutorial.new.supplies_code": "On the same server, party your merchant with a fighter you own. Run once when that fighter needs potions. The script picks an owned party fighter, uses carried potions first, buys shortages from Ernis, and delivers 20 HP and 20 MP potions. It keeps 20 of each and 4,000 gold. Larger potions count too. If the fighter is no longer nearby on arrival, it stops.",
+	"docs.tutorial.new.supplies_code": "On the same server, party your merchant with a fighter you own. Run this once when that fighter needs potions. The script chooses an owned party fighter, uses carried potions first, buys any shortages from Ernis, then delivers 20 HP and 20 MP potions. It keeps 20 of each and 4,000 gold. Larger potions count too. If the fighter is no longer nearby when the merchant arrives, it stops.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
-	"docs.tutorial.new.shop_manual": "Your first shop starts with Divian, south of Mainland's town square. Right-click her, choose the button to buy a stand, then click Merchant Stand in her shop and buy it for 40,000 gold. Keep money for potions; you can come back to this lesson when you can afford one.",
+	"docs.tutorial.new.shop_manual": "Your first shop starts with Divian, south of Mainland's town square. Right-click her, choose the button to buy a stand, then select Merchant Stand in her shop and buy it for 40,000 gold. Keep enough money for potions; if a stand is too expensive for now, come back to this lesson later.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
-	"docs.tutorial.new.shop_code": "With a Merchant Stand in inventory, this opens the stand. Add your first listing manually so you can inspect the item and price before offering it to other players.",
+	"docs.tutorial.new.shop_code": "With a Merchant Stand in your inventory, this opens the stand. Add your first listing manually so you can check both the item and its price before offering it to other players.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
 	"docs.tutorial.new.xp_trade": "Player trading: merchants gain XP from eligible purchases and sales made through player stands and, below level 70, from completed trade offers. The XP is based on the trade's tax. Trades between your own characters do not qualify.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
-	"docs.tutorial.new.xp_donate": "For donations, enter Wizard's Crib west of Mainland's town square and talk to Ron at Lost & Found. Choose Donate, enter a gold amount, and read the XP preview before confirming. The rate depends on the server's treasury. This spends your gold; it is optional, so keep your potion money first.",
+	"docs.tutorial.new.xp_donate": "For donations, enter Wizard's Crib west of Mainland's town square and talk to Ron at Lost & Found. Choose Donate, enter a gold amount, and check the XP preview before confirming. The rate depends on the server's treasury. Donations spend your gold and are entirely optional, so keep your potion money first.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
-	"docs.tutorial.new.xp_combat": "Open stands: the server periodically awards XP to online merchants with an open stand. This is not a timer that starts when you open your shop. Merchants do not earn ordinary monster-kill or party-kill XP.",
+	"docs.tutorial.new.xp_combat": "Open stands: the server periodically awards XP to online merchants whose stand is open. It is not a timer that begins when you open your shop. Merchants also do not earn ordinary monster-kill or party-kill XP.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
-	"docs.tutorial.new.xp_gather": "Gathering gives items, not a fixed XP reward per attempt. Selling gathered materials to other players can then earn trade XP.",
+	"docs.tutorial.new.xp_gather": "Gathering gives you items, not a fixed amount of XP per attempt. Sell those gathered materials to other players, however, and the trade can earn XP.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
-	"docs.tutorial.new.gather_manual": "Gathering unlocks at merchant level 16. Start with a Rod: Leo, south of Mainland's town square, crafts one from a Staff, one Spider Silk, and 100 gold. A Pickaxe needs the same ingredients plus a Blade. Gabriel sells Staff and Blade; Spider Silk drops from Spiders or can be bought from another player. Right-click Leo and choose Recipes to inspect the tool, then Craft when you have its ingredients.",
+	"docs.tutorial.new.gather_manual": "Gathering unlocks at merchant level 16. Start with a Rod: Leo, south of Mainland's town square, crafts one from a Staff, one Spider Silk, and 100 gold. A Pickaxe uses the same ingredients plus a Blade. Gabriel sells Staff and Blade; Spider Silk drops from Spiders or can be bought from another player. Right-click Leo and choose Recipes to inspect the tool, then Craft once you have the ingredients.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
-	"docs.tutorial.new.delivery_manual": "Merrit visits open shops in Mainland's town square. You do not accept a delivery quest: keep an eligible item listed for sale, stay online, and leave room around NPCs and other shops. Her guide below shows the delivery area, eligible listings, and waiting time. When a Market Parcel arrives, keep it and follow the guide to exchange it for rewards.",
+	"docs.tutorial.new.delivery_manual": "Merrit visits open shops in Mainland's town square. There is no delivery quest to accept: keep an eligible item listed for sale, stay online, and leave room around NPCs and other shops. Her guide below explains the delivery area, eligible listings, and waiting time. When a Market Parcel arrives, keep it and follow the guide to exchange it for rewards.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
-	"docs.tutorial.new.merchant_finish": "Choose your next job: a supply run, one carefully priced listing, or gathering once you reach level 16. You can return to these lessons whenever your merchant needs a new goal.",
+	"docs.tutorial.new.merchant_finish": "Pick your next job: make a supply run, put up one carefully priced listing, or start gathering once you reach level 16. You can return to these lessons whenever your merchant needs a new goal.",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
 	"docs.tutorial.new.references": "Read more",
 	// New tutorial/guide text. Keep Adventure Land, CODE/API identifiers, item/NPC names (Goo, Coat, Merchant Stand, Market Parcels, Rod, Pickaxe, Computer, Daisy, Merrit, Lost & Found), FriendName, STR/INT/DEX/MP/HP/XP and numbers unchanged. Translate class display names using existing locale terminology. No markup or placeholders.
-	"docs.tutorial.new.preview_only": "Look through the examples, then Continue. No purchase or upgrade is required.",
+	"docs.tutorial.new.preview_only": "Look through the examples, then Continue. You do not need to buy or upgrade anything.",
 	// New CODE example introduction at bottom of Merrit guide. Preserve Mainland (map proper name), open_stand(), exact HTML and URL. One example follows: open_stand();
-	"docs.guide.npc-merrit.open-shop-with-code": "Set up a qualifying listing and choose a clear spot on Mainland first. With a stand item in your bag, use <a href=\"/docs/code/functions/open_stand\">open_stand()</a>. Repeated calls keep the same open stand and its timer unchanged.",
+	"docs.guide.npc-merrit.open-shop-with-code": "Set up a qualifying listing and choose a clear spot on Mainland first. With a stand item in your bag, use <a href=\"/docs/code/functions/open_stand\">open_stand()</a>. Repeated calls keep the same stand open without resetting its timer.",
 	// docs/articles/1-easy.html:13; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Adventure Land"].
 	"docs.articles.1-easy.adventure-land-is-written-in-javascript-and-you": "Adventure Land is written in Javascript, and you'll learn Javascript.",
 	// docs/articles/1-easy.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
@@ -2234,6 +2300,9 @@ module.exports = {
 	// docs/functions/bank_deposit.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.bank_deposit.returns-promise-resolving-with-the-bank-response-or":
 		"<b>Returns:</b> Promise resolving with the bank response, or rejecting when the character is not in a bank or the server refuses the action.",
+	// Shared bank gold result metadata. Preserve operation, deposit, withdraw and gold as executable CODE fields/values.
+	"docs.functions.bank_gold.operation": "The result's <span class='dlabel'>operation</span> is <span class='dlabel'>\"deposit\"</span> or <span class='dlabel'>\"withdraw\"</span>; <span class='dlabel'>gold</span> is the amount moved.",
+
 	// docs/functions/bank_retrieve.html:6; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.bank_retrieve.example": "<b>Example:</b>",
 	// docs/functions/bank_retrieve.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
@@ -2294,21 +2363,21 @@ module.exports = {
 	// docs/functions/get_poker_table.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["failed: true","reason","mode_resolve_all()"].
 	"docs.functions.get_poker_table.promise-failures-unless-a-function-specific-note-says": "<b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.",
 	// docs/functions/get_poker_table.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
-	"docs.functions.get_poker_table.notes-works-anywhere-the-same-object-arrives": "<b>Notes:</b> Works anywhere. While you are in the Tavern the same object also arrives as a <span class='dlabel'>poker</span> game event whenever the table changes. timeout_ms defaults to 10,000ms.",
+	"docs.functions.get_poker_table.notes-works-anywhere-the-same-object-arrives": "<b>Notes:</b> Works anywhere. While you are in the Tavern, the same object also arrives as a <span class='dlabel'>poker</span> game event whenever the table changes. timeout_ms defaults to 10,000ms.",
 	// docs/functions/get_poker_table.html:6; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.get_poker_table.example": "<b>Example:</b>",
 	// docs/functions/poker_join.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Hold'em is the poker variant.
-	"docs.functions.poker_join.sits-down-at-the-tavern-s-hold-em-table": "Sits down at the Tavern's Hold'em table with gold, or adds gold to your stack between hands when you are already seated.",
+	"docs.functions.poker_join.sits-down-at-the-tavern-s-hold-em-table": "Sits down at the Tavern's Hold'em table with gold, or adds gold to your stack between hands if you are already seated.",
 	// docs/functions/poker_join.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep the field names unchanged; they are CODE.
 	"docs.functions.poker_join.returns-promise-resolving-with-seat-stack-buyin-and-blinds": "<b>Returns:</b> Promise resolving with seat, stack, buyin and blinds.",
 	// docs/functions/poker_join.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["failed: true","reason","mode_resolve_all()"].
 	"docs.functions.poker_join.promise-failures-unless-a-function-specific-note-says": "<b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.",
 	// docs/functions/poker_join.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
-	"docs.functions.poker_join.notes-stand-near-the-table-in-the-tavern": "<b>Notes:</b> Walk up to a free stool first: you sit on the stool you stand next to, within 40 pixels, and seat, when given, must be that stool's number from 0 to 4. The table object lists the stools as offsets from its x and y. The buy-in is 40 to 200 big blinds of the server's tier, one seat per account. The gold leaves your purse while you sit and returns the moment you leave. A rebuy is refused during a hand. timeout_ms defaults to 10,000ms.",
+	"docs.functions.poker_join.notes-stand-near-the-table-in-the-tavern": "<b>Notes:</b> Walk up to a free stool first: you sit on the stool you are standing next to, within 40 pixels. If seat is given, it must be that stool's number from 0 to 4. The table object lists the stools as offsets from its x and y. The buy-in is 40 to 200 big blinds of the server's tier, with one seat per account. The gold leaves your purse while you sit and returns the moment you leave. Rebuys are refused during a hand. timeout_ms defaults to 10,000ms.",
 	// docs/functions/poker_join.html:6; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.poker_join.example": "<b>Example:</b>",
 	// docs/functions/poker_leave.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Hold'em is the poker variant.
-	"docs.functions.poker_leave.leaves-the-hold-em-table-at-once-between": "Leaves the Hold'em table: at once between hands, otherwise after the current hand.",
+	"docs.functions.poker_leave.leaves-the-hold-em-table-at-once-between": "Leaves the Hold'em table: immediately between hands, otherwise after the current hand.",
 	// docs/functions/poker_leave.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep leaving:true and gold unchanged; they are CODE.
 	"docs.functions.poker_leave.returns-promise-resolving-with-leaving-true-while": "<b>Returns:</b> Promise resolving with leaving:true while a hand is running, or with gold, the stack returned to your purse.",
 	// docs/functions/poker_leave.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["failed: true","reason","mode_resolve_all()"].
@@ -2324,11 +2393,11 @@ module.exports = {
 	// docs/functions/poker_act.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["failed: true","reason","mode_resolve_all()"].
 	"docs.functions.poker_act.promise-failures-unless-a-function-specific-note-says": "<b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.",
 	// docs/functions/poker_act.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep bet, raise, amount, acting and deadline unchanged; they are CODE.
-	"docs.functions.poker_act.notes-for-bet-and-raise-amount-is-the-total": "<b>Notes:</b> For bet and raise, amount is the total you will have bet on the current street: at least the current bet plus the last raise, and an amount beyond your stack is an all-in. A call with nothing to call is a check. Only the acting seat can act; read acting and deadline from <span class='dlabel'>get_poker_table</span>. When the clock and the time bank run out, the server checks if it is free and folds otherwise. timeout_ms defaults to 10,000ms.",
+	"docs.functions.poker_act.notes-for-bet-and-raise-amount-is-the-total": "<b>Notes:</b> For bet and raise, amount is the total you will have bet on the current street: at least the current bet plus the last raise. An amount beyond your stack is an all-in. A call with nothing to call becomes a check. Only the acting seat can act; read acting and deadline from <span class='dlabel'>get_poker_table</span>. When the clock and time bank run out, the server checks if checking is free and folds otherwise. timeout_ms defaults to 10,000ms.",
 	// docs/functions/poker_act.html:6; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.poker_act.example": "<b>Example:</b>",
 	// docs/functions/poker_sit_out.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Hold'em is the poker variant.
-	"docs.functions.poker_sit_out.sits-out-at-the-hold-em-table-you-keep": "Sits out at the Hold'em table: you keep your seat and stack but are not dealt into the next hands.",
+	"docs.functions.poker_sit_out.sits-out-at-the-hold-em-table-you-keep": "Sits out at the Hold'em table: you keep your seat and stack, but are not dealt into subsequent hands.",
 	// docs/functions/poker_sit_out.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep out:true unchanged; it is CODE.
 	"docs.functions.poker_sit_out.returns-promise-resolving-with-out-true": "<b>Returns:</b> Promise resolving with out:true.",
 	// docs/functions/poker_sit_out.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["failed: true","reason","mode_resolve_all()"].
@@ -2344,22 +2413,22 @@ module.exports = {
 	// docs/functions/poker_sit_in.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["failed: true","reason","mode_resolve_all()"].
 	"docs.functions.poker_sit_in.promise-failures-unless-a-function-specific-note-says": "<b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.",
 	// docs/functions/poker_sit_in.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
-	"docs.functions.poker_sit_in.notes-needs-at-least-one-big-blind-on-the-seat": "<b>Notes:</b> Needs at least one big blind on the seat; buy in again with <span class='dlabel'>poker_join</span> otherwise. timeout_ms defaults to 10,000ms.",
+	"docs.functions.poker_sit_in.notes-needs-at-least-one-big-blind-on-the-seat": "<b>Notes:</b> Requires at least one big blind on the seat; otherwise, buy in again with <span class='dlabel'>poker_join</span>. timeout_ms defaults to 10,000ms.",
 	// docs/functions/poker_sit_in.html:6; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.poker_sit_in.example": "<b>Example:</b>",
 	// docs/functions/bet_wheel.html:6; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.bet_wheel.example": "<b>Example:</b>",
 	// docs/functions/bet_wheel.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep names: ["CODE"]. Sun and Moon are the wheel's sides; get_tavern_info is CODE.
 	"docs.functions.bet_wheel.notes-use-sun-or-moon-the-server-keeps":
-		'<b>Notes:</b> Use "sun" or "moon". The server keeps the wager inside 10,000 to 100,000,000,000 gold and refuses a second spin while yours is still turning. The house keeps its edge from the net win; read the edge with <span class=\'dlabel\'>get_tavern_info</span>. The result timeout defaults to 60,000ms.',
+		"<b>Notes:</b> Use \"sun\" or \"moon\". The server keeps the wager between 10,000 and 100,000,000,000 gold and refuses a second spin while yours is still turning. The house takes its edge from the net win; read the edge with <span class='dlabel'>get_tavern_info</span>. The result timeout defaults to 60,000ms.",
 	// docs/functions/bet_wheel.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fortune's Wheel is the Tavern wheel game.
-	"docs.functions.bet_wheel.places-one-fortune-s-wheel-wager-on-a": "Places one Fortune's Wheel wager on a side of the Tavern wheel and waits for that spin to settle.",
+	"docs.functions.bet_wheel.places-one-fortune-s-wheel-wager-on-a": "Places one Fortune's Wheel wager on a side of the Tavern wheel and waits for the spin to settle.",
 	// docs/functions/bet_wheel.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["failed: true","reason","mode_resolve_all()"].
 	"docs.functions.bet_wheel.promise-failures-unless-a-function-specific-note-says":
 		"<b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.",
 	// docs/functions/bet_wheel.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.bet_wheel.returns-promise-resolving-with-won-side-result-slice":
-		"<b>Returns:</b> Promise resolving with won, side, result, slice, wager, payout, net, and edge. A valid spin that loses still resolves with won:false. Invalid wagers and timeouts reject.",
+		"<b>Returns:</b> Promise resolving with won, side, result, slice, wager, payout, net, and edge. A valid losing spin still resolves with won:false. Invalid wagers and timeouts reject.",
 	// docs/functions/bless_server.html:6; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.bless_server.example": "<b>Example:</b>",
 	// docs/functions/bless_server.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
@@ -2943,12 +3012,12 @@ module.exports = {
 	"docs.functions.get_tavern_info.example": "<b>Example:</b>",
 	// docs/functions/get_tavern_info.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.get_tavern_info.notes-multiple-calls-can-run-at-the-same":
-		"<b>Notes:</b> Multiple calls can run at the same time; each one waits for its own reply. timeout_ms defaults to 10,000ms.",
+		"<b>Notes:</b> Multiple calls can run at the same time; each waits for its own reply. timeout_ms defaults to 10,000ms.",
 	// docs/functions/get_tavern_info.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["failed: true","reason","mode_resolve_all()"].
 	"docs.functions.get_tavern_info.promise-failures-unless-a-function-specific-note-says":
 		"<b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.",
 	// docs/functions/get_tavern_info.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.functions.get_tavern_info.retrieves-the-tavern-s-current-house-edge-and": "Retrieves the tavern's current house edge and largest win it can cover, without opening the tavern panel.",
+	"docs.functions.get_tavern_info.retrieves-the-tavern-s-current-house-edge-and": "Retrieves the Tavern's current house edge and the largest win it can cover, without opening the Tavern panel.",
 	// docs/functions/get_tavern_info.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.get_tavern_info.returns-promise-resolving-with-edge-as-a-percentage": "<b>Returns:</b> Promise resolving with edge as a percentage and max as gold. It rejects on timeout.",
 	// docs/functions/giveaway.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
@@ -3411,15 +3480,15 @@ module.exports = {
 	// docs/functions/play_slots.html:6; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.play_slots.example": "<b>Example:</b>",
 	// docs/functions/play_slots.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep names: ["CODE"].
-	"docs.functions.play_slots.notes-a-second-code-spin-is-rejected-while": "<b>Notes:</b> A second CODE spin is rejected while the first is active. timeout_ms defaults to 10,000ms.",
+	"docs.functions.play_slots.notes-a-second-code-spin-is-rejected-while": "<b>Notes:</b> A second CODE spin is rejected while the first is still active. timeout_ms defaults to 10,000ms.",
 	// docs/functions/play_slots.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["failed: true","reason","mode_resolve_all()"].
 	"docs.functions.play_slots.promise-failures-unless-a-function-specific-note-says":
 		"<b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.",
 	// docs/functions/play_slots.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.play_slots.returns-promise-resolving-after-the-spin-with-won":
-		"<b>Returns:</b> Promise resolving after the reels stop with won, cost, payout, net, symbols, prize and edge. A valid spin that loses still resolves with won:false. Invalid requests and timeouts reject.",
+		"<b>Returns:</b> Promise resolving after the reels stop with won, cost, payout, net, symbols, prize and edge. A valid losing spin still resolves with won:false. Invalid requests and timeouts reject.",
 	// docs/functions/play_slots.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.functions.play_slots.spends-1-000-000-gold-at-the-tavern": "Spends 1,000,000 gold at the tavern slots machine and waits for the spin result.",
+	"docs.functions.play_slots.spends-1-000-000-gold-at-the-tavern": "Spends 1,000,000 gold at the tavern slots machine and waits for the spin to settle.",
 	// docs/functions/pm.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.pm.example": "<b>Example:</b>",
 	// docs/functions/pm.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["failed: true","reason","mode_resolve_all()"].
@@ -3802,7 +3871,7 @@ module.exports = {
 	"docs.functions.town.returns-promise-resolving-with-success-true-after-completion":
 		"<b>Returns:</b> Promise resolving with {success:true} after completion, or rejecting on server failure, interruption, disconnection, or the 10-second completion timeout.",
 	// docs/functions/town.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.functions.town.starts-the-town-teleport-and-waits-until-the": "Starts the town teleport and waits until the channel has ended.",
+	"docs.functions.town.starts-the-town-teleport-and-waits-until-the": "Starts the town teleport and waits for the server to confirm arrival.",
 	// docs/functions/trade.html:6; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.trade.example": "<b>Example:</b>",
 	// docs/functions/trade.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
@@ -3874,7 +3943,15 @@ module.exports = {
 	// docs/functions/unequip.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.unequip.example": "<b>Example:</b>",
 	// docs/functions/unequip.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.functions.unequip.moves-an-equipped-item-from-an-equipment-slot": "Moves an equipped item from an equipment slot into the inventory.",
+	"docs.functions.unequip.moves-an-equipped-item-from-an-equipment-slot": "Moves an item from an equipment or merchant stand slot into your inventory.",
+	// Shared stand-removal example in trade/unequip references, markets guide and merchant tutorial. Short heading.
+	"docs.merchant.remove_heading": "Take an item off your stand",
+	// Shared manual and CODE instructions. Preserve unequip("trade1"), "trade2" and CODE. The first stand slot is trade1; an empty inventory slot is required.
+	"docs.merchant.remove_instructions": "Right-click the item on your own stand, or use unequip(\"trade1\") through CODE. For another slot, use its name, such as \"trade2\". Leave at least one inventory slot empty.",
+	// unequip reference limits. Slot is a string, not an inventory index; wishlist cancellation returns no item; giveaways cannot be removed. Preserve "trade1" and unequip().
+	"docs.merchant.remove_limits": "The slot name must be a string, such as \"trade1\", not an inventory index. The same call removes trade offers and cancels wishlist buy orders. A real item needs at least one empty inventory slot. Giveaway listings cannot be removed with unequip(). Empty or invalid slots are rejected.",
+	// Distinguish closing the shop from withdrawing an item in the shared example and close_stand reference. Preserve close_stand() and unequip().
+	"docs.merchant.remove_closing": "close_stand() closes the shop but keeps its listings. Use unequip() to return a listed item to your inventory.",
 	// docs/functions/unequip.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["failed: true","reason","mode_resolve_all()"].
 	"docs.functions.unequip.promise-failures-unless-a-function-specific-note-says":
 		"<b>Promise failures:</b> Unless a function-specific note says otherwise, failures reject with an object containing <span class='dlabel'>failed: true</span> and a <span class='dlabel'>reason</span>. After <span class='dlabel'>mode_resolve_all()</span>, the same failures fulfill instead.",
@@ -4146,7 +4223,7 @@ module.exports = {
 	"docs.guide.basics.keyboard-t": "Keyboard T",
 	// docs/guide/basics.html:65; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.basics.left-click-to-target-monsters-and-players-press":
-		'<span style="color: #909292">&gt;</span> Left click to target monsters and players. Press the character name between HP and MP bars to target yourself. You can see the properties/items of the\n\ttargeted entity. You can only target one entity at a time.',
+		"<span style=\"color: #909292\">&gt;</span> Left click to target monsters and players. Press the character name between the HP and MP bars to target yourself. You can inspect the properties/items of the\n\ttargeted entity. You can only target one entity at a time.",
 	// docs/guide/basics.html:18; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.basics.mana": "Mana",
 	// docs/guide/basics.html:3; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
@@ -4159,7 +4236,7 @@ module.exports = {
 	"docs.guide.basics.note": "Note:",
 	// docs/guide/basics.html:57; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.basics.right-click-to-equip-and-un-equip-items":
-		'<span style="color: #909292">&gt;</span> Right click to equip and un-equip items. You can drag items within your inventory. When a merchant NPC is active, right click the item to see the item value\n\tand sell the item.',
+		"<span style=\"color: #909292\">&gt;</span> Right click to equip and un-equip items. You can drag items around within your inventory. When a merchant NPC is active, right click an item to see its value\n\tand sell it.",
 	// docs/guide/basics.html:37; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.basics.show-names-toggle": "Show Names [Toggle]",
 	// docs/guide/basics.html:5; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
@@ -4169,7 +4246,7 @@ module.exports = {
 	// docs/guide/basics.html:62; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.basics.targeting-top-left-corner": "Targeting | Top Left Corner",
 	// docs/guide/basics.html:80; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep names: ["The Bank"].
-	"docs.guide.basics.the-bank-is-for-storing-items-and-gold": '<span style="color: #909292">&gt;</span> The Bank is for storing items and gold. The Bank is shared across all your characters!',
+	"docs.guide.basics.the-bank-is-for-storing-items-and-gold": "<span style=\"color: #909292\">&gt;</span> The Bank stores items and gold. The Bank is shared across all your characters!",
 	// docs/guide/basics.html:40; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.guide.basics.toggle-code": "Toggle CODE",
 	// docs/guide/basics.html:15; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["HP Potion"].
@@ -4180,7 +4257,7 @@ module.exports = {
 	"docs.guide.basics.use-mp-potion": "Use MP Potion",
 	// docs/guide/basics.html; Complete skill-button sentence. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.basics.key-remapping-guide":
-		'You can map or remap any key from the <div class="gamebutton gamebutton-small" onclick="btc(event); if(character){ hide_modal(); render_skills(); }">SKILLS</div> system. The SKILLS and remapping have a separate guide.',
+		"You can map or remap any key through the <div class=\"gamebutton gamebutton-small\" onclick=\"btc(event); if(character){ hide_modal(); render_skills(); }\">SKILLS</div> system. SKILLS and key remapping have a separate guide.",
 	// docs/guide/compounding.html:25; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.compounding.1-match-name-and-level-three-1-rings": '<span class="guide-step">1</span><b>Match name and level</b><br />Three +1 rings can become one +2 ring. A +0 copy cannot join them.',
 	// docs/guide/compounding.html:26; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
@@ -4342,7 +4419,7 @@ module.exports = {
 		"A new Lone Wolf starts with 15× Gold, XP and Luck. Your normal equipment, buffs, party shares and chest-opening rules still apply. Encouragement adds rewards for your own contribution to each monster: damage, tanking and useful healing.",
 	// docs/guide/encouragement.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Adventure Land"].
 	"docs.guide.encouragement.adventure-land-keeps-going-if-you-are-just":
-		"Adventure Land keeps going. If you are just starting, returning after a long break, or making your way with one character, these bonuses help you grow.",
+		"Adventure Land keeps moving. If you're just starting, returning after a long break, or making your way with one character, these bonuses help you grow.",
 	// docs/guide/encouragement.html:27; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.guide.encouragement.after-more-than-60-days-away-welcome-back":
 		"After more than 60 days away, Welcome Back lasts for half your time away, up to 90 days. All linked characters share the return window. An active merchant or CODE character counts as playing.",
@@ -4367,13 +4444,13 @@ module.exports = {
 		"Encouragement does not change the displayed XP, Gold or Luck stats. It does not multiply trading, selling, fixed prizes or PvP rewards.",
 	// docs/guide/encouragement.html:8; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.encouragement.everyone-whose-oldest-character-is-less-than-40":
-		"Everyone whose oldest character is less than 40 days old receives the New Player bonus. The clock starts when that character was created and keeps running while you are offline. Linked accounts share the same clock.",
+		"Everyone whose oldest character is less than 40 days old receives the New Player bonus. The clock starts when that character is created and keeps running while you're offline. Linked accounts share the same clock.",
 	// docs/guide/encouragement.html:32; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.encouragement.extra-rewards": "Extra Rewards",
 	// docs/guide/encouragement.html:41; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.encouragement.fair-play": "Fair Play",
 	// docs/guide/encouragement.html:29; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.guide.encouragement.for-example-120-days-away-gives-60-days": "For example, 120 days away gives 60 days of Welcome Back. The timer keeps running while you are offline.",
+	"docs.guide.encouragement.for-example-120-days-away-gives-60-days": "For example, 120 days away gives 60 days of Welcome Back. The timer keeps running while you're offline.",
 	// docs/guide/encouragement.html:21; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.encouragement.for-those-who-bond-with-one-adventurer-lone":
 		"For those who bond with one adventurer. Lone Wolf applies to your only running non-merchant character. Merchants may stay online, but do not receive Lone Wolf.",
@@ -4391,7 +4468,7 @@ module.exports = {
 	"docs.guide.encouragement.lone-wolf": "Lone Wolf",
 	// docs/guide/encouragement.html:37; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.encouragement.loot-normally-extra-items-and-gold-go-to":
-		"Loot normally. Extra items and gold go to the contributor, not the chest opener or party lottery. If your inventory is full, your extra rewards wait in a chest only that character can open. Stay connected to collect your rewards.",
+		"Loot normally. Extra items and gold go to the contributor, not the chest opener or party lottery. If your inventory is full, your extra rewards wait in a chest only that character can open. Stay connected to collect them.",
 	// docs/guide/encouragement.html:10; Documentation th prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.encouragement.luck": "Luck",
 	// docs/guide/encouragement.html:36; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
@@ -4436,7 +4513,7 @@ module.exports = {
 	"docs.guide.event-abtesting.snippets": "Snippets",
 	// docs/guide/event-anniversary.html:6; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.event-anniversary.1-equip-the-emote-open-skills-drag-i":
-		"<b>1. Equip the emote.</b> Open <b>SKILLS</b>. Drag <b>I Kiss You</b> from <b>EMOTES</b> onto a key slot under <b>MAPPING</b>, such as <b>1</b>. It appears while your Visit is active; no emote jar needed.",
+		"<b>1. Equip the emote.</b> Open <b>SKILLS</b>. Drag <b>I Kiss You</b> from <b>EMOTES</b> onto a key slot under <b>MAPPING</b>, such as <b>1</b>. It appears while your Visit is active; no emote jar is needed.",
 	// docs/guide/event-anniversary.html:2; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.event-anniversary.10-years-of-adventure": "10 Years of Adventure",
 	// docs/guide/event-anniversary.html:7; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
@@ -4446,7 +4523,7 @@ module.exports = {
 	"docs.guide.event-anniversary.3-kiss-get-within-80-range-then-click": "<b>3. Kiss!</b> Get within <b>80 range</b>, then click the emote on your skillbar or press its assigned key.",
 	// docs/guide/event-anniversary.html:14; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.event-anniversary.all-your-characters-share-one-slice-flavor-kisses":
-		"All your characters share one slice flavor. Kisses and monster drops use that flavor on every server. Trade for the other five.",
+		"All your characters share one slice flavor. Kisses and monster drops use that same flavor on every server. Trade for the other five.",
 	// docs/guide/event-anniversary.html:21; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.event-anniversary.also-receive": "Also receive:",
 	// docs/guide/event-anniversary.html:69; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
@@ -4454,7 +4531,7 @@ module.exports = {
 	// docs/guide/event-anniversary.html:19; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.event-anniversary.cake-drops-one-prize": "Cake drops — one prize",
 	// docs/guide/event-anniversary.html:110; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.guide.event-anniversary.check-inventory-gold-and-cosmetics-for-your-rewards": "Check inventory, gold and cosmetics for your rewards; not all rewards appear in the returned result.",
+	"docs.guide.event-anniversary.check-inventory-gold-and-cosmetics-for-your-rewards": "Check your inventory, gold and cosmetics for rewards; not everything appears in the returned result.",
 	// Anniversary guide heading. The CODE example chooses Mira or Cole from server.status.anniversary. Preserve CODE.
 	"docs.guide.event-anniversary.code-craft-with-mira": "CODE: Craft anniversary recipes",
 	// docs/guide/event-anniversary.html:36; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
@@ -4477,12 +4554,12 @@ module.exports = {
 	// Gift here means Anniversary Gift (anniversarygift), not the separate Gift item. Preserve its full item name.
 	"docs.guide.event-anniversary.gift-drops-one-prize": "Anniversary Gift drops — one prize",
 	// docs/guide/event-anniversary.html:28; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.guide.event-anniversary.hop-sickness-or-realm-fatigue-prevents-anniversary-visits": "Hop Sickness or Realm Fatigue blocks kiss rewards and the kiss buff. Merchants must be on their home server. You must be eligible when the player is chosen; clearing a penalty later does not grant a Visit for that round. Check event INFO for your reason. These rules apply to the featured player too.",
+	"docs.guide.event-anniversary.hop-sickness-or-realm-fatigue-prevents-anniversary-visits": "Hop Sickness or Realm Fatigue blocks kiss rewards and the kiss buff. Merchants must be on their home server. You must be eligible when the player is chosen; clearing a penalty later does not grant a Visit for that round. Check event INFO for the reason. These rules apply to the featured player too.",
 	// docs/guide/event-anniversary.html:5; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.event-anniversary.how-to-kiss": "How to Kiss",
 	// docs/guide/event-anniversary.html:30; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.event-anniversary.if-the-featured-player-disconnects-or-becomes-unreachable":
-		"If the featured player disconnects or becomes unreachable, their place stays reserved until the round ends. They can return during the same five minutes. The timer does not restart.",
+		"If the featured player disconnects or becomes unreachable, their place stays reserved until the round ends. They can return during the same five-minute window. The timer does not restart.",
 	// CODE ingredient inspection. Preserve the span markup and show_json(G.craft) exactly.
 	"docs.guide.event-anniversary.inspect-ingredients-with-show-json-g-craft-find":
 		"Inspect ingredients with <span class=\"dlabel\">show_json(G.craft)</span>.",
@@ -4512,7 +4589,7 @@ module.exports = {
 		"The Guestbook and Keepsake Pendant combine at the Compound Shrine: three matching copies of the same level + a compound scroll. The other anniversary equipment uses Upgrade Scrolls. Both shrines remain available after the event.",
 	// docs/guide/event-anniversary.html:10; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep names: ["CX Jar"].
 	"docs.guide.event-anniversary.the-visitor-may-also-receive-an-i-kiss":
-		"The visitor may also receive an <b>I Kiss You CX Jar</b> to keep the emote permanently. Lucky finds are announced to the server.",
+		"The visitor may also receive an <b>I Kiss You CX Jar</b>, permanently unlocking the emote. Lucky finds are announced to the server.",
 	// docs/guide/event-anniversary.html:89; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Compound Scroll","High Compound Scroll"].
 	"docs.guide.event-anniversary.to-combine-guestbooks-or-pendants-visit-the-compound":
 		"To combine Guestbooks or Pendants, visit the Compound Shrine. Put three matching +0 copies in inventory slots 0, 1 and 2, and a High Compound Scroll in slot 3:",
@@ -4644,12 +4721,12 @@ module.exports = {
 	"docs.guide.event-valentines.valentines-day-event-on-adventure-land": "Valentines Day Event on Adventure Land",
 	// docs/guide/events-and-home.html:29; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["G.events","server.status"].
 	"docs.guide.events-and-home.an-event-name-appearing-in-g-events-proves":
-		'An event name appearing in <span class="dlabel">G.events</span> proves only that the event is defined. Check <span class="dlabel">server.status</span> for the current realm before trying to join or travel.',
+		"An event name appearing in <span class=\"dlabel\">G.events</span> only proves that the event is defined. Check <span class=\"dlabel\">server.status</span> for the current realm before trying to join or travel.",
 	// docs/guide/events-and-home.html:9; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep names: ["Bean"].
 	"docs.guide.events-and-home.bean-sets-this-character-s-home-realm-home":
 		'<span class="guide-card-icon events-bean"></span><b>Bean</b>Sets this character\'s home realm. Home changes have a 36-hour cooldown.',
 	// docs/guide/events-and-home.html:48; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Bean"].
-	"docs.guide.events-and-home.changing-home-has-a-36-hour-cooldown-so": "Changing home has a 36-hour cooldown, so read Bean's confirmation instead of using it as ordinary travel.",
+	"docs.guide.events-and-home.changing-home-has-a-36-hour-cooldown-so": "Changing home has a 36-hour cooldown, so read Bean's confirmation instead of treating it as ordinary travel.",
 	// docs/guide/events-and-home.html:41; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["server.status.anniversary","live","target","id","map","x","y","expires","next","use_skill(\"ikissyou\", server.status.anniversary.id)"].
 	"docs.guide.events-and-home.check-server-status-anniversary-its-live-field-identifies":
 		'Check <span class="dlabel">server.status.anniversary</span>. Its <span class="dlabel">live</span> field identifies an active visit round; <span class="dlabel">target</span>, <span class="dlabel">id</span>, <span class="dlabel">map</span>, <span class="dlabel">x</span>, and <span class="dlabel">y</span> identify the featured player. <span class="dlabel">expires</span> and <span class="dlabel">next</span> are timestamps in milliseconds. Travel normally, then use <span class="dlabel">use_skill("ikissyou", server.status.anniversary.id)</span> when nearby.',
@@ -4664,10 +4741,10 @@ module.exports = {
 	"docs.guide.events-and-home.events-home-servers": "Events & Home Servers",
 	// docs/guide/events-and-home.html:37; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Mira","Town"].
 	"docs.guide.events-and-home.every-character-on-your-account-finds-the-same":
-		"Every character on your account finds the same slice flavor, on every realm. Slices are tradeable: collect all six flavors, then bring one of each and 100,000 gold to Mira in Town. Her workshop also lets you choose a particular reward using a cake and the listed ingredients.",
+		"Every character on your account finds the same slice flavor on every realm. Slices are tradeable: collect all six flavors, then bring one of each and 100,000 gold to Mira in Town. Her workshop also lets you choose a particular reward using a cake and the listed ingredients.",
 	// docs/guide/events-and-home.html:49; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Favoré"].
 	"docs.guide.events-and-home.favor-s-blessing-is-realm-wide-and-spends":
-		"Favoré's blessing is realm-wide and spends Shells. Her panel shows the exact current cost and remaining blessing time. This is separate from setting a home server.",
+		"Favoré's blessing is realm-wide and spends Shells. Her panel shows the exact current cost and remaining blessing time. It is separate from setting a home server.",
 	// docs/guide/events-and-home.html:10; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep names: ["Favoré"].
 	"docs.guide.events-and-home.favor-shows-the-shell-cost-and-remaining-time":
 		'<span class="guide-card-icon events-favore"></span><b>Favoré</b>Shows the Shell cost and remaining time before blessing the current server.',
@@ -4675,13 +4752,13 @@ module.exports = {
 	"docs.guide.events-and-home.home-and-blessings": "Home and Blessings",
 	// docs/guide/events-and-home.html:34; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.events-and-home.how-to-kiss-open-skills-and-drag-i":
-		"<b>How to Kiss:</b> Open SKILLS and drag I Kiss You from EMOTES onto a key slot under MAPPING. Close SKILLS, use the red KISS portrait to find the player, and click them to select them. Get within 80 range, then click the emote on your skillbar or press its assigned key. No emote jar needed while your Visit is active.",
+		"<b>How to Kiss:</b> Open SKILLS and drag I Kiss You from EMOTES onto a key slot under MAPPING. Close SKILLS, use the red KISS portrait to find the player, and click them to select them. Get within 80 range, then click the emote on your skillbar or press its assigned key. No emote jar is needed while your Visit is active.",
 	// docs/guide/events-and-home.html:46; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.events-and-home.if-another-non-merchant-character-on-your-account":
 		"If another non-merchant character on your account recently visited a different server, you receive Realm Fatigue. It is checked when you enter and while you play; activity on another realm can take about a minute to reach you. Normal rewards continue, but the home contribution bonus and home-only drops wait until the condition ends. Reconnecting does not clear it. Merchants are ignored.",
 	// docs/guide/events-and-home.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.events-and-home.in-the-menu-active-events-appear-in-colored":
-		"In the menu, active events appear in colored cards above the game log. Click a card to open its guide. The cards follow your connected server and disappear when you enter the game. In-game, use the INFO row.",
+		"In the menu, the next event and any live events appear above the game log. Click the next-event card to open EVENTS, or a live event's card to read its guide. These cards show events on your connected realm and disappear when you enter the game. In-game, use the INFO row.",
 	// docs/guide/events-and-home.html:18; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.events-and-home.join-or-travel": '<span class="guide-flow-icon events-route">↗</span><span class="guide-flow-label">Join or Travel</span>',
 	// docs/guide/events-and-home.html:24; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["join(name)"].
@@ -4689,7 +4766,7 @@ module.exports = {
 		'<b>Joinable event</b>Some server activities accept <span class="dlabel">join(name)</span> and place you into their event map or queue.',
 	// docs/guide/events-and-home.html:8; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.events-and-home.live-event-an-event-button-portal-creature-or":
-		'<span class="guide-card-icon events-rgoo"></span><b>Live Event</b>An EVENT button, portal, creature, or NPC may appear when an activity is running.',
+		"<span class=\"guide-card-icon events-rgoo\"></span><b>Live Event</b>An EVENT button, portal, creature, or NPC may appear while an activity is running.",
 	// docs/guide/events-and-home.html:16; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.events-and-home.open-event-guide": '<span class="guide-flow-icon events-rgoo"></span><span class="guide-flow-label">Open Event Guide</span>',
 	// docs/guide/events-and-home.html:39; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CX Jar","Sixfold Cake","Anniversary Gift"].
@@ -4707,10 +4784,10 @@ module.exports = {
 		'References: <span class="rlabel" onclick="render_function_reference($(this).html())">join</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">smart_move</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">set_home</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bless_server</span>.',
 	// docs/guide/events-and-home.html:7; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.events-and-home.schedule-open-the-clock-to-inspect-planned-events":
-		'<span class="guide-card-icon events-tracker"></span><b>Schedule</b>Open the clock to inspect planned events and their current realm timing.',
+		"<span class=\"guide-card-icon events-tracker\"></span><b>Schedule</b>Click the slider or realm clock above chat to see the next seven days of events, when each season ends and what you can still do today.",
 	// docs/guide/events-and-home.html:27; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.events-and-home.scheduled-window-the-clock-can-announce-an-event":
-		"<b>Scheduled window</b>The clock can announce an event before it is available. Read its guide and live state before acting.",
+		"<b>Scheduled window</b>The Events window can show an event before it starts. Check its guide and current status before joining.",
 	// docs/guide/events-and-home.html:80; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.events-and-home.see-also-travel-and-instances":
 		"See also: <span onclick=\"hide_modal(); open_guide('travel-and-instances',get_guide_url('travel-and-instances'))\">Travel and Instances</span>.",
@@ -4728,20 +4805,20 @@ module.exports = {
 		"The Guestbook and Keepsake Pendant combine at the Compound Shrine using three matching copies of the same level and a compound scroll. The other anniversary equipment uses Upgrade Scrolls.",
 	// docs/guide/events-and-home.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.events-and-home.the-realm-clock-event-buttons-and-live-server":
-		"The realm clock, event buttons, and live server state describe what is happening now. Each character chooses a home server for that realm's home rewards.",
+		"The realm clock, event buttons, and live server state tell you what is happening now. Each character chooses a home server for that realm's home rewards.",
 	// docs/guide/events-and-home.html:32; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.events-and-home.the-tenth-anniversary": "The Tenth Anniversary",
 	// docs/guide/events-and-home.html:36; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CX Jar"].
 	"docs.guide.events-and-home.the-visitor-also-has-a-0-1-chance":
-		"The visitor also has a 0.1% chance to receive an I Kiss You CX Jar, which unlocks the emote permanently. Lucky finds are announced to the server. Luck does not change this chance; kisses without a Visit cannot win the jar.",
+		"The visitor also has a 0.1% chance to receive an I Kiss You CX Jar, permanently unlocking the emote. Lucky finds are announced to the server. Luck does not affect this chance, and kisses without a Visit cannot win the jar.",
 	// docs/guide/events-and-home.html:1; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.events-and-home.the-world-keeps-moving": "THE WORLD KEEPS MOVING",
 	// docs/guide/events-and-home.html:25; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["server.status"].
 	"docs.guide.events-and-home.world-creature-a-live-boss-may-need-ordinary":
-		'<b>World creature</b>A live boss may need ordinary travel to the coordinates in <span class="dlabel">server.status</span>.',
+		"<b>World creature</b>A live boss may require ordinary travel to the coordinates in <span class=\"dlabel\">server.status</span>.",
 	// docs/guide/events-and-home.html:35; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Anniversary Gift","Gift"].
 	"docs.guide.events-and-home.your-visit-is-used-up-you-and-the":
-		"Your Visit is used up. You and the featured player each receive one slice and one Anniversary Gift. You also gain 10 Frequency and 6 Output for 20 minutes; it does not stack. Each valid visitor rewards the featured player again; kisses without a Visit give no rewards or buff. Nearby players see the kiss in chat.",
+		"Your Visit is used up. You and the featured player each receive one slice and one Anniversary Gift. You also gain 10 Frequency and 6 Output for 20 minutes; the buff does not stack. Each valid visitor rewards the featured player again. Kisses without a Visit give no rewards or buff. Nearby players see the kiss in chat.",
 	// docs/guide/exchanges-and-quests.html:51; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.guide.exchanges-and-quests.code-buy-with-tokens": "CODE: Buy with Tokens",
 	// docs/guide/exchanges-and-quests.html:34; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
@@ -4916,6 +4993,8 @@ module.exports = {
 	"docs.guide.items.or-or-or": "<span class='eitemex0'></span> => <span class='eitemexo00'></span> or <span class='eitemexo01'></span> or <span class='eitemexo02'></span> or ...",
 	// docs/guide/items.html:7; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.items.pvp-marked-item-can-be-dropped-on-death": "<span class='eitempvp'></span> ^: PVP marked item, can be dropped on death",
+	// Items guide, beside PvP item markings. Self-inflicted splash still hurts, but never counts as an opponent or awards a self-kill or self-loot. Preserve PvP.
+	"docs.guide.items.self_damage": "Your own splash damage can hurt you in PvP areas. It does not count as another player attacking you, give you a PvP kill or let you loot your own death.",
 	// docs/guide/items.html:4; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.items.right-bottom-corner-indicates-the-item-quantity": "<span class='eitemq'></span> Right bottom corner indicates the item quantity",
 	// docs/guide/items.html:12; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
@@ -5168,7 +5247,7 @@ module.exports = {
 	"docs.guide.npc-merrit.a-sparkle-and-a-coin-sound-mark-each": "A sparkle and a coin sound mark each delivery. Click Merrit to talk or recall her last gift.",
 	// docs/guide/npc-merrit.html:32; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Merrit"].
 	"docs.guide.npc-merrit.after-each-delivery-settle-for-two-minutes-again":
-		"After each delivery, settle for two minutes again. The one-hour account cooldown runs at the same time. Time away never builds up parcels. Ready shops get priority, but delivery still waits for Merrit's visit.",
+		"After each delivery, settle in for two minutes again. The one-hour account cooldown runs at the same time. Time away never builds up parcels. Ready shops get priority, but delivery still waits for Merrit's visit.",
 	// docs/guide/npc-merrit.html; Visible section heading for the optional Shell reward. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.npc-merrit.an-occasional-extra-1-shell": "An occasional extra: 1 SHELL",
 	// docs/guide/npc-merrit.html:37; Documentation th prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
@@ -5179,7 +5258,7 @@ module.exports = {
 	"docs.guide.npc-merrit.each-visit-gives-1-market-parcel-trade-it":
 		"Each visit gives <b>1 Market Parcel</b>. Trade it, bank it, or exchange one with Xyn for supplies or a rare find. Computer exchange access also works.",
 	// docs/guide/npc-merrit.html:15; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.guide.npc-merrit.exchange-1-parcel-for-1-result-luck-stand": "Exchange 1 parcel for 1 result. Luck, stand type and sales volume do not change these chances.",
+	"docs.guide.npc-merrit.exchange-1-parcel-for-1-result-luck-stand": "Exchange 1 parcel for 1 result. Luck, stand type and sales volume do not affect these chances.",
 	// docs/guide/npc-merrit.html:3; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Market Parcel","Merrit","Mainland"].
 	"docs.guide.npc-merrit.keep-a-shop-on-mainland-s-square-merrit": "Keep a shop on Mainland's square. Merrit brings Market Parcels to traders who leave room for their neighbors.",
 	// docs/guide/npc-merrit.html:27; Documentation alt attribute. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Mainland"].
@@ -5193,17 +5272,17 @@ module.exports = {
 	// docs/guide/npc-merrit.html:26; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep names: ["Merrit"].
 	"docs.guide.npc-merrit.merrit-stays-within-600px-of-0-0-your": "Merrit stays within <b>600px of (0,0)</b>. Your stand must be in the outlined square or southern aisle, on pavement she can reach.",
 	// docs/guide/npc-merrit.html:31; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.guide.npc-merrit.moving-closing-or-reopening-disconnecting-leaving-the-area": "Moving, closing, disconnecting, leaving the area, losing your last qualifying listing, or failing the spacing rules restarts the two-minute timer. Replacing listings while another valid listing remains keeps your progress. Calling open_stand() again on the same open stand does not restart it.",
+	"docs.guide.npc-merrit.moving-closing-or-reopening-disconnecting-leaving-the-area": "Moving, closing, reopening, disconnecting, leaving the area, losing your last qualifying listing, or breaking the spacing rules restarts the two-minute timer. Replacing listings while another valid listing remains keeps your progress. Calling open_stand() again on the same open stand does not restart it.",
 	// docs/guide/npc-merrit.html:20; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.npc-merrit.no-parcels-directly-in-front-of-another-stand": "<b>Leave room in front of and behind other stands:</b> more than 15px vertically when within 10px sideways.",
 	// docs/guide/npc-merrit.html:19; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
-	"docs.guide.npc-merrit.no-parcels-within-10px-of-another-open-stand": "<b>Leave more than 10px between open stands.</b> If two shops are too close, the shop set up first keeps its place. The newer shop must move.",
+	"docs.guide.npc-merrit.no-parcels-within-10px-of-another-open-stand": "<b>Leave more than 10px between open stands.</b> If two shops are too close, the one set up first keeps its place. The newer shop must move.",
 	// docs/guide/npc-merrit.html:18; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep names: ["Favoré","Ponty"].
 	"docs.guide.npc-merrit.no-parcels-within-40px-of-a-stationary-npc":
 		"<b>No parcels within 40px of a stationary NPC.</b> Keep the entrances to Ponty, Favoré and other fixed NPCs clear. Roaming citizens don't count when they pause.",
 	// docs/guide/npc-merrit.html:33; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.npc-merrit.parcels-stack-up-to-9-999-keep-an":
-		"Parcels stack up to <b>9,999</b>. Keep an unlocked matching stack with room, or one free slot. A full bag doesn't consume a reward or restart the account cooldown. Exchanges need space for their result.",
+		"Parcels stack up to <b>9,999</b>. Keep an unlocked matching stack with room, or one free slot. A full bag does not consume the reward or restart the account cooldown. Exchanges need room for their result.",
 	// docs/guide/npc-merrit.html:22; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Mainland"].
 	"docs.guide.npc-merrit.placement-notices-appear-only-on-mainland-while-guides":
 		"Placement notices appear only on Mainland while Guides are enabled in Advanced settings. Click X to dismiss a notice until you reopen your stand.",
@@ -5229,7 +5308,7 @@ module.exports = {
 	"docs.guide.npc-merrit.where-she-walks": "Where she walks",
 	// docs/guide/npc-merrit.html:28; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.npc-merrit.white-dot-0-0-square-x-240-to":
-		"White dot: (0,0). Square: x −240 to 240, y −120 to 144. Southern aisle: x −88 to 88, y 144 to 360. Water, blocked ground and the spacing exclusions do not qualify.",
+		"White dot: (0,0). Square: x −240 to 240, y −120 to 144. Southern aisle: x −88 to 88, y 144 to 360. Water, blocked ground and spacing exclusions do not qualify.",
 	// docs/guide/npc-merrit.html; Visible section heading for the current character's shop status. The whole section is absent outside the game. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.npc-merrit.your-shop": "Your shop",
 	// docs/guide/pvp.html:19; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
@@ -5432,7 +5511,7 @@ module.exports = {
 	// docs/guide/stats.html:13; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.stats.stat-becomes-a-main-attribute-with-a-scroll": '<span style="color: #3A3B3B">Stat:</span> Becomes a main attribute with a scroll.',
 	// docs/guide/stats.html:2; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
-	"docs.guide.stats.strength-increases-hp-armor": '<span style="color: #3A3B3B">Strength:</span> Increases HP, Armor. <!--Increases the attack of warriors.-->',
+	"docs.guide.stats.strength-increases-hp-armor": "<span style=\"color: #3A3B3B\">Strength:</span> Increases HP, Armor and run speed. <!--Increases the attack of warriors.-->",
 	// docs/guide/stats.html:5; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.stats.vitality-increases-hp-proportional-to-level": '<span style="color: #3A3B3B">Vitality:</span> Increases HP proportional to level.',
 	// docs/guide/stats.html:27; Class overview. Translate class names. Merchants can use dartguns and explicitly allowed skills; priest output starts at 40 but equipment and conditions can change it. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
@@ -5448,13 +5527,13 @@ module.exports = {
 	"docs.guide.tavern-games.777-wait-for-one-spin": '<span class="guide-flow-icon tavern-slots">777</span><span class="guide-flow-label">Three Reels Stop</span>',
 	// docs/guide/tavern-games.html:31; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["won: false"].
 	"docs.guide.tavern-games.a-completed-losing-wager-is-a-valid-result":
-		'A completed losing wager is a valid result and fulfills its Promise with <span class="dlabel">won: false</span>. A rejected Promise means the wager or machine failed validation.',
+		"A completed losing wager is still a valid result and fulfills its Promise with <span class=\"dlabel\">won: false</span>. A rejected Promise means the wager or machine failed validation.",
 	// docs/guide/tavern-games.html; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"]. Fortune's Wheel is the Tavern wheel game.
 	"docs.guide.tavern-games.code-spin-fortune-s-wheel": "CODE: Spin Fortune's Wheel",
 	// docs/guide/tavern-games.html; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fortune's Wheel is the Tavern wheel game's name.
 	"docs.guide.tavern-games.fortune-s-wheel": "Fortune's Wheel",
 	// docs/guide/tavern-games.html:7; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep names: ["Jaqk"].
-	"docs.guide.tavern-games.house_rules": "<b>Ask Jaqk for the current house</b>The tavern panel shows whether betting is open, its edge, and the largest win it can presently cover.",
+	"docs.guide.tavern-games.house_rules": "<b>Ask Jaqk for the current house</b>The tavern panel shows whether betting is open, its edge, and the largest win it can currently cover.",
 	// docs/guide/tavern-games.html:34; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.guide.tavern-games.code-inspect-the-house": "CODE: Inspect the House",
 	// docs/guide/tavern-games.html:44; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
@@ -5465,7 +5544,7 @@ module.exports = {
 	"docs.guide.tavern-games.down-choose-direction": '<span class="guide-flow-icon tavern-choice">DOWN</span><span class="guide-flow-label">Choose Direction</span>',
 	// docs/guide/tavern-games.html:19; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.tavern-games.down-wins-when-the-roll-is-at-or":
-		"<b>Down</b> wins when the roll is at or below your chosen number. <b>Up</b> wins when the roll is at or above it. The displayed payout changes with that choice, the threshold, the wager, and the house edge.",
+		"<b>Down</b> wins when the roll is at or below your chosen number. <b>Up</b> wins when the roll is at or above it. The displayed payout changes with your direction, threshold, wager and the house edge.",
 	// docs/guide/tavern-games.html; Section title of the Tavern's Texas Hold'em poker table.
 	"docs.guide.tavern-games.hold-em": "Hold'em",
 	// docs/guide/tavern-games.html; Flow node. Fixed HTML: preserve every tag and attribute; translate the label only.
@@ -5479,7 +5558,7 @@ module.exports = {
 	// docs/guide/tavern-games.html; Hold'em paragraph introducing Venn, the NPC dealer behind the table. Keep Venn unchanged.
 	"docs.guide.tavern-games.venn-deals": "Venn deals every hand from behind the table and keeps the room entertained between games. Stand beside a free stool, then right-click the table or Venn to sit down.",
 	// docs/guide/tavern-games.html; Guide paragraph. Hold'em is the poker variant; keep the numbers.
-	"docs.guide.tavern-games.the-tavern-has-one-five-seat-no-limit": "The Tavern has one five-seat no-limit Hold'em table. Buy in for 40 to 200 big blinds. Each decision allows 20 seconds, with one extra 30-second time bank per hand. The house takes 2% from each awarded pot, capped at 10 big blinds.",
+	"docs.guide.tavern-games.the-tavern-has-one-five-seat-no-limit": "The Tavern has one five-seat no-limit Hold'em table. Buy in for 40 to 200 big blinds. You get 20 seconds for each decision, plus one extra 30-second time bank per hand. The house takes 2% from each awarded pot, capped at 10 big blinds.",
 	// docs/guide/tavern-games.html; Blinds table column heading.
 	"docs.guide.tavern-games.servers": "Servers",
 	// docs/guide/tavern-games.html; Blinds table column heading. Poker term.
@@ -5499,10 +5578,10 @@ module.exports = {
 	// docs/guide/tavern-games.html; blinds table row label for PVP servers.
 	"docs.guide.tavern-games.tier-pvp": "PVP servers",
 	// docs/guide/tavern-games.html; Guide note. Fixed HTML: preserve the tags.
-	"docs.guide.tavern-games.leaving-the-table": "<b>Leaving.</b> Leave or walk away to cash out after the hand. A disconnected seat posts blinds for up to two more hands, then sits out. It is kept for five minutes; cash-out waits for the hand to end. Reconnect on the same server to resume. Switching servers also waits for the hand to end.",
+	"docs.guide.tavern-games.leaving-the-table": "<b>Leaving.</b> Leave or walk away to cash out after the hand. A disconnected seat posts blinds for up to two more hands, then sits out. The seat is kept for five minutes; cash-out waits for the hand to end. Reconnect on the same server to resume. Switching servers also waits for the hand to end.",
 	// docs/guide/tavern-games.html; Guide note on restarts for every Tavern game. Keep tavern_closing as the CODE reason.
 	"docs.guide.tavern-games.restarts":
-		"<b>Restarts.</b> A restart closes the Tavern's games before the countdown: wheel, slots and dice wagers that have not settled are returned in full, the poker table voids its hand and cashes every stack out, and any request during the countdown fails with <span class='dlabel'>tavern_closing</span>.",
+		"<b>Restarts.</b> A restart closes the Tavern's games before the countdown: wheel, slots and dice wagers that have not settled are returned in full, the poker table voids its hand and cashes out every stack, and any request during the countdown fails with <span class='dlabel'>tavern_closing</span>.",
 	// docs/guide/tavern-games.html; Guide code section title. Keep CODE.
 	"docs.guide.tavern-games.code-play-a-hand": "CODE: Play a Hand",
 	// docs/guide/tavern-games.html; pay table odds column. {value} is a formatted number of spins, as in "1 in 5,000".
@@ -5513,7 +5592,7 @@ module.exports = {
 	"docs.guide.tavern-games.chance": "Chance",
 	// docs/guide/tavern-games.html:30; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.tavern-games.each-play-spends-the-machine-s-shown-cost":
-		"Each spin costs 1,000,000 gold and turns three reels; wait for them to stop before trying again. Three matching symbols on the middle line pay the prize below. The draw is fair: over many spins the prizes average the stake, and the house keeps only its edge from the net win.",
+		"Each spin costs 1,000,000 gold and turns three reels; wait for them to stop before spinning again. Three matching symbols on the middle line pay the prize below. The draw is fair: over many spins, the prizes average the stake, and the house keeps only its edge from the net win.",
 	// docs/guide/tavern-games.html:62; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.tavern-games.for-ordinary-trade-see-markets-and-trading":
 		"For ordinary trade, see <span onclick=\"hide_modal(); open_guide('markets-and-trading',get_guide_url('markets-and-trading'))\">Markets and Trading</span>.",
@@ -5545,17 +5624,17 @@ module.exports = {
 	"docs.guide.tavern-games.the-wheel-s-fourteen-slices-alternate-between-sun": "The wheel's fourteen slices alternate between <b>Sun</b> and <b>Moon</b>. Pick a side, choose a wager and spin. Landing on your side returns the wager plus an equal win, minus the house's cut of that win. Landing on the other side loses the wager. Wagers start at 10,000 gold, and the largest win stays within what the house can cover.",
 	// docs/guide/tracktrix.html:6; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.tracktrix.1-0-for-each-monster-your-character-or":
-		"<span style='color:#359CA3'>+1.0</span> For each monster your character or your party kills<br />\n\t<span style='color:#5BA652'>+0.3</span> Per each one of your characters in your party or within 600px of you<br />\n\t<span style='color:#AC3029'>-0.3</span> If you are not within 600px of the kill and your last kill was a different monster<br />\n\t<span style='color:#AC3029'>-0.1</span> If an allied merchant is within 600px of the kill<br />",
+		"<span style='color:#359CA3'>+1.0</span> For each monster your character or your party kills<br />\n\t<span style='color:#5BA652'>+0.3</span> For each of your characters in your party or within 600px of you<br />\n\t<span style='color:#AC3029'>-0.3</span> If you are more than 600px from the kill and your last kill was a different monster<br />\n\t<span style='color:#AC3029'>-0.1</span> If an allied merchant is within 600px of the kill<br />",
 	// docs/guide/tracktrix.html:12; Documentation h4 prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.tracktrix.co-op": "Co-op",
 	// docs/guide/tracktrix.html:14; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.tracktrix.co-op-monster-scores-and-kills-aren-t": "Co-op monster scores and kills aren't shared within a party<br />\n\tAll score modifications are halved for co-op monsters",
 	// docs/guide/tracktrix.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Tracktrix","Monster Token","Daisy","Mainland"].
 	"docs.guide.tracktrix.get-your-tracktrix-by-completing-4-monster-hunt":
-		"Get your tracktrix by completing 4 Monster Hunt Quest's from the NPC Daisy on Mainland, you can get the Tracktrix in exchange for 4 Monster Token's.",
+		"Complete 4 Monster Hunt Quests from Daisy on Mainland to earn 4 Monster Tokens, then exchange them for a Tracktrix.",
 	// docs/guide/tracktrix.html:20; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.tracktrix.merchants-in-a-party-only-get-half-the":
-		"Merchants in a party only get half the points<br />\n\tIf you've contributed more than 2% in Co-Op fights, you can't lose points from distance<br />",
+		"Merchants in a party receive only half the points<br />\n\tIf you've contributed more than 2% in Co-Op fights, distance can't make you lose points<br />",
 	// docs/guide/tracktrix.html:18; Documentation h4 prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.guide.tracktrix.misc": "Misc",
 	// docs/guide/tracktrix.html:4; Documentation h4 prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
@@ -5711,16 +5790,16 @@ module.exports = {
 	// docs/tutorial/bank.html:31; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.bank.manual": "MANUAL",
 	// docs/tutorial/bank.html:33; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.tutorial.bank.only-one-of-your-characters-can-be-inside": "Only one of your characters can be inside the bank at a time. The first packs are open; deeper vaults must be unlocked.",
+	"docs.tutorial.bank.only-one-of-your-characters-can-be-inside": "Only one of your characters can be inside the bank at a time. The first packs are open; deeper vaults need to be unlocked.",
 	// docs/tutorial/bank.html:37; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.tutorial.bank.optional-code": "OPTIONAL CODE",
 	// docs/tutorial/bank.html:1; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.bank.the-bank-keeps-items-and-gold-safe-and": "The bank keeps items and gold safe—and shares them with all your characters.",
 	// docs/tutorial/bank.html:50; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.tutorial.bank.the-item-can-be-retrieved-later-from-its": "The item can be retrieved later from its bank pack.",
+	"docs.tutorial.bank.the-item-can-be-retrieved-later-from-its": "You can retrieve the item later from its bank pack.",
 	// docs/tutorial/compound.html:33; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.compound.a-failure-consumes-all-three-accessories-and-the":
-		"A failure consumes all three accessories and the scroll. Every new level needs three of the previous level: a +2 already carries at least nine base copies inside it.",
+		"A failure consumes all three accessories and the scroll. Each new level needs three of the previous one, so a +2 already contains at least nine base copies.",
 	// docs/tutorial/compound.html:68; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.tutorial.compound.before-risking-rare-pieces-read-the-full-guide":
 		'<span class="hlabel">Before risking rare pieces:</span> Read the full guide. Scroll grades, offerings, grace, and the value of all three inputs matter.',
@@ -5759,14 +5838,14 @@ module.exports = {
 	// docs/tutorial/crafting-exchanges.html:27; Documentation span prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.crafting-exchanges.done": "DONE",
 	// docs/tutorial/crafting-exchanges.html:33; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Xyn"].
-	"docs.tutorial.crafting-exchanges.exchangeable-items-show-their-required-quantity-xyn-handles": "Xyn, north of Mainland's town square, handles many exchanges. For example, save Seashells from the shore, click one in your bag to check the required quantity, then take the stack to Xyn. Right-click Xyn, place the stack in the exchange slot, inspect the possible rewards, and choose Exchange. Other quest and event collectors accept their own items. Exchanges consume what you hand over.",
+	"docs.tutorial.crafting-exchanges.exchangeable-items-show-their-required-quantity-xyn-handles": "Xyn, north of Mainland's town square, handles many exchanges. For example, save Seashells from the shore, click one in your bag to check the required quantity, then take the stack to Xyn. Right-click Xyn, place the stack in the exchange slot, inspect the possible rewards, and choose Exchange. Other quest and event collectors accept their own items. Exchanges consume whatever you hand over.",
 	// docs/tutorial/crafting-exchanges.html:20; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.crafting-exchanges.exchanges-quests": "EXCHANGES & QUESTS",
 	// docs/tutorial/crafting-exchanges.html:31; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.crafting-exchanges.manual": "MANUAL",
 	// docs/tutorial/crafting-exchanges.html:32; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.tutorial.crafting-exchanges.open-guide-all-recipes-a-recipe-names-every":
-		'Open <span class="gamebutton gamebutton-small">GUIDE</span> → All Recipes. A recipe names every item, quantity, level, and gold cost. Bring the exact ingredients to the Craftsman.',
+		"Open <span class=\"gamebutton gamebutton-small\">GUIDE</span> → All Recipes. A recipe lists every required item, quantity, level, and gold cost. Bring the exact ingredients to the Craftsman.",
 	// docs/tutorial/crafting-exchanges.html:37; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.tutorial.crafting-exchanges.optional-code": "OPTIONAL CODE",
 	// docs/tutorial/crafting-exchanges.html:49; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["auto_craft(name)","exchange(num)"].
@@ -5778,15 +5857,15 @@ module.exports = {
 	"docs.tutorial.events-status.done": "DONE",
 	// docs/tutorial/events-status.html:34; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.tutorial.events-status.event-buttons-appear-when-something-is-active-or":
-		'Event buttons appear when something is active or approaching. Open their <span class="gamebutton gamebutton-small">INFO</span> guide before joining. The Guide\'s event list keeps daily, nightly,\n\t\tand seasonal knowledge together.',
+		"Event buttons appear when something is active or approaching. Open their <span class=\"gamebutton gamebutton-small\">INFO</span> guide before joining. The Guide's event list keeps daily, nightly,\n\t\tand seasonal knowledge in one place.",
 	// docs/tutorial/events-status.html:37; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.events-status.events-differ-by-server-each-character-has-a":
-		"Events differ by server. Each character has a home server with stronger cooperative credit and extra rewards. Switching non-merchant characters between servers within 30 minutes causes Realm Fatigue, which pauses those home bonuses while normal rewards continue.",
+		"Events differ by server. Each character has a home server, where cooperative credit is stronger and extra rewards are available. Switching non-merchant characters between servers within 30 minutes causes Realm Fatigue, which pauses those home bonuses while normal rewards continue.",
 	// docs/tutorial/events-status.html:12; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.events-status.events-schedules-home": "EVENTS, SCHEDULES & HOME",
 	// docs/tutorial/events-status.html:51; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["G.events","server.status"].
 	"docs.tutorial.events-status.g-events-explains-an-event-server-status-tells":
-		'<span class="dlabel">G.events</span> explains an event. <span class="dlabel">server.status</span> tells you what is happening on this server now. Read it again after waiting; live state changes.',
+		"<span class=\"dlabel\">G.events</span> explains an event. <span class=\"dlabel\">server.status</span> tells you what is happening on this server now. Check it again after waiting; live state changes.",
 	// docs/tutorial/events-status.html:32; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.events-status.manual": "MANUAL",
 	// docs/tutorial/events-status.html:54; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["on_game_event","smart_move","join"].
@@ -5810,7 +5889,7 @@ module.exports = {
 	// docs/tutorial/hellocode.html:27; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.hellocode.manual": "MANUAL",
 	// docs/tutorial/hellocode.html:37; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.tutorial.hellocode.most-actions-return-a-promise-handle-success-and": "Most actions return a Promise. Handle success and failure when an action matters:",
+	"docs.tutorial.hellocode.most-actions-return-a-promise-handle-success-and": "Most actions return a Promise. Handle both success and failure when an action matters:",
 	// docs/tutorial/hellocode.html:33; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep names: ["CODE"].
 	"docs.tutorial.hellocode.open-code-the-default-script-uses-potions-and":
 		'Open <span class="gamebutton gamebutton-small">CODE</span>. The default script uses potions and loots chests. Change its first line to:',
@@ -5832,7 +5911,7 @@ module.exports = {
 	// docs/tutorial/helloworld.html:6; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.helloworld.manual": "MANUAL",
 	// docs/tutorial/helloworld.html:7; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.tutorial.helloworld.move-fight-trade-explore-and-meet-other-adventurers": "Move, fight, trade, explore, and meet other adventurers with the game controls. The next lessons begin here.",
+	"docs.tutorial.helloworld.move-fight-trade-explore-and-meet-other-adventurers": "Move, fight, trade, explore, and meet other adventurers with the game controls. The next lessons start here.",
 	// docs/tutorial/helloworld.html:11; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.tutorial.helloworld.optional-code": "OPTIONAL CODE",
 	// docs/tutorial/helloworld.html:16; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
@@ -5849,7 +5928,7 @@ module.exports = {
 	// docs/tutorial/interface.html:18; Documentation span prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.interface.done": "DONE",
 	// docs/tutorial/interface.html:24; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.tutorial.interface.hp-and-mp-potions-share-a-short-cooldown": "HP and MP potions share a short cooldown. Use the one you need; carrying them is not the same as drinking them.",
+	"docs.tutorial.interface.hp-and-mp-potions-share-a-short-cooldown": "HP and MP potions share a short cooldown. Use the one you need; carrying a potion is not the same as drinking it.",
 	// docs/tutorial/interface.html:11; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.interface.items-inventory": "ITEMS & INVENTORY",
 	// docs/tutorial/interface.html:36; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["locate_item","equip","use_hp_or_mp"].
@@ -5859,7 +5938,7 @@ module.exports = {
 	"docs.tutorial.interface.manual": "MANUAL",
 	// docs/tutorial/interface.html:23; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.tutorial.interface.open-inv-right-click-equipment-to-wear-it":
-		'Open <span class="gamebutton gamebutton-small">INV</span>. Right-click equipment to wear it and right-click an equipped slot to remove it. Drag items to keep the bag tidy.',
+		"Open <span class=\"gamebutton gamebutton-small\">INV</span>. Right-click equipment to wear it, and right-click an equipped slot to remove it. Drag items around to keep your bag tidy.",
 	// docs/tutorial/interface.html:28; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.tutorial.interface.optional-code": "OPTIONAL CODE",
 	// docs/tutorial/interface.html:34; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["\"blade\"","use_hp_or_mp()"].
@@ -5885,7 +5964,7 @@ module.exports = {
 	// docs/tutorial/learntofight.html:37; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.tutorial.learntofight.optional-code": "OPTIONAL CODE",
 	// docs/tutorial/learntofight.html:52; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.tutorial.learntofight.run-it-again-as-the-fight-changes-later": "Run it again as the fight changes. Later, a loop can do that watching for you.",
+	"docs.tutorial.learntofight.run-it-again-as-the-fight-changes-later": "Run it again as the fight changes. Later, a loop can do the watching for you.",
 	// docs/tutorial/learntofight.html:38; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Goo"].
 	"docs.tutorial.learntofight.this-finds-one-goo-approaches-it-attacks-when": "This finds one Goo, approaches it, attacks when ready, and checks for chests:",
 	// docs/tutorial/learntofight.html:33; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
@@ -5893,7 +5972,7 @@ module.exports = {
 	// docs/tutorial/move.html:27; Documentation span prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.move.done": "DONE",
 	// docs/tutorial/move.html:49; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
-	"docs.tutorial.move.for-banks-shops-doors-and-special-npcs-use": "For banks, shops, doors, and special NPCs, use the documented CODE function instead of sending low-level socket events.",
+	"docs.tutorial.move.for-banks-shops-doors-and-special-npcs-use": "For banks, shops, doors, and special NPCs, use the documented CODE function rather than sending low-level socket events.",
 	// docs/tutorial/move.html:31; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.move.manual": "MANUAL",
 	// docs/tutorial/move.html:20; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
@@ -5909,24 +5988,24 @@ module.exports = {
 	"docs.tutorial.move.travel-guide": "TRAVEL GUIDE",
 	// docs/tutorial/move.html:32; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.tutorial.move.use-travel-for-a-long-journey-nearby-doors":
-		'Use <span class="gamebutton gamebutton-small">TRAVEL</span> for a long journey. Nearby doors and NPCs can be activated with right-click or <span class="gamebutton gamebutton-small">F</span>.',
+		"Use <span class=\"gamebutton gamebutton-small\">TRAVEL</span> for longer journeys. Nearby doors and NPCs can be activated with right-click or <span class=\"gamebutton gamebutton-small\">F</span>.",
 	// docs/tutorial/move.html:33; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.tutorial.move.when-an-info-button-appears-nearby-open-it":
-		'When an <span class="gamebutton gamebutton-small">INFO</span> button appears nearby, open it. It explains the system you are standing next to.',
+		"When an <span class=\"gamebutton gamebutton-small\">INFO</span> button appears nearby, open it. It explains the system you're standing next to.",
 	// docs/tutorial/multiple-characters.html:11; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.multiple-characters.characters-coordination": "CHARACTERS & COORDINATION",
 	// docs/tutorial/multiple-characters.html:18; Documentation span prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.multiple-characters.done": "DONE",
 	// docs/tutorial/multiple-characters.html:24; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.tutorial.multiple-characters.each-character-keeps-its-own-class-inventory-skills":
-		"Each character keeps its own class, inventory, skills, and CODE. Only one character can occupy the bank at a time.",
+		"Each character has its own class, inventory, skills, and CODE. Only one character can occupy the bank at a time.",
 	// docs/tutorial/multiple-characters.html:22; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.multiple-characters.manual": "MANUAL",
 	// docs/tutorial/multiple-characters.html:35; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.tutorial.multiple-characters.only-trust-commands-from-your-own-characters-check": "Only trust commands from your own characters. Check the sender before acting on a CODE message.",
 	// docs/tutorial/multiple-characters.html:23; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.tutorial.multiple-characters.open-com-characters-you-can-deploy-another-character":
-		'Open <span class="gamebutton gamebutton-small">COM</span> → Characters. You can deploy another character in a game window and move equipment or gold through the shared bank.',
+		"Open <span class=\"gamebutton gamebutton-small\">COM</span> → Characters. You can deploy another character in a game window, then move equipment or gold through the shared bank.",
 	// docs/tutorial/multiple-characters.html:28; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.tutorial.multiple-characters.optional-code": "OPTIONAL CODE",
 	// docs/tutorial/multiple-characters.html:37; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["start_character","send_cm","on_cm","command_character"].
@@ -5949,7 +6028,7 @@ module.exports = {
 	"docs.tutorial.parties-friends.playing-together": "PLAYING TOGETHER",
 	// docs/tutorial/parties-friends.html:42; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.tutorial.parties-friends.replace-the-name-before-running-for-incoming-requests":
-		"Replace the name before running. For incoming requests, listen for the matching CODE event and call the matching accept function.",
+		"Replace the name before running it. For incoming requests, listen for the matching CODE event and call the matching accept function.",
 	// docs/tutorial/parties-friends.html:44; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["send_party_invite","send_friend_request","party_say","pm"].
 	"docs.tutorial.parties-friends.send-party-invite-send-friend-request-party-say":
 		'<span class="rlabel" onclick="load_documentation($(this).html())">send_party_invite</span> ·\n\t\t<span class="rlabel" onclick="load_documentation($(this).html())">send_friend_request</span> · <span class="rlabel" onclick="load_documentation($(this).html())">party_say</span> ·\n\t\t<span class="rlabel" onclick="load_documentation($(this).html())">pm</span>',
@@ -5963,7 +6042,7 @@ module.exports = {
 	"docs.tutorial.shops.find-npc-buy-sell":
 		'<span class="rlabel" onclick="load_documentation($(this).html())">find_npc</span> · <span class="rlabel" onclick="load_documentation($(this).html())">buy</span> ·\n\t\t<span class="rlabel" onclick="load_documentation($(this).html())">sell</span>',
 	// docs/tutorial/shops.html:24; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.tutorial.shops.keep-one-empty-inventory-slot-full-bags-have": "Keep one empty inventory slot. Full bags have a talent for becoming full at the worst moment.",
+	"docs.tutorial.shops.keep-one-empty-inventory-slot-full-bags-have": "Keep one inventory slot empty. Full bags have a talent for becoming a problem at exactly the wrong moment.",
 	// docs/tutorial/shops.html:22; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.shops.manual": "MANUAL",
 	// docs/tutorial/shops.html:28; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
@@ -5973,7 +6052,7 @@ module.exports = {
 	// docs/tutorial/shops.html:1; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Town"].
 	"docs.tutorial.shops.town-merchants-sell-dependable-supplies-monsters-provide-the": "Town merchants sell dependable supplies. Monsters provide the stranger merchandise.",
 	// docs/tutorial/shops.html:23; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.tutorial.shops.walk-near-a-merchant-and-right-click-buy": "Visit Ernis beside Gabriel in Mainland's town square. Right-click Ernis to open his potion shop, click an HP potion, choose a small quantity, and buy it. Gabriel sells basic equipment next door. To sell an unwanted item, keep the shop open and click the item in your inventory; check it before choosing Sell.",
+	"docs.tutorial.shops.walk-near-a-merchant-and-right-click-buy": "Visit Ernis beside Gabriel in Mainland's town square. Right-click Ernis to open his potion shop, click an HP potion, choose a small quantity, and buy it. Gabriel sells basic equipment next door. To sell an unwanted item, keep the shop open and click the item in your inventory; check what you've selected before choosing Sell.",
 	// docs/tutorial/skills-recovery.html:46; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["can_use","use_skill","respawn"].
 	"docs.tutorial.skills-recovery.can-use-use-skill-respawn":
 		'<span class="rlabel" onclick="load_documentation($(this).html())">can_use</span> · <span class="rlabel" onclick="load_documentation($(this).html())">use_skill</span> ·\n\t\t<span class="rlabel" onclick="load_documentation($(this).html())">respawn</span>',
@@ -5992,11 +6071,11 @@ module.exports = {
 	"docs.tutorial.skills-recovery.optional-code": "OPTIONAL CODE",
 	// docs/tutorial/skills-recovery.html:33; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.skills-recovery.regeneration-costs-time-potions-cost-gold-and-share":
-		"Regeneration costs time; potions cost gold and share a cooldown. If you fall, respawn when the way is safe. Death takes experience, not your whole adventure.",
+		"Regeneration costs time; potions cost gold and share a cooldown. If you fall, respawn when the way is safe. Death costs experience, not your whole adventure.",
 	// docs/tutorial/skills-recovery.html:20; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.tutorial.skills-recovery.skills-in-code": "SKILLS IN CODE",
 	// docs/tutorial/skills-recovery.html:1; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
-	"docs.tutorial.skills-recovery.skills-turn-a-class-into-a-calling-recovery": "Skills turn a class into a calling. Recovery keeps that calling alive.",
+	"docs.tutorial.skills-recovery.skills-turn-a-class-into-a-calling-recovery": "Skills give each class its calling. Recovery keeps you alive long enough to answer it.",
 	// docs/tutorial/theend.html:14; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
 	"docs.tutorial.theend.code-docs-cover-every-supported-function-start-small": "CODE Docs cover every supported function. Start small, read failures, and let your code grow with your character.",
 	// docs/tutorial/theend.html:38; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Goo"].
@@ -6018,10 +6097,10 @@ module.exports = {
 	"docs.tutorial.theend.you-can-fight-by-hand-automate-a-loop":
 		"You can fight by hand, automate a loop, build a party, raise several characters, chase a live event, craft something rare, or simply wander until the map surprises you.",
 	// docs/tutorial/upgrade.html:32; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["Upgrade Scroll","Cue"].
-	"docs.tutorial.upgrade.buy-one-basic-upgrade-scroll-take-a-cheap": "Buy a basic Upgrade Scroll from Lucas, west of Mainland's town square. Bring a spare +0 weapon or armor piece from Gabriel to Cue, northwest of Gabriel. Right-click Cue and choose Upgrade. Drag the item and scroll into their slots, read the success chance, then decide whether to attempt it. Keep your working equipment equipped so you do not risk it by mistake.",
+	"docs.tutorial.upgrade.buy-one-basic-upgrade-scroll-take-a-cheap": "Buy a basic Upgrade Scroll from Lucas, west of Mainland's town square. Bring a spare +0 weapon or armor piece from Gabriel to Cue, northwest of Gabriel. Right-click Cue and choose Upgrade. Drag the item and scroll into their slots, read the success chance, then decide whether to attempt it. Keep your working equipment equipped so you don't risk it by mistake.",
 	// docs/tutorial/upgrade.html:63; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["CONFIRM_UPGRADE","true"].
 	"docs.tutorial.upgrade.calculation-mode-consumes-nothing-read-its-chance-then":
-		'Calculation mode consumes nothing. Read its chance, then change <span class="dlabel">CONFIRM_UPGRADE</span> to <span class="dlabel">true</span> only if you accept the risk.',
+		"Calculation mode consumes nothing. Read the chance, then change <span class=\"dlabel\">CONFIRM_UPGRADE</span> to <span class=\"dlabel\">true</span> only if you're willing to take the risk.",
 	// docs/tutorial/upgrade.html:11; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.tutorial.upgrade.complete-upgrading-guide": "COMPLETE UPGRADING GUIDE",
 	// docs/tutorial/upgrade.html:27; Documentation span prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
@@ -6065,15 +6144,15 @@ module.exports = {
 	// CODE globals reference: diagnostic output is unchanged. Mainframe supports the same object but already has no routine CM/path logs or floating text. Preserve JavaScript and Mainframe.
 	"docs.code_settings.errors": "These settings leave path failures, warnings and JavaScript errors visible. Mainframe accepts the same settings; it already omits the routine logs and floating text.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"docs.progression.use": "The Progression Guide sits above HP and MP. Open its heading to see your route or choose a goal; each INFO shows the next step and its sources. Minimize it with the minus button. Turn it off in Settings beside Tutorial.",
+	"docs.progression.use": "The Progression Guide sits above HP and MP. Open its heading to see your route or choose a goal; each INFO explains the next step and where its resources come from. Minimize it with the minus button. Turn it off in Settings beside Tutorial.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"docs.progression.goals": "Combat classes first work toward 1,000 permanent Attack; Priests work toward 1,000 Healing, and Merchants toward a stocked shop. Better owned equipment can skip lessons. Later, choose an item, set, gold target, farm or encounter. Temporary buffs do not finish permanent goals.",
+	"docs.progression.goals": "Combat classes first work toward 1,000 permanent Attack; Priests work toward 1,000 Healing, and Merchants toward a stocked shop. Better equipment you already own can skip lessons. Later, choose an item, set, gold target, farm, or encounter. Temporary buffs do not complete permanent goals.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"docs.progression.estimates": "Farm advice uses your equipment and the monster's stats. Goo is a starting farm. A trial fight is suggested when an estimate is close to your limits; recent deaths or costly fights withdraw a route. Event INFO opens its guide; an active event does not prove you can fight it.",
+	"docs.progression.estimates": "Farm advice uses your equipment and the monster's stats. Goo is a starting farm. When an estimate is close to your limits, the guide suggests a trial fight; recent deaths or costly fights can withdraw that route. Event INFO opens its guide, but an active event does not mean you can safely fight it.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"docs.progression.resources": "Plans keep worn and protected equipment out of crafting and compounding inputs. Recipes use exact item levels and sufficient stacks. Listed development costs are averages before offerings or grace, not guarantees; check the native upgrade or compound preview before spending.",
+	"docs.progression.resources": "Plans keep worn and protected equipment out of crafting and compounding inputs. Recipes require exact item levels and sufficient stacks. Listed development costs are averages before offerings or grace, not guarantees; check the native upgrade or compound preview before spending.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
-	"docs.progression.code": "get_progression(options) returns advice without moving, spending or attacking. It works in regular CODE and Mainframe. Calling it starts observation of subsequent fights; earlier play is unknown. Disabling the HUD does not disable this CODE function.",
+	"docs.progression.code": "get_progression(options) returns advice without moving, spending, or attacking. It works in regular CODE and Mainframe. Calling it begins observing subsequent fights; earlier play is unknown. Disabling the HUD does not disable this CODE function.",
 	// Progression guide: HUD, settings or guide explanation. Preserve named parameters, native item/map/NPC names and CODE identifiers.
 	"docs.progression.api": "The result includes ready, goal, progress, complete, rows, plans, opportunities and choices. Each row has a stable id, action, reason, cost and resource references. Text uses phrase IDs and parameters. Use goal to inspect another objective, spendLimit to cap spending, and allowPvp to consider PvP opportunities. Options affect this read, not the saved HUD goal.",
 	// Progression GUIDE: {move} is the translated Move button. Travel uses the existing confirmation; purchases and combat stay manual.
@@ -6088,27 +6167,28 @@ module.exports = {
 
 // Cave guide. English only during the user-approved test phase. Preserve CODE identifiers and numbers.
 Object.assign(module.exports, {
-  "docs.cave.intro": "Find Dorr at the vine-covered doorway in Mainland, near 816,1200. Bring your party close, out of combat, and choose Enter together. CAVE INFO appears near Dorr and inside the cave.",
-  "docs.cave.time": "The cave pauses during a forced vote. Your 24-minute clock stops too. Each character has one vote, including fallen characters. You have one minute to choose.",
+  "docs.cave.intro": "Find Dorr at the vine-covered doorway in Mainland, near 816,1200. Bring your party close, stay out of combat, and choose Enter together. CAVE INFO appears near Dorr and inside the cave.",
+  "docs.cave.time": "The cave pauses during a forced vote, and so does your 24-minute clock. Each character gets one vote, including fallen characters. You have one minute to choose.",
   "docs.cave.travel": "Follow the labelled doorways. Defeat the guard camp and floor keeper, then settle the marked encounter to open the next floor. The cave timer shows which rooms are still unfinished. Locked stairs stay marked until all three are done. Directions above can lead you to each room.",
   "docs.cave.votes": "A majority settles the vote early. Otherwise, the reply with the most votes wins when time runs out. The conversation tells you what happens if nobody wins.",
-  "docs.cave.choices": "Rescue a traveler, take a side in a fight, hire help or take a risk. Look at their weapons and strength before you choose. Passing travelers can also stop for a quick chat; that does not pause the cave.",
+  "docs.cave.choices": "Rescue a traveler, take a side in a fight, hire help, or take a risk. Look at their weapons and strength before you choose. Passing travelers may also stop for a quick chat; that does not pause the cave.",
   "docs.cave.danger": "Some choices call in six level 100 wolves. The rare Dark Mage deals 100,000 magic damage and targets mages first. Only his own reflected spell can kill him.",
   "docs.cave.rogue": "The cornered rogue has a 1% chance to carry Last Word. To get it, monsters must kill him before he betrays you. If he survives, there is a 50% chance he turns on you and attacks anyone within 200 pixels.",
-  "docs.cave.hunts": "Monster camps hold three packs with a reward for each clear. After each clear, the next pack comes out of the nest ten seconds later. The third pack is the last. Some travelers also offer timed hunts: kill the marked monsters before the hunt clock ends.",
-  "docs.cave.loot": "NPC rewards go to a random member of the original party. Merchants take gold from the shared cave purse and give their one item to a random party member. Each item can be bought only once. Items found here carry the Cave-found title.",
+  "docs.cave.hunts": "Monster camps hold three packs, with a reward for each clear. After each clear, the next pack comes out of the nest ten seconds later. The third pack is the last. Some travelers also offer timed hunts: kill the marked monsters before the hunt clock runs out.",
+  // Cave reward ownership. title is the localized item-title prefix; preserve the existing distribution rules.
+  "docs.cave.loot": "NPC rewards go to a random member of the original party. Merchants take gold from the shared cave purse and give their one item to a random party member. Each item can be bought only once. Items found here carry the {title} title.",
   "docs.cave.purse": "Open glowing cave chests to collect cave gold and Amber. Spend cave gold at merchants or during encounters; it never becomes carried gold or mail. Each floor has a merchant near its doorway, along an upper wall. Unspent Amber goes to the party when someone exits or the run ends. Items go into the recipient’s bag, or into MAIL if they are offline or their bag is full.",
   "docs.cave.exit": "Exit ends your visit and returns you outside alive, even while fallen or voting. Reloading or disconnecting keeps your place until the cave ends. Speak to Dorr on the same server to return where you disconnected, with your cave health; fallen characters remain fallen. The clock keeps running while nobody is inside. Only original entrants can return. Magiport cannot enter or leave the cave.",
   "docs.cave.code": "Use cave_enter() beside Dorr. Read character.cave for the timer, purse, objectives and door locations. Set reply_id below to an available option ID. Each option shows its total shared-gold cost in cost, its total Amber cost in amber, and any reason it is unavailable. Revive here costs 1 Amber per fallen character; the doorway option is free.",
   "docs.cave.failure": "These functions return Promises. A failed request rejects with a reason.",
-  "docs.cave.story": "Dorr\u2019s story",
+  "docs.cave.story": "Nell’s first cave",
   "docs.cave.drops": "NPC bargains, trials and hunts",
   "docs.cave.rewards": "Completing floor 3",
   "docs.cave.code_heading": "CODE",
 });
 
 // Public cave function reference. Preserve function names and return fields.
-module.exports["docs.cave.function.cave_reply"]="Votes once as this character. Use the current choice.id and one of its option IDs. An absolute majority can settle before the one-minute deadline.";
+module.exports["docs.cave.function.cave_reply"]="Votes once as this character. Use the current choice.id and one of its option IDs. An absolute majority can settle the vote before the one-minute deadline.";
 
 
 // Public cave function reference. Preserve function names and return fields.
@@ -6158,17 +6238,17 @@ module.exports["docs.cave.danger_heading"]="Watch their weapons";
 module.exports["docs.cave.facts"]="3 characters · 3 floors · 24 minutes · 10× enemy XP";
 
 // Casual cave conversations are optional and do not pause the instance.
-module.exports["docs.cave.travelers"]="Travelers walk between rooms. Click one to chat. These short conversations do not pause the cave or start a vote.";
+module.exports["docs.cave.travelers"]="Travelers move between rooms. Click one to chat. These short conversations do not pause the cave or start a vote.";
 // cave_talk: optional actor is the targeted NPC ID; room-only calls use the nearest friendly NPC.
-module.exports["docs.cave.function.cave_talk"] = "Talk to a cave NPC within 160 pixels. Pass the room ID from npc.cave.room. You can also pass npc.id as the second argument to talk to that person; otherwise the nearest friendly NPC in that encounter is used.";
+module.exports["docs.cave.function.cave_talk"] = "Talk to a cave NPC within 160 pixels. Pass the room ID from npc.cave.room. You can also pass npc.id as the second argument to talk to that person; otherwise, the nearest friendly NPC in that encounter is used.";
 
 // Cave chest collection. Preserve loot and CODE field names.
 module.exports["docs.cave.chest_code"]="Click a cave chest or use loot(id) within 400 pixels. Cave gold and Amber go to the party purse. The receipt includes cave.gold and cave.amber; carried gold stays unchanged. You cannot collect while fallen or while the cave is paused.";
 
 // Cave reward sources and the shared cave-gold purse.
 Object.assign(module.exports, {
-  "docs.cave.function.cave_buy": "Buy the one item offered by a cave merchant within 160 pixels. Pass the shop’s room ID. The price comes from the shared cave-gold purse; a random original party member receives the item. The result includes recipient, item, gold spent and currency: \"cave_gold\". A sold item cannot be bought again.",
-  "docs.cave.drop_chances": "Each table below picks one reward when you complete the named activity. The percentages are per reward, not per monster kill. For example, 60% means a 60-in-100 chance of that row. Item quantities appear on the icons. These rewards are shared by the party.",
+  "docs.cave.function.cave_buy": "Buy the one item offered by a cave merchant within 160 pixels. Pass the shop’s room ID. The price comes from the shared cave-gold purse, and one random original party member receives the item. The result includes recipient, item, gold spent and currency: \"cave_gold\". Once sold, the item cannot be bought again.",
+  "docs.cave.drop_chances": "Each table below picks one reward when you complete the named activity. The percentages are per reward, not per monster kill. For example, 60% means a 60-in-100 chance for that row. Item quantities appear on the icons. These rewards are shared by the party.",
   "docs.cave.parcel_source": "Rewards from bought parcels, trials, timed hunts and fights with hostile travelers. Only choices that promise a reward use this table; leaving or paying a toll gives no item.",
   "docs.cave.rescue_rewards": "Helping travelers",
   "docs.cave.rescue_source": "Rewards for a successful rescue or escort, or for helping a rival who wins the fight. Taking a smaller reward uses the table above instead.",
@@ -6182,7 +6262,7 @@ Object.assign(module.exports, {
 // Cave equipment: ordinary shops, Cole's recipes, fixed completion bonuses and the exact crafting CODE example. Item and NPC names stay unchanged.
 Object.assign(module.exports, {
   "docs.cave.rare_crafts_heading": "Rare finds",
-  "docs.cave.rare_crafts": "Deepvein Axe and Amberweave Coat each have a separate 0.1% chance to drop when your party completes floor 3. Each item goes to one original party member. Luck does not change these two chances. Cole can also craft both items with Cave Amber and other ingredients.",
+  "docs.cave.rare_crafts": "Deepvein Axe and Amberweave Coat each have a separate 0.1% chance to drop when your party completes floor 3. Each item goes to one original party member. Luck does not affect these two chances. Cole can also craft both items with Cave Amber and other ingredients.",
   "docs.cave.common_weapons": "Tunnel Axe and Reed Scythe can come from cave rewards or merchants. Gabriel also sells Reed Scythe in Mainland for 16,000 gold. Cole can craft either weapon.",
   "docs.cave.craft": "Bring Cave Amber and the recipe ingredients to Cole in Mainland. Click an item below to see its recipe. Deepvein Axe uses an unupgraded Tunnel Axe. You can trade Amber with other players.",
   "docs.cave.craft_code": "Stand near Cole with 8 Cave Amber, an unupgraded Blade, an unupgraded Wooden Basher and 12,000 gold. Keep all the Amber in one inventory slot. This crafts one Tunnel Axe.",
@@ -6196,92 +6276,110 @@ Object.assign(module.exports, {
 module.exports["docs.cave.routine_comment"] = "Your usual fighting or farming code goes here.";
 module.exports["docs.cave.loot_comment"] = "Open nearby cave chests. Run this in your normal loot loop.";
 
-// Cave story page footer. Keep this short.
-module.exports["docs.cave.comic.page1.title"] = "The door opens";
+// Cave comic: Short page title. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page1.title"] = "First trip";
 
-// Cave story image description. Mainland, Senna, Noll and Cave Amber are fixed names.
-module.exports["docs.cave.comic.page1.alt"] = "Three travelers meet a carved stone keeper on Mainland. It opens a doorway and gives them twenty-four minutes.";
+// Cave comic: Accessible scene description; not in a balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page1.alt"] = "Nell joins the Ranger and Merchant at the Cave of Many Dreams entrance. Dorr gathers the party and gives them twenty-four minutes inside.";
 
-// Cave story page footer. Keep this short.
-module.exports["docs.cave.comic.page2.title"] = "Help on the way down";
+// Cave comic: Dorr, page 1, panel 1; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page1.speech1"] = "Going in? Bring your whole party close.";
 
-// Cave story image description. Mainland, Senna, Noll and Cave Amber are fixed names.
-module.exports["docs.cave.comic.page2.alt"] = "The party saves Senna from two rats. She gives them Cave Amber and points them toward the stairs.";
+// Cave comic: Merchant, page 1, panel 2; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page1.speech2"] = "First cave. Any second thoughts?";
 
-// Cave story page footer. Keep this short.
-module.exports["docs.cave.comic.page3.title"] = "Do not pull";
+// Cave comic: Nell, page 1, panel 2; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page1.speech3"] = "Plenty. I'm still going.";
 
-// Cave story image description. Mainland, Senna, Noll and Cave Amber are fixed names.
-module.exports["docs.cave.comic.page3.alt"] = "Noll offers a game of dice. The ranger pulls the marked rope beside his table, lifting the gates of two wolf pens.";
+// Cave comic: Dorr, page 1, panel 3; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page1.speech4"] = "You get 24 minutes inside. Stay together.";
 
-// Cave story page footer. Keep this short.
-module.exports["docs.cave.comic.page4.title"] = "Run";
+// Cave comic: Nell, page 1, panel 3; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page1.speech5"] = "I need to learn how to help here.";
 
-// Cave story image description. Mainland, Senna, Noll and Cave Amber are fixed names.
-module.exports["docs.cave.comic.page4.alt"] = "Six level-100 wolves surround the party. Senna, whom the party saved earlier, directs them to the open exit.";
+// Cave comic: Short page title. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page2.title"] = "A voice ahead";
 
-// Cave story page footer. Keep this short.
-module.exports["docs.cave.comic.page5.title"] = "Outside";
+// Cave comic: Accessible scene description; not in a balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page2.alt"] = "Inside a generated cave room, the party hears Senna calling from beyond the stonework and finds three wolves surrounding her.";
 
-// Cave story image description. Mainland, Senna, Noll and Cave Amber are fixed names.
-module.exports["docs.cave.comic.page5.alt"] = "With one second left, all three travelers reach the door. Outside, the stone keeper closes its eyes and the party keeps its amber.";
+// Cave comic: Ranger, page 2, panel 1; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page2.speech1"] = "Rule one: caves dislike confidence.";
 
-// Cave story speech by STONE KEEPER. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page1.speech1"] = "What are you looking for?";
+// Cave comic: Merchant, page 2, panel 1; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page2.speech2"] = "You made that rule up.";
 
-// Cave story speech by WARRIOR. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page1.speech2"] = "A way to get stronger.";
+// Cave comic: Senna, page 2, panel 2; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page2.speech3"] = "Help! I can't get past them!";
 
-// Cave story speech by STONE KEEPER. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page1.speech3"] = "These rooms come from people's dreams. Twenty-four minutes. Then this door closes.";
+// Cave comic: Nell, page 2, panel 2; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page2.speech4"] = "Someone's in trouble.";
 
-// Cave story speech by PRIEST. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page1.speech4"] = "Stay together.";
+// Cave comic: Merchant, page 2, panel 3; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page2.speech5"] = "Three wolves.";
 
-// Cave story speech by SENNA. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page2.speech1"] = "Help! I can't get past them!";
+// Cave comic: Ranger, page 2, panel 3; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page2.speech6"] = "Could've been four.";
 
-// Cave story speech by WARRIOR. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page2.speech2"] = "We're coming.";
+// Cave comic: Short page title. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page3.title"] = "The choice";
 
-// Cave story speech by SENNA. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page2.speech3"] = "Thank you. Take this amber. The stairs are behind that pillar.";
+// Cave comic: Accessible scene description; not in a balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page3.alt"] = "The party considers the cave's rescue choice. Nell connects Senna's plea with her own past, and all three vote to help.";
 
-// Cave story speech by NOLL. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page3.speech1"] = "One roll. You could win my die.";
+// Cave comic: Ranger, page 3, panel 1; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page3.speech1"] = "We don't have to take every fight.";
 
-// Cave story speech by RANGER. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page3.speech2"] = "What's this for?";
+// Cave comic: Nell, page 3, panel 1; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page3.speech2"] = "She asked for help.";
 
-// Cave story speech by NOLL. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page3.speech3"] = "Don't touch it.";
+// Cave comic: Nell, page 3, panel 2; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page3.speech3"] = "So did I.";
 
-// Cave story speech by NOLL. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page3.speech4"] = "That opens the wolf pens!";
+// Cave comic: Merchant, page 3, panel 2; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page3.speech4"] = "Then we vote.";
 
-// Cave story speech by PRIEST. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page4.speech1"] = "We can't fight these. Run!";
+// Cave comic: Compact choice/vote caption. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page3.caption1"] = "Choice: Save Senna: fight the wolves";
 
-// Cave story speech by SENNA. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page4.speech2"] = "This way! The door is still open!";
+// Cave comic: Compact choice/vote caption. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page3.caption2"] = "Vote: 3/3";
 
-// Cave story speech by WARRIOR. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page5.speech1"] = "Keep moving!";
+// Cave comic: Short page title. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page4.title"] = "Three wolves";
 
-// Cave story speech by RANGER. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page5.speech2"] = "We still got the amber.";
+// Cave comic: Accessible scene description; not in a balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page4.alt"] = "The Ranger, Merchant and Nell fight the three cave wolves together. Senna is freed and thanks them before the party continues.";
 
-// Cave story speech by PRIEST. Compact native pixel balloon. Amber is shorthand for Cave Amber; Senna and Noll are fixed names.
-module.exports["docs.cave.comic.page5.speech3"] = "Next time, leave the rope alone.";
+// Cave comic: Merchant, page 4, panel 1; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page4.speech1"] = "Still glad we voted yes?";
 
-// Generic role of the carved stone face in the cave comic, not a named NPC. Short speaker label.
-module.exports["docs.cave.comic.keeper"] = "Stone Keeper";
+// Cave comic: Nell, page 4, panel 1; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page4.speech2"] = "Ask me after the third wolf.";
 
-// Short warning on the rope sign in the cave comic.
-module.exports["docs.cave.comic.sign"] = "Do not pull";
+// Cave comic: Senna, page 4, panel 2; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page4.speech3"] = "Thank you. I thought I was stuck here.";
 
-// Cave comic sound lettering when the gates lift. Short metal clanking sound.
-module.exports["docs.cave.comic.clank"] = "Clank!";
+// Cave comic: Nell, page 4, panel 2; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page4.speech4"] = "You're not.";
+
+// Cave comic: Short page title. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page5.title"] = "In a minute";
+
+// Cave comic: Accessible scene description; not in a balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page5.alt"] = "Later, Nell, the Ranger and Merchant are back outside the cave. Nell pauses by the coast before leaving, and her companions wait with her.";
+
+// Cave comic: Ranger, page 5, panel 1; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page5.speech1"] = "Not bad for a first trip.";
+
+// Cave comic: Nell, page 5, panel 1; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page5.speech2"] = "Senna might disagree.";
+
+// Cave comic: Merchant, page 5, panel 2; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page5.speech3"] = "Market?";
+
+// Cave comic: Nell, page 5, panel 2; compact speech balloon. Nell, Senna, Dorr and Cave of Many Dreams are fixed names.
+module.exports["docs.cave.comic.page5.speech4"] = "In a minute.";
 
 // CODE function reference. fields is a literal list of return fields or object shapes; preserve it exactly.
 module.exports["docs.cave.returns"] = "Returns on success: {fields}.";
@@ -6296,13 +6394,16 @@ module.exports["docs.cave.restart"] = "If a server restart ends your visit, the 
 module.exports["docs.guide.tavern-games.deck-verification"] = "<b>Deck verification.</b> Before dealing, the table publishes a commitment. After the hand, it reveals the key and full deck order, including folded cards.";
 
 // Poker CODE reference: can_raise is the exact seat field; short all-ins can cumulatively reopen a full raise.
-module.exports["docs.functions.poker_act.reopening"] = "Your seat's can_raise says whether you may raise. Several short all-ins reopen betting when their combined increase reaches a full raise.";
+module.exports["docs.functions.poker_act.reopening"] = "Your seat's can_raise tells you whether you may raise. Several short all-ins can reopen betting once their combined increase reaches a full raise.";
 
 // Poker guide and action references. Keep poker_saving and poker_hand_active exactly; they are CODE reason identifiers.
 module.exports["docs.poker.waiting"] = "If an action fails with poker_saving, wait briefly and retry. If login fails with poker_hand_active, wait for your hand to finish or reconnect to its server.";
 
 // Cave guide and function references. Only original entrants can return. Preserve Dorr and all CODE identifiers and field names.
 module.exports["docs.cave.return_code"] = "Use cave_enter() beside Dorr to return to your active cave on the same server. You do not need to recreate the party or spend another visit. cave_info() returns resume with run and server when a return is available; on that server it also includes remaining_ms. A successful return includes resumed: true.";
+
+// Cave guide and cave_enter reference: recovery from a saved position inside a wall stays on the same floor and never revives a fallen character.
+module.exports["docs.cave.safe_return"] = "If a wall blocks your saved position, returning places you at a safe point on the same floor, or at that floor’s entrance. Your cave progress and health are kept; fallen characters remain fallen.";
 
 // Cave rewards guide. Explicit exits and run completion settle shared Amber; disconnecting does not. Keep Amber and MAIL unchanged.
 module.exports["docs.cave.disconnect_purse"] = "Disconnecting does not pay out the shared purse. Amber stays in the cave until an explicit exit or the run ends. Each payout names the recipient and says whether it went to their bag or MAIL.";
@@ -6311,5 +6412,156 @@ module.exports["docs.cave.disconnect_purse"] = "Disconnecting does not pay out t
 module.exports["docs.code.storage_limits"] = "Save to a numbered slot from 1 to 100 or the default slot of a character you currently own. Each newly saved script can use up to 1 MiB (1,048,576 bytes) of UTF-8 text. An account can store up to 118 scripts and 128 MiB in total. Older scripts remain available to load, export, or delete.";
 module.exports["docs.code.save_rate"] = "You can make up to 10 CODE saves or deletions in quick succession. The allowance recovers by one request every 2 seconds and is shared across all clients on your account. If a request returns code_rate_limited, wait retry_after_ms milliseconds before trying again.";
 
+// Cave guide: generated map IDs are visit-specific. Preserve character.cave.floor, character.cave, character.map and null; floor is zero-based.
+module.exports["docs.cave.map_code"] = "Cave map IDs change with each visit. Use character.cave.floor to check the floor: 0 is floor 1, 1 is floor 2, and 2 is floor 3. character.cave is null outside the cave. Use character.map as the current map ID for movement.";
+
+// Cave guide: target contains a player name, not an NPC identifier. Preserve target, null and CODE identifiers.
+module.exports["docs.cave.target_code"] = "A cave monster's target is the name of the player it is targeting, or null when it isn't targeting a player. This example finds the nearest monster targeting you.";
+
+// Cave and Rime Djinn guides: {item} is Loaded Die or Stillwater Lens. Preserve item names, Mainland, COMPOUND and compound(). Inventory slots are zero-based.
+module.exports["docs.equipment.compound_orb"] = "Combine three {item} of the same level with a suitable compound scroll at COMPOUND in Mainland. Copies without a level count as +0. In CODE, use compound(); this example uses item slots 0, 1 and 2, with the scroll in slot 3.";
+
+// Cave guide: {title} is the localized Cave title. This is flat magic resistance for each equipped titled item, not darkness resistance.
+module.exports["docs.cave.origin_bonus"] = "Each equipped item with the {title} title gives +5 magic resistance.";
+
+// Parties guide, account invitation paragraph. This is an account-menu action, not a CODE party or friend request. Keep Steam, Adventure Land, Friend Token, SHELLS, Fvona and Mainland fixed.
+module.exports["docs.guide.parties.steam_connections"] = "To invite a friend, open Share and Recruit on the character screen and copy your link. For an eligible first Steam link, a valid referral link connects the accounts automatically. Without one, a single older Adventure Land account on your Steam friends list connects automatically; if several match, choose one and confirm. The choice is permanent. After the invited player enters the game, both accounts receive a Friend Token and the inviter receives 200 SHELLS. Spend Friend Tokens with Fvona in Mainland. This is separate from in-game friend requests and parties.";
+
 // Geometry article: recognized monster types use server combat rectangles, not sprite or skin dimensions. Default dimensions are 24 by 24; apply size only when set, then round. Keep distance, is_in_range() and can_attack() unchanged.
 module.exports["docs.articles.4.g-geometry.monster-combat-bounds"] = "For recognized monsters, distance uses the server combat bounds: the monster type's dimensions (24 by 24 when unspecified), multiplied by its size when set and rounded. Sprite dimensions and skin aliases do not determine monster attack range. This also applies to is_in_range() and can_attack(); visual sizing and movement collision bounds are unchanged.";
+
+// brew() reference. The Witch's Cipher runs at the Witch in Spooky Forest. Keep brew, the Witch, Spooky Forest and Witch's Cipher unchanged; ingredient names are CODE item names.
+module.exports["docs.functions.brew.about"] = "Brews five ingredients in order in the Witch's cauldron during the Witch's Cipher. Stand near the Witch in Spooky Forest with the ingredients in your inventory. No need to join. Pass five item names in order: verdantspore, frostscale, embercoal or gloomfeather. Ingredients may repeat.";
+
+// brew() result. Keep the CODE field names (right, fits, cracked, parcels, mixes_left) and failure reasons unchanged.
+module.exports["docs.functions.brew.returns"] = "Returns a Promise with right (number of ingredients in the correct position), fits (true if the mix fit every clue and paid a Parcel), cracked, parcels received and mixes_left. Rejects with a reason such as witchcipher_not_live, witchcipher_no_mixes, witchcipher_ingredients, witchcipher_elsewhere (your account brewed on another realm today) or distance.";
+
+// witch_cipher_info() reference. Keep the CODE field names (mixes, mixes_left, parcels, live, server) unchanged.
+module.exports["docs.functions.witch_cipher_info.about"] = "Returns a Promise with your account's Witch's Cipher status for today: mixes used, mixes_left, parcels, live and server (the realm of your first mix today, if any). Works any time, from anywhere.";
+
+// knock() reference. Trick or Treat is a Halloween event with seven doors in Spooky Forest and Spooky Town. Keep knock and the field names unchanged.
+module.exports["docs.functions.knock.about"] = "Knocks on a nearby Trick or Treat door during Halloween. You must stand at the door. Pass a door number to choose which nearby door, or omit it for the nearest one. Each character can knock on each door once per UTC day, with a limit of 14 knocks per account per UTC day.";
+
+// knock() result. Keep the CODE field names (treat, trick, stamps, parcel, laugh) and failure reasons unchanged; "spooked" and "ghost" are CODE values.
+module.exports["docs.functions.knock.returns"] = "Returns a Promise with treat (the item and quantity) or trick (\"spooked\" or \"ghost\"), plus your account's stamps. parcel and laugh are true when a knock awards a Witch's Parcel or Sinister Laugh. Rejects with trickortreat_season, trickortreat_door, trickortreat_knocked or trickortreat_limit.";
+
+// Witch's Cipher guide intro. During Halloween (until November 2) it runs at 06:00 and 18:00 on the realm clock; the rest of the year it takes turns with Giga Crab, Goo Brawl and A/B Testing at 13:00 or 20:00. Each round lasts 28 minutes, ingredients drop for the first 20 and brewing is open for all 28. Nobody joins. Keep the Witch, Spooky Forest, Witch's Cipher, Giga Crab, Goo Brawl and A/B Testing unchanged.
+module.exports["docs.guide.event-witchcipher.intro"] = "During Halloween, until November 2, the Witch's Cipher runs every day at 06:00 and 18:00 on the realm clock (above chat). The rest of the year, it takes turns with Giga Crab, Goo Brawl and A/B Testing at 13:00 or 20:00 realm time. Each round lasts 28 minutes. Gather ingredients from monsters during the first 20 minutes, then use the remaining 8 minutes to finish brewing. The cauldron stays open for all 28 minutes. No need to join: any character can brew at the Witch in Spooky Forest. Each mix uses five ingredients in order. Everyone on the realm shares the clues.";
+
+// Witch's Cipher guide section title above the ingredient rows (monsters that drop each ingredient).
+module.exports["docs.guide.event-witchcipher.ingredients"] = "Ingredients";
+
+// Witch's Cipher guide: how ingredients drop, under the list of monsters with their drop chances. 0.3% per 1,000 HP at Luck 1 is exact; there is no daily ingredient limit.
+module.exports["docs.guide.event-witchcipher.gathering"] = "During the first 20 minutes, monsters in four regions can drop ingredients alongside their normal loot. Monsters with more HP drop them more often: 0.3% per 1,000 HP at Luck 1. A 12,000 HP Ghost has a 3.6% chance; a Goo has 0.03%. The list above shows each monster's chance. Luck and party loot work as with any other drop. There is no daily ingredient limit. You can trade, bank and keep the ingredients.";
+
+// Witch's Cipher guide section title above a sample clue board.
+module.exports["docs.guide.event-witchcipher.cauldron"] = "The cauldron";
+
+// Witch's Cipher guide: how clues work and what happens on a crack. 1,024 is exact (five slots, four ingredients).
+module.exports["docs.guide.event-witchcipher.clues"] = "Each mix gives one clue: how many of its ingredients are in the correct position. Ingredients can repeat, making 1,024 possible recipes. The board shows the realm's mixes for the current recipe and how many recipes still fit every clue. When someone cracks the recipe, the Witch forgets it and starts a new one with a clean board. The cracked recipe and who cracked it stay shown above the board.";
+
+// Witch's Cipher guide section title above the payout rows (Witch's Parcel icons with amounts).
+module.exports["docs.guide.event-witchcipher.payout"] = "Witch's Parcel rewards";
+
+// Payout row (1 Parcel): a mix the board hasn't seen that fits every clue on the current recipe's board (the server checks it); later cracks the same day pay this too.
+module.exports["docs.guide.event-witchcipher.pay_fits"] = "A new mix that fits every clue on the current board, including later cracks that day";
+
+// Payout row (no Parcel): a mix the clues already rule out, or one already on the board.
+module.exports["docs.guide.event-witchcipher.pay_other"] = "A mix ruled out by the clues or already on the board";
+
+// Payout row (5 Parcels): the account's first crack of the UTC day, 1 Parcel plus a bonus of 4. Everyone in the realm gets a message and a new recipe starts.
+module.exports["docs.guide.event-witchcipher.pay_crack"] = "Your account's first crack of the UTC day (1 Parcel + 4 bonus)";
+
+
+// Witch's Cipher guide: the daily limit. 5 mixes per account per UTC day, shared by its characters, on the realm of its first mix; no Parcel limit.
+module.exports["docs.guide.event-witchcipher.pay_limit"] = "5 mixes per account per UTC day, shared by all characters, on the realm of your first mix. No daily Witch's Parcel limit.";
+
+// Witch's Cipher guide: what to do with Witch's Parcels. PARCELS is the Witch's button label.
+module.exports["docs.guide.event-witchcipher.parcels"] = "Open Witch's Parcels at the Witch (PARCELS), or save them for her recipes. Her recipes are available all year.";
+
+// Witch's Cipher guide section title above the Witch's recipe rows.
+module.exports["docs.guide.event-witchcipher.recipes"] = "The Witch's recipes";
+
+// Witch's Cipher guide CODE intro: what brew() needs and that the example does one step per call. Keep brew(), witch_cipher_info(), character.witchcipher and server.status.witchcipher unchanged.
+module.exports["docs.guide.event-witchcipher.code"] = "Go to the Witch and brew a mix that fits the clues. No need to join. brew() takes five ingredient names in order. You must have all five ingredients in your inventory and be at the Witch. Ingredients can repeat. The example finds the first new mix your ingredients can make that fits every clue. Each call does one step, so run it again to continue. character.witchcipher shows your account's mixes left during a round; witch_cipher_info() works at any time, from anywhere. server.status.witchcipher shows the shared clue board.";
+
+// Headless Horseman guide intro. 00:00 is on the realm clock; after 40 minutes he leaves only once nobody has attacked him for 20 seconds. Keep Headless Horseman, Halloween and Spooky Forest unchanged.
+module.exports["docs.guide.event-horseman.intro"] = "Every night at 00:00 realm time during Halloween, the Headless Horseman rides out of Spooky Forest's north graveyard. After 40 minutes, he leaves once nobody has attacked him for 20 seconds. Keep fighting and he stays. Everyone who fights him shares the reward.";
+
+// Headless Horseman guide: minions. Jack-o Walker is a monster name; 75% and 25% are his health.
+module.exports["docs.guide.event-horseman.walkers"] = "At 75% health, four Jack-o Walkers join him. Four more arrive at 25%.";
+
+// Headless Horseman guide: section title above his and the Jack-o Walkers' stat cards.
+module.exports["docs.guide.event-horseman.fight-title"] = "How the Fight Works";
+
+// Headless Horseman guide, beside his and the Jack-o Walkers' stat cards: how they fight, what helps and the Halloween Spirit buff. Keep Headless Horseman, Jack-o Walker and Halloween Spirit unchanged; 75% and 25% are his health.
+module.exports["docs.guide.event-horseman.fight"] = "The Headless Horseman hits for 1,600 physical damage every second and runs too fast to escape, so armor and evasion help. He resists most stuns, and both physical and magical attacks deal about 30% less damage to him. Four Jack-o Walkers join at 75% HP and four more at 25%; they charge quickly and deal magical damage, so resistance helps against them. Everyone who helps defeat him gets Halloween Spirit for extra XP, luck and gold, with a stronger, longer buff for lower-level characters.";
+
+// Headless Horseman guide, under his drop list: his helmet and the Witch's Parcels. Keep Horseman's Pumpkin and Witch's Parcels unchanged.
+module.exports["docs.guide.event-horseman.helmet"] = "His Horseman's Pumpkin is a rare drop. A usual crowd gets about one a night, and each fighter averages five Witch's Parcels. The more you help, the better your chance.";
+
+// Headless Horseman guide CODE intro: the example does one step per call. Keep join("horseman") and server.status.horseman unchanged.
+module.exports["docs.guide.event-horseman.code"] = "join(\"horseman\") takes you to Spooky Forest while he rides. server.status.horseman shows where he is. The example does one step per call: join if needed, find him, walk halfway if he is out of range, or attack when ready. Run it again as the fight changes.";
+
+// Graveyard Rising guide intro. The times are on the realm clock. Keep Graveyard Rising, Spooky Town, Zombie, Ghoul and Gargoyle unchanged.
+module.exports["docs.guide.event-graveyard.intro"] = "During Halloween, Graveyard Rising begins every two hours at 1:30, 3:30, 5:30 and so on, on the realm clock. Three waves of Zombies and Ghouls rise from Spooky Town's graveyard, three minutes apart. After the waves, the Gargoyle wakes at the monument.";
+
+// Graveyard Rising guide: shared rewards. Points earned on the waves carry over to the Gargoyle's reward. Each fighter's Parcel chance is ten times their share of the fight, rolled once more for every 10 fighters, so fighters average about one Parcel per Gargoyle at any crowd size.
+module.exports["docs.guide.event-graveyard.shared"] = "Everyone who fights shares the rewards. Your contribution against the waves also counts toward the Gargoyle's reward. Each fighter gets about one Witch's Parcel per Gargoyle on average, with a better chance for those who contribute more.";
+
+// Graveyard Rising guide: section title above the monsters' stat cards and how the round plays out.
+module.exports["docs.guide.event-graveyard.fight-title"] = "How the Fight Works";
+
+// Graveyard Rising guide: how a round plays out. Keep Zombie, Ghoul and Gargoyle unchanged; 3 and 6 minutes are after the start, 9 minutes is the latest the Gargoyle wakes, and ten minutes after waking it leaves only once nobody has attacked it for 20 seconds.
+module.exports["docs.guide.event-graveyard.waves"] = "The round starts with 12 Zombies rising from the graves. More Zombies and Ghouls rise after 3 and 6 minutes. The Gargoyle wakes at the monument when all wave monsters are defeated after the third wave, or after 9 minutes at the latest. Ten minutes after it wakes, it leaves once nobody has attacked it for 20 seconds. Keep fighting and it stays.";
+
+// Graveyard Rising guide, beside the Zombie, Ghoul, Gargoyle and Mummy stat cards: how each fights, the graveyard's own Mummies, and what helps. Keep the monster names unchanged.
+module.exports["docs.guide.event-graveyard.monsters"] = "Zombies walk slowly and attack anyone who comes near. Ghouls hit harder and charge faster than most characters can run. The graveyard also has 9 Mummies that keep roaming during the event, attack anyone nearby for 420 physical damage, charge quickly and raise more Mummies when half are down. The Gargoyle has 6 million HP, hits hard at close range and usually resists stuns, but ranged characters can stay out of its reach. Magic deals about twice as much damage to the Gargoyle as physical attacks, while armor and evasion help against all these monsters.";
+
+// Graveyard Rising guide CODE intro: the example does one step per call. Keep join("graveyard") and server.status.graveyard unchanged.
+module.exports["docs.guide.event-graveyard.code"] = "join(\"graveyard\") takes you to the graveyard. server.status.graveyard shows the current wave. The example does one step per call: join if needed, find the monster, walk halfway if it is out of range, or attack when ready. Run it again as the fight changes.";
+
+// Trick or Treat guide intro. 14 is the account's daily knock limit. Keep Trick or Treat, Halloween, Spooky Forest and Spooky Town unchanged.
+module.exports["docs.guide.event-trickortreat.intro"] = "During Halloween, knock on seven Trick or Treat doors: two in Spooky Forest and five in Spooky Town. Each character can knock on each door once per UTC day, up to 14 knocks per account per UTC day.";
+
+// Trick or Treat guide: what a knock gives and the pumpkin helmet bonus. The icons above show the treats, the Spooked! condition, the Ghost and the helmets.
+module.exports["docs.guide.event-trickortreat.odds"] = "Each knock has a 70% chance of a treat and a 30% chance of a trick. Treats include Candy, Rare Candy, two of the Witch's ingredients or a Witch's Parcel. A trick gives Spooked! (+40 speed for 3 seconds) or releases a Ghost that stays for two minutes. Wear Pumpkin Head, Green Pumpkin Head or Horseman's Pumpkin to raise your treat chance to 85%.";
+
+// Trick or Treat guide: stamps. Every knock counts for the whole account. Keep Witch's Parcel and Sinister Laugh unchanged.
+module.exports["docs.guide.event-trickortreat.stamps"] = "Every knock earns one stamp for your account. Every 10th stamp gives a Witch's Parcel. Your 40th stamp also gives a CX Jar containing the Sinister Laugh emote.";
+
+// Trick or Treat guide CODE intro. Keep knock and character.trickortreat unchanged.
+module.exports["docs.guide.event-trickortreat.code"] = "Walk up to a door and use knock(). character.trickortreat shows today's doors and your account's stamps.";
+
+// Events & Home guide: section title for the Events window opened from the slider or realm clock above chat.
+module.exports["docs.guide.events-and-home.events-window-title"] = "The Events Window";
+
+// Events & Home guide: what the Events window shows. The slider and the realm clock are the line above chat. Keep Witch's Cipher, Cave of Many Dreams, Trick or Treat and Graveyard Rising as their translated event names.
+module.exports["docs.guide.events-and-home.events-window"] = "Click the slider or realm clock above chat, or the next-event card in the menu. The Events window shows running seasons and their last days, the next Graveyard Rising, expected seasonal boss respawns, today's activities (Witch's Cipher, Cave of Many Dreams and Trick or Treat doors) and the next seven days of scheduled events. Switch between your time and the realm clock.";
+
+// Events & Home guide: reminders. REMIND is the Events window button. Reminders stay in this browser and only fire while the game is open on that realm.
+module.exports["docs.guide.events-and-home.events-window-remind"] = "Click REMIND to get a game log message 10 minutes before an event starts. Reminders are saved in this browser and only work while the game is open on that realm.";
+
+// Events & Home guide CODE paragraph. Keep server.status.schedule, events, repeats, event, at, status and server.status.event_ends unchanged.
+module.exports["docs.guide.events-and-home.events-window-code"] = "In CODE, server.status.schedule contains the published lineup: events, each with event, at (a timestamp) and status, plus repeats for events such as Graveyard Rising. server.status.event_ends contains the end times of running seasons.";
+
+// Halloween guide: the four new Halloween activities shown as sprites above. Keep Headless Horseman, Spooky Town, Trick or Treat, Witch's Cipher, Giga Crab, Goo Brawl and A/B Testing unchanged.
+module.exports["docs.guide.event-halloween.new-events"] = "The Headless Horseman rides every night, Graveyard Rising brings the dead out of Spooky Town's graveyard every two hours, and seven doors offer Trick or Treat. The Witch's Cipher runs twice a day during Halloween, then takes turns with Giga Crab, Goo Brawl and A/B Testing throughout the year.";
+
+// Halloween guide: after the season ends. The end date itself is shown above this line.
+module.exports["docs.guide.event-halloween.after"] = "After Halloween, Candy and Pumpkin Stems can still be exchanged and used in recipes. Witch's Parcels and the Witch's recipes also remain available.";
+
+// server.status reference: the published lineup. Keep events, event, at, status, scheduled, live, done, missed, repeats, every, server_time and G.events unchanged.
+module.exports["docs.articles.data-server-status.schedule-lineup"] = "<b>events</b> contains the published lineup for the next seven days on this realm. <b>event</b> is the G.events key, <b>at</b> is the start time in Unix milliseconds, and <b>status</b> is scheduled, live, done or missed. <b>repeats</b> lists frequent events such as Graveyard Rising once, with <b>every</b> giving the interval in milliseconds. <b>server_time</b> is the server clock when the list was sent.";
+
+// server.status reference: the Witch's Cipher entry. Keep server.status.witchcipher unchanged.
+module.exports["docs.articles.data-server-status.witchcipher"] = "<b>Witch's Cipher</b>: server.status.witchcipher shows today's event on this realm, including the shared clue board.";
+
+// server.status reference: the Graveyard Rising entry. Keep server.status.graveyard unchanged.
+module.exports["docs.articles.data-server-status.graveyard"] = "<b>Graveyard Rising</b>: server.status.graveyard shows the current wave, how many risen monsters remain and the Gargoyle's health once it awakens.";
+
+// server.status reference: season end times. Keep server.status.event_ends unchanged. The last day is the UTC day before the end time.
+module.exports["docs.articles.data-server-status.event-ends"] = "<b>Season ends</b>: server.status.event_ends gives each running season's end time, when set, in Unix milliseconds. Its last day is the UTC day before that time.";
+
+// character reference: the two event fields. Keep character.witchcipher, character.trickortreat and the field names unchanged. character.witchcipher exists on every character only while a round runs.
+module.exports["docs.articles.data-character.witchcipher"] = "<b>character.witchcipher</b> appears on every character during a Witch's Cipher round. It shows the account's mixes used today, mixes_left and parcels earned. If the account brewed on another realm today, mixes_left is 0 and server names that realm. It clears when the round ends. <b>character.trickortreat</b> lists the Trick or Treat doors this character has knocked on today, doors_left and the account's stamps.";

@@ -579,6 +579,103 @@ var craft={
 		"cost":0,
 		"quest":"witch",
 	},
+	// The Witch's Cipher recipes: Parcels and Halloween leftovers into Witching Season gear (all year).
+	"witchparcel":{
+		"items":[
+			[5,"verdantspore"],
+			[5,"frostscale"],
+			[5,"embercoal"],
+			[5,"gloomfeather"],
+		],
+		"cost":10000,
+		"quest":"witch",
+	},
+	"cipherdraught":{
+		"items":[
+			[1,"verdantspore"],
+			[1,"frostscale"],
+			[1,"embercoal"],
+			[1,"gloomfeather"],
+			[1,"hpot0"],
+		],
+		"cost":20000,
+		"quest":"witch",
+	},
+	// Tier 3 gear: 30-40 Parcels, a Gold Ingot (12 Gold Nuggets), one Halloween material and 2M.
+	// Tier 4 gear: 50 Parcels, a Gold Ingot, one scarce Halloween material and 4M. An engaged player
+	// earns 10-15 Parcels a day during Halloween, so the first piece takes a few days.
+	"crookedkey":{
+		"items":[
+			[30,"witchparcel"],
+			[1,"goldingot"],
+			[20,"mbones"],
+		],
+		"cost":2000000,
+		"quest":"witch",
+	},
+	"patchbuckler":{
+		"items":[
+			[30,"witchparcel"],
+			[1,"goldingot"],
+			[20,"bandages"],
+		],
+		"cost":2000000,
+		"quest":"witch",
+	},
+	"blackcatbell":{
+		"items":[
+			[40,"witchparcel"],
+			[1,"goldingot"],
+			[100,"bwing"],
+		],
+		"cost":2000000,
+		"quest":"witch",
+	},
+	"nightmarketsash":{
+		"items":[
+			[30,"witchparcel"],
+			[1,"goldingot"],
+			[50,"pstem"],
+		],
+		"cost":2000000,
+		"quest":"witch",
+	},
+	"hexweavegloves":{
+		"items":[
+			[50,"witchparcel"],
+			[1,"goldingot"],
+			[100,"spidersilk"],
+		],
+		"cost":4000000,
+		"quest":"witch",
+	},
+	"candleboots":{
+		"items":[
+			[50,"witchparcel"],
+			[1,"goldingot"],
+			[2,"bcandle"],
+		],
+		"cost":4000000,
+		"quest":"witch",
+	},
+	"witchlightmantle":{
+		"items":[
+			[50,"witchparcel"],
+			[1,"goldingot"],
+			[20,"essenceofether"],
+		],
+		"cost":4000000,
+		"quest":"witch",
+	},
+	"laughingbook":{
+		"items":[
+			[50,"witchparcel"],
+			[1,"goldingot"],
+			[1,"ectoplasm"],
+		],
+		"cost":4000000,
+		"quest":"witch",
+	},
 	"daggerofthedead":{
 		"items":[
 			[1,"mbones"],

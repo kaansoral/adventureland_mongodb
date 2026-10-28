@@ -54,6 +54,7 @@ function ui() {
 	});
 	load(c, "js/html.js", [
 		"render_item",
+		"render_prop_lines",
 		"render_condition",
 		"render_encouragement_info",
 		"open_guide",

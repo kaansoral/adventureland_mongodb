@@ -317,7 +317,7 @@
 	"game.clicks_away": "{dist}클릭 거리",
 	"game.echoes": "반향 {length}개",
 	"game.clicks": "{c}클릭",
-	"npc.home.set_offer": "여기는 홈 서버가 아니에요. 현재 홈은 {home}이에요. 홈 월드에서는 협동 기여도가 더 높게 반영되고 특별 보상도 받을 수 있어요. 상인이 아닌 캐릭터를 빠르게 바꿔 접속하면 이 혜택이 30분 동안 멈춰요. 이 서버를 홈으로 정할까요?",
+	"npc.home.set_offer": "이곳은 당신의 홈 서버가 아닙니다. 당신은 {home}의 주민입니다. 홈 월드에서는 협동 기여도가 더 강하게 적용되고 특별 보상이 있습니다. 비상인 캐릭터가 빠르게 서버를 바꾸면 그 혜택이 30분 동안 중지됩니다. 이 서버를 홈으로 설정할까요?",
 	"npc.yes": "네!",
 	"npc.home.current": "여기가 홈 서버예요. 이곳에서는 협동 몬스터 전투의 기여도가 더 높게 반영되고 일부 몬스터에게서 홈 추가 보상도 받을 수 있어요. 상인이 아닌 다른 캐릭터가 다른 서버에 다녀온 뒤 이곳으로 접속하면 30분 동안 월드 피로가 생겨요. 적응하는 동안에도 일반 보상은 계속 받을 수 있어요.",
 	"npc.bless_server.offer": "서버 전체를 3일 동안 축복할까요?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "그 아이템은 제안 조건에 맞지 않아요",
 	"response.trade_swap_space": "상인의 가방에 공간이 없어요",
 	"game.trade_history.traded": "- {player}님과 교환: '{item}' 주고 '{received}' 받음",
-	"response.transport_need_items": "필요한 아이템: {items}"
+	"response.transport_need_items": "필요한 아이템: {items}",
+	"combat.emote.hehehe": "히히히"
 }

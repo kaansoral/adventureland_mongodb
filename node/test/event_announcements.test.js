@@ -63,6 +63,7 @@ function setup(extra = {}) {
 		open_guide: (...args) => opened.push(args),
 		render_anniversary_event: () => opened.push(["anniversary-window"]),
 		release_card_html: () => "",
+		events_selection_card_html: () => "",
 		pcs() {},
 		event: {},
 		...extra,

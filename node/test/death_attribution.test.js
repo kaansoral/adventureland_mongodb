@@ -256,6 +256,90 @@ function fixture({ map = "arena", pvp = false, hp = 100, splash = false, mode = 
 	return { c, p, m, packets, player, advance, blink, completeBlink, attack, state, openChest };
 }
 
+test("a landed hit wakes a sleeping hostile cave actor without removing stun", () => {
+	const h = fixture();
+	load(h.c, "node/server.js", ["target_player"]);
+	load(h.c, "node/logic/cavalry.js", ["is_cavalry"]);
+	load(h.c, "node/logic/cave_of_many_dreams.js", ["cave_hostile", "cave_accept_attack", "cave_damage"]);
+	h.m.zone_actor = { side: "enemy" };
+	h.m.target = null;
+	h.m.s.sleeping = {};
+	h.m.s.stunned = { ms: 1000 };
+	h.attack(h.p, h.m);
+	h.advance(2000);
+	assert.equal(h.m.s.sleeping, undefined);
+	assert.ok(h.m.s.stunned);
+	assert.equal(h.m.zone_actor.prey, h.p);
+	h.m.zone_actor = { side: "ally" };
+	h.m.s.sleeping = {};
+	h.c.target_player(h.m, h.p);
+	assert.ok(h.m.s.sleeping, "friendly actors are not provoked");
+});
+
+test("Purify keeps innate monster poison but removes temporary poison coatings", () => {
+	for (const innate of [true, false]) {
+		const h = fixture();
+		h.p.type = "paladin";
+		h.p.mp = 10000;
+		h.m.type = innate ? "bscorpion" : "goo";
+		h.m.hp = h.m.max_hp = 1000000;
+		h.m.s = { poisonous: { ms: 999999 }, cursed: { ms: 5000 } };
+		h.c.commence_attack(h.p, h.m, "purify");
+		h.advance(10000);
+		assert.equal(!!h.m.s.poisonous, innate);
+		assert.equal(h.m.s.cursed, undefined);
+	}
+});
+
+test("Purify caps the Rogue stack bonus and preserves stacks and monster burning", () => {
+	for (const [stacks, bonus] of [
+		[1, 401],
+		[3, 403],
+		[100, 500],
+		[399, 799],
+		[400, 800],
+		[401, 800],
+		[2000, 800],
+		[Number.MAX_VALUE, 800],
+		[0, 0],
+		[-1, 0],
+		[NaN, 0],
+		[Infinity, 0],
+		["2000", 0],
+		[undefined, 0],
+	]) {
+		const h = fixture();
+		h.p.type = "paladin";
+		h.m.hp = h.m.max_hp = 2000000;
+		h.m.s = { stack: { s: stacks, ms: 10000 }, burned: { intensity: 20, ms: 5000 }, cursed: { ms: 5000 } };
+		h.c.commence_attack(h.p, h.m, "purify");
+		h.advance(10000);
+		assert.equal(h.m.s.stack.s, stacks);
+		assert.equal(h.m.s.burned.intensity, 20);
+		assert.equal(h.m.s.cursed, undefined);
+		assert.equal(h.m.max_hp - h.m.hp, 2000 + bonus + 800);
+	}
+});
+
+test("Purify with Cupid cannot target unrelated PvE players, even with a shared cooperative buff", () => {
+	for (const relation of ["stranger", "coop", "owner", "party", "team", "guild"]) {
+		const h = fixture({ map: "main", hp: 100000 });
+		h.p.type = "paladin";
+		h.p.slots.mainhand = { name: "cupid", level: 0 };
+		const target = h.player("Other");
+		if (relation === "coop") h.p.s.coop = target.s.coop = { id: "boss" };
+		else if (relation !== "stranger") h.p[relation] = target[relation] = "allies";
+		target.s.cursed = { ms: 5000 };
+		const mp = h.p.mp;
+		const result = h.c.commence_attack(h.p, target, "purify");
+		if (relation === "stranger" || relation === "coop") {
+			assert.equal(result.reason, "no_pvp");
+			assert.equal(h.p.mp, mp);
+			assert.equal(Object.keys(h.c.projectiles).length, 0);
+		} else assert.notEqual(result?.reason, "no_pvp");
+	}
+});
+
 for (const pvp of [false, true]) {
 	test(`self-splash keeps monster death penalties on ${pvp ? "a PvP realm" : "the Arena"}`, () => {
 		const h = fixture({ map: pvp ? "level2s" : "arena", pvp, splash: true, hp: 500 });

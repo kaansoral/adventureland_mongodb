@@ -646,17 +646,56 @@ async function transport(map, spawn) {
 	return rejecting_promise({ reason: "timeout", place: "transport" });
 }
 
-async function town() {
-	var promise = parent.push_deferred("town");
-	parent.socket.emit("town");
-	var call = await promise;
-	if (call.failed) return call;
-	for (var i = 0; character.c.town && i < 10000; i++) {
-		if (parent.socket.disconnected) return rejecting_promise({ reason: "disconnected", place: "town" });
-		await sleep(1);
-	}
-	if (character.c.town) return rejecting_promise({ reason: "timeout", place: "town" });
-	return { success: true };
+function town() {
+	var socket = parent.socket;
+	return new Promise(function (resolve, reject) {
+		var acknowledged = false,
+			settled = false;
+		function finish(result) {
+			if (settled) return;
+			settled = true;
+			clearTimeout(timer);
+			socket.off("game_response", on_response);
+			socket.off("new_map", on_map);
+			socket.off("player", on_player);
+			socket.off("disconnect", on_disconnect);
+			if (result.failed && !RESOLVE_ALL) reject(result);
+			else resolve(result);
+		}
+		function fail(reason) {
+			finish({ failed: true, reason: reason, place: "town" });
+		}
+		function on_response(data) {
+			if (!data || data.place !== "town") return;
+			if (data.failed) fail(data.reason || data.response);
+			else acknowledged = true;
+		}
+		function on_map(data) {
+			// The server uses effect 1 for a completed town channel, including same-map travel.
+			if (data.effect === 1) finish({ success: true });
+			else fail("interrupted");
+		}
+		function on_player(data) {
+			// Only server updates prove cancellation; the client also counts the channel down.
+			if (data.rip || (acknowledged && data.c && !data.c.town)) fail("interrupted");
+		}
+		function on_disconnect() {
+			fail("disconnected");
+		}
+		var timer = setTimeout(function () {
+			fail("timeout");
+		}, 10000);
+		socket.on("game_response", on_response);
+		socket.on("new_map", on_map);
+		socket.on("player", on_player);
+		socket.on("disconnect", on_disconnect);
+		if (socket.disconnected) return on_disconnect();
+		try {
+			socket.emit("town");
+		} catch (error) {
+			fail(error.message || "disconnected");
+		}
+	});
 }
 
 function leave() {
@@ -1180,6 +1219,7 @@ function equip_batch(data) {
 		return rejecting_promise({ reason: "invalid" });
 	}
 	for (let i = 0; i < data.length; i++) {
+		if (data[i] == null) return rejecting_promise({ reason: "invalid" });
 		let num = data[i].num;
 		if (num < 0) {
 			game_log(parent.phrase("code.equip_invalid", { slot: num }));
@@ -1321,21 +1361,31 @@ function dismantle(item_num) {
 	return parent.dismantle();
 }
 
-async function exchange(item_num) {
-	parent.e_item = item_num;
-	var call = await parent.exchange(1),
-		num = call.num,
-		name = undefined;
-	if (!call.in_progress) return call;
-	if (character.q.exchange) num = character.q.exchange.num;
-	for (var i = 0; (character.q.exchange || (character.items[num] && character.items[num].name == "placeholder")) && i < 30000; i++) {
-		if (parent.socket.disconnected) return rejecting_promise({ reason: "disconnected", place: "exchange" });
-		await sleep(1);
-	}
-	if (character.q.exchange || (character.items[num] && character.items[num].name == "placeholder")) return rejecting_promise({ reason: "timeout", place: "exchange" });
-	if (character.items[num]) name = character.items[num].name;
-	else num = undefined;
-	return { success: true, reward: name, num: num };
+function exchange(item_num) {
+	var socket = parent.socket;
+	if (!socket || socket.disconnected) return rejecting_promise({ reason: "disconnected", place: "exchange" });
+	if (!["number", "string"].includes(typeof item_num) || !/^[0-9]+$/.test(item_num) || !Number.isSafeInteger(+item_num) || !character.items[item_num]) return rejecting_promise({ reason: "invalid", place: "exchange" });
+	if (character.q.exchange) return rejecting_promise({ reason: "in_progress", place: "exchange" });
+	var request_id = randomStr(30);
+	return new Promise(function (resolve, reject) {
+		function finish(data) {
+			socket.off("game_response", response);
+			socket.off("disconnect", disconnected);
+			if (data.failed && !RESOLVE_ALL) reject(data);
+			else resolve(data);
+		}
+		function response(data) {
+			if (!data || data.place !== "exchange" || data.request_id !== request_id || data.in_progress) return;
+			if (data.failed) finish(Object.assign({}, data, { reason: data.reason || data.response }));
+			else finish({ success: true, reward: data.reward, num: data.num });
+		}
+		function disconnected() {
+			finish({ failed: true, reason: "disconnected", place: "exchange" });
+		}
+		socket.on("game_response", response);
+		socket.on("disconnect", disconnected);
+		socket.emit("exchange", { item_num: +item_num, q: character.items[item_num].q, request_id: request_id });
+	});
 }
 
 function exchange_buy(token, name) {
@@ -1434,7 +1484,8 @@ function find_npc(npc_id) {
 		}));
 		for (var i = 0; i < locations.length; i++) {
 			var npc = locations[i];
-			if (npc.id == npc_id) return { map: name, in: name, x: npc.position[0], y: npc.position[1] };
+			var position = npc.position || (npc.positions && npc.positions[0]);
+			if (npc.id == npc_id && position) return { map: name, in: name, x: position[0], y: position[1] };
 		}
 	}
 	return null;
@@ -2491,10 +2542,20 @@ function smart_move(destination, on_done) {
 	// despite the name, smart_move isn't very smart or efficient, it's up to the players to implement a better movement method [05/02/17]
 	// on_done function is an old callback function for compatibility, smart_move also returns a Promise [25/03/20]
 	if (smart.moving) smart.on_done(false, "interrupted");
+	smart.moving = false;
+	smart.town = null;
+	smart.plot = [];
+	smart.searching = smart.found = false;
 	smart.map = "";
 	if (is_string(destination)) destination = { to: destination };
 	if (is_number(destination)) ((destination = { x: destination, y: on_done }), (on_done = null));
+	function invalid_destination() {
+		if (typeof on_done === "function") on_done(false);
+		return rejecting_promise({ reason: "invalid", place: "smart_move" });
+	}
+	if (!destination || typeof destination !== "object") return invalid_destination();
 	if ("x" in destination) {
+		if (!Number.isFinite(destination.x) || !Number.isFinite(destination.y)) return invalid_destination();
 		smart.map = destination.map || character.map;
 		smart.x = destination.x;
 		smart.y = destination.y;
@@ -2554,7 +2615,7 @@ function smart_move(destination, on_done) {
 	}
 	if (!smart.map) {
 		game_log(parent.phrase("code.location_unknown"), "#CF5B5B");
-		return rejecting_promise({ reason: "invalid" });
+		return invalid_destination();
 	}
 	smart.moving = true;
 	smart.plot = [];
@@ -2763,7 +2824,7 @@ function continue_pathfinding() {
 }
 
 function smart_move_logic() {
-	if (!smart.moving) return;
+	if (!smart.moving || smart.town) return;
 	if (!smart.searching && !smart.found) {
 		start_pathfinding();
 	} else if (!smart.found) {
@@ -2803,7 +2864,16 @@ function smart_move_logic() {
 		smart.plot.splice(0, 1);
 		// game_log(JSON.stringify(current));
 		if (current.town) {
-			use("town");
+			smart.town = current;
+			var town_done = function (result) {
+				if (smart.town !== current) return;
+				smart.town = null;
+				if (smart.moving && (result.failed || result.success === false)) {
+					smart.moving = false;
+					smart.on_done(false, result.reason || "interrupted");
+				}
+			};
+			town().then(town_done, town_done);
 		} else if (current.transport) {
 			parent.push_deferred("transport");
 			parent.socket.emit("transport", { to: current.map, s: current.s });
@@ -2813,7 +2883,9 @@ function smart_move_logic() {
 			move(current.x, current.y);
 		} else {
 			game_log(parent.phrase("code.path_lost"), "#CF5B5B");
-			smart_move({ map: smart.map, x: smart.x, y: smart.y }, smart.on_done);
+			smart.plot = [];
+			smart.flags = {};
+			smart.searching = smart.found = false;
 		}
 	}
 }
@@ -2895,3 +2967,10 @@ function cave_buy(room) { return parent.cave_request("buy", { room: room }); }
 function cave_exit() { return parent.cave_request("exit"); }
 
 function cave_talk(room, actor) { return parent.cave_request("talk", {room:room,actor:actor}); }
+
+// The Witch's Cipher: brew five ingredient names in order at the Witch while a round runs.
+function brew(ingredients) { return parent.witch_request("brew", { items: ingredients }); }
+// Your account's Witch's Cipher today: { mixes, mixes_left, server, parcels, live }
+function witch_cipher_info() { return parent.witch_request("info"); }
+// Trick or Treat during Halloween: knock on the door you are standing at (or a door index).
+function knock(door) { return parent.knock_request(door); }

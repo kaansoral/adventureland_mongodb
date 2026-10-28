@@ -682,7 +682,7 @@ module.exports = {
 	"game.clicks": "{c} clicks",
 	// js/game.js, message display. Parameters: home.
 	"npc.home.set_offer":
-		"This is not your home server. You are a resident of {home}. Home realms offer stronger cooperative credit and special rewards; rapid non-merchant character switching pauses them for 30 minutes. Would you like to set this server as your home?",
+		"This is not your home server. You are a resident of {home}. Home realms offer stronger cooperative credit and special rewards; rapidly switching non-merchant characters pauses those benefits for 30 minutes. Would you like to set this server as your home?",
 	// js/game.js, button display.
 	"npc.yes": "Yes!",
 	// js/game.js, message display.
@@ -883,6 +883,8 @@ module.exports = {
 	"game.map.unknown": "Unknown",
 	// Short comic onomatopoeia for a cosmetic emote.
 	"combat.emote.pfft": "PFFT",
+	// Short comic onomatopoeia for the Sinister Laugh emote: an evil cackle rising over the character. Keep it short and uppercase.
+	"combat.emote.hehehe": "HEHEHE",
 	// Short comic onomatopoeia for a cosmetic emote.
 	"combat.emote.prrt": "PRRT",
 	// Short comic onomatopoeia for a cosmetic emote.

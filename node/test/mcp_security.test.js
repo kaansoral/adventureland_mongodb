@@ -486,6 +486,7 @@ test("every MCP game-data section is also published in normal browser data", asy
 	])
 		context[field] = {};
 	context.Version = 1;
+	context.active_event_flags = {};
 	context.precomputed = { images: {} };
 	loadSection(context, "main.js", "async function get_browser_data(", "// Shells / Payment page");
 	const browser = await context.get_browser_data();

@@ -317,7 +317,7 @@
 	"game.clicks_away": "Entfernung in Klicks: {dist}",
 	"game.echoes": "Echos: {length}",
 	"game.clicks": "Klicks: {c}",
-	"npc.home.set_offer": "Dies ist nicht dein Heimatserver. Deine Heimat ist {home}. In deiner Heimatwelt zählen gemeinsame Kämpfe stärker, und es gibt besondere Belohnungen. Ein schneller Wechsel zwischen Nicht-Händler-Charakteren setzt diese Vorteile für 30 Minuten aus. Möchtest du diesen Server zu deiner Heimat machen?",
+	"npc.home.set_offer": "Das ist nicht dein Heimatserver. Du bist Einwohner von {home}. Heimatwelten bieten stärkere kooperative Anrechnung und besondere Belohnungen; schnelles Wechseln von Nicht-Händler-Charakteren pausiert diese Vorteile 30 Minuten lang. Möchtest du diesen Server als deine Heimat festlegen?",
 	"npc.yes": "Ja!",
 	"npc.home.current": "Dies ist dein Heimatserver. Deine Hilfe gegen kooperative Monster zählt hier stärker, und manche Monster geben zusätzliche Heimatbelohnungen. Wenn du hierher wechselst, nachdem ein anderer Nicht-Händler-Charakter einen anderen Server besucht hat, erhältst du 30 Minuten Weltenmüdigkeit. Normale Belohnungen bekommst du während dieser Eingewöhnungszeit weiterhin.",
 	"npc.bless_server.offer": "Möchtest du den gesamten Server für 3 Tage segnen?",
@@ -456,5 +456,6 @@
 	"response.trade_swap_match": "Dieser Gegenstand passt nicht zum Angebot",
 	"response.trade_swap_space": "Händler hat keinen Platz",
 	"game.trade_history.traded": "- '{item}' mit {player} gegen '{received}' getauscht",
-	"response.transport_need_items": "Benötigt: {items}"
+	"response.transport_need_items": "Benötigt: {items}",
+	"combat.emote.hehehe": "HEHEHE"
 }

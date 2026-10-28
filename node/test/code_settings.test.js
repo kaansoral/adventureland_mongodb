@@ -71,6 +71,76 @@ function fixture(noGraphics = false) {
 	return { context, parent, logs, consoleLogs, texts, moves };
 }
 
+test("smart_move keeps its route pending until its town step finishes", async () => {
+	const { context, moves } = fixture(true);
+	let arrive;
+	context.town = () =>
+		new Promise((resolve) => {
+			arrive = resolve;
+		});
+	const route = context.smart_move({ x: 10, y: 0 });
+	let settled = false;
+	route.then(() => {
+		settled = true;
+	});
+	context.smart.found = true;
+	context.smart.plot = [
+		{ town: true, map: "main", x: 0, y: 0 },
+		{ map: "main", x: 10, y: 0 },
+	];
+	context.smart_move_logic();
+	context.smart_move_logic();
+	assert.equal(moves.length, 0, "do not walk and cancel the channel before its first player update");
+	assert.equal(settled, false);
+	arrive({ success: true });
+	await Promise.resolve();
+	context.smart_move_logic();
+	context.smart_move_logic();
+	assert.equal((await route).success, true);
+	assert.deepEqual(moves, [[10, 0]]);
+});
+
+test("an interrupted town step rejects its route and cannot end a replacement route", async () => {
+	const { context } = fixture(true);
+	let fail;
+	context.town = () =>
+		new Promise((resolve, reject) => {
+			fail = reject;
+		});
+	const old = context.smart_move({ x: 10, y: 0 });
+	context.smart.found = true;
+	context.smart.plot = [{ town: true, map: "main", x: 0, y: 0 }];
+	context.smart_move_logic();
+	const replacement = context.smart_move({ x: 20, y: 0 });
+	await assert.rejects(old, (error) => error.reason === "interrupted");
+	fail({ failed: true, reason: "interrupted" });
+	await Promise.resolve();
+	assert.equal(context.smart.moving, true);
+	for (let i = 0; i < 6 && context.smart.moving; i++) context.smart_move_logic();
+	assert.equal((await replacement).success, true);
+});
+
+test("stopping a town route calls its callback only once", async () => {
+	const { context, parent } = fixture(true);
+	parent.socket = { emit() {} };
+	const callbacks = [];
+	let fail;
+	context.town = () =>
+		new Promise((resolve, reject) => {
+			fail = reject;
+		});
+	const route = context.smart_move({ x: 10, y: 0 }, (done) => callbacks.push(done));
+	context.smart.found = true;
+	context.smart.plot = [{ town: true, map: "main", x: 0, y: 0 }];
+	context.smart_move_logic();
+	context.stop("smart");
+	await assert.rejects(route);
+	fail({ failed: true, reason: "interrupted" });
+	await Promise.resolve();
+	assert.deepEqual(callbacks, [false]);
+	assert.equal(context.smart.town, null);
+});
+
 test("the documented CM example suppresses only the default log and keeps custom handlers", () => {
 	const { context, logs } = fixture();
 	const event = { name: "Sender", message: { ready: true } };

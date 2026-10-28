@@ -83,5 +83,9 @@
 	"error.cant_delete_map_in_use": "Non è possibile eliminare una mappa in uso.",
 	"error.code_too_large": "Questo script è troppo grande. Ogni slot CODE può contenere fino a 1 MiB (1.048.576 byte) di testo UTF-8.",
 	"error.code_storage_full": "Lo spazio di archiviazione CODE è pieno. Esporta ed elimina gli script inutilizzati prima di salvare altro codice.",
-	"error.code_rate_limited": "Stai salvando CODE troppo spesso. Attendi un momento e riprova."
+	"error.code_rate_limited": "Stai salvando CODE troppo spesso. Attendi un momento e riprova.",
+	"error.item_changed": "L'oggetto è cambiato. Riprova.",
+	"error.mail_item_untaken": "Ritira l'allegato prima di eliminare questa lettera.",
+	"error.mail_sender_limit": "Questo personaggio ha già 20 allegati non ritirati dal tuo account. Deve ritirarne alcuni prima che tu possa inviarne un altro.",
+	"error.mailbox_full": "Questo personaggio ha già 200 allegati non ritirati. Deve ritirarne alcuni prima che tu possa inviarne un altro."
 }

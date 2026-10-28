@@ -54,6 +54,13 @@ function client(type, x = 70, y = 0) {
 	return { type: "monster", mtype: type, x, y, awidth: 60, aheight: 40, visible: true };
 }
 
+test("monster IDs keep the ordinary sequential numeric format", () => {
+	const c = harness();
+	c.total_monsters = 1233;
+	assert.equal(spawn(c, "crab").id, "1234");
+	assert.equal(spawn(c, "crab").id, "1235");
+});
+
 test("Tiny Crab: sprite bounds admit a 30-range attack, server combat bounds reject it at 51", () => {
 	const c = harness();
 	const crab = client("crab");
