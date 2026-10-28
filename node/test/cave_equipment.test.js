@@ -103,12 +103,34 @@ test("cave orbs compound through the native handler, including old copies withou
 
 test("the two orbs keep small native stat gains and the normal rare compound ceiling", () => {
 	for (const [name, fields, values] of [
-		["cave_loaded_die", ["crit", "critdamage"], [[8, 10], [8.5, 12], [9.5, 16], [12.375, 27.5]]],
-		["stillwaterlens", ["int", "mp", "resistance"], [[9, 400, 60], [10, 440, 66], [12, 520, 78], [18, 750, 113]]],
+		[
+			"cave_loaded_die",
+			["crit", "critdamage"],
+			[
+				[8, 10],
+				[8.5, 12],
+				[9.5, 16],
+				[12.375, 27.5],
+			],
+		],
+		[
+			"stillwaterlens",
+			["int", "mp", "resistance"],
+			[
+				[9, 400, 60],
+				[10, 440, 66],
+				[12, 520, 78],
+				[18, 750, 113],
+			],
+		],
 	]) {
 		for (const [index, level] of [0, 1, 3, 7].entries()) {
 			const p = G.calculate_item_properties({ name, level });
-			assert.deepEqual(fields.map((key) => p[key]), values[index], name + " +" + level);
+			assert.deepEqual(
+				fields.map((key) => p[key]),
+				values[index],
+				name + " +" + level,
+			);
 		}
 		assert.equal(G.calculate_item_grade(G.items[name], { level: 0 }), 2);
 		assert.equal(G.calculate_item_grade(G.items[name], { level: 7 }), 4);
