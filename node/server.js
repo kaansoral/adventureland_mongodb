@@ -2093,7 +2093,7 @@ function add_item(player, new_item, args) {
 		var num = add_item(mr, item, { m: 1 });
 		mr.socket.emit("game_log", item_message("server.item.found", item, {}, { color: "#64B867" }));
 		xy_emit(mr, "ui", { type: "+M", name: mr.name, item: cache_item(item), num: num, cevent: "mluck", event: "mluck" });
-		resend(mr, "reopen+nc");
+		resend(mr, "reopen+nc+inv");
 	}
 	if (args.announce !== false && (a || (a_score[new_item.name] || 0) < G.items[new_item.name].a) && !player.stealth) {
 		var event = G.items[new_item.name].event;
@@ -6320,7 +6320,7 @@ function init_socket_io(socket_server, server_index) {
 					{ name: item.name, level: item.level - 1, grace: parseInt((item.grace || 0) / 3) },
 					{ announce: false },
 				);
-				resend(player, "reopen+nc");
+				resend(player, "reopen+nc+inv");
 				return success_response("dismantle", { name: item.name, level: item.level, cost: cost, cevent: true });
 			}
 			if (!item || !G.dismantle[item.name]) {
@@ -6350,7 +6350,7 @@ function init_socket_io(socket_server, server_index) {
 				}
 				add_item(player, e[1], { q: max(1, e[0]), p: item.p && !G.titles[item.p].misc && item.p });
 			});
-			resend(player, "reopen+nc");
+			resend(player, "reopen+nc+inv");
 			success_response("dismantle", { name: item.name, cevent: true });
 		});
 		socket.on("craft", function (data) {
@@ -6452,7 +6452,7 @@ function init_socket_io(socket_server, server_index) {
 				consume(player, place[x[1]], x[0]);
 			});
 			var i = add_item(player, crafted, { r: 1, p: Object.keys(p).length && random_one(p) });
-			resend(player, "reopen+nc");
+			resend(player, "reopen+nc+inv");
 			success_response("craft", { num: i, name: crafted.name, cevent: true });
 		});
 		socket.on("exchange", function (data) {
@@ -6516,7 +6516,7 @@ function init_socket_io(socket_server, server_index) {
 			if (def.quest) {
 				player.q.exchange.qs = def.quest;
 			}
-			resend(player, "reopen+nc");
+			resend(player, "reopen+nc+inv");
 			success_response({ success: false, in_progress: true, num: num });
 		});
 		socket.on("exchange_buy", function (data) {
@@ -6575,7 +6575,7 @@ function init_socket_io(socket_server, server_index) {
 			}
 
 			xy_emit(npc, "upgrade", { type: item.name + "s", success: 1 });
-			resend(player, "reopen+nc");
+			resend(player, "reopen+nc+inv");
 			success_response({ num: num, cevent: true });
 		});
 
@@ -6965,7 +6965,7 @@ function init_socket_io(socket_server, server_index) {
 				player.citems[data.items[1]] = cache_item(player.items[data.items[1]]);
 				player.citems[data.items[2]] = cache_item(player.items[data.items[2]]);
 
-				resend(player, "reopen+nc" + ex);
+				resend(player, "reopen+nc+inv" + ex);
 			} catch (e) {
 				server_log("compound_e " + e);
 				return socket.emit("game_response", { response: "exception", place: "compound", failed: true });
@@ -7409,7 +7409,7 @@ function init_socket_io(socket_server, server_index) {
 
 				player.citems[data.item_num] = cache_item(player.items[data.item_num]);
 
-				resend(player, "reopen+nc" + ex);
+				resend(player, "reopen+nc+inv" + ex);
 			} catch (e) {
 				server_log("upgrade_e " + e);
 				return socket.emit("game_response", { response: "exception", place: "upgrade", failed: true });
@@ -7947,7 +7947,7 @@ function init_socket_io(socket_server, server_index) {
 				num: num,
 				event: "sell",
 			});
-			resend(player, "reopen+nc");
+			resend(player, "reopen+nc+inv");
 			success_response("gold_received", { gold: value * quantity, item: new_item, cevent: "sell" });
 			secondhands_logic(item, quantity); // In the end, so if this fails, the "sell" still succeeds - otherwise it could cause a infinite gold loophole [10/07/18]
 		});
@@ -8032,7 +8032,7 @@ function init_socket_io(socket_server, server_index) {
 						},
 					});
 					update_characters(R.element, null, null, 0).catch(console.error);
-					resend(player, "reopen+nc");
+					resend(player, "reopen+nc+inv");
 					finish_shell_purchase("shell_purchase_complete", { success: true, cost: cost });
 				} catch (e) {
 					console.error("buy_with_cash error", e);
@@ -8107,7 +8107,7 @@ function init_socket_io(socket_server, server_index) {
 					);
 					finish_bless("blessed", { success: true, cost: cost, blessed_by: player.name, minutes: S.blessed_minutes });
 
-					resend(player, "reopen+nc");
+					resend(player, "reopen+nc+inv");
 					bless_loop();
 
 					discord_call(player.name + " blessed " + region + " " + server_name);
@@ -8200,7 +8200,7 @@ function init_socket_io(socket_server, server_index) {
 						"game_log",
 						localization.message("server.game_log.spent_gold", { amount: String(to_pretty_num(gold)) }),
 					);
-					resend(player, "reopen+nc");
+					resend(player, "reopen+nc+inv");
 					socket.emit(ev, cc);
 					done = true;
 					xy_emit(npc, "ui", { type: e, id: npc.id, name: player.name, item: cache_item(item, 1) });
@@ -8270,7 +8270,7 @@ function init_socket_io(socket_server, server_index) {
 				event: "buy",
 			});
 
-			resend(player, "reopen+nc");
+			resend(player, "reopen+nc+inv");
 			success_response("buy_success", { cost: cost, num: num, name: name, q: quantity, cevent: "buy" });
 		});
 		socket.on("send", function (data) {
@@ -8343,8 +8343,8 @@ function init_socket_io(socket_server, server_index) {
 					event: true,
 				});
 
-				resend(player, "reopen+nc");
-				resend(receiver, "reopen+nc");
+				resend(player, "reopen+nc+inv");
+				resend(receiver, "reopen+nc+inv");
 				receiver.socket.emit("game_response", {
 					response: "item_received",
 					name: player.name,
@@ -8384,8 +8384,8 @@ function init_socket_io(socket_server, server_index) {
 					event: true,
 				});
 
-				resend(player, "reopen+nc");
-				resend(receiver, "reopen+nc");
+				resend(player, "reopen+nc+inv");
+				resend(receiver, "reopen+nc+inv");
 				receiver.socket.emit("game_response", {
 					response: "gold_received",
 					name: player.name,
@@ -9081,7 +9081,7 @@ function init_socket_io(socket_server, server_index) {
 			}
 			player.citems[data.a] = cache_item(player.items[data.a]);
 			player.citems[data.b] = cache_item(player.items[data.b]);
-			resend(player, "reopen+nc");
+			resend(player, "reopen+nc+inv");
 			return success_response("data");
 		});
 		socket.on("bank", function (data) {
@@ -9375,7 +9375,7 @@ function init_socket_io(socket_server, server_index) {
 				if (item.name == "smoke") {
 					xy_emit({ map: player.map, in: player.in, x: x, y: y }, "eval", "assassin_smoke(" + x + "," + y + ");");
 				}
-				resend(player, "reopen+nc");
+				resend(player, "reopen+nc+inv");
 				success_response({});
 			} else {
 				fail_response("no_item");
@@ -9484,7 +9484,7 @@ function init_socket_io(socket_server, server_index) {
 				} else {
 					return;
 				}
-				resend(player, "reopen+nc+u+cid");
+				resend(player, "reopen+nc+inv+u+cid");
 			} else {
 				var item = player.items[data.num];
 				if (item) {
@@ -9541,7 +9541,7 @@ function init_socket_io(socket_server, server_index) {
 						socket.emit("game_response", "bank_pack_unlocked");
 					}
 				}
-				resend(player, "reopen+nc");
+				resend(player, "reopen+nc+inv");
 			}
 		});
 		socket.on("booster", function (data) {
@@ -11224,7 +11224,7 @@ function init_socket_io(socket_server, server_index) {
 					if (!r.items.length) {
 						delete r.items;
 					}
-					resend(player, (reopen && "reopen+nc") || "");
+					resend(player, (reopen && "reopen+nc+inv") || "");
 					socket.emit("chest_opened", r);
 				} else if (chest) {
 					// var gold=round(chest.gold/parties[player.party].length);
@@ -11384,7 +11384,7 @@ function init_socket_io(socket_server, server_index) {
 								args: { color: "gold", size: "large" },
 							});
 						}
-						resend(current, (reopen[current.id] && "reopen+nc") || "");
+						resend(current, (reopen[current.id] && "reopen+nc+inv") || "");
 						current.socket.emit("chest_opened", r);
 					});
 				} else {
@@ -14676,7 +14676,7 @@ function update_instance(instance) {
 					delete player.p.c_item;
 					delete player.p.c_itemx;
 					delete player.p.c_roll;
-					resend(player, "reopen+u+cid+nc");
+					resend(player, "reopen+u+cid+nc+inv");
 				}
 				if (name == "upgrade") {
 					var success = false;
@@ -14754,7 +14754,7 @@ function update_instance(instance) {
 					delete player.p.u_roll;
 					delete player.p.u_fail;
 					delete player.p.u_level;
-					resend(player, "reopen+u+cid+nc");
+					resend(player, "reopen+u+cid+nc+inv");
 				}
 				if (name == "wheel") {
 					tavern_wheel_settle(player, ref);
