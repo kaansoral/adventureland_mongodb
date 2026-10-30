@@ -84,7 +84,7 @@ function gather_fixture() {
 	};
 }
 
-test("fishing and mining success include reward and num when an item is awarded", () => {
+test("fishing and mining success include reward, num, and item when an item is awarded", () => {
 	for (const [skill, drop, chance] of [
 		["fishing", "f1", 0.05],
 		["mining", "m1", 0.1],
@@ -99,6 +99,7 @@ test("fishing and mining success include reward and num when an item is awarded"
 		assert.equal(success[1].reward, "hpot0");
 		assert.equal(typeof success[1].num, "number");
 		assert.equal(h.player.items[success[1].num].name, "hpot0");
+		assert.deepEqual(success[1].item, plain(h.c.cache_item(h.player.items[success[1].num])));
 	}
 });
 
@@ -118,6 +119,7 @@ test("fishing and mining success omit reward when the bag is full or the table r
 		assert(fullSuccess, skill + " full-bag success");
 		assert.equal(fullSuccess[1].reward, undefined);
 		assert.equal(fullSuccess[1].num, undefined);
+		assert.equal(fullSuccess[1].item, undefined);
 
 		const empty = gather_fixture();
 		empty.c.Math.random = () => chance;
@@ -129,6 +131,7 @@ test("fishing and mining success omit reward when the bag is full or the table r
 		assert(emptySuccess, skill + " empty-roll success");
 		assert.equal(emptySuccess[1].reward, undefined);
 		assert.equal(emptySuccess[1].num, undefined);
+		assert.equal(emptySuccess[1].item, undefined);
 	}
 });
 

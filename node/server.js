@@ -15152,7 +15152,13 @@ function update_instance(instance) {
 									slot: "mainhand",
 									request_id: ref.request_id,
 								},
-								outcome.reward !== undefined ? { reward: outcome.reward, num: outcome.num } : {},
+								outcome.reward !== undefined
+									? {
+											reward: outcome.reward,
+											num: outcome.num,
+											item: cache_item(player.items[outcome.num]),
+										}
+									: {},
 							),
 						);
 						resend(player, "reopen");
@@ -15196,7 +15202,13 @@ function update_instance(instance) {
 									slot: "mainhand",
 									request_id: ref.request_id,
 								},
-								outcome.reward !== undefined ? { reward: outcome.reward, num: outcome.num } : {},
+								outcome.reward !== undefined
+									? {
+											reward: outcome.reward,
+											num: outcome.num,
+											item: cache_item(player.items[outcome.num]),
+										}
+									: {},
 							),
 						);
 						resend(player, "reopen");
