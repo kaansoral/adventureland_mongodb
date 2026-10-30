@@ -862,6 +862,7 @@ function player_to_server(player, place) {
 				"height",
 				"u",
 				"user",
+				"unlocked", // account-level bank/map unlocks — never store on the character entity
 			])
 		) {
 			char[prop] = player[prop];
@@ -1014,10 +1015,14 @@ function player_to_client(player, stranger) {
 			data[p] = player[p];
 		});
 		data.items = player.citems;
+		// Account unlocks (e.g. bank_b / bank_u via bkey / ukey). Available to CODE always,
+		// including outside the bank, so bots can plan routes before entering a locked floor.
+		data.unlocked = player.unlocked || {};
 		if (player.user !== undefined) {
 			data.user = player.cuser;
 			if (player.user) {
 				data.user.gold = player.user.gold;
+				if (player.user.unlocked) data.user.unlocked = player.user.unlocked;
 			}
 		}
 		if (player.socket) {
@@ -9671,6 +9676,7 @@ function init_socket_io(socket_server, server_index) {
 						consume_one(player, data.num);
 						player.user.unlocked = player.user.unlocked || {};
 						player.user.unlocked.bank_b = new Date();
+						player.unlocked = player.user.unlocked;
 						player.user.items8 = player.user.items8 || [];
 						player.cuser.items8 = player.user.items8.map((item) => cache_item(item));
 						socket.emit("game_response", "door_unlocked");
@@ -9685,6 +9691,7 @@ function init_socket_io(socket_server, server_index) {
 						consume_one(player, data.num);
 						player.user.unlocked = player.user.unlocked || {};
 						player.user.unlocked.bank_u = new Date();
+						player.unlocked = player.user.unlocked;
 						player.user.items24 = player.user.items24 || [];
 						player.cuser.items24 = player.user.items24.map((item) => cache_item(item));
 						socket.emit("game_response", "door_unlocked");
@@ -11770,6 +11777,8 @@ function init_socket_io(socket_server, server_index) {
 				if (ip_info && ip_info.exception) player.ipx = ip_info.info.limit;
 				player.cash = owner.cash;
 				player.verified = gf(owner, "verified", 0);
+				// Account map unlocks (ulocked doors / bank keys). Kept off the character entity.
+				player.unlocked = Object.assign({}, (owner.info && owner.info.unlocked) || {});
 				var recovered_generated_map = generated_recover_login(player);
 
 				if (
@@ -16675,6 +16684,9 @@ function sync_loop() {
 			player.last_sync = new Date();
 			server_log("mount_user: " + player.name + " owner: " + player.owner, 1);
 			player.user = R.user;
+			if (!player.user.unlocked) player.user.unlocked = {};
+			// Share the same object so key unlocks update character.unlocked immediately.
+			player.unlocked = player.user.unlocked;
 			delete player.mount_id;
 			init_bank(player);
 			if (players[player.socket.id]) {
@@ -16739,6 +16751,8 @@ function sync_loop() {
 			server_log("unmount_user: " + player.name + " owner: " + player.owner + " result: " + JSON.stringify(R), 1);
 			delete player.unmounting;
 			delete player.unmount_id;
+			// Keep unlocks after leaving the bank (CODE still needs them outside).
+			player.unlocked = Object.assign({}, (player.user && player.user.unlocked) || player.unlocked || {});
 			player.user = null;
 			player.cuser = null;
 			if (players[player.socket.id] && player.unmount_to) {

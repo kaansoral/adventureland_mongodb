@@ -36,6 +36,8 @@ docs = {
 		"bank_store",
 		"bank_retrieve",
 		"bank_swap",
+		"is_unlocked",
+		"map_requires_unlock",
 		"swap",
 		"locate_item",
 		"quantity",
@@ -482,7 +484,7 @@ docs = {
 			article: "banking",
 			icon: "computer",
 			summary: "Store shared items and gold safely across your characters.",
-			functions: ["bank_deposit", "bank_withdraw", "open_bank_pack", "bank_store", "bank_retrieve", "bank_swap"],
+			functions: ["bank_deposit", "bank_withdraw", "open_bank_pack", "bank_store", "bank_retrieve", "bank_swap", "is_unlocked", "map_requires_unlock"],
 			proximity: true,
 		},
 		exchanges: {

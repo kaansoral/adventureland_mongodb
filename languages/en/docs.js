@@ -3182,6 +3182,16 @@ module.exports = {
 	"docs.functions.is_transporting.example": "<b>Example:</b>",
 	// docs/functions/is_transporting.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.is_transporting.returns-boolean": "<b>Returns:</b> Boolean.",
+	// docs/functions/is_unlocked.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Locked inline code: ["character.unlocked"]. Keep names: ["bank_b","bank_u","bkey","ukey"].
+	"docs.functions.is_unlocked.checks-whether-an-account-unlock-requirement-for":
+		"Checks whether an account unlock requirement for a map is satisfied. Currently covers bank floors such as bank_b and bank_u that are opened with bkey and ukey.",
+	// docs/functions/is_unlocked.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
+	"docs.functions.is_unlocked.example": "<b>Example:</b>",
+	// docs/functions/is_unlocked.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["character.unlocked","map_requires_unlock"].
+	"docs.functions.is_unlocked.notes-maps-that-do-not-need-an":
+		"<b>Notes:</b> Maps that do not need an account unlock return true. Uses <span class='dlabel'>character.unlocked</span>, which the server sends for your character even outside the bank. See also <span class='dlabel'>map_requires_unlock</span>.",
+	// docs/functions/is_unlocked.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
+	"docs.functions.is_unlocked.returns-boolean": "<b>Returns:</b> Boolean.",
 	// docs/functions/item_grade.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged.
 	"docs.functions.item_grade.calculates-an-item-s-grade-from-its-definition": "Calculates an item's grade from its definition and level.",
 	// docs/functions/item_grade.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
@@ -3326,6 +3336,16 @@ module.exports = {
 	"docs.functions.map_key.maps-a-keyboard-key-to-a-skill-built": "Maps a keyboard key to a skill, built-in action, or code snippet and saves the updated keymap.",
 	// docs/functions/map_key.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.map_key.returns-nothing": "<b>Returns:</b> Nothing.",
+	// docs/functions/map_requires_unlock.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Locked inline code: ["unlocks","ulocked"]. Keep names: ["bank_b","bank_u"].
+	"docs.functions.map_requires_unlock.checks-whether-a-map-is-gated-by":
+		"Checks whether a map is gated by an account unlock, using item unlocks fields and ulocked doors in G.",
+	// docs/functions/map_requires_unlock.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
+	"docs.functions.map_requires_unlock.example": "<b>Example:</b>",
+	// docs/functions/map_requires_unlock.html:4; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["G.items","G.maps","is_unlocked"]. Keep names: ["bkey","ukey"].
+	"docs.functions.map_requires_unlock.notes-driven-by-item-unlocks-and":
+		"<b>Notes:</b> Driven by <span class='dlabel'>G.items</span> unlocks values and inbound ulocked doors onto mount maps in <span class='dlabel'>G.maps</span>, matching the server gate. New key floors are covered without a CODE change. Pair with <span class='dlabel'>is_unlocked</span>.",
+	// docs/functions/map_requires_unlock.html:3; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
+	"docs.functions.map_requires_unlock.returns-boolean": "<b>Returns:</b> Boolean.",
 	// docs/functions/mode_resolve_all.html:5; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.functions.mode_resolve_all.example": "<b>Example:</b>",
 	// docs/functions/mode_resolve_all.html:2; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Keep names: ["CODE"].
@@ -4126,6 +4146,9 @@ module.exports = {
 	// docs/guide/banking.html:42; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["character.bank"].
 	"docs.guide.banking.character-bank-exists-while-you-are-inside-the":
 		'<span class="dlabel">character.bank</span> exists while you are inside the bank. It contains the shared gold and every open pack available to the character.',
+	// docs/guide/banking.html:45; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["character.unlocked","is_unlocked","map_requires_unlock"]. Keep names: ["bank_b","bank_u","bkey","ukey"].
+	"docs.guide.banking.character-unlocked-tracks-account-map-unlocks":
+		'<span class="dlabel">character.unlocked</span> tracks account map unlocks such as bank_b and bank_u. It is available outside the bank too. Use <span class="rlabel" onclick="render_function_reference($(this).html())">is_unlocked</span> and <span class="rlabel" onclick="render_function_reference($(this).html())">map_requires_unlock</span> to query them from CODE.',
 	// docs/guide/banking.html:36; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep names: ["Diamond Key"].
 	"docs.guide.banking.diamond-key-opens-the-next-unopened-item-teller": '<span class="guide-card-icon bank-dkey"></span><b>Diamond Key</b>Opens the next unopened item teller and is consumed.',
 	// docs/guide/banking.html:11; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Keep names: ["Mr. Rich"].
@@ -4156,7 +4179,7 @@ module.exports = {
 	"docs.guide.banking.opening-more-space": "Opening More Space",
 	// docs/guide/banking.html:61; Documentation p prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only. Locked inline code: ["bank_deposit","bank_withdraw","bank_store","bank_retrieve","bank_swap"].
 	"docs.guide.banking.references-bank-deposit-bank-withdraw-bank-store-bank":
-		'References: <span class="rlabel" onclick="render_function_reference($(this).html())">bank_deposit</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_withdraw</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_store</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_retrieve</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_swap</span>.',
+		'References: <span class="rlabel" onclick="render_function_reference($(this).html())">bank_deposit</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_withdraw</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_store</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_retrieve</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">bank_swap</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">is_unlocked</span>, <span class="rlabel" onclick="render_function_reference($(this).html())">map_requires_unlock</span>.',
 	// docs/guide/banking.html:63; Documentation div prose block. Keep Adventure Land, CODE symbols, and item/NPC/map/monster names unchanged. Fixed HTML: preserve every tag, attribute, handler and URL exactly; translate visible prose only.
 	"docs.guide.banking.related-items-item-maintenance-travel":
 		"Related: <span onclick=\"hide_modal(); open_guide('items',get_guide_url('items'))\">Items</span> · <span onclick=\"hide_modal(); open_guide('item-maintenance',get_guide_url('item-maintenance'))\">Item Maintenance</span> · <span onclick=\"hide_modal(); open_guide('travel-and-instances',get_guide_url('travel-and-instances'))\">Travel</span>",
