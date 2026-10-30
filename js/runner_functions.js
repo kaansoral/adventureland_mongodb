@@ -354,6 +354,7 @@ function use_skill(name, target, extra_arg, timeout_ms) {
 					if (!RESOLVE_ALL) return reject(data);
 				} else {
 					data.success = true;
+					// found = bite/hit; reward/num (from the server) mean an item was actually awarded
 					if (event == "fishing_none" || event == "mining_none") data.found = false;
 					else if (event == "fishing_success" || event == "mining_success") data.found = true;
 				}

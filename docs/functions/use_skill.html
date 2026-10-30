@@ -8,6 +8,8 @@
 <div class='code'>async function example() {
 	var result = await use_skill("fishing", null, null, 20000);
 	if (result.found === false) game_log("Nothing caught this time");
+	else if (result.reward) game_log("Caught " + result.reward + " in slot " + result.num);
+	else game_log("Bite, but no item");
 }
 example();</div>
 <p>{{ phrase_html("docs.functions.use_skill.paladin-aura-at-level-60-pass-the-aura") }}</p>
