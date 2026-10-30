@@ -45,7 +45,9 @@
 	}
 
 	var result = await use_skill(kind);
-	game_log(result.found ? "Found something" : "Nothing this time");
+	if (!result.found) game_log("Nothing this time");
+	else if (result.reward) game_log("Got " + result.reward);
+	else game_log("Hit, but no item");
 }
 
 gather("fishing").catch(show_json); // or "mining"</div>

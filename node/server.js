@@ -15123,8 +15123,9 @@ function update_instance(instance) {
 				}
 				if (name == "fishing") {
 					if (Math.random() < 0.1) {
+						var outcome = {};
 						if (player.esize) {
-							exchange(player, ref.drop, { phrase: "Fished" });
+							outcome = exchange(player, ref.drop, { phrase: "Fished" });
 						}
 						consume_skill(player, "fishing", true);
 						if (player.slots.mainhand) {
@@ -15142,12 +15143,24 @@ function update_instance(instance) {
 								});
 							}
 						}
-						player.socket.emit("game_response", {
-							response: "data",
-							cevent: "fishing_success",
-							slot: "mainhand",
-							request_id: ref.request_id,
-						});
+						player.socket.emit(
+							"game_response",
+							Object.assign(
+								{
+									response: "data",
+									cevent: "fishing_success",
+									slot: "mainhand",
+									request_id: ref.request_id,
+								},
+								outcome.reward !== undefined
+									? {
+											reward: outcome.reward,
+											num: outcome.num,
+											item: cache_item(player.items[outcome.num]),
+										}
+									: {},
+							),
+						);
 						resend(player, "reopen");
 					} else {
 						player.socket.emit("ui", {
@@ -15160,8 +15173,9 @@ function update_instance(instance) {
 				}
 				if (name == "mining") {
 					if (Math.random() < 0.2) {
+						var outcome = {};
 						if (player.esize) {
-							exchange(player, ref.drop, { phrase: "Mined" });
+							outcome = exchange(player, ref.drop, { phrase: "Mined" });
 						}
 						consume_skill(player, "mining", true);
 						if (player.slots.mainhand) {
@@ -15179,12 +15193,24 @@ function update_instance(instance) {
 								});
 							}
 						}
-						player.socket.emit("game_response", {
-							response: "data",
-							cevent: "mining_success",
-							slot: "mainhand",
-							request_id: ref.request_id,
-						});
+						player.socket.emit(
+							"game_response",
+							Object.assign(
+								{
+									response: "data",
+									cevent: "mining_success",
+									slot: "mainhand",
+									request_id: ref.request_id,
+								},
+								outcome.reward !== undefined
+									? {
+											reward: outcome.reward,
+											num: outcome.num,
+											item: cache_item(player.items[outcome.num]),
+										}
+									: {},
+							),
+						);
 						resend(player, "reopen");
 					} else {
 						player.socket.emit("ui", {
