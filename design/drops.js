@@ -226,6 +226,8 @@ var drops = {
 			[500, "cclaw"],
 			[10000, "cshell"],
 			[1000, "funtoken"],
+			[250, "funtoken"],
+			[250, "funtoken"],
 			[10, "funtoken"],
 			[10, "funtoken"],
 		],
@@ -761,6 +763,8 @@ var drops = {
 			[1000, "funtoken"],
 			[1000, "funtoken"],
 			[1000, "funtoken"],
+			[10, "funtoken"],
+			[10, "funtoken"],
 		],
 		rharpy: [
 			[0.05, "feather1"],
