@@ -422,6 +422,35 @@ function reduce_cooldown(name, ms) {
 	if (parent.next_skill[name]) parent.skill_timeout(name, -mssince(parent.next_skill[name]) - ms);
 }
 
+// True when `map` is gated by an account unlock (item.unlocks / ulocked mount door).
+// Matches the server transport gate: unlocks apply to mount maps (bank floors), not every
+// door tagged ulocked (e.g. the bank_u → level2 exit is ulocked+complicated but not gated).
+function map_requires_unlock(map) {
+	if (!map || !G) return false;
+	if (G.items) {
+		for (var id in G.items) {
+			if (G.items[id] && G.items[id].unlocks === map) return true;
+		}
+	}
+	if (G.maps && G.maps[map] && G.maps[map].mount) {
+		for (var mid in G.maps) {
+			var doors = (G.maps[mid] && G.maps[mid].doors) || [];
+			for (var i = 0; i < doors.length; i++) {
+				if (doors[i][7] === "ulocked" && doors[i][4] === map) return true;
+			}
+		}
+	}
+	return false;
+}
+
+// Account unlock check for maps that need a key (currently bank_b / bank_u via bkey / ukey).
+// Maps that do not require an unlock count as unlocked. Uses character.unlocked from the server.
+function is_unlocked(map) {
+	if (!map) return false;
+	if (!map_requires_unlock(map)) return true;
+	return !!(character && character.unlocked && character.unlocked[map]);
+}
+
 function bank_deposit(gold) {
 	if (!character.bank) return rejecting_promise({ reason: "not_in_bank" });
 	var promise = parent.push_deferred("bank");
@@ -2922,10 +2951,9 @@ function proxy_all() {
 	for (var p in real) if (Object.prototype.hasOwnProperty.call(real, p) && !Object.prototype.hasOwnProperty.call(character, p)) proxy(p);
 }
 
-character.read_only.push(...["on", "once"]);
-["bank", "user", "code", "angle", "direction", "target", "from_x", "from_y", "going_x", "going_y", "moving", "vx", "vy", "move_num"].forEach(function (p) {
-	proxy(p);
-});
+character.read_only.push(...["on", "once", "unlocked"]);
+var proxy_props = ["bank", "user", "unlocked", "code", "angle", "direction", "target", "from_x", "from_y", "going_x", "going_y", "moving", "vx", "vy", "move_num"];
+for (var pi = 0; pi < proxy_props.length; pi++) proxy(proxy_props[pi]);
 setInterval(function () {
 	proxy_all();
 }, 50); // bottom of the barrel

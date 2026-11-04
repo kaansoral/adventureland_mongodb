@@ -42,6 +42,7 @@
 <div class="divider"></div>
 <div class="title mt15">CODE</div>
 <p>{{ phrase_html("docs.guide.banking.character-bank-exists-while-you-are-inside-the") }}</p>
+<p>{{ phrase_html("docs.guide.banking.character-unlocked-tracks-account-map-unlocks") }}</p>
 <p>{{ phrase("docs.functions.bank_store.explicit_destination") }}</p>
 <div class="code">async function bank_trip() {
 	await smart_move("bank");
@@ -64,6 +65,9 @@
 }
 
 bank_trip().catch(show_json);</div>
+<div class="code">// Floors gated by bkey / ukey (and any future item.unlocks maps):
+if (is_unlocked("bank_b")) await smart_move("bank_b");
+if (map_requires_unlock("bank_u") &amp;&amp; !is_unlocked("bank_u")) game_log("Need ukey for bank_u");</div>
 <p>{{ phrase_html("docs.guide.banking.open-a-closed-teller-through-code-with-open") }}</p>
 <p>{{ phrase_html("docs.guide.banking.references-bank-deposit-bank-withdraw-bank-store-bank") }}</p>
 
