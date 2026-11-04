@@ -3202,6 +3202,7 @@ var weapons={
 		"apiercing": 20,
 		"dex": 24,
 		"upgrade": {
+			"apiercing": 5,
 			"hp": 40
 		}
 	},
