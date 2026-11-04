@@ -167,7 +167,13 @@ test("password login rejects active account bans inside the session transaction"
 		current.info.blocked_until = until;
 		const before = structuredClone(current);
 		const res = response(f.req);
-		const result = await f.context.signup_or_login_api({ req: f.req, res, email: "fixture@example.invalid", password: "fixturepassword", only_login: true });
+		const result = await f.context.signup_or_login_api({
+			req: f.req,
+			res,
+			email: "fixture@example.invalid",
+			password: "fixturepassword",
+			only_login: true,
+		});
 		assert.equal(result.reason, "banned");
 		assert.equal(res.getHeader("Set-Cookie"), undefined);
 		assert.equal(f.stats.writes, 0);
@@ -180,7 +186,13 @@ test("password login allows an expired timed ban", async () => {
 	f.records.get(f.user._id).banned = true;
 	f.records.get(f.user._id).info.blocked_until = new Date(Date.now() - 1000);
 	const res = response(f.req);
-	const result = await f.context.signup_or_login_api({ req: f.req, res, email: "fixture@example.invalid", password: "fixturepassword", only_login: true });
+	const result = await f.context.signup_or_login_api({
+		req: f.req,
+		res,
+		email: "fixture@example.invalid",
+		password: "fixturepassword",
+		only_login: true,
+	});
 	assert.equal(result.success, true);
 	assert.ok(res.getHeader("Set-Cookie"));
 });

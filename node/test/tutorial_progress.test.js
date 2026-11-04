@@ -471,10 +471,14 @@ test("one party invite, join request or membership persists credit without an ac
 	for (const event of ["invite", "request", "membership"]) {
 		const r = actionRuntime();
 		if (event === "membership") r.handlers.party_update({ list: ["Mira", "Finn"] });
-		else r.handlers.game_log({ phrase: event === "invite" ? "server.game_log.invited_to_party" : "server.game_log.requested_to_join_s_party", message: "Confirmed" });
+		else
+			r.handlers.game_log({
+				phrase: event === "invite" ? "server.game_log.invited_to_party" : "server.game_log.requested_to_join_s_party",
+				message: "Confirmed",
+			});
 		await r.flush();
 		assert.ok(r.saved().includes("com"), event);
-		assert.equal(r.context.docs.tutorial.find(lesson => lesson.key === "parties-friends").tasks.join(","), "com");
+		assert.equal(r.context.docs.tutorial.find((lesson) => lesson.key === "parties-friends").tasks.join(","), "com");
 	}
 });
 
