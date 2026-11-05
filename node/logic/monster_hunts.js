@@ -1,4 +1,4 @@
-// Minimum account level for the introductory hunt targets. At 60, the normal
+// Minimum account level for the introductory hunt targets. At 70, the normal
 // live-monster selection applies without a target restriction.
 const beginner_levels = {
 	goo: 1,
@@ -11,7 +11,17 @@ const beginner_levels = {
 	tortoise: 48,
 	squigtoad: 52,
 	bat: 56,
+	spider: 64,
 };
+
+const blocklist_mtypes = [
+	"target_a500",
+	"target_a750",
+	"target_ar900",
+	"target_r500",
+	"target_r750",
+	"target_ar500red",
+];
 
 function account_level(player, players, characters = []) {
 	let level = Math.max(player.level, player.max_stats?.level || 0);
@@ -37,7 +47,8 @@ function assign(G, instances, hunted, level) {
 		if (instances[id].name !== id || !G.maps[id] || G.maps[id].irregular) continue;
 		for (const mid in instances[id].monsters) {
 			const monster = instances[id].monsters[mid];
-			if (level < 60 && !(beginner_levels[monster.type] <= level)) continue;
+			if (blocklist_mtypes.includes(monster.type)) continue;
+			if (level < 70 && !(beginner_levels[monster.type] <= level)) continue;
 			if (monster.level > mmax && !hunted.includes(monster.type) && !monster.target) {
 				name = monster.type;
 				mmax = monster.level;
@@ -49,7 +60,7 @@ function assign(G, instances, hunted, level) {
 		if (G.maps[id].irregular || !G.maps[id].monsters) continue;
 		for (const spawn of G.maps[id].monsters) if (spawn.type === name) times += spawn.count;
 	}
-	const cap = level < 60 ? 10 + Math.floor(((level - 30) * 490) / 30) : 500;
+	const cap = level < 70 ? 10 + Math.floor(((level - 30) * 490) / 40) : 500;
 	const count = Math.max(
 		1,
 		Math.min(cap, parseInt((20 * 60 * Math.max(1, times)) / the_hp / (G.monsters[name].respawn + 0.25))),
