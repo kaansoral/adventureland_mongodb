@@ -101,8 +101,8 @@ test("every account below 30 gets ten Goo, even when Goo are busy or reserved", 
 test("account levels use offline siblings, live siblings and refreshed snapshots, including merchants", () => {
 	for (const options of [
 		{ player: { max_stats: { level: 80 } } },
-		{ players: { sibling: { owner: "US_hunter", level: 60, type: "merchant" } } },
-		{ characters: [{ owner: "US_hunter", level: 70, online: false, type: "merchant" }] },
+		{ players: { sibling: { owner: "US_hunter", level: 70, type: "merchant" } } },
+		{ characters: [{ owner: "US_hunter", level: 76, online: false, type: "merchant" }] },
 	]) {
 		const h = harness(1, options);
 		h.spawn("wolf", 1);
@@ -121,14 +121,14 @@ test("account levels use offline siblings, live siblings and refreshed snapshots
 	assert.equal(h.player.s.monsterhunt.c, 10);
 });
 
-test("level-ups end the starter bracket and introductory targets expand before 60", () => {
+test("level-ups end the starter bracket and introductory targets expand before 70", () => {
 	for (const [level, target] of [
 		[29, "goo"],
 		[30, "bee"],
 		[40, "armadillo"],
 		[50, "tortoise"],
 		[59, "bat"],
-		[60, "wolf"],
+		[70, "wolf"],
 	]) {
 		const h = harness(level, { player: { max_stats: { level: 1 } } });
 		["goo", "bee", "armadillo", "tortoise", "bat", "wolf"].forEach((type, i) => h.spawn(type, i + 1));
@@ -138,14 +138,14 @@ test("level-ups end the starter bracket and introductory targets expand before 6
 	}
 });
 
-test("introductory kill caps rise to normal at 60 without increasing naturally short hunts", () => {
+test("introductory kill caps rise to normal at 70 without increasing naturally short hunts", () => {
 	for (const [level, count] of [
 		[29, 10],
 		[30, 10],
-		[40, 173],
-		[50, 336],
-		[59, 483],
-		[60, 500],
+		[40, 132],
+		[50, 255],
+		[59, 365],
+		[70, 500],
 		[80, 500],
 	]) {
 		const h = harness(level);
@@ -160,7 +160,7 @@ test("introductory kill caps rise to normal at 60 without increasing naturally s
 });
 
 test("normal hunts still pick the highest idle level and skip occupied, hunted and irregular targets", () => {
-	const h = harness(60, { markers: { monsterhunt_bat: { name: "Other", type: "monsterhunt", id: "bat" } } });
+	const h = harness(70, { markers: { monsterhunt_bat: { name: "Other", type: "monsterhunt", id: "bat" } } });
 	h.spawn("goo");
 	h.spawn("wolf", 5);
 	h.spawn("croc", 10, { target: "Fighter" });
@@ -172,13 +172,13 @@ test("normal hunts still pick the highest idle level and skip occupied, hunted a
 });
 
 test("an empty eligible pool has a finite Goo fallback and beginner hunts do not reserve targets", () => {
-	for (const level of [1, 40, 60]) {
+	for (const level of [1, 40, 70]) {
 		const h = harness(level);
 		h.run();
 		assert.equal(h.player.s.monsterhunt.id, "goo");
 		assert(Number.isInteger(h.player.s.monsterhunt.c));
 		assert(h.player.s.monsterhunt.c > 0);
-		assert.equal(!!h.context.server.s.monsterhunt_goo, level >= 60);
+		assert.equal(!!h.context.server.s.monsterhunt_goo, level >= 70);
 	}
 });
 
