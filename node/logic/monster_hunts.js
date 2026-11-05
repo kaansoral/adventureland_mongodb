@@ -15,6 +15,7 @@ const beginner_levels = {
 };
 
 const blocklist_mtypes = [
+	"target",
 	"target_a500",
 	"target_a750",
 	"target_ar900",
