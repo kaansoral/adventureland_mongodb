@@ -23,7 +23,7 @@ var tokens={
 		"tracker":4,
 		"armorbox":5,
 		"troll":14,
-		"networkcard":2000,
+		"networkcard":1200,
 		"mwgloves":8, "mwarmor":12, "mwpants":11, "mwhelmet":7, "mwboots":15,
 		"mmgloves":8, "mmarmor":12, "mmpants":11, "mmhat":7, "mmshoes":15,
 		"mpgloves":8, "mparmor":12, "mppants":11, "mphat":7, "mpshoes":15,

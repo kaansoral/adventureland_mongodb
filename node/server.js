@@ -5511,7 +5511,7 @@ function init_socket_io(socket_server, server_index) {
 				count = max(1, parseInt(count / 10));
 			}
 			player.s.monsterhunt = { sn: region + " " + server_name, id: name, c: count, ms: 30 * 60 * 1000, dl: true };
-			if (level >= 60)
+			if (level >= 70)
 				server.s["monsterhunt_" + name] = { name: player.name, id: name, ms: 20 * 60 * 1000, type: "monsterhunt" };
 			player.hitchhikers.push(["game_response", "monsterhunt_started"]);
 			resend(player, "u+cid");
