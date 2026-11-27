@@ -456,6 +456,7 @@ function encouragement_chest(player, monster, chest, share) {
 	}
 	if (chest.encouragement)
 		chest.encouragement_monster = {
+			id: monster.id,
 			type: monster.type,
 			map: monster.map,
 			max_hp: monster.max_hp,
@@ -493,7 +494,7 @@ function encouragement_loot(chest, r, looters) {
 		var gold = Math.floor(((chest.encouragement_gold || 0) * r.goldm + (chest.egold || 0)) * receipt.gold);
 		// A reserved ordinary chest keeps a full inventory from losing or rerolling the result.
 		if (!can_add_items(player, drop.items)) {
-			drop_one_thing(player, [], { reserved: drop, gold: gold, character: receipt.id, group: receipt.group });
+			drop_one_thing(player, [], { reserved: drop, gold: gold, character: receipt.id, group: receipt.group, entity_id: chest.encouragement_monster.id });
 			continue;
 		}
 		var result = in_arr(player.name, looters) ? r : { id: r.id, goldm: r.goldm, opener: r.opener, items: [] };
