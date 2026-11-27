@@ -393,7 +393,7 @@ function encouragement_heal(healer, player, amount, missing) {
 
 function encouragement_share(player, monster) {
 	var entry = monster.contributions && monster.contributions[player.real_id];
-	if (!entry || entry.owner !== player.owner || player.dc || player.in !== monster.in) return null;
+	if (!entry || entry.owner !== player.owner || player.dc || (player.in !== monster.in && !monster["global"])) return null;
 	encouragement_update(player);
 	var total = Math.max(monster.contribution_total || 0, monster.max_hp - Math.max(0, monster.hp));
 	if (!(total > 0)) return null;
