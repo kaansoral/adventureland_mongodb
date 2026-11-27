@@ -1223,6 +1223,7 @@ function simple_distance(a,b)
 {
 	var a_x=get_x(a),a_y=get_y(a),b_x=get_x(b),b_y=get_y(b);
 	if(a.map && b.map && a.map!=b.map) return 9999999;
+	if(a.in && b.in && a.in!=b.in) return 9999999;
 	return Math.sqrt((a_x-b_x)*(a_x-b_x)+(a_y-b_y)*(a_y-b_y))
 }
 

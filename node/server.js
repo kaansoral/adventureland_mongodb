@@ -2297,6 +2297,7 @@ function drop_one_thing(player, items, args) {
 	drop.gold = args.gold || 0;
 	drop.x = args.x !== undefined ? args.x : player.x;
 	drop.y = args.y !== undefined ? args.y : player.y;
+	drop.entity_id = args.entity_id || null;
 	drop.map = args.map || player.map;
 	drop.in = args.in || player.in;
 	drop.chest = chest;
@@ -2307,7 +2308,9 @@ function drop_one_thing(player, items, args) {
 		items: drop.items.length,
 		chest: chest,
 		id: drop_id,
+		entity_id: drop.entity_id,
 		map: drop.map,
+		in: drop.in,
 		owners: [player.owner],
 	});
 	return drop_id;
@@ -2457,10 +2460,12 @@ function drop_something(player, monster, share) {
 	drop.x = monster.x;
 	drop.y = monster.y;
 	drop.map = monster.map;
+	drop.in = monster.in;
 	if (monster["global"]) {
 		drop.x = player.x;
 		drop.y = player.y;
 		drop.map = player.map;
+		drop.in = player.in;
 	}
 	roll_monster_drops(player, monster, drop, share);
 	drop.encouragement_gold = drop.gold;
@@ -2505,8 +2510,10 @@ function drop_something(player, monster, share) {
 				items: drop.items.length,
 				chest: chest,
 				id: drop_id,
+				entity_id: monster.id,
 				party: player.party,
 				map: drop.map,
+				in: drop.in,
 				owners: owners,
 			},
 			{ instance: player.in },
@@ -2518,7 +2525,9 @@ function drop_something(player, monster, share) {
 			items: drop.items.length,
 			chest: chest,
 			id: drop_id,
+			entity_id: monster.id,
 			map: drop.map,
+			in: drop.in,
 			owners: [player.owner],
 		});
 	}
@@ -2583,8 +2592,10 @@ function drop_something_hardcore(player, target) {
 				items: drop.pvp_items.length,
 				chest: "chest8",
 				id: drop_id,
+				entity_id: target.id,
 				party: player.party,
 				map: target.map,
+				in: target.in,
 				owners: owners,
 			},
 			{ instance: player.in },
@@ -2596,7 +2607,9 @@ function drop_something_hardcore(player, target) {
 			items: drop.pvp_items.length,
 			chest: "chest8",
 			id: drop_id,
+			entity_id: target.id,
 			map: target.map,
+			in: target.in,
 			owners: [player.owner],
 		});
 	}
@@ -2659,8 +2672,10 @@ function drop_something_pvp(player, target) {
 				items: drop.pvp_items.length,
 				chest: "chest8",
 				id: drop_id,
+				entity_id: target.id,
 				party: player.party,
 				map: target.map,
+				in: target.in,
 				owners: owners,
 			},
 			{ instance: player.in },
@@ -2672,7 +2687,9 @@ function drop_something_pvp(player, target) {
 			items: drop.pvp_items.length,
 			chest: "chest8",
 			id: drop_id,
+			entity_id: target.id,
 			map: target.map,
+			in: target.in,
 			owners: [player.owner],
 		});
 	}
@@ -4052,7 +4069,7 @@ function complete_attack(attacker, target, info) {
 			def.heal = -attack;
 			if (attacker.is_player && target.type == "ghost" && !target.s.healed) {
 				target.s.healed = { ms: 960 * 60 * 60 * 1000 };
-				drop_one_thing(attacker, "essenceoflife", { x: target.x, y: target.y, chest: "chestp" });
+				drop_one_thing(attacker, "essenceoflife", { x: target.x, y: target.y, chest: "chestp", entity_id: target.id });
 			}
 			if (G.monsters[attacker.type] && G.monsters[attacker.type].goldsteal && target.is_player) {
 				var gold = -88;
@@ -13309,7 +13326,7 @@ function init_socket_io(socket_server, server_index) {
 				} else if (data.command == "give spares") {
 					if (S.misc && S.misc.spares && S.misc.spares.length) {
 						mainframe_reply("here you go");
-						drop_one_thing(player, S.misc.spares, { x: 1, y: -88 });
+						drop_one_thing(player, S.misc.spares, { x: 1, y: -88, map: 'cyberland', entity_id: null });
 						S.misc.spares = [];
 					} else {
 						mainframe_reply("come later");

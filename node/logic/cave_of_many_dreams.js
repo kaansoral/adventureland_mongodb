@@ -506,6 +506,7 @@ function cave_credit(run, gold, amber, source) {
 		reserved: drop,
 		gold,
 		chest: "cavechest",
+		entity_id: null,
 		map: source.map,
 		in: source.map,
 		x: point.x,
@@ -525,7 +526,7 @@ function cave_credit(run, gold, amber, source) {
 	return id;
 }
 function cave_send_chest(socket, id, chest) {
-	socket.emit("drop", { id, x: chest.x, y: chest.y, map: chest.map, chest: chest.chest, items: chest.items.length });
+	socket.emit("drop", { id, entity_id: null, x: chest.x, y: chest.y, map: chest.map, in: chest.in, chest: chest.chest, items: chest.items.length });
 }
 function cave_send_chests(run, socket, map) {
 	for (var id of run.cave?.chests || []) {
