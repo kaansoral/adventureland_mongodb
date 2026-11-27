@@ -1228,6 +1228,12 @@ var dismantle={
 	// 	],
 	// 	"cost":20,
 	// },
+	"tombkey":{
+		"items":[
+			[2,"mbones"],
+		],
+		"cost":100000,
+	},
 };
 
 Object.assign(craft, {
